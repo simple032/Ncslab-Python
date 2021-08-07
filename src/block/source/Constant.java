@@ -9,6 +9,6 @@ public class Constant extends block.Block{
 		super(blockJSON);
 		
 		//Ò»¸öÊä³ö
-		outputPortList.add(new OutputPort());
+		outputPortList.add(new OutputPort(this,1));
 	}
 }

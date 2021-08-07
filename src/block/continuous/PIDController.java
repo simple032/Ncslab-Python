@@ -10,7 +10,7 @@ public class PIDController extends block.Block{
 		super(blockIn);
 		
 		//一个输入，一个输出
-		inputPortList.add(new InputPort());
-		outputPortList.add(new OutputPort());
+		inputPortList.add(new InputPort(this,1));
+		outputPortList.add(new OutputPort(this,1));
 	}
 }

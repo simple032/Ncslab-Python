@@ -10,6 +10,8 @@ public class Block {
 	protected String blockType;
 	protected String blockName;
 	
+	protected int blockId=0;
+	
 	protected JSONObject paramValues;
 	
 	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
@@ -40,5 +42,13 @@ public class Block {
 	
 	public Vector<OutputPort> getOutputPortList(){
 		return outputPortList;
+	}
+	
+	public void setBlockId(int blockId) {
+		this.blockId=blockId;
+	}
+	
+	public int getBlockId() {
+		return this.blockId;
 	}
 }

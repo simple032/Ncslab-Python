@@ -11,8 +11,8 @@ public class WaterLevel extends Block {
 		super(blockJSON);
 		
 		//一个输入，两个输出
-		inputPortList.add(new InputPort());
-		outputPortList.add(new OutputPort());
-		outputPortList.add(new OutputPort());
+		inputPortList.add(new InputPort(this,1));
+		outputPortList.add(new OutputPort(this,1));
+		outputPortList.add(new OutputPort(this,2));
 	}
 }

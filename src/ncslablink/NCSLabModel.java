@@ -8,6 +8,8 @@ import java.util.Vector;
 import block.Block;
 import block.BlockType;
 
+import line.Line;
+
 public class NCSLabModel {
 	
 	private JSONObject jsonIn;
@@ -18,6 +20,8 @@ public class NCSLabModel {
 	private Config config;
 	
 	private Vector<Block> blockList=new Vector<Block>();
+	
+	private Vector<Line> lineList=new Vector<Line>();
 	
 	NCSLabModel(JSONObject jsonIn){
 		this.jsonIn=jsonIn;
@@ -33,6 +37,10 @@ public class NCSLabModel {
 		return model;
 	}
 	
+	public Vector<Block> getBlockList(){
+		return this.blockList;
+	}
+	
 	private void parseModel() {
 		modelName=jsonIn.getString("modelName");
 		modelRealName=jsonIn.getString("modelRealName");
@@ -41,7 +49,9 @@ public class NCSLabModel {
 		
 		parseBlocks();
 		
-		showBlocks();
+		parseLines();
+		
+		//showBlocks();
 	}
 	
 	private void showBlocks() {
@@ -61,11 +71,30 @@ public class NCSLabModel {
 			//String blockType=blockJSON.getString("blockType");
 			
 			Block block=BlockType.createBlock(blockJSON);
+			block.setBlockId(i+1);
+			
+			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 			
 			if(block!=null) {
 				blockList.add(block);
 			}
 			
+		}
+	}
+	
+	private void parseLines() {
+		JSONArray lineJSONList=jsonIn.getJSONArray("lines");
+		for(int i=0;i<lineJSONList.length();i++) {
+			JSONObject lineJSON=lineJSONList.getJSONObject(i);
+			
+			Line line=Line.createLine(lineJSON, this);
+			line.setLineId(i+1);
+			
+			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
+			
+			if(line!=null) {
+				lineList.add(line);
+			}
 		}
 	}
 

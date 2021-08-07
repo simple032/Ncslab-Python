@@ -9,6 +9,6 @@ public class Scope extends block.Block{
 		super(scopeIn);
 		
 		//Ò»¸öÊäÈë
-		inputPortList.add(new InputPort());
+		inputPortList.add(new InputPort(this,1));
 	}
 }
