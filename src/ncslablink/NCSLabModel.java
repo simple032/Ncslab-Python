@@ -40,6 +40,17 @@ public class NCSLabModel {
 		config=Config.createFromJSON(jsonIn.getJSONObject("config"));
 		
 		parseBlocks();
+		
+		showBlocks();
+	}
+	
+	private void showBlocks() {
+		for(Block block:blockList) {
+			System.out.println("+++++++++++++++++++++++++++");
+			System.out.println("Name: "+block.getBlockName());
+			System.out.println("Type: "+block.getBlockType());
+			System.out.println("In: "+block.getInputPortList().size()+" Out:"+block.getOutputPortList().size());
+		}
 	}
 	
 	private void parseBlocks() {
@@ -56,8 +67,6 @@ public class NCSLabModel {
 			}
 			
 		}
-		
-		System.out.println(blockList.size());
 	}
 
 }
