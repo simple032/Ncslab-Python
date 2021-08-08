@@ -21,19 +21,19 @@ public class Config {
 		return config;
 	}
 	
-	double getFixedStep() {
+	public double getFixedStep() {
 		return fixedStep;
 	}
 	
-	String getSolver() {
+	public String getSolver() {
 		return solver;
 	}
 	
-	double getStartTime() {
+	public double getStartTime() {
 		return startTime;
 	}
 	
-	double getStopTime() {
+	public double getStopTime() {
 		return stopTime;
 	}
 }

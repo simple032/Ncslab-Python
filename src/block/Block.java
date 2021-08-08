@@ -6,6 +6,8 @@ import org.json.JSONObject;
 import block.io.InputPort;
 import block.io.OutputPort;
 
+import ncslablink.NCSLabModel;
+
 public class Block {
 	protected String blockType;
 	protected String blockName;
@@ -19,11 +21,19 @@ public class Block {
 	
 	protected boolean isOutputCodeGenerated=false;
 	
-	protected Block(JSONObject blockIn) {
+	protected String initCode;
+	
+	protected NCSLabModel model;
+	
+	protected Block(JSONObject blockIn,NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
 		this.paramValues=blockIn.getJSONObject("paramValues");
 		
+	}
+	
+	public NCSLabModel getModel() {
+		return this.model;
 	}
 	
 	public boolean isTerminalBlock() {
@@ -54,16 +64,40 @@ public class Block {
 		return this.blockId;
 	}
 	
-	public void generateBlockOutputCode() {
+	public String generateOutputCode() {
+		String code="";
+		
+		return code;
+	}
+	
+	public String generateBlockOutputCode() {
 		System.out.println("Generating block output code ("+blockId+"):"+blockName);
+		
+		String code=generateOutputCode();
 		
 		isOutputCodeGenerated=true;
 		for(OutputPort outputPort:outputPortList) {
 			outputPort.setIsCodeGenerated(true);
 		}
+		
+		return code;
 	}
 	
 	public boolean getIsOutputCodeGenerated() {
 		return this.isOutputCodeGenerated;
+	}
+	
+	public String generateInitCode() {
+		String code="";
+		
+		this.initCode=code;
+		return code;
+	}
+	
+	public String generateUpdateCode() {
+		String code="";
+		
+		this.initCode=code;
+		return code;
 	}
 }

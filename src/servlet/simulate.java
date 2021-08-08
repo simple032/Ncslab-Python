@@ -46,6 +46,13 @@ public class simulate extends HttpServlet {
         CodeModel model=CodeModel.createFromJSON(jsonIn);
         model.generate();
         model.showErrorMessages();
+        
+        System.out.println();
+        
+        if(model.getErrorList().size()==0) {
+        	System.out.println(model.getCode());
+        }
+        
 	}
 
 }

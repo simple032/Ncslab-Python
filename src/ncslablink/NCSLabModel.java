@@ -33,6 +33,14 @@ public class NCSLabModel {
 		//System.out.println(config.getFixedStep());
 	}
 	
+	public Config getConfig() {
+		return config;
+	}
+	
+	public Vector<ErrorMessage> getErrorList(){
+		return this.errorList;
+	}
+	
 	public static NCSLabModel createFromJSON(JSONObject jsonIn) {
 		NCSLabModel model=new NCSLabModel(jsonIn);
 		
@@ -89,7 +97,7 @@ public class NCSLabModel {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
 			//String blockType=blockJSON.getString("blockType");
 			
-			Block block=BlockType.createBlock(blockJSON);
+			Block block=BlockType.createBlock(blockJSON,this);
 			block.setBlockId(i+1);
 			
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");

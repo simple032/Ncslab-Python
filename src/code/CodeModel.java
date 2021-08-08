@@ -12,6 +12,7 @@ import line.Line;
 
 public class CodeModel extends NCSLabModel{
 	
+	private String code="";
 	CodeModel(JSONObject jsonIn){
 		super(jsonIn);
 	}
@@ -22,10 +23,35 @@ public class CodeModel extends NCSLabModel{
 		return model;
 	}
 	
+	public String getCode() {
+		return this.code;
+	}
+	
 	public void generate() {
 		System.out.println("Generating codes......");
+		generateInitCode();
+		
+		code+="for t="+this.getConfig().getStartTime()+":"+this.getConfig().getFixedStep()+":"+this.getConfig().getStopTime()+"\n";
+		
 		findTerminalBlocks();
 		scanOutputChain();
+		
+		generateUpdateCode();
+		
+		code+="end\n";
+	}
+	
+	private void generateUpdateCode() {
+		System.out.println("Generating update codes......");
+	}
+	
+	private void generateInitCode() {
+		System.out.println("Generating init codes......");
+		for(Block block:blockList) {
+			System.out.println("Generating init codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			this.code+=block.generateInitCode();
+		}
 	}
 	
 	private Vector<Block> terminalBlockList=new Vector<Block>();
@@ -50,7 +76,7 @@ public class CodeModel extends NCSLabModel{
 				scanInputPort(inputPort);
 			}
 			
-			block.generateBlockOutputCode();
+			code+=block.generateBlockOutputCode();
 		}
 		
 		while(scanBlockList.isEmpty()==false) {
@@ -122,11 +148,11 @@ public class CodeModel extends NCSLabModel{
 			for(InputPort input:InputPortList) {
 				scanInputPort(input);
 			}
-			block.generateBlockOutputCode();
+			code+=block.generateBlockOutputCode();
 		}
 		//如果没有，就直接生成模块的额输出代码
 		else {
-			block.generateBlockOutputCode();
+			code+=block.generateBlockOutputCode();
 			scanBlockList.add(block);
 		}
 		
