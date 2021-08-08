@@ -15,7 +15,7 @@ public class Sum extends Block {
 		super(blockJSON);
 		
 		//Ò»¸öÊä³ö
-		outputPortList.add(new OutputPort(this,1));
+		outputPortList.add(new OutputPort(this,1,true));
 		
 		paraseParamValues();
 	}

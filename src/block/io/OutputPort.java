@@ -15,9 +15,19 @@ public class OutputPort {
 	
 	private Vector<Line> linkedLineList=new Vector<Line>();
 	
+	private boolean isFeedThrough=false;
+	
+	private boolean isCodeGenerated=false;
+	
 	public OutputPort(Block block,int number){
 		this.block=block;
 		this.number=number;
+	}
+	
+	public OutputPort(Block block,int number,boolean isFeedThrough){
+		this.block=block;
+		this.number=number;
+		this.isFeedThrough=isFeedThrough;
 	}
 	
 	public int getNumber() {
@@ -34,5 +44,17 @@ public class OutputPort {
 	
 	public Block getBLock() {
 		return this.block;
+	}
+	
+	public boolean getFeedThrough() {
+		return this.isFeedThrough;
+	}
+	
+	public boolean getIsCodeGenerated() {
+		return this.isCodeGenerated;
+	}
+	
+	public void setIsCodeGenerated(boolean isCodeGenerated) {
+		this.isCodeGenerated=isCodeGenerated;
 	}
 }

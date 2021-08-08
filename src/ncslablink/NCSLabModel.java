@@ -19,22 +19,28 @@ public class NCSLabModel {
 	
 	private Config config;
 	
-	private Vector<Block> blockList=new Vector<Block>();
+	protected Vector<Block> blockList=new Vector<Block>();
 	
-	private Vector<Line> lineList=new Vector<Line>();
+	protected Vector<Line> lineList=new Vector<Line>();
 	
-	NCSLabModel(JSONObject jsonIn){
+	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
+	
+	protected NCSLabModel(JSONObject jsonIn){
 		this.jsonIn=jsonIn;
 		
 		parseModel();
 		
-		System.out.println(config.getFixedStep());
+		//System.out.println(config.getFixedStep());
 	}
 	
 	public static NCSLabModel createFromJSON(JSONObject jsonIn) {
 		NCSLabModel model=new NCSLabModel(jsonIn);
 		
 		return model;
+	}
+	
+	protected void addErrorMessage(ErrorMessage message) {
+		errorList.add(message);
 	}
 	
 	public Vector<Block> getBlockList(){
@@ -60,6 +66,19 @@ public class NCSLabModel {
 			System.out.println("Name: "+block.getBlockName());
 			System.out.println("Type: "+block.getBlockType());
 			System.out.println("In: "+block.getInputPortList().size()+" Out:"+block.getOutputPortList().size());
+		}
+	}
+	
+	public void showErrorMessages() {
+		if(errorList.isEmpty()) {
+			System.out.println("No error! Succeed");
+		}
+		else {
+			int i=0;
+			for(ErrorMessage error:errorList) {
+				System.out.println("Error "+(i+1)+": "+error.getMessage());
+				i++;
+			}
 		}
 	}
 	

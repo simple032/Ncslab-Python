@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import java.io.*;
 
-import ncslablink.NCSLabModel;
+import code.CodeModel;;
 
 /**
  * Servlet implementation class simulate
@@ -43,7 +43,9 @@ public class simulate extends HttpServlet {
         }  
         JSONObject jsonIn = new JSONObject(result);
 		
-		NCSLabModel model=NCSLabModel.createFromJSON(jsonIn);
+        CodeModel model=CodeModel.createFromJSON(jsonIn);
+        model.generate();
+        model.showErrorMessages();
 	}
 
 }

@@ -17,6 +17,8 @@ public class Block {
 	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
 	protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
 	
+	protected boolean isOutputCodeGenerated=false;
+	
 	protected Block(JSONObject blockIn) {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
@@ -25,7 +27,7 @@ public class Block {
 	}
 	
 	public boolean isTerminalBlock() {
-		return (inputPortList.size()==0);
+		return (outputPortList.size()==0);
 	}
 	
 	public String getBlockName() {
@@ -50,5 +52,18 @@ public class Block {
 	
 	public int getBlockId() {
 		return this.blockId;
+	}
+	
+	public void generateBlockOutputCode() {
+		System.out.println("Generating block output code ("+blockId+"):"+blockName);
+		
+		isOutputCodeGenerated=true;
+		for(OutputPort outputPort:outputPortList) {
+			outputPort.setIsCodeGenerated(true);
+		}
+	}
+	
+	public boolean getIsOutputCodeGenerated() {
+		return this.isOutputCodeGenerated;
 	}
 }

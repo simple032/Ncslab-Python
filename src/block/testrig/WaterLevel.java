@@ -12,7 +12,7 @@ public class WaterLevel extends Block {
 		
 		//一个输入，两个输出
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1));
-		outputPortList.add(new OutputPort(this,2));
+		outputPortList.add(new OutputPort(this,1,false));
+		outputPortList.add(new OutputPort(this,2,false));
 	}
 }
