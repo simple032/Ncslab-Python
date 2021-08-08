@@ -8,6 +8,12 @@ import block.io.OutputPort;
 import ncslablink.NCSLabModel;
 
 public class WaterLevel extends Block {
+	private double pumeK=1;
+	private double pumeT=2;
+	
+	private double waterLevelK=0.1;
+	private double waterLevelT=50;
+	
 	public WaterLevel(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
@@ -23,6 +29,30 @@ public class WaterLevel extends Block {
 		code+="Block"+getBlockId()+"_LevelState=0;\n";
 		
 		this.initCode=code;
+		return code;
+	}
+	
+	public String generateUpdateCode() {
+		String code=super.generateUpdateCode();
+		
+		code+="Block"+getBlockId()+"_PumpState="
+				+"Block"+getBlockId()+"_PumpState+"
+				+"(Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
+				+"_Output"
+				+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
+				+"*"+pumeK+"-"+"Block"+getBlockId()+"_PumpState)"
+				+"*"+(1/pumeT)
+				+"*"+getModel().getConfig().getFixedStep()
+				+";\n";
+		
+		code+="Block"+getBlockId()+"_LevelState="
+				+"Block"+getBlockId()+"_LevelState+"
+				+"(Block"+getBlockId()+"_PumpState*"+waterLevelK+"-"+"Block"+getBlockId()+"_LevelState)"
+				+"*"+(1/waterLevelT)
+				+"*"+getModel().getConfig().getFixedStep()
+				+";\n";
+		
+		this.updateCode=code;
 		return code;
 	}
 	

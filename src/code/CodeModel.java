@@ -43,6 +43,12 @@ public class CodeModel extends NCSLabModel{
 	
 	private void generateUpdateCode() {
 		System.out.println("Generating update codes......");
+		
+		for(Block block:blockList) {
+			System.out.println("Generating update codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			this.code+=block.generateUpdateCode();
+		}
 	}
 	
 	private void generateInitCode() {

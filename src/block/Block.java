@@ -22,6 +22,7 @@ public class Block {
 	protected boolean isOutputCodeGenerated=false;
 	
 	protected String initCode;
+	protected String updateCode;
 	
 	protected NCSLabModel model;
 	
@@ -29,6 +30,7 @@ public class Block {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
 		this.paramValues=blockIn.getJSONObject("paramValues");
+		this.model=model;
 		
 	}
 	

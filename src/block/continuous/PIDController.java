@@ -23,6 +23,22 @@ public class PIDController extends block.Block{
 		return code;
 	}
 	
+	public String generateUpdateCode() {
+		String code=super.generateUpdateCode();
+		
+		code+="Block"+getBlockId()+"_Integral="
+				+"Block"+getBlockId()+"_Integral+"
+				+paramValues.getDouble("I")+"*"
+				+"Block"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+"_"
+				+"Output"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getNumber()
+				+"*"
+				+getModel().getConfig().getFixedStep()
+				+";\n";
+		
+		this.updateCode=code;
+		return code;
+	}
+	
 	public String generateOutputCode() {
 		String code="Block"+this.getBlockId()+"_Output1=Block"+getBlockId()+"_Integral"
 				+"+"+paramValues.getDouble("P")+"*"
