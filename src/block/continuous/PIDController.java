@@ -60,6 +60,10 @@ public class PIDController extends block.Block{
 		stateIntegral=code.addState(this, "integral");
 		
 		String initCode="/*Code for initialization of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		initCode+=cparaP.getName()+"="+paramValues.getDouble("P")+";\n";
+		initCode+=cparaI.getName()+"="+paramValues.getDouble("I")+";\n";
+		
 		initCode+=stateIntegral.getName()+"="+0+";\n"; 
 		
 		code.addInitCode(initCode);

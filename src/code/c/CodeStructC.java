@@ -11,6 +11,8 @@ public class CodeStructC {
 	public String includeCode="";
 	public String initCode="";
 	
+	public String outputCode="";
+	
 	public String parameterDefineCode="";
 	public String stateDefineCode="";
 	public String outputSignalDefineCode="";
@@ -34,10 +36,18 @@ public class CodeStructC {
 		initCode+=code;
 	}
 	
+	public String getOutputCode() {
+		return this.outputCode;
+	}
+	
+	public void addOutputCode(String code) {
+		outputCode+=code;
+	}
+	
 	public String getMainCode() {
 		initCode=parameterDefineCode+stateDefineCode+outputSignalDefineCode+initCode;
 		
-		mainCode=includeCode+initCode;
+		mainCode=includeCode+initCode+outputCode;
 		
 		return mainCode;
 	}

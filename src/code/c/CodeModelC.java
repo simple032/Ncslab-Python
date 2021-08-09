@@ -63,7 +63,7 @@ public class CodeModelC extends CodeModel {
 	private Vector<OutputPort> outputPortPathList=new Vector<OutputPort>();	
 	
 	protected void generateBlockOutputCode(Block block) {
-		block.generateBlockOutputCodeM();
+		block.generateBlockOutputCodeC(code);
 	}
 	
 	private void scanOutputChain() {
@@ -71,7 +71,7 @@ public class CodeModelC extends CodeModel {
 		for(Block block:terminalBlockList) {
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
-				//scanInputPort(inputPort);
+				scanInputPort(inputPort);
 			}
 			
 			//code+=block.generateBlockOutputCodeM();
@@ -82,12 +82,12 @@ public class CodeModelC extends CodeModel {
 			Block block=scanBlockList.remove(0);
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
-				//scanInputPort(inputPort);
+				scanInputPort(inputPort);
 			}
 		}
 	}
 	
-	/*
+	
 	private void scanInputPort(InputPort inputPort) {
 		Line line=inputPort.getLinkedLine();
 		OutputPort outputPort=line.getLinkedOutputPort();
@@ -146,15 +146,15 @@ public class CodeModelC extends CodeModel {
 			for(InputPort input:InputPortList) {
 				scanInputPort(input);
 			}
-			code+=block.generateBlockOutputCodeM();
+			generateBlockOutputCode(block);
 		}
 		//如果没有，就直接生成模块的额输出代码
 		else {
-			code+=block.generateBlockOutputCodeM();
+			generateBlockOutputCode(block);
 			scanBlockList.add(block);
 		}
 		
 		outputPortPathList.remove(outputPortPathList.size()-1);
-	}*/
+	}
 
 }
