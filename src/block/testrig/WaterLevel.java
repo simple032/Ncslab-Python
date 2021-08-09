@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import block.Block;
 import block.io.InputPort;
 import block.io.OutputPort;
+import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
 public class WaterLevel extends Block {
@@ -28,7 +29,6 @@ public class WaterLevel extends Block {
 		code+="Block"+getBlockId()+"_PumpState=0;\n";
 		code+="Block"+getBlockId()+"_LevelState=0;\n";
 		
-		this.initCode=code;
 		return code;
 	}
 	
@@ -52,7 +52,6 @@ public class WaterLevel extends Block {
 				+"*"+getModel().getConfig().getFixedStep()
 				+";\n";
 		
-		this.updateCode=code;
 		return code;
 	}
 	
@@ -66,5 +65,20 @@ public class WaterLevel extends Block {
 				+ ";\n";
 		
 		return code;
+	}
+	
+	code.c.State pumpState;
+	code.c.State LevelState;
+	public void generateInitCodeC(CodeStructC code) {
+		super.generateInitCodeC(code);
+		
+		pumpState=code.addState(this, "pumpState");
+		LevelState=code.addState(this, "LevelState");
+		
+		String initCode="/*Code for initialization of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
+		initCode+=pumpState.getName()+"="+0+";\n"
+					+LevelState.getName()+"="+0+";\n"; 
+		
+		code.addInitCode(initCode);
 	}
 }

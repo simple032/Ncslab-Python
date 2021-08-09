@@ -5,10 +5,10 @@ import org.json.JSONObject;
 
 import block.io.InputPort;
 import block.io.OutputPort;
-
+import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
-public class Block implements block.lan.MCodeBlock{
+public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	protected String blockType;
 	protected String blockName;
 	
@@ -20,9 +20,6 @@ public class Block implements block.lan.MCodeBlock{
 	protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
 	
 	protected boolean isOutputCodeGenerated=false;
-	
-	protected String initCode;
-	protected String updateCode;
 	
 	protected NCSLabModel model;
 	
@@ -97,7 +94,6 @@ public class Block implements block.lan.MCodeBlock{
 	public String generateInitCodeM() {
 		String code="";
 		
-		this.initCode=code;
 		return code;
 	}
 	
@@ -109,7 +105,33 @@ public class Block implements block.lan.MCodeBlock{
 	public String generateUpdateCodeM() {
 		String code="";
 		
-		this.initCode=code;
 		return code;
+	}
+	
+	public void generateBlockInitCodeC(CodeStructC code) {
+		for(OutputPort outputPort:outputPortList) {
+			code.addOutputSignal(this, outputPort);
+		}
+		generateInitCodeC(code);
+	}
+	
+	public void generateInitCodeC(CodeStructC code) {
+		
+	}
+	
+	public void generateBlockOutputCodeC(CodeStructC code) {
+		System.out.println("Generating block output code ("+blockId+"):"+blockName);
+		
+		generateOutputCodeC(code);
+		
+		isOutputCodeGenerated=true;
+		for(OutputPort outputPort:outputPortList) {
+			outputPort.setIsCodeGenerated(true);
+		}
+		
+	}
+	
+	public void generateOutputCodeC(CodeStructC code) {
+		
 	}
 }

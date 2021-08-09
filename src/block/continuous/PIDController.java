@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 import block.io.InputPort;
 import block.io.OutputPort;
+import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
 public class PIDController extends block.Block{
@@ -19,7 +20,6 @@ public class PIDController extends block.Block{
 		String code=super.generateInitCodeM();
 		code+="Block"+getBlockId()+"_Integral=0;\n";
 		
-		this.initCode=code;
 		return code;
 	}
 	
@@ -35,7 +35,6 @@ public class PIDController extends block.Block{
 				+getModel().getConfig().getFixedStep()
 				+";\n";
 		
-		this.updateCode=code;
 		return code;
 	}
 	
@@ -48,4 +47,23 @@ public class PIDController extends block.Block{
 		
 		return code;
 	}
+	
+	code.c.Parameter cparaP;
+	code.c.Parameter cparaI;
+	code.c.State stateIntegral;
+	public void generateInitCodeC(CodeStructC code) {
+		super.generateInitCodeC(code);
+		
+		cparaP=code.addParameter(this,"P");
+		cparaI=code.addParameter(this,"I");
+		
+		stateIntegral=code.addState(this, "integral");
+		
+		String initCode="/*Code for initialization of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
+		initCode+=stateIntegral.getName()+"="+0+";\n"; 
+		
+		code.addInitCode(initCode);
+	}
+	
+	
 }

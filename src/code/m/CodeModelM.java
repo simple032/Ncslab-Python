@@ -1,4 +1,4 @@
-package code;
+package code.m;
 
 import org.json.JSONObject;
 import java.util.Vector;
@@ -8,6 +8,7 @@ import ncslablink.NCSLabModel;
 import block.Block;
 import block.io.InputPort;
 import block.io.OutputPort;
+import code.CodeModel;
 import line.Line;
 
 public class CodeModelM extends CodeModel{
@@ -83,7 +84,6 @@ public class CodeModelM extends CodeModel{
 		}
 	}
 	
-	private boolean isAlgebraicLoop=false;
 	
 	private void scanInputPort(InputPort inputPort) {
 		Line line=inputPort.getLinkedLine();

@@ -10,8 +10,9 @@ import ncslablink.NCSLabModel;
 public class CodeModel extends NCSLabModel {
 	
 	protected Vector<Block> terminalBlockList=new Vector<Block>();
+	protected boolean isAlgebraicLoop=false;
 	
-	CodeModel(JSONObject jsonIn){
+	protected CodeModel(JSONObject jsonIn){
 		super(jsonIn);
 	}
 	

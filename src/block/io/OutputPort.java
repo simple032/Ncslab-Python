@@ -19,6 +19,8 @@ public class OutputPort {
 	
 	private boolean isCodeGenerated=false;
 	
+	private code.c.OutputSignal outputSignalC=null;
+	
 	public OutputPort(Block block,int number){
 		this.block=block;
 		this.number=number;
@@ -28,6 +30,14 @@ public class OutputPort {
 		this.block=block;
 		this.number=number;
 		this.isFeedThrough=isFeedThrough;
+	}
+	
+	public code.c.OutputSignal getOutputSignalC(){
+		return this.outputSignalC;
+	}
+	
+	public void setOutputSignalC(code.c.OutputSignal outputSignalC){
+		this.outputSignalC=outputSignalC;
 	}
 	
 	public int getNumber() {

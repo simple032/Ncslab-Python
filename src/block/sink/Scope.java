@@ -26,7 +26,6 @@ public class Scope extends block.Block{
 	public String generateInitCodeM() {
 		String code=getBlockName()+"=[];\n";
 		
-		this.initCode=code;
 		return code;
 	}
 }

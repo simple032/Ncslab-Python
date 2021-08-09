@@ -10,7 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import java.io.*;
 
-import code.CodeModelM;
+import code.c.CodeModelC;
+import code.m.CodeModelM;
 
 /**
  * Servlet implementation class simulate
@@ -51,6 +52,18 @@ public class simulate extends HttpServlet {
         
         if(model.getErrorList().size()==0) {
         	System.out.println(model.getCode());
+        }
+        
+        
+        System.out.println();
+        
+        CodeModelC modelC=CodeModelC.createFromJSON(jsonIn);
+        modelC.generate();
+        
+        System.out.println();
+        
+        if(modelC.getErrorList().size()==0) {
+        	System.out.println(modelC.getMainCode());
         }
         
 	}
