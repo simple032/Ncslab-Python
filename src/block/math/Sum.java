@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import block.Block;
 import block.io.OutputPort;
+import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 import block.io.InputPort;
 
@@ -46,5 +47,25 @@ public class Sum extends Block {
 		code+=";\n";
 		
 		return code;
+	}
+	
+	public void generateOutputCodeC(CodeStructC code) {
+		String outputCode="/*Code for output of block Sum:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0";
+		
+		for(int i=0;i<seq.length();i++) {
+			if(seq.charAt(i)=='+') {
+				outputCode+="+";
+			}
+			if(seq.charAt(i)=='-') {
+				outputCode+="-";
+			}
+			outputCode+=inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+		}
+		
+		outputCode+=";\n";
+		
+		code.addOutputCode(outputCode);
 	}
 }
