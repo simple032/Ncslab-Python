@@ -72,7 +72,7 @@ public class PIDController extends block.Block{
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+stateIntegral.getName()
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+cparaP.getName()
 					+"*"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
 					+"+"+stateIntegral.getName()
 					+";\n";

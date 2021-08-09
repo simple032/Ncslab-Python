@@ -45,9 +45,9 @@ public class CodeStructC {
 	}
 	
 	public String getMainCode() {
-		initCode=parameterDefineCode+stateDefineCode+outputSignalDefineCode+initCode;
+		initCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n"+initCode;
 		
-		mainCode=includeCode+initCode+outputCode;
+		mainCode=includeCode+"\n"+initCode+"\n"+outputCode;
 		
 		return mainCode;
 	}
