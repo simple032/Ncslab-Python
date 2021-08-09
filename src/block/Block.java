@@ -8,7 +8,7 @@ import block.io.OutputPort;
 
 import ncslablink.NCSLabModel;
 
-public class Block {
+public class Block implements block.lan.MCodeBlock{
 	protected String blockType;
 	protected String blockName;
 	
@@ -66,16 +66,16 @@ public class Block {
 		return this.blockId;
 	}
 	
-	public String generateOutputCode() {
+	public String generateOutputCodeM() {
 		String code="";
 		
 		return code;
 	}
 	
-	public String generateBlockOutputCode() {
+	public String generateBlockOutputCodeM() {
 		System.out.println("Generating block output code ("+blockId+"):"+blockName);
 		
-		String code=generateOutputCode();
+		String code=generateOutputCodeM();
 		
 		isOutputCodeGenerated=true;
 		for(OutputPort outputPort:outputPortList) {
@@ -89,14 +89,24 @@ public class Block {
 		return this.isOutputCodeGenerated;
 	}
 	
-	public String generateInitCode() {
+	public String generateBlockInitCodeM() {
+		String code=generateInitCodeM();
+		return code;
+	}
+	
+	public String generateInitCodeM() {
 		String code="";
 		
 		this.initCode=code;
 		return code;
 	}
 	
-	public String generateUpdateCode() {
+	public String generateBlockUpdateCodeM() {
+		String code=generateUpdateCodeM();
+		return code;
+	}
+	
+	public String generateUpdateCodeM() {
 		String code="";
 		
 		this.initCode=code;

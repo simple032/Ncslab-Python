@@ -15,16 +15,16 @@ public class PIDController extends block.Block{
 		outputPortList.add(new OutputPort(this,1,true));
 	}
 	
-	public String generateInitCode() {
-		String code=super.generateInitCode();
+	public String generateInitCodeM() {
+		String code=super.generateInitCodeM();
 		code+="Block"+getBlockId()+"_Integral=0;\n";
 		
 		this.initCode=code;
 		return code;
 	}
 	
-	public String generateUpdateCode() {
-		String code=super.generateUpdateCode();
+	public String generateUpdateCodeM() {
+		String code=super.generateUpdateCodeM();
 		
 		code+="Block"+getBlockId()+"_Integral="
 				+"Block"+getBlockId()+"_Integral+"
@@ -39,7 +39,7 @@ public class PIDController extends block.Block{
 		return code;
 	}
 	
-	public String generateOutputCode() {
+	public String generateOutputCodeM() {
 		String code="Block"+this.getBlockId()+"_Output1=Block"+getBlockId()+"_Integral"
 				+"+"+paramValues.getDouble("P")+"*"
 				+"Block"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+"_"

@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import java.io.*;
 
-import code.CodeModel;;
+import code.CodeModelM;
 
 /**
  * Servlet implementation class simulate
@@ -43,7 +43,7 @@ public class simulate extends HttpServlet {
         }  
         JSONObject jsonIn = new JSONObject(result);
 		
-        CodeModel model=CodeModel.createFromJSON(jsonIn);
+        CodeModelM model=CodeModelM.createFromJSON(jsonIn);
         model.generate();
         model.showErrorMessages();
         

@@ -23,8 +23,8 @@ public class WaterLevel extends Block {
 		outputPortList.add(new OutputPort(this,2,false));
 	}
 	
-	public String generateInitCode() {
-		String code=super.generateInitCode();
+	public String generateInitCodeM() {
+		String code=super.generateInitCodeM();
 		code+="Block"+getBlockId()+"_PumpState=0;\n";
 		code+="Block"+getBlockId()+"_LevelState=0;\n";
 		
@@ -32,8 +32,8 @@ public class WaterLevel extends Block {
 		return code;
 	}
 	
-	public String generateUpdateCode() {
-		String code=super.generateUpdateCode();
+	public String generateUpdateCodeM() {
+		String code=super.generateUpdateCodeM();
 		
 		code+="Block"+getBlockId()+"_PumpState="
 				+"Block"+getBlockId()+"_PumpState+"
@@ -56,7 +56,7 @@ public class WaterLevel extends Block {
 		return code;
 	}
 	
-	public String generateOutputCode() {
+	public String generateOutputCodeM() {
 		String code="Block"+this.getBlockId()+"_Output1="
 				+"Block"+getBlockId()+"_PumpState"
 				+";\n";

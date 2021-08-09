@@ -13,7 +13,7 @@ public class Scope extends block.Block{
 		inputPortList.add(new InputPort(this,1));
 	}
 	
-	public String generateOutputCode() {
+	public String generateOutputCodeM() {
 		String code=getBlockName()+"=["+getBlockName()
 				+" Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId() 
 				+"_Output"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
@@ -23,7 +23,7 @@ public class Scope extends block.Block{
 		return code;
 	}
 	
-	public String generateInitCode() {
+	public String generateInitCodeM() {
 		String code=getBlockName()+"=[];\n";
 		
 		this.initCode=code;

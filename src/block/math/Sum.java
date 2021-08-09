@@ -29,7 +29,7 @@ public class Sum extends Block {
 		}
 	}
 	
-	public String generateOutputCode() {
+	public String generateOutputCodeM() {
 		String code="Block"+this.getBlockId()+"_Output1=0";
 		
 		for(int i=0;i<seq.length();i++) {

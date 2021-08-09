@@ -13,7 +13,7 @@ public class Constant extends block.Block{
 		outputPortList.add(new OutputPort(this,1,false));
 	}
 	
-	public String generateOutputCode() {
+	public String generateOutputCodeM() {
 		String code="Block"+this.getBlockId()+"_Output1="+paramValues.getInt("Value")+";\n";
 		
 		return code;
