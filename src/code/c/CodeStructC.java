@@ -69,7 +69,7 @@ public class CodeStructC {
 	}
 	
 	public OutputSignal addOutputSignal(Block block,OutputPort outputPort) {
-		OutputSignal outputSignal=new OutputSignal(stateIndex++,"Block"+block.getBlockId()+"_Output_"+outputPort.getNumber(),"out"+outputPort.getNumber()); 
+		OutputSignal outputSignal=new OutputSignal(stateIndex++,"Block"+block.getBlockId()+"_Output"+outputPort.getNumber(),"out"+outputPort.getNumber()); 
 		
 		outputSignalList.add(outputSignal);
 		

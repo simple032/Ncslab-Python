@@ -68,17 +68,26 @@ public class WaterLevel extends Block {
 	}
 	
 	code.c.State pumpState;
-	code.c.State LevelState;
+	code.c.State levelState;
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
 		pumpState=code.addState(this, "pumpState");
-		LevelState=code.addState(this, "LevelState");
+		levelState=code.addState(this, "levelState");
 		
 		String initCode="/*Code for initialization of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=pumpState.getName()+"="+0+";\n"
-					+LevelState.getName()+"="+0+";\n"; 
+					+levelState.getName()+"="+0+";\n"; 
 		
 		code.addInitCode(initCode);
+	}
+	
+	public void generateOutputCodeC(CodeStructC code) {
+		String outputCode="/*Code for output of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+pumpState.getName()+";\n";
+		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
+		
+		code.addOutputCode(outputCode);
 	}
 }
