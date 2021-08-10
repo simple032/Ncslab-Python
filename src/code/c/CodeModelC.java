@@ -183,5 +183,15 @@ public class CodeModelC extends CodeModel {
 		
 		outputPortPathList.remove(outputPortPathList.size()-1);
 	}
+	
+	public void makeExeFile() {
+		System.out.println("Making exe file ncslabccode.exe...");
+		if(code.makeExeFile()) {
+			System.out.println("Exe file ncslabccode.exe created!");
+		}
+		else {
+			System.out.println("Cannot create exe file ncslabccode.exe!");
+		}
+	}
 
 }

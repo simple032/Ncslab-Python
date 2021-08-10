@@ -3,6 +3,7 @@ package code.c;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Vector;
+import java.io.InputStream;
 
 import code.CodeModel;
 import block.Block;
@@ -62,8 +63,7 @@ public class CodeStructC {
 	
 	public void generateIncludeCode() {
 		includeCode+=""
-				+"#include\"stdlib.h\"\n"
-				+"#define REAL double";
+				+"#include\"ncslabccode.h\"\n";
 	}
 	
 	public void generateFinalCodes() {
@@ -138,11 +138,53 @@ public class CodeStructC {
 	private String codePath;
 	
 	private void writeMainCFile() {
+		System.out.println("Writing main C file ncslabccode.c...");
+		
 		File file = new File(codePath+"ncslabccode.c");
     	FileOutputStream outputStream;
     	try {
     		outputStream = new FileOutputStream(file);
     		outputStream.write(mainCode.getBytes());
+    		outputStream.close();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+	}
+	
+	private void writeMakefile() {
+		System.out.println("Writing makefile...");
+		
+		InputStream InputStream = this.getClass().getResourceAsStream("makefile");
+		
+		File file=new File(codePath+"/makefile");
+		FileOutputStream outputStream;
+    	try {
+    		outputStream = new FileOutputStream(file);
+    		byte[] buffer=new byte[1024];
+    		int len;
+    		while((len=InputStream.read(buffer))>0) {
+    			outputStream.write(buffer,0,len);
+    		}
+    		outputStream.close();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+	}
+	
+	private void writeHFiles() {
+		System.out.println("Writing ncslabccode.h...");
+		
+		InputStream InputStream = this.getClass().getResourceAsStream("ncslabccode.h");
+		
+		File file=new File(codePath+"/ncslabccode.h");
+		FileOutputStream outputStream;
+    	try {
+    		outputStream = new FileOutputStream(file);
+    		byte[] buffer=new byte[1024];
+    		int len;
+    		while((len=InputStream.read(buffer))>0) {
+    			outputStream.write(buffer,0,len);
+    		}
     		outputStream.close();
     	} catch (Exception e) {
     		e.printStackTrace();
@@ -165,8 +207,33 @@ public class CodeStructC {
 		}
 		
 		codePath=modelPath+"/";
+		
 		writeMainCFile();
+		writeHFiles();
+    	writeMakefile();
     	
+    	//makeExeFile();
+	}
+	
+	public boolean makeExeFile() {
+		try {
+			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+			process.waitFor();
+			
+			if(process.exitValue()==0) {
+				return true;
+			}
+			else {
+				byte[] buffer=new byte[process.getErrorStream().available()];
+				process.getErrorStream().read(buffer);
+				System.err.println(new String(buffer));
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 	
 }

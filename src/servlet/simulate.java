@@ -65,6 +65,7 @@ public class simulate extends HttpServlet {
         if(modelC.getErrorList().size()==0) {
         	String code=modelC.getMainCode();
         	System.out.println(code);
+        	modelC.makeExeFile();
         }
         
 	}
