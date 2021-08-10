@@ -6,7 +6,12 @@
 
 
 typedef struct {
+	char *type;
 	char *name;
+	int inputPortNum;
+	int outputPortNum;
+	int parameterNum;
+	int stateNum;
 
 }BLOCK;
 

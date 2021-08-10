@@ -7,6 +7,8 @@ import block.io.InputPort;
 import block.io.OutputPort;
 import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
+import code.c.Parameter;
+import code.c.State;
 
 public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	protected String blockType;
@@ -18,6 +20,9 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
 	protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
+	
+	protected Vector<Parameter> parameterList=new Vector<Parameter>();
+	protected Vector<State> stateList=new Vector<State>();
 	
 	protected boolean isOutputCodeGenerated=false;
 	
@@ -53,6 +58,14 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	public Vector<OutputPort> getOutputPortList(){
 		return outputPortList;
+	}
+	
+	public Vector<Parameter> getParameterList(){
+		return parameterList;
+	}
+	
+	public Vector<State> getStateList(){
+		return stateList;
 	}
 	
 	public void setBlockId(int blockId) {

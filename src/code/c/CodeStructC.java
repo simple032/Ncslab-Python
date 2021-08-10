@@ -144,7 +144,7 @@ public class CodeStructC {
 			int i=0;
 			for(Block block:model.getBlockList()) {
 				
-				dataStructureCode+="BLOCK block"+i+"={\""+block.getBlockName()+"\"};\n";
+				dataStructureCode+="BLOCK block"+i+"={\""+block.getBlockType()+"\",\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+"};\n";
 				i++;
 			}
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
@@ -153,6 +153,7 @@ public class CodeStructC {
 			dataStructureCode+="BLOCK **blocks=NULL";
 		}
 		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+"};\n";  
+		
 		
 		dataStructureInitCode+="/*Initialize data structure*/\n";
 		

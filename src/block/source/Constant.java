@@ -25,6 +25,7 @@ public class Constant extends block.Block{
 		super.generateInitCodeC(code);
 		
 		value=code.addParameter(this,"value");
+		parameterList.add(value);
 		
 		String initCode="/*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n"; 
