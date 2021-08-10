@@ -7,4 +7,6 @@ public interface CCodeBlock {
 	public void generateInitCodeC(CodeStructC code);
 	public void generateBlockOutputCodeC(CodeStructC code);
 	public void generateOutputCodeC(CodeStructC code);
+	public void generateBlockUpdateCodeC(CodeStructC code);
+	public void generateUpdateCodeC(CodeStructC code);
 }

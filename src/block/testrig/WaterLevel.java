@@ -9,8 +9,8 @@ import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
 public class WaterLevel extends Block {
-	private double pumeK=1;
-	private double pumeT=2;
+	private double pumpK=1;
+	private double pumpT=2;
 	
 	private double waterLevelK=0.1;
 	private double waterLevelT=50;
@@ -40,8 +40,8 @@ public class WaterLevel extends Block {
 				+"(Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
 				+"_Output"
 				+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
-				+"*"+pumeK+"-"+"Block"+getBlockId()+"_PumpState)"
-				+"*"+(1/pumeT)
+				+"*"+pumpK+"-"+"Block"+getBlockId()+"_PumpState)"
+				+"*"+(1/pumpT)
 				+"*"+getModel().getConfig().getFixedStep()
 				+";\n";
 		
@@ -89,5 +89,31 @@ public class WaterLevel extends Block {
 		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
 		
 		code.addOutputCode(outputCode);
+	}
+	
+	public void generateUpdateCodeC(CodeStructC code) {
+		super.generateUpdateCodeC(code);
+		
+		String updateCode="/*Code for update of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		updateCode+=pumpState.getName()+"="
+				+pumpState.getName()
+				+"+("+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
+				+"*"+pumpK
+				+"-"+pumpState.getName()+")" 
+				+"*"+(1/pumpT)
+				+"*"+getModel().getConfig().getFixedStep()
+				+";\n";
+		
+		updateCode+=levelState.getName()+"="
+				+levelState.getName()
+				+"+("+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
+				+"*"+waterLevelK
+				+"-"+levelState.getName()+")" 
+				+"*"+(1/waterLevelT)
+				+"*"+getModel().getConfig().getFixedStep()
+				+";\n";
+		
+		code.addUpdateCode(updateCode); 
 	}
 }

@@ -13,6 +13,8 @@ public class CodeStructC {
 	
 	public String outputCode="";
 	
+	public String updateCode="";
+	
 	public String parameterDefineCode="";
 	public String stateDefineCode="";
 	public String outputSignalDefineCode="";
@@ -44,10 +46,18 @@ public class CodeStructC {
 		outputCode+=code;
 	}
 	
+	public String getUpdateCode() {
+		return this.updateCode;
+	}
+	
+	public void addUpdateCode(String code) {
+		updateCode+=code;
+	}
+	
 	public String getMainCode() {
 		initCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n"+initCode;
 		
-		mainCode=includeCode+"\n"+initCode+"\n"+outputCode;
+		mainCode=includeCode+"\n"+initCode+"\n"+outputCode+"\n"+updateCode;
 		
 		return mainCode;
 	}

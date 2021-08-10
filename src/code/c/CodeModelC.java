@@ -39,6 +39,8 @@ public class CodeModelC extends CodeModel {
 		
 		findTerminalBlocks();
 		scanOutputChain();
+		
+		generateUpdateCode();
 	}
 	
 	private void generateInclude() {
@@ -64,6 +66,20 @@ public class CodeModelC extends CodeModel {
 	
 	protected void generateBlockOutputCode(Block block) {
 		block.generateBlockOutputCodeC(code);
+	}
+	
+	protected void generateBlockUpdateCode(Block block) {
+		block.generateBlockUpdateCodeC(code);
+	}
+	
+	private void generateUpdateCode() {
+		System.out.println("Generating update codes......");
+		
+		for(Block block:blockList) {
+			System.out.println("Generating update codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			generateBlockUpdateCode(block);
+		}
 	}
 	
 	private void scanOutputChain() {

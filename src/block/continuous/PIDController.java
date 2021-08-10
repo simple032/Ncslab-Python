@@ -79,4 +79,19 @@ public class PIDController extends block.Block{
 		
 		code.addOutputCode(outputCode);
 	}
+	
+	public void generateUpdateCodeC(CodeStructC code) {
+		super.generateUpdateCodeC(code);
+		
+		String updateCode="/*Code for update of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		updateCode+=stateIntegral.getName()+"="
+				+stateIntegral.getName()
+				+"+"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
+				+"*"+cparaI.getName()
+				+"*"+getModel().getConfig().getFixedStep()
+				+";\n";
+		
+		code.addUpdateCode(updateCode); 
+	}
 }

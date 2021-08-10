@@ -134,4 +134,11 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public void generateOutputCodeC(CodeStructC code) {
 		
 	}
+	
+	public void generateBlockUpdateCodeC(CodeStructC code) {
+		generateUpdateCodeC(code);
+	}
+	
+	public void generateUpdateCodeC(CodeStructC code) {
+	}
 }
