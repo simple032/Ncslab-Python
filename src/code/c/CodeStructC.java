@@ -23,6 +23,9 @@ public class CodeStructC {
 	public String stateDefineCode="";
 	public String outputSignalDefineCode="";
 	
+	public String dataStructureCode="";
+	public String dataStructureInitCode="";
+	
 	private int parameterIndex=1;
 	private int stateIndex=1;
 	
@@ -71,7 +74,9 @@ public class CodeStructC {
 		
 		mainCode=includeCode+"\n" 
 				+preCode+"\n"
+				+dataStructureCode+"\n"
 				+"main(){\n"
+				+dataStructureInitCode+"\n"
 				+initCode+"\n"
 				+DataTypeC.getRealString()+" time=0;\n"
 				+"while(time<"+model.getConfig().getStopTime()+"){\n"
@@ -82,8 +87,6 @@ public class CodeStructC {
 	}
 	
 	public String getMainCode() {
-		
-		
 		return mainCode;
 	}
 	
@@ -132,6 +135,33 @@ public class CodeStructC {
 		for(OutputSignal outputSignal:outputSignalList) {
 			outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
 		}
+	}
+	
+	public void gnenrateDataStructureCode() {
+		dataStructureCode+="/*Define data structures*/\n";
+		
+		if(model.getBlockList().size()>0) {
+			int i=0;
+			for(Block block:model.getBlockList()) {
+				
+				dataStructureCode+="BLOCK block"+i+"={\""+block.getBlockName()+"\"};\n";
+				i++;
+			}
+			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
+		}
+		else {
+			dataStructureCode+="BLOCK **blocks=NULL";
+		}
+		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+"};\n";  
+		
+		dataStructureInitCode+="/*Initialize data structure*/\n";
+		
+		for(int i=0;i<model.getBlockList().size();i++) {
+			Block block=model.getBlockList().get(i);
+			dataStructureInitCode+="blocks["+i+"]=&block"+i+";\n";
+		}
+		
+		dataStructureInitCode+="model.blocks=blocks;";
 	}
 	
 	private String codePathBase=utils.Property.instance.getProperty("CCodePath");

@@ -36,6 +36,10 @@ public class NCSLabModel {
 		//System.out.println(config.getFixedStep());
 	}
 	
+	public String getModelRealName() {
+		return this.modelRealName;
+	}
+	
 	public Config getConfig() {
 		return config;
 	}

@@ -42,6 +42,8 @@ public class CodeModelC extends CodeModel {
 		
 		generateUpdateCode();
 		
+		generateDataStructureCode();
+		
 		generateFinalCodes();
 		
 		writeCCodeFiles();
@@ -57,6 +59,10 @@ public class CodeModelC extends CodeModel {
 	
 	private void generateInclude() {
 		code.generateIncludeCode();
+	}
+	
+	private void generateDataStructureCode() {
+		code.gnenrateDataStructureCode();
 	}
 	
 	private void generateInitCode() {
