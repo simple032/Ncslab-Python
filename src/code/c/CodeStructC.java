@@ -2,6 +2,7 @@ package code.c;
 
 import java.util.Vector;
 
+import code.CodeModel;
 import block.Block;
 import block.io.OutputPort;
 
@@ -26,7 +27,10 @@ public class CodeStructC {
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 	
-	public CodeStructC() {
+	private CodeModel model;
+	
+	public CodeStructC(CodeModel model) {
+		this.model=model;
 		
 	}
 	
@@ -54,10 +58,25 @@ public class CodeStructC {
 		updateCode+=code;
 	}
 	
+	public void generateIncludeCode() {
+		includeCode+=""
+				+"#include\"stdlib.h\"\n"
+				+"#define REAL double";
+	}
+	
 	public String getMainCode() {
-		initCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n"+initCode;
+		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n";
 		
-		mainCode=includeCode+"\n"+initCode+"\n"+outputCode+"\n"+updateCode;
+		mainCode=includeCode+"\n" 
+				+preCode+"\n"
+				+"main(){\n"
+				+initCode+"\n"
+				+DataTypeC.getRealString()+" time=0;\n"
+				+"while(time<"+model.getConfig().getStopTime()+"){\n"
+				+outputCode+"\n"+updateCode
+				+"time+="+model.getConfig().getFixedStep()+";\n"
+				+"}\n"
+				+"}\n";
 		
 		return mainCode;
 	}

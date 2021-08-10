@@ -15,7 +15,7 @@ public class CodeModelC extends CodeModel {
 	
 	private static final String REAL="real_t";
 	
-	private CodeStructC code=new CodeStructC();
+	private CodeStructC code=new CodeStructC(this);
 	
 	CodeModelC(JSONObject jsonIn){
 		super(jsonIn);
@@ -44,8 +44,7 @@ public class CodeModelC extends CodeModel {
 	}
 	
 	private void generateInclude() {
-		code.includeCode+=
-				"#include\"stdlib.h\"\n";
+		code.generateIncludeCode();
 	}
 	
 	private void generateInitCode() {

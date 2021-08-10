@@ -1,5 +1,8 @@
 package code.c;
 
 public enum DataTypeC {
-	REAL
+	REAL;
+	public static String getRealString() {
+		return "REAL";
+	}
 }
