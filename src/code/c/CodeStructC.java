@@ -1,5 +1,7 @@
 package code.c;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Vector;
 
 import code.CodeModel;
@@ -64,7 +66,7 @@ public class CodeStructC {
 				+"#define REAL double";
 	}
 	
-	public String getMainCode() {
+	public void generateFinalCodes() {
 		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n";
 		
 		mainCode=includeCode+"\n" 
@@ -77,6 +79,10 @@ public class CodeStructC {
 				+"time+="+model.getConfig().getFixedStep()+";\n"
 				+"}\n"
 				+"}\n";
+	}
+	
+	public String getMainCode() {
+		
 		
 		return mainCode;
 	}
@@ -126,6 +132,41 @@ public class CodeStructC {
 		for(OutputSignal outputSignal:outputSignalList) {
 			outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
 		}
+	}
+	
+	private String codePathBase=utils.Property.instance.getProperty("CCodePath");
+	private String codePath;
+	
+	private void writeMainCFile() {
+		File file = new File(codePath+"ncslabccode.c");
+    	FileOutputStream outputStream;
+    	try {
+    		outputStream = new FileOutputStream(file);
+    		outputStream.write(mainCode.getBytes());
+    		outputStream.close();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+	}
+	
+	public void writeCCodeFiles() {
+		
+		String userPath=codePathBase+model.getUserId();
+		
+		File file=new File(userPath);
+		if(file.exists()==false) {
+			file.mkdir();
+		}
+		
+		String modelPath=userPath+"/"+model.getModelId();
+		file=new File(modelPath);
+		if(file.exists()==false) {
+			file.mkdir();
+		}
+		
+		codePath=modelPath+"/";
+		writeMainCFile();
+    	
 	}
 	
 }

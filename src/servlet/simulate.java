@@ -65,17 +65,6 @@ public class simulate extends HttpServlet {
         if(modelC.getErrorList().size()==0) {
         	String code=modelC.getMainCode();
         	System.out.println(code);
-        	
-        	//File file = new File("C:\\Users\\Whu22\\Documents\\NCSLab\\NCSLabLink\\CCode\\ncslabccode.c");
-        	File file = new File(utils.Property.instance.getProperty("CCodePath")+"ncslabccode.c");
-        	FileOutputStream outputStream;
-        	try {
-        		outputStream = new FileOutputStream(file);
-        		outputStream.write(code.getBytes());
-        		outputStream.close();
-        	} catch (Exception e) {
-        		e.printStackTrace();
-        	}
         }
         
 	}

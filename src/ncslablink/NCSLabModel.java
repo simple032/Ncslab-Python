@@ -19,6 +19,9 @@ public class NCSLabModel {
 	
 	private Config config;
 	
+	private int userId;
+	private int modelId;
+	
 	protected Vector<Block> blockList=new Vector<Block>();
 	
 	protected Vector<Line> lineList=new Vector<Line>();
@@ -35,6 +38,14 @@ public class NCSLabModel {
 	
 	public Config getConfig() {
 		return config;
+	}
+	
+	public int getUserId() {
+		return this.userId;
+	}
+	
+	public int getModelId() {
+		return this.modelId;
 	}
 	
 	public Vector<ErrorMessage> getErrorList(){
@@ -58,6 +69,9 @@ public class NCSLabModel {
 	private void parseModel() {
 		modelName=jsonIn.getString("modelName");
 		modelRealName=jsonIn.getString("modelRealName");
+		
+		userId=jsonIn.getInt("userId");
+		modelId=jsonIn.getInt("modelId");
 		
 		config=Config.createFromJSON(jsonIn.getJSONObject("config"));
 		

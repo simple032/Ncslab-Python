@@ -41,6 +41,18 @@ public class CodeModelC extends CodeModel {
 		scanOutputChain();
 		
 		generateUpdateCode();
+		
+		generateFinalCodes();
+		
+		writeCCodeFiles();
+	}
+	
+	private void generateFinalCodes() {
+		code.generateFinalCodes();
+	}
+	
+	private void writeCCodeFiles() {
+		code.writeCCodeFiles();
 	}
 	
 	private void generateInclude() {
