@@ -1,6 +1,7 @@
 #ifndef NCSLABCCODE
 #define NCSLABCCODE
 
+#include "stdio.h"
 #include "stdlib.h"
 #define REAL double
 
@@ -46,10 +47,15 @@ typedef struct {
 typedef struct {
 	char *name;
 	int blockNum;
+	REAL stepSize;
+	REAL startTime;
+	REAL stopTime;
+	REAL time;
 	BLOCK **blocks;
 }MODEL;
 
-
+void NCSLabInit();
+MODEL * NCSLabGetModelP();
 
 #endif
 

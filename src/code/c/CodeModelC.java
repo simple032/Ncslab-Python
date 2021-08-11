@@ -44,13 +44,8 @@ public class CodeModelC extends CodeModel {
 		
 		generateDataStructureCode();
 		
-		generateFinalCodes();
 		
 		writeCCodeFiles();
-	}
-	
-	private void generateFinalCodes() {
-		code.generateFinalCodes();
 	}
 	
 	private void writeCCodeFiles() {

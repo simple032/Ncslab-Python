@@ -71,21 +71,36 @@ public class CodeStructC {
 				+"#include\"ncslabccode.h\"\n";
 	}
 	
-	public void generateFinalCodes() {
+	private void writeMainCodeFile() {
 		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n";
-		
-		mainCode=includeCode+"\n" 
+		String mainCCode=includeCode+"\n"
 				+preCode+"\n"
 				+dataStructureCode+"\n"
-				+"main(){\n"
+				+"void NCSLabInit(){\n"
 				+dataStructureInitCode+"\n"
 				+initCode+"\n"
-				+DataTypeC.getRealString()+" time=0;\n"
-				+"while(time<"+model.getConfig().getStopTime()+"){\n"
-				+outputCode+"\n"+updateCode
-				+"time+="+model.getConfig().getFixedStep()+";\n"
 				+"}\n"
-				+"}\n";
+				
+				+"void NCSLabOneStep(){\n"
+				+outputCode+"\n"
+				+updateCode+"\n"
+				+"}\n"
+				
+				+"MODEL * NCSLabGetModelP(){\n"
+				+"return &model;\n"
+				+"}\n"
+				
+				+"\n";
+		
+		File file = new File(codePath+"mainccode.c");
+    	FileOutputStream outputStream;
+    	try {
+    		outputStream = new FileOutputStream(file);
+    		outputStream.write(mainCCode.getBytes());
+    		outputStream.close();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
 	}
 	
 	public String getMainCode() {
@@ -144,20 +159,6 @@ public class CodeStructC {
 	private String codePathBase=utils.Property.instance.getProperty("CCodePath");
 	private String codePath;
 	
-	private void writeMainCFile() {
-		System.out.println("Writing main C file ncslabccode.c...");
-		
-		File file = new File(codePath+"ncslabccode.c");
-    	FileOutputStream outputStream;
-    	try {
-    		outputStream = new FileOutputStream(file);
-    		outputStream.write(mainCode.getBytes());
-    		outputStream.close();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
-	}
-	
 	private void writeMakefile() {
 		System.out.println("Writing makefile...");
 		
@@ -198,6 +199,27 @@ public class CodeStructC {
     	}
 	}
 	
+	private void writeNCSLabMainFile() {
+		System.out.println("Writing ncslabmain.c...");
+		InputStream InputStream = this.getClass().getResourceAsStream("ncslabmain.c");
+		
+		File file=new File(codePath+"/ncslabmain.c");
+		FileOutputStream outputStream;
+    	try {
+    		outputStream = new FileOutputStream(file);
+    		byte[] buffer=new byte[1024];
+    		int len;
+    		while((len=InputStream.read(buffer))>0) {
+    			outputStream.write(buffer,0,len);
+    		}
+    		outputStream.close();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+	}
+	
+	
+	
 	public void writeCCodeFiles() {
 		
 		String userPath=codePathBase+model.getUserId();
@@ -215,11 +237,11 @@ public class CodeStructC {
 		
 		codePath=modelPath+"/";
 		
-		writeMainCFile();
 		writeHFiles();
     	writeMakefile();
     	
-    	//makeExeFile();
+    	writeMainCodeFile();
+    	writeNCSLabMainFile();
 	}
 	
 	public boolean makeExeFile() {
@@ -315,7 +337,7 @@ public class CodeStructC {
 		else {
 			dataStructureCode+="BLOCK **blocks=NULL";
 		}
-		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+"};\n";  
+		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
 	}
 	
 	private void generateDataStrucureInit() {
@@ -391,7 +413,8 @@ public class CodeStructC {
 			dataStructureInitCode+="blocks["+i+"]=&block"+block.getBlockId()+";\n";
 		}
 		
-		dataStructureInitCode+="model.blocks=blocks;";
+		dataStructureInitCode+="model.blocks=blocks;\n";
+		dataStructureInitCode+="model.time=model.startTime;\n";
 	}
 	
 }
