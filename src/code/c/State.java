@@ -18,6 +18,10 @@ public class State {
 		return this.name;
 	}
 	
+	public String getLocalName() {
+		return this.localName;
+	}
+	
 	public String getDefineString() {
 		String defineString="";
 		
@@ -27,5 +31,13 @@ public class State {
 		}
 		
 		return defineString;
+	}
+	
+	public int getId() {
+		return this.id;
+	}
+	
+	public int getWidth() {
+		return this.width;
 	}
 }

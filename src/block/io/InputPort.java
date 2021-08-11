@@ -12,6 +12,8 @@ public class InputPort {
 	
 	private int number;
 	
+	private String name;
+	
 	private Line linkedLine=null;
 	
 	public InputPort(Block block,int number){
@@ -20,6 +22,8 @@ public class InputPort {
 		this.number=number;
 		
 		this.linkedOutputPort=null;
+		
+		this.name="in"+number;
 	}
 	
 	public int getNumber() {
@@ -36,5 +40,13 @@ public class InputPort {
 	
 	public Block getBLock() {
 		return this.block;
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+	
+	public int getWidth() {
+		return this.width;
 	}
 }

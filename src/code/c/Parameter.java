@@ -19,6 +19,10 @@ public class Parameter {
 		return this.name;
 	}
 	
+	public String getLocalName() {
+		return this.localName;
+	}
+	
 	public String getDefineString() {
 		String defineString="";
 		
@@ -28,5 +32,13 @@ public class Parameter {
 		}
 		
 		return defineString;
+	}
+	
+	public int getId() {
+		return this.id;
+	}
+	
+	public int getWidth() {
+		return this.width;
 	}
 }

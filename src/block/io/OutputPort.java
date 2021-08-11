@@ -21,14 +21,18 @@ public class OutputPort {
 	
 	private code.c.OutputSignal outputSignalC=null;
 	
+	private String name;
+	
 	public OutputPort(Block block,int number){
 		this.block=block;
 		this.number=number;
+		this.name="out"+number;
 	}
 	
 	public OutputPort(Block block,int number,boolean isFeedThrough){
 		this.block=block;
 		this.number=number;
+		this.name="out"+number;
 		this.isFeedThrough=isFeedThrough;
 	}
 	
@@ -66,5 +70,13 @@ public class OutputPort {
 	
 	public void setIsCodeGenerated(boolean isCodeGenerated) {
 		this.isCodeGenerated=isCodeGenerated;
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+	
+	public int getWidth() {
+		return this.width;
 	}
 }
