@@ -72,6 +72,7 @@ public class CodeStructC {
 	}
 	
 	private void writeMainCodeFile() {
+		System.out.println("Writing file mainccode.c...");
 		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
 				+preCode+"\n"
@@ -159,51 +160,11 @@ public class CodeStructC {
 	private String codePathBase=utils.Property.instance.getProperty("CCodePath");
 	private String codePath;
 	
-	private void writeMakefile() {
-		System.out.println("Writing makefile...");
+	private void writeNCSLabFile(String fileName) {
+		System.out.println("Writing file "+fileName+"...");
+		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 		
-		InputStream InputStream = this.getClass().getResourceAsStream("makefile");
-		
-		File file=new File(codePath+"/makefile");
-		FileOutputStream outputStream;
-    	try {
-    		outputStream = new FileOutputStream(file);
-    		byte[] buffer=new byte[1024];
-    		int len;
-    		while((len=InputStream.read(buffer))>0) {
-    			outputStream.write(buffer,0,len);
-    		}
-    		outputStream.close();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
-	}
-	
-	private void writeHFiles() {
-		System.out.println("Writing ncslabccode.h...");
-		
-		InputStream InputStream = this.getClass().getResourceAsStream("ncslabccode.h");
-		
-		File file=new File(codePath+"/ncslabccode.h");
-		FileOutputStream outputStream;
-    	try {
-    		outputStream = new FileOutputStream(file);
-    		byte[] buffer=new byte[1024];
-    		int len;
-    		while((len=InputStream.read(buffer))>0) {
-    			outputStream.write(buffer,0,len);
-    		}
-    		outputStream.close();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
-	}
-	
-	private void writeNCSLabMainFile() {
-		System.out.println("Writing ncslabmain.c...");
-		InputStream InputStream = this.getClass().getResourceAsStream("ncslabmain.c");
-		
-		File file=new File(codePath+"/ncslabmain.c");
+		File file=new File(codePath+"/"+fileName);
 		FileOutputStream outputStream;
     	try {
     		outputStream = new FileOutputStream(file);
@@ -237,16 +198,18 @@ public class CodeStructC {
 		
 		codePath=modelPath+"/";
 		
-		writeHFiles();
-    	writeMakefile();
+		writeNCSLabFile("makefile");
+		writeNCSLabFile("ncslabccode.h");
+		writeNCSLabFile("ncslabmain.c");
+		writeNCSLabFile("ServerThread.c");
+		writeNCSLabFile("ServerThread.h");
     	
     	writeMainCodeFile();
-    	writeNCSLabMainFile();
 	}
 	
 	public boolean makeExeFile() {
 		try {
-			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+			Process process=Runtime.getRuntime().exec("mingw32-make", null, new File(codePath));
 			process.waitFor();
 			
 			if(process.exitValue()==0) {

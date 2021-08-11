@@ -3,6 +3,9 @@
 
 #include "stdio.h"
 #include "stdlib.h"
+
+#include <windows.h>
+
 #define REAL double
 
 typedef struct {
@@ -55,6 +58,7 @@ typedef struct {
 }MODEL;
 
 void NCSLabInit();
+void NCSLabOneStep();
 MODEL * NCSLabGetModelP();
 
 #endif
