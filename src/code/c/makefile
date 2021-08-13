@@ -6,8 +6,8 @@ LD=gcc
 
 CCFlag=-mwindows -D_WIN32_WINNT=0x0501 
 
-ncslab.exe: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o
-	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o -lwinmm -lws2_32
+ncslab.exe: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o
+	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o -lwinmm -lws2_32
 	
 mainccode.o: mainccode.c
 	$(CC) $(CCFlag) -c mainccode.c
@@ -23,6 +23,9 @@ ClientThread.o: ClientThread.c ClientThread.h
 	
 DataApi.o: DataApi.c DataApi.h
 	$(CC) $(CCFlag) -c DataApi.c
+	
+UploadThread.o: UploadThread.c UploadThread.h
+	$(CC) $(CCFlag) -c UploadThread.c
 
 clean:
 	rm ncslab.exe mainccode.o ncslabmain.o

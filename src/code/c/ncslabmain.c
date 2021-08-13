@@ -5,6 +5,9 @@ MODEL *mp;
 
 void  CALLBACK TimeEvent(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2){
 	//printf("%f\n",mp->time);
+
+	setAllClientUploadEvents();
+
 	NCSLabOneStep();
 	mp->time+=mp->stepSize;
 }

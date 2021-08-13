@@ -212,6 +212,8 @@ public class CodeStructC {
 		writeNCSLabFile("ServerThread.h");
 		writeNCSLabFile("ClientThread.c");
 		writeNCSLabFile("ClientThread.h");
+		writeNCSLabFile("UploadThread.c");
+		writeNCSLabFile("UploadThread.h");
     	
     	writeMainCodeFile();
 	}
@@ -386,7 +388,7 @@ public class CodeStructC {
 				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".name=\""+parameter.getLocalName()+"\";\n";
 				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".width="+parameter.getWidth()+";\n";
 				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".vp=&"+parameter.getName()+";\n";
-				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+parameter.getLocalName()+"\";\n";
+				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"\";\n";
 			}
 		}
 		
