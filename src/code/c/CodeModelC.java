@@ -17,12 +17,31 @@ public class CodeModelC extends CodeModel {
 	
 	private CodeStructC code=new CodeStructC(this);
 	
+	private int signalNum=0;
+	private int parameterNum=0;
+	
 	CodeModelC(JSONObject jsonIn){
 		super(jsonIn);
 	}
 	
 	public String getMainCode() {
 		return code.getMainCode();
+	}
+	
+	public void setSignalNum(int signalNum) {
+		this.signalNum=signalNum;
+	}
+	
+	public int getSignalNum() {
+		return this.signalNum;
+	}
+	
+	public void setParameterNum(int parameterNum) {
+		this.parameterNum=parameterNum;
+	}
+	
+	public int getParameterNum() {
+		return this.parameterNum;
 	}
 	
 	public static CodeModelC createFromJSON(JSONObject jsonIn) {

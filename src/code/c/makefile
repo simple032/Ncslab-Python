@@ -4,10 +4,10 @@ CC=gcc
 
 LD=gcc
 
-CCFlag=-mwindows -D_WIN32_WINNT=0x0501
+CCFlag=-mwindows -D_WIN32_WINNT=0x0501 
 
-ncslab.exe: ncslabmain.o mainccode.o ServerThread.o
-	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o -lwinmm -lws2_32
+ncslab.exe: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o
+	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o -lwinmm -lws2_32
 	
 mainccode.o: mainccode.c
 	$(CC) $(CCFlag) -c mainccode.c
@@ -17,6 +17,12 @@ ncslabmain.o: ncslabmain.c ncslabccode.h
 
 ServerThread.o: ServerThread.c ServerThread.h 
 	$(CC) $(CCFlag) -c ServerThread.c
+
+ClientThread.o: ClientThread.c ClientThread.h
+	$(CC) $(CCFlag) -c ClientThread.c
+	
+DataApi.o: DataApi.c DataApi.h
+	$(CC) $(CCFlag) -c DataApi.c
 
 clean:
 	rm ncslab.exe mainccode.o ncslabmain.o

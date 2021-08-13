@@ -9,7 +9,7 @@ void  CALLBACK TimeEvent(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR d
 	mp->time+=mp->stepSize;
 }
 
-main(int argc, const char *argv[]){
+void main(int argc, char *argv[]){
 	ExtModeData extModeData;
 
 	NCSLabInit();
@@ -21,9 +21,10 @@ main(int argc, const char *argv[]){
       extModeData.port=NULL;
     }
 
-	startMyServerThread(extModeData);
-	
 	mp=NCSLabGetModelP();
+	extModeData.mp=mp;
+
+	startMyServerThread(extModeData);
 	
 	timeSetEvent(mp->stepSize*1000,1,(LPTIMECALLBACK)TimeEvent,0,TIME_PERIODIC);
 	

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Vector;
 import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.*;
 
 import code.CodeModel;
 import block.Block;
@@ -12,6 +14,9 @@ import block.io.OutputPort;
 import block.io.InputPort;
 
 public class CodeStructC {
+	
+	public boolean inputAsSignal=true;
+	public boolean outputAsSignal=true;
 	
 	public String mainCode="";
 	public String includeCode="";
@@ -35,9 +40,9 @@ public class CodeStructC {
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 	
-	private CodeModel model;
+	private CodeModelC model;
 	
-	public CodeStructC(CodeModel model) {
+	public CodeStructC(CodeModelC model) {
 		this.model=model;
 		
 	}
@@ -201,8 +206,12 @@ public class CodeStructC {
 		writeNCSLabFile("makefile");
 		writeNCSLabFile("ncslabccode.h");
 		writeNCSLabFile("ncslabmain.c");
+		writeNCSLabFile("DataApi.c");
+		writeNCSLabFile("DataApi.h");
 		writeNCSLabFile("ServerThread.c");
 		writeNCSLabFile("ServerThread.h");
+		writeNCSLabFile("ClientThread.c");
+		writeNCSLabFile("ClientThread.h");
     	
     	writeMainCodeFile();
 	}
@@ -210,16 +219,30 @@ public class CodeStructC {
 	public boolean makeExeFile() {
 		try {
 			Process process=Runtime.getRuntime().exec("mingw32-make", null, new File(codePath));
+			
+			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
+			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line=null,outLine=null;
+			StringBuilder errStr=new StringBuilder();
+			StringBuilder outStr=new StringBuilder();
+			
+			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
+				if(outLine!=null) {
+					outStr.append(outLine);
+					System.out.println(outLine);
+				}
+				if(line!=null) {
+					errStr.append(line);
+					System.err.println(line);
+				}
+			}
+			
 			process.waitFor();
 			
 			if(process.exitValue()==0) {
 				return true;
 			}
-			else {
-				byte[] buffer=new byte[process.getErrorStream().available()];
-				process.getErrorStream().read(buffer);
-				System.err.println(new String(buffer));
-			}
+			
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -265,10 +288,12 @@ public class CodeStructC {
 		}
 		
 		dataStructureCode+="/*Define parameter structures*/\n";
+		int parameterNum=0;
 		for(Block block:model.getBlockList()) {
 			if(block.getParameterList().size()>0) {
 				for(Parameter parameter:block.getParameterList()) {
-					dataStructureCode+="PARAMETER parameter"+block.getBlockId()+"_"+parameter.getId()+"={\""+parameter.getLocalName()+"\","+parameter.getWidth()+"};\n";
+					dataStructureCode+="PARAMETER parameter"+block.getBlockId()+"_"+parameter.getId()+";\n";
+					parameterNum++;
 				}
 				dataStructureCode+="PARAMETER *parameters"+block.getBlockId()+"["+block.getParameterList().size()+"];\n";
 			}
@@ -276,6 +301,8 @@ public class CodeStructC {
 				dataStructureCode+="PARAMETER **parameters"+block.getBlockId()+"=NULL;\n";
 			}
 		}
+		dataStructureCode+="PARAMETER *parameters["+parameterNum+"];\n";
+		model.setParameterNum(parameterNum);
 		
 		dataStructureCode+="/*Define state structures*/\n";
 		for(Block block:model.getBlockList()) {
@@ -290,10 +317,40 @@ public class CodeStructC {
 			}
 		}
 		
+		dataStructureCode+="/*Define signal structures*/\n";
+		int signalNum=0;
+		for(Block block:model.getBlockList()) {
+			int i=0;
+			if(inputAsSignal&&block.getInputPortList().size()>0) {
+				for(InputPort input:block.getInputPortList()) {
+					dataStructureCode+="SIGNAL signal"+block.getBlockId()+"_In"+input.getNumber()+";\n";
+					i++;
+					signalNum++;
+				}
+			}
+			if(outputAsSignal&&block.getOutputPortList().size()>0) {
+				for(OutputPort output:block.getOutputPortList()) {
+					dataStructureCode+="SIGNAL signal"+block.getBlockId()+"_Out"+output.getNumber()+";\n";
+					i++;
+					signalNum++;
+				}
+			}
+			if(i>0) {
+				dataStructureCode+="SIGNAL *signals"+block.getBlockId()+"["+i+"];\n";
+			}
+			else {
+				dataStructureCode+="SIGNAL **signals"+block.getBlockId()+"=NULL;\n";
+			}
+			
+			block.setSignalNum(i);
+		}
+		dataStructureCode+="SIGNAL *signals["+signalNum+"];\n";
+		model.setSignalNum(signalNum);
+		
 		dataStructureCode+="/*Define block structures*/\n";
 		if(model.getBlockList().size()>0) {
 			for(Block block:model.getBlockList()) {			
-				dataStructureCode+="BLOCK block"+block.getBlockId()+"={\""+block.getBlockType()+"\",\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+"};\n";
+				dataStructureCode+="BLOCK block"+block.getBlockId()+"={\""+block.getBlockType()+"\",\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+"};\n";
 			}
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
 		}
@@ -326,7 +383,10 @@ public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize parameters for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(Parameter parameter:block.getParameterList()) {
+				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".name=\""+parameter.getLocalName()+"\";\n";
+				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".width="+parameter.getWidth()+";\n";
 				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".vp=&"+parameter.getName()+";\n";
+				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+parameter.getLocalName()+"\";\n";
 			}
 		}
 		
@@ -338,7 +398,31 @@ public class CodeStructC {
 			}
 		}
 		
+		dataStructureInitCode+="/*Initialize signals*/\n";
+		for(Block block:model.getBlockList()) {
+			dataStructureInitCode+="/*Initialize signals for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
+			if(inputAsSignal) {
+				for(InputPort input:block.getInputPortList()) {
+					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".width="+input.getLinkedLine().getLinkedOutputPort().getWidth()+";\n";
+					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".name=\""+input.getName()+"\";\n";
+					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+input.getName()+"\";\n";
+				}
+			}
+			if(outputAsSignal) {
+				for(OutputPort output:block.getOutputPortList()) {
+					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".width="+output.getWidth()+";\n";
+					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".name=\""+output.getName()+"\";\n";
+					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+output.getName()+"\";\n";
+				}
+			}
+		}
+		
+		
 		dataStructureInitCode+="/*Initialize blocks*/\n";
+		int signalNum=0;
+		int parameterNum=0;
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			int i=0;
@@ -358,7 +442,9 @@ public class CodeStructC {
 			i=0;
 			for(Parameter parameter:block.getParameterList()) {
 				dataStructureInitCode+="parameters"+block.getBlockId()+"["+i+"]=&parameter"+block.getBlockId()+"_"+parameter.getId()+";\n";
+				dataStructureInitCode+="parameters["+parameterNum+"]=&parameter"+block.getBlockId()+"_"+parameter.getId()+";\n";
 				i++;
+				parameterNum++;
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".parameters=parameters"+block.getBlockId()+";\n";
 			
@@ -368,6 +454,25 @@ public class CodeStructC {
 				i++;
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".states=states"+block.getBlockId()+";\n";
+			
+			i=0;
+			if(inputAsSignal) {
+				for(InputPort input:block.getInputPortList()) {
+					dataStructureInitCode+="signals"+block.getBlockId()+"["+i+"]=&signal"+block.getBlockId()+"_In"+input.getNumber()+";\n";
+					dataStructureInitCode+="signals["+signalNum+"]=&signal"+block.getBlockId()+"_In"+input.getNumber()+";\n";
+					i++;
+					signalNum++;
+				}
+			}
+			if(outputAsSignal) {
+				for(OutputPort output:block.getOutputPortList()) {
+					dataStructureInitCode+="signals"+block.getBlockId()+"["+i+"]=&signal"+block.getBlockId()+"_Out"+output.getNumber()+";\n";
+					dataStructureInitCode+="signals["+signalNum+"]=&signal"+block.getBlockId()+"_Out"+output.getNumber()+";\n";
+					i++;
+					signalNum++;
+				}
+			}
+			dataStructureInitCode+="block"+block.getBlockId()+".signals=signals"+block.getBlockId()+";\n";
 		}
 		
 		dataStructureInitCode+="/*Initialize model*/\n";
@@ -378,6 +483,12 @@ public class CodeStructC {
 		
 		dataStructureInitCode+="model.blocks=blocks;\n";
 		dataStructureInitCode+="model.time=model.startTime;\n";
+		
+		dataStructureInitCode+="model.signalNum="+signalNum+";\n";
+		dataStructureInitCode+="model.signals=signals;\n";
+		
+		dataStructureInitCode+="model.parameterNum="+parameterNum+";\n";
+		dataStructureInitCode+="model.parameters=parameters;\n";
 	}
 	
 }

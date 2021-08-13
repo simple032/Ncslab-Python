@@ -28,12 +28,22 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	protected NCSLabModel model;
 	
+	protected int signalNum=0;
+	
 	protected Block(JSONObject blockIn,NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
 		this.paramValues=blockIn.getJSONObject("paramValues");
 		this.model=model;
 		
+	}
+	
+	public void setSignalNum(int signalNum) {
+		this.signalNum=signalNum;
+	}
+	
+	public int getSignalNum() {
+		return this.signalNum;
 	}
 	
 	public NCSLabModel getModel() {

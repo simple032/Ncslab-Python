@@ -1,16 +1,18 @@
-#include "serverthread.h"
+#include "ServerThread.h"
+#include "clientThread.h"
 
 #define DEFAULT_PORT "27015"
 
 #define MAX_CLIENT_NUM 16
 
-static HANDLE  hServerThread;
+static HANDLE hServerThread;
+static DWORD hServerThreadId;
 
 ExtModeData extModeData;
 
 DWORD WINAPI ServerThreadFunction( LPVOID lpParam );
 
-//static CLIENT_STRUCT clients[MAX_CLIENT_NUM];
+static CLIENT_STRUCT clients[MAX_CLIENT_NUM];
 
 void startMyServerThread(ExtModeData pExtModeData)
 {
@@ -25,15 +27,71 @@ void startMyServerThread(ExtModeData pExtModeData)
             ServerThreadFunction,       // thread function name
             &extModeData,          // argument to thread function
             0,                      // use default creation flags
-            &hServerThread);   // returns the thread identifier
+            &hServerThreadId);   // returns the thread identifier
 
 
+}
+
+void initClients()
+{
+	int i;
+	for(i=0;i<MAX_CLIENT_NUM;i++)
+	{
+		clients[i].isEmpty=TRUE;
+	}
+}
+
+BOOL startClientThread(SOCKET socket)
+{
+	int i;
+	printf("Start client thread\n");
+
+	for(i=0;i<MAX_CLIENT_NUM;i++)
+	{
+		if(clients[i].isEmpty==TRUE)
+			break;
+	}
+
+	if(i==MAX_CLIENT_NUM)
+	{
+		printf("To many connections!\n");
+		return FALSE;
+	}
+
+	printf("Connection %d is available. Starting the client thread...\n",i);
+
+	clients[i].socket=socket;
+	clients[i].pExtModeData=&extModeData;
+	clients[i].currentCommand=0;
+	clients[i].upload.hUploadThread=0;
+	clients[i].upload.data=NULL;
+	clients[i].upload.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
+	clients[i].select=NULL;
+
+	clients[i].isEmpty=FALSE;
+
+	createClientThread(&clients[i]);
+
+	return TRUE;
+}
+
+void setAllClientUploadEvents()
+{
+	int_T i;
+	for(i=0;i<MAX_CLIENT_NUM;i++)
+	{
+		if(clients[i].isEmpty==FALSE)
+		{
+			SetEvent(clients[i].upload.hEvent);
+		}
+	}
 }
 
 DWORD WINAPI ServerThreadFunction( LPVOID lpParam )
 {
 	struct addrinfo *result = NULL, *ptr = NULL;
     struct addrinfo hints;
+
 	WSADATA wsaData;
 
 	int iResult;
@@ -102,7 +160,7 @@ DWORD WINAPI ServerThreadFunction( LPVOID lpParam )
 		return 1;
 	}
 
-	//initClients();
+	initClients();
 
 	while(TRUE)
 	{
@@ -115,5 +173,11 @@ DWORD WINAPI ServerThreadFunction( LPVOID lpParam )
 
 		}
 		printf("Accepted...\n");
+
+        if(startClientThread(ClientSocket)==FALSE)
+		{
+			closesocket(ClientSocket);
+			printf("Connection rejected!\n");
+		}
     }
 }
