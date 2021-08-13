@@ -12,25 +12,34 @@ import line.Line;
 
 public class NCSLabModel {
 	
+	//从Web端传过来的描述框图的json文件
 	private JSONObject jsonIn;
 	
+	//模型的名字（s开头的带数字的名字）
 	private String modelName;
+	//模型的名字（用户指定的名字）
 	private String modelRealName;
 	
+	//模型的配置参数
 	private Config config;
 	
 	private int userId;
 	private int modelId;
 	
+	//组件块的列表
 	protected Vector<Block> blockList=new Vector<Block>();
 	
+	//线的列表
 	protected Vector<Line> lineList=new Vector<Line>();
 	
+	//错误信息的列表
 	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
 	
+	//构造函数，从web传入json，建立模型的数据结构
 	protected NCSLabModel(JSONObject jsonIn){
 		this.jsonIn=jsonIn;
 		
+		//解析json中的内容，建立block,line,input,output相互连接的数据结构
 		parseModel();
 		
 		//System.out.println(config.getFixedStep());

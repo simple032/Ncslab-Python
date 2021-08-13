@@ -44,6 +44,7 @@ public class simulate extends HttpServlet {
         }  
         JSONObject jsonIn = new JSONObject(result);
 		
+        //建立M语言的生成器CodeModelM
         CodeModelM model=CodeModelM.createFromJSON(jsonIn);
         model.generate();
         model.showErrorMessages();
@@ -57,6 +58,7 @@ public class simulate extends HttpServlet {
         
         System.out.println();
         
+        //建立C语言的生成器CodeModelC
         CodeModelC modelC=CodeModelC.createFromJSON(jsonIn);
         modelC.generate();
         

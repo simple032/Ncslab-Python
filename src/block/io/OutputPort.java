@@ -36,6 +36,13 @@ public class OutputPort {
 		this.isFeedThrough=isFeedThrough;
 	}
 	
+	public OutputPort(Block block,String name,int number,boolean isFeedThrough){
+		this.block=block;
+		this.number=number;
+		this.name=name;
+		this.isFeedThrough=isFeedThrough;
+	}
+	
 	public code.c.OutputSignal getOutputSignalC(){
 		return this.outputSignalC;
 	}
@@ -74,6 +81,10 @@ public class OutputPort {
 	
 	public String getName() {
 		return this.name;
+	}
+	
+	public void setName(String name) {
+		this.name=name;
 	}
 	
 	public int getWidth() {
