@@ -15,22 +15,30 @@ import block.io.InputPort;
 
 public class CodeStructC {
 	
+	//模块的输入是否作为信号
 	public boolean inputAsSignal=true;
+	//模块的输出是否作为信号
 	public boolean outputAsSignal=true;
 	
-	public String mainCode="";
+	//头文件的代码
 	public String includeCode="";
+	//init初始化的代码
 	public String initCode="";
-	
+	//Output的代码
 	public String outputCode="";
-	
+	//update的代码
 	public String updateCode="";
 	
+	/*定义Parameter的代码 如*REAL Block5_Parameter_P*/
 	public String parameterDefineCode="";
+	/*定义State的代码 如 REAL Block1_State_pumpState;*/
 	public String stateDefineCode="";
+	/*定义Output信号的代码，如 REAL Block1_Output1;*/
 	public String outputSignalDefineCode="";
 	
+	/*定义所有监控数据实体的代码，包括INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
+	/*定义监控数据实体初始化的代码，初始化各个组件结构的名称，path等，让指针指向指定的位置，建立数据结构， */
 	public String dataStructureInitCode="";
 	
 	private int parameterIndex=1;
@@ -78,6 +86,7 @@ public class CodeStructC {
 	
 	private void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.c...");
+		//precode是参数，状态，和输出的定义，以全局变量的方式
 		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
 				+preCode+"\n"
@@ -107,10 +116,6 @@ public class CodeStructC {
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-	}
-	
-	public String getMainCode() {
-		return mainCode;
 	}
 	
 	public Parameter addParameter(Block block,String localName) {

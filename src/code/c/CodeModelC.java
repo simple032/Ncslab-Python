@@ -24,10 +24,6 @@ public class CodeModelC extends CodeModel {
 		super(jsonIn);
 	}
 	
-	public String getMainCode() {
-		return code.getMainCode();
-	}
-	
 	public void setSignalNum(int signalNum) {
 		this.signalNum=signalNum;
 	}
@@ -55,6 +51,7 @@ public class CodeModelC extends CodeModel {
 		writeCCodeFiles(); 
 	}
 	
+	/*将代码变成C语言的一系列文件 */
 	private void writeCCodeFiles() {
 		code.writeCCodeFiles();
 	}
@@ -93,6 +90,7 @@ public class CodeModelC extends CodeModel {
 		}
 	}
 	
+	/*调用make命令，生成可执行代码 */
 	public void makeExeFile() {
 		System.out.println("Making exe file ncslabccode.exe...");
 		if(code.makeExeFile()) {

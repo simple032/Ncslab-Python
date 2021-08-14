@@ -27,6 +27,11 @@ public class CodeModelM extends CodeModel{
 	public String getCode() {
 		return this.code;
 	}
+
+	//生成代码的方法，使用上一级的就可以了
+	public void generate() {
+		super.generate();
+	}
 	
 	protected void generateUpdateCode() {
 		System.out.println("Generating update codes......");
