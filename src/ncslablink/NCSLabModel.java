@@ -80,16 +80,20 @@ public class NCSLabModel {
 	}
 	
 	private void parseModel() {
+
+		//读入json中的信息
 		modelName=jsonIn.getString("modelName");
 		modelRealName=jsonIn.getString("modelRealName");
 		
 		userId=jsonIn.getInt("userId");
 		modelId=jsonIn.getInt("modelId");
 		
+		//读取json中的config配置
 		config=Config.createFromJSON(jsonIn.getJSONObject("config"));
 		
+		//解析json文件中的block模块，建立block的数据结构
 		parseBlocks();
-		
+		//解析json文件中的line模块，在数据结构中，用line连接各个block
 		parseLines();
 		
 		//showBlocks();
@@ -117,18 +121,20 @@ public class NCSLabModel {
 		}
 	}
 	
+	/*读取所有的block，建立block的数据结构 */
 	private void parseBlocks() {
 		
 		JSONArray blockJSONList=jsonIn.getJSONArray("blocks");
 		for(int i=0;i<blockJSONList.length();i++) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
-			//String blockType=blockJSON.getString("blockType");
-			
+
+			//根据Block的type，建立不同的block的数据结构
 			Block block=BlockType.createBlock(blockJSON,this);
 			block.setBlockId(i+1);
 			
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 			
+			//将block加入到blockList的Vector中
 			if(block!=null) {
 				blockList.add(block);
 			}
@@ -141,11 +147,13 @@ public class NCSLabModel {
 		for(int i=0;i<lineJSONList.length();i++) {
 			JSONObject lineJSON=lineJSONList.getJSONObject(i);
 			
+			//建立Line的数据结构，连接两端的Block
 			Line line=Line.createLine(lineJSON, this);
 			line.setLineId(i+1);
 			
 			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
 			
+			//将Line加入到lineList中
 			if(line!=null) {
 				lineList.add(line);
 			}
