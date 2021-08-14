@@ -28,6 +28,8 @@ public class PIDController extends block.Block{
 		
 		stateIntegral=new State(this,1,"integral");
 		stateList.add(stateIntegral);
+		
+		updateBlock();
 	}
 	
 	public String generateInitCodeM() {

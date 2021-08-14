@@ -7,6 +7,7 @@ import block.io.InputPort;
 import block.io.OutputPort;
 import block.io.Parameter;
 import block.io.State;
+import block.io.OutputSignal;
 import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
@@ -28,6 +29,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	protected Vector<Parameter> parameterList=new Vector<Parameter>();
 	protected Vector<State> stateList=new Vector<State>();
+	
+	protected Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 	
 	//是否输出的代码已经生成，如果生成，遍历到这个模块的时候，直接引用就行了，就不需要进一步遍历了
 	protected boolean isOutputCodeGenerated=false;
@@ -145,12 +148,22 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return code;
 	}
 	
+	protected void updateBlock() {
+		int i=0;
+		for(OutputPort outputPort:outputPortList) {
+			OutputSignal outputSignal=new OutputSignal(this,i,outputPort.getNumber(),outputPort.getName());
+			outputPort.setOutputSignalC(outputSignal);
+			outputSignalList.add(outputSignal);
+			i++;
+		}
+	}
+	
 	
 	//c语言的代码生成方法，与M语言相同
 	//生成C语言的Init代码，供上一级调用
 	public void generateBlockInitCodeC(CodeStructC code) {
-		for(OutputPort outputPort:outputPortList) {
-			code.addOutputSignal(this, outputPort);
+		for(OutputSignal outputSignal:outputSignalList) {
+			code.addOutputSignal(outputSignal);
 		}
 		generateInitCodeC(code);
 	}
@@ -168,7 +181,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		
 		isOutputCodeGenerated=true;
 		for(OutputPort outputPort:outputPortList) {
-			outputPort.setIsCodeGenerated(true);
+			outputPort.setIsCodeGenerated(true); 
 		}
 		
 	}

@@ -10,6 +10,7 @@ import java.io.*;
 import code.CodeModel;
 import block.Block;
 import block.io.OutputPort;
+import block.io.OutputSignal;
 import block.io.Parameter;
 import block.io.State;
 import block.io.InputPort;
@@ -127,6 +128,11 @@ public class CodeStructC {
 		stateList.add(state);
 	}
 	
+	public void addOutputSignal(OutputSignal outputSignal) {
+		outputSignalList.add(outputSignal);
+	}
+	
+	/*
 	public OutputSignal addOutputSignal(Block block,OutputPort outputPort) {
 		OutputSignal outputSignal=new OutputSignal(stateIndex++,"Block"+block.getBlockId()+"_Output"+outputPort.getNumber(),"out"+outputPort.getNumber()); 
 		
@@ -135,7 +141,7 @@ public class CodeStructC {
 		outputPort.setOutputSignalC(outputSignal);
 		
 		return outputSignal;
-	}
+	}*/
 	
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";

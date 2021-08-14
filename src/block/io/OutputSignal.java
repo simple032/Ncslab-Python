@@ -1,4 +1,7 @@
-package code.c;
+package block.io;
+
+import code.c.DataTypeC;
+import block.Block;
 
 public class OutputSignal {
 	private int id;
@@ -6,15 +9,20 @@ public class OutputSignal {
 	private String localName;
 	private int width=1;
 	private DataTypeC type=DataTypeC.REAL;
+	private Block block;
+	private int outputPortId;
 	
-	public OutputSignal(int id,String name,String localName){
+	public OutputSignal(Block block,int id,int outputPortId,String localName){
+		this.block=block;
 		this.type=DataTypeC.REAL;
 		this.id=id;
-		this.name=name;
+		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
 		this.localName=localName;
+		this.outputPortId=outputPortId;
 	}
 	
 	public String getName() {
+		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
 		return this.name;
 	}
 	

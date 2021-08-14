@@ -19,7 +19,7 @@ public class OutputPort {
 	
 	private boolean isCodeGenerated=false;
 	
-	private code.c.OutputSignal outputSignalC=null;
+	private block.io.OutputSignal outputSignalC=null;
 	
 	private String name;
 	
@@ -43,11 +43,11 @@ public class OutputPort {
 		this.isFeedThrough=isFeedThrough;
 	}
 	
-	public code.c.OutputSignal getOutputSignalC(){
+	public block.io.OutputSignal getOutputSignalC(){
 		return this.outputSignalC;
 	}
 	
-	public void setOutputSignalC(code.c.OutputSignal outputSignalC){
+	public void setOutputSignalC(block.io.OutputSignal outputSignalC){
 		this.outputSignalC=outputSignalC;
 	}
 	
