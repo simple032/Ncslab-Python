@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import ncslablink.NCSLabModel;
 
 public class BlockType {
+	/*根据BlockType的类型，生成不同的Block */
 	public static Block createBlock(JSONObject blockJSON,NCSLabModel model) {
 		String blockType=blockJSON.getString("blockType");
 		

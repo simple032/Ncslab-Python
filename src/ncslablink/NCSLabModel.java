@@ -10,7 +10,7 @@ import block.BlockType;
 
 import line.Line;
 
-public class NCSLabModel {
+abstract public class NCSLabModel {
 	
 	//从Web端传过来的描述框图的json文件
 	private JSONObject jsonIn;
@@ -63,12 +63,6 @@ public class NCSLabModel {
 	
 	public Vector<ErrorMessage> getErrorList(){
 		return this.errorList;
-	}
-	
-	public static NCSLabModel createFromJSON(JSONObject jsonIn) {
-		NCSLabModel model=new NCSLabModel(jsonIn);
-		
-		return model;
 	}
 	
 	protected void addErrorMessage(ErrorMessage message) {
