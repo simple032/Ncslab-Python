@@ -120,29 +120,20 @@ public class CodeStructC {
     	}
 	}
 	
+	//加入全局的Parameter的列表
 	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
 	}
-	
+	//加入全局的state的列表
 	public void addState(State state) {
 		stateList.add(state);
 	}
-	
+	//加入全局的信号的列表
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
 	
-	/*
-	public OutputSignal addOutputSignal(Block block,OutputPort outputPort) {
-		OutputSignal outputSignal=new OutputSignal(stateIndex++,"Block"+block.getBlockId()+"_Output"+outputPort.getNumber(),"out"+outputPort.getNumber()); 
-		
-		outputSignalList.add(outputSignal);
-		
-		outputPort.setOutputSignalC(outputSignal);
-		
-		return outputSignal;
-	}*/
-	
+	//生成定义Parameter的代码
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";
 		for(Parameter parameter:parameterList) {
@@ -150,6 +141,7 @@ public class CodeStructC {
 		}
 	}
 	
+	//生成定义State的代码
 	public void generateStateDefineCode() {
 		stateDefineCode+="/*Define variables for states*/\n";
 		for(State state:stateList) {
@@ -157,6 +149,7 @@ public class CodeStructC {
 		}
 	}
 	
+	//生成定义Output的代码
 	public void generateOutputSignalDefineCode() {
 		outputSignalDefineCode+="/*Define variables for output signals*/\n";
 		for(OutputSignal outputSignal:outputSignalList) {
@@ -167,8 +160,10 @@ public class CodeStructC {
 	
 	
 	private String codePathBase=utils.Property.instance.getProperty("CCodePath");
+	//目标文件夹的位置codePathBase/用户id/modelId
 	private String codePath;
 	
+	//写文件的方法，将文件从resource中拷贝出来，写在目标文件夹
 	private void writeNCSLabFile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
@@ -192,6 +187,7 @@ public class CodeStructC {
 	
 	public void writeCCodeFiles() {
 		
+		//生成目标文件夹的位置codePathBase/用户id/modelId
 		String userPath=codePathBase+model.getUserId();
 		
 		File file=new File(userPath);
@@ -204,14 +200,21 @@ public class CodeStructC {
 		if(file.exists()==false) {
 			file.mkdir();
 		}
-		
+	
 		codePath=modelPath+"/";
 		
+		//写入周边的资源文件
+		//makefile
 		writeNCSLabFile("makefile");
+		//主数据结构
 		writeNCSLabFile("ncslabccode.h");
+		//main函数以及定时器
 		writeNCSLabFile("ncslabmain.c");
+		//访问主数据结构的接口API定义
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
+
+		//实现Netcon协议的通用文件
 		writeNCSLabFile("ServerThread.c");
 		writeNCSLabFile("ServerThread.h");
 		writeNCSLabFile("ClientThread.c");
@@ -219,13 +222,15 @@ public class CodeStructC {
 		writeNCSLabFile("UploadThread.c");
 		writeNCSLabFile("UploadThread.h");
     	
+		//写入生成的主代码ncslabccdoe.c
     	writeMainCodeFile();
 	}
 	
 	public boolean makeExeFile() {
 		try {
+			//启动make，生成可执行代码
 			Process process=Runtime.getRuntime().exec("mingw32-make", null, new File(codePath));
-			
+			//读取OutputStream和errStream。如果读取不及时，会出现阻塞
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line=null,outLine=null;
@@ -243,6 +248,7 @@ public class CodeStructC {
 				}
 			}
 			
+			//等待makefile的完成
 			process.waitFor();
 			
 			if(process.exitValue()==0) {
@@ -257,11 +263,15 @@ public class CodeStructC {
 		return false;
 	}
 	
+	//建立Model,block,input,output,signal,state,parameter等数据结构，并初始化
 	public void gnenrateDataStructureCode() {
+		//建立一系列数据结构的定义
 		generateDataStrucure();
+		//初始化数据结构，实现数据结构之间的指针连接
 		generateDataStrucureInit();
 	}
 	
+	//建立数据结构的定义
 	private void generateDataStrucure() {
 		dataStructureCode+="/*Define data structures*/\n";
 		
@@ -311,10 +321,12 @@ public class CodeStructC {
 		model.setParameterNum(parameterNum);
 		
 		dataStructureCode+="/*Define state structures*/\n";
+		int stateNum=0;
 		for(Block block:model.getBlockList()) {
 			if(block.getStateList().size()>0) {
 				for(State state:block.getStateList()) {
 					dataStructureCode+="STATE state"+block.getBlockId()+"_"+state.getId()+"={\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
+					stateNum++;
 				}
 				dataStructureCode+="STATE *states"+block.getBlockId()+"["+block.getStateList().size()+"];\n";
 			}
@@ -322,6 +334,8 @@ public class CodeStructC {
 				dataStructureCode+="STATE **states"+block.getBlockId()+"=NULL;\n";
 			}
 		}
+		dataStructureCode+="STATE *states["+stateNum+"];\n";
+		model.setStateNum(stateNum);
 		
 		dataStructureCode+="/*Define signal structures*/\n";
 		int signalNum=0;
@@ -366,6 +380,7 @@ public class CodeStructC {
 		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
 	}
 	
+	//初始化数据结构，实现数据结构之间的指针连接
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
 		
@@ -429,6 +444,7 @@ public class CodeStructC {
 		dataStructureInitCode+="/*Initialize blocks*/\n";
 		int signalNum=0;
 		int parameterNum=0;
+		int stateNum=0;
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			int i=0;
@@ -457,7 +473,9 @@ public class CodeStructC {
 			i=0;
 			for(State state:block.getStateList()) {
 				dataStructureInitCode+="states"+block.getBlockId()+"["+i+"]=&state"+block.getBlockId()+"_"+state.getId()+";\n";
+				dataStructureInitCode+="states["+stateNum+"]=&state"+block.getBlockId()+"_"+state.getId()+";\n";
 				i++;
+				stateNum++;
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".states=states"+block.getBlockId()+";\n";
 			
@@ -495,6 +513,9 @@ public class CodeStructC {
 		
 		dataStructureInitCode+="model.parameterNum="+parameterNum+";\n";
 		dataStructureInitCode+="model.parameters=parameters;\n";
+		
+		dataStructureInitCode+="model.stateNum="+stateNum+";\n";
+		dataStructureInitCode+="model.states=states;\n";
 	}
 	
 }

@@ -71,8 +71,10 @@ typedef struct {
 	
 	int signalNum;
 	int parameterNum;
+	int stateNum;
 	SIGNAL **signals;
 	PARAMETER **parameters;
+	STATE **states;
 	
 	BLOCK **blocks;
 }MODEL;

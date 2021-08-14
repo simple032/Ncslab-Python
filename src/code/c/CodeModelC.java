@@ -20,6 +20,7 @@ public class CodeModelC extends CodeModel {
 	//生成代码的时候统计singal和parameter的个数
 	private int signalNum=0;
 	private int parameterNum=0;
+	private int stateNum=0;
 	
 	CodeModelC(JSONObject jsonIn){
 		super(jsonIn);
@@ -39,6 +40,14 @@ public class CodeModelC extends CodeModel {
 	
 	public int getParameterNum() {
 		return this.parameterNum;
+	}
+	
+	public void setStateNum(int stateNum) {
+		this.stateNum=stateNum;
+	}
+	
+	public int getStateNum() {
+		return this.stateNum;
 	}
 	
 	public static CodeModelC createFromJSON(JSONObject jsonIn) {
