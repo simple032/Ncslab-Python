@@ -148,7 +148,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return code;
 	}
 	
-	protected void updateBlock() {
+	public void updateBlock() {
 		int i=0;
 		for(OutputPort outputPort:outputPortList) {
 			OutputSignal outputSignal=new OutputSignal(this,i,outputPort.getNumber(),outputPort.getName());

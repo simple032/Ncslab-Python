@@ -123,8 +123,7 @@ abstract public class NCSLabModel {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
 
 			//根据Block的type，建立不同的block的数据结构
-			Block block=BlockType.createBlock(blockJSON,this);
-			block.setBlockId(i+1);
+			Block block=BlockType.createBlock(i+1,blockJSON,this);
 			
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 			

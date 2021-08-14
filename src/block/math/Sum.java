@@ -20,8 +20,6 @@ public class Sum extends Block {
 		outputPortList.add(new OutputPort(this,1,true));
 		
 		paraseParamValues();
-		
-		updateBlock();
 	}
 	
 	private void paraseParamValues() {

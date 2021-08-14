@@ -11,8 +11,6 @@ public class Scope extends block.Block{
 		
 		//Ò»¸öÊäÈë
 		inputPortList.add(new InputPort(this,1));
-		
-		updateBlock();
 	}
 	
 	public String generateOutputCodeM() {

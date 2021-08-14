@@ -18,8 +18,6 @@ public class Constant extends block.Block{
 		
 		value=new Parameter(this,1,"value");
 		parameterList.add(value);
-		
-		updateBlock();
 	}
 	
 	public String generateOutputCodeM() {

@@ -31,8 +31,6 @@ public class WaterLevel extends Block {
 		stateList.add(pumpState);
 		levelState=new State(this,2,"levelState");
 		stateList.add(levelState);
-		
-		updateBlock();
 	}
 	
 	public String generateInitCodeM() {
