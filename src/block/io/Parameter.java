@@ -1,20 +1,27 @@
-package code.c;
+package block.io;
 
-public class State {
+import code.c.DataTypeC;
+import block.Block;
+
+public class Parameter {
+	
 	private int id;
 	private String name;
 	private String localName;
 	private int width=1;
 	private DataTypeC type=DataTypeC.REAL;
+	private Block block;
 	
-	public State(int id,String name,String localName){
+	public Parameter(Block block,int id,String localName) {
+		this.block=block;
 		this.type=DataTypeC.REAL;
 		this.id=id;
-		this.name=name;
+		this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
 		this.localName=localName;
 	}
 	
 	public String getName() {
+		this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
 		return this.name;
 	}
 	

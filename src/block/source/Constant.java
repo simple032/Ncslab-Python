@@ -3,15 +3,21 @@ package block.source;
 import org.json.JSONObject;
 
 import block.io.OutputPort;
+import block.io.Parameter;
 import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
 public class Constant extends block.Block{
+	
+	block.io.Parameter value;
 	public Constant(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
 		//Ò»¸öÊä³ö
 		outputPortList.add(new OutputPort(this,1,false));
+		
+		value=new Parameter(this,1,"value");
+		parameterList.add(value);
 	}
 	
 	public String generateOutputCodeM() {
@@ -20,12 +26,11 @@ public class Constant extends block.Block{
 		return code;
 	}
 	
-	code.c.Parameter value;
+	
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		value=code.addParameter(this,"value");
-		parameterList.add(value);
+		code.addParameter(value);
 		
 		String initCode="/*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n"; 

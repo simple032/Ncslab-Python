@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import block.Block;
 import block.io.InputPort;
 import block.io.OutputPort;
+import block.io.State;
 import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
@@ -15,6 +16,9 @@ public class WaterLevel extends Block {
 	private double waterLevelK=0.1;
 	private double waterLevelT=50;
 	
+	State pumpState;
+	State levelState;
+	
 	public WaterLevel(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
@@ -22,6 +26,11 @@ public class WaterLevel extends Block {
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,"Pump_Speed",1,false));
 		outputPortList.add(new OutputPort(this,"Water_Level",2,false));
+		
+		pumpState=new State(this,1,"pumpState");
+		stateList.add(pumpState);
+		levelState=new State(this,2,"levelState");
+		stateList.add(levelState);
 	}
 	
 	public String generateInitCodeM() {
@@ -67,15 +76,12 @@ public class WaterLevel extends Block {
 		return code;
 	}
 	
-	code.c.State pumpState;
-	code.c.State levelState;
+	
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		pumpState=code.addState(this, "pumpState");
-		stateList.add(pumpState);
-		levelState=code.addState(this, "levelState");
-		stateList.add(levelState);
+		code.addState(pumpState);
+		code.addState(levelState);
 		
 		String initCode="/*Code for initialization of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=pumpState.getName()+"="+0+";\n"

@@ -5,10 +5,10 @@ import org.json.JSONObject;
 
 import block.io.InputPort;
 import block.io.OutputPort;
+import block.io.Parameter;
+import block.io.State;
 import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
-import code.c.Parameter;
-import code.c.State;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
 public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{

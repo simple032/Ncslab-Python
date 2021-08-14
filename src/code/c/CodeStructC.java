@@ -10,7 +10,8 @@ import java.io.*;
 import code.CodeModel;
 import block.Block;
 import block.io.OutputPort;
-
+import block.io.Parameter;
+import block.io.State;
 import block.io.InputPort;
 
 public class CodeStructC {
@@ -118,21 +119,22 @@ public class CodeStructC {
     	}
 	}
 	
-	public Parameter addParameter(Block block,String localName) {
-		Parameter parameter=new Parameter(parameterIndex++,"Block"+block.getBlockId()+"_Parameter_"+localName,localName); 
-		
+	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
-		
-		return parameter;
 	}
 	
+	public void addState(State state) {
+		stateList.add(state);
+	}
+	
+	/*
 	public State addState(Block block,String localName) {
 		State state=new State(stateIndex++,"Block"+block.getBlockId()+"_State_"+localName,localName); 
 		
 		stateList.add(state);
 		
 		return state;
-	}
+	}*/
 	
 	public OutputSignal addOutputSignal(Block block,OutputPort outputPort) {
 		OutputSignal outputSignal=new OutputSignal(stateIndex++,"Block"+block.getBlockId()+"_Output"+outputPort.getNumber(),"out"+outputPort.getNumber()); 

@@ -4,16 +4,30 @@ import org.json.JSONObject;
 
 import block.io.InputPort;
 import block.io.OutputPort;
+import block.io.Parameter;
+import block.io.State;
 import code.c.CodeStructC;
 import ncslablink.NCSLabModel;
 
 public class PIDController extends block.Block{
+	
+	block.io.Parameter cparaP;
+	block.io.Parameter cparaI;
+	block.io.State stateIntegral;
 	public PIDController(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		
 		//一个输入，一个输出
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
+		
+		cparaP=new Parameter(this,1,"P");
+		parameterList.add(cparaP);
+		cparaI=new Parameter(this,2,"I");
+		parameterList.add(cparaI);
+		
+		stateIntegral=new State(this,1,"integral");
+		stateList.add(stateIntegral);
 	}
 	
 	public String generateInitCodeM() {
@@ -48,19 +62,14 @@ public class PIDController extends block.Block{
 		return code;
 	}
 	
-	code.c.Parameter cparaP;
-	code.c.Parameter cparaI;
-	code.c.State stateIntegral;
+	
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		cparaP=code.addParameter(this,"P");
-		parameterList.add(cparaP);
-		cparaI=code.addParameter(this,"I");
-		parameterList.add(cparaI);
+		code.addParameter(cparaP);
+		code.addParameter(cparaI);
 		
-		stateIntegral=code.addState(this, "integral");
-		stateList.add(stateIntegral);
+		code.addState(stateIntegral);
 		
 		String initCode="/*Code for initialization of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
