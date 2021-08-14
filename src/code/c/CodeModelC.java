@@ -17,6 +17,7 @@ public class CodeModelC extends CodeModel {
 	
 	private CodeStructC code=new CodeStructC(this);
 	
+	//生成代码的时候统计singal和parameter的个数
 	private int signalNum=0;
 	private int parameterNum=0;
 	
@@ -51,7 +52,7 @@ public class CodeModelC extends CodeModel {
 		writeCCodeFiles(); 
 	}
 	
-	/*灏嗕唬鐮佸彉鎴怌璇█鐨勪竴绯诲垪鏂囦欢 */
+	/*将代码变成C语言的一系列文件 */
 	private void writeCCodeFiles() {
 		code.writeCCodeFiles();
 	}
@@ -90,7 +91,7 @@ public class CodeModelC extends CodeModel {
 		}
 	}
 	
-	/*璋冪敤make鍛戒护锛岀敓鎴愬彲鎵ц浠ｇ爜 */
+	/*调用make命令，生成可执行代码 */
 	public void makeExeFile() {
 		System.out.println("Making exe file ncslabccode.exe...");
 		if(code.makeExeFile()) {

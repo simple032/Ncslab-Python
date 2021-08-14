@@ -127,15 +127,6 @@ public class CodeStructC {
 		stateList.add(state);
 	}
 	
-	/*
-	public State addState(Block block,String localName) {
-		State state=new State(stateIndex++,"Block"+block.getBlockId()+"_State_"+localName,localName); 
-		
-		stateList.add(state);
-		
-		return state;
-	}*/
-	
 	public OutputSignal addOutputSignal(Block block,OutputPort outputPort) {
 		OutputSignal outputSignal=new OutputSignal(stateIndex++,"Block"+block.getBlockId()+"_Output"+outputPort.getNumber(),"out"+outputPort.getNumber()); 
 		
