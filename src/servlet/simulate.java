@@ -13,6 +13,8 @@ import java.io.*;
 import code.c.CodeModelC;
 import code.m.CodeModelM;
 
+import ncslablink.ModelException;
+
 /**
  * Servlet implementation class simulate
  */
@@ -44,28 +46,40 @@ public class simulate extends HttpServlet {
         }  
         JSONObject jsonIn = new JSONObject(result);
 		
-        //建立M语言的生成器CodeModelM
-        CodeModelM model=CodeModelM.createFromJSON(jsonIn);
-        model.generate();
-        model.showErrorMessages();
-        
-        System.out.println();
-        
-        if(model.getErrorList().size()==0) {
-        	System.out.println(model.getCode());
+        try {
+        	//建立M语言的生成器CodeModelM
+        	CodeModelM model=CodeModelM.createFromJSON(jsonIn);
+        	model.generate();
+        	model.showErrorMessages();
+
+        	System.out.println();
+
+        	if(model.getErrorList().size()==0) {
+        		System.out.println(model.getCode());
+        	}
+        }
+        catch(ModelException e) {
+        	System.err.println(e.getMessage());
+        	System.err.println("Code generatrion terminated unsuccessfully。。。");
         }
         
         
         System.out.println();
         
-        //建立C语言的生成器CodeModelC
-        CodeModelC modelC=CodeModelC.createFromJSON(jsonIn);
-        modelC.generate();
-        
-        System.out.println();
-        
-        if(modelC.getErrorList().size()==0) {
-        	modelC.makeExeFile();
+        try {
+        	//建立C语言的生成器CodeModelC
+        	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn);
+        	modelC.generate();
+
+        	System.out.println();
+
+        	if(modelC.getErrorList().size()==0) {
+        		modelC.makeExeFile();
+        	}
+        }
+        catch(ModelException e) {
+        	System.err.println(e.getMessage());
+        	System.err.println("Code generatrion terminated unsuccessfully。。。");
         }
         
 	}

@@ -9,6 +9,7 @@ import block.io.InputPort;
 import block.io.OutputPort;
 import line.Line;
 import ncslablink.ErrorMessage;
+import ncslablink.ModelException;
 import ncslablink.NCSLabModel;
 
 abstract public class CodeModel extends NCSLabModel {
@@ -19,7 +20,7 @@ abstract public class CodeModel extends NCSLabModel {
 	protected Vector<Block> scanBlockList=new Vector<Block>();
 	protected Vector<OutputPort> outputPortPathList=new Vector<OutputPort>();	
 	
-	protected CodeModel(JSONObject jsonIn){
+	protected CodeModel(JSONObject jsonIn) throws ModelException{
 		super(jsonIn);
 	}
 	

@@ -36,7 +36,7 @@ abstract public class NCSLabModel {
 	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
 	
 	//构造函数，从web传入json，建立模型的数据结构
-	protected NCSLabModel(JSONObject jsonIn){
+	protected NCSLabModel(JSONObject jsonIn) throws ModelException{
 		this.jsonIn=jsonIn;
 		
 		//解析json中的内容，建立block,line,input,output相互连接的数据结构
@@ -73,7 +73,7 @@ abstract public class NCSLabModel {
 		return this.blockList;
 	}
 	
-	private void parseModel() {
+	private void parseModel() throws ModelException{
 
 		//读入json中的信息
 		modelName=jsonIn.getString("modelName");
@@ -116,7 +116,7 @@ abstract public class NCSLabModel {
 	}
 	
 	/*读取所有的block，建立block的数据结构 */
-	private void parseBlocks() {
+	private void parseBlocks() throws ModelException{
 		
 		JSONArray blockJSONList=jsonIn.getJSONArray("blocks");
 		for(int i=0;i<blockJSONList.length();i++) {

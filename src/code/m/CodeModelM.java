@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import java.util.Vector;
 
 import ncslablink.ErrorMessage;
+import ncslablink.ModelException;
 import ncslablink.NCSLabModel;
 import block.Block;
 import block.io.InputPort;
@@ -14,11 +15,11 @@ import line.Line;
 public class CodeModelM extends CodeModel{
 	
 	private String code="";
-	CodeModelM(JSONObject jsonIn){
+	CodeModelM(JSONObject jsonIn) throws ModelException{
 		super(jsonIn);
 	}
 	
-	public static CodeModelM createFromJSON(JSONObject jsonIn) {
+	public static CodeModelM createFromJSON(JSONObject jsonIn) throws ModelException{
 		CodeModelM model=new CodeModelM(jsonIn);
 		
 		return model;

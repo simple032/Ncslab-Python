@@ -10,6 +10,7 @@ import block.io.OutputPort;
 import code.CodeModel;
 import line.Line;
 import ncslablink.ErrorMessage;
+import ncslablink.ModelException;
 
 public class CodeModelC extends CodeModel {
 	
@@ -22,7 +23,7 @@ public class CodeModelC extends CodeModel {
 	private int parameterNum=0;
 	private int stateNum=0;
 	
-	CodeModelC(JSONObject jsonIn){
+	CodeModelC(JSONObject jsonIn) throws ModelException{
 		super(jsonIn);
 	}
 	
@@ -50,7 +51,7 @@ public class CodeModelC extends CodeModel {
 		return this.stateNum;
 	}
 	
-	public static CodeModelC createFromJSON(JSONObject jsonIn) {
+	public static CodeModelC createFromJSON(JSONObject jsonIn) throws ModelException {
 		CodeModelC model=new CodeModelC(jsonIn);
 		
 		return model;
