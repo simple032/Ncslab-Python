@@ -31,6 +31,9 @@ public class BlockType {
 		case "Gain":
 			block=new block.math.Gain(blockJSON,model);
 			break;
+		case "Integrator":
+			block=new block.continuous.Integrator(blockJSON,model);
+			break;
 		}
 		
 		if(block==null) {
