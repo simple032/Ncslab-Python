@@ -34,6 +34,8 @@ public class BlockType {
 		case "Integrator":
 			block=new block.continuous.Integrator(blockJSON,model);
 			break;
+		case "Transfer Fcn":
+			block=new block.continuous.TransferFcn(blockJSON, model);
 		}
 		
 		if(block==null) {

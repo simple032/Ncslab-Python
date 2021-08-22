@@ -11,9 +11,11 @@ import ncslablink.NCSLabModel;
 
 public class PIDController extends block.Block{
 	
-	block.io.Parameter cparaP;
-	block.io.Parameter cparaI;
-	block.io.State stateIntegral;
+	Parameter cparaP;
+	Parameter cparaI;
+	Parameter lowerSaturationLimit=null;
+	Parameter upperSaturationLimit=null;
+	State stateIntegral;
 	public PIDController(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		
@@ -28,6 +30,13 @@ public class PIDController extends block.Block{
 		
 		stateIntegral=new State(this,1,"integral");
 		stateList.add(stateIntegral);
+		
+		if(paramValues.getString("LimitOutput").equals("on")) {
+			lowerSaturationLimit=new Parameter(this,1,"LowerSaturationLimit");
+			parameterList.add(lowerSaturationLimit);
+			upperSaturationLimit=new Parameter(this,1,"UpperSaturationLimit");
+			parameterList.add(upperSaturationLimit);
+		}
 	}
 	
 	public String generateInitCodeM() {
@@ -70,6 +79,11 @@ public class PIDController extends block.Block{
 		
 		initCode+=cparaP.getName()+"="+paramValues.getDouble("P")+";\n";
 		initCode+=cparaI.getName()+"="+paramValues.getDouble("I")+";\n";
+		
+		if(paramValues.getString("LimitOutput").equals("on")) {
+			initCode+=lowerSaturationLimit.getName()+"="+paramValues.getDouble("LowerSaturationLimit")+";\n";
+			initCode+=upperSaturationLimit.getName()+"="+paramValues.getDouble("UpperSaturationLimit")+";\n";
+		}
 		
 		initCode+=stateIntegral.getName()+"="+0+";\n"; 
 		
