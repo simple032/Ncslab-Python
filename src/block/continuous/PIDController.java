@@ -66,11 +66,6 @@ public class PIDController extends block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		code.addParameter(cparaP);
-		code.addParameter(cparaI);
-		
-		code.addState(stateIntegral);
-		
 		String initCode="/*Code for initialization of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
 		initCode+=cparaP.getName()+"="+paramValues.getDouble("P")+";\n";

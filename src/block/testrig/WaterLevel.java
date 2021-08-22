@@ -80,9 +80,6 @@ public class WaterLevel extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		code.addState(pumpState);
-		code.addState(levelState);
-		
 		String initCode="/*Code for initialization of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=pumpState.getName()+"="+0+";\n"
 					+levelState.getName()+"="+0+";\n"; 

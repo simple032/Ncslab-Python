@@ -30,8 +30,6 @@ public class Constant extends block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		code.addParameter(value);
-		
 		String initCode="/*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n"; 
 		

@@ -56,10 +56,6 @@ public class Integrator extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		code.addParameter(initialCondition);
-		
-		code.addState(stateIntegral);
-		
 		String initCode="/*Code for initialization of block Intergator:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
 		initCode+=initialCondition.getName()+"="+paramValues.getDouble("InitialCondition")+";\n";

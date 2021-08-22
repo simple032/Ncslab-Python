@@ -35,8 +35,6 @@ public class Gain extends Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		
-		code.addParameter(gain);
-		
 		String initCode="/*Code for initialization of block Gain:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=gain.getName()+"="+paramValues.getDouble("Gain")+";\n"; 
 		

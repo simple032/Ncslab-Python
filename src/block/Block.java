@@ -101,6 +101,10 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return this.isOutputCodeGenerated;
 	}
 	
+	public String getInputPortVariable(int n) {
+		return inputPortList.get(n).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+	}
+	
 	//生成M语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
 	public String generateOutputCodeM() {
 		String code="";
@@ -170,7 +174,12 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	//生成C语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateInitCodeC(CodeStructC code) {
-		
+		for(Parameter parameter:parameterList) {
+			code.addParameter(parameter);
+		}
+		for(State state:stateList) {
+			code.addState(state);
+		}
 	}
 	
 	//生成C语言的Output代码，供上一级调用
