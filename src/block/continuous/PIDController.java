@@ -23,18 +23,18 @@ public class PIDController extends block.Block{
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
 		
-		cparaP=new Parameter(this,1,"P");
+		cparaP=new Parameter(this,parameterList.size()+1,"P");
 		parameterList.add(cparaP);
-		cparaI=new Parameter(this,2,"I");
+		cparaI=new Parameter(this,parameterList.size()+1,"I");
 		parameterList.add(cparaI);
 		
 		stateIntegral=new State(this,1,"integral");
 		stateList.add(stateIntegral);
 		
 		if(paramValues.getString("LimitOutput").equals("on")) {
-			lowerSaturationLimit=new Parameter(this,1,"LowerSaturationLimit");
+			lowerSaturationLimit=new Parameter(this,parameterList.size()+1,"LowerSaturationLimit");
 			parameterList.add(lowerSaturationLimit);
-			upperSaturationLimit=new Parameter(this,1,"UpperSaturationLimit");
+			upperSaturationLimit=new Parameter(this,parameterList.size()+1,"UpperSaturationLimit");
 			parameterList.add(upperSaturationLimit);
 		}
 	}
