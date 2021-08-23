@@ -17,30 +17,30 @@ import block.io.InputPort;
 
 public class CodeStructC {
 	
-	//Ä£¿éµÄÊäÈëÊÇ·ñ×÷ÎªÐÅºÅ
+	//Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Îªï¿½Åºï¿½
 	public boolean inputAsSignal=true;
-	//Ä£¿éµÄÊä³öÊÇ·ñ×÷ÎªÐÅºÅ
+	//Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Îªï¿½Åºï¿½
 	public boolean outputAsSignal=true;
 	
-	//Í·ÎÄ¼þµÄ´úÂë
+	//Í·ï¿½Ä¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public String includeCode="";
-	//init³õÊ¼»¯µÄ´úÂë
+	//initï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public String initCode="";
-	//OutputµÄ´úÂë
+	//Outputï¿½Ä´ï¿½ï¿½ï¿½
 	public String outputCode="";
-	//updateµÄ´úÂë
+	//updateï¿½Ä´ï¿½ï¿½ï¿½
 	public String updateCode="";
 	
-	/*¶¨ÒåParameterµÄ´úÂë Èç*REAL Block5_Parameter_P*/
+	/*ï¿½ï¿½ï¿½ï¿½Parameterï¿½Ä´ï¿½ï¿½ï¿½ ï¿½ï¿½*REAL Block5_Parameter_P*/
 	public String parameterDefineCode="";
-	/*¶¨ÒåStateµÄ´úÂë Èç REAL Block1_State_pumpState;*/
+	/*ï¿½ï¿½ï¿½ï¿½Stateï¿½Ä´ï¿½ï¿½ï¿½ ï¿½ï¿½ REAL Block1_State_pumpState;*/
 	public String stateDefineCode="";
-	/*¶¨ÒåOutputÐÅºÅµÄ´úÂë£¬Èç REAL Block1_Output1;*/
+	/*ï¿½ï¿½ï¿½ï¿½Outputï¿½ÅºÅµÄ´ï¿½ï¿½ë£¬ï¿½ï¿½ REAL Block1_Output1;*/
 	public String outputSignalDefineCode="";
 	
-	/*¶¨ÒåËùÓÐ¼à¿ØÊý¾ÝÊµÌåµÄ´úÂë£¬°üÀ¨INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
+	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½Ä´ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
-	/*¶¨Òå¼à¿ØÊý¾ÝÊµÌå³õÊ¼»¯µÄ´úÂë£¬³õÊ¼»¯¸÷¸ö×é¼þ½á¹¹µÄÃû³Æ£¬pathµÈ£¬ÈÃÖ¸ÕëÖ¸ÏòÖ¸¶¨µÄÎ»ÖÃ£¬½¨Á¢Êý¾Ý½á¹¹£¬ */
+	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ë£¬ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½pathï¿½È£ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ö¸ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½ */
 	public String dataStructureInitCode="";
 	
 	private int parameterIndex=1;
@@ -88,7 +88,7 @@ public class CodeStructC {
 	
 	private void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.c...");
-		//precodeÊÇ²ÎÊý£¬×´Ì¬£¬ºÍÊä³öµÄ¶¨Òå£¬ÒÔÈ«¾Ö±äÁ¿µÄ·½Ê½
+		//precodeï¿½Ç²ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½å£¬ï¿½ï¿½È«ï¿½Ö±ï¿½ï¿½ï¿½ï¿½Ä·ï¿½Ê½
 		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
 				+preCode+"\n"
@@ -120,20 +120,20 @@ public class CodeStructC {
     	}
 	}
 	
-	//¼ÓÈëÈ«¾ÖµÄParameterµÄÁÐ±í
+	//ï¿½ï¿½ï¿½ï¿½È«ï¿½Öµï¿½Parameterï¿½ï¿½ï¿½Ð±ï¿½
 	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
 	}
-	//¼ÓÈëÈ«¾ÖµÄstateµÄÁÐ±í
+	//ï¿½ï¿½ï¿½ï¿½È«ï¿½Öµï¿½stateï¿½ï¿½ï¿½Ð±ï¿½
 	public void addState(State state) {
 		stateList.add(state);
 	}
-	//¼ÓÈëÈ«¾ÖµÄÐÅºÅµÄÁÐ±í
+	//ï¿½ï¿½ï¿½ï¿½È«ï¿½Öµï¿½ï¿½ÅºÅµï¿½ï¿½Ð±ï¿½
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
 	
-	//Éú³É¶¨ÒåParameterµÄ´úÂë
+	//ï¿½ï¿½ï¿½É¶ï¿½ï¿½ï¿½Parameterï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";
 		for(Parameter parameter:parameterList) {
@@ -141,7 +141,7 @@ public class CodeStructC {
 		}
 	}
 	
-	//Éú³É¶¨ÒåStateµÄ´úÂë
+	//ï¿½ï¿½ï¿½É¶ï¿½ï¿½ï¿½Stateï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateStateDefineCode() {
 		stateDefineCode+="/*Define variables for states*/\n";
 		for(State state:stateList) {
@@ -149,7 +149,7 @@ public class CodeStructC {
 		}
 	}
 	
-	//Éú³É¶¨ÒåOutputµÄ´úÂë
+	//ï¿½ï¿½ï¿½É¶ï¿½ï¿½ï¿½Outputï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateOutputSignalDefineCode() {
 		outputSignalDefineCode+="/*Define variables for output signals*/\n";
 		for(OutputSignal outputSignal:outputSignalList) {
@@ -160,10 +160,10 @@ public class CodeStructC {
 	
 	
 	private String codePathBase=utils.Property.instance.getProperty("CCodePath");
-	//Ä¿±êÎÄ¼þ¼ÐµÄÎ»ÖÃcodePathBase/ÓÃ»§id/modelId
+	//Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½Î»ï¿½ï¿½codePathBase/ï¿½Ã»ï¿½id/modelId
 	private String codePath;
 	
-	//Ð´ÎÄ¼þµÄ·½·¨£¬½«ÎÄ¼þ´ÓresourceÖÐ¿½±´³öÀ´£¬Ð´ÔÚÄ¿±êÎÄ¼þ¼Ð
+	//Ð´ï¿½Ä¼ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½resourceï¿½Ð¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
 	private void writeNCSLabFile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
@@ -187,7 +187,7 @@ public class CodeStructC {
 	
 	public void writeCCodeFiles() {
 		
-		//Éú³ÉÄ¿±êÎÄ¼þ¼ÐµÄÎ»ÖÃcodePathBase/ÓÃ»§id/modelId
+		//ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½Î»ï¿½ï¿½codePathBase/ï¿½Ã»ï¿½id/modelId
 		String userPath=codePathBase+model.getUserId();
 		
 		File file=new File(userPath);
@@ -203,18 +203,18 @@ public class CodeStructC {
 	
 		codePath=modelPath+"/";
 		
-		//Ð´ÈëÖÜ±ßµÄ×ÊÔ´ÎÄ¼þ
+		//Ð´ï¿½ï¿½ï¿½Ü±ßµï¿½ï¿½ï¿½Ô´ï¿½Ä¼ï¿½
 		//makefile
 		writeNCSLabFile("makefile");
-		//Ö÷Êý¾Ý½á¹¹
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹
 		writeNCSLabFile("ncslabccode.h");
-		//mainº¯ÊýÒÔ¼°¶¨Ê±Æ÷
+		//mainï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 		writeNCSLabFile("ncslabmain.c");
-		//·ÃÎÊÖ÷Êý¾Ý½á¹¹µÄ½Ó¿ÚAPI¶¨Òå
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½Ä½Ó¿ï¿½APIï¿½ï¿½ï¿½ï¿½
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
 
-		//ÊµÏÖNetconÐ­ÒéµÄÍ¨ÓÃÎÄ¼þ
+		//Êµï¿½ï¿½NetconÐ­ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Ä¼ï¿½
 		writeNCSLabFile("ServerThread.c");
 		writeNCSLabFile("ServerThread.h");
 		writeNCSLabFile("ClientThread.c");
@@ -222,15 +222,15 @@ public class CodeStructC {
 		writeNCSLabFile("UploadThread.c");
 		writeNCSLabFile("UploadThread.h");
     	
-		//Ð´ÈëÉú³ÉµÄÖ÷´úÂëncslabccdoe.c
+		//Ð´ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ncslabccdoe.c
     	writeMainCodeFile();
 	}
 	
 	public boolean makeExeFile() {
 		try {
-			//Æô¶¯make£¬Éú³É¿ÉÖ´ÐÐ´úÂë
-			Process process=Runtime.getRuntime().exec("mingw32-make", null, new File(codePath));
-			//¶ÁÈ¡OutputStreamºÍerrStream¡£Èç¹û¶ÁÈ¡²»¼°Ê±£¬»á³öÏÖ×èÈû
+			//ï¿½ï¿½ï¿½ï¿½makeï¿½ï¿½ï¿½ï¿½ï¿½É¿ï¿½Ö´ï¿½Ð´ï¿½ï¿½ï¿½
+			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+			//ï¿½ï¿½È¡OutputStreamï¿½ï¿½errStreamï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line=null,outLine=null;
@@ -248,7 +248,7 @@ public class CodeStructC {
 				}
 			}
 			
-			//µÈ´ýmakefileµÄÍê³É
+			//ï¿½È´ï¿½makefileï¿½ï¿½ï¿½ï¿½ï¿½
 			process.waitFor();
 			
 			if(process.exitValue()==0) {
@@ -263,15 +263,15 @@ public class CodeStructC {
 		return false;
 	}
 	
-	//½¨Á¢Model,block,input,output,signal,state,parameterµÈÊý¾Ý½á¹¹£¬²¢³õÊ¼»¯
+	//ï¿½ï¿½ï¿½ï¿½Model,block,input,output,signal,state,parameterï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 	public void gnenrateDataStructureCode() {
-		//½¨Á¢Ò»ÏµÁÐÊý¾Ý½á¹¹µÄ¶¨Òå
+		//ï¿½ï¿½ï¿½ï¿½Ò»Ïµï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½Ä¶ï¿½ï¿½ï¿½
 		generateDataStrucure();
-		//³õÊ¼»¯Êý¾Ý½á¹¹£¬ÊµÏÖÊý¾Ý½á¹¹Ö®¼äµÄÖ¸ÕëÁ¬½Ó
+		//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹Ö®ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		generateDataStrucureInit();
 	}
 	
-	//½¨Á¢Êý¾Ý½á¹¹µÄ¶¨Òå
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½Ä¶ï¿½ï¿½ï¿½
 	private void generateDataStrucure() {
 		dataStructureCode+="/*Define data structures*/\n";
 		
@@ -380,7 +380,7 @@ public class CodeStructC {
 		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
 	}
 	
-	//³õÊ¼»¯Êý¾Ý½á¹¹£¬ÊµÏÖÊý¾Ý½á¹¹Ö®¼äµÄÖ¸ÕëÁ¬½Ó
+	//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹Ö®ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
 		

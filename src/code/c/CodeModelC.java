@@ -18,7 +18,7 @@ public class CodeModelC extends CodeModel {
 	
 	private CodeStructC code=new CodeStructC(this);
 	
-	//Éú³É´úÂëµÄÊ±ºòÍ³¼ÆsingalºÍparameterµÄ¸öÊý
+	//ï¿½ï¿½ï¿½É´ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í³ï¿½ï¿½singalï¿½ï¿½parameterï¿½Ä¸ï¿½ï¿½ï¿½
 	private int signalNum=0;
 	private int parameterNum=0;
 	private int stateNum=0;
@@ -62,7 +62,7 @@ public class CodeModelC extends CodeModel {
 		writeCCodeFiles(); 
 	}
 	
-	/*½«´úÂë±ä³ÉCÓïÑÔµÄÒ»ÏµÁÐÎÄ¼þ */
+	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Ò»Ïµï¿½ï¿½ï¿½Ä¼ï¿½ */
 	private void writeCCodeFiles() {
 		code.writeCCodeFiles();
 	}
@@ -76,7 +76,7 @@ public class CodeModelC extends CodeModel {
 		}
 		
 		code.generateIncludeCode();
-		code.writeCCodeFiles();
+		//code.writeCCodeFiles();
 		code.generateParameterDefineCode(); 
 		code.generateStateDefineCode();
 		code.generateOutputSignalDefineCode(); 
@@ -101,7 +101,7 @@ public class CodeModelC extends CodeModel {
 		}
 	}
 	
-	/*µ÷ÓÃmakeÃüÁî£¬Éú³É¿ÉÖ´ÐÐ´úÂë */
+	/*ï¿½ï¿½ï¿½ï¿½makeï¿½ï¿½ï¿½î£¬ï¿½ï¿½ï¿½É¿ï¿½Ö´ï¿½Ð´ï¿½ï¿½ï¿½ */
 	public void makeExeFile() {
 		System.out.println("Making exe file ncslabccode.exe...");
 		if(code.makeExeFile()) {
