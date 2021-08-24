@@ -1,10 +1,19 @@
 #ifndef NCSLABCCODE
 #define NCSLABCCODE
 
-#include "stdio.h"
-#include "stdlib.h"
-
-#include <windows.h>
+#include <float.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+#include<errno.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include <sys/time.h>
+#include<signal.h>
+#include<time.h>
 
 #define REAL double
 #define real_T REAL

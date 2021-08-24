@@ -4,11 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "ncslabccode.h"
 #include "ServerThread.h"
-#include <winsock2.h>
-#include <ws2tcpip.h>
 
 #define UPLOAD_SIG_PARAM 0x01
 #define SELECT_SIG_PARAM 0x02
@@ -42,13 +41,12 @@ typedef struct
 
 typedef struct
 {
-	BOOL isEmpty;
-	SOCKET socket;
-	HANDLE  hClientThread;
+	bool isEmpty;
+	int socket;
+	pthread_t  clientThread;
 	uint_T currentCommand;
 
-	CRITICAL_SECTION  socketCritical;
-	
+	pthread_mutex_t  socketCritical;
 
 	SELECT *select;
 	uint_T selectNum;
@@ -58,14 +56,15 @@ typedef struct
 
 	struct
 	{
-		HANDLE  hUploadThread;
+		int  hUploadThread;
 		real_T *data;
-		BOOL loop;
-		HANDLE hEvent;
+		bool loop;
+		pthread_mutex_t mutex;
+		pthread_cond_t cond;
 		uint_T totalSize;
 	}upload;
 
-	CRITICAL_SECTION  listCritical;
+	pthread_mutex_t  listCritical;
 
 	ExtModeData *pExtModeData;
 }CLIENT_STRUCT;

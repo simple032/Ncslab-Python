@@ -7,69 +7,69 @@
 	#define MSG_WAITALL 0x08
 #endif
 
-#define false FALSE;
-
-DWORD WINAPI ClientThreadFunction( LPVOID lpParam );
-BOOL uploadMMI(CLIENT_STRUCT *p);
+void * ClientThreadFunction( void * lpParam );
+bool uploadMMI(CLIENT_STRUCT *p);
 void closeClient(CLIENT_STRUCT *p);
-BOOL readCom(CLIENT_STRUCT *p);
+bool readCom(CLIENT_STRUCT *p);
 
-BOOL uploadVersion(CLIENT_STRUCT *p);
-BOOL uploadSignals(CLIENT_STRUCT *p);
-BOOL uploadBlockParameters(CLIENT_STRUCT *p);
-BOOL uploadModelParameters(CLIENT_STRUCT *p);
-BOOL setParameter(CLIENT_STRUCT *p);
+bool uploadVersion(CLIENT_STRUCT *p);
+bool uploadSignals(CLIENT_STRUCT *p);
+bool uploadBlockParameters(CLIENT_STRUCT *p);
+bool uploadModelParameters(CLIENT_STRUCT *p);
+bool setParameter(CLIENT_STRUCT *p);
 
 
-BOOL responseEXT_CONNECT(CLIENT_STRUCT *p);
-BOOL responseEXT_GET_PARAMSIGNAL(CLIENT_STRUCT *p);
-BOOL responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p);
-BOOL responseEXT_SETSAMPLETIME(CLIENT_STRUCT *p);
-BOOL responseEXT_SETPARAM(CLIENT_STRUCT *p);
+bool responseEXT_CONNECT(CLIENT_STRUCT *p);
+bool responseEXT_GET_PARAMSIGNAL(CLIENT_STRUCT *p);
+bool responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p);
+bool responseEXT_SETSAMPLETIME(CLIENT_STRUCT *p);
+bool responseEXT_SETPARAM(CLIENT_STRUCT *p);
 
 void createClientThread(CLIENT_STRUCT *p)
 {
-	HANDLE  hClientThread;
-	DWORD  hClientThreadId;
+	//HANDLE  hClientThread;
+
+    int ret;
+    pthread_t id;
 
 	printf("Creating client thread...\n");
 
-	InitializeCriticalSection(&(p->listCritical));
+    pthread_mutex_init(&(p->socketCritical),NULL);
+    pthread_mutex_init(&(p->listCritical),NULL);
 
-	InitializeCriticalSection(&(p->socketCritical));
+    ret=pthread_create(&id,NULL,ClientThreadFunction,p);
 
-	hClientThread = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            ClientThreadFunction,       // thread function name
-            p,          // argument to thread function 
-            0,                      // use default creation flags 
-            &hClientThreadId);   // returns the thread identifier 
+
+    if(ret!=0)
+    {
+        printf ("Create pthread error!\n");
+        //exit (1);
+    }
 }
 
-BOOL terminateUploadThread(CLIENT_STRUCT *p)
+bool terminateUploadThread(CLIENT_STRUCT *p)
 {
 	if(p->upload.hUploadThread!=0)
 	{
 		//Wait for the old thread to stop.
 		printf("Old upload thread didn't stop. Wait for it to stop\n");
-		p->upload.loop=FALSE;
-		WaitForSingleObject(p->upload.hUploadThread,INFINITE);
+		p->upload.loop=false;
+		//WaitForSingleObject(p->upload.hUploadThread,INFINITE);
 		printf("Old upload thread stopped\n");
 	}
 }
 
-BOOL startUpload(CLIENT_STRUCT *p)
+bool startUpload(CLIENT_STRUCT *p)
 {
 	//terminateUploadThread(p);
 	printf("Starting new upload thread.\n");
 	createUploadThread(p);
-	return TRUE;
+	return true;
 }
 
-DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
+void * ClientThreadFunction( void * lpParam )
 {
-	BOOL loop=TRUE;
+	bool loop=true;
 
 	CLIENT_STRUCT *p;
 
@@ -89,7 +89,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 	while(loop)
 	{
 		printf("\nWaiting for command!\n");
-		if(readCom(p)==FALSE)
+		if(readCom(p)==false)
 		{
 			printf("\nSocket error when reading the command\n");
 			break;
@@ -101,7 +101,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 		{
 		case EXT_CONNECT:
 			printf("\nGet a EXT_CONNECT message...\n");
-			if(responseEXT_CONNECT(p)==FALSE)
+			if(responseEXT_CONNECT(p)==false)
 			{
 				printf("\nSocket error when processing EXT_CONNECT\n");
 				loop=false;
@@ -109,7 +109,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 			break;
         case EXT_GET_PARAMSIGNAL:
 			printf("\nGet a EXT_GET_PARAMSIGNAL message...\n");
-			if(responseEXT_GET_PARAMSIGNAL(p)==FALSE)
+			if(responseEXT_GET_PARAMSIGNAL(p)==false)
 			{
 				printf("\nSocket error when processing EXT_GET_PARAMSIGNAL\n");
 				loop=false;
@@ -117,7 +117,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 			break;
 		case EXT_SELECT_SIGNALS:
 			printf("\nGet a EXT_SELECT_SIGNALS message...\n");
-			if(responseEXT_SELECT_SIGNALS(p)==FALSE)
+			if(responseEXT_SELECT_SIGNALS(p)==false)
 			{
 				printf("\nSocket error when processing EXT_SELECT_SIGNALS\n");
 				loop=false;
@@ -125,7 +125,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 			break;
 		case EXT_SETSAMPLETIME:
 			printf("\nGet a EXT_SETSAMPLETIME message...\n");
-			if(responseEXT_SETSAMPLETIME(p)==FALSE)
+			if(responseEXT_SETSAMPLETIME(p)==false)
 			{
 				printf("\nSocket error when processing EXT_SETSAMPLETIME\n");
 				loop=false;
@@ -135,7 +135,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 			break;
 		case EXT_SETPARAM:
 			printf("\nGet a EXT_SETPARAM message...\n");
-			if(responseEXT_SETPARAM(p)==FALSE)
+			if(responseEXT_SETPARAM(p)==false)
 			{
 				printf("\nSocket error when processing EXT_SETPARAM\n");
 				loop=false;
@@ -149,9 +149,9 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 
 }
 
-BOOL responseEXT_CONNECT(CLIENT_STRUCT *p)
+bool responseEXT_CONNECT(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 
 	int ret;
 	uint_T reponseCommand=EXT_CONNECT_RESPONSE;
@@ -160,33 +160,33 @@ BOOL responseEXT_CONNECT(CLIENT_STRUCT *p)
 	uint_T bodySize;
 
 	ret=recv(socket,(char *)&bodySize,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
-	EnterCriticalSection(&(p->socketCritical));
+	pthread_mutex_lock(&(p->socketCritical));
 
 	ret=send(socket,(char *)&reponseCommand,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=send(socket,(char *)&reponseSize,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
-	LeaveCriticalSection(&(p->socketCritical));
+	pthread_mutex_unlock(&(p->socketCritical));
 
-	return TRUE;
+	return true;
 }
 
-BOOL uploadSignals(CLIENT_STRUCT *p)
+bool uploadSignals(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 	MODEL *mp=p->pExtModeData->mp;
 	int ret;
 	uint_T i;
@@ -194,6 +194,8 @@ BOOL uploadSignals(CLIENT_STRUCT *p)
 	SIGNAL **signals=dataApiGetSignals(mp);
 
 	uint_T num=dataApiGetNumSignals(mp);
+	
+	printf("Singnal Num %d\n",num);
 
 	for(i=0;i<num;i++){
 		SIGNAL *signal=dataApiGetSignal(signals,i);
@@ -207,8 +209,8 @@ BOOL uploadSignals(CLIENT_STRUCT *p)
 		uint_T orientation=0;
 		uint_T dataType=0;
 
-		printf("%s\n",signal->path);
-		printf("%s\n",signal->name);
+		printf("%d:%s\n",i,signal->path);
+		printf("%d:%s\n",i,signal->name);
 
 		strcpy(blockPath,signal->path);
 		strcpy(signalName,signal->name);
@@ -217,48 +219,50 @@ BOOL uploadSignals(CLIENT_STRUCT *p)
 		nCols=1;
 
 		ret=send(socket,signalName,NAME_LENGTH,0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,blockPath,PATH_LENGTH,0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&orientation,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&dataType,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&nRows,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&nCols,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 	}
+	
+	return true;
 
 }
 
-BOOL uploadParameters(CLIENT_STRUCT *p)
+bool uploadParameters(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 	MODEL *mp=p->pExtModeData->mp;
 	int ret;
 	uint_T i;
@@ -292,48 +296,50 @@ BOOL uploadParameters(CLIENT_STRUCT *p)
 
 		
 		ret=send(socket,parameterName,NAME_LENGTH,0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,blockPath,PATH_LENGTH,0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&orientation,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&dataType,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&nRows,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 		ret=send(socket,(char *)&nCols,sizeof(uint_T),0);
-		if(ret==SOCKET_ERROR)
+		if(ret==-1)
 		{
-			return FALSE;
+			return false;
 		}
 
 	}
+	
+	return true;
 
 }
 
-BOOL responseEXT_GET_PARAMSIGNAL(CLIENT_STRUCT *p)
+bool responseEXT_GET_PARAMSIGNAL(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 	MODEL *mp=p->pExtModeData->mp;
 
 	int ret;
@@ -349,59 +355,61 @@ BOOL responseEXT_GET_PARAMSIGNAL(CLIENT_STRUCT *p)
 	paramNum=dataApiGetNumParameters(mp);
 
 	ret=recv(socket,(char *)&bodySize,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
-	EnterCriticalSection(&(p->socketCritical));
+	pthread_mutex_lock(&(p->socketCritical));
 
 	//Send command
 	ret=send(socket,(char *)&responseCommand,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	//Send body size
 	responseSize=sizeof(uint_T)*2+(NAME_LENGTH+PATH_LENGTH+sizeof(uint_T)*4)*(signalNum+paramNum);
 	//responseSize=512;
 	ret=send(socket,(char *)&responseSize,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=send(socket,(char *)&signalNum,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=send(socket,(char *)&paramNum,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
-	if(uploadSignals(p)==FALSE)
+	if(uploadSignals(p)==false)
 	{
-		return FALSE;
+		return false;
+	}
+	
+	//printf("Signal finished\n");
+
+	if(uploadParameters(p)==false)
+	{
+		return false;
 	}
 
-	if(uploadParameters(p)==FALSE)
-	{
-		return FALSE;
-	}
+	pthread_mutex_unlock(&(p->socketCritical));
 
-	LeaveCriticalSection(&(p->socketCritical));
-
-	return TRUE;
+	return true;
 }
 
-BOOL responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p)
+bool responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 	MODEL *mp=p->pExtModeData->mp;
 
 	int ret;
@@ -416,15 +424,15 @@ BOOL responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p)
 	SELECT *select,*oldSelect;
 
 	ret=recv(socket,(char *)&bodySize,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=recv(socket,(char *)&num,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	//printf("Body size=%d\n",bodySize);
@@ -434,9 +442,9 @@ BOOL responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p)
 	select=malloc(sizeof(SELECT)*num);
 
 	ret=recv(socket,(char *)select,sizeof(SELECT)*num,MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	for(i=0;i<num;i++)
@@ -457,28 +465,28 @@ BOOL responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p)
 	}
 
 	//Return EXT_SELECT_SIGNALS_RESPONSE
-	EnterCriticalSection(&(p->socketCritical));
+	pthread_mutex_lock(&(p->socketCritical));
 
 	ret=send(socket,(char *)&reponseCommand,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=send(socket,(char *)&reponseSize,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
-	LeaveCriticalSection(&(p->socketCritical));
+	pthread_mutex_unlock(&(p->socketCritical));
 
-	return TRUE;
+	return true;
 }
 
-BOOL responseEXT_SETSAMPLETIME(CLIENT_STRUCT *p)
+bool responseEXT_SETSAMPLETIME(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 	MODEL *mp=p->pExtModeData->mp;
 
 	int ret;
@@ -492,21 +500,21 @@ BOOL responseEXT_SETSAMPLETIME(CLIENT_STRUCT *p)
 	real_T stepSize;
 
 	ret=recv(socket,(char *)&bodySize,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=recv(socket,(char *)&sampleTime,sizeof(real_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=recv(socket,(char *)&packetSize,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	p->sampleTime=sampleTime;
@@ -516,37 +524,37 @@ BOOL responseEXT_SETSAMPLETIME(CLIENT_STRUCT *p)
 	printf("SampleTime=%f\n",sampleTime);
 
 	//Return EXT_SETSAMPLETIME_RESPONSE
-	EnterCriticalSection(&(p->socketCritical));
+	pthread_mutex_lock(&(p->socketCritical));
 
 	ret=send(socket,(char *)&reponseCommand,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=send(socket,(char *)&reponseSize,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	//stepSize=getStepSize();
 	//printf("My SampleTime=%f\n",stepSize);
 
 	ret=send(socket,(char *)&stepSize,sizeof(real_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
-	LeaveCriticalSection(&(p->socketCritical));
+	pthread_mutex_unlock(&(p->socketCritical));
 
-	return TRUE;
+	return true;
 }
 
-BOOL responseEXT_SETPARAM(CLIENT_STRUCT *p)
+bool responseEXT_SETPARAM(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 	MODEL *mp=p->pExtModeData->mp;
 
 	real_T *sec;
@@ -563,33 +571,33 @@ BOOL responseEXT_SETPARAM(CLIENT_STRUCT *p)
 	PARAMETER *parameter;
 
 	ret=recv(socket,(char *)&bodySize,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=recv(socket,(char *)&pos,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=recv(socket,(char *)&row,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=recv(socket,(char *)&col,sizeof(uint_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=recv(socket,(char *)&value,sizeof(real_T),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	parameter=dataApiGetParameter(parameters,pos);
@@ -599,35 +607,33 @@ BOOL responseEXT_SETPARAM(CLIENT_STRUCT *p)
 	printf("Pos=%d\n",pos);
 	printf("Value=%f\n",value);
 	
-	return TRUE;
+	return true;
 }
 
 void closeClient(CLIENT_STRUCT *p)
 {
-	terminateUploadThread(p);
-	closesocket(p->socket);
+	//terminateUploadThread(p);
+	close(p->socket);
 
-	CloseHandle(p->upload.hEvent);
-	p->isEmpty=TRUE;
+	//CloseHandle(p->upload.hEvent);
+	p->isEmpty=true;
 
-	DeleteCriticalSection(&(p->socketCritical));
-	DeleteCriticalSection(&(p->listCritical));
 
 	printf("Client closed\n");
 }
 
-BOOL readCom(CLIENT_STRUCT *p)
+bool readCom(CLIENT_STRUCT *p)
 {
 	uint_T com;
 
 	int ret;
 
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 
 	ret=recv(socket,(char *)&(p->currentCommand),sizeof(p->currentCommand),MSG_WAITALL);
-	if(ret==SOCKET_ERROR||ret==0)
+	if(ret==-1||ret==0)
 	{
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }

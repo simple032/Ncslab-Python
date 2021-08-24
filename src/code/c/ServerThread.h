@@ -4,16 +4,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#define _WIN32_WINNT 0x501
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include "ncslabccode.h"
 
 
 typedef struct
 {
-	char *port;
+	int port;
+
+    uint_T acc;
     MODEL *mp;
+    
+    pthread_t  servetThread;
+
+    pthread_mutex_t  timerCritical;
 
 }ExtModeData;
 

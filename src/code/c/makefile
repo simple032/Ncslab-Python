@@ -1,31 +1,20 @@
+OBJS=ncslabmain.o mainccode.o ServerThread.o DataApi.o ClientThread.o UploadThread.o
 
-
+//CC=/opt/pi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc
 CC=gcc
 
+//LD=/opt/pi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc
 LD=gcc
 
-CCFlag=-mwindows -D_WIN32_WINNT=0x0501 
+CCFlag=
 
-ncslab.exe: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o
-	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o -lwinmm -lws2_32
+LDFLAG=-lm -lpthread -lrt
+
+ncslab: $(OBJS)
+	$(LD) -o ncslab $(OBJS) $(LDFLAG)
 	
-mainccode.o: mainccode.c
-	$(CC) $(CCFlag) -c mainccode.c
-
-ncslabmain.o: ncslabmain.c ncslabccode.h
-	$(CC) $(CCFlag) -c ncslabmain.c
-
-ServerThread.o: ServerThread.c ServerThread.h 
-	$(CC) $(CCFlag) -c ServerThread.c
-
-ClientThread.o: ClientThread.c ClientThread.h
-	$(CC) $(CCFlag) -c ClientThread.c
-	
-DataApi.o: DataApi.c DataApi.h
-	$(CC) $(CCFlag) -c DataApi.c
-	
-UploadThread.o: UploadThread.c UploadThread.h
-	$(CC) $(CCFlag) -c UploadThread.c
+%.o : %.c
+	$(CC) $(CCFlag) -c "$<"
 
 clean:
-	rm ncslab.exe mainccode.o ncslabmain.o
+	rm ncslab $(OBJS)

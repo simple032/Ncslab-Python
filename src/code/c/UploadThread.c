@@ -6,31 +6,33 @@
 	#define MSG_WAITALL 0x08
 #endif
 
-DWORD WINAPI UploadThreadFunction( LPVOID lpParam );
+void * UploadThreadFunction( void * lpParam );
 void onUploadTermination(CLIENT_STRUCT *p);
 void readRealTimeData(CLIENT_STRUCT *p);
-BOOL uploadRealTimeData(CLIENT_STRUCT *p);
+bool uploadRealTimeData(CLIENT_STRUCT *p);
 
 void createUploadThread(CLIENT_STRUCT *p)
 {
-	HANDLE  hUploadThread;
-    DWORD  hUploadThreadId;
+	int ret;
+	pthread_t id;
 
-	printf("Creating upload thread...\n");
+	printf("Creating client thread...\n");
 
-	hUploadThread = CreateThread(
-            NULL,                   // default security attributes
-            0,                      // use default stack size
-            UploadThreadFunction,       // thread function name
-            p,          // argument to thread function
-            0,                      // use default creation flags
-            &hUploadThreadId);   // returns the thread identifier
+	ret=pthread_create(&id,NULL,UploadThreadFunction,p);
 
-	p->upload.hUploadThread=hUploadThread;
-	p->upload.loop=TRUE;
+
+    if(ret!=0)
+    {
+        printf ("Create pthread error!\n");
+		return;
+        //exit (1);
+    }
+
+	p->upload.hUploadThread=id;
+	p->upload.loop=true;
 }
 
-BOOL allocateMemory(CLIENT_STRUCT *p)
+bool allocateMemory(CLIENT_STRUCT *p)
 {
 	uint_T num=(p->packetSize)*(p->selectNum+1)*sizeof(real_T);
 	printf("Allocating %d values for uploading buffer\n",num);
@@ -40,12 +42,12 @@ BOOL allocateMemory(CLIENT_STRUCT *p)
 
 	if(p->upload.data==NULL)
 	{
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL packagingData(CLIENT_STRUCT *p,uint_T n)
+bool packagingData(CLIENT_STRUCT *p,uint_T n)
 {
 	real_T *pos;
 	real_T *sec;
@@ -55,18 +57,25 @@ BOOL packagingData(CLIENT_STRUCT *p,uint_T n)
 
 	MODEL *mp=p->pExtModeData->mp;
 	
+	//printf("Packaging...\n");
+	
 	SIGNAL **signals=dataApiGetSignals(mp);
 	PARAMETER **parameters=dataApiGetParameters(mp);
+	
+	//printf("Packaging1...\n");
 
 	//uint_T signalNum=dataApiGetNumSignals(mp);
 
 	pos=p->upload.data+n*(p->selectNum+1);
+	
+	//printf("Packaging2: %d %d...\n",p->selectNum,n);
 
 	*pos++=mp->time;
 
 	for(i=0;i<p->selectNum;i++)
 	{
         REAL value=0;
+        //printf("%d\n",i);
 		if(p->select[i].type==1)
 		{
 			SIGNAL *signal=dataApiGetSignal(signals,p->select[i].pos);
@@ -80,7 +89,7 @@ BOOL packagingData(CLIENT_STRUCT *p,uint_T n)
 		}
 		else
 		{
-			return FALSE;
+			return false;
 		}
 
         *pos=value;
@@ -91,42 +100,42 @@ BOOL packagingData(CLIENT_STRUCT *p,uint_T n)
 
 	//printf("\n");
 
-	return TRUE;
+	return true;
 }
 
-BOOL responseEXT_UPLOAD_DATA(CLIENT_STRUCT *p)
+bool responseEXT_UPLOAD_DATA(CLIENT_STRUCT *p)
 {
-	SOCKET socket=p->socket;
+	int socket=p->socket;
 	MODEL *mp=p->pExtModeData->mp;
 
 	int ret;
 	uint_T reponseCommand=EXT_UPLOAD_DATA;
 	uint_T reponseSize=p->upload.totalSize;
 
-	EnterCriticalSection(&(p->socketCritical));
+	pthread_mutex_lock(&(p->socketCritical));
 	ret=send(socket,(char *)&reponseCommand,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=send(socket,(char *)&reponseSize,sizeof(uint_T),0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
 
 	ret=send(socket,(char *)p->upload.data,p->upload.totalSize,0);
-	if(ret==SOCKET_ERROR)
+	if(ret==-1)
 	{
-		return FALSE;
+		return false;
 	}
-	LeaveCriticalSection(&(p->socketCritical));
+	pthread_mutex_unlock(&(p->socketCritical));
 
-	return TRUE;
+	return true;
 }
 
-DWORD WINAPI UploadThreadFunction( LPVOID lpParam )
+void * UploadThreadFunction( void * lpParam )
 {
 	CLIENT_STRUCT *p;
 	MODEL *mp;
@@ -139,19 +148,24 @@ DWORD WINAPI UploadThreadFunction( LPVOID lpParam )
 	printf("\nUpload thread started\n");
 	printf("Packet size=%d\n",p->packetSize);
 
-    if(allocateMemory(p)==FALSE)
+    if(allocateMemory(p)==false)
 	{
 		printf("Allocating memory for upload data failed.\n");
 		return 0;
 	}
 	
+	fetch=0;
 	while(p->upload.loop)
 	{
-		WaitForSingleObject(p->upload.hEvent,INFINITE);
+		pthread_mutex_lock(&(p->upload.mutex));
+		pthread_cond_wait(&(p->upload.cond),&(p->upload.mutex));
+		pthread_mutex_unlock(&(p->upload.mutex));
 
 		//printf("Uploading...%f\n",mp->time);
 
 		packagingData(p,fetch);
+		
+		//printf("Packaged...%f\n",mp->time);
 
 		fetch++;
 
