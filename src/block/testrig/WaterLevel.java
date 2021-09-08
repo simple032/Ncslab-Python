@@ -7,6 +7,7 @@ import block.io.InputPort;
 import block.io.OutputPort;
 import block.io.State;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
 public class WaterLevel extends Block {
@@ -33,47 +34,45 @@ public class WaterLevel extends Block {
 		stateList.add(levelState);
 	}
 	
-	public String generateInitCodeM() {
-		String code=super.generateInitCodeM();
-		code+="Block"+getBlockId()+"_PumpState=0;\n";
-		code+="Block"+getBlockId()+"_LevelState=0;\n";
+	public void generateInitCodeM(CodeStructM code) {
+		super.generateInitCodeM(code);
+		String initCode="";
+		initCode+=pumpState.getName()+"=0;\n";
+		initCode+=levelState.getName()+"=0;\n";
 		
-		return code;
+		code.addInitCode(initCode);
 	}
 	
-	public String generateUpdateCodeM() {
-		String code=super.generateUpdateCodeM();
+	public void generateDerivativeCodeM(CodeStructM code) {
+		super.generateDerivativeCodeM(code);
 		
-		code+="Block"+getBlockId()+"_PumpState="
-				+"Block"+getBlockId()+"_PumpState+"
-				+"(Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
-				+"_Output"
-				+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
-				+"*"+pumpK+"-"+"Block"+getBlockId()+"_PumpState)"
+		String derivativeCode="";
+		
+		derivativeCode+=pumpState.getDerivativeName()+"=("
+				+this.getInputPortVariable(0)
+				+"*"+pumpK+"-"+pumpState.getName()+")"
 				+"*"+(1/pumpT)
-				+"*"+getModel().getConfig().getFixedStep()
 				+";\n";
 		
-		code+="Block"+getBlockId()+"_LevelState="
-				+"Block"+getBlockId()+"_LevelState+"
-				+"(Block"+getBlockId()+"_PumpState*"+waterLevelK+"-"+"Block"+getBlockId()+"_LevelState)"
+		derivativeCode+=levelState.getDerivativeName()+"=("
+				+pumpState.getName()+"*"+waterLevelK+"-"+levelState.getName()+")"
 				+"*"+(1/waterLevelT)
-				+"*"+getModel().getConfig().getFixedStep()
 				+";\n";
 		
-		return code;
+		code.addDerivativeCode(derivativeCode);
 	}
 	
-	public String generateOutputCodeM() {
-		String code="Block"+this.getBlockId()+"_Output1="
-				+"Block"+getBlockId()+"_PumpState"
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
+		String outputCode=getOutputPortVariable(0)+"="
+				+pumpState.getName()
 				+";\n";
 		
-		code+="Block"+this.getBlockId()+"_Output2="
-				+"Block"+getBlockId()+"_LevelState"
+		outputCode+=getOutputPortVariable(1)+"="
+				+levelState.getName()
 				+ ";\n";
 		
-		return code;
+		code.addOutputCode(outputCode);
 	}
 	
 	
@@ -96,29 +95,20 @@ public class WaterLevel extends Block {
 		code.addOutputCode(outputCode);
 	}
 	
-	public void generateUpdateCodeC(CodeStructC code) {
-		super.generateUpdateCodeC(code);
+	public void  generateDerivativeCodeC(CodeStructC code) {
+		String derivativeCode="/*Code for Derivative of WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
-		String updateCode="/*Code for update of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		updateCode+=pumpState.getName()+"="
-				+pumpState.getName()
-				+"+("+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
-				+"*"+pumpK
-				+"-"+pumpState.getName()+")" 
+		derivativeCode+=pumpState.getDerivativeName()+"=("
+				+this.getInputPortVariable(0)
+				+"*"+pumpK+"-"+pumpState.getName()+")"
 				+"*"+(1/pumpT)
-				+"*"+getModel().getConfig().getFixedStep()
 				+";\n";
 		
-		updateCode+=levelState.getName()+"="
-				+levelState.getName()
-				+"+("+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
-				+"*"+waterLevelK
-				+"-"+levelState.getName()+")" 
+		derivativeCode+=levelState.getDerivativeName()+"=("
+				+pumpState.getName()+"*"+waterLevelK+"-"+levelState.getName()+")"
 				+"*"+(1/waterLevelT)
-				+"*"+getModel().getConfig().getFixedStep()
 				+";\n";
 		
-		code.addUpdateCode(updateCode); 
+		code.addDerivativeCode(derivativeCode);
 	}
 }

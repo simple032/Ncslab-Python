@@ -3,6 +3,7 @@ package block.sink;
 import org.json.JSONObject;
 
 import block.io.InputPort;
+import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
 public class Scope extends block.Block{
@@ -13,19 +14,25 @@ public class Scope extends block.Block{
 		inputPortList.add(new InputPort(this,1));
 	}
 	
-	public String generateOutputCodeM() {
-		String code=getBlockName()+"=["+getBlockName()
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
+		String outputCode="";
+		outputCode+="if storeEnable>0\n";
+		outputCode+=getBlockName()+"=["+getBlockName()
 				+" Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId() 
 				+"_Output"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
 				+"]"
 				+";\n";
-		
-		return code;
+		outputCode+="end\n";
+		code.addOutputCode(outputCode);
 	}
 	
-	public String generateInitCodeM() {
-		String code=getBlockName()+"=[];\n";
+	public void generateInitCodeM(CodeStructM code) {
+		super.generateInitCodeM(code);
+		String initCode="";
+		code.addGlobalDefineCode("global "+getBlockName()+";\n");
+		initCode+=getBlockName()+"=[];\n";
 		
-		return code;
+		code.addInitCode(initCode);
 	}
 }

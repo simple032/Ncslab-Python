@@ -1,4 +1,4 @@
-OBJS=ncslabmain.o mainccode.o ServerThread.o DataApi.o ClientThread.o UploadThread.o
+OBJS=ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o
 
 //CC=/opt/pi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc
 CC=gcc

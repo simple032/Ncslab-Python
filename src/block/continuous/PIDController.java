@@ -7,6 +7,7 @@ import block.io.OutputPort;
 import block.io.Parameter;
 import block.io.State;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
 public class PIDController extends block.Block{
@@ -39,36 +40,42 @@ public class PIDController extends block.Block{
 		}
 	}
 	
-	public String generateInitCodeM() {
-		String code=super.generateInitCodeM();
-		code+="Block"+getBlockId()+"_Integral=0;\n";
+	public void generateInitCodeM(CodeStructM code) {
+		super.generateInitCodeM(code);
 		
-		return code;
+		String initCode="";
+		
+		initCode+=cparaP.getName()+"="+paramValues.getDouble("P")+";\n";
+		initCode+=cparaI.getName()+"="+paramValues.getDouble("I")+";\n";
+		
+		initCode+=stateIntegral.getName()+"=0;\n";
+		
+		code.addInitCode(initCode);
 	}
 	
-	public String generateUpdateCodeM() {
-		String code=super.generateUpdateCodeM();
+	public void generateDerivativeCodeM(CodeStructM code) {
+		super.generateDerivativeCodeM(code);
 		
-		code+="Block"+getBlockId()+"_Integral="
-				+"Block"+getBlockId()+"_Integral+"
-				+paramValues.getDouble("I")+"*"
-				+"Block"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+"_"
-				+"Output"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getNumber()
-				+"*"
-				+getModel().getConfig().getFixedStep()
+		String derivativeCode="";
+		
+		derivativeCode+=stateIntegral.getDerivativeName()+"="
+				+cparaI.getName()+"*"
+				+this.getInputPortVariable(0)
 				+";\n";
 		
-		return code;
+		code.addDerivativeCode(derivativeCode);
 	}
 	
-	public String generateOutputCodeM() {
-		String code="Block"+this.getBlockId()+"_Output1=Block"+getBlockId()+"_Integral"
-				+"+"+paramValues.getDouble("P")+"*"
-				+"Block"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+"_"
-				+"Output"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getNumber()
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
+		
+		String outputCode=getOutputPortVariable(0)
+				+"="+stateIntegral.getName()             //"=Block"+getBlockId()+"_Integral"
+				+"+"+cparaP.getName()+"*"
+				+this.getInputPortVariable(0)
 				+";\n";
 		
-		return code;
+		code.addOutputCode(outputCode);
 	}
 	
 	
@@ -101,18 +108,15 @@ public class PIDController extends block.Block{
 		code.addOutputCode(outputCode);
 	}
 	
-	public void generateUpdateCodeC(CodeStructC code) {
-		super.generateUpdateCodeC(code);
+	
+	public void  generateDerivativeCodeC(CodeStructC code) {
+		String derivativeCode="/*Code for Derivative of PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
-		String updateCode="/*Code for update of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		updateCode+=stateIntegral.getName()+"="
-				+stateIntegral.getName()
-				+"+"+getInputPortVariable(0)
-				+"*"+cparaI.getName()
-				+"*"+getModel().getConfig().getFixedStep()
+		derivativeCode+=stateIntegral.getDerivativeName()+"="
+				+cparaI.getName()+"*"
+				+this.getInputPortVariable(0)
 				+";\n";
 		
-		code.addUpdateCode(updateCode); 
+		code.addDerivativeCode(derivativeCode);
 	}
 }

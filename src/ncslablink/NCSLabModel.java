@@ -25,6 +25,13 @@ abstract public class NCSLabModel {
 	
 	private int userId;
 	private int modelId;
+	private int testRig;
+	
+	private long uuid;
+	
+	private JSONObject saveInfo;
+	
+	private ModelMode mode=ModelMode.Simulation;
 	
 	//组件块的列表
 	protected Vector<Block> blockList=new Vector<Block>();
@@ -36,7 +43,9 @@ abstract public class NCSLabModel {
 	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
 	
 	//构造函数，从web传入json，建立模型的数据结构
-	protected NCSLabModel(JSONObject jsonIn) throws ModelException{
+	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
+		this.mode=mode;
+		
 		this.jsonIn=jsonIn;
 		
 		//解析json中的内容，建立block,line,input,output相互连接的数据结构
@@ -61,6 +70,14 @@ abstract public class NCSLabModel {
 		return this.modelId;
 	}
 	
+	public long getUuid() {
+		return uuid;
+	}
+	
+	public int getTestRig() {
+		return testRig;
+	}
+	
 	public Vector<ErrorMessage> getErrorList(){
 		return this.errorList;
 	}
@@ -81,9 +98,13 @@ abstract public class NCSLabModel {
 		
 		userId=jsonIn.getInt("userId");
 		modelId=jsonIn.getInt("modelId");
+		uuid=jsonIn.getLong("uuid");
+		testRig=jsonIn.getInt("testRig");
 		
 		//读取json中的config配置
-		config=Config.createFromJSON(jsonIn.getJSONObject("config"));
+		config=Config.createFromJSON(jsonIn.getJSONObject("config"),mode);
+		
+		saveInfo=jsonIn.getJSONObject("saveInfo");
 		
 		//解析json文件中的block模块，建立block的数据结构
 		parseBlocks();
@@ -91,6 +112,10 @@ abstract public class NCSLabModel {
 		parseLines();
 		
 		//showBlocks();
+	}
+	
+	public JSONObject getSaveInfo() {
+		return saveInfo;
 	}
 	
 	private void showBlocks() {

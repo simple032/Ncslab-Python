@@ -9,15 +9,22 @@ public class Config {
 	private double startTime;
 	private double stopTime;
 	
-	Config(JSONObject configIn){
+	Config(JSONObject configIn,ModelMode mode){
 		this.fixedStep=configIn.getDouble("FixedStep");
 		this.solver=configIn.getString("Solver");
-		this.startTime=configIn.getDouble("StartTime");
-		this.stopTime=configIn.getDouble("StopTime");
+		
+		if(mode==ModelMode.Simulation) {
+			this.startTime=configIn.getDouble("StartTime");
+			this.stopTime=configIn.getDouble("StopTime");
+		}
+		else {
+			this.startTime=0;
+			this.stopTime=10;
+		}
 	}
 	
-	public static Config createFromJSON(JSONObject configIn) {
-		Config config=new Config(configIn);
+	public static Config createFromJSON(JSONObject configIn,ModelMode mode) {
+		Config config=new Config(configIn,mode);
 		return config;
 	}
 	

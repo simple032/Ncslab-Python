@@ -44,6 +44,7 @@ typedef struct {
 	char *name;
 	int width;
 	void *vp;
+	void *dvp;
 }STATE;
 
 typedef struct {
@@ -77,6 +78,7 @@ typedef struct {
 	REAL startTime;
 	REAL stopTime;
 	REAL time;
+	REAL offset;
 	
 	int signalNum;
 	int parameterNum;
@@ -90,6 +92,13 @@ typedef struct {
 
 void NCSLabInit();
 void NCSLabOneStep();
+void NCSLabOutput();
+void NCSLabDerivative();
+void NCSLabUpdate();
+void storeState();
+void restoreState();
+void storeDerivative(int);
+void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
 
 #endif

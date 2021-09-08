@@ -6,6 +6,7 @@ import block.Block;
 import block.io.OutputPort;
 import block.io.Parameter;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 import block.io.InputPort;
 import ncslablink.NCSLabModel;
 
@@ -24,11 +25,12 @@ public class Gain extends Block{
 		parameterList.add(gain);
 	}
 	
-	public String generateOutputCodeM() {
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
 		//String code="Block"+this.getBlockId()+"_Output1="+paramValues.getDouble("Gain")+"*Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+"_Output"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()+";\n";
-		String code=outputPortList.get(0).getOutputSignalC().getName()+"="+paramValues.getDouble("Gain")+"*"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+		String ouputCode=outputPortList.get(0).getOutputSignalC().getName()+"="+paramValues.getDouble("Gain")+"*"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
 		
-		return code;
+		code.addOutputCode(ouputCode);
 	}
 	
 	

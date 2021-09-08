@@ -1,0 +1,54 @@
+#include"ncslabccode.h"
+#include"ServerThread.h"
+#include"ncslab.h"
+
+extern MODEL *mp;
+
+double stateReserve[STATE_NUM];
+
+double derivativeReserve[4][STATE_NUM];
+
+double weight1[4]={1.0/6, 2.0/6, 2.0/6, 1.0/6};
+
+void NCSLabOneStep(){
+
+  mp->offset=0;
+  NCSLabOutput();
+
+  //Calculate K0
+	NCSLabDerivative();
+  storeDerivative(0);
+
+  //Calculate K1
+  storeState();
+  mp->stepSize=STEP_SIZE/2;
+	NCSLabUpdate();
+  mp->offset=STEP_SIZE/2;
+  NCSLabOutput();
+  NCSLabDerivative();
+  storeDerivative(1);
+
+  //Calculate K2
+  restoreState();
+  mp->stepSize=STEP_SIZE/2;
+  NCSLabUpdate();
+  mp->offset=STEP_SIZE/2;
+  NCSLabOutput();
+  NCSLabDerivative();
+  storeDerivative(2);
+
+  //Calculate K3
+  restoreState();
+  mp->stepSize=STEP_SIZE;
+  NCSLabUpdate();
+  mp->offset=STEP_SIZE;
+  NCSLabOutput();
+  NCSLabDerivative();
+  storeDerivative(3);
+
+  //Update
+  restoreState();
+  mp->stepSize=STEP_SIZE;
+  caculateDerivative(weight1,4);
+  NCSLabUpdate();
+}

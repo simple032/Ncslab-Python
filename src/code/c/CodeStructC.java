@@ -2,6 +2,7 @@ package code.c;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.util.Vector;
 import java.io.InputStream;
 import java.io.BufferedReader;
@@ -16,12 +17,12 @@ import block.io.State;
 import block.io.InputPort;
 
 public class CodeStructC {
-	
+
 	//ģ��������Ƿ���Ϊ�ź�
 	public boolean inputAsSignal=true;
 	//ģ�������Ƿ���Ϊ�ź�
 	public boolean outputAsSignal=true;
-	
+
 	//ͷ�ļ��Ĵ���
 	public String includeCode="";
 	//init��ʼ���Ĵ���
@@ -30,62 +31,70 @@ public class CodeStructC {
 	public String outputCode="";
 	//update�Ĵ���
 	public String updateCode="";
-	
+
+	//update�Ĵ���
+	public String derivativeCode="";
+
 	/*����Parameter�Ĵ��� ��*REAL Block5_Parameter_P*/
 	public String parameterDefineCode="";
 	/*����State�Ĵ��� �� REAL Block1_State_pumpState;*/
 	public String stateDefineCode="";
 	/*����Output�źŵĴ��룬�� REAL Block1_Output1;*/
 	public String outputSignalDefineCode="";
-	
+
 	/*�������м������ʵ��Ĵ��룬����INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
 	/*����������ʵ���ʼ���Ĵ��룬��ʼ����������ṹ�����ƣ�path�ȣ���ָ��ָ��ָ����λ�ã��������ݽṹ�� */
 	public String dataStructureInitCode="";
-	
+
 	private int parameterIndex=1;
 	private int stateIndex=1;
-	
+
 	private Vector<Parameter> parameterList=new Vector<Parameter>();
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
-	
+
 	private CodeModelC model;
-	
+
 	public CodeStructC(CodeModelC model) {
 		this.model=model;
-		
+
 	}
-	
+
 	public String getInitCode() {
 		return this.initCode;
 	}
-	
+
 	public void addInitCode(String code) {
 		initCode+=code;
 	}
-	
+
 	public String getOutputCode() {
 		return this.outputCode;
 	}
-	
+
 	public void addOutputCode(String code) {
 		outputCode+=code;
 	}
-	
+
 	public String getUpdateCode() {
 		return this.updateCode;
 	}
-	
+
 	public void addUpdateCode(String code) {
 		updateCode+=code;
 	}
-	
+
+	public void addDerivativeCode(String code) {
+		derivativeCode+=code;
+	}
+
 	public void generateIncludeCode() {
 		includeCode+=""
-				+"#include\"ncslabccode.h\"\n";
+				+"#include\"ncslabccode.h\"\n"
+				+"#include\"ncslab.h\"\n";
 	}
-	
+
 	private void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.c...");
 		//precode�ǲ�����״̬��������Ķ��壬��ȫ�ֱ����ķ�ʽ
@@ -97,29 +106,43 @@ public class CodeStructC {
 				+dataStructureInitCode+"\n"
 				+initCode+"\n"
 				+"}\n"
-				
+
+				/*
 				+"void NCSLabOneStep(){\n"
 				+outputCode+"\n"
+				+derivativeCode+"\n"
+				+updateCode+"\n"
+				+"}\n"*/
+
+				+"void NCSLabOutput(){\n"
+				+outputCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabDerivative(){\n"
+				+derivativeCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabUpdate(){\n"
 				+updateCode+"\n"
 				+"}\n"
 				
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
 				+"}\n"
-				
+
 				+"\n";
-		
+
 		File file = new File(codePath+"mainccode.c");
-    	FileOutputStream outputStream;
-    	try {
-    		outputStream = new FileOutputStream(file);
-    		outputStream.write(mainCCode.getBytes());
-    		outputStream.close();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
+		FileOutputStream outputStream;
+		try {
+			outputStream = new FileOutputStream(file);
+			outputStream.write(mainCCode.getBytes());
+			outputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	//����ȫ�ֵ�Parameter���б�
 	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
@@ -132,7 +155,7 @@ public class CodeStructC {
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
-	
+
 	//���ɶ���Parameter�Ĵ���
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";
@@ -140,15 +163,16 @@ public class CodeStructC {
 			parameterDefineCode+=parameter.getDefineString()+" "+parameter.getName()+";\n";
 		}
 	}
-	
+
 	//���ɶ���State�Ĵ���
 	public void generateStateDefineCode() {
 		stateDefineCode+="/*Define variables for states*/\n";
 		for(State state:stateList) {
 			stateDefineCode+=state.getDefineString()+" "+state.getName()+";\n";
+			stateDefineCode+=state.getDefineString()+" "+state.getDerivativeName()+";\n";
 		}
 	}
-	
+
 	//���ɶ���Output�Ĵ���
 	public void generateOutputSignalDefineCode() {
 		outputSignalDefineCode+="/*Define variables for output signals*/\n";
@@ -156,53 +180,106 @@ public class CodeStructC {
 			outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
 		}
 	}
-	
-	
-	
+
+
+
 	private String codePathBase=utils.Property.instance.getProperty("CCodePath");
 	//Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
 	private String codePath;
-	
+
 	//д�ļ��ķ��������ļ���resource�п���������д��Ŀ���ļ���
 	private void writeNCSLabFile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
-		
+
 		File file=new File(codePath+"/"+fileName);
 		FileOutputStream outputStream;
-    	try {
-    		outputStream = new FileOutputStream(file);
-    		byte[] buffer=new byte[1024];
-    		int len;
-    		while((len=InputStream.read(buffer))>0) {
-    			outputStream.write(buffer,0,len);
-    		}
-    		outputStream.close();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
+		try {
+			outputStream = new FileOutputStream(file);
+			byte[] buffer=new byte[1024];
+			int len;
+			while((len=InputStream.read(buffer))>0) {
+				outputStream.write(buffer,0,len);
+			}
+			outputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
+	private void writeNCSLabFile(String fileName,String fileNameOut) {
+		System.out.println("Writing file "+fileName+"...");
+		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
+
+		File file=new File(codePath+"/"+fileNameOut);
+		FileOutputStream outputStream;
+		try {
+			outputStream = new FileOutputStream(file);
+			byte[] buffer=new byte[1024];
+			int len;
+			while((len=InputStream.read(buffer))>0) {
+				outputStream.write(buffer,0,len);
+			}
+			outputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
-	
-	public void writeCCodeFiles() {
+	void wirteDefineFile() {
 		
+		String code="#define STATE_NUM "+stateList.size()+"\n";
+		
+		code+="#define STEP_SIZE (1.0*"+model.getConfig().getFixedStep()+")\n";
+		
+		File file = new File(codePath+"ncslab.h");
+		FileOutputStream outputStream;
+		try {
+			outputStream = new FileOutputStream(file);
+			outputStream.write(code.getBytes());
+			outputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private byte[] readFile(String fileName) {
+		File file = new File(codePath+fileName);
+		FileInputStream inputStream;
+		byte[] fileData=null;
+		try {
+			inputStream = new FileInputStream(file);
+			fileData=new byte[inputStream.available()];
+			inputStream.read(fileData);
+			inputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return fileData;
+	}
+	
+	public byte[] readExeFile() {
+		return readFile("ncslab");
+	}
+
+	public void writeCCodeFiles() {
+
 		//����Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
 		String userPath=codePathBase+model.getUserId();
-		
+
 		File file=new File(userPath);
 		if(file.exists()==false) {
 			file.mkdir();
 		}
-		
+
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
 		if(file.exists()==false) {
 			file.mkdir();
 		}
-	
+
 		codePath=modelPath+"/";
-		
+
 		//д���ܱߵ���Դ�ļ�
 		//makefile
 		writeNCSLabFile("makefile");
@@ -213,6 +290,8 @@ public class CodeStructC {
 		//���������ݽṹ�Ľӿ�API����
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
+		
+		writeNCSLabFile("util.c");
 
 		//ʵ��NetconЭ���ͨ���ļ�
 		writeNCSLabFile("ServerThread.c");
@@ -221,11 +300,29 @@ public class CodeStructC {
 		writeNCSLabFile("ClientThread.h");
 		writeNCSLabFile("UploadThread.c");
 		writeNCSLabFile("UploadThread.h");
-    	
+
 		//д�����ɵ�������ncslabccdoe.c
-    	writeMainCodeFile();
+		writeMainCodeFile();
+		
+		wirteDefineFile();
+		
+		switch(model.getSolver()) {
+		case ode1:
+			writeNCSLabFile("ode1.c","onestep.c");
+			break;
+		case ode2:
+			writeNCSLabFile("ode2.c","onestep.c");
+			break;
+		case ode3:
+			writeNCSLabFile("ode3.c","onestep.c");
+			break;
+		case ode4:
+			writeNCSLabFile("ode4.c","onestep.c");
+			break;
+		}
+		
 	}
-	
+
 	public boolean makeExeFile() {
 		try {
 			//����make�����ɿ�ִ�д���
@@ -236,7 +333,7 @@ public class CodeStructC {
 			String line=null,outLine=null;
 			StringBuilder errStr=new StringBuilder();
 			StringBuilder outStr=new StringBuilder();
-			
+
 			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
 				if(outLine!=null) {
 					outStr.append(outLine);
@@ -247,22 +344,22 @@ public class CodeStructC {
 					System.err.println(line);
 				}
 			}
-			
+
 			//�ȴ�makefile�����
 			process.waitFor();
-			
+
 			if(process.exitValue()==0) {
 				return true;
 			}
-			
+
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
-	
+
 	//����Model,block,input,output,signal,state,parameter�����ݽṹ������ʼ��
 	public void gnenrateDataStructureCode() {
 		//����һϵ�����ݽṹ�Ķ���
@@ -270,11 +367,11 @@ public class CodeStructC {
 		//��ʼ�����ݽṹ��ʵ�����ݽṹ֮���ָ������
 		generateDataStrucureInit();
 	}
-	
+
 	//�������ݽṹ�Ķ���
 	private void generateDataStrucure() {
 		dataStructureCode+="/*Define data structures*/\n";
-		
+
 		dataStructureCode+="/*Define inputPort structures*/\n";
 		for(Block block:model.getBlockList()) {
 			if(block.getInputPortList().size()>0) {
@@ -286,9 +383,9 @@ public class CodeStructC {
 			else {
 				dataStructureCode+="INPUT_PORT **inputPorts"+block.getBlockId()+"=NULL;\n";
 			}
-			
+
 		}
-		
+
 		dataStructureCode+="/*Define outputPort structures*/\n";
 		for(Block block:model.getBlockList()) {
 			if(block.getOutputPortList().size()>0) {
@@ -300,9 +397,9 @@ public class CodeStructC {
 			else {
 				dataStructureCode+="OUTPUT_PORT **outputPorts"+block.getBlockId()+"=NULL;\n";
 			}
-			
+
 		}
-		
+
 		dataStructureCode+="/*Define parameter structures*/\n";
 		int parameterNum=0;
 		for(Block block:model.getBlockList()) {
@@ -319,7 +416,7 @@ public class CodeStructC {
 		}
 		dataStructureCode+="PARAMETER *parameters["+parameterNum+"];\n";
 		model.setParameterNum(parameterNum);
-		
+
 		dataStructureCode+="/*Define state structures*/\n";
 		int stateNum=0;
 		for(Block block:model.getBlockList()) {
@@ -336,7 +433,7 @@ public class CodeStructC {
 		}
 		dataStructureCode+="STATE *states["+stateNum+"];\n";
 		model.setStateNum(stateNum);
-		
+
 		dataStructureCode+="/*Define signal structures*/\n";
 		int signalNum=0;
 		for(Block block:model.getBlockList()) {
@@ -361,12 +458,12 @@ public class CodeStructC {
 			else {
 				dataStructureCode+="SIGNAL **signals"+block.getBlockId()+"=NULL;\n";
 			}
-			
+
 			block.setSignalNum(i);
 		}
 		dataStructureCode+="SIGNAL *signals["+signalNum+"];\n";
 		model.setSignalNum(signalNum);
-		
+
 		dataStructureCode+="/*Define block structures*/\n";
 		if(model.getBlockList().size()>0) {
 			for(Block block:model.getBlockList()) {			
@@ -379,11 +476,11 @@ public class CodeStructC {
 		}
 		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
 	}
-	
+
 	//��ʼ�����ݽṹ��ʵ�����ݽṹ֮���ָ������
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
-		
+
 		dataStructureInitCode+="/*Initialize inputs*/\n";
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize inputs for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
@@ -391,7 +488,7 @@ public class CodeStructC {
 				dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
 			}
 		}
-		
+
 		dataStructureInitCode+="/*Initialize outputs*/\n";
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize outputs for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
@@ -399,7 +496,7 @@ public class CodeStructC {
 				dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
 			}
 		}
-		
+
 		dataStructureInitCode+="/*Initialize parameters*/\n";
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize parameters for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
@@ -410,15 +507,16 @@ public class CodeStructC {
 				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"\";\n";
 			}
 		}
-		
+
 		dataStructureInitCode+="/*Initialize states*/\n";
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize states for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(State state:block.getStateList()) {
 				dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".vp=&"+state.getName()+";\n";
+				dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".dvp=&"+state.getDerivativeName()+";\n";
 			}
 		}
-		
+
 		dataStructureInitCode+="/*Initialize signals*/\n";
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize signals for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
@@ -439,8 +537,8 @@ public class CodeStructC {
 				}
 			}
 		}
-		
-		
+
+
 		dataStructureInitCode+="/*Initialize blocks*/\n";
 		int signalNum=0;
 		int parameterNum=0;
@@ -453,14 +551,14 @@ public class CodeStructC {
 				i++;
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".inputPorts=inputPorts"+block.getBlockId()+";\n";
-			
+
 			i=0;
 			for(OutputPort output:block.getOutputPortList()) {
 				dataStructureInitCode+="outputPorts"+block.getBlockId()+"["+i+"]=&outputPort"+block.getBlockId()+"_"+output.getNumber()+";\n";
 				i++;
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".outputPorts=outputPorts"+block.getBlockId()+";\n";
-			
+
 			i=0;
 			for(Parameter parameter:block.getParameterList()) {
 				dataStructureInitCode+="parameters"+block.getBlockId()+"["+i+"]=&parameter"+block.getBlockId()+"_"+parameter.getId()+";\n";
@@ -469,7 +567,7 @@ public class CodeStructC {
 				parameterNum++;
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".parameters=parameters"+block.getBlockId()+";\n";
-			
+
 			i=0;
 			for(State state:block.getStateList()) {
 				dataStructureInitCode+="states"+block.getBlockId()+"["+i+"]=&state"+block.getBlockId()+"_"+state.getId()+";\n";
@@ -478,7 +576,7 @@ public class CodeStructC {
 				stateNum++;
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".states=states"+block.getBlockId()+";\n";
-			
+
 			i=0;
 			if(inputAsSignal) {
 				for(InputPort input:block.getInputPortList()) {
@@ -498,24 +596,25 @@ public class CodeStructC {
 			}
 			dataStructureInitCode+="block"+block.getBlockId()+".signals=signals"+block.getBlockId()+";\n";
 		}
-		
+
 		dataStructureInitCode+="/*Initialize model*/\n";
 		for(int i=0;i<model.getBlockList().size();i++) {
 			Block block=model.getBlockList().get(i);
 			dataStructureInitCode+="blocks["+i+"]=&block"+block.getBlockId()+";\n";
 		}
-		
+
 		dataStructureInitCode+="model.blocks=blocks;\n";
 		dataStructureInitCode+="model.time=model.startTime;\n";
-		
+		dataStructureInitCode+="model.offset=0;\n";
+
 		dataStructureInitCode+="model.signalNum="+signalNum+";\n";
 		dataStructureInitCode+="model.signals=signals;\n";
-		
+
 		dataStructureInitCode+="model.parameterNum="+parameterNum+";\n";
 		dataStructureInitCode+="model.parameters=parameters;\n";
-		
+
 		dataStructureInitCode+="model.stateNum="+stateNum+";\n";
 		dataStructureInitCode+="model.states=states;\n";
 	}
-	
+
 }

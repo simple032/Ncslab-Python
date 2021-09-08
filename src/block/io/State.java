@@ -25,6 +25,12 @@ public class State {
 		return this.name;
 	}
 	
+	public String getDerivativeName() {
+		this.name="Block"+block.getBlockId()+"_State_"+localName;
+		
+		return this.name+"_Derivative";
+	}
+	
 	public String getLocalName() {
 		return this.localName;
 	}

@@ -12,6 +12,7 @@ import block.io.InputPort;
 import block.io.OutputPort;
 import block.io.State;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
 public class TransferFcn extends Block {
@@ -110,52 +111,59 @@ public class TransferFcn extends Block {
 		
 	}
 	
-	public String generateInitCodeM() {
-		String code=super.generateInitCodeM();
+	public void generateInitCodeM(CodeStructM code) {
+		super.generateInitCodeM(code);
+		
+		String initCode="";
 		for(State xState:xStateList) {
-			code+=xState.getName()+
+			initCode+=xState.getName()+
 					"=0;\n";
 		}
-		return code;
+		code.addInitCode(initCode);
 	}
 	
-	public String generateOutputCodeM() {
-		String code=getOutputPortVariable(0)+"=0";
+	
+	
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
+			
+		String outputCode=getOutputPortVariable(0)+"=0";
 		
 		int i=num.length-1;
 		for(State xState:xStateList) {
-			code+="+"+xState.getName()+"*"+num[i];
+			outputCode+="+"+xState.getName()+"*"+num[i];
 			i--;
 		}
 		
 		if(feedThrough) {
-			code+="+"+D+"*"+getInputPortVariable(0);
+			outputCode+="+"+D+"*"+getInputPortVariable(0);
 		}
 		
-		code+=";\n";
+		outputCode+=";\n";
 		
-		return code;
+		code.addOutputCode(outputCode);
 	}
 	
-	public String generateUpdateCodeM() {
-		String code=super.generateUpdateCodeM();
+	public void generateDerivativeCodeM(CodeStructM code) {
+		super.generateDerivativeCodeM(code);
+		
+		String derivativeCode="";
 		
 		for(int i=0;i<xStateList.size()-1;i++) {
-			code+=xStateList.get(i).getName()+"="
-					+xStateList.get(i).getName()+"+"
-					+xStateList.get(i+1).getName()+"*"+getModel().getConfig().getFixedStep()
+			derivativeCode+=xStateList.get(i).getDerivativeName()+"="
+					+xStateList.get(i+1).getName()
 					+";\n";
 		}
 		
-		code+=xStateList.get(xStateList.size()-1).getName()+"="+xStateList.get(xStateList.size()-1).getName()+"+("+getInputPortVariable(0);
+		derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+getInputPortVariable(0);
 		int i=den.length-1;
 		for(State xState:xStateList) {
-			code+="-"+xState.getName()+"*"+den[i];
+			derivativeCode+="-"+xState.getName()+"*"+den[i];
 			i--;
 		}
-		code+=")*"+getModel().getConfig().getFixedStep()+";\n";
+		derivativeCode+=");\n";
 		
-		return code;
+		code.addDerivativeCode(derivativeCode);
 	}
 	
 	public void generateInitCodeC(CodeStructC code) {
@@ -190,26 +198,23 @@ public class TransferFcn extends Block {
 		code.addOutputCode(outputCode);
 	}
 	
-	public void generateUpdateCodeC(CodeStructC code) {
-		super.generateUpdateCodeC(code);
-		
-		String updateCode="/*Code for update of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+	public void  generateDerivativeCodeC(CodeStructC code) {
+		String derivativeCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
 		for(int i=0;i<xStateList.size()-1;i++) {
-			updateCode+=xStateList.get(i).getName()+"="
-					+xStateList.get(i).getName()+"+"
-					+xStateList.get(i+1).getName()+"*"+getModel().getConfig().getFixedStep()
+			derivativeCode+=xStateList.get(i).getDerivativeName()+"="
+					+xStateList.get(i+1).getName()
 					+";\n";
 		}
 		
-		updateCode+=xStateList.get(xStateList.size()-1).getName()+"+=("+getInputPortVariable(0);
+		derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+getInputPortVariable(0);
 		int i=den.length-1;
 		for(State xState:xStateList) {
-			updateCode+="-"+xState.getName()+"*"+den[i];
+			derivativeCode+="-"+xState.getName()+"*"+den[i];
 			i--;
 		}
-		updateCode+=")*"+getModel().getConfig().getFixedStep()+";\n";
+		derivativeCode+=");\n";
 		
-		code.addUpdateCode(updateCode); 
+		code.addDerivativeCode(derivativeCode);
 	}
 }

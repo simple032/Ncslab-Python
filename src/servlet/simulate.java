@@ -7,13 +7,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 import org.json.JSONObject;
 import java.io.*;
+import java.util.*;
 
+import code.Solver;
 import code.c.CodeModelC;
 import code.m.CodeModelM;
 
 import ncslablink.ModelException;
+import ncslablink.ModelMode;
 
 /**
  * Servlet implementation class simulate
@@ -48,15 +55,17 @@ public class simulate extends HttpServlet {
 		
         try {
         	//建立M语言的生成器CodeModelM
-        	CodeModelM model=CodeModelM.createFromJSON(jsonIn);
+        	CodeModelM model=CodeModelM.createFromJSON(jsonIn,ModelMode.Simulation);
+        	model.setSolver(Solver.ode4);
         	model.generate();
         	model.showErrorMessages();
 
         	System.out.println();
 
+        	/*
         	if(model.getErrorList().size()==0) {
         		System.out.println(model.getCode());
-        	}
+        	}*/
         }
         catch(ModelException e) {
         	System.err.println(e.getMessage());
@@ -68,13 +77,15 @@ public class simulate extends HttpServlet {
         
         try {
         	//建立C语言的生成器CodeModelC
-        	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn);
+        	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn,ModelMode.Compilation);
+        	modelC.setSolver(Solver.ode4);
         	modelC.generate();
 
         	System.out.println();
 
         	if(modelC.getErrorList().size()==0) {
         		modelC.makeExeFile();
+        		modelC.saveToDatabase();
         	}
         }
         catch(ModelException e) {
@@ -82,6 +93,24 @@ public class simulate extends HttpServlet {
         	System.err.println("Code generatrion terminated unsuccessfully。。。");
         }
         
+        
+        /*
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("piscesPU");
+        
+        long s = System.currentTimeMillis();
+        // 数据库连接失败这里会抛出异常
+        final EntityManager em = emf.createEntityManager();
+        long e = System.currentTimeMillis();
+        System.out.println("连接数据库耗时: " + (e - s) + "毫秒");
+        // 获取数据
+        @SuppressWarnings("unchecked")
+        List<main.database.Algorithms> list = em.createQuery("SELECT a FROM algorithms a").getResultList();
+        int i = 0;
+        for (main.database.Algorithms info : list) {
+            //System.out.println("第" + (++i) + "个值为: " + info);
+        }
+        em.close();
+        */
 	}
 
 }

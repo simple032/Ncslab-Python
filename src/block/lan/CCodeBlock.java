@@ -9,4 +9,7 @@ public interface CCodeBlock {
 	public void generateOutputCodeC(CodeStructC code);
 	public void generateBlockUpdateCodeC(CodeStructC code);
 	public void generateUpdateCodeC(CodeStructC code);
+	
+	public void generateBlockDerivativeCodeC(CodeStructC code);
+	public void generateDerivativeCodeC(CodeStructC code);
 }

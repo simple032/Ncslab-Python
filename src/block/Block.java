@@ -9,6 +9,7 @@ import block.io.Parameter;
 import block.io.State;
 import block.io.OutputSignal;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
@@ -110,50 +111,74 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 	
 	//生成M语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
-	public String generateOutputCodeM() {
-		String code="";
-		
-		return code;
+	public void  generateOutputCodeM(CodeStructM code) {
+	
 	}
 	
-	//生成M语言的Output代码，供上一级调用
-	public String generateBlockOutputCodeM() {
-		System.out.println("Generating block output code ("+blockId+"):"+blockName);
-		
-		String code=generateOutputCodeM();
-		
-		isOutputCodeGenerated=true;
+	public void setIsOuputCodeGenerated(boolean isOutputCodeGenerated) {
+		this.isOutputCodeGenerated=isOutputCodeGenerated;
 		for(OutputPort outputPort:outputPortList) {
 			outputPort.setIsCodeGenerated(true);
 		}
+	}
+	
+	//生成M语言的Output代码，供上一级调用
+	public void generateBlockOutputCodeM(CodeStructM code) {
+		System.out.println("Generating block output code ("+blockId+"):"+blockName);
 		
-		return code;
+		generateOutputCodeM(code);
+		
+		/*
+		isOutputCodeGenerated=true;
+		for(OutputPort outputPort:outputPortList) {
+			outputPort.setIsCodeGenerated(true);
+		}*/
 	}
 	
 	//生成M语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
-	public String generateInitCodeM() {
-		String code="";
-		
-		return code;
+	public void generateInitCodeM(CodeStructM code) {
 	}
 
 	//生成M语言的Init代码，供上一级调用
-	public String generateBlockInitCodeM() {
-		String code=generateInitCodeM();
-		return code;
+	public void generateBlockInitCodeM(CodeStructM code) {
+		for(OutputSignal outputSignal:outputSignalList) {
+			code.addOutputSignal(outputSignal);
+		}
+		for(Parameter parameter:parameterList) {
+			code.addParameter(parameter);
+		}
+		for(State state:stateList) {
+			code.addState(state);
+		}
+		generateInitCodeM(code);
 	}
 	
 	//生成M语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
-	public String generateUpdateCodeM() {
-		String code="";
+	public void generateUpdateCodeM(CodeStructM code) {
+		String updateCode="";
 		
-		return code;
+		for(State state:stateList) {
+			updateCode+=state.getName()+"="
+					+state.getName()+"+"
+					+state.getDerivativeName()
+					+"*"
+					+"stepSize"
+					+";\n";
+		}
+		
+		code.addUpdateCode(updateCode);
 	}
 	
 	//生成M语言的Update代码，供上一级调用
-	public String generateBlockUpdateCodeM() {
-		String code=generateUpdateCodeM();
-		return code;
+	public void generateBlockUpdateCodeM(CodeStructM code) {
+		generateUpdateCodeM(code);
+	}
+	
+	public void generateBlockDerivativeCodeM(CodeStructM code) {
+		generateDerivativeCodeM(code);
+	}
+	public void generateDerivativeCodeM(CodeStructM code) {
+		
 	}
 	
 	public void updateBlock() {
@@ -192,10 +217,11 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		
 		generateOutputCodeC(code);
 		
+		/*
 		isOutputCodeGenerated=true;
 		for(OutputPort outputPort:outputPortList) {
 			outputPort.setIsCodeGenerated(true); 
-		}
+		}*/
 		
 	}
 	
@@ -211,5 +237,24 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	//生成C语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateUpdateCodeC(CodeStructC code) {
+		String updateCode="/*Code for update of block "+getBlockType()+":("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		for(State state:stateList) {
+			updateCode+=state.getName()+"="
+					+state.getName()+"+"
+					+state.getDerivativeName()
+					+"*"
+					+"model.stepSize"
+					+";\n";
+		}
+		
+		code.addUpdateCode(updateCode);
+	}
+	
+	public void generateBlockDerivativeCodeC(CodeStructC code) {
+		generateDerivativeCodeC(code);
+	}
+	public void generateDerivativeCodeC(CodeStructC code) {
+		
 	}
 }

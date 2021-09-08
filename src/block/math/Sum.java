@@ -6,6 +6,7 @@ import java.util.Vector;
 import block.Block;
 import block.io.OutputPort;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 import block.io.InputPort;
 
@@ -30,23 +31,24 @@ public class Sum extends Block {
 		}
 	}
 	
-	public String generateOutputCodeM() {
-		String code="Block"+this.getBlockId()+"_Output1=0";
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
+		String ouputCode="Block"+this.getBlockId()+"_Output1=0";
 		
 		for(int i=0;i<seq.length();i++) {
 			if(seq.charAt(i)=='+') {
-				code+="+";
+				ouputCode+="+";
 			}
 			if(seq.charAt(i)=='-') {
-				code+="-";
+				ouputCode+="-";
 			}
-			code+="Block"+getInputPortList().get(i).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
+			ouputCode+="Block"+getInputPortList().get(i).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
 					+"_Output"+getInputPortList().get(i).getLinkedLine().getLinkedOutputPort().getNumber();
 		}
 		
-		code+=";\n";
+		ouputCode+=";\n";
 		
-		return code;
+		code.addOutputCode(ouputCode);
 	}
 	
 	public void generateOutputCodeC(CodeStructC code) {

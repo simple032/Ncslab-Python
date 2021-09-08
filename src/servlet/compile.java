@@ -1,0 +1,77 @@
+package servlet;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONObject;
+
+import code.Solver;
+import code.c.CodeModelC;
+import code.m.CodeModelM;
+import ncslablink.ModelException;
+import ncslablink.ModelMode;
+
+/**
+ * Servlet implementation class compile
+ */
+@WebServlet("/compile")
+public class compile extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public compile() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		
+		
+		//response.getWriter().append("Served at: ").append(request.getContextPath());
+		
+		//读取Post的JSON配置
+		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
+        String result = "";
+        int respInt = insr.read();
+        while(respInt!=-1) {
+            result +=(char)respInt;
+            respInt = insr.read();
+        }  
+        JSONObject jsonIn = new JSONObject(result);
+        
+        try {
+        	//建立C语言的生成器CodeModelC
+        	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn,ModelMode.Compilation);
+        	modelC.setSolver(Solver.ode4);
+        	modelC.generate();
+
+        	System.out.println();
+
+        	if(modelC.getErrorList().size()==0) {
+        		modelC.makeExeFile();
+        		modelC.saveToDatabase();
+        	}
+        	
+        	response.getWriter().write("{\"code\":2000}");
+        }
+        catch(ModelException e) {
+        	System.err.println(e.getMessage());
+        	System.err.println("Code generatrion terminated unsuccessfully。。。");
+        	response.getWriter().write("{\"code\":400,\"message\":\""+e.getMessage()+"\"}");
+        }
+		
+	}
+
+}

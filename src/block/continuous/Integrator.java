@@ -9,6 +9,7 @@ import block.io.OutputPort;
 import block.io.State;
 import block.io.Parameter;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 
 public class Integrator extends Block {
 	private State stateIntegral;
@@ -26,31 +27,39 @@ public class Integrator extends Block {
 		parameterList.add(initialCondition);
 	}
 	
-	public String generateInitCodeM() {
-		String code=super.generateInitCodeM();
-		code+=stateIntegral.getName()+"="+paramValues.getDouble("InitialCondition")+";\n"; 
+	public void generateInitCodeM(CodeStructM code) {
+		String initCode="";
 		
-		return code;
+		super.generateInitCodeM(code);
+		
+		initCode+=initialCondition.getName()+"="+paramValues.getDouble("InitialCondition")+";\n"; 
+		initCode+=stateIntegral.getName()+"="+initialCondition.getName()+";\n"; 
+		
+		code.addInitCode(initCode);
 	}
 	
-	public String generateUpdateCodeM() {
-		String code=super.generateUpdateCodeM();
+	public void generateDerivativeCodeM(CodeStructM code) {
+		String derivativeCode="";
 		
-		code+=stateIntegral.getName()+"="
-				+stateIntegral.getName()+"+"
+		super.generateDerivativeCodeM(code);
+		
+		derivativeCode+=stateIntegral.getDerivativeName()+"="
 				+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
-				+"*"
-				+getModel().getConfig().getFixedStep()
 				+";\n";
 		
-		return code;
+		code.addDerivativeCode(derivativeCode);
 	}
 	
-	public String generateOutputCodeM() {
-		String code=outputPortList.get(0).getOutputSignalC().getName()+"="+stateIntegral.getName()
+	public void generateOutputCodeM(CodeStructM code) {
+		
+		String outputCode="";
+		
+		super.generateOutputCodeM(code);
+		
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+stateIntegral.getName()
 					+";\n";
 		
-		return code;
+		code.addOutputCode(outputCode);
 	}
 	
 	public void generateInitCodeC(CodeStructC code) {
@@ -65,20 +74,6 @@ public class Integrator extends Block {
 		code.addInitCode(initCode);
 	}
 	
-	public void generateUpdateCodeC(CodeStructC code) {
-		super.generateUpdateCodeC(code);
-		
-		String updateCode="/*Code for update of block Intergator:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		updateCode+=stateIntegral.getName()+"="
-				+stateIntegral.getName()+"+"
-				+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
-				+"*"
-				+getModel().getConfig().getFixedStep()
-				+";\n";
-		
-		code.addUpdateCode(updateCode); 
-	}
 	
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Intergator:("+getBlockId()+")"+getBlockName()+"*/\n";
@@ -87,5 +82,16 @@ public class Integrator extends Block {
 					+";\n";
 		
 		code.addOutputCode(outputCode);
+	}
+	
+	public void generateDerivativeCodeC(CodeStructC code) {
+		
+		String derivativeCode="/*Code for Derivative of block Intergator:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		derivativeCode+=stateIntegral.getDerivativeName()+"="
+				+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
+				+";\n";
+		
+		code.addDerivativeCode(derivativeCode);
 	}
 }

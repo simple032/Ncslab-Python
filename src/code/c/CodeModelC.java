@@ -1,16 +1,24 @@
 package code.c;
 
-import java.util.Vector;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 import org.json.JSONObject;
 
 import block.Block;
 import block.io.InputPort;
 import block.io.OutputPort;
+import code.CodeGenerationOption;
 import code.CodeModel;
 import line.Line;
 import ncslablink.ErrorMessage;
 import ncslablink.ModelException;
+import ncslablink.ModelMode;
+import main.database.Algorithms;
 
 public class CodeModelC extends CodeModel {
 	
@@ -18,13 +26,13 @@ public class CodeModelC extends CodeModel {
 	
 	private CodeStructC code=new CodeStructC(this);
 	
-	//ï¿½ï¿½ï¿½É´ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í³ï¿½ï¿½singalï¿½ï¿½parameterï¿½Ä¸ï¿½ï¿½ï¿½
+	//Éú³É´úÂëµÄÊ±ºòÍ³¼ÆsingalºÍparameterµÄ¸öÊý
 	private int signalNum=0;
 	private int parameterNum=0;
 	private int stateNum=0;
 	
-	CodeModelC(JSONObject jsonIn) throws ModelException{
-		super(jsonIn);
+	CodeModelC(JSONObject jsonIn,ModelMode mode) throws ModelException{
+		super(jsonIn,mode);
 	}
 	
 	public void setSignalNum(int signalNum) {
@@ -51,8 +59,8 @@ public class CodeModelC extends CodeModel {
 		return this.stateNum;
 	}
 	
-	public static CodeModelC createFromJSON(JSONObject jsonIn) throws ModelException {
-		CodeModelC model=new CodeModelC(jsonIn);
+	public static CodeModelC createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException {
+		CodeModelC model=new CodeModelC(jsonIn,mode);
 		
 		return model;
 	}
@@ -62,12 +70,12 @@ public class CodeModelC extends CodeModel {
 		writeCCodeFiles(); 
 	}
 	
-	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Ò»Ïµï¿½ï¿½ï¿½Ä¼ï¿½ */
+	/*½«´úÂë±ä³ÉCÓïÑÔµÄÒ»ÏµÁÐÎÄ¼þ */
 	private void writeCCodeFiles() {
 		code.writeCCodeFiles();
 	}
 	
-	protected void generateInitCode() {
+	protected void generateInitCode(CodeGenerationOption option) {
 		System.out.println("Generating init codes......");
 		for(Block block:blockList) {
 			System.out.println("Generating init codes for ("+block.getBlockId()+")"+block.getBlockName());
@@ -83,7 +91,7 @@ public class CodeModelC extends CodeModel {
 		code.gnenrateDataStructureCode();
 	}
 	
-	protected void generateBlockOutputCode(Block block) {
+	protected void generateBlockOutputCode(Block block,CodeGenerationOption option) {
 		block.generateBlockOutputCodeC(code);
 	}
 	
@@ -91,7 +99,7 @@ public class CodeModelC extends CodeModel {
 		block.generateBlockUpdateCodeC(code);
 	}
 	
-	protected void generateUpdateCode() {
+	protected void generateUpdateCode(CodeGenerationOption option) {
 		System.out.println("Generating update codes......");
 		
 		for(Block block:blockList) {
@@ -101,7 +109,7 @@ public class CodeModelC extends CodeModel {
 		}
 	}
 	
-	/*ï¿½ï¿½ï¿½ï¿½makeï¿½ï¿½ï¿½î£¬ï¿½ï¿½ï¿½É¿ï¿½Ö´ï¿½Ð´ï¿½ï¿½ï¿½ */
+	/*µ÷ÓÃmakeÃüÁî£¬Éú³É¿ÉÖ´ÐÐ´úÂë */
 	public void makeExeFile() {
 		System.out.println("Making exe file ncslabccode.exe...");
 		if(code.makeExeFile()) {
@@ -111,5 +119,44 @@ public class CodeModelC extends CodeModel {
 			System.out.println("Cannot create exe file ncslabccode.exe!");
 		}
 	}
-
+	
+	protected void generateDerivativeCode(CodeGenerationOption option) {
+		System.out.println("Generating derivative codes......");
+		
+		for(Block block:blockList) {
+			System.out.println("Generating derivative codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			block.generateBlockDerivativeCodeC(code);
+		}
+	}
+	
+	public void saveToDatabase() {
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory("piscesPU");
+        final EntityManager em = emf.createEntityManager();
+ 
+        Algorithms algorithm = new Algorithms();
+        
+        algorithm.setAuthor(getSaveInfo().getInt("userId"));
+        algorithm.setName(getSaveInfo().getString("modelRealName"));
+        algorithm.setBin(code.readExeFile());
+        
+        algorithm.setTestRig(getSaveInfo().getInt("testRig"));
+        algorithm.setModelId(getSaveInfo().getInt("modelId"));
+        algorithm.setLastUpdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+        
+        algorithm.setStepTime(new Float(getSaveInfo().getDouble("stepTime")));
+        algorithm.setPacketSize(getSaveInfo().getInt("packetSize"));
+        
+        algorithm.setUuid(getSaveInfo().getLong("uuid"));
+        algorithm.setPublicFlag(getSaveInfo().getInt("publicFlag"));
+        algorithm.setTargetPlatform(getSaveInfo().getInt("targetPlatform"));
+ 
+        try {
+            em.getTransaction().begin();
+            em.persist(algorithm);
+            em.getTransaction().commit();
+        } finally {
+            em.close();
+        }
+	}
 }

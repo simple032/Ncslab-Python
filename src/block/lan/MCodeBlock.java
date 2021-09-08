@@ -1,10 +1,15 @@
 package block.lan;
 
+import code.m.CodeStructM;
+
 public interface MCodeBlock {
-	public String generateOutputCodeM();
-	public String generateBlockOutputCodeM();
-	public String generateBlockInitCodeM();
-	public String generateInitCodeM();
-	public String generateBlockUpdateCodeM();
-	public String generateUpdateCodeM();
+	public void generateOutputCodeM(CodeStructM code);
+	public void generateBlockOutputCodeM(CodeStructM code);
+	public void generateBlockInitCodeM(CodeStructM code);
+	public void generateInitCodeM(CodeStructM code);
+	public void generateBlockUpdateCodeM(CodeStructM code);
+	public void generateUpdateCodeM(CodeStructM code);
+	
+	public void generateBlockDerivativeCodeM(CodeStructM code);
+	public void generateDerivativeCodeM(CodeStructM code);
 }

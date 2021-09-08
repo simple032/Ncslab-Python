@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import block.io.OutputPort;
 import block.io.Parameter;
 import code.c.CodeStructC;
+import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
 public class Constant extends block.Block{
@@ -20,10 +21,23 @@ public class Constant extends block.Block{
 		parameterList.add(value);
 	}
 	
-	public String generateOutputCodeM() {
-		String code="Block"+this.getBlockId()+"_Output1="+paramValues.getDouble("Value")+";\n";
+	public void generateInitCodeM(CodeStructM code) {
+		super.generateInitCodeM(code);
 		
-		return code;
+		String initCode="";
+		
+		initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n"; 
+		
+		code.addInitCode(initCode);
+	}
+	
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
+		String outputCode="";
+				
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
+		
+		code.addOutputCode(outputCode);
 	}
 	
 	
