@@ -101,5 +101,7 @@ void storeDerivative(int);
 void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
 
+unsigned char calcSum(unsigned char bytes[]);
+
 #endif
 

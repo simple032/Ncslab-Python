@@ -41,7 +41,7 @@ public class compile extends HttpServlet {
 		
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		
-		//¶ÁÈ¡PostµÄJSONÅäÖÃ
+		//ï¿½ï¿½È¡Postï¿½ï¿½JSONï¿½ï¿½ï¿½ï¿½
 		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
         String result = "";
         int respInt = insr.read();
@@ -52,9 +52,9 @@ public class compile extends HttpServlet {
         JSONObject jsonIn = new JSONObject(result);
         
         try {
-        	//½¨Á¢CÓïÑÔµÄÉú³ÉÆ÷CodeModelC
+        	//ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CodeModelC
         	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn,ModelMode.Compilation);
-        	modelC.setSolver(Solver.ode4);
+        	modelC.setSolver(Solver.ode1);
         	modelC.generate();
 
         	System.out.println();
@@ -68,7 +68,7 @@ public class compile extends HttpServlet {
         }
         catch(ModelException e) {
         	System.err.println(e.getMessage());
-        	System.err.println("Code generatrion terminated unsuccessfully¡£¡£¡£");
+        	System.err.println("Code generatrion terminated unsuccessfullyï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
         	response.getWriter().write("{\"code\":400,\"message\":\""+e.getMessage()+"\"}");
         }
 		

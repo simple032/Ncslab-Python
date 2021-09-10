@@ -1,11 +1,22 @@
 #include"ncslabccode.h"
 #include"ServerThread.h"
+#include "ncs_serialport.h"
 
 MODEL *mp;
 
 ExtModeData extModeData;
 
 timer_t main_timer;
+
+unsigned char calcSum(unsigned char bytes[])
+{
+    int i = 0;  
+    unsigned char res = 0x00;
+    for(i=0; i<6; i++){
+ 	res += bytes[i];
+    }
+    return res;
+}
 
 /*static*/void timer_in_callback(union sigval v)
 { 

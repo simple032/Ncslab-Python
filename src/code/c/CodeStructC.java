@@ -41,6 +41,8 @@ public class CodeStructC {
 	public String stateDefineCode="";
 	/*����Output�źŵĴ��룬�� REAL Block1_Output1;*/
 	public String outputSignalDefineCode="";
+	
+	public String otherCode="";
 
 	/*�������м������ʵ��Ĵ��룬����INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
@@ -92,13 +94,15 @@ public class CodeStructC {
 	public void generateIncludeCode() {
 		includeCode+=""
 				+"#include\"ncslabccode.h\"\n"
-				+"#include\"ncslab.h\"\n";
+				+"#include\"ncslab.h\"\n"
+				+"#include\"ncs_serialport.h\"\n";
 	}
 
 	private void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.c...");
 		//precode�ǲ�����״̬��������Ķ��壬��ȫ�ֱ����ķ�ʽ
-		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"+outputSignalDefineCode+"\n";
+		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"
+					+outputSignalDefineCode+"\n"+otherCode+"\n";
 		String mainCCode=includeCode+"\n"
 				+preCode+"\n"
 				+dataStructureCode+"\n"
@@ -300,6 +304,9 @@ public class CodeStructC {
 		writeNCSLabFile("ClientThread.h");
 		writeNCSLabFile("UploadThread.c");
 		writeNCSLabFile("UploadThread.h");
+		
+		writeNCSLabFile("ncs_serialport_pi.c");
+		writeNCSLabFile("ncs_serialport.h");
 
 		//д�����ɵ�������ncslabccdoe.c
 		writeMainCodeFile();
@@ -615,6 +622,14 @@ public class CodeStructC {
 
 		dataStructureInitCode+="model.stateNum="+stateNum+";\n";
 		dataStructureInitCode+="model.states=states;\n";
+	}
+
+	public void generateOtherCode() {
+		// TODO Auto-generated method stub
+		otherCode += "int hComm;\n" + 
+				"\n" + 
+				"\n" + 
+				"unsigned char calcSum(unsigned char bytes[]);\n";
 	}
 
 }

@@ -36,6 +36,8 @@ public class BlockType {
 			break;
 		case "Transfer Fcn":
 			block=new block.continuous.TransferFcn(blockJSON, model);
+		case "newMotor":
+			block=new block.testrig.NewMotor(blockJSON, model);
 		}
 		
 		if(block==null) {
