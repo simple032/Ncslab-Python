@@ -31,6 +31,10 @@ public class CodeModelM extends CodeModel{
 	public String getCode() {
 		return code.getMainCode();
 	}
+	
+	public String getCodePath() {
+		return code.getCodePath();
+	}
 
 	//ç”Ÿæˆä»£ç çš„æ–¹æ³•ï¼Œä½¿ç”¨ä¸Šä¸€çº§çš„å°±å¯ä»¥äº†
 	public void generate() {
@@ -38,7 +42,7 @@ public class CodeModelM extends CodeModel{
 		writeMCodeFiles();
 	}
 	
-	/*½«´úÂë±ä³ÉMÓïÑÔµÄÒ»ÏµÁĞÎÄ¼ş */
+	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½Ôµï¿½Ò»Ïµï¿½ï¿½ï¿½Ä¼ï¿½ */
 	private void writeMCodeFiles() {
 		code.writeMCodeFiles();
 	}
