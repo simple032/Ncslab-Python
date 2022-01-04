@@ -72,6 +72,48 @@ public class BlockType {
 		case "Demux":
 			block=new block.route.Demux(blockJSON, model);
 			break;	
+		case "State-Space":
+			block=new block.continuous.StateSpace(blockJSON,model);
+			break;
+		case "Saturation":
+			block=new block.discontinuous.Saturation(blockJSON,model);
+			break;
+		case "Relay":
+			block=new block.discontinuous.Relay(blockJSON,model);
+			break;
+		case "Dead Zone":
+			block=new block.discontinuous.DeadZone(blockJSON,model);
+			break;
+		case "Trigonometric Function":
+			block=new block.math.TrigFunction(blockJSON,model);
+			break;
+		case "Add":
+			block=new block.math.Add(blockJSON,model);
+			break;
+		case "Sign":
+			block=new block.math.Sign(blockJSON,model);
+			break;
+		case "Product":
+			block=new block.math.Product(blockJSON,model);
+			break;
+		case "Math Function":
+			block=new block.math.MathFunction(blockJSON,model);
+			break;
+		case "Step":
+			block=new block.source.Step(blockJSON,model);
+			break;
+		case "Pulse Generator":
+			block=new block.source.Pulse(blockJSON,model);
+			break;
+		case "Repeating Sequence":
+			block=new block.source.RepeatingSequence(blockJSON,model);
+			break;
+		case "Ramp":
+			block=new block.source.Ramp(blockJSON,model);
+			break;
+		case "Sine Wave":
+			block=new block.source.SineWave(blockJSON,model);
+			break;
 		}
 		
 		if(block==null) {

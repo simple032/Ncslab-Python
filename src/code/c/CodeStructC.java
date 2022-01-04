@@ -345,25 +345,25 @@ public class CodeStructC {
 		//makefile
 		writeMakefile("makefile");
 		//�����ݽṹ
-//		writeNCSLabFile("ncslabccode.h");
+		writeNCSLabFile("ncslabccode.h");
 		//main�����Լ���ʱ��
 		writeNCSLabFile("ncslabmain.c");
 		//���������ݽṹ�Ľӿ�API����
 		writeNCSLabFile("DataApi.c");
-//		writeNCSLabFile("DataApi.h");
+		writeNCSLabFile("DataApi.h");
 		
 		writeNCSLabFile("util.c");
 
 		//ʵ��NetconЭ���ͨ���ļ�
 		writeNCSLabFile("ServerThread.c");
-//		writeNCSLabFile("ServerThread.h");
+		writeNCSLabFile("ServerThread.h");
 		writeNCSLabFile("ClientThread.c");
-//		writeNCSLabFile("ClientThread.h");
+		writeNCSLabFile("ClientThread.h");
 		writeNCSLabFile("UploadThread.c");
-//		writeNCSLabFile("UploadThread.h");
-//		
+		writeNCSLabFile("UploadThread.h");
+		writeNCSLabFile("ncslabdefines.h");
 		writeNCSLabFile("ncs_serialport_pi.c");
-//		writeNCSLabFile("ncs_serialport.h");
+		writeNCSLabFile("ncs_serialport.h");
 
 		//д�����ɵ�������ncslabccdoe.c
 		for(Block block: model.getBlockList()) {
