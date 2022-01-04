@@ -1,0 +1,100 @@
+package block.route;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+
+import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import block.Block;
+import block.io.InputPort;
+import block.io.OutputPort;
+import block.io.State;
+import block.math.Matrix;
+import code.c.CodeStructC;
+import code.m.CodeStructM;
+import ncslablink.NCSLabModel;
+
+public class Mux extends Block {
+	private int num;
+
+	public Mux(JSONObject blockIn,NCSLabModel model) {
+		super(blockIn,model);
+		
+		this.num = paramValues.getInt("Inputs");				
+		
+		//һ�����룬һ�����
+		for(int i=0; i<num; i++) {
+			inputPortList.add(new InputPort(this,i+1));
+		}
+		outputPortList.add(new OutputPort(this,1,num));
+	}
+
+	public void generateInitCodeM(CodeStructM code) {
+		super.generateInitCodeM(code);
+		String initCode=getOutputPortVariable(0)+"=0";
+
+		
+		code.addInitCode(initCode);
+	}
+	
+	
+	
+	public void generateOutputCodeM(CodeStructM code) {
+		super.generateOutputCodeM(code);
+			
+		String outputCode=getOutputPortVariable(0)+"=0";
+		
+		
+		outputCode+=";\n";
+		
+		code.addOutputCode(outputCode);
+	}
+	
+	public void generateDerivativeCodeM(CodeStructM code) {
+		super.generateDerivativeCodeM(code);
+		
+		String derivativeCode="";
+		
+
+		derivativeCode+=");\n";
+		
+		code.addDerivativeCode(derivativeCode);
+	}
+	
+	public void generateInitCodeC(CodeStructC code) {
+		super.generateInitCodeC(code);
+		
+		String initCode="/*Code for initialization of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+
+		
+		code.addInitCode(initCode);
+	}
+	
+	public void generateOutputCodeC(CodeStructC code) {
+		String outputCode="/*Code for output of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+		//y(k)=Cx(k)+Du(k)
+		
+		for(int i=0; i<num; i++) {
+			outputCode+=getOutputPortVariable(0)+"["+i+"]="
+				+getInputPortVariable(i)
+				+";\n";
+		}		
+
+		code.addOutputCode(outputCode);
+	}
+	
+	public void  generateDerivativeCodeC(CodeStructC code) {
+		String derivativeCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		
+		code.addDerivativeCode(derivativeCode);
+	}
+	
+	public void  generateUpdateCodeC(CodeStructC code) {
+		String updateCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+		
+		code.addUpdateCode(updateCode);	
+	}
+}

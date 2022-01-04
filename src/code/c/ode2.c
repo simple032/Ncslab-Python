@@ -11,10 +11,10 @@ void NCSLabOneStep(){
 
   mp->offset=0;
   NCSLabOutput();
-
+  mp->majorStep=1;
   //Calculate K0
 	NCSLabDerivative();
-
+  mp->majorStep=0;
   //Calculate K1
   storeState();
   mp->stepSize=STEP_SIZE/2;

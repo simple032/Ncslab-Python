@@ -11,25 +11,27 @@ import block.io.State;
 import code.c.CodeModelC;
 
 public class CodeStructM {
-	//init³õÊ¼»¯µÄ´úÂë
+	//initï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public String initCode="";
-	//OutputµÄ´úÂë
+	//Outputï¿½Ä´ï¿½ï¿½ï¿½
 	public String outputCode="";
-	//updateµÄ´úÂë
+	//updateï¿½Ä´ï¿½ï¿½ï¿½
 	public String updateCode="";
 
-	//derivativeµÄ´úÂë
+	//derivativeï¿½Ä´ï¿½ï¿½ï¿½
 	public String derivativeCode="";
 
 	public String globalDefineCode="";
 
 	private String codePathBase=utils.Property.instance.getProperty("MCodePath");
-	//Ä¿±êÎÄ¼þ¼ÐµÄÎ»ÖÃcodePathBase/ÓÃ»§id/modelId
+	//Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½Î»ï¿½ï¿½codePathBase/ï¿½Ã»ï¿½id/modelId
 	private String codePath;
 
 	private Vector<Parameter> parameterList=new Vector<Parameter>();
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
+
+	private String mainCode="";
 
 	private CodeModelM model;
 
@@ -38,21 +40,22 @@ public class CodeStructM {
 
 	}
 
-	//¼ÓÈëÈ«¾ÖµÄParameterµÄÁÐ±í
+	//ï¿½ï¿½ï¿½ï¿½È«ï¿½Öµï¿½Parameterï¿½ï¿½ï¿½Ð±ï¿½
 	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
 	}
-	//¼ÓÈëÈ«¾ÖµÄstateµÄÁÐ±í
+	//ï¿½ï¿½ï¿½ï¿½È«ï¿½Öµï¿½stateï¿½ï¿½ï¿½Ð±ï¿½
 	public void addState(State state) {
 		stateList.add(state);
 	}
-	//¼ÓÈëÈ«¾ÖµÄÐÅºÅµÄÁÐ±í
+	//ï¿½ï¿½ï¿½ï¿½È«ï¿½Öµï¿½ï¿½ÅºÅµï¿½ï¿½Ð±ï¿½
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
 
 	public String getMainCode() {
-		return initCode+outputCode+updateCode+derivativeCode;
+		//return initCode+outputCode+updateCode+derivativeCode;
+		return mainCode;
 	}
 
 	public String getInitCode() {
@@ -87,7 +90,7 @@ public class CodeStructM {
 		globalDefineCode+=code;
 	}
 
-	//Éú³É¶¨ÒåglobalµÄ´úÂë
+	//ï¿½ï¿½ï¿½É¶ï¿½ï¿½ï¿½globalï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateGlobalDefineCode() {
 		for(Parameter parameter:parameterList) {
 			globalDefineCode+="global "+parameter.getName()+";\n";
@@ -105,7 +108,7 @@ public class CodeStructM {
 
 		generateGlobalDefineCode();
 
-		//Éú³ÉÄ¿±êÎÄ¼þ¼ÐµÄÎ»ÖÃcodePathBase/ÓÃ»§id/modelId
+		//ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½Î»ï¿½ï¿½codePathBase/ï¿½Ã»ï¿½id/modelId
 		String userPath=codePathBase+model.getUserId();
 
 		File file=new File(userPath);
@@ -172,6 +175,46 @@ public class CodeStructM {
 		return code;
 	}
 	
+	private String calculateDerivativeCode(double[] weights) {
+		String code="";
+		for(State state:stateList) {
+			code+=state.getDerivativeName()+"=0";
+			int i=0;
+			for(double w:weights) {
+				code+="+("+weights[i]+")*"+state.getDerivativeName()+i;
+				i++;
+			}
+			code+=";\n";
+		}
+		return code;
+	}
+	
+	private String calculateStateDifCode(int seq1,int seq2) {
+		String code="";
+		code+="dif=0;\n";
+		for(State state:stateList) {
+			code+="if dif<abs("+state.getName()+seq1+"-"+state.getName()+seq2+");\n";
+			code+="dif=abs("+state.getName()+seq1+"-"+state.getName()+seq2+");\n";
+			code+="end\n";
+		}
+		return code;
+	}
+	
+	/*
+	private String getDerivativeCode(double[] weight) {
+		String code="";
+		
+		for(State state:stateList) {
+			code+=state.getDerivativeName()+"=0";
+			for(int i=0;i<weight.length;i++) {
+				code+="+"+state.getDerivativeName()+i+"*("+weight[i]+")";
+			}
+			code+=";\n";
+		}
+		
+		return code;
+	}*/
+	
 	private String getOde2Code() {
 		String code="";
 		code+="offset=0;\n";
@@ -201,20 +244,8 @@ public class CodeStructM {
 		
 		return code;
 	}
-	
-	private String calculateDerivativeCode(double[] weights) {
-		String code="";
-		for(State state:stateList) {
-			code+=state.getDerivativeName()+"=0";
-			int i=0;
-			for(double w:weights) {
-				code+="+"+weights[i]+"*"+state.getDerivativeName()+i;
-				i++;
-			}
-			code+=";\n";
-		}
-		return code;
-	}
+
+
 	
 	private String getOde3Code() {
 		String code="";
@@ -309,12 +340,145 @@ public class CodeStructM {
 		return code;
 	}
 	
-	private void writeNCSLabMainCode() {
-		String fileName="ncslabmain.m";
 
-		String code="clear all\n";
+	private String getOde23Code() {
+		String code="";
+		
+		code+="time=[time t];\n";
+		
+		code+="offset=0;\n";
+		code+="storeEnable=1;\n";
+		code+=outputCode;
+		code+="storeEnable=0;\n";
+		
+		code+=getStateStoreCode(0);
+		
+		code+="for i=1:2\n";
+		
+		code+="%Calculate K1\n";
+		code+=derivativeCode;
+		code+=getDerivativeStoreCode(0);
+		
+		code+="%Calculate K2\n";
+		code+=getStateRestoreCode(0);
+		code+="stepSize=h/4;\n";
+		code+=updateCode;
+		code+="offset=h/4;\n";
+		code+=outputCode;
+		code+=derivativeCode;
+		code+=getDerivativeStoreCode(1);
+		
+		code+="%Calculate K3\n";
+		code+=getStateRestoreCode(0);
+		code+="stepSize=h*3.0/8.0;\n";
+		double[] weights3= {1.0/4.0,3.0/4.0};
+		code+=calculateDerivativeCode(weights3);
+		code+=updateCode;
+		code+="offset=h*3.0/8.0;\n";
+		code+=outputCode;
+		code+=derivativeCode;
+		code+=getDerivativeStoreCode(2);
+		
+		code+="%Calculate K4\n";
+		code+=getStateRestoreCode(0);
+		code+="stepSize=h*12.0/13.0;\n";
+		double[] weights4= {1932.0/2028.0,-7200.0/2028.0,7296.0/2028.0};
+		code+=calculateDerivativeCode(weights4);
+		code+=updateCode;
+		code+="offset=h*12.0/13.0;\n";
+		code+=outputCode;
+		code+=derivativeCode;
+		code+=getDerivativeStoreCode(3);
+		
+		code+="%Calculate K5\n";
+		code+=getStateRestoreCode(0);
+		code+="stepSize=h;\n";
+		double[] weights5= {439.0/216.0,-8.0,3680.0/513.0,-845.0/4104.0};
+		code+=calculateDerivativeCode(weights5);
+		code+=updateCode;
+		code+="offset=h;\n";
+		code+=outputCode;
+		code+=derivativeCode;
+		code+=getDerivativeStoreCode(4);
+		
+		code+="%Calculate K6\n";
+		code+=getStateRestoreCode(0);
+		code+="stepSize=h/2.0;\n";
+		double[] weights6= {-8.0/27.0*2.0,2.0*2.0,-3544.0/2565.0*2.0,1859.0/4104.0*2.0,-11.0/40.0*2.0};
+		code+=calculateDerivativeCode(weights6);
+		code+=updateCode;
+		code+="offset=h/2.0;\n";
+		code+=outputCode;
+		code+=derivativeCode;
+		code+=getDerivativeStoreCode(5);
+		
+		code+="%update\n";
+		code+=getStateRestoreCode(0);
+		code+="stepSize=h;\n";
+		double[] weightss1= {25.0/216.0,0.0,1408.0/2565.0,2197.0/4104.0,-1.0/5.0};
+		//double[] weights= {16.0/135.0, 0.0, 6656.0/12825.0, 28561.0/56430.0,-9.0/50.0,2.0/55.0};
+		code+=calculateDerivativeCode(weightss1);
+		code+=updateCode;
+		code+=getStateStoreCode(1);
+		
+		code+="%update\n";
+		code+=getStateRestoreCode(0);
+		code+="stepSize=h;\n";
+		//double[] weights= {25.0/216.0,0.0,1408.0/2565.0,2197.0/4104.0,-1.0/5.0};
+		double[] weightss2= {16.0/135.0, 0.0, 6656.0/12825.0, 28561.0/56430.0,-9.0/50.0,2.0/55.0};
+		code+=calculateDerivativeCode(weightss2);
+		code+=updateCode;
+		code+=getStateStoreCode(2);
+		
+		
+		code+=calculateStateDifCode(1,2);
+		
+		code+="nh=((tol*h)/dif)^0.25*0.84*h;\n";
+		
+		//code+="if nh<h || i==2 ||t!="+model.getConfig().getStartTime()+" \n";
+		code+="if nh<h || i==2 \n";
+		code+="break;\n";
+		code+="end\n";
+		
+		code+="h=nh;\n";
+		code+=getStateRestoreCode(0);
+		code+="offset=0;\n";
+		code+=outputCode;
+		
+		code+="end\n";
+		
+		
+		return code;
+	}
+	
+	private void writeNCSLabMainCode() {
+		String fileName="ncslabmain"+model.getModelSeq()+".m";
+		
+		
+		String code="%clear all\n";
+		code+="ScopeNum=0;\n";
 		code+=initCode;
-		code+="for t="+model.getConfig().getStartTime()+":"+model.getConfig().getFixedStep()+":"+model.getConfig().getStopTime()+"\n";
+		
+		switch(model.getSolver())
+		{
+		case ode1:
+		case ode2:
+		case ode3:
+		case ode4:
+			code+="time="+model.getConfig().getStartTime()+":"+model.getConfig().getFixedStep()+":"+model.getConfig().getStopTime()+";\n";
+			code+="for t="+model.getConfig().getStartTime()+":"+model.getConfig().getFixedStep()+":"+model.getConfig().getStopTime()+"\n";
+			code+="h="+model.getConfig().getFixedStep()+";\n";
+			break;
+		
+		case ode23:
+			code+="time=[];\n";
+			code+="t="+model.getConfig().getStartTime()+";\n";
+			code+="h=0.01;\n";
+			code+="tol=1E-6;\n";
+			code+="while t<"+model.getConfig().getStopTime()+"\n";
+			break;
+		}
+		
 		
 		switch(model.getSolver()) {
 		case ode1:
@@ -329,9 +493,29 @@ public class CodeStructM {
 		case ode4:
 			code+=getOde4Code();
 			break;
+
+		case ode23:
+			code+=getOde23Code();
+			break;
 		}
 		
-		code+="end\n";
+		switch(model.getSolver())
+		{
+		case ode1:
+		case ode2:
+		case ode3:
+		case ode4:
+			code+="end\n";
+			break;
+		case ode23:
+			code+="t=t+h;\n";
+			code+="h=nh;\n;";
+			code+="end\n";
+			break;
+		}		
+		
+		mainCode=code;
+
 		
 		writeFile(fileName,code);
 	}
@@ -348,6 +532,11 @@ public class CodeStructM {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+
+	public String getCodePath() {
+		return codePath;
 	}
 	
 	/*
@@ -448,7 +637,7 @@ public class CodeStructM {
 		writeNCSLabFile(fileName,"","");
 	}
 	
-	//Ð´ÎÄ¼þµÄ·½·¨£¬½«ÎÄ¼þ´ÓresourceÖÐ¿½±´³öÀ´£¬Ð´ÔÚÄ¿±êÎÄ¼þ¼Ð
+	//Ð´ï¿½Ä¼ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½resourceï¿½Ð¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
 	private void writeNCSLabFile(String fileName,String preCode,String sufCode) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);

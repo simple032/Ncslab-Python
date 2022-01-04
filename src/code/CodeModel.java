@@ -9,6 +9,7 @@ import block.io.InputPort;
 import block.io.OutputPort;
 import line.Line;
 import ncslablink.ErrorMessage;
+import ncslablink.MatDimException;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 import ncslablink.NCSLabModel;
@@ -36,15 +37,15 @@ abstract public class CodeModel extends NCSLabModel {
 
 	private void generateOutputCodeFromChain(CodeGenerationOption option) {
 		for(Block block:outputChain) {
-			//±éÀúÍê³É£¬Ò²ÒªÉú³ÉÄ£¿éµÄÊä³ö´úÂë
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É£ï¿½Ò²Òªï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			generateBlockOutputCode(block,option);
 		}
 	}
 
 	private void setupOuputChain() {
-		//ÕÒµ½ÖÕ¶ËµÄBlock£¨Ö»ÓĞÊäÈëÃ»ÓĞÊä³ö£©£¬·ÅÈëterminalBlockList£¬×÷Îª±éÀúµÄÈë¿Ú
+		//ï¿½Òµï¿½ï¿½Õ¶Ëµï¿½Blockï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½terminalBlockListï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		findTerminalBlocks();
-		//±éÀú¸÷¸öÄ£¿é£¬°´ÕÕË³ĞòÉú³ÉOutputµÄ´úÂë
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½é£¬ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Outputï¿½Ä´ï¿½ï¿½ï¿½
 		scanOutputChain();
 	}
 
@@ -60,12 +61,12 @@ abstract public class CodeModel extends NCSLabModel {
 	public void generateOde1() {
 		CodeGenerationOption option=new CodeGenerationOption();
 
-		//Ê×ÏÈÉú³É³õÊ¼»¯´úÂë
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		generateInitCode(option);
 
 		generateOutputCodeFromChain(option);
 
-		//Ê×ÏÈÉú³ÉÊı¾İ¸üĞÂµÄ´úÂë£¬UpdateµÄ´úÂë²»ÏñOuput£¬²»ĞèÒª×¢ÒâË³Ğò
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¸ï¿½ï¿½ÂµÄ´ï¿½ï¿½ë£¬Updateï¿½Ä´ï¿½ï¿½ë²»ï¿½ï¿½Ouputï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òª×¢ï¿½ï¿½Ë³ï¿½ï¿½
 		generateUpdateCode(option);
 	}*/
 	
@@ -73,19 +74,19 @@ abstract public class CodeModel extends NCSLabModel {
 	public void generateOde1() {
 		CodeGenerationOption option=new CodeGenerationOption();
 
-		//Ê×ÏÈÉú³É³õÊ¼»¯´úÂë
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		generateInitCode(option);
-		//Éú³ÉÊä³öµÄ´úÂë		
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½		
 		generateOutputCodeFromChain(option);
-		//Éú³ÉÎ¢·ÖÁ¿µÄ´úÂë
+		//ï¿½ï¿½ï¿½ï¿½Î¢ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 		generateDerivativeCode(option);
 
-		//Ê×ÏÈÉú³ÉÊı¾İ¸üĞÂµÄ´úÂë£¬UpdateµÄ´úÂë²»ÏñOuput£¬²»ĞèÒª×¢ÒâË³Ğò
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¸ï¿½ï¿½ÂµÄ´ï¿½ï¿½ë£¬Updateï¿½Ä´ï¿½ï¿½ë²»ï¿½ï¿½Ouputï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òª×¢ï¿½ï¿½Ë³ï¿½ï¿½
 		generateUpdateCode(option);
 	}*/
 
 
-	//Éú³É´úÂëµÄÍ¨ÓÃ·¶Ê½£¬²»Í¬µÄÓïÑÔµÄÉú³É£¬¿ÉÒÔÖØÔØ
+	//ï¿½ï¿½ï¿½É´ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ã·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½ï¿½É£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	public void generate() {
 
 		CodeGenerationOption option=new CodeGenerationOption();
@@ -94,31 +95,40 @@ abstract public class CodeModel extends NCSLabModel {
 
 		setupOuputChain();
 
-		//Ê×ÏÈÉú³É³õÊ¼»¯´úÂë
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		generateInitCode(option);
-		//Éú³ÉÊä³öµÄ´úÂë		
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½		
 		generateOutputCodeFromChain(option);
-		//Éú³ÉÎ¢·ÖÁ¿µÄ´úÂë
+		//ï¿½ï¿½ï¿½ï¿½Î¢ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 		generateDerivativeCode(option);
 
-		//Ê×ÏÈÉú³ÉÊı¾İ¸üĞÂµÄ´úÂë£¬UpdateµÄ´úÂë²»ÏñOuput£¬²»ĞèÒª×¢ÒâË³Ğò
-		generateUpdateCode(option);
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¸ï¿½ï¿½ÂµÄ´ï¿½ï¿½ë£¬Updateï¿½Ä´ï¿½ï¿½ë²»ï¿½ï¿½Ouputï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òª×¢ï¿½ï¿½Ë³ï¿½ï¿½
+		try {
+			generateUpdateCode(option);
+		} catch (MatDimException e) {
+			// TODO Auto-generated catch block
+			errorList.add(new ErrorMessage(100, e.getMessage()));
+		}
+		
+		generateStatementCode(option);
 	}
 
-	//³õÊ¼»¯µÄ´úÂë£¬¼Ì³ĞµÄÀà¿ÉÒÔÖØÔØ
+	//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ë£¬ï¿½Ì³Ğµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	abstract protected void generateInitCode(CodeGenerationOption option);
-	//UpdateµÄ´úÂë£¬¼Ì³ĞµÄÀà¿ÉÒÔÖØÔØ
-	abstract protected void generateUpdateCode(CodeGenerationOption option);
-	//Ä³¸öÄ£¿éÊä³öµÄ´úÂë£¬¼Ì³ĞµÄÀà¿ÉÒÔÖØÔØ
+	//Updateï¿½Ä´ï¿½ï¿½ë£¬ï¿½Ì³Ğµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	abstract protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException;
+	//Ä³ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ë£¬ï¿½Ì³Ğµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	abstract protected void generateBlockOutputCode(Block block,CodeGenerationOption option); 
 
 	abstract protected void generateDerivativeCode(CodeGenerationOption option);
+	
+	abstract protected void generateStatementCode(CodeGenerationOption option);
 
 	private void scanInputPort(InputPort inputPort) {
 		Line line=inputPort.getLinkedLine();
 		OutputPort outputPort=line.getLinkedOutputPort();
 
-		//Èç¹ûÊä³ö¶Ë¿ÚÒÑ¾­Éú³ÉÍê±Ï£¬Ôò²»ÓÃÔÙÉú³É£¬½áÊøÕâÒ»¸ö·ÖÖ§µÄ±éÀú
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ö§ï¿½Ä±ï¿½ï¿½ï¿½
 		if(outputPort.getIsCodeGenerated()==true) {
 			return;
 		}
@@ -129,7 +139,7 @@ abstract public class CodeModel extends NCSLabModel {
 			}
 		}
 
-		//Èç¹û·¢ÏÖ´úÊı»·
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(isAlgebraicLoop) {
 			String errorString;
 			errorString="Found algorbet loop!!!";
@@ -152,10 +162,10 @@ abstract public class CodeModel extends NCSLabModel {
 		}
 
 
-		//¼ÇÂ¼Õâ¸öOutputPortÒÑ¾­ÔÚÏÖÓĞÂ·¾¶»ØÂ·ÖĞ£¬×÷Îª¼ÇÒä
+		//ï¿½ï¿½Â¼ï¿½ï¿½ï¿½OutputPortï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ğ£ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½
 		outputPortPathList.add(outputPort);
 
-		//Èç¹ûÃ»ÓĞÉú³É£¬ÄÇ¾Í±éÀúblock£¬Éú³ÉÕâ¸öblockµÄ´úÂë
+		//ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½É£ï¿½ï¿½Ç¾Í±ï¿½ï¿½ï¿½blockï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½blockï¿½Ä´ï¿½ï¿½ï¿½
 		Block block=outputPort.getBLock();
 
 		boolean isFeedThroughBlock=false;
@@ -166,38 +176,38 @@ abstract public class CodeModel extends NCSLabModel {
 			}
 		}
 
-		//Èç¹ûÓĞFeedthroughµÄÄ£¿é£¬ÔòÒª±éÀúÕû¸öÄ£¿éµÄInputPort
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Feedthroughï¿½ï¿½Ä£ï¿½é£¬ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½InputPort
 		if(isFeedThroughBlock) {
 			Vector<InputPort> InputPortList=block.getInputPortList();
 			for(InputPort input:InputPortList) {
-				//µİ¹éµ÷ÓÃ£¬ÊµÏÖ±éÀú
+				//ï¿½İ¹ï¿½ï¿½ï¿½Ã£ï¿½Êµï¿½Ö±ï¿½ï¿½ï¿½
 				scanInputPort(input);
 			}
-			//±éÀúÍê³É£¬Ò²ÒªÉú³ÉÄ£¿éµÄÊä³ö´úÂë
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É£ï¿½Ò²Òªï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			//generateBlockOutputCode(block);
 			outputChain.add(block);
 			block.setIsOuputCodeGenerated(true);
 		}
-		//Èç¹ûÃ»ÓĞ£¬¾ÍÖ±½ÓÉú³ÉÄ£¿éµÄÊä³ö´úÂë
+		//ï¿½ï¿½ï¿½Ã»ï¿½Ğ£ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		else {
-			//Éú³ÉÄ£¿éµÄÊä³ö´úÂë
+			//ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			//generateBlockOutputCode(block);
 			outputChain.add(block);
 			block.setIsOuputCodeGenerated(true);
 
-			//¾¡¹ÜÕâ¸öÄ£¿éµÄÊä³ö¼ÆËã²»È¡¾öÓÚµ±Ç°µÄÊäÈë£¬µ«ÊÇËüµÄUpdate»¹ÊÇĞèÒªÊäÈëÁ¿µÄ¼ÆËã¡£Òò´Ë½«Õâ¸öÄ£¿é¼ÓÈëscanBlockList£¬½øÈë¶ş´Î±éÀú
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã²»È¡ï¿½ï¿½ï¿½Úµï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Updateï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ã¡£ï¿½ï¿½Ë½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½scanBlockListï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î±ï¿½ï¿½ï¿½
 			scanBlockList.add(block);
 		}
 
-		//Çå³ı¼ÇÒäµÄÂ·¾¶»ØÂ·ÖĞµÄÕâ¸öÄ£¿é
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ğµï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½
 		outputPortPathList.remove(outputPortPathList.size()-1);
 	}
 
-	/*½øĞĞ±éÀúµÄ·½·¨*/
+	/*ï¿½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½*/
 	private void scanOutputChain() {
 		System.out.println("scaning outputChain");
 
-		//±éÀúËùÓĞµÄÖÕ¶ËÄ£¿é
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğµï¿½ï¿½Õ¶ï¿½Ä£ï¿½ï¿½
 		for(Block block:terminalBlockList) {
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
@@ -210,9 +220,9 @@ abstract public class CodeModel extends NCSLabModel {
 			block.setIsOuputCodeGenerated(true);
 		}
 
-		//½øĞĞ¶ş´Î±éÀú£¬ÒòÎª¶ş´Î±éÀú¹ı³ÌÖĞ£¬scanBlockListÖĞµÄÔªËØ¶¯Ì¬±ä»¯£¬ËùÓĞÒªÓÃwhileÑ­»·
+		//ï¿½ï¿½ï¿½Ğ¶ï¿½ï¿½Î±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½Î±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ£ï¿½scanBlockListï¿½Ğµï¿½Ôªï¿½Ø¶ï¿½Ì¬ï¿½ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½whileÑ­ï¿½ï¿½
 		while(scanBlockList.isEmpty()==false) {
-			//È¡³öµÚÒ»¸öÔªËØ½øĞĞ±éÀú
+			//È¡ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ôªï¿½Ø½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½
 			Block block=scanBlockList.remove(0);
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
@@ -221,7 +231,7 @@ abstract public class CodeModel extends NCSLabModel {
 		}
 	}
 
-	/*Ñ°ÕÒÖÕ¶ËBlockµÄº¯Êı£¬½«ËùÓĞµÄÖÕ¶Ëblock¼ÓÈëterminalBlockList£¬Îª±éÀú×ö×¼±¸ */
+	/*Ñ°ï¿½ï¿½ï¿½Õ¶ï¿½Blockï¿½Äºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğµï¿½ï¿½Õ¶ï¿½blockï¿½ï¿½ï¿½ï¿½terminalBlockListï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¼ï¿½ï¿½ */
 	private void findTerminalBlocks() {
 		System.out.println("Looking for terminal blocks");
 		for(Block block:blockList) {

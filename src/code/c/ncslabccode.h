@@ -14,6 +14,8 @@
 #include <sys/time.h>
 #include<signal.h>
 #include<time.h>
+#include "arpa/inet.h"
+#include "fcntl.h"
 
 #define REAL double
 #define real_T REAL
@@ -54,6 +56,13 @@ typedef struct {
 	void *vp;
 }SIGNAL;
 
+
+typedef void(*MdlUpdateFcn)(void* S);
+typedef void(*MdlOutputsFcn)(void* S, int tid);
+typedef void(*MdlStartFcn)(void* S);
+typedef void(*MdlDerivativesFcn)(void* S);
+typedef void(*MdlTerminateFcn)(void* S);
+
 typedef struct {
 	char *type;
 	char *name;
@@ -70,6 +79,15 @@ typedef struct {
 	SIGNAL **signals;
 
 }BLOCK;
+
+typedef struct SimStruct_tag{
+	MdlUpdateFcn update;
+	MdlOutputsFcn outputs;
+	MdlStartFcn start;
+	MdlDerivativesFcn derivatives;
+	MdlTerminateFcn terminate;
+	BLOCK* parentBlock;
+}SimStruct;
 
 typedef struct {
 	char *name;
@@ -88,6 +106,8 @@ typedef struct {
 	STATE **states;
 	
 	BLOCK **blocks;
+	int majorStep;
+	struct timeval tv;
 }MODEL;
 
 void NCSLabInit();

@@ -12,15 +12,19 @@ import line.Line;
 
 abstract public class NCSLabModel {
 	
-	//从Web端传过来的描述框图的json文件
+	private static int modelSeqCount=0;
+	
+	protected int modelSeq;
+	
+	//锟斤拷Web锟剿达拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷图锟斤拷json锟侥硷拷
 	private JSONObject jsonIn;
 	
-	//模型的名字（s开头的带数字的名字）
+	//模锟酵碉拷锟斤拷锟街ｏ拷s锟斤拷头锟侥达拷锟斤拷锟街碉拷锟斤拷锟街ｏ拷
 	private String modelName;
-	//模型的名字（用户指定的名字）
+	//模锟酵碉拷锟斤拷锟街ｏ拷锟矫伙拷指锟斤拷锟斤拷锟斤拷锟街ｏ拷
 	private String modelRealName;
 	
-	//模型的配置参数
+	//模锟酵碉拷锟斤拷锟矫诧拷锟斤拷
 	private Config config;
 	
 	private int userId;
@@ -33,25 +37,33 @@ abstract public class NCSLabModel {
 	
 	private ModelMode mode=ModelMode.Simulation;
 	
-	//组件块的列表
+	//锟斤拷锟斤拷锟斤拷锟叫憋拷
 	protected Vector<Block> blockList=new Vector<Block>();
 	
-	//线的列表
+	//锟竭碉拷锟叫憋拷
 	protected Vector<Line> lineList=new Vector<Line>();
 	
-	//错误信息的列表
+	//锟斤拷锟斤拷锟斤拷息锟斤拷锟叫憋拷
 	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
 	
-	//构造函数，从web传入json，建立模型的数据结构
+	//锟斤拷锟届函锟斤拷锟斤拷锟斤拷web锟斤拷锟斤拷json锟斤拷锟斤拷锟斤拷模锟酵碉拷锟斤拷锟捷结构
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		this.mode=mode;
 		
 		this.jsonIn=jsonIn;
 		
-		//解析json中的内容，建立block,line,input,output相互连接的数据结构
+		//锟斤拷锟斤拷json锟叫碉拷锟斤拷锟捷ｏ拷锟斤拷锟斤拷block,line,input,output锟洁互锟斤拷锟接碉拷锟斤拷锟捷结构
 		parseModel();
 		
+		modelSeq=modelSeqCount;
+		
+		modelSeqCount++;
+		
 		//System.out.println(config.getFixedStep());
+	}
+	
+	public int getModelSeq() {
+		return modelSeq;
 	}
 	
 	public String getModelRealName() {
@@ -78,6 +90,10 @@ abstract public class NCSLabModel {
 		return testRig;
 	}
 	
+	public String getModelName() {
+		return modelName;
+	}
+	
 	public Vector<ErrorMessage> getErrorList(){
 		return this.errorList;
 	}
@@ -92,7 +108,7 @@ abstract public class NCSLabModel {
 	
 	private void parseModel() throws ModelException{
 
-		//读入json中的信息
+		//锟斤拷锟斤拷json锟叫碉拷锟斤拷息
 		modelName=jsonIn.getString("modelName");
 		modelRealName=jsonIn.getString("modelRealName");
 		
@@ -101,15 +117,17 @@ abstract public class NCSLabModel {
 		uuid=jsonIn.getLong("uuid");
 		testRig=jsonIn.getInt("testRig");
 		
-		//读取json中的config配置
+		//锟斤拷取json锟叫碉拷config锟斤拷锟斤拷
 		config=Config.createFromJSON(jsonIn.getJSONObject("config"),mode);
 		
 		saveInfo=jsonIn.getJSONObject("saveInfo");
 		
-		//解析json文件中的block模块，建立block的数据结构
+		//锟斤拷锟斤拷json锟侥硷拷锟叫碉拷block模锟介，锟斤拷锟斤拷block锟斤拷锟斤拷锟捷结构
 		parseBlocks();
-		//解析json文件中的line模块，在数据结构中，用line连接各个block
+		//锟斤拷锟斤拷json锟侥硷拷锟叫碉拷line模锟介，锟斤拷锟斤拷锟捷结构锟叫ｏ拷锟斤拷line锟斤拷锟接革拷锟斤拷block
 		parseLines();
+		
+		updateDimensions();
 		
 		//showBlocks();
 	}
@@ -140,19 +158,19 @@ abstract public class NCSLabModel {
 		}
 	}
 	
-	/*读取所有的block，建立block的数据结构 */
+	/*锟斤拷取锟斤拷锟叫碉拷block锟斤拷锟斤拷锟斤拷block锟斤拷锟斤拷锟捷结构 */
 	private void parseBlocks() throws ModelException{
 		
 		JSONArray blockJSONList=jsonIn.getJSONArray("blocks");
 		for(int i=0;i<blockJSONList.length();i++) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
 
-			//根据Block的type，建立不同的block的数据结构
+			//锟斤拷锟斤拷Block锟斤拷type锟斤拷锟斤拷锟斤拷锟斤拷同锟斤拷block锟斤拷锟斤拷锟捷结构
 			Block block=BlockType.createBlock(i+1,blockJSON,this);
 			
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 			
-			//将block加入到blockList的Vector中
+			//锟斤拷block锟斤拷锟诫到blockList锟斤拷Vector锟斤拷
 			if(block!=null) {
 				blockList.add(block);
 			}
@@ -165,17 +183,23 @@ abstract public class NCSLabModel {
 		for(int i=0;i<lineJSONList.length();i++) {
 			JSONObject lineJSON=lineJSONList.getJSONObject(i);
 			
-			//建立Line的数据结构，连接两端的Block
+			//锟斤拷锟斤拷Line锟斤拷锟斤拷锟捷结构锟斤拷锟斤拷锟斤拷锟斤拷锟剿碉拷Block
 			Line line=Line.createLine(lineJSON, this);
 			line.setLineId(i+1);
 			
 			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
 			
-			//将Line加入到lineList中
+			//锟斤拷Line锟斤拷锟诫到lineList锟斤拷
 			if(line!=null) {
 				lineList.add(line);
 			}
 		}
 	}
-
+	
+	
+	private void updateDimensions() {
+		for(Block block:blockList) {
+			block.updateDimension();
+		}
+	}
 }

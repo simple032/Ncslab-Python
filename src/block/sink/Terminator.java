@@ -6,8 +6,8 @@ import block.io.InputPort;
 import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
-public class Scope extends block.Block{
-	public Scope(JSONObject scopeIn,NCSLabModel model) {
+public class Terminator extends block.Block{
+	public Terminator(JSONObject scopeIn,NCSLabModel model) {
 		super(scopeIn,model);
 		
 		//һ������

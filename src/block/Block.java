@@ -10,21 +10,22 @@ import block.io.State;
 import block.io.OutputSignal;
 import code.c.CodeStructC;
 import code.m.CodeStructM;
+import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 
-//¸÷¸öBlockÄ£¿éµÄ»ùÀà£¬¶¨ÒåÁËblockµÄ¿ò¼Ü£»Èç¹ûĞèÒªÉú³É¸÷ÖÖÓïÑÔ£¬ĞèÒªÁ¬½Ó¸÷ÖÖÓïÑÔÉú³ÉÆ÷µÄ½Ó¿Ú
+//ï¿½ï¿½ï¿½ï¿½BlockÄ£ï¿½ï¿½Ä»ï¿½ï¿½à£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½blockï¿½Ä¿ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½É¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä½Ó¿ï¿½
 public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
-	//BlockµÄÀàĞÍ£¬ĞèÒªÔÚBlockTypeÖĞ½¨Á¢blockµÄÊ±ºò·Ö±ğ¶Ô´ı
+	//Blockï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½Òªï¿½ï¿½BlockTypeï¿½Ğ½ï¿½ï¿½ï¿½blockï¿½ï¿½Ê±ï¿½ï¿½Ö±ï¿½Ô´ï¿½
 	protected String blockType;
 	protected String blockName;
 	
 	protected int blockId=0;
 	
-	//BlockµÄ²ÎÊı£¬ÒòÎª²»Í¬µÄblockÓĞ²»Í¬µÄ²ÎÊı£¬Òò´ËÒÔÔ­ÉúµÄjson¸ñÊ½´æ´¢
+	//Blockï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Í¬ï¿½ï¿½blockï¿½Ğ²ï¿½Í¬ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½jsonï¿½ï¿½Ê½ï¿½æ´¢
 	protected JSONObject paramValues;
 	
-	//ÊäÈëÓëÊä³ö¶Ë¿ÚµÄÁĞ±í
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿Úµï¿½ï¿½Ğ±ï¿½
 	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
 	protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
 	
@@ -33,13 +34,13 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	protected Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 	
-	//ÊÇ·ñÊä³öµÄ´úÂëÒÑ¾­Éú³É£¬Èç¹ûÉú³É£¬±éÀúµ½Õâ¸öÄ£¿éµÄÊ±ºò£¬Ö±½ÓÒıÓÃ¾ÍĞĞÁË£¬¾Í²»ĞèÒª½øÒ»²½±éÀúÁË
+	//ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½É£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½Ã¾ï¿½ï¿½ï¿½ï¿½Ë£ï¿½ï¿½Í²ï¿½ï¿½ï¿½Òªï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	protected boolean isOutputCodeGenerated=false;
 	
-	//Ö¸ÏòÉÏ¼¶ModelÄ£ĞÍµÄÖ¸Õë
+	//Ö¸ï¿½ï¿½ï¿½Ï¼ï¿½ModelÄ£ï¿½Íµï¿½Ö¸ï¿½ï¿½
 	protected NCSLabModel model;
 	
-	//BlockÖĞSingalÖĞµÄ¸öÊı£¬SignalÃ»ÓĞJavaµÄÊı¾İ½á¹¹£¬Signal¿ÉÒÔÊÇInputPortµÄÁ¿£¬Ò²¿ÉÒÔÊÇOutputPortÖĞµÄÁ¿£¬¾ßÌå¿´´úÂëÉú³ÉÊ±µÄÈÏ¶¨
+	//Blockï¿½ï¿½Singalï¿½ĞµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½SignalÃ»ï¿½ï¿½Javaï¿½ï¿½ï¿½ï¿½ï¿½İ½á¹¹ï¿½ï¿½Signalï¿½ï¿½ï¿½ï¿½ï¿½ï¿½InputPortï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½OutputPortï¿½Ğµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å¿´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ï¶ï¿½
 	protected int signalNum=0;
 	
 	protected Block(JSONObject blockIn,NCSLabModel model) {
@@ -110,7 +111,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return outputPortList.get(n).getOutputSignalC().getName();
 	}
 	
-	//Éú³ÉMÓïÑÔµÄOutput´úÂë,²»Í¬µÄBlockÀàĞÍ£¬ÖØÔØÕâ¸ö·½·¨£¬Éú³É×Ô¼ºµÄ´úÂë
+	//ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½Ôµï¿½Outputï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¬ï¿½ï¿½Blockï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public void  generateOutputCodeM(CodeStructM code) {
 	
 	}
@@ -122,7 +123,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}
 	}
 	
-	//Éú³ÉMÓïÑÔµÄOutput´úÂë£¬¹©ÉÏÒ»¼¶µ÷ÓÃ
+	//ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½Ôµï¿½Outputï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	public void generateBlockOutputCodeM(CodeStructM code) {
 		System.out.println("Generating block output code ("+blockId+"):"+blockName);
 		
@@ -135,11 +136,11 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}*/
 	}
 	
-	//Éú³ÉMÓïÑÔµÄInit´úÂë,²»Í¬µÄBlockÀàĞÍ£¬ÖØÔØÕâ¸ö·½·¨£¬Éú³É×Ô¼ºµÄ´úÂë
+	//ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½Ôµï¿½Initï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¬ï¿½ï¿½Blockï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateInitCodeM(CodeStructM code) {
 	}
 
-	//Éú³ÉMÓïÑÔµÄInit´úÂë£¬¹©ÉÏÒ»¼¶µ÷ÓÃ
+	//ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½Ôµï¿½Initï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	public void generateBlockInitCodeM(CodeStructM code) {
 		for(OutputSignal outputSignal:outputSignalList) {
 			code.addOutputSignal(outputSignal);
@@ -153,7 +154,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		generateInitCodeM(code);
 	}
 	
-	//Éú³ÉMÓïÑÔµÄUpdate´úÂë,²»Í¬µÄBlockÀàĞÍ£¬ÖØÔØÕâ¸ö·½·¨£¬Éú³É×Ô¼ºµÄ´úÂë
+	//ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½Ôµï¿½Updateï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¬ï¿½ï¿½Blockï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateUpdateCodeM(CodeStructM code) {
 		String updateCode="";
 		
@@ -169,7 +170,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		code.addUpdateCode(updateCode);
 	}
 	
-	//Éú³ÉMÓïÑÔµÄUpdate´úÂë£¬¹©ÉÏÒ»¼¶µ÷ÓÃ
+	//ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½Ôµï¿½Updateï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	public void generateBlockUpdateCodeM(CodeStructM code) {
 		generateUpdateCodeM(code);
 	}
@@ -184,7 +185,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public void updateBlock() {
 		int i=0;
 		for(OutputPort outputPort:outputPortList) {
-			OutputSignal outputSignal=new OutputSignal(this,i,outputPort.getNumber(),outputPort.getName());
+			OutputSignal outputSignal=new OutputSignal(this,i,outputPort.getNumber(),outputPort.getName(),outputPort.getWidth());
 			outputPort.setOutputSignalC(outputSignal);
 			outputSignalList.add(outputSignal);
 			i++;
@@ -192,8 +193,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 	
 	
-	//cÓïÑÔµÄ´úÂëÉú³É·½·¨£¬ÓëMÓïÑÔÏàÍ¬
-	//Éú³ÉCÓïÑÔµÄInit´úÂë£¬¹©ÉÏÒ»¼¶µ÷ÓÃ
+	//cï¿½ï¿½ï¿½ÔµÄ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬
+	//ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Initï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	public void generateBlockInitCodeC(CodeStructC code) {
 		for(OutputSignal outputSignal:outputSignalList) {
 			code.addOutputSignal(outputSignal);
@@ -201,7 +202,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		generateInitCodeC(code);
 	}
 	
-	//Éú³ÉCÓïÑÔµÄInit´úÂë,²»Í¬µÄBlockÀàĞÍ£¬ÖØÔØÕâ¸ö·½·¨£¬Éú³É×Ô¼ºµÄ´úÂë
+	//ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Initï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¬ï¿½ï¿½Blockï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateInitCodeC(CodeStructC code) {
 		for(Parameter parameter:parameterList) {
 			code.addParameter(parameter);
@@ -211,7 +212,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}
 	}
 	
-	//Éú³ÉCÓïÑÔµÄOutput´úÂë£¬¹©ÉÏÒ»¼¶µ÷ÓÃ
+	//ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Outputï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	public void generateBlockOutputCodeC(CodeStructC code) {
 		System.out.println("Generating block output code ("+blockId+"):"+blockName);
 		
@@ -225,18 +226,18 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		
 	}
 	
-	//Éú³ÉCÓïÑÔµÄOutput´úÂë,²»Í¬µÄBlockÀàĞÍ£¬ÖØÔØÕâ¸ö·½·¨£¬Éú³É×Ô¼ºµÄ´úÂë
+	//ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Outputï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¬ï¿½ï¿½Blockï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 	public void generateOutputCodeC(CodeStructC code) {
 		
 	}
 	
-	//Éú³ÉCÓïÑÔµÄUpdate´úÂë£¬¹©ÉÏÒ»¼¶µ÷ÓÃ
-	public void generateBlockUpdateCodeC(CodeStructC code) {
+	//ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Updateï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	public void generateBlockUpdateCodeC(CodeStructC code) throws MatDimException {
 		generateUpdateCodeC(code);
 	}
 	
-	//Éú³ÉCÓïÑÔµÄUpdate´úÂë,²»Í¬µÄBlockÀàĞÍ£¬ÖØÔØÕâ¸ö·½·¨£¬Éú³É×Ô¼ºµÄ´úÂë
-	public void generateUpdateCodeC(CodeStructC code) {
+	//ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôµï¿½Updateï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¬ï¿½ï¿½Blockï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
+	public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
 		String updateCode="/*Code for update of block "+getBlockType()+":("+getBlockId()+")"+getBlockName()+"*/\n";
 		
 		for(State state:stateList) {
@@ -255,6 +256,40 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		generateDerivativeCodeC(code);
 	}
 	public void generateDerivativeCodeC(CodeStructC code) {
+		
+	}
+
+	public boolean isSFcnBlock() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void generateSourceFile() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getSFcnName() {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	public void generateBlockStatementCodeC(CodeStructC code) {
+		// TODO Auto-generated method stub
+		generateStatementCodeC(code);
+	}
+	
+	public void generateStatementCodeC(CodeStructC code) {
+		
+	}
+
+	public String[] getSFunctionModuleList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void updateDimension() {
+		// TODO Auto-generated method stub
 		
 	}
 }

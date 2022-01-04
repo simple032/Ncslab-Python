@@ -16,6 +16,7 @@ import code.CodeGenerationOption;
 import code.CodeModel;
 import line.Line;
 import ncslablink.ErrorMessage;
+import ncslablink.MatDimException;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 import main.database.Algorithms;
@@ -65,7 +66,7 @@ public class CodeModelC extends CodeModel {
 		return model;
 	}
 	
-	public void generate() {
+	public void generate()  {
 		super.generate();
 		writeCCodeFiles(); 
 	}
@@ -87,8 +88,7 @@ public class CodeModelC extends CodeModel {
 		//code.writeCCodeFiles();
 		code.generateParameterDefineCode(); 
 		code.generateStateDefineCode();
-		code.generateOutputSignalDefineCode(); 
-		code.generateOtherCode();
+		code.generateOutputSignalDefineCode(); 		
 		code.gnenrateDataStructureCode();
 	}
 	
@@ -96,11 +96,11 @@ public class CodeModelC extends CodeModel {
 		block.generateBlockOutputCodeC(code);
 	}
 	
-	protected void generateBlockUpdateCode(Block block) {
+	protected void generateBlockUpdateCode(Block block) throws MatDimException {
 		block.generateBlockUpdateCodeC(code);
 	}
 	
-	protected void generateUpdateCode(CodeGenerationOption option) {
+	protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException {
 		System.out.println("Generating update codes......");
 		
 		for(Block block:blockList) {
@@ -110,15 +110,33 @@ public class CodeModelC extends CodeModel {
 		}
 	}
 	
+	protected void generateBlockStatementCode(Block block) {
+		block.generateBlockStatementCodeC(code);
+	}
+	
+	protected void generateStatementCode(CodeGenerationOption option) {
+		System.out.println("Generating statement codes......");
+		
+		for(Block block:blockList) {
+			
+			System.out.println("Generating statement codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			generateBlockStatementCode(block);
+			
+		}
+	}
+	
 	/*����make������ɿ�ִ�д��� */
-	public void makeExeFile() {
-		System.out.println("Making exe file ncslabccode.exe...");
-		if(code.makeExeFile()) {
-			System.out.println("Exe file ncslabccode.exe created!");
+	public boolean makeExeFile() {
+		System.out.println("Making exe file ncslab...");
+		boolean flag = code.makeExeFile();
+		if(flag){
+			System.out.println("Exe file ncslab created!");
 		}
 		else {
-			System.out.println("Cannot create exe file ncslabccode.exe!");
+			System.out.println("Cannot create exe file ncslab!");
 		}
+		return flag;
 	}
 	
 	protected void generateDerivativeCode(CodeGenerationOption option) {

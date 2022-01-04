@@ -22,6 +22,10 @@ import code.m.CodeModelM;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 
+
+import server.SimulationServer;
+import server.SimulationThread;
+
 /**
  * Servlet implementation class simulate
  */
@@ -41,9 +45,9 @@ public class simulate extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		
-		//读取Post的JSON配置
+		//锟斤拷取Post锟斤拷JSON锟斤拷锟斤拷
 		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
         String result = "";
         int respInt = insr.read();
@@ -54,13 +58,32 @@ public class simulate extends HttpServlet {
         JSONObject jsonIn = new JSONObject(result);
 		
         try {
-        	//建立M语言的生成器CodeModelM
+        	//锟斤拷锟斤拷M锟斤拷锟皆碉拷锟斤拷锟斤拷锟斤拷CodeModelM
         	CodeModelM model=CodeModelM.createFromJSON(jsonIn,ModelMode.Simulation);
-        	model.setSolver(Solver.ode4);
+        	model.setSolver(Solver.ode23);
         	model.generate();
         	model.showErrorMessages();
 
         	System.out.println();
+        	
+        	SimulationThread thread=SimulationServer.instance.getVacantSimulationThread();
+        	
+        	JSONObject jb=new JSONObject();
+    		jb.put("code", 2000);
+        	
+        	if(thread!=null) {
+        		thread.startSimulation(model);
+        		jb.put("message", "SUCCESS");
+        		JSONObject data=new JSONObject();
+        		data.put("figFileUrl", "/MCode/"+model.getUserId()+"/"+model.getModelId()+"/scope");
+        		jb.put("data", data);
+        	}
+        	else {
+        		System.out.println("No server available...");
+        		jb.put("message", "No server available...");
+        	}
+        	
+        	response.getWriter().append(jb.toString());
 
         	/*
         	if(model.getErrorList().size()==0) {
@@ -69,48 +92,8 @@ public class simulate extends HttpServlet {
         }
         catch(ModelException e) {
         	System.err.println(e.getMessage());
-        	System.err.println("Code generatrion terminated unsuccessfully。。。");
+        	System.err.println("Code generatrion terminated unsuccessfully锟斤拷锟斤拷锟斤拷");
         }
-        
-        
-        System.out.println();
-        
-        try {
-        	//建立C语言的生成器CodeModelC
-        	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn,ModelMode.Compilation);
-        	modelC.setSolver(Solver.ode4);
-        	modelC.generate();
-
-        	System.out.println();
-
-        	if(modelC.getErrorList().size()==0) {
-        		modelC.makeExeFile();
-        		modelC.saveToDatabase();
-        	}
-        }
-        catch(ModelException e) {
-        	System.err.println(e.getMessage());
-        	System.err.println("Code generatrion terminated unsuccessfully。。。");
-        }
-        
-        
-        /*
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("piscesPU");
-        
-        long s = System.currentTimeMillis();
-        // 数据库连接失败这里会抛出异常
-        final EntityManager em = emf.createEntityManager();
-        long e = System.currentTimeMillis();
-        System.out.println("连接数据库耗时: " + (e - s) + "毫秒");
-        // 获取数据
-        @SuppressWarnings("unchecked")
-        List<main.database.Algorithms> list = em.createQuery("SELECT a FROM algorithms a").getResultList();
-        int i = 0;
-        for (main.database.Algorithms info : list) {
-            //System.out.println("第" + (++i) + "个值为: " + info);
-        }
-        em.close();
-        */
 	}
 
 }

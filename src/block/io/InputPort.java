@@ -26,6 +26,18 @@ public class InputPort {
 		this.name="in"+number;
 	}
 	
+	public InputPort(Block block,int number, int width){
+		this.block=block;
+		
+		this.number=number;
+		
+		this.width=width;
+		
+		this.linkedOutputPort=null;
+		
+		this.name="in"+number;
+	}
+	
 	public int getNumber() {
 		return number;
 	}
@@ -48,5 +60,10 @@ public class InputPort {
 	
 	public int getWidth() {
 		return this.width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+		
 	}
 }

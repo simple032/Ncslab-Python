@@ -18,12 +18,16 @@ import block.io.InputPort;
 
 public class CodeStructC {
 
+
 	//ģ��������Ƿ���Ϊ�ź�
+
 	public boolean inputAsSignal=true;
 	//ģ�������Ƿ���Ϊ�ź�
 	public boolean outputAsSignal=true;
 
+
 	//ͷ�ļ��Ĵ���
+
 	public String includeCode="";
 	//init��ʼ���Ĵ���
 	public String initCode="";
@@ -33,16 +37,18 @@ public class CodeStructC {
 	public String updateCode="";
 
 	//update�Ĵ���
+	public String statementCode="";
+	//update�Ĵ���
 	public String derivativeCode="";
 
 	/*����Parameter�Ĵ��� ��*REAL Block5_Parameter_P*/
+
 	public String parameterDefineCode="";
 	/*����State�Ĵ��� �� REAL Block1_State_pumpState;*/
 	public String stateDefineCode="";
 	/*����Output�źŵĴ��룬�� REAL Block1_Output1;*/
 	public String outputSignalDefineCode="";
-	
-	public String otherCode="";
+
 
 	/*�������м������ʵ��Ĵ��룬����INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
@@ -94,17 +100,21 @@ public class CodeStructC {
 	public void generateIncludeCode() {
 		includeCode+=""
 				+"#include\"ncslabccode.h\"\n"
-				+"#include\"ncslab.h\"\n"
-				+"#include\"ncs_serialport.h\"\n";
+				+"#include\"ncslabdefines.h\"\n"
+				+"#include\"ncs_serialport.h\"\n"
+				+"#include\"ncslab.h\"\n";
 	}
 
 	private void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.c...");
 		//precode�ǲ�����״̬��������Ķ��壬��ȫ�ֱ����ķ�ʽ
-		String preCode=parameterDefineCode+"\n"+stateDefineCode+"\n"
-					+outputSignalDefineCode+"\n"+otherCode+"\n";
+		String preCode="extern MODEL* mp;\n"
+					+statementCode+"\n"
+					+parameterDefineCode+"\n"
+					+stateDefineCode+"\n"
+					+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
-				+preCode+"\n"
+				+preCode+"\n"				
 				+dataStructureCode+"\n"
 				+"void NCSLabInit(){\n"
 				+dataStructureInitCode+"\n"
@@ -147,6 +157,7 @@ public class CodeStructC {
 		}
 	}
 
+
 	//����ȫ�ֵ�Parameter���б�
 	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
@@ -159,6 +170,7 @@ public class CodeStructC {
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
+
 
 	//���ɶ���Parameter�Ĵ���
 	public void generateParameterDefineCode() {
@@ -177,11 +189,15 @@ public class CodeStructC {
 		}
 	}
 
+
 	//���ɶ���Output�Ĵ���
 	public void generateOutputSignalDefineCode() {
 		outputSignalDefineCode+="/*Define variables for output signals*/\n";
 		for(OutputSignal outputSignal:outputSignalList) {
-			outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
+			if(outputSignal.getWidth()==1) //compatible with former version
+				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
+			else
+				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+"["+outputSignal.getWidth()+"];\n";
 		}
 	}
 
@@ -191,6 +207,45 @@ public class CodeStructC {
 	//Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
 	private String codePath;
 
+	private void writeMakefile(String fileName) {
+		System.out.println("Writing file "+fileName+"...");
+		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
+
+		File file=new File(codePath+"/"+fileName);
+		FileOutputStream outputStream;
+		try {
+			outputStream = new FileOutputStream(file);
+			//ckeckout the s-function file
+			String sfcn = "SFCNOBJS=";
+			for(Block block : model.getBlockList())
+			{
+				if(block.isSFcnBlock()) {
+					sfcn += 
+					block.getSFcnName()+"_"+block.getBlockId()+".o ";
+					for(String module : block.getSFunctionModuleList())
+					{
+						sfcn += module + ".o ";
+					}
+				}
+			}
+			sfcn += "\n";	
+					
+			byte[] buffer = sfcn.getBytes();
+			outputStream.write(buffer,0,buffer.length);
+			
+			buffer = new byte[1024];
+			
+			int len;
+			while((len=InputStream.read(buffer))>0) {
+				outputStream.write(buffer,0,len);
+			}
+			
+			outputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	//д�ļ��ķ��������ļ���resource�п���������д��Ŀ���ļ���
 	private void writeNCSLabFile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
@@ -199,12 +254,13 @@ public class CodeStructC {
 		File file=new File(codePath+"/"+fileName);
 		FileOutputStream outputStream;
 		try {
-			outputStream = new FileOutputStream(file);
-			byte[] buffer=new byte[1024];
+			outputStream = new FileOutputStream(file);						
+			byte[] buffer = new byte[1024];			
 			int len;
 			while((len=InputStream.read(buffer))>0) {
 				outputStream.write(buffer,0,len);
 			}
+			
 			outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -266,6 +322,7 @@ public class CodeStructC {
 		return readFile("ncslab");
 	}
 
+
 	public void writeCCodeFiles() {
 
 		//����Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
@@ -286,29 +343,35 @@ public class CodeStructC {
 
 		//д���ܱߵ���Դ�ļ�
 		//makefile
-		writeNCSLabFile("makefile");
+		writeMakefile("makefile");
 		//�����ݽṹ
-		writeNCSLabFile("ncslabccode.h");
+//		writeNCSLabFile("ncslabccode.h");
 		//main�����Լ���ʱ��
 		writeNCSLabFile("ncslabmain.c");
 		//���������ݽṹ�Ľӿ�API����
 		writeNCSLabFile("DataApi.c");
-		writeNCSLabFile("DataApi.h");
+//		writeNCSLabFile("DataApi.h");
 		
 		writeNCSLabFile("util.c");
 
 		//ʵ��NetconЭ���ͨ���ļ�
 		writeNCSLabFile("ServerThread.c");
-		writeNCSLabFile("ServerThread.h");
+//		writeNCSLabFile("ServerThread.h");
 		writeNCSLabFile("ClientThread.c");
-		writeNCSLabFile("ClientThread.h");
+//		writeNCSLabFile("ClientThread.h");
 		writeNCSLabFile("UploadThread.c");
-		writeNCSLabFile("UploadThread.h");
-		
+//		writeNCSLabFile("UploadThread.h");
+//		
 		writeNCSLabFile("ncs_serialport_pi.c");
-		writeNCSLabFile("ncs_serialport.h");
+//		writeNCSLabFile("ncs_serialport.h");
 
 		//д�����ɵ�������ncslabccdoe.c
+		for(Block block: model.getBlockList()) {
+			if(block.isSFcnBlock()) {
+				block.generateSourceFile();
+			}
+		}
+
 		writeMainCodeFile();
 		
 		wirteDefineFile();
@@ -325,6 +388,9 @@ public class CodeStructC {
 			break;
 		case ode4:
 			writeNCSLabFile("ode4.c","onestep.c");
+			break;
+		default:
+			System.out.println("error");
 			break;
 		}
 		
@@ -352,6 +418,7 @@ public class CodeStructC {
 				}
 			}
 
+
 			//�ȴ�makefile�����
 			process.waitFor();
 
@@ -366,6 +433,7 @@ public class CodeStructC {
 
 		return false;
 	}
+
 
 	//����Model,block,input,output,signal,state,parameter�����ݽṹ������ʼ��
 	public void gnenrateDataStructureCode() {
@@ -484,6 +552,7 @@ public class CodeStructC {
 		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
 	}
 
+
 	//��ʼ�����ݽṹ��ʵ�����ݽṹ֮���ָ������
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
@@ -492,7 +561,11 @@ public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize inputs for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(InputPort input:block.getInputPortList()) {
-				dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+				if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+				}else {
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp="+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+				}
 			}
 		}
 
@@ -500,7 +573,10 @@ public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize outputs for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(OutputPort output:block.getOutputPortList()) {
-				dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
+				if(output.getWidth()==1)
+					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
+				else
+					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp="+output.getOutputSignalC().getName()+";\n";
 			}
 		}
 
@@ -529,7 +605,11 @@ public class CodeStructC {
 			dataStructureInitCode+="/*Initialize signals for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			if(inputAsSignal) {
 				for(InputPort input:block.getInputPortList()) {
-					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
+						dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					}else {
+						dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".vp="+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					}
 					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".width="+input.getLinkedLine().getLinkedOutputPort().getWidth()+";\n";
 					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".name=\""+input.getName()+"\";\n";
 					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+input.getName()+"\";\n";
@@ -537,7 +617,11 @@ public class CodeStructC {
 			}
 			if(outputAsSignal) {
 				for(OutputPort output:block.getOutputPortList()) {
-					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
+					if(output.getWidth()==1) {
+						dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
+					}else {
+						dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".vp="+output.getOutputSignalC().getName()+";\n";
+					}
 					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".width="+output.getWidth()+";\n";
 					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".name=\""+output.getName()+"\";\n";
 					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+output.getName()+"\";\n";
@@ -624,12 +708,9 @@ public class CodeStructC {
 		dataStructureInitCode+="model.states=states;\n";
 	}
 
-	public void generateOtherCode() {
+	public void addStatementCode(String code) {
 		// TODO Auto-generated method stub
-		otherCode += "int hComm;\n" + 
-				"\n" + 
-				"\n" + 
-				"unsigned char calcSum(unsigned char bytes[]);\n";
+		this.statementCode += code;
 	}
 
 }

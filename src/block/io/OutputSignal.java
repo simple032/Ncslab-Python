@@ -21,6 +21,16 @@ public class OutputSignal {
 		this.outputPortId=outputPortId;
 	}
 	
+	public OutputSignal(Block block, int id, int outputPortId, String localName, int width) {
+		this.block=block;
+		this.type=DataTypeC.REAL;
+		this.id=id;
+		this.width=width;
+		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
+		this.localName=localName;
+		this.outputPortId=outputPortId;
+	}
+
 	public String getName() {
 		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
 		return this.name;
@@ -35,5 +45,14 @@ public class OutputSignal {
 		}
 		
 		return defineString;
+	}
+	
+	public int getWidth() {
+		return this.width;
+	}
+
+	public void setWidth(int width) {
+		// TODO Auto-generated method stub
+		this.width = width;
 	}
 }

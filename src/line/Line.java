@@ -22,7 +22,7 @@ public class Line {
 		String fromBlockName=lineJSON.getString("fromBlockName");
 		String toBlockName=lineJSON.getString("toBlockName");
 		
-		//Ñ°ÕÒLineÁ½¶ËµÄBlock
+		//Ñ°ï¿½ï¿½Lineï¿½ï¿½ï¿½Ëµï¿½Block
 		Block fromBlock=null;
 		Block toBlock=null;
 		for(Block block:blockList) {
@@ -38,7 +38,7 @@ public class Line {
 			return;
 		}
 		
-		//Ñ°ÕÒfrom¶ËµÄÊä³ö¶Ë
+		//Ñ°ï¿½ï¿½fromï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		int fromPortNo=lineJSON.getInt("fromPortNo");
 		OutputPort fromPort=null;
 		
@@ -56,7 +56,7 @@ public class Line {
 		this.linkedOutputPort=fromPort;
 		fromPort.addLinkedLine(this);
 		
-		//Ñ°ÕÒtoµÄÊäÈë¶Ë
+		//Ñ°ï¿½ï¿½toï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		int toPortNo=lineJSON.getInt("toPortNo");
 		InputPort toPort=null;
 		
@@ -70,6 +70,8 @@ public class Line {
 		if(toPort==null) {
 			return;
 		}
+		
+		toPort.setWidth(fromPort.getWidth());
 		
 		this.linkedInputPort=toPort;
 		toPort.setLinkedLine(this);

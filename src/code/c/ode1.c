@@ -8,7 +8,9 @@ double **derivativeReserve;
 
 void NCSLabOneStep(){
 	mp->offset=0;
+	mp->majorStep=1;
 	NCSLabOutput();
 	NCSLabDerivative();
 	NCSLabUpdate();
+	mp->majorStep=0;
 }

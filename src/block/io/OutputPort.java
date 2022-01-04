@@ -29,6 +29,21 @@ public class OutputPort {
 		this.name="out"+number;
 	}
 	
+	public OutputPort(Block block,int number, int width){
+		this.block=block;
+		this.number=number;
+		this.name="out"+number;
+		this.width=width;
+	}
+	
+	public OutputPort(Block block,int number,boolean isFeedThrough,int width){
+		this.block=block;
+		this.number=number;
+		this.name="out"+number;
+		this.isFeedThrough=isFeedThrough;
+		this.width=width;
+	}
+	
 	public OutputPort(Block block,int number,boolean isFeedThrough){
 		this.block=block;
 		this.number=number;
@@ -90,4 +105,10 @@ public class OutputPort {
 	public int getWidth() {
 		return this.width;
 	}
+
+	public void setWidth(int width) {
+		// TODO Auto-generated method stub
+		this.width = width;
+	}
+	
 }

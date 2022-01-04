@@ -2,6 +2,7 @@ package servlet;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +15,7 @@ import org.json.JSONObject;
 import code.Solver;
 import code.c.CodeModelC;
 import code.m.CodeModelM;
+import ncslablink.ErrorMessage;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 
@@ -41,6 +43,7 @@ public class compile extends HttpServlet {
 		
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		
+
 		//��ȡPost��JSON����
 		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
         String result = "";
@@ -50,26 +53,39 @@ public class compile extends HttpServlet {
             respInt = insr.read();
         }  
         JSONObject jsonIn = new JSONObject(result);
-        
+        int code = 2000;
+        String errorMsgs="";
         try {
+
         	//����C���Ե�������CodeModelC
         	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn,ModelMode.Compilation);
-        	modelC.setSolver(Solver.ode1);
+        	modelC.setSolver(Solver.ode4);
+
         	modelC.generate();
 
         	System.out.println();
-
+        	
         	if(modelC.getErrorList().size()==0) {
-        		modelC.makeExeFile();
-        		modelC.saveToDatabase();
+        		if(modelC.makeExeFile()) {
+        			modelC.saveToDatabase();
+        			errorMsgs += "make exe success.";
+        		}        		
+        	}else {
+        		for(ErrorMessage em: modelC.getErrorList()) {
+        			errorMsgs += em.getMessage();
+        		}
+        		code = 400;
+        		throw new ModelException(errorMsgs);
         	}
         	
-        	response.getWriter().write("{\"code\":2000}");
+        	response.getWriter().write("{\"code\":"+code+","
+	        	+"\"msg\":"+"\""+errorMsgs+"\""
+	        	+"}");
         }
         catch(ModelException e) {
         	System.err.println(e.getMessage());
         	System.err.println("Code generatrion terminated unsuccessfully������");
-        	response.getWriter().write("{\"code\":400,\"message\":\""+e.getMessage()+"\"}");
+        	response.getWriter().write("{\"code\":400,\"msg\":\""+e.getMessage()+"\"}");
         }
 		
 	}

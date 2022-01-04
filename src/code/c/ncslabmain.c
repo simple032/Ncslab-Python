@@ -1,6 +1,8 @@
 #include"ncslabccode.h"
 #include"ServerThread.h"
+
 #include "ncs_serialport.h"
+#include"ncslab.h"
 
 MODEL *mp;
 
@@ -26,7 +28,7 @@ unsigned char calcSum(unsigned char bytes[])
     setAllClientUploadEvents();
     NCSLabOneStep();
     mp->time+=mp->stepSize;
-	
+	gettimeofday(&(mp->tv), NULL);
 	//printf("%f\n",mp->time);
 	
     pthread_mutex_unlock(&(extModeData.timerCritical));
@@ -59,6 +61,7 @@ void startTimer(real_T stepSize)
 
         exit(0);
 
+
     }
 
     pthread_mutex_init(&(extModeData.timerCritical),NULL);
@@ -89,6 +92,10 @@ void startTimer(real_T stepSize)
         exit(1);
 
     } 
+
+	//NCSLabOneStep();
+	//mp->time+=STEP_SIZE;
+
 }
 
 
@@ -110,10 +117,10 @@ void main(int argc, char *argv[]){
 
 	startMyServerThread(extModeData);
 	
+
 	startTimer(mp->stepSize);
 	pthread_join(extModeData.servetThread,NULL);
-	
-	//timeSetEvent(mp->stepSize*1000,1,(LPTIMECALLBACK)TimeEvent,0,TIME_PERIODIC);
+
 	
 	//WaitForSingleObject(CreateEvent(NULL,FALSE,FALSE,NULL),INFINITE);
 }

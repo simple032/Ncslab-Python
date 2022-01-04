@@ -14,11 +14,11 @@
             <!-- 数据库连接配置, JDBC驱动 -->
             <property name="toplink.jdbc.driver" value="com.mysql.jdbc.Driver" />
             <!-- 数据库连接配置,URL -->
-            <property name="toplink.jdbc.url" value="jdbc:mysql://192.168.46.133:6033/ncslab" />
+            <property name="toplink.jdbc.url" value="jdbc:mysql://192.168.46.128:3306/ncslab" />
             <!-- 数据库连接配置, 用户名 -->
-            <property name="toplink.jdbc.user" value="NCSLab" />
+            <property name="toplink.jdbc.user" value="root" />
             <!-- 数据库连接配置, 密码 -->
-            <property name="toplink.jdbc.password" value="NCSLab11" />
+            <property name="toplink.jdbc.password" value="1234" />
         </properties>
     </persistence-unit>
  

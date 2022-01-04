@@ -32,9 +32,9 @@ public class CodeModelM extends CodeModel{
 		return code.getMainCode();
 	}
 	
-//	public String getCodePath() {
-//		return code.getCodePath();
-//	}
+	public String getCodePath() {
+		return code.getCodePath();
+	}
 
 	//生成代码的方法，使用上一级的就可以了
 	public void generate() {
@@ -45,6 +45,10 @@ public class CodeModelM extends CodeModel{
 	/*��������M���Ե�һϵ���ļ� */
 	private void writeMCodeFiles() {
 		code.writeMCodeFiles();
+	}
+	
+	protected void generateStatementCode(CodeGenerationOption option) {
+		
 	}
 	
 	protected void generateUpdateCode(CodeGenerationOption option) {

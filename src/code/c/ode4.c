@@ -13,12 +13,13 @@ double weight1[4]={1.0/6, 2.0/6, 2.0/6, 1.0/6};
 void NCSLabOneStep(){
 
   mp->offset=0;
+  mp->majorStep=1;
   NCSLabOutput();
 
   //Calculate K0
 	NCSLabDerivative();
   storeDerivative(0);
-
+  mp->majorStep=0;
   //Calculate K1
   storeState();
   mp->stepSize=STEP_SIZE/2;
