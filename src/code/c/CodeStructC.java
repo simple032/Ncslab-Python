@@ -16,7 +16,7 @@ import block.io.Parameter;
 import block.io.State;
 import block.io.InputPort;
 
-public class CodeStructC {
+abstract public class CodeStructC {
 
 
 	//ģ��������Ƿ���Ϊ�ź�
@@ -62,7 +62,7 @@ public class CodeStructC {
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 
-	private CodeModelC model;
+	protected CodeModelC model;
 
 	public CodeStructC(CodeModelC model) {
 		this.model=model;
@@ -105,7 +105,7 @@ public class CodeStructC {
 				+"#include\"ncslab.h\"\n";
 	}
 
-	private void writeMainCodeFile() {
+	protected void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.c...");
 		//precode�ǲ�����״̬��������Ķ��壬��ȫ�ֱ����ķ�ʽ
 		String preCode="extern MODEL* mp;\n"
@@ -203,9 +203,9 @@ public class CodeStructC {
 
 
 
-	private String codePathBase=utils.Property.instance.getProperty("CCodePath");
+	protected String codePathBase=utils.Property.instance.getProperty("CCodePath");
 	//Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
-	private String codePath;
+	protected String codePath;
 
 	private void writeMakefile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
@@ -247,7 +247,7 @@ public class CodeStructC {
 	}
 	
 	//д�ļ��ķ��������ļ���resource�п���������д��Ŀ���ļ���
-	private void writeNCSLabFile(String fileName) {
+	protected void writeNCSLabFile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
@@ -267,7 +267,7 @@ public class CodeStructC {
 		}
 	}
 	
-	private void writeNCSLabFile(String fileName,String fileNameOut) {
+	protected void writeNCSLabFile(String fileName,String fileNameOut) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
@@ -286,7 +286,7 @@ public class CodeStructC {
 		}
 	}
 	
-	void wirteDefineFile() {
+	protected void wirteDefineFile() {
 		
 		String code="#define STATE_NUM "+stateList.size()+"\n";
 		
@@ -303,7 +303,7 @@ public class CodeStructC {
 		}
 	}
 	
-	private byte[] readFile(String fileName) {
+	protected byte[] readFile(String fileName) {
 		File file = new File(codePath+fileName);
 		FileInputStream inputStream;
 		byte[] fileData=null;

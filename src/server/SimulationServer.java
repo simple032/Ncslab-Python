@@ -30,28 +30,28 @@ public class SimulationServer extends Thread {
 	
 	public void run() {
 		System.out.println("Hello");
-//		try {
-//			// ���������socket
-//			ServerSocket serverSocket = new ServerSocket(Server_Port);
-//			
-//			// �����ͻ���socket
-//			Socket socket = new Socket();	
-//			
-//			//ѭ�������ȴ��ͻ��˵�����
-//            while(true){
-//            	// �����ͻ���
-//            	socket = serverSocket.accept();
-//            	
-//            	SimulationThread thread = new SimulationThread(socket,this);
-//            	simulationThreadList.add(thread);
-//            	thread.start();
-//            	
-//            	InetAddress address=socket.getInetAddress();
-//                System.out.println("��ǰ�ͻ��˵�IP��"+address.getHostAddress());
-//            }
-//		} catch (Exception e) {
-//			// TODO: handle exception
-//			e.printStackTrace();
-//		}
+		try {
+			// ���������socket
+			ServerSocket serverSocket = new ServerSocket(Server_Port);
+			
+			// �����ͻ���socket
+			Socket socket = new Socket();	
+			
+			//ѭ�������ȴ��ͻ��˵�����
+            while(true){
+            	// �����ͻ���
+            	socket = serverSocket.accept();
+            	
+            	SimulationThread thread = new SimulationThread(socket,this);
+            	simulationThreadList.add(thread);
+            	thread.start();
+            	
+            	InetAddress address=socket.getInetAddress();
+                System.out.println("��ǰ�ͻ��˵�IP��"+address.getHostAddress());
+            }
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 }

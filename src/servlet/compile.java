@@ -13,8 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import code.Solver;
-import code.c.CodeModelC;
-import code.m.CodeModelM;
+import code.c.raspberry.CodeModelCRaspberry;
 import ncslablink.ErrorMessage;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
@@ -58,7 +57,7 @@ public class compile extends HttpServlet {
         try {
 
         	//����C���Ե�������CodeModelC
-        	CodeModelC modelC=CodeModelC.createFromJSON(jsonIn,ModelMode.Compilation);
+        	CodeModelCRaspberry modelC=CodeModelCRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
         	modelC.setSolver(Solver.ode4);
 
         	modelC.generate();

@@ -21,18 +21,19 @@ import ncslablink.ModelException;
 import ncslablink.ModelMode;
 import main.database.Algorithms;
 
-public class CodeModelC extends CodeModel {
+abstract public class CodeModelC extends CodeModel {
 	
 	private static final String REAL="real_t";
 	
-	private CodeStructC code=new CodeStructC(this);
-	
+		
 	//���ɴ����ʱ��ͳ��singal��parameter�ĸ���
 	private int signalNum=0;
 	private int parameterNum=0;
 	private int stateNum=0;
 	
-	CodeModelC(JSONObject jsonIn,ModelMode mode) throws ModelException{
+	abstract protected CodeStructC getCodeStructC();
+	
+	protected CodeModelC(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
 	}
 	
@@ -60,12 +61,6 @@ public class CodeModelC extends CodeModel {
 		return this.stateNum;
 	}
 	
-	public static CodeModelC createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException {
-		CodeModelC model=new CodeModelC(jsonIn,mode);
-		
-		return model;
-	}
-	
 	public void generate()  {
 		super.generate();
 		writeCCodeFiles(); 
@@ -73,7 +68,7 @@ public class CodeModelC extends CodeModel {
 	
 	/*��������C���Ե�һϵ���ļ� */
 	private void writeCCodeFiles() {
-		code.writeCCodeFiles();
+		getCodeStructC().writeCCodeFiles();
 	}
 	
 	protected void generateInitCode(CodeGenerationOption option) {
@@ -81,23 +76,23 @@ public class CodeModelC extends CodeModel {
 		for(Block block:blockList) {
 			System.out.println("Generating init codes for ("+block.getBlockId()+")"+block.getBlockName());
 			
-			block.generateBlockInitCodeC(code);
+			block.generateBlockInitCodeC(getCodeStructC());
 		}
 		
-		code.generateIncludeCode();
+		getCodeStructC().generateIncludeCode();
 		//code.writeCCodeFiles();
-		code.generateParameterDefineCode(); 
-		code.generateStateDefineCode();
-		code.generateOutputSignalDefineCode(); 		
-		code.gnenrateDataStructureCode();
+		getCodeStructC().generateParameterDefineCode(); 
+		getCodeStructC().generateStateDefineCode();
+		getCodeStructC().generateOutputSignalDefineCode(); 		
+		getCodeStructC().gnenrateDataStructureCode();
 	}
 	
 	protected void generateBlockOutputCode(Block block,CodeGenerationOption option) {
-		block.generateBlockOutputCodeC(code);
+		block.generateBlockOutputCodeC(getCodeStructC());
 	}
 	
 	protected void generateBlockUpdateCode(Block block) throws MatDimException {
-		block.generateBlockUpdateCodeC(code);
+		block.generateBlockUpdateCodeC(getCodeStructC());
 	}
 	
 	protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException {
@@ -111,7 +106,7 @@ public class CodeModelC extends CodeModel {
 	}
 	
 	protected void generateBlockStatementCode(Block block) {
-		block.generateBlockStatementCodeC(code);
+		block.generateBlockStatementCodeC(getCodeStructC());
 	}
 	
 	protected void generateStatementCode(CodeGenerationOption option) {
@@ -129,7 +124,7 @@ public class CodeModelC extends CodeModel {
 	/*����make������ɿ�ִ�д��� */
 	public boolean makeExeFile() {
 		System.out.println("Making exe file ncslab...");
-		boolean flag = code.makeExeFile();
+		boolean flag = getCodeStructC().makeExeFile();
 		if(flag){
 			System.out.println("Exe file ncslab created!");
 		}
@@ -145,7 +140,7 @@ public class CodeModelC extends CodeModel {
 		for(Block block:blockList) {
 			System.out.println("Generating derivative codes for ("+block.getBlockId()+")"+block.getBlockName());
 			
-			block.generateBlockDerivativeCodeC(code);
+			block.generateBlockDerivativeCodeC(getCodeStructC());
 		}
 	}
 	
@@ -157,7 +152,7 @@ public class CodeModelC extends CodeModel {
         
         algorithm.setAuthor(getSaveInfo().getInt("userId"));
         algorithm.setName(getSaveInfo().getString("modelRealName"));
-        algorithm.setBin(code.readExeFile());
+        algorithm.setBin(getCodeStructC().readExeFile());
         
         algorithm.setTestRig(getSaveInfo().getInt("testRig"));
         algorithm.setModelId(getSaveInfo().getInt("modelId"));
