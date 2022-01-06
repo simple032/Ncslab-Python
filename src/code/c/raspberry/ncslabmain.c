@@ -4,6 +4,9 @@
 #include "ncs_serialport.h"
 #include"ncslab.h"
 
+//#include <iostream>
+//#include <octave/oct.h>
+
 MODEL *mp;
 
 ExtModeData extModeData;
@@ -99,7 +102,7 @@ void startTimer(real_T stepSize)
 }
 
 
-void main(int argc, char *argv[]){
+int main(int argc, char *argv[]){
 
 	NCSLabInit();
 
@@ -115,7 +118,7 @@ void main(int argc, char *argv[]){
 	mp=NCSLabGetModelP();
 	extModeData.mp=mp;
 
-	startMyServerThread(extModeData);
+	startMyServerThread(&extModeData);
 	
 
 	startTimer(mp->stepSize);

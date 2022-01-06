@@ -5,22 +5,22 @@
 
 #define MAX_CLIENT_NUM 16
 
-ExtModeData extModeData;
+ExtModeData *pExtModeDataG;
 
 void* ServerThreadFunction(void *arg);
 
 static CLIENT_STRUCT clients[MAX_CLIENT_NUM];
 
-void startMyServerThread(ExtModeData pExtModeData)
+void startMyServerThread(ExtModeData *pExtModeData)
 {
-	extModeData=pExtModeData;
+	pExtModeDataG=pExtModeData;
 
 	printf("Server Thread starting...\n");
 
     pthread_t id;
     int ret;
     
-    ret=pthread_create(&id,NULL,ServerThreadFunction,&extModeData);
+    ret=pthread_create(&id,NULL,ServerThreadFunction,pExtModeDataG);
 
 
     if(ret!=0)
@@ -29,7 +29,7 @@ void startMyServerThread(ExtModeData pExtModeData)
         exit (1);
     }
 
-    extModeData.servetThread=id;
+    pExtModeDataG->servetThread=id;
 
 
 }
@@ -63,7 +63,7 @@ bool startClientThread(int socket)
 	printf("Connection %d is available. Starting the client thread...\n",i);
 
 	clients[i].socket=socket;
-	clients[i].pExtModeData=&extModeData;
+	clients[i].pExtModeData=pExtModeDataG;
 	clients[i].currentCommand=0;
 	//clients[i].upload.hUploadThread=0;
 	clients[i].upload.data=NULL;

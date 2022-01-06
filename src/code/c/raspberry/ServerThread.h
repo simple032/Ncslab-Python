@@ -21,7 +21,7 @@ typedef struct
 }ExtModeData;
 
 
-void startMyServerThread(ExtModeData);
+void startMyServerThread(ExtModeData*);
 void setAllClientUploadEvents();
 
 #endif

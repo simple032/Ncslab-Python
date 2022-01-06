@@ -102,7 +102,10 @@ abstract public class CodeStructC {
 				+"#include\"ncslabccode.h\"\n"
 				+"#include\"ncslabdefines.h\"\n"
 				+"#include\"ncs_serialport.h\"\n"
-				+"#include\"ncslab.h\"\n";
+				+"#include\"ncslab.h\"\n"
+				+"#include <iostream>"
+				+"#include <octave/oct.h>"
+				;
 	}
 
 	protected void writeMainCodeFile() {
