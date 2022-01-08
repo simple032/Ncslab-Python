@@ -1,10 +1,12 @@
 package block.io;
 
 import block.Block;
+import block.data.DataType;
 import line.Line;
 
 public class InputPort {
 	private int width=1;
+	private int height=1;
 	
 	private OutputPort linkedOutputPort;
 	
@@ -65,5 +67,39 @@ public class InputPort {
 	public void setWidth(int width) {
 		this.width = width;
 		
+	}
+	
+	public int getHeight() {
+		return this.height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+		
+	}
+	
+	public String getDataStructureInitCodeC() {
+		String code="";
+		
+		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		
+		switch(signal.getDataType()) {
+		case REAL:
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".vp=&"+signal.getName()+";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".width="+signal.getWidth()+";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".height="+signal.getHeight()+";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			break;
+		case MATRIX:
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".vp="+signal.getName()+";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".width="+signal.getWidth()+";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".height="+signal.getHeight()+";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			break;
+		}
+		
+		return code;
 	}
 }

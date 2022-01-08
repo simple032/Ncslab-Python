@@ -36,7 +36,7 @@ bool allocateMemory(CLIENT_STRUCT *p)
 {
 	uint_T num=(p->packetSize)*(p->selectNum+1)*sizeof(real_T);
 	printf("Allocating %d values for uploading buffer\n",num);
-	p->upload.data=malloc(num+100);
+	p->upload.data=(double *)malloc(num+100);
 
 	p->upload.totalSize=num;
 
@@ -79,13 +79,15 @@ bool packagingData(CLIENT_STRUCT *p,uint_T n)
 		if(p->select[i].type==1)
 		{
 			SIGNAL *signal=dataApiGetSignal(signals,p->select[i].pos);
+			//printf("%d\t%d\t%d\t%d\t",p->select[i].row,p->select[i].col,signal->height,signal->width);
             value=*((REAL *)(signal->vp));
 		}
 		else
 		if(p->select[i].type==2)
 		{
 			PARAMETER *parameter=dataApiGetParameter(parameters,p->select[i].pos);
-            value=*((REAL *)(parameter->vp));
+			//printf("%d\t%d\t%d\t%d\t",p->select[i].row,p->select[i].col,parameter->height,parameter->width);
+            value=*((REAL *)(parameter->vp)+parameter->width*p->select[i].row+p->select[i].col);
 		}
 		else
 		{

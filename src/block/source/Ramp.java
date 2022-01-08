@@ -13,11 +13,11 @@ public class Ramp extends block.Block {
 	    block.io.Parameter initial_output;
 	public Ramp(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);
-		//¹¹½¨Ò»¸öÊä³ö
+		//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		outputPortList.add(new OutputPort(this,1,false));
-		slope=new Parameter(this,1,"slope");
-		start=new Parameter(this,1,"start");
-		initial_output=new Parameter(this,1,"initial_output");
+		slope=new Parameter(this,1,"slope",paramValues.getString("slope"));
+		start=new Parameter(this,1,"start",paramValues.getString("start"));
+		initial_output=new Parameter(this,1,"initial_output",paramValues.getString("X0"));
 		parameterList.add(slope);
 		parameterList.add(start);
 		parameterList.add(initial_output);
@@ -37,7 +37,7 @@ public class Ramp extends block.Block {
 		outputCode+="if sign(t-"+start.getName()+"+offset)>=0\n";
 		//outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+initial_output.getName()+"+"+slope.getName()+"*(t-"+start.getName()+");\n";
         outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+initial_output.getName()+"+"+slope.getName()+"*(t-"+start.getName()+"+offset);\n";
-        //µ÷ÊÔ
+        //ï¿½ï¿½ï¿½ï¿½
         outputCode+="else\n";
         //outputCode+="h=0.01;\n";
        // outputCode+="else\n";

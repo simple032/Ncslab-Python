@@ -16,6 +16,8 @@ import block.io.Parameter;
 import block.io.State;
 import block.io.InputPort;
 
+import block.data.DataType;
+
 abstract public class CodeStructC {
 
 
@@ -103,7 +105,7 @@ abstract public class CodeStructC {
 				+"#include\"ncslabdefines.h\"\n"
 				+"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.h\"\n"
-				+"#include <iostream>"
+				+"#include <iostream>\n"
 				+"#include <octave/oct.h>"
 				;
 	}
@@ -179,7 +181,8 @@ abstract public class CodeStructC {
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";
 		for(Parameter parameter:parameterList) {
-			parameterDefineCode+=parameter.getDefineString()+" "+parameter.getName()+";\n";
+			//parameterDefineCode+=parameter.getDefineString()+" "+parameter.getName()+";\n";
+			parameterDefineCode+=parameter.getDefineCodeC();
 		}
 	}
 
@@ -197,10 +200,20 @@ abstract public class CodeStructC {
 	public void generateOutputSignalDefineCode() {
 		outputSignalDefineCode+="/*Define variables for output signals*/\n";
 		for(OutputSignal outputSignal:outputSignalList) {
+			/*
 			if(outputSignal.getWidth()==1) //compatible with former version
 				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
 			else
-				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+"["+outputSignal.getWidth()+"];\n";
+				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+"["+outputSignal.getWidth()+"];\n";*/
+			
+			switch(outputSignal.getDataType()) {
+			case REAL:
+				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
+				break;
+			case MATRIX:
+				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+"["+outputSignal.getHeight()+"]["+outputSignal.getWidth()+"];\n";
+				break;
+			}
 		}
 	}
 
@@ -454,7 +467,7 @@ abstract public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			if(block.getInputPortList().size()>0) {
 				for(InputPort input:block.getInputPortList()) {
-					dataStructureCode+="INPUT_PORT inputPort"+input.getBLock().getBlockId()+"_"+input.getNumber()+"={\""+input.getName()+"\","+input.getWidth()+"};\n";
+					dataStructureCode+="INPUT_PORT inputPort"+input.getBLock().getBlockId()+"_"+input.getNumber()+"={(char *)\""+input.getName()+"\","+input.getWidth()+"};\n";
 				}
 				dataStructureCode+="INPUT_PORT *inputPorts"+block.getBlockId()+"["+block.getInputPortList().size()+"];\n";
 			}
@@ -468,7 +481,7 @@ abstract public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			if(block.getOutputPortList().size()>0) {
 				for(OutputPort output:block.getOutputPortList()) {
-					dataStructureCode+="OUTPUT_PORT outputPort"+output.getBLock().getBlockId()+"_"+output.getNumber()+"={\""+output.getName()+"\","+output.getWidth()+"};\n";
+					dataStructureCode+="OUTPUT_PORT outputPort"+output.getBLock().getBlockId()+"_"+output.getNumber()+"={(char *)\""+output.getName()+"\","+output.getWidth()+"};\n";
 				}
 				dataStructureCode+="OUTPUT_PORT *outputPorts"+block.getBlockId()+"["+block.getOutputPortList().size()+"];\n";
 			}
@@ -500,7 +513,7 @@ abstract public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			if(block.getStateList().size()>0) {
 				for(State state:block.getStateList()) {
-					dataStructureCode+="STATE state"+block.getBlockId()+"_"+state.getId()+"={\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
+					dataStructureCode+="STATE state"+block.getBlockId()+"_"+state.getId()+"={(char *)\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
 					stateNum++;
 				}
 				dataStructureCode+="STATE *states"+block.getBlockId()+"["+block.getStateList().size()+"];\n";
@@ -545,14 +558,14 @@ abstract public class CodeStructC {
 		dataStructureCode+="/*Define block structures*/\n";
 		if(model.getBlockList().size()>0) {
 			for(Block block:model.getBlockList()) {			
-				dataStructureCode+="BLOCK block"+block.getBlockId()+"={\""+block.getBlockType()+"\",\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+"};\n";
+				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+"};\n";
 			}
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
 		}
 		else {
 			dataStructureCode+="BLOCK **blocks=NULL";
 		}
-		dataStructureCode+="MODEL model={\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
+		dataStructureCode+="MODEL model={(char *)\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
 	}
 
 
@@ -587,10 +600,7 @@ abstract public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize parameters for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(Parameter parameter:block.getParameterList()) {
-				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".name=\""+parameter.getLocalName()+"\";\n";
-				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".width="+parameter.getWidth()+";\n";
-				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".vp=&"+parameter.getName()+";\n";
-				dataStructureInitCode+="parameter"+block.getBlockId()+"_"+parameter.getId()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"\";\n";
+				dataStructureInitCode+=parameter.getDataStructureInitCodeC();
 			}
 		}
 
@@ -608,26 +618,12 @@ abstract public class CodeStructC {
 			dataStructureInitCode+="/*Initialize signals for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			if(inputAsSignal) {
 				for(InputPort input:block.getInputPortList()) {
-					if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
-						dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-					}else {
-						dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".vp="+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-					}
-					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".width="+input.getLinkedLine().getLinkedOutputPort().getWidth()+";\n";
-					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".name=\""+input.getName()+"\";\n";
-					dataStructureInitCode+="signal"+block.getBlockId()+"_In"+input.getNumber()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+input.getName()+"\";\n";
+					dataStructureInitCode+=input.getDataStructureInitCodeC();
 				}
 			}
 			if(outputAsSignal) {
 				for(OutputPort output:block.getOutputPortList()) {
-					if(output.getWidth()==1) {
-						dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
-					}else {
-						dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".vp="+output.getOutputSignalC().getName()+";\n";
-					}
-					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".width="+output.getWidth()+";\n";
-					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".name=\""+output.getName()+"\";\n";
-					dataStructureInitCode+="signal"+block.getBlockId()+"_Out"+output.getNumber()+".path=\""+model.getModelRealName()+"/"+block.getBlockName()+"/"+output.getName()+"\";\n";
+					dataStructureInitCode+=output.getDataStructureInitCodeC();
 				}
 			}
 		}

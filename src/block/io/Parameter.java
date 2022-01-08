@@ -1,23 +1,25 @@
 package block.io;
-
-import code.c.DataTypeC;
 import block.Block;
+
+import block.data.Data;
+import block.data.DataType;
 
 public class Parameter {
 	
 	private int id;
 	private String name;
 	private String localName;
-	private int width=1;
-	private DataTypeC type=DataTypeC.REAL;
 	private Block block;
 	
-	public Parameter(Block block,int id,String localName) {
+	private Data data=null;
+	
+	public Parameter(Block block,int id,String localName,String dataString) {
 		this.block=block;
-		this.type=DataTypeC.REAL;
 		this.id=id;
 		this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
 		this.localName=localName;
+		
+		data=new Data(dataString);
 	}
 	
 	public String getName() {
@@ -29,11 +31,16 @@ public class Parameter {
 		return this.localName;
 	}
 	
+	public DataType getDataType() {
+		return data.getDataType();
+	}
+	
 	public String getDefineString() {
 		String defineString="";
 		
-		switch(type) {
+		switch(data.getDataType()) {
 		case REAL:
+		case MATRIX:
 			defineString="REAL"; 
 		}
 		
@@ -45,6 +52,41 @@ public class Parameter {
 	}
 	
 	public int getWidth() {
-		return this.width;
+		return data.getWidth();
+	}
+	
+	public int getHeight() {
+		return data.getHeight();
+	}
+	
+	public String getInitCodeC() {
+		String code;
+		
+		code=data.getInitCodeC(this.getName());
+		
+		return code;
+	}
+	
+	public String getDefineCodeC() {
+		String code;
+		
+		code=data.getDefineCodeC(this.getName());
+		
+		return code;
+	}
+	
+	public String getDataStructureInitCodeC() {
+		String code="";
+		code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.getLocalName()+"\";\n";
+		code+="parameter"+block.getBlockId()+"_"+this.getId()+".width="+this.getWidth()+";\n";
+		code+="parameter"+block.getBlockId()+"_"+this.getId()+".height="+this.getHeight()+";\n";
+		if(data.getDataType()==DataType.REAL) {
+			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.getName()+";\n";
+		}
+		else {
+			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp="+this.getName()+";\n";
+		}
+		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getModel().getModelRealName()+"/"+block.getBlockName()+"\";\n";
+		return code;
 	}
 }

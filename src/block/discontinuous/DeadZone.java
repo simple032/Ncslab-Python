@@ -16,8 +16,8 @@ public class DeadZone extends Block{
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
-		lowervalue=new Parameter(this,1,"lowervalue");
-		uppervalue=new Parameter(this,1,"uppervalue");
+		lowervalue=new Parameter(this,1,"lowervalue",paramValues.getString("LowerValue"));
+		uppervalue=new Parameter(this,1,"uppervalue",paramValues.getString("UpperValue"));
 		parameterList.add(lowervalue);
 		parameterList.add(uppervalue);
   }

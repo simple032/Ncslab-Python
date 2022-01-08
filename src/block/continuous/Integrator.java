@@ -16,14 +16,14 @@ public class Integrator extends Block {
 	private Parameter initialCondition;
 	public Integrator(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
-		//Ò»¸öÊäÈë£¬Ò»¸öÊä³ö
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,false));
 		
 		stateIntegral=new State(this,1,"integral");
 		stateList.add(stateIntegral);
 		
-		initialCondition=new Parameter(this,1,"InitialCondition");
+		initialCondition=new Parameter(this,1,"InitialCondition",paramValues.getString("InitialCondition"));
 		parameterList.add(initialCondition);
 	}
 	

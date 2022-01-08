@@ -15,13 +15,13 @@ public class Relay extends Block{
 	public Relay(JSONObject blockIn,NCSLabModel model) {
 		
 		super(blockIn,model);
-		//Ò»¸öÊäÈë£¬Ò»¸öÊä³ö
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
-		onSwitchValue=new Parameter(this,1,"onSwitchValue");
-		offSwitchValue=new Parameter(this,1,"offSwitchValue");
-		onOutputValue=new Parameter(this,1,"onOutputValue");
-		offOutputValue=new Parameter(this,1,"offOutputValue");
+		onSwitchValue=new Parameter(this,1,"onSwitchValue",paramValues.getString("OnSwitchValue"));
+		offSwitchValue=new Parameter(this,1,"offSwitchValue",paramValues.getString("OffSwitchValue"));
+		onOutputValue=new Parameter(this,1,"onOutputValue",paramValues.getString("OnOutputValue"));
+		offOutputValue=new Parameter(this,1,"offOutputValue",paramValues.getString("OffOutputValue"));
 		parameterList.add(onSwitchValue);
 		parameterList.add(offSwitchValue);
 		parameterList.add(onOutputValue);

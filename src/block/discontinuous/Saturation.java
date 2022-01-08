@@ -15,11 +15,11 @@ public class Saturation extends Block{
 	public Saturation(JSONObject blockIn,NCSLabModel model) {
 	
 		super(blockIn,model);
-		//Ò»¸öÊäÈë£¬Ò»¸öÊä³ö
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
-		lowerLimit=new Parameter(this,1,"lowerLimit");
-		upperLimit=new Parameter(this,1,"upperLimit");
+		lowerLimit=new Parameter(this,1,"lowerLimit",paramValues.getString("LowerLimit"));
+		upperLimit=new Parameter(this,1,"upperLimit",paramValues.getString("UpperLimit"));
 		parameterList.add(lowerLimit);
 		parameterList.add(upperLimit);
 	}

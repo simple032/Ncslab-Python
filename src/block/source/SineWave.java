@@ -15,13 +15,13 @@ public class SineWave extends block.Block{
 	    block.io.Parameter sampleTime;
 	public SineWave(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);
-		//¹¹½¨Ò»¸öÊä³ö
+		//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		outputPortList.add(new OutputPort(this,1,false));
-        amplitude=new Parameter(this,1,"amplitude");
-		bias=new Parameter(this,1,"bias");
-		frequency=new Parameter(this,1,"frequency");
-		phase=new Parameter(this,1,"phase");
-		sampleTime=new Parameter(this,1,"sampleTime");
+        amplitude=new Parameter(this,1,"amplitude",paramValues.getString("Amplitude"));
+		bias=new Parameter(this,1,"bias",paramValues.getString("Bias"));
+		frequency=new Parameter(this,1,"frequency",paramValues.getString("Frequency"));
+		phase=new Parameter(this,1,"phase",paramValues.getString("Phase"));
+		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		parameterList.add(amplitude);
 		parameterList.add(bias);
 		parameterList.add(frequency);
@@ -45,7 +45,7 @@ public class SineWave extends block.Block{
 	   // outputCode+="if "+sampleTime.getName()+"==0\n";
 		//outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+initial_output.getName()+"+"+slope.getName()+"*(t-"+start.getName()+");\n";
         outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+bias.getName()+"+"+amplitude.getName()+"*sin("+frequency.getName()+"*(t+offset-"+phase.getName()+"));\n";
-     //µ÷ÊÔ
+     //ï¿½ï¿½ï¿½ï¿½
        // outputCode+="else\n";
         //outputCode+="if mod(t,"+sampleTime.getName()+")==0\n";
        // outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+bias.getName()+"+"+amplitude.getName()+"*sin("+frequency.getName()+"*t-"+phase.getName()+");\n";

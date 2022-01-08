@@ -1,7 +1,10 @@
 package code.c;
 
 public enum DataTypeC {
-	REAL;
+	REAL,
+	MATRIX,
+	ROW_VECTOR,
+	COLUMN_VECTOR;
 	public static String getRealString() {
 		return "REAL";
 	}

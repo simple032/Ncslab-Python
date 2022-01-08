@@ -14,12 +14,12 @@ public class Pulse extends block.Block{
 	    block.io.Parameter phaseDelay;
 	public Pulse(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);
-		//¹¹½¨Ò»¸öÊä³ö
+		//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		outputPortList.add(new OutputPort(this,1,false));
-        amplitude=new Parameter(this,1,"amplitude");
-		period=new Parameter(this,1,"period");
-		pulseWidth=new Parameter(this,1,"pulseWidth");
-		phaseDelay=new Parameter(this,1,"phaseDelay");
+        amplitude=new Parameter(this,1,"amplitude",paramValues.getString("Amplitude"));
+		period=new Parameter(this,1,"period",paramValues.getString("Period"));
+		pulseWidth=new Parameter(this,1,"pulseWidth",paramValues.getString("PulseWidth"));
+		phaseDelay=new Parameter(this,1,"phaseDelay",paramValues.getString("PhaseDelay"));
 		parameterList.add(amplitude);
 		parameterList.add(period);
 		parameterList.add(pulseWidth);

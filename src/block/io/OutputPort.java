@@ -7,9 +7,11 @@ import block.Block;
 import line.Line;
 
 public class OutputPort {
-	private int width=1;
 	
 	private Block block;
+	
+	private int width=1;
+	private int height=1;
 	
 	private int number;
 	
@@ -33,7 +35,7 @@ public class OutputPort {
 		this.block=block;
 		this.number=number;
 		this.name="out"+number;
-		this.width=width;
+		outputSignalC.setWidth(width);
 	}
 	
 	public OutputPort(Block block,int number,boolean isFeedThrough,int width){
@@ -41,7 +43,7 @@ public class OutputPort {
 		this.number=number;
 		this.name="out"+number;
 		this.isFeedThrough=isFeedThrough;
-		this.width=width;
+		outputSignalC.setWidth(width);
 	}
 	
 	public OutputPort(Block block,int number,boolean isFeedThrough){
@@ -108,7 +110,43 @@ public class OutputPort {
 
 	public void setWidth(int width) {
 		// TODO Auto-generated method stub
-		this.width = width;
+		this.width=width;
+		//outputSignalC.setWidth(width);
+	}
+	
+	public int getHeight() {
+		return this.height;
+	}
+
+	public void setHeight(int height) {
+		// TODO Auto-generated method stub
+		this.height=height;
+		//outputSignalC.setHeight(height);
+	}
+	
+	public String getDataStructureInitCodeC() {
+		String code="";
+		
+		OutputSignal signal=getOutputSignalC();
+		
+		switch(signal.getDataType()) {
+		case REAL:
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".vp=&"+signal.getName()+";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".width="+signal.getWidth()+";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".height="+signal.getHeight()+";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			break;
+		case MATRIX:
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".vp="+signal.getName()+";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".width="+signal.getWidth()+";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".height="+signal.getHeight()+";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			break;
+		}
+		
+		return code;
 	}
 	
 }

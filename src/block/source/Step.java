@@ -15,11 +15,11 @@ public class Step extends block.Block{
 	
 	public Step(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);
-		//¹¹½¨Ò»¸öÊä³ö
+		//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		outputPortList.add(new OutputPort(this,1,false));
-		time0=new Parameter(this,1,"time");
-		after=new Parameter(this,1,"after");
-		before=new Parameter(this,1,"before");
+		time0=new Parameter(this,1,"time",paramValues.getString("Time"));
+		after=new Parameter(this,1,"after",paramValues.getString("After"));
+		before=new Parameter(this,1,"before",paramValues.getString("Before"));
 		parameterList.add(time0);
 		parameterList.add(after);
 		parameterList.add(before);
@@ -39,7 +39,7 @@ public class Step extends block.Block{
 		String outputCode="";
 		outputCode+="if sign(t-"+time0.getName()+"+offset)>=0\n";
         outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+after.getName()+";\n";
-        //µ÷ÊÔ
+        //ï¿½ï¿½ï¿½ï¿½
         outputCode+="else\n";
         //outputCode+="h=0.01;\n";
        // outputCode+="else\n";

@@ -1,6 +1,6 @@
 package block.io;
 
-import code.c.DataTypeC;
+import block.data.DataType;
 import block.Block;
 
 public class OutputSignal {
@@ -8,27 +8,33 @@ public class OutputSignal {
 	private String name;
 	private String localName;
 	private int width=1;
-	private DataTypeC type=DataTypeC.REAL;
+	private int height=1;
+	private DataType type=DataType.REAL;
 	private Block block;
 	private int outputPortId;
 	
 	public OutputSignal(Block block,int id,int outputPortId,String localName){
 		this.block=block;
-		this.type=DataTypeC.REAL;
+		this.type=DataType.REAL;
 		this.id=id;
 		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
 		this.localName=localName;
 		this.outputPortId=outputPortId;
 	}
 	
-	public OutputSignal(Block block, int id, int outputPortId, String localName, int width) {
+	public OutputSignal(Block block, int id, int outputPortId, String localName, int width,int height) {
 		this.block=block;
-		this.type=DataTypeC.REAL;
+		this.type=DataType.REAL;
 		this.id=id;
 		this.width=width;
+		this.height=height;
 		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
 		this.localName=localName;
 		this.outputPortId=outputPortId;
+		
+		if(width>1||height>1) {
+			this.type=DataType.MATRIX;
+		}
 	}
 
 	public String getName() {
@@ -41,6 +47,7 @@ public class OutputSignal {
 		
 		switch(type) {
 		case REAL:
+		case MATRIX:
 			defineString="REAL"; 
 		}
 		
@@ -54,5 +61,24 @@ public class OutputSignal {
 	public void setWidth(int width) {
 		// TODO Auto-generated method stub
 		this.width = width;
+		if(width>1) {
+			this.type=DataType.MATRIX;
+		}
+	}
+	
+	public int getHeight() {
+		return this.height;
+	}
+
+	public void setHeight(int height) {
+		// TODO Auto-generated method stub
+		this.height = height;
+		if(height>1) {
+			this.type=DataType.MATRIX;
+		}
+	}
+	
+	public DataType getDataType() {
+		return this.type;
 	}
 }

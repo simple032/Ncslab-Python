@@ -215,8 +215,8 @@ bool uploadSignals(CLIENT_STRUCT *p)
 		strcpy(blockPath,signal->path);
 		strcpy(signalName,signal->name);
 
-		nRows=signal->width;
-		nCols=1;
+		nRows=signal->height;
+		nCols=signal->width;
 
 		ret=send(socket,signalName,NAME_LENGTH,0);
 		if(ret==-1)
@@ -291,8 +291,8 @@ bool uploadParameters(CLIENT_STRUCT *p)
 		strcpy(blockPath,parameter->path);
 		strcpy(parameterName,parameter->name);
 
-		nRows=parameter->width;
-		nCols=1;
+		nRows=parameter->height;
+		nCols=parameter->width;
 
 		
 		ret=send(socket,parameterName,NAME_LENGTH,0);
@@ -439,7 +439,7 @@ bool responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p)
 	printf("Selected signal and parameter number=%d\n",num);
 	//printf("Data size=%d",sizeof(SELECT)*num);
 
-	select=malloc(sizeof(SELECT)*num);
+	select=(SELECT *)malloc(sizeof(SELECT)*num);
 
 	ret=recv(socket,(char *)select,sizeof(SELECT)*num,MSG_WAITALL);
 	if(ret==-1||ret==0)
@@ -601,7 +601,7 @@ bool responseEXT_SETPARAM(CLIENT_STRUCT *p)
 	}
 
 	parameter=dataApiGetParameter(parameters,pos);
-	sec=(REAL *)(parameter->vp);
+	sec=(REAL *)(parameter->vp)+parameter->width*row+col;
 	*sec=value;
 
 	printf("Pos=%d\n",pos);

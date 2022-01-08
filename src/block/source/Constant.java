@@ -2,6 +2,7 @@ package block.source;
 
 import org.json.JSONObject;
 
+import block.data.DataType;
 import block.io.OutputPort;
 import block.io.Parameter;
 import code.c.CodeStructC;
@@ -14,11 +15,15 @@ public class Constant extends block.Block{
 	public Constant(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
-		//Ò»¸öÊä³ö
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		outputPortList.add(new OutputPort(this,1,false));
 		
-		value=new Parameter(this,1,"value");
+		//value=new Parameter(this,1,"value");
+		value=new Parameter(this,1,"value",paramValues.getString("Value"));
 		parameterList.add(value);
+		
+		outputPortList.get(0).setHeight(value.getHeight());
+		outputPortList.get(0).setWidth(value.getWidth());
 	}
 	
 	public void generateInitCodeM(CodeStructM code) {
@@ -45,7 +50,9 @@ public class Constant extends block.Block{
 		super.generateInitCodeC(code);
 		
 		String initCode="/*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*/\n";
-		initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n"; 
+		//initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n";
+		
+		initCode+=value.getInitCodeC();
 		
 		code.addInitCode(initCode);
 	}
@@ -53,7 +60,18 @@ public class Constant extends block.Block{
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Constant:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
+		switch(value.getDataType()) {
+		case REAL:
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
+			break;
+		case MATRIX:
+			for(int i=0;i<value.getHeight();i++) {
+				for(int j=0;j<value.getWidth();j++) {
+					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"["+i+"]["+j+"]="+value.getName()+"["+i+"]["+j+"];\n";
+				}
+			}
+			break;
+		}
 		
 		code.addOutputCode(outputCode);
 	}

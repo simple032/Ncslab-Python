@@ -185,7 +185,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public void updateBlock() {
 		int i=0;
 		for(OutputPort outputPort:outputPortList) {
-			OutputSignal outputSignal=new OutputSignal(this,i,outputPort.getNumber(),outputPort.getName(),outputPort.getWidth());
+			OutputSignal outputSignal=new OutputSignal(this,i,outputPort.getNumber(),outputPort.getName(),outputPort.getWidth(),outputPort.getHeight());
 			outputPort.setOutputSignalC(outputSignal);
 			outputSignalList.add(outputSignal);
 			i++;

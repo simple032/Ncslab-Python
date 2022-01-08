@@ -26,12 +26,14 @@
 typedef struct {
 	char *name;
 	int width;
+	int height;
 	void *vp;
 }INPUT_PORT;
 
 typedef struct {
 	char *name;
 	int width;
+	int height;
 	void *vp;
 }OUTPUT_PORT;
 
@@ -39,12 +41,14 @@ typedef struct {
 	char *name;
 	char *path;
 	int width;
+	int height;
 	void *vp;
 }PARAMETER;
 
 typedef struct {
 	char *name;
 	int width;
+	int height;
 	void *vp;
 	void *dvp;
 }STATE;
@@ -53,6 +57,7 @@ typedef struct {
 	char *name;
 	char *path;
 	int width;
+	int height;
 	void *vp;
 }SIGNAL;
 
