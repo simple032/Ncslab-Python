@@ -5,8 +5,6 @@ import block.data.DataType;
 import line.Line;
 
 public class InputPort {
-	private int width=1;
-	private int height=1;
 	
 	private OutputPort linkedOutputPort;
 	
@@ -22,18 +20,6 @@ public class InputPort {
 		this.block=block;
 		
 		this.number=number;
-		
-		this.linkedOutputPort=null;
-		
-		this.name="in"+number;
-	}
-	
-	public InputPort(Block block,int number, int width){
-		this.block=block;
-		
-		this.number=number;
-		
-		this.width=width;
 		
 		this.linkedOutputPort=null;
 		
@@ -61,21 +47,44 @@ public class InputPort {
 	}
 	
 	public int getWidth() {
-		return this.width;
-	}
-
-	public void setWidth(int width) {
-		this.width = width;
-		
+		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		return signal.getWidth();
 	}
 	
 	public int getHeight() {
-		return this.height;
+		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		return signal.getHeight();
 	}
-
-	public void setHeight(int height) {
-		this.height = height;
-		
+	
+	public boolean isVector() {
+		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		if(signal.getDataType()==DataType.MATRIX&&signal.getWidth()==1||signal.getHeight()==1) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public boolean isReal() {
+		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		if(signal.getDataType()==DataType.REAL) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public int getVectorSize() {
+		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		if(signal.getWidth()>1) {
+			return signal.getWidth();
+		}
+		if(signal.getHeight()>1) {
+			return signal.getHeight();
+		}
+		return 1;
 	}
 	
 	public String getDataStructureInitCodeC() {

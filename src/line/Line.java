@@ -71,7 +71,7 @@ public class Line {
 			return;
 		}
 		
-		toPort.setWidth(fromPort.getWidth());
+		//toPort.setWidth(fromPort.getWidth());
 		
 		this.linkedInputPort=toPort;
 		toPort.setLinkedLine(this);

@@ -15,6 +15,7 @@ import block.math.Matrix;
 import code.c.CodeStructC;
 import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
+import ncslablink.MatDimException;
 
 public class Demux extends Block {
 	private int num;
@@ -29,7 +30,7 @@ public class Demux extends Block {
 		for(int i=0; i<num; i++) {
 			outputPortList.add(new OutputPort(this,i+1,feedThrough));
 		}
-		inputPortList.add(new InputPort(this,1,num));
+		inputPortList.add(new InputPort(this,1));
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
@@ -77,11 +78,20 @@ public class Demux extends Block {
 		String outputCode="/*Code for output of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
 		//y(k)=Cx(k)+Du(k)
 		
-		for(int i=0; i<num; i++) {
-			outputCode+=getOutputPortVariable(i)+"="
-				+getInputPortVariable(0)+"["+i+"]"
-				+";\n";
-		}		
+		if(this.getInputPortList().get(0).getWidth()==1) {
+			for(int i=0; i<num; i++) {
+				outputCode+=getOutputPortVariable(i)+"="
+					+getInputPortVariable(0)+"[0]["+i+"]"
+					+";\n";
+			}	
+		}
+		else {
+			for(int i=0; i<num; i++) {
+				outputCode+=getOutputPortVariable(i)+"="
+					+getInputPortVariable(0)+"["+i+"][0]"
+					+";\n";
+			}	
+		}
 
 		code.addOutputCode(outputCode);
 	}
@@ -97,5 +107,23 @@ public class Demux extends Block {
 		String updateCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
 		code.addUpdateCode(updateCode);	
+	}
+	
+	public void updateDimension() throws MatDimException{
+		super.updateDimension();
+		System.out.println("Update dimension:Demux");
+		System.out.println("Input width: "+this.getInputPortList().get(0).getWidth());
+		System.out.println("Input height: "+this.getInputPortList().get(0).getHeight());
+		System.out.println("Is a vector: "+this.getInputPortList().get(0).isVector());
+		
+		if(this.getInputPortList().get(0).isVector()==false||this.getInputPortList().get(0).isReal()==true) {
+			MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n Only a vector is applicable for demux\n");
+			throw(e);
+		}
+		
+		if(this.getInputPortList().get(0).getVectorSize()!=num) {
+			MatDimException e=new MatDimException("Block "+this.blockName+" output dimension error!\n The input signal width is "+this.getInputPortList().get(0).getVectorSize()+", but the number of output is "+num+"\n");
+			throw(e);
+		}
 	}
 }

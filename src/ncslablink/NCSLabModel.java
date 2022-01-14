@@ -197,7 +197,7 @@ abstract public class NCSLabModel {
 	}
 	
 	
-	private void updateDimensions() {
+	private void updateDimensions() throws MatDimException{
 		for(Block block:blockList) {
 			block.updateDimension();
 		}

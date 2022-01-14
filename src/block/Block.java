@@ -288,7 +288,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return null;
 	}
 
-	public void updateDimension() {
+	public void updateDimension() throws MatDimException{
 		// TODO Auto-generated method stub
 		
 	}
