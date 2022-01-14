@@ -1,3 +1,4 @@
+#include "winsock2.h"
 #include"ncslabccode.h"
 #include"ServerThread.h"
 #include"ncslab.h"

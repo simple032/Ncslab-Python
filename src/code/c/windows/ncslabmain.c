@@ -1,3 +1,4 @@
+#include"winsock2.h"
 #include"ncslabccode.h"
 #include"ServerThread.h"
 #include"ncslab.h"
@@ -12,7 +13,7 @@ void  CALLBACK TimeEvent(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR d
 	mp->time+=STEP_SIZE;
 }
 
-void main(int argc, char *argv[]){
+int main(int argc, char *argv[]){
 	ExtModeData extModeData;
 
 	NCSLabInit();

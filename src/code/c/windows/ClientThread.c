@@ -1,3 +1,4 @@
+#include "winsock2.h"
 #include "ClientThread.h"
 #include "ncslabccode.h"
 #include "DataApi.h"
@@ -57,6 +58,7 @@ BOOL terminateUploadThread(CLIENT_STRUCT *p)
 		WaitForSingleObject(p->upload.hUploadThread,INFINITE);
 		printf("Old upload thread stopped\n");
 	}
+	return TRUE;
 }
 
 BOOL startUpload(CLIENT_STRUCT *p)
@@ -146,6 +148,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
     }
 
     closeClient(p);
+    return TRUE;
 
 }
 
@@ -253,6 +256,8 @@ BOOL uploadSignals(CLIENT_STRUCT *p)
 		}
 
 	}
+	
+	return TRUE;
 
 }
 
@@ -328,6 +333,7 @@ BOOL uploadParameters(CLIENT_STRUCT *p)
 		}
 
 	}
+	return TRUE;
 
 }
 
@@ -431,7 +437,7 @@ BOOL responseEXT_SELECT_SIGNALS(CLIENT_STRUCT *p)
 	printf("Selected signal and parameter number=%d\n",num);
 	//printf("Data size=%d",sizeof(SELECT)*num);
 
-	select=malloc(sizeof(SELECT)*num);
+	select=(SELECT *)malloc(sizeof(SELECT)*num);
 
 	ret=recv(socket,(char *)select,sizeof(SELECT)*num,MSG_WAITALL);
 	if(ret==SOCKET_ERROR||ret==0)

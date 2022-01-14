@@ -3,7 +3,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
-
+#include "winsock2.h"
 #include <windows.h>
 
 #define REAL double
@@ -15,12 +15,14 @@
 typedef struct {
 	char *name;
 	int width;
+	int height;
 	void *vp;
 }INPUT_PORT;
 
 typedef struct {
 	char *name;
 	int width;
+	int height;
 	void *vp;
 }OUTPUT_PORT;
 
@@ -28,12 +30,14 @@ typedef struct {
 	char *name;
 	char *path;
 	int width;
+	int height;
 	void *vp;
 }PARAMETER;
 
 typedef struct {
 	char *name;
 	int width;
+	int height;
 	void *vp;
 	void *dvp;
 }STATE;
@@ -42,6 +46,7 @@ typedef struct {
 	char *name;
 	char *path;
 	int width;
+	int height;
 	void *vp;
 }SIGNAL;
 
@@ -79,6 +84,8 @@ typedef struct {
 	STATE **states;
 	
 	BLOCK **blocks;
+	int majorStep;
+	struct timeval tv;
 }MODEL;
 
 void NCSLabInit();

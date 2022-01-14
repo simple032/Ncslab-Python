@@ -1,3 +1,4 @@
+#include "winsock2.h"
 #include "UploadThread.h"
 #include "ncslabccode.h"
 #include "DataApi.h"
@@ -34,7 +35,7 @@ BOOL allocateMemory(CLIENT_STRUCT *p)
 {
 	uint_T num=(p->packetSize)*(p->selectNum+1)*sizeof(real_T);
 	printf("Allocating %d values for uploading buffer\n",num);
-	p->upload.data=malloc(num+100);
+	p->upload.data=(double *)malloc(num+100);
 
 	p->upload.totalSize=num;
 
@@ -164,6 +165,8 @@ DWORD WINAPI UploadThreadFunction( LPVOID lpParam )
 	}
 
     onUploadTermination(p);
+    
+    return 0;
 }
 
 void onUploadTermination(CLIENT_STRUCT *p)
