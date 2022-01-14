@@ -81,4 +81,8 @@ public class OutputSignal {
 	public DataType getDataType() {
 		return this.type;
 	}
+	
+	public void setDataType(DataType type) {
+		this.type=type;
+	}
 }

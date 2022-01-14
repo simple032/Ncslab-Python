@@ -24,6 +24,8 @@ public class Demux extends Block {
 	public Demux(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		
+		this.feedThrough=true;
+		
 		this.num = paramValues.getInt("Outputs");				
 		
 		//һ�����룬һ�����
@@ -78,7 +80,7 @@ public class Demux extends Block {
 		String outputCode="/*Code for output of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
 		//y(k)=Cx(k)+Du(k)
 		
-		if(this.getInputPortList().get(0).getWidth()==1) {
+		if(this.getInputPortList().get(0).getHeight()==1) {
 			for(int i=0; i<num; i++) {
 				outputCode+=getOutputPortVariable(i)+"="
 					+getInputPortVariable(0)+"[0]["+i+"]"
@@ -111,10 +113,11 @@ public class Demux extends Block {
 	
 	public void updateDimension() throws MatDimException{
 		super.updateDimension();
+		/*
 		System.out.println("Update dimension:Demux");
 		System.out.println("Input width: "+this.getInputPortList().get(0).getWidth());
 		System.out.println("Input height: "+this.getInputPortList().get(0).getHeight());
-		System.out.println("Is a vector: "+this.getInputPortList().get(0).isVector());
+		System.out.println("Is a vector: "+this.getInputPortList().get(0).isVector());*/
 		
 		if(this.getInputPortList().get(0).isVector()==false||this.getInputPortList().get(0).isReal()==true) {
 			MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n Only a vector is applicable for demux\n");
