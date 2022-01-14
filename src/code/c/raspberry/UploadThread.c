@@ -80,7 +80,7 @@ bool packagingData(CLIENT_STRUCT *p,uint_T n)
 		{
 			SIGNAL *signal=dataApiGetSignal(signals,p->select[i].pos);
 			//printf("%d\t%d\t%d\t%d\t",p->select[i].row,p->select[i].col,signal->height,signal->width);
-            value=*((REAL *)(signal->vp));
+            value=*((REAL *)(signal->vp)+signal->width*p->select[i].row+p->select[i].col);
 		}
 		else
 		if(p->select[i].type==2)
