@@ -45,16 +45,17 @@ public class Data {
 	}
 	
 	private static Matrix parseMatrix(String matrixString) {
-		matrixString=matrixString.replace("[", "");
-		matrixString=matrixString.replace("]", "");
+		matrixString=matrixString.replaceAll("\\[\\s*", "");
+		matrixString=matrixString.replaceAll("\\s*\\]", "");
 		
-		String[] parentMat = matrixString.split(";");
+		String[] parentMat = matrixString.split("\\s*;\\s*");
 	    double[][] childMat = new double[parentMat.length][];
 	    for (int i = 0; i < parentMat.length; i++) {
-	        String[] child = parentMat[i].split(" ");
+	        String[] child = parentMat[i].split("(\\s*\\,\\s*)|(\\s+)");
 	        childMat[i] = new double[child.length];
 	        for (int j = 0; j < child.length; j++) {
-	            childMat[i][j] = Double.parseDouble(child[j]);
+	        	String doubleString=child[j].replaceAll("\\s+", "");
+	            childMat[i][j] = Double.parseDouble(doubleString);
 	        }
 	    }
 	    
