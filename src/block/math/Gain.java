@@ -38,11 +38,11 @@ public class Gain extends Block{
 			out = new OutputPort(this,1,true);
 			in = new InputPort(this,1);
 		}
-		//һ�����
+		//一锟斤拷锟斤拷锟�
 		
 		outputPortList.add(out);
 		
-		//һ������
+		//一锟斤拷锟斤拷锟斤拷
 		inputPortList.add(in);
 		
 //		gain=new Parameter(this,1,"value");
@@ -55,7 +55,7 @@ public class Gain extends Block{
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 		//String code="Block"+this.getBlockId()+"_Output1="+paramValues.getDouble("Gain")+"*Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+"_Output"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()+";\n";
-		String ouputCode=outputPortList.get(0).getOutputSignalC().getName()+"="+paramValues.getDouble("Gain")+"*"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+		String ouputCode=outputPortList.get(0).getOutputSignalC().getName()+"="+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"*"+paramValues.getString("Gain")+";\n";
 		
 		code.addOutputCode(ouputCode);
 	}

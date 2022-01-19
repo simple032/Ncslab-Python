@@ -28,7 +28,7 @@ public class Demux extends Block {
 		
 		this.num = paramValues.getInt("Outputs");				
 		
-		//һ�����룬һ�����
+		//一锟斤拷锟斤拷锟诫，一锟斤拷锟斤拷锟�
 		for(int i=0; i<num; i++) {
 			outputPortList.add(new OutputPort(this,i+1,feedThrough));
 		}
@@ -37,8 +37,10 @@ public class Demux extends Block {
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-		String initCode=getOutputPortVariable(0)+"=0";
-
+		String initCode="";
+		for(int i=0; i<num; i++) {
+			initCode+=getOutputPortVariable(0)+"=0;\n";
+		}
 		
 		code.addInitCode(initCode);
 	}
@@ -48,10 +50,14 @@ public class Demux extends Block {
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 			
-		String outputCode=getOutputPortVariable(0)+"=0";
+		//String outputCode=getOutputPortVariable(0)+"=0";
 		
 		
-		outputCode+=";\n";
+		//outputCode+=";\n";
+		String outputCode="";
+		for(int i=0; i<num; i++) {
+			outputCode+=getOutputPortVariable(i)+"="+getInputPortVariable(0)+"("+(i+1)+");\n";
+		}
 		
 		code.addOutputCode(outputCode);
 	}
@@ -62,7 +68,7 @@ public class Demux extends Block {
 		String derivativeCode="";
 		
 
-		derivativeCode+=");\n";
+		//derivativeCode+=");\n";
 		
 		code.addDerivativeCode(derivativeCode);
 	}

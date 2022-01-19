@@ -32,7 +32,8 @@ public class Scope extends block.Block{
 		String initCode="";
 		code.addGlobalDefineCode("global "+getBlockName()+";\n");
 		initCode+=getBlockName()+"=[];\n";
-		initCode+="ScopeNum=ScopeNum+1;\n";		
+		initCode+="ScopeNum=ScopeNum+1;\n";	
+		initCode+="ScopeList=[ScopeList; '"+getBlockName()+"'];\n";
 		code.addInitCode(initCode);
 	}
 }

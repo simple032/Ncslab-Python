@@ -89,6 +89,23 @@ public class Data {
 		return this.initValue;
 	}
 	
+	public String getInitCodeM(String name) {
+		String code="";
+		switch(this.dataType) {
+		case REAL:
+			code+=name+"="+initValue+";\n";
+			break;
+		case MATRIX:
+			for(int i=0;i<initMatrix.getRowDimension();i++) {
+				for(int j=0;j<initMatrix.getColumnDimension();j++) {
+					code+=name+"("+(i+1)+","+(j+1)+")="+initMatrix.get(i, j)+";\n";
+				}
+			}
+			break;
+		}
+		return code;
+	}
+	
 	public String getInitCodeC(String name) {
 		String code="";
 		

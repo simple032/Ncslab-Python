@@ -457,6 +457,7 @@ public class CodeStructM {
 		
 		String code="%clear all\n";
 		code+="ScopeNum=0;\n";
+		code+="ScopeList=[];\n";
 		code+=initCode;
 		
 		switch(model.getSolver())

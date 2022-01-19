@@ -31,7 +31,8 @@ public class Constant extends block.Block{
 		
 		String initCode="";
 		
-		initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n"; 
+		//initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n";
+		initCode+=value.getInitCodeM();
 		
 		code.addInitCode(initCode);
 	}

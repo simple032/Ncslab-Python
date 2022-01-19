@@ -29,7 +29,7 @@ public class Mux extends Block {
 		
 		this.num = paramValues.getInt("Inputs");				
 		
-		//һ�����룬һ�����
+		//一锟斤拷锟斤拷锟诫，一锟斤拷锟斤拷锟�
 		for(int i=0; i<num; i++) {
 			inputPortList.add(new InputPort(this,i+1));
 		}
@@ -38,7 +38,7 @@ public class Mux extends Block {
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-		String initCode=getOutputPortVariable(0)+"=0";
+		String initCode=getOutputPortVariable(0)+"=0;\n";
 
 		
 		code.addInitCode(initCode);
@@ -49,10 +49,18 @@ public class Mux extends Block {
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 			
-		String outputCode=getOutputPortVariable(0)+"=0";
+		//String outputCode=getOutputPortVariable(0)+"=0";
 		
 		
-		outputCode+=";\n";
+		//outputCode+=";\n";
+		String outputCode="";
+		int i=0;
+		outputCode+=getOutputPortVariable(0)+"=[";
+		for(InputPort inputPort:inputPortList) {
+			outputCode+=getInputPortVariable(i)+" ";
+			i++;
+		}
+		outputCode+="];\n";
 		
 		code.addOutputCode(outputCode);
 	}
@@ -63,7 +71,7 @@ public class Mux extends Block {
 		String derivativeCode="";
 		
 
-		derivativeCode+=");\n";
+		//derivativeCode+=");\n";
 		
 		code.addDerivativeCode(derivativeCode);
 	}

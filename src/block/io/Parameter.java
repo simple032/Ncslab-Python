@@ -59,6 +59,14 @@ public class Parameter {
 		return data.getHeight();
 	}
 	
+	public String getInitCodeM() {
+		String code;
+		
+		code=data.getInitCodeM(this.getName());
+		
+		return code;
+	}
+	
 	public String getInitCodeC() {
 		String code;
 		
