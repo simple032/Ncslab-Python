@@ -436,7 +436,7 @@ public class CodeStructM {
 		code+="nh=((tol*h)/dif)^0.25*0.84*h;\n";
 		
 		//code+="if nh<h || i==2 ||t!="+model.getConfig().getStartTime()+" \n";
-		code+="if nh<h || i==2 \n";
+		code+="if nh>h || i==2 \n";
 		code+="break;\n";
 		code+="end\n";
 		
