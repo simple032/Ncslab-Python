@@ -8,36 +8,64 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import block.Block;
+import block.data.DataType;
 import block.io.InputPort;
 import block.io.OutputPort;
+import block.io.OutputSignal;
+import block.io.Parameter;
 import block.io.State;
 import code.c.CodeStructC;
 import code.m.CodeStructM;
+import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 public class StateSpace extends Block{
 	//private double D=0;
 	private boolean feedThrough=false;
-    private double[]  para_A;
-    private double[]  para_B;
-    private double[]  para_C;
-    private double para_D;
-    private double[]  init_X;
+    
+	private block.io.Parameter A;
+	private block.io.Parameter B;
+	private block.io.Parameter C;
+	private block.io.Parameter D;
+	private block.io.Parameter X0;
+    
+    InputPort input;
+    OutputPort output;
     
     private Vector<State> xStateList=new Vector<State>();
     
 	public StateSpace(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
-		parseVector();
-		for(int i=0;i<Math.sqrt(para_A.length);i++) {
-			State xState=new State(this,i+1,"x"+(i+1));
-			xStateList.add(xState);
-			stateList.add(xState);		
-		}
 		
-		//Ò»¸öÊäÈë£¬Ò»¸öÊä³ö
-		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,feedThrough));
+		//parseVector();
+		
+		A=new Parameter(this,1,"A",paramValues.getString("A"));
+		B=new Parameter(this,2,"B",paramValues.getString("B"));
+		C=new Parameter(this,3,"C",paramValues.getString("C"));
+		D=new Parameter(this,4,"D",paramValues.getString("D"));	
+		X0=new Parameter(this,5,"X0",paramValues.getString("X0"));
+		
+		parameterList.add(A);
+		parameterList.add(B);
+		parameterList.add(C);
+		parameterList.add(D);
+		parameterList.add(X0);
+		
+		for(int i=0;i<A.getHeight();i++) {
+			State xState=new State(this,1,"x"+(i+1)+"_");
+			xStateList.add(xState);
+			stateList.add(xState);	
+		}
+			
+		
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
+		input=new InputPort(this,1);
+		inputPortList.add(input);
+		output=new OutputPort(this,1,feedThrough);
+		output.setHeight(C.getHeight());
+		outputPortList.add(output);
 	}
+	
+	/*
 	private void parseVector() {
 		String aStr=paramValues.getString("A");
 		String bStr=paramValues.getString("B");
@@ -84,20 +112,42 @@ public class StateSpace extends Block{
 			feedThrough=true;
 		}
 			
-	}
+	}*/
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
 		String initCode="";
+		
+		initCode+=A.getInitCodeM();
+		initCode+=B.getInitCodeM();
+		initCode+=C.getInitCodeM();
+		initCode+=D.getInitCodeM();
+		initCode+=X0.getInitCodeM();
+		
         int i=0;
 		for(State xState:xStateList) {
 			initCode+=xState.getName()+
-					"="+init_X[i]+";\n";
+					"="+X0.getName()+"("+(i+1)+",1)"+";\n";
 			i++;
 		}
 		code.addInitCode(initCode);
 	}
    public void generateOutputCodeM(CodeStructM code) {
+	   
 		super.generateOutputCodeM(code);
+		String outputCode="";
+		
+		for(int i=0;i<C.getHeight();i++) {
+			outputCode+=getOutputPortVariable(0)+"=0";
+			for(int j=0;j<C.getWidth();j++) {
+				State xState=xStateList.get(j);
+				outputCode+="+"+xState.getName()+"*"+C.getName()+"("+(i+1)+","+(j+1)+")";
+			}
+			outputCode+=";\n";
+		}
+		
+		code.addOutputCode(outputCode);
+
+		/*
 		int i=0;
 		String outputCode=getOutputPortVariable(0)+"=0";
 		for(State xState:xStateList) {
@@ -110,10 +160,30 @@ public class StateSpace extends Block{
 		}
 		
 		outputCode+=";\n";
-		code.addOutputCode(outputCode);	
+		code.addOutputCode(outputCode);	*/
 		
 	}
    public void generateDerivativeCodeM(CodeStructM code) {
+	    super.generateDerivativeCodeM(code);
+		String derivativeCode="";
+		
+		//derivativeCode+="#######################\n";
+		for(int i=0;i<A.getHeight();i++) {
+			derivativeCode+=xStateList.get(i).getDerivativeName()+"=0";
+			for(int j=0;j<A.getWidth();j++) {
+				State xState=xStateList.get(j);
+				derivativeCode+="+"+A.getName()+"("+(i+1)+","+(j+1)+")"+"*"+xState.getName();
+			}
+			
+			for(int j=0;j<B.getWidth();j++) {
+				derivativeCode+="+"+A.getName()+"("+(i+1)+","+(j+1)+")"+"*"+this.getInputPortVariable(0)+"("+(j+1)+")";
+			}
+			derivativeCode+=";\n";
+		}
+		//derivativeCode+="#######################\n";
+		code.addDerivativeCode(derivativeCode);
+		
+	   /*
 		super.generateDerivativeCodeM(code);
 		String derivativeCode="";
 		for(int i=0;i<xStateList.size();i++) {
@@ -124,5 +194,36 @@ public class StateSpace extends Block{
 			derivativeCode+=";\n";
 		}
 		code.addDerivativeCode(derivativeCode);
+		*/
+   }
+   
+   public void updateDimension() throws MatDimException{
+	    OutputPort out  = outputPortList.get(0);
+		InputPort in  = inputPortList.get(0);
+		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		
+		if(A.getWidth()!=A.getHeight()
+				||A.getHeight()!=B.getHeight()
+				||A.getWidth()!=C.getWidth()
+				||A.getWidth()!=xStateList.size()
+				||D.getWidth()!=B.getWidth()
+				||D.getHeight()!=C.getHeight()
+				||B.getWidth()!=in.getHeight()
+				) {
+			MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
+			throw(e);
+			
+		}
+		
+		out.setHeight(D.getHeight());
+		out.setWidth(1);
+		out.getOutputSignalC().setHeight(D.getHeight());
+		out.getOutputSignalC().setWidth(1);
+		if(D.getHeight()>1) {
+			out.getOutputSignalC().setDataType(DataType.MATRIX);
+		}
+		else {
+			out.getOutputSignalC().setDataType(DataType.REAL);
+		}
    }
 }
