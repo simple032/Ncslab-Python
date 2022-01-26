@@ -93,6 +93,7 @@ public class simulate extends HttpServlet {
         catch(ModelException e) {
         	System.err.println(e.getMessage());
         	System.err.println("Code generatrion terminated unsuccessfully������");
+        	response.getWriter().write("{\"code\":400,\"message\":\""+e.getMessage()+"\"}");
         }
 	}
 
