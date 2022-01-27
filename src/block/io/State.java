@@ -2,6 +2,7 @@ package block.io;
 
 import code.c.DataTypeC;
 import block.Block;
+import block.data.Data;
 
 public class State {
 	private int id;
@@ -12,12 +13,26 @@ public class State {
 	
 	private Block block;
 	
+	private Data data=null;
+	
 	public State(Block block,int id,String localName){
 		this.block=block;
 		this.type=DataTypeC.REAL;
 		this.id=id;
 		this.name="Block"+block.getBlockId()+"_State_"+localName;
 		this.localName=localName;
+		
+		this.data=new Data();
+	}
+	
+	public State(Block block,int id,String localName,int height,int width){
+		this.block=block;
+		this.type=DataTypeC.REAL;
+		this.id=id;
+		this.name="Block"+block.getBlockId()+"_State_"+localName;
+		this.localName=localName;
+		
+		this.data=new Data(height,width);
 	}
 	
 	public String getName() {
@@ -51,6 +66,10 @@ public class State {
 	}
 	
 	public int getWidth() {
-		return this.width;
+		return data.getWidth();
+	}
+	
+	public int getHeight() {
+		return data.getHeight();
 	}
 }

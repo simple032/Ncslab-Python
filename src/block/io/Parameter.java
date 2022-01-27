@@ -83,6 +83,10 @@ public class Parameter {
 		return code;
 	}
 	
+	public boolean isZero() {
+		return data.isZero();
+	}
+	
 	public String getDataStructureInitCodeC() {
 		String code="";
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.getLocalName()+"\";\n";

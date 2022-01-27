@@ -27,6 +27,8 @@ public class StateSpace extends Block{
 	private block.io.Parameter C;
 	private block.io.Parameter D;
 	private block.io.Parameter X0;
+	
+	private State xState;
     
     InputPort input;
     OutputPort output;
@@ -44,17 +46,29 @@ public class StateSpace extends Block{
 		D=new Parameter(this,4,"D",paramValues.getString("D"));	
 		X0=new Parameter(this,5,"X0",paramValues.getString("X0"));
 		
+		if(D.isZero()) {
+			feedThrough=false;
+		}
+		else {
+			feedThrough=true;
+		}
+		
 		parameterList.add(A);
 		parameterList.add(B);
 		parameterList.add(C);
 		parameterList.add(D);
 		parameterList.add(X0);
 		
+		/*
 		for(int i=0;i<A.getHeight();i++) {
 			State xState=new State(this,1,"x"+(i+1)+"_");
 			xStateList.add(xState);
 			stateList.add(xState);	
-		}
+		}*/
+		
+		xState=new State(this,1,"x",A.getWidth(),1);
+		xStateList.add(xState);
+		stateList.add(xState);
 			
 		
 		//һ�����룬һ�����
@@ -123,12 +137,16 @@ public class StateSpace extends Block{
 		initCode+=D.getInitCodeM();
 		initCode+=X0.getInitCodeM();
 		
+		/*
         int i=0;
 		for(State xState:xStateList) {
 			initCode+=xState.getName()+
 					"="+X0.getName()+"("+(i+1)+",1)"+";\n";
 			i++;
-		}
+		}*/
+		
+		initCode+=xState.getName()+"="+X0.getName()+";\n";
+		
 		code.addInitCode(initCode);
 	}
    public void generateOutputCodeM(CodeStructM code) {
@@ -136,6 +154,7 @@ public class StateSpace extends Block{
 		super.generateOutputCodeM(code);
 		String outputCode="";
 		
+		/*
 		for(int i=0;i<C.getHeight();i++) {
 			outputCode+=getOutputPortVariable(0)+"=0";
 			for(int j=0;j<C.getWidth();j++) {
@@ -143,6 +162,12 @@ public class StateSpace extends Block{
 				outputCode+="+"+xState.getName()+"*"+C.getName()+"("+(i+1)+","+(j+1)+")";
 			}
 			outputCode+=";\n";
+		}*/
+		if(this.getOutputPortList().get(0).getFeedThrough()) {
+			outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+"+"+D.getName()+"*"+this.getInputPortVariable(0)+";\n";
+		}
+		else {
+			outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+";\n";
 		}
 		
 		code.addOutputCode(outputCode);
@@ -168,6 +193,7 @@ public class StateSpace extends Block{
 		String derivativeCode="";
 		
 		//derivativeCode+="#######################\n";
+		/*
 		for(int i=0;i<A.getHeight();i++) {
 			derivativeCode+=xStateList.get(i).getDerivativeName()+"=0";
 			for(int j=0;j<A.getWidth();j++) {
@@ -179,8 +205,12 @@ public class StateSpace extends Block{
 				derivativeCode+="+"+A.getName()+"("+(i+1)+","+(j+1)+")"+"*"+this.getInputPortVariable(0)+"("+(j+1)+")";
 			}
 			derivativeCode+=";\n";
-		}
+		}*/
+		
 		//derivativeCode+="#######################\n";
+		
+		derivativeCode+=xState.getDerivativeName()+"="+A.getName()+"*"+xState.getName()+"+"+B.getName()+"*"+this.getInputPortVariable(0)+";\n";
+		
 		code.addDerivativeCode(derivativeCode);
 		
 	   /*
@@ -202,22 +232,39 @@ public class StateSpace extends Block{
 		InputPort in  = inputPortList.get(0);
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		
-		if(A.getWidth()!=A.getHeight()
-				||A.getHeight()!=B.getHeight()
-				||A.getWidth()!=C.getWidth()
-				||A.getWidth()!=xStateList.size()
-				||D.getWidth()!=B.getWidth()
-				||D.getHeight()!=C.getHeight()
-				||B.getWidth()!=in.getHeight()
-				) {
-			MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
-			throw(e);
-			
+		if(this.feedThrough) {
+			if(A.getWidth()!=A.getHeight()
+					||A.getHeight()!=B.getHeight()
+					||A.getWidth()!=C.getWidth()
+					||A.getWidth()!=xState.getHeight()
+					||D.getWidth()!=B.getWidth()
+					||D.getHeight()!=C.getHeight()
+					||B.getWidth()!=in.getHeight()
+					||in.getWidth()!=1
+					) {
+				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
+				throw(e);
+				
+			}
+		}
+		else {
+			if(A.getWidth()!=A.getHeight()
+					||A.getHeight()!=B.getHeight()
+					||A.getWidth()!=C.getWidth()
+					||A.getWidth()!=xState.getHeight()
+					||B.getWidth()!=in.getHeight()
+					||in.getWidth()!=1
+					) {
+				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
+				throw(e);
+				
+			}
 		}
 		
-		out.setHeight(D.getHeight());
+		
+		out.setHeight(C.getHeight());
 		out.setWidth(1);
-		out.getOutputSignalC().setHeight(D.getHeight());
+		out.getOutputSignalC().setHeight(C.getHeight());
 		out.getOutputSignalC().setWidth(1);
 		if(D.getHeight()>1) {
 			out.getOutputSignalC().setDataType(DataType.MATRIX);

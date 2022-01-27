@@ -62,6 +62,20 @@ public class Data {
 	    return new Matrix(childMat);
 	}
 	
+	public Data(int height,int width) {
+		if(height>1||width>1) {
+			this.dataType=DataType.MATRIX;
+			initMatrix=new Matrix(height,width);
+		}
+		else {
+			initValue=0;
+		}
+	}
+	
+	public Data() {
+		this(1,1);
+	}
+	
 	public Data(String dataString) {
 		
 		dataString=formatDataString(dataString);
@@ -104,6 +118,31 @@ public class Data {
 			break;
 		}
 		return code;
+	}
+	
+	public boolean isZero() {
+		boolean zero=true;
+		switch(this.getDataType()) {
+		case REAL:
+			if(initValue==0) {
+				zero=true;
+			}
+			else {
+				zero=false;
+			}
+			break;
+		case MATRIX:
+			for(int i=0;i<initMatrix.getRowDimension();i++) {
+				for(int j=0;j<initMatrix.getColumnDimension();j++) {
+					if(initMatrix.get(i,j)!=0) {
+						zero=false;
+					}
+				}
+			}
+			break;
+		}
+		
+		return zero;
 	}
 	
 	public String getInitCodeC(String name) {

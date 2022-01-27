@@ -193,9 +193,20 @@ public class CodeStructM {
 		String code="";
 		code+="dif=0;\n";
 		for(State state:stateList) {
-			code+="if dif<abs("+state.getName()+seq1+"-"+state.getName()+seq2+");\n";
-			code+="dif=abs("+state.getName()+seq1+"-"+state.getName()+seq2+");\n";
-			code+="end\n";
+			if(state.getWidth()==1&&state.getHeight()==1) {
+				code+="if dif<abs("+state.getName()+seq1+"-"+state.getName()+seq2+");\n";
+				code+="dif=abs("+state.getName()+seq1+"-"+state.getName()+seq2+");\n";
+				code+="end\n";
+			}
+			else {
+				for(int i=0;i<state.getHeight();i++) {
+					for(int j=0;j<state.getWidth();j++) {
+						code+="if dif<abs("+state.getName()+seq1+"("+(i+1)+","+(j+1)+")"+"-"+state.getName()+seq2+"("+(i+1)+","+(j+1)+")"+");\n";
+						code+="dif=abs("+state.getName()+seq1+"("+(i+1)+","+(j+1)+")"+"-"+state.getName()+seq2+"("+(i+1)+","+(j+1)+")"+");\n";
+						code+="end\n";
+					}
+				}
+			}
 		}
 		return code;
 	}
