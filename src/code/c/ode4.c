@@ -2,11 +2,20 @@
 #include"ServerThread.h"
 #include"ncslab.h"
 
+#include <iostream>
+#include <octave/oct.h>
+
 extern MODEL *mp;
 
-double stateReserve[STATE_NUM];
+//double stateReserve[STATE_NUM];
 
-double derivativeReserve[4][STATE_NUM];
+double singleStateReserve[SINGLE_STATE_NUM];
+Matrix matrixStateReserve[MATRIX_STATE_NUM];
+
+//double derivativeReserve[4][STATE_NUM];
+
+double singleDerivativeReserve[4][SINGLE_STATE_NUM];
+Matrix matrixDerivativeReserve[4][SINGLE_STATE_NUM];
 
 double weight1[4]={1.0/6, 2.0/6, 2.0/6, 1.0/6};
 

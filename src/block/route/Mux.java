@@ -101,7 +101,7 @@ public class Mux extends Block {
 		for(InputPort inputPort:inputPortList) {
 			OutputSignal signal=inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			if(signal.getDataType()==DataType.REAL) {
-				outputCode+=getOutputPortVariable(0)+"[0]["+fetch+"]="
+				outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
 						+getInputPortVariable(i)
 						+";\n";
 				
@@ -110,8 +110,8 @@ public class Mux extends Block {
 			}
 			else if(signal.getHeight()==1){
 				for(int j=0;j<signal.getWidth();j++) {
-					outputCode+=getOutputPortVariable(0)+"[0]["+fetch+"]="
-							+getInputPortVariable(i)+"[0]["+j+"]"
+					outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
+							+getInputPortVariable(i)+"(0,"+j+")"
 							+";\n";
 					
 					fetch++;
@@ -120,8 +120,8 @@ public class Mux extends Block {
 			}
 			else if(signal.getWidth()==1){
 				for(int j=0;j<signal.getHeight();j++) {
-					outputCode+=getOutputPortVariable(0)+"[0]["+fetch+"]="
-							+getInputPortVariable(i)+"["+j+"][0]"
+					outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
+							+getInputPortVariable(i)+"("+j+",0)"
 							+";\n";
 					
 					fetch++;

@@ -23,10 +23,13 @@
 #define int_T int
 #define char_T char
 
+enum DATA_TYPE {SINGLE,MATRIX};
+
 typedef struct {
 	char *name;
 	int width;
 	int height;
+	DATA_TYPE type;
 	void *vp;
 }INPUT_PORT;
 
@@ -34,6 +37,7 @@ typedef struct {
 	char *name;
 	int width;
 	int height;
+	DATA_TYPE type;
 	void *vp;
 }OUTPUT_PORT;
 
@@ -42,6 +46,7 @@ typedef struct {
 	char *path;
 	int width;
 	int height;
+	DATA_TYPE type;
 	void *vp;
 }PARAMETER;
 
@@ -49,6 +54,7 @@ typedef struct {
 	char *name;
 	int width;
 	int height;
+	DATA_TYPE type;
 	void *vp;
 	void *dvp;
 }STATE;
@@ -58,6 +64,7 @@ typedef struct {
 	char *path;
 	int width;
 	int height;
+	DATA_TYPE type;
 	void *vp;
 }SIGNAL;
 

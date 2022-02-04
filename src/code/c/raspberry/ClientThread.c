@@ -3,6 +3,9 @@
 #include "DataApi.h"
 #include "UploadThread.h"
 
+#include <iostream>
+#include <octave/oct.h>
+
 #ifndef MSG_WAITALL
 	#define MSG_WAITALL 0x08
 #endif
@@ -209,8 +212,11 @@ bool uploadSignals(CLIENT_STRUCT *p)
 		uint_T orientation=0;
 		uint_T dataType=0;
 
-		printf("%d:%s\n",i,signal->path);
-		printf("%d:%s\n",i,signal->name);
+		printf("Signal %d:%s\n",i,signal->path);
+		printf("%s\n",signal->name);
+		printf("Type: %d\n",signal->type);
+		printf("Height: %d\n",signal->height);
+		printf("Width: %d\n",signal->width);
 
 		strcpy(blockPath,signal->path);
 		strcpy(signalName,signal->name);
@@ -284,8 +290,11 @@ bool uploadParameters(CLIENT_STRUCT *p)
 		uint_T orientation=0;
 		uint_T dataType=0;
 
-		printf("%s\n",parameter->path);
+		printf("Parameter %d:%s\n",i,parameter->path);
 		printf("%s\n",parameter->name);
+		printf("Type: %d\n",parameter->type);
+		printf("Height: %d\n",parameter->height);
+		printf("Width: %d\n",parameter->width);
 		
 		
 		strcpy(blockPath,parameter->path);
@@ -600,9 +609,26 @@ bool responseEXT_SETPARAM(CLIENT_STRUCT *p)
 		return false;
 	}
 
+	
 	parameter=dataApiGetParameter(parameters,pos);
-	sec=(REAL *)(parameter->vp)+parameter->width*row+col;
-	*sec=value;
+	//sec=(REAL *)(parameter->vp)+parameter->width*row+col;
+	//*sec=value;
+
+	switch (parameter->type)
+	{
+	case SINGLE:
+		sec=(REAL *)(parameter->vp);
+		*sec=value;
+		break;
+	case MATRIX:
+		Matrix *matrix;
+		matrix=(Matrix *)(parameter->vp);
+		(*matrix)(row,col)=value;
+		break;
+	
+	default:
+		break;
+	}
 
 	printf("Pos=%d\n",pos);
 	printf("Value=%f\n",value);

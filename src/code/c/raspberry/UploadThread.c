@@ -2,6 +2,9 @@
 #include "ncslabccode.h"
 #include "DataApi.h"
 
+#include <iostream>
+#include <octave/oct.h>
+
 #ifndef MSG_WAITALL
 	#define MSG_WAITALL 0x08
 #endif
@@ -57,6 +60,8 @@ bool packagingData(CLIENT_STRUCT *p,uint_T n)
 
 	MODEL *mp=p->pExtModeData->mp;
 	
+	//Matrix matrix;
+	
 	//printf("Packaging...\n");
 	
 	SIGNAL **signals=dataApiGetSignals(mp);
@@ -80,14 +85,45 @@ bool packagingData(CLIENT_STRUCT *p,uint_T n)
 		{
 			SIGNAL *signal=dataApiGetSignal(signals,p->select[i].pos);
 			//printf("%d\t%d\t%d\t%d\t",p->select[i].row,p->select[i].col,signal->height,signal->width);
-            value=*((REAL *)(signal->vp)+signal->width*p->select[i].row+p->select[i].col);
+            //value=*((REAL *)(signal->vp)+signal->width*p->select[i].row+p->select[i].col);
+            
+            switch (signal->type)
+			{
+			case SINGLE:
+				value=*((REAL *)(signal->vp));
+				break;
+			case MATRIX:
+				//Matrix *matrix;
+				//matrix=(Matrix *)(signal->vp);
+				//value=(* matrix)(p->select[i].row,p->select[i].col);
+				//matrix=*((Matrix *)(signal->vp));
+				//value=matrix(p->select[i].row,p->select[i].col);
+				//std::cout<<matrix<<std::endl;
+				Matrix *matrix;
+				matrix=(Matrix *)(signal->vp);
+				value=(* matrix)(p->select[i].row,p->select[i].col);
+			default:
+				break;
+			}
 		}
 		else
 		if(p->select[i].type==2)
 		{
 			PARAMETER *parameter=dataApiGetParameter(parameters,p->select[i].pos);
 			//printf("%d\t%d\t%d\t%d\t",p->select[i].row,p->select[i].col,parameter->height,parameter->width);
-            value=*((REAL *)(parameter->vp)+parameter->width*p->select[i].row+p->select[i].col);
+            //value=*((REAL *)(parameter->vp)+parameter->width*p->select[i].row+p->select[i].col);
+            switch (parameter->type)
+			{
+			case SINGLE:
+				value=*((REAL *)(parameter->vp));
+				break;
+			case MATRIX:
+				Matrix *matrix;
+				matrix=(Matrix *)(parameter->vp);
+				value=(* matrix)(p->select[i].row,p->select[i].col);
+			default:
+				break;
+			}
 		}
 		else
 		{

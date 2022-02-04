@@ -30,6 +30,8 @@ abstract public class CodeModelC extends CodeModel {
 	private int signalNum=0;
 	private int parameterNum=0;
 	private int stateNum=0;
+	private int singleStateNum=0;
+	private int matrixStateNum=0;
 	
 	abstract protected CodeStructC getCodeStructC();
 	
@@ -53,8 +55,18 @@ abstract public class CodeModelC extends CodeModel {
 		return this.parameterNum;
 	}
 	
-	public void setStateNum(int stateNum) {
-		this.stateNum=stateNum;
+	public void setStateNum(int singleStateNum,int matrixStateNum) {
+		this.singleStateNum=singleStateNum;
+		this.matrixStateNum=matrixStateNum;
+		this.stateNum=singleStateNum+matrixStateNum;
+	}
+	
+	public int getSingleStateNum() {
+		return this.singleStateNum;
+	}
+	
+	public int getMatrixStateNum() {
+		return this.matrixStateNum;
 	}
 	
 	public int getStateNum() {

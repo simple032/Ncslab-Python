@@ -190,8 +190,8 @@ abstract public class CodeStructC {
 	public void generateStateDefineCode() {
 		stateDefineCode+="/*Define variables for states*/\n";
 		for(State state:stateList) {
-			stateDefineCode+=state.getDefineString()+" "+state.getName()+";\n";
-			stateDefineCode+=state.getDefineString()+" "+state.getDerivativeName()+";\n";
+			stateDefineCode+=state.getDefineCodeC();
+			//stateDefineCode+=state.getDefineString()+" "+state.getDerivativeName()+";\n";
 		}
 	}
 
@@ -205,7 +205,7 @@ abstract public class CodeStructC {
 				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
 			else
 				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+"["+outputSignal.getWidth()+"];\n";*/
-			
+			/*
 			switch(outputSignal.getDataType()) {
 			case REAL:
 				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+";\n";
@@ -213,7 +213,8 @@ abstract public class CodeStructC {
 			case MATRIX:
 				outputSignalDefineCode+=outputSignal.getDefineString()+" "+outputSignal.getName()+"["+outputSignal.getHeight()+"]["+outputSignal.getWidth()+"];\n";
 				break;
-			}
+			}*/
+			outputSignalDefineCode+=outputSignal.getDefineCodeC();
 		}
 	}
 
@@ -305,6 +306,9 @@ abstract public class CodeStructC {
 	protected void wirteDefineFile() {
 		
 		String code="#define STATE_NUM "+stateList.size()+"\n";
+		
+		code+="#define SINGLE_STATE_NUM "+model.getSingleStateNum()+"\n";
+		code+="#define MATRIX_STATE_NUM "+model.getMatrixStateNum()+"\n";
 		
 		code+="#define STEP_SIZE (1.0*"+model.getConfig().getFixedStep()+")\n";
 		
@@ -509,12 +513,21 @@ abstract public class CodeStructC {
 		model.setParameterNum(parameterNum);
 
 		dataStructureCode+="/*Define state structures*/\n";
+		int singleStateNum=0;
+		int matrixStateNum=0;
 		int stateNum=0;
 		for(Block block:model.getBlockList()) {
 			if(block.getStateList().size()>0) {
 				for(State state:block.getStateList()) {
 					dataStructureCode+="STATE state"+block.getBlockId()+"_"+state.getId()+"={(char *)\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
-					stateNum++;
+					switch(state.getDataType()) {
+					case REAL:
+						singleStateNum++;
+						break;
+					case MATRIX:
+						matrixStateNum++;
+						break;
+					}
 				}
 				dataStructureCode+="STATE *states"+block.getBlockId()+"["+block.getStateList().size()+"];\n";
 			}
@@ -522,8 +535,9 @@ abstract public class CodeStructC {
 				dataStructureCode+="STATE **states"+block.getBlockId()+"=NULL;\n";
 			}
 		}
+		stateNum=singleStateNum+matrixStateNum;
 		dataStructureCode+="STATE *states["+stateNum+"];\n";
-		model.setStateNum(stateNum);
+		model.setStateNum(singleStateNum,matrixStateNum);
 
 		dataStructureCode+="/*Define signal structures*/\n";
 		int signalNum=0;
@@ -580,7 +594,7 @@ abstract public class CodeStructC {
 				if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
 					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
 				}else {
-					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp="+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
 				}
 			}
 		}
@@ -592,7 +606,7 @@ abstract public class CodeStructC {
 				if(output.getWidth()==1)
 					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
 				else
-					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp="+output.getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
 			}
 		}
 
@@ -608,6 +622,16 @@ abstract public class CodeStructC {
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize states for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(State state:block.getStateList()) {
+				dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".height="+state.getHeight()+";\n";
+				dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".width="+state.getWidth()+";\n";
+				switch(state.getDataType()) {
+				case REAL:
+					dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".type=SINGLE;\n";
+					break;
+				case MATRIX:
+					dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".type=MATRIX;\n";
+					break;
+				}
 				dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".vp=&"+state.getName()+";\n";
 				dataStructureInitCode+="state"+block.getBlockId()+"_"+state.getId()+".dvp=&"+state.getDerivativeName()+";\n";
 			}

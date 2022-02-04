@@ -66,11 +66,13 @@ public class Constant extends block.Block{
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
 			break;
 		case MATRIX:
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
+			/*
 			for(int i=0;i<value.getHeight();i++) {
 				for(int j=0;j<value.getWidth();j++) {
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"["+i+"]["+j+"]="+value.getName()+"["+i+"]["+j+"];\n";
+					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+value.getName()+"["+i+"]["+j+"];\n";
 				}
-			}
+			}*/
 			break;
 		}
 		

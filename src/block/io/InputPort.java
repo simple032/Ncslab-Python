@@ -99,13 +99,15 @@ public class InputPort {
 			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".height="+signal.getHeight()+";\n";
 			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
 			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".type=SINGLE;\n";
 			break;
 		case MATRIX:
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".vp="+signal.getName()+";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".vp=&"+signal.getName()+";\n";
 			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".width="+signal.getWidth()+";\n";
 			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".height="+signal.getHeight()+";\n";
 			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
 			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".type=MATRIX;\n";
 			break;
 		}
 		

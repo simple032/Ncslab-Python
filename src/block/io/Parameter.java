@@ -93,10 +93,12 @@ public class Parameter {
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".width="+this.getWidth()+";\n";
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".height="+this.getHeight()+";\n";
 		if(data.getDataType()==DataType.REAL) {
+			code+="parameter"+block.getBlockId()+"_"+this.getId()+".type=SINGLE;\n";
 			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.getName()+";\n";
 		}
 		else {
-			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp="+this.getName()+";\n";
+			code+="parameter"+block.getBlockId()+"_"+this.getId()+".type=MATRIX;\n";
+			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.getName()+";\n";
 		}
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getModel().getModelRealName()+"/"+block.getBlockName()+"\";\n";
 		return code;

@@ -1,15 +1,14 @@
 package block.io;
 
-import code.c.DataTypeC;
 import block.Block;
 import block.data.Data;
+import block.data.DataType;
 
 public class State {
 	private int id;
 	private String name;
 	private String localName;
 	private int width=1;
-	private DataTypeC type=DataTypeC.REAL;
 	
 	private Block block;
 	
@@ -17,7 +16,6 @@ public class State {
 	
 	public State(Block block,int id,String localName){
 		this.block=block;
-		this.type=DataTypeC.REAL;
 		this.id=id;
 		this.name="Block"+block.getBlockId()+"_State_"+localName;
 		this.localName=localName;
@@ -27,7 +25,6 @@ public class State {
 	
 	public State(Block block,int id,String localName,int height,int width){
 		this.block=block;
-		this.type=DataTypeC.REAL;
 		this.id=id;
 		this.name="Block"+block.getBlockId()+"_State_"+localName;
 		this.localName=localName;
@@ -50,15 +47,39 @@ public class State {
 		return this.localName;
 	}
 	
+	public DataType getDataType() {
+		return data.getDataType();
+	}
+	
 	public String getDefineString() {
 		String defineString="";
 		
-		switch(type) {
+		switch(data.getDataType()) {
 		case REAL:
 			defineString="REAL"; 
+			break;
+		case MATRIX:
+			defineString="Matrix";
 		}
 		
 		return defineString;
+	}
+	
+	public String getDefineCodeC() {
+		String code;
+		
+		code=data.getDefineCodeC(this.getName());
+		
+		switch(data.getDataType()) {
+		case REAL:
+			code+=getDefineString()+" "+getDerivativeName()+";\n"; 
+			break;
+		case MATRIX:
+			code+=getDefineString()+" "+getDerivativeName()+"("+data.getHeight()+","+data.getWidth()+")"+";\n"; 
+			break;
+		}
+		
+		return code;
 	}
 	
 	public int getId() {

@@ -54,6 +54,21 @@ public class OutputSignal {
 		return defineString;
 	}
 	
+	public String getDefineCodeC() {
+		String code="";
+		switch(type) {
+		case REAL:
+			code+="REAL "+getName()+";\n";
+			break;
+		case MATRIX:
+			//code+="REAL "+name+"["+initMatrix.getRowDimension()+"]["+initMatrix.getColumnDimension()+"]"+";\n";
+			code+="Matrix "+getName()+"("+height+","+width+")"+";\n";
+			break;
+		}
+		return code;
+		
+	}
+	
 	public int getWidth() {
 		return this.width;
 	}

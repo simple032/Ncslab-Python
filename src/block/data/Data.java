@@ -156,7 +156,7 @@ public class Data {
 			//code+=name+"=0.000000"+";\n";
 			for(int i=0;i<initMatrix.getRowDimension();i++) {
 				for(int j=0;j<initMatrix.getColumnDimension();j++) {
-					code+=name+"["+i+"]["+j+"]="+initMatrix.get(i, j)+";\n";
+					code+=name+"("+i+","+j+")="+initMatrix.get(i, j)+";\n";
 				}
 			}
 			
@@ -173,7 +173,8 @@ public class Data {
 			code+="REAL "+name+";\n";
 			break;
 		case MATRIX:
-			code+="REAL "+name+"["+initMatrix.getRowDimension()+"]["+initMatrix.getColumnDimension()+"]"+";\n";
+			//code+="REAL "+name+"["+initMatrix.getRowDimension()+"]["+initMatrix.getColumnDimension()+"]"+";\n";
+			code+="Matrix "+name+"("+initMatrix.getRowDimension()+","+initMatrix.getColumnDimension()+")"+";\n";
 			break;
 		}
 		return code;

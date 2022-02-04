@@ -84,19 +84,18 @@ public class Demux extends Block {
 	
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-		//y(k)=Cx(k)+Du(k)
 		
 		if(this.getInputPortList().get(0).getHeight()==1) {
 			for(int i=0; i<num; i++) {
 				outputCode+=getOutputPortVariable(i)+"="
-					+getInputPortVariable(0)+"[0]["+i+"]"
+					+getInputPortVariable(0)+"(0,"+i+")"
 					+";\n";
 			}	
 		}
 		else {
 			for(int i=0; i<num; i++) {
 				outputCode+=getOutputPortVariable(i)+"="
-					+getInputPortVariable(0)+"["+i+"][0]"
+					+getInputPortVariable(0)+"("+i+",0)"
 					+";\n";
 			}	
 		}
