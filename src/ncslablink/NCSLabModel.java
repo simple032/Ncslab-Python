@@ -16,15 +16,15 @@ abstract public class NCSLabModel {
 	
 	protected int modelSeq;
 	
-	//��Web�˴�������������ͼ��json�ļ�
+	//从Web传递过来的JSON文件
 	private JSONObject jsonIn;
 	
-	//ģ�͵����֣�s��ͷ�Ĵ����ֵ����֣�
+	//model的名称，S开头后面跟数字
 	private String modelName;
-	//ģ�͵����֣��û�ָ�������֣�
+	//model的真正名字
 	private String modelRealName;
 	
-	//ģ�͵����ò���
+	//Model的配置文件
 	private Config config;
 	
 	private int userId;
@@ -37,22 +37,22 @@ abstract public class NCSLabModel {
 	
 	private ModelMode mode=ModelMode.Simulation;
 	
-	//�������б�
+	//所有的模块
 	protected Vector<Block> blockList=new Vector<Block>();
 	
-	//�ߵ��б�
+	//所有的连线
 	protected Vector<Line> lineList=new Vector<Line>();
 	
-	//������Ϣ���б�
+	//所有的错误信息
 	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
 	
-	//���캯������web����json������ģ�͵����ݽṹ
+	//解析model，变成数据结构
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		this.mode=mode;
 		
 		this.jsonIn=jsonIn;
 		
-		//����json�е����ݣ�����block,line,input,output�໥���ӵ����ݽṹ
+		//解析model，变成数据结构
 		parseModel();
 		
 		modelSeq=modelSeqCount;
@@ -108,7 +108,7 @@ abstract public class NCSLabModel {
 	
 	private void parseModel() throws ModelException{
 
-		//����json�е���Ϣ
+		//解析各个JSON项目
 		modelName=jsonIn.getString("modelName");
 		modelRealName=jsonIn.getString("modelRealName");
 		
@@ -117,14 +117,14 @@ abstract public class NCSLabModel {
 		uuid=jsonIn.getLong("uuid");
 		testRig=jsonIn.getInt("testRig");
 		
-		//��ȡjson�е�config����
+		//解析JSON的Config
 		config=Config.createFromJSON(jsonIn.getJSONObject("config"),mode);
 		
 		saveInfo=jsonIn.getJSONObject("saveInfo");
 		
-		//����json�ļ��е�blockģ�飬����block�����ݽṹ
+		//解析各个Block
 		parseBlocks();
-		//����json�ļ��е�lineģ�飬�����ݽṹ�У���line���Ӹ���block
+		//解析各条连线
 		parseLines();
 		
 		updateDimensions();
@@ -158,19 +158,17 @@ abstract public class NCSLabModel {
 		}
 	}
 	
-	/*��ȡ���е�block������block�����ݽṹ */
+	/*解析各个Block*/
 	private void parseBlocks() throws ModelException{
 		
 		JSONArray blockJSONList=jsonIn.getJSONArray("blocks");
 		for(int i=0;i<blockJSONList.length();i++) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
 
-			//����Block��type��������ͬ��block�����ݽṹ
 			Block block=BlockType.createBlock(i+1,blockJSON,this);
 			
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 			
-			//��block���뵽blockList��Vector��
 			if(block!=null) {
 				blockList.add(block);
 			}
@@ -183,13 +181,12 @@ abstract public class NCSLabModel {
 		for(int i=0;i<lineJSONList.length();i++) {
 			JSONObject lineJSON=lineJSONList.getJSONObject(i);
 			
-			//����Line�����ݽṹ���������˵�Block
+			//解析各条连线
 			Line line=Line.createLine(lineJSON, this);
 			line.setLineId(i+1);
 			
 			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
 			
-			//��Line���뵽lineList��
 			if(line!=null) {
 				lineList.add(line);
 			}
