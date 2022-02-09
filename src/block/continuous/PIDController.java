@@ -20,7 +20,7 @@ public class PIDController extends block.Block{
 	public PIDController(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		
-		//һ�����룬һ�����
+		//一个输入，一个输出
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
 		

@@ -13,19 +13,19 @@ import code.m.CodeStructM;
 import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 
-//����Blockģ��Ļ��࣬������block�Ŀ�ܣ������Ҫ���ɸ������ԣ���Ҫ���Ӹ��������������Ľӿ�
+//各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
 public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
-	//Block�����ͣ���Ҫ��BlockType�н���block��ʱ��ֱ�Դ�
+	//Block的类型，需要在BlockType中建立block的时候分别对待
 	protected String blockType;
 	protected String blockName;
 	
 	protected int blockId=0;
 	
-	//Block�Ĳ�������Ϊ��ͬ��block�в�ͬ�Ĳ����������ԭ����json��ʽ�洢
+	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
 	protected JSONObject paramValues;
 	
-	//����������˿ڵ��б�
+	//输入与输出端口的列表
 	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
 	protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
 	
@@ -34,13 +34,13 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	protected Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 	
-	//�Ƿ�����Ĵ����Ѿ����ɣ�������ɣ����������ģ���ʱ��ֱ�����þ����ˣ��Ͳ���Ҫ��һ��������
+	//是否输出的代码已经生成，如果生成，遍历到这个模块的时候，直接引用就行了，就不需要进一步遍历了
 	protected boolean isOutputCodeGenerated=false;
 	
-	//ָ���ϼ�Modelģ�͵�ָ��
+	//指向上级Model模型的指针
 	protected NCSLabModel model;
 	
-	//Block��Singal�еĸ�����Signalû��Java�����ݽṹ��Signal������InputPort������Ҳ������OutputPort�е��������忴��������ʱ���϶�
+	//Block中Singal中的个数，Signal没有Java的数据结构，Signal可以是InputPort的量，也可以是OutputPort中的量，具体看代码生成时的认定
 	protected int signalNum=0;
 	
 	protected Block(JSONObject blockIn,NCSLabModel model) {
@@ -111,7 +111,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return outputPortList.get(n).getOutputSignalC().getName();
 	}
 	
-	//����M���Ե�Output����,��ͬ��Block���ͣ�������������������Լ��Ĵ���
+	//生成M语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void  generateOutputCodeM(CodeStructM code) {
 	
 	}
@@ -123,7 +123,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}
 	}
 	
-	//����M���Ե�Output���룬����һ������
+	//生成M语言的Output代码，供上一级调用
 	public void generateBlockOutputCodeM(CodeStructM code) {
 		System.out.println("Generating block output code ("+blockId+"):"+blockName);
 		
@@ -136,11 +136,11 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}*/
 	}
 	
-	//����M���Ե�Init����,��ͬ��Block���ͣ�������������������Լ��Ĵ���
+	//生成M语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateInitCodeM(CodeStructM code) {
 	}
 
-	//����M���Ե�Init���룬����һ������
+	//生成M语言的Init代码，供上一级调用
 	public void generateBlockInitCodeM(CodeStructM code) {
 		for(OutputSignal outputSignal:outputSignalList) {
 			code.addOutputSignal(outputSignal);
@@ -154,7 +154,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		generateInitCodeM(code);
 	}
 	
-	//����M���Ե�Update����,��ͬ��Block���ͣ�������������������Լ��Ĵ���
+	//生成M语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateUpdateCodeM(CodeStructM code) {
 		String updateCode="";
 		
@@ -170,7 +170,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		code.addUpdateCode(updateCode);
 	}
 	
-	//����M���Ե�Update���룬����һ������
+	//生成M语言的Update代码，供上一级调用
 	public void generateBlockUpdateCodeM(CodeStructM code) {
 		generateUpdateCodeM(code);
 	}
@@ -193,8 +193,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 	
 	
-	//c���ԵĴ������ɷ�������M������ͬ
-	//����C���Ե�Init���룬����һ������
+	//c语言的代码生成方法，与M语言相同
+	//生成C语言的Init代码，供上一级调用
 	public void generateBlockInitCodeC(CodeStructC code) {
 		for(OutputSignal outputSignal:outputSignalList) {
 			code.addOutputSignal(outputSignal);
@@ -202,7 +202,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		generateInitCodeC(code);
 	}
 	
-	//����C���Ե�Init����,��ͬ��Block���ͣ�������������������Լ��Ĵ���
+	//生成C语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateInitCodeC(CodeStructC code) {
 		for(Parameter parameter:parameterList) {
 			code.addParameter(parameter);
@@ -212,7 +212,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}
 	}
 	
-	//����C���Ե�Output���룬����һ������
+	//生成C语言的Output代码，供上一级调用
 	public void generateBlockOutputCodeC(CodeStructC code) {
 		System.out.println("Generating block output code ("+blockId+"):"+blockName);
 		
@@ -226,17 +226,17 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		
 	}
 	
-	//����C���Ե�Output����,��ͬ��Block���ͣ�������������������Լ��Ĵ���
+	//生成C语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateOutputCodeC(CodeStructC code) {
 		
 	}
 	
-	//����C���Ե�Update���룬����һ������
+	//生成C语言的Update代码，供上一级调用
 	public void generateBlockUpdateCodeC(CodeStructC code) throws MatDimException {
 		generateUpdateCodeC(code);
 	}
 	
-	//����C���Ե�Update����,��ͬ��Block���ͣ�������������������Լ��Ĵ���
+	//生成C语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
 		String updateCode="/*Code for update of block "+getBlockType()+":("+getBlockId()+")"+getBlockName()+"*/\n";
 		
