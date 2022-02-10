@@ -21,26 +21,26 @@ import block.data.DataType;
 abstract public class CodeStructC {
 
 
-	//ģ��������Ƿ���Ϊ�ź�
+	//模块的输入是否作为信号
 
 	public boolean inputAsSignal=true;
-	//ģ�������Ƿ���Ϊ�ź�
+	//模块的输出是否作为信号
 	public boolean outputAsSignal=true;
 
 
-	//ͷ�ļ��Ĵ���
+	//头文件的代码
 
 	public String includeCode="";
-	//init��ʼ���Ĵ���
+	//init初始化的代码
 	public String initCode="";
-	//Output�Ĵ���
+	//Output的代码
 	public String outputCode="";
-	//update�Ĵ���
+	//update的代码
 	public String updateCode="";
 
-	//update�Ĵ���
+	//定义的代码
 	public String statementCode="";
-	//update�Ĵ���
+	//微分计算的代码
 	public String derivativeCode="";
 
 	/*����Parameter�Ĵ��� ��*REAL Block5_Parameter_P*/
@@ -52,9 +52,9 @@ abstract public class CodeStructC {
 	public String outputSignalDefineCode="";
 
 
-	/*�������м������ʵ��Ĵ��룬����INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
+	/*定义所有监控数据实体的代码，包括INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
-	/*����������ʵ���ʼ���Ĵ��룬��ʼ����������ṹ�����ƣ�path�ȣ���ָ��ָ��ָ����λ�ã��������ݽṹ�� */
+	/*定义监控数据实体初始化的代码，初始化各个组件结构的名称，path等，让指针指向指定的位置，建立数据结构， */
 	public String dataStructureInitCode="";
 
 	private int parameterIndex=1;
@@ -112,7 +112,7 @@ abstract public class CodeStructC {
 
 	protected void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.c...");
-		//precode�ǲ�����״̬��������Ķ��壬��ȫ�ֱ����ķ�ʽ
+		//precode是参数，状态，和输出的定义，以全局变量的方式
 		String preCode="extern MODEL* mp;\n"
 					+statementCode+"\n"
 					+parameterDefineCode+"\n"
@@ -163,21 +163,21 @@ abstract public class CodeStructC {
 	}
 
 
-	//����ȫ�ֵ�Parameter���б�
+	//加入全局的Parameter的列表
 	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
 	}
-	//����ȫ�ֵ�state���б�
+	//加入全局的state的列表
 	public void addState(State state) {
 		stateList.add(state);
 	}
-	//����ȫ�ֵ��źŵ��б�
+	//加入全局的信号的列表
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
 
 
-	//���ɶ���Parameter�Ĵ���
+	//生成定义Parameter的代码
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";
 		for(Parameter parameter:parameterList) {
@@ -186,7 +186,7 @@ abstract public class CodeStructC {
 		}
 	}
 
-	//���ɶ���State�Ĵ���
+	//生成定义State的代码
 	public void generateStateDefineCode() {
 		stateDefineCode+="/*Define variables for states*/\n";
 		for(State state:stateList) {
@@ -196,7 +196,7 @@ abstract public class CodeStructC {
 	}
 
 
-	//���ɶ���Output�Ĵ���
+	//生成定义Output的代码
 	public void generateOutputSignalDefineCode() {
 		outputSignalDefineCode+="/*Define variables for output signals*/\n";
 		for(OutputSignal outputSignal:outputSignalList) {
@@ -221,7 +221,7 @@ abstract public class CodeStructC {
 
 
 	protected String codePathBase=utils.Property.instance.getProperty("CCodePath");
-	//Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
+	//目标文件夹的位置codePathBase/用户id/modelId
 	protected String codePath;
 
 	private void writeMakefile(String fileName) {
@@ -263,7 +263,7 @@ abstract public class CodeStructC {
 		}
 	}
 	
-	//д�ļ��ķ��������ļ���resource�п���������д��Ŀ���ļ���
+	//写文件的方法，将文件从resource中拷贝出来，写在目标文件夹
 	protected void writeNCSLabFile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
@@ -303,6 +303,7 @@ abstract public class CodeStructC {
 		}
 	}
 	
+	/*生成宏定义，定义各种数据结构的个数*/
 	protected void wirteDefineFile() {
 		
 		String code="#define STATE_NUM "+stateList.size()+"\n";
@@ -345,7 +346,7 @@ abstract public class CodeStructC {
 
 	public void writeCCodeFiles() {
 
-		//����Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
+		//生成目标文件夹的位置codePathBase/用户id/modelId
 		String userPath=codePathBase+model.getUserId();
 
 		File file=new File(userPath);
@@ -361,20 +362,20 @@ abstract public class CodeStructC {
 
 		codePath=modelPath+"/";
 
-		//д���ܱߵ���Դ�ļ�
+		//写入周边的资源文件
 		//makefile
 		writeMakefile("makefile");
-		//�����ݽṹ
+		//主数据结构
 		writeNCSLabFile("ncslabccode.h");
-		//main�����Լ���ʱ��
+		//main函数以及定时器
 		writeNCSLabFile("ncslabmain.c");
-		//���������ݽṹ�Ľӿ�API����
+		//访问主数据结构的接口API定义
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
 		
 		writeNCSLabFile("util.c");
 
-		//ʵ��NetconЭ���ͨ���ļ�
+		//实现Netcon协议的通用文件
 		writeNCSLabFile("ServerThread.c");
 		writeNCSLabFile("ServerThread.h");
 		writeNCSLabFile("ClientThread.c");
@@ -385,7 +386,7 @@ abstract public class CodeStructC {
 		writeNCSLabFile("ncs_serialport_pi.c");
 		writeNCSLabFile("ncs_serialport.h");
 
-		//д�����ɵ�������ncslabccdoe.c
+		//写入生成的主代码ncslabccdoe.c
 		for(Block block: model.getBlockList()) {
 			if(block.isSFcnBlock()) {
 				block.generateSourceFile();
@@ -418,9 +419,9 @@ abstract public class CodeStructC {
 
 	public boolean makeExeFile() {
 		try {
-			//����make�����ɿ�ִ�д���
+			//启动make，生成可执行代码
 			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
-			//��ȡOutputStream��errStream�������ȡ����ʱ�����������
+			//读取OutputStream和errStream。如果读取不及时，会出现阻塞
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line=null,outLine=null;
@@ -439,7 +440,7 @@ abstract public class CodeStructC {
 			}
 
 
-			//�ȴ�makefile�����
+			//等待makefile的完成
 			process.waitFor();
 
 			if(process.exitValue()==0) {
@@ -455,15 +456,15 @@ abstract public class CodeStructC {
 	}
 
 
-	//����Model,block,input,output,signal,state,parameter�����ݽṹ������ʼ��
+	//建立Model,block,input,output,signal,state,parameter等数据结构，并初始化
 	public void gnenrateDataStructureCode() {
-		//����һϵ�����ݽṹ�Ķ���
+		//建立一系列数据结构的定义
 		generateDataStrucure();
-		//��ʼ�����ݽṹ��ʵ�����ݽṹ֮���ָ������
+		//初始化数据结构，实现数据结构之间的指针连接
 		generateDataStrucureInit();
 	}
 
-	//�������ݽṹ�Ķ���
+	//建立数据结构的定义
 	private void generateDataStrucure() {
 		dataStructureCode+="/*Define data structures*/\n";
 
@@ -583,7 +584,7 @@ abstract public class CodeStructC {
 	}
 
 
-	//��ʼ�����ݽṹ��ʵ�����ݽṹ֮���ָ������
+	//初始化数据结构，实现数据结构之间的指针连接
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
 

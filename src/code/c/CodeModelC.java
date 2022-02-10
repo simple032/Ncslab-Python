@@ -26,7 +26,7 @@ abstract public class CodeModelC extends CodeModel {
 	private static final String REAL="real_t";
 	
 		
-	//���ɴ����ʱ��ͳ��singal��parameter�ĸ���
+	//生成代码的时候统计singal和parameter的个数
 	private int signalNum=0;
 	private int parameterNum=0;
 	private int stateNum=0;
@@ -78,7 +78,7 @@ abstract public class CodeModelC extends CodeModel {
 		writeCCodeFiles(); 
 	}
 	
-	/*��������C���Ե�һϵ���ļ� */
+	/*将代码变成C语言的一系列文件 */
 	private void writeCCodeFiles() {
 		getCodeStructC().writeCCodeFiles();
 	}
@@ -133,7 +133,7 @@ abstract public class CodeModelC extends CodeModel {
 		}
 	}
 	
-	/*����make������ɿ�ִ�д��� */
+	/*调用make命令，生成可执行代码 */
 	public boolean makeExeFile() {
 		System.out.println("Making exe file ncslab...");
 		boolean flag = getCodeStructC().makeExeFile();

@@ -11,20 +11,20 @@ import block.io.State;
 import code.c.CodeModelC;
 
 public class CodeStructM {
-	//init��ʼ���Ĵ���
+	//init初始化的代码
 	public String initCode="";
-	//Output�Ĵ���
+	//Output的代码
 	public String outputCode="";
-	//update�Ĵ���
+	//update的代码
 	public String updateCode="";
 
-	//derivative�Ĵ���
+	//derivative的代码
 	public String derivativeCode="";
 
 	public String globalDefineCode="";
 
 	private String codePathBase=utils.Property.instance.getProperty("MCodePath");
-	//Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
+	//目标文件夹的位置codePathBase/用户id/modelId
 	private String codePath;
 
 	private Vector<Parameter> parameterList=new Vector<Parameter>();
@@ -40,15 +40,15 @@ public class CodeStructM {
 
 	}
 
-	//����ȫ�ֵ�Parameter���б�
+	//加入全局的Parameter的列表
 	public void addParameter(Parameter parameter) {
 		parameterList.add(parameter);
 	}
-	//����ȫ�ֵ�state���б�
+	//加入全局的state的列表
 	public void addState(State state) {
 		stateList.add(state);
 	}
-	//����ȫ�ֵ��źŵ��б�
+	//加入全局的信号的列表
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
@@ -90,7 +90,7 @@ public class CodeStructM {
 		globalDefineCode+=code;
 	}
 
-	//���ɶ���global�Ĵ���
+	//生成定义global的代码
 	public void generateGlobalDefineCode() {
 		for(Parameter parameter:parameterList) {
 			globalDefineCode+="global "+parameter.getName()+";\n";
@@ -108,7 +108,7 @@ public class CodeStructM {
 
 		generateGlobalDefineCode();
 
-		//����Ŀ���ļ��е�λ��codePathBase/�û�id/modelId
+		//生成目标文件夹的位置codePathBase/用户id/modelId
 		String userPath=codePathBase+model.getUserId();
 
 		File file=new File(userPath);
@@ -550,127 +550,4 @@ public class CodeStructM {
 	public String getCodePath() {
 		return codePath;
 	}
-	
-	/*
-	private void writeNCSLabMainCode() {
-		String fileName="ncslabmain.m";
-
-		String code="clear all\n";
-		code+=globalDefineCode;
-		code+="modelInit;\n";
-		code+="for t="+model.getConfig().getStartTime()+":"+model.getConfig().getFixedStep()+":"+model.getConfig().getStopTime()+"\n";
-		code+="modelOutput;\n";
-		code+="modelDerivative;\n";
-		code+="modelUpdate;\n";
-		code+="end\n";
-		
-		code+="function modelInit\n";
-		code+=globalDefineCode;
-		code+=initCode;
-		code+="end\n";
-		
-		code+="function modelOutput\n";
-		code+=globalDefineCode;
-		code+=outputCode;
-		code+="end\n";
-		
-		code+="function modelDerivative\n";
-		code+=globalDefineCode;
-		code+=derivativeCode;
-		code+="end\n";
-		
-		code+="function modelUpdate\n";
-		code+=globalDefineCode;
-		code+=updateCode;
-		code+="end\n";
-		
-		writeFile(fileName,code);
-	}*/
-	/*
-	private void writeFile(String fileName,String code) {
-		System.out.println("Writing file "+fileName+" ...");
-
-		File file=new File(codePath+"/"+fileName);
-		FileOutputStream outputStream;
-		try {
-			outputStream = new FileOutputStream(file);
-			outputStream.write(code.getBytes());
-			outputStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void writeInitFunction() {
-		String fileName="modelInit.m";
-
-		String code="function modelInit\n";
-		code+=globalDefineCode;
-		code+=initCode;
-		code+="end\n";
-
-		writeFile(fileName,code);
-	}
-
-	private void writeOutputFunction() {
-		String fileName="modelOutput.m";
-
-		String code="function modelOutput\n";
-		code+=globalDefineCode;
-		code+=outputCode;
-		code+="end\n";
-
-		writeFile(fileName,code);
-	}
-
-	private void writeDerivativeFunction() {
-		String fileName="modelDerivative.m";
-
-		String code="function modelDerivative\n";
-		code+=globalDefineCode;
-		code+=derivativeCode;
-		code+="end\n";
-
-		writeFile(fileName,code);
-	}
-
-	private void writeUpdateFunction() {
-		String fileName="modelUpdate.m";
-
-		String code="function modelUpdate\n";
-		code+=globalDefineCode;
-		code+=updateCode;
-		code+="end\n";
-
-		writeFile(fileName,code);
-	}
-	
-	private void writeNCSLabFile(String fileName) {
-		writeNCSLabFile(fileName,"","");
-	}
-	
-	//д�ļ��ķ��������ļ���resource�п���������д��Ŀ���ļ���
-	private void writeNCSLabFile(String fileName,String preCode,String sufCode) {
-		System.out.println("Writing file "+fileName+"...");
-		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
-
-		File file=new File(codePath+"/"+fileName);
-		FileOutputStream outputStream;
-		try {
-			outputStream = new FileOutputStream(file);
-			
-			outputStream.write(preCode.getBytes());
-			
-			byte[] buffer=new byte[1024];
-			int len;
-			while((len=InputStream.read(buffer))>0) {
-				outputStream.write(buffer,0,len);
-			}
-			
-			outputStream.write(sufCode.getBytes());
-			outputStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}*/
 }

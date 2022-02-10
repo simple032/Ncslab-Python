@@ -42,7 +42,7 @@ public class CodeModelM extends CodeModel{
 		writeMCodeFiles();
 	}
 	
-	/*��������M���Ե�һϵ���ļ� */
+	/*组装成M文件 */
 	private void writeMCodeFiles() {
 		code.writeMCodeFiles();
 	}
