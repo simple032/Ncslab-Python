@@ -289,10 +289,15 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	/*检查数据宽度是否匹配，可以重载，如果不匹配，可以throw Exception*/
-	/*默认检查输入的宽度，默认的宽度为1，如果不为1，需要重载这个函数*/
+
 	public void updateDimension() throws MatDimException{
 		// TODO Auto-generated method stub
+		
+	}
+	
+	/*检查数据宽度是否匹配，可以重载，如果不匹配，可以throw Exception*/
+	/*默认检查输入的宽度，默认的宽度为1，如果不为1，需要重载这个函数*/
+	public void checkDimension() throws MatDimException{
 		for(InputPort input:inputPortList) {
 			OutputSignal signal=input.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			if(signal.getDataType()!=DataType.REAL) {

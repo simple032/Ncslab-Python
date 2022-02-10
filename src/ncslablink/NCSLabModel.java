@@ -198,5 +198,9 @@ abstract public class NCSLabModel {
 		for(Block block:blockList) {
 			block.updateDimension();
 		}
+		
+		for(Block block:blockList) {
+			block.checkDimension();
+		}
 	}
 }

@@ -41,4 +41,8 @@ public class Scope extends block.Block{
 	public void updateDimension() throws MatDimException{
 		
 	}
+	
+	public void checkDimension() throws MatDimException{
+		
+	}
 }

@@ -124,6 +124,10 @@ public class Demux extends Block {
 		System.out.println("Input height: "+this.getInputPortList().get(0).getHeight());
 		System.out.println("Is a vector: "+this.getInputPortList().get(0).isVector());*/
 		
+		
+	}
+	
+	public void checkDimension() throws MatDimException{
 		if(this.getInputPortList().get(0).isVector()==false||this.getInputPortList().get(0).isReal()==true) {
 			MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n Only a vector is applicable for demux\n");
 			throw(e);

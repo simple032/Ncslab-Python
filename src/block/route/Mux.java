@@ -166,4 +166,8 @@ public class Mux extends Block {
 		output.getOutputSignalC().setWidth(size);
 		output.getOutputSignalC().setDataType(DataType.MATRIX);
 	}
+	
+	public void checkDimension() throws MatDimException{
+		
+	}
 }

@@ -184,7 +184,7 @@ public class StateSpace extends Block{
 					||A.getWidth()!=xState.getHeight() //A和状态是否匹配
 					||D.getWidth()!=B.getWidth() //B和D是否匹配
 					||D.getHeight()!=C.getHeight() //D和C是否匹配
-					||B.getWidth()!=in.getHeight() //输入和B是否匹配
+					//||B.getWidth()!=in.getHeight() //输入和B是否匹配
 					||in.getWidth()!=1 //输入必须是列向量
 					) {
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
@@ -198,7 +198,7 @@ public class StateSpace extends Block{
 					||A.getHeight()!=B.getHeight()
 					||A.getWidth()!=C.getWidth()
 					||A.getWidth()!=xState.getHeight()
-					||B.getWidth()!=in.getHeight()
+					//||B.getWidth()!=in.getHeight()
 					||in.getWidth()!=1
 					) {
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
@@ -218,5 +218,13 @@ public class StateSpace extends Block{
 		else {
 			out.getOutputSignalC().setDataType(DataType.REAL);
 		}
+   }
+   
+   public void checkDimension() throws MatDimException{
+	   InputPort in  = inputPortList.get(0);
+	   if(B.getWidth()!=in.getHeight()) {//输入和B是否匹配
+		   MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
+		   throw(e);
+	   }
    }
 }
