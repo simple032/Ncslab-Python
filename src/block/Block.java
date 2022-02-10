@@ -279,6 +279,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		generateStatementCodeC(code);
 	}
 	
+	
 	public void generateStatementCodeC(CodeStructC code) {
 		
 	}
@@ -287,7 +288,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	/*检查数据宽度是否匹配，可以重载，如果不匹配，可以throw Exception*/
 	public void updateDimension() throws MatDimException{
 		// TODO Auto-generated method stub
 		

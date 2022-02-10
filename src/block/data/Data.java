@@ -2,6 +2,7 @@ package block.data;
 
 import Jama.Matrix;
 
+/*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
 public class Data {
 	
 	private DataType dataType=DataType.REAL;
@@ -44,6 +45,7 @@ public class Data {
 		return 1;
 	}
 	
+	/*使用正则表达式来解析矩阵，实验性的*/
 	private static Matrix parseMatrix(String matrixString) {
 		matrixString=matrixString.replaceAll("\\[\\s*", "");
 		matrixString=matrixString.replaceAll("\\s*\\]", "");
@@ -76,6 +78,7 @@ public class Data {
 		this(1,1);
 	}
 	
+	/*根据从前端传递来的字符串建立数据*/
 	public Data(String dataString) {
 		
 		dataString=formatDataString(dataString);
@@ -120,6 +123,7 @@ public class Data {
 		return code;
 	}
 	
+	/*检查这个数据是否为0，在传入参数的时候比较有效*/
 	public boolean isZero() {
 		boolean zero=true;
 		switch(this.getDataType()) {
