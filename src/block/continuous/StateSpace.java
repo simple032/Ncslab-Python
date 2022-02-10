@@ -178,14 +178,14 @@ public class StateSpace extends Block{
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		
 		if(this.feedThrough) {
-			if(A.getWidth()!=A.getHeight()
-					||A.getHeight()!=B.getHeight()
-					||A.getWidth()!=C.getWidth()
-					||A.getWidth()!=xState.getHeight()
-					||D.getWidth()!=B.getWidth()
-					||D.getHeight()!=C.getHeight()
-					||B.getWidth()!=in.getHeight()
-					||in.getWidth()!=1
+			if(A.getWidth()!=A.getHeight() //A是否是方阵
+					||A.getHeight()!=B.getHeight() //A和B是否匹配
+					||A.getWidth()!=C.getWidth() //A和CB是否匹配
+					||A.getWidth()!=xState.getHeight() //A和状态是否匹配
+					||D.getWidth()!=B.getWidth() //B和D是否匹配
+					||D.getHeight()!=C.getHeight() //D和C是否匹配
+					||B.getWidth()!=in.getHeight() //输入和B是否匹配
+					||in.getWidth()!=1 //输入必须是列向量
 					) {
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
 				throw(e);
@@ -193,6 +193,7 @@ public class StateSpace extends Block{
 			}
 		}
 		else {
+			//如果没有D，检查的时候就不用考虑D向量
 			if(A.getWidth()!=A.getHeight()
 					||A.getHeight()!=B.getHeight()
 					||A.getWidth()!=C.getWidth()
@@ -206,7 +207,7 @@ public class StateSpace extends Block{
 			}
 		}
 		
-		
+		//根据参数，设置输出的宽度
 		out.setHeight(C.getHeight());
 		out.setWidth(1);
 		out.getOutputSignalC().setHeight(C.getHeight());
