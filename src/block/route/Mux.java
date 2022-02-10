@@ -147,7 +147,7 @@ public class Mux extends Block {
 	}
 	
 	public void updateDimension() throws MatDimException{
-		super.updateDimension();
+		//super.updateDimension();
 		int size=0;
 		for(InputPort inputPort:inputPortList) {
 			if(inputPort.isVector()==true||inputPort.isReal()==true) {

@@ -117,7 +117,7 @@ public class Demux extends Block {
 	}
 	
 	public void updateDimension() throws MatDimException{
-		super.updateDimension();
+		//super.updateDimension();
 		/*
 		System.out.println("Update dimension:Demux");
 		System.out.println("Input width: "+this.getInputPortList().get(0).getWidth());

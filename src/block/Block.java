@@ -3,6 +3,7 @@ package block;
 import java.util.Vector;
 import org.json.JSONObject;
 
+import block.data.DataType;
 import block.io.InputPort;
 import block.io.OutputPort;
 import block.io.Parameter;
@@ -291,6 +292,12 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	/*检查数据宽度是否匹配，可以重载，如果不匹配，可以throw Exception*/
 	public void updateDimension() throws MatDimException{
 		// TODO Auto-generated method stub
-		
+		for(InputPort input:inputPortList) {
+			OutputSignal signal=input.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+			if(signal.getDataType()!=DataType.REAL) {
+				MatDimException e=new MatDimException("Block "+this.blockName+" doesn't support Matrix!");
+				throw(e);
+			}
+		}
 	}
 }

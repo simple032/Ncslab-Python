@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 import block.io.InputPort;
 import code.m.CodeStructM;
+import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 
 public class Scope extends block.Block{
@@ -35,5 +36,9 @@ public class Scope extends block.Block{
 		initCode+="ScopeNum=ScopeNum+1;\n";	
 		initCode+="ScopeList=[ScopeList; '"+getBlockName()+"'];\n";
 		code.addInitCode(initCode);
+	}
+	
+	public void updateDimension() throws MatDimException{
+		
 	}
 }
