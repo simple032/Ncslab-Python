@@ -151,11 +151,27 @@ public class StateSpace extends Block{
 	   String outputCode="/*Code for output of block State Space:("+getBlockId()+")"+getBlockName()+"*/\n";
 	   
 	   outputCode+="/*******************************/\n";
+	   
+	   OutputPort out=this.getOutputPortList().get(0);
 	   if(this.feedThrough) {
-		   outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+"+"+D.getName()+"*"+this.getInputPortVariable(0)+";\n";
+		   switch(out.getOutputSignalC().getDataType()) {
+		   case MATRIX:
+			   outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+"+"+D.getName()+"*"+this.getInputPortVariable(0)+";\n";	   
+			   break;
+		   case REAL:
+			   outputCode+=this.getOutputPortVariable(0)+"=("+C.getName()+"*"+xState.getName()+"+"+D.getName()+"*"+this.getInputPortVariable(0)+")(0,0);\n";	   
+			   break;		   
+		   }
 	   }
 	   else {
-		   outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+";\n";
+		   switch(out.getOutputSignalC().getDataType()) {
+		   case MATRIX:
+			   outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+";\n";
+			   break;
+		   case REAL:
+			   outputCode+=this.getOutputPortVariable(0)+"=("+C.getName()+"*"+xState.getName()+")(0,0);\n";
+			   break;
+		   }
 	   }
 	   outputCode+="/*******************************/\n";
 	   
@@ -186,6 +202,8 @@ public class StateSpace extends Block{
 					||D.getHeight()!=C.getHeight() //D和C是否匹配
 					//||B.getWidth()!=in.getHeight() //输入和B是否匹配
 					||in.getWidth()!=1 //输入必须是列向量
+					||X0.getHeight()!=A.getHeight()
+					||X0.getWidth()!=1
 					) {
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
 				throw(e);
@@ -200,6 +218,8 @@ public class StateSpace extends Block{
 					||A.getWidth()!=xState.getHeight()
 					//||B.getWidth()!=in.getHeight()
 					||in.getWidth()!=1
+					||X0.getHeight()!=A.getHeight()
+					||X0.getWidth()!=1
 					) {
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
 				throw(e);
