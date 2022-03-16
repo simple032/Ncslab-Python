@@ -1,4 +1,4 @@
-package code.c.linux;
+package code.c.linux.raspberry;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,8 +19,8 @@ import block.io.InputPort;
 import code.c.CodeStructC;
 import code.c.CodeModelC;
 
-public class CodeStructCLinux extends CodeStructC{
-	public CodeStructCLinux(CodeModelC model) {
+public class CodeStructCLinuxRaspberry extends CodeStructC{
+	public CodeStructCLinuxRaspberry(CodeModelC model) {
 		super(model);
 	}
 	
@@ -46,27 +46,27 @@ public class CodeStructCLinux extends CodeStructC{
 		//makefile
 		writeNCSLabFile("makefile");
 		//锟斤拷锟斤拷锟捷结构
-		writeNCSLabFile("ncslabccode.h");
+		writeNCSLabFile("../../ncslabccode.h","ncslabccode.h");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
-		writeNCSLabFile("ncslabmain.c");
+		writeNCSLabFile("../../ncslabmain.c","ncslabmain.c");
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
-		writeNCSLabFile("DataApi.c");
-		writeNCSLabFile("DataApi.h");
+		writeNCSLabFile("../../DataApi.c","DataApi.c");
+		writeNCSLabFile("../../DataApi.h","DataApi.h");
 		
-		writeNCSLabFile("util.c");
+		writeNCSLabFile("../../util.c","util.c");
 		
-		writeNCSLabFile("ncslabdefines.h");
+		writeNCSLabFile("../../ncslabdefines.h","ncslabdefines.h");
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
-		writeNCSLabFile("ServerThread.c");
-		writeNCSLabFile("ServerThread.h");
-		writeNCSLabFile("ClientThread.c");
-		writeNCSLabFile("ClientThread.h");
-		writeNCSLabFile("UploadThread.c");
-		writeNCSLabFile("UploadThread.h");
+		writeNCSLabFile("../ServerThread.c","ServerThread.c");
+		writeNCSLabFile("../ServerThread.h","ServerThread.h");
+		writeNCSLabFile("../ClientThread.c","ClientThread.c");
+		writeNCSLabFile("../ClientThread.h","ClientThread.h");
+		writeNCSLabFile("../UploadThread.c","UploadThread.c");
+		writeNCSLabFile("../UploadThread.h","UploadThread.h");
 		
-		writeNCSLabFile("ncs_serialport_pi.c");
-		writeNCSLabFile("ncs_serialport.h");
+		writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
+		writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");
 
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();
@@ -75,16 +75,16 @@ public class CodeStructCLinux extends CodeStructC{
 		
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("../ode1.c","onestep.c");
+			writeNCSLabFile("../../ode1.c","onestep.c");
 			break;
 		case ode2:
-			writeNCSLabFile("../ode2.c","onestep.c");
+			writeNCSLabFile("../../ode2.c","onestep.c");
 			break;
 		case ode3:
-			writeNCSLabFile("../ode3.c","onestep.c");
+			writeNCSLabFile("../../ode3.c","onestep.c");
 			break;
 		case ode4:
-			writeNCSLabFile("../ode4.c","onestep.c");
+			writeNCSLabFile("../../ode4.c","onestep.c");
 			break;
 		}
 		

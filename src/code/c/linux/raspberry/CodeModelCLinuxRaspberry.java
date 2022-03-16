@@ -1,4 +1,4 @@
-package code.c.linux;
+package code.c.linux.raspberry;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,11 +22,11 @@ import main.database.Algorithms;
 import code.c.CodeModelC;
 import code.c.CodeStructC;
 
-public class CodeModelCLinux extends CodeModelC{
+public class CodeModelCLinuxRaspberry extends CodeModelC{
 	
-	private CodeStructCLinux codeRaspberry=new CodeStructCLinux(this);
+	private CodeStructCLinuxRaspberry codeRaspberry=new CodeStructCLinuxRaspberry(this);
 	
-	CodeModelCLinux(JSONObject jsonIn,ModelMode mode) throws ModelException{
+	CodeModelCLinuxRaspberry(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
 	}
 	
@@ -34,8 +34,8 @@ public class CodeModelCLinux extends CodeModelC{
 		return codeRaspberry;
 	}
 	
-	public static CodeModelCLinux createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException {
-		CodeModelCLinux model=new CodeModelCLinux(jsonIn,mode);
+	public static CodeModelCLinuxRaspberry createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException {
+		CodeModelCLinuxRaspberry model=new CodeModelCLinuxRaspberry(jsonIn,mode);
 		
 		return model;
 	}
