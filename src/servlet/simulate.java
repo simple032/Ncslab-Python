@@ -17,8 +17,9 @@ import java.util.*;
 
 import code.Solver;
 import code.c.CodeModelC;
+import code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
 import code.m.CodeModelM;
-
+import ncslablink.ErrorMessage;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 
@@ -57,6 +58,74 @@ public class simulate extends HttpServlet {
         }  
         JSONObject jsonIn = new JSONObject(result);
 		
+        int code = 2000;
+        String errorMsgs="";
+        
+        try {
+
+        	//����C���Ե�������CodeModelC
+        	//CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
+        	CodeModelCLinuxPCSimulation modelC=CodeModelCLinuxPCSimulation.createFromJSON(jsonIn,ModelMode.Simulation);
+        	modelC.setSolver(Solver.ode4);
+
+        	modelC.generate();
+        	
+        	System.out.println();
+        	
+        	if(modelC.getErrorList().size()>0) {
+        		for(ErrorMessage em: modelC.getErrorList()) {
+        			errorMsgs += em.getMessage();
+        		}
+        		code = 400;
+        		throw new ModelException(errorMsgs);
+        	}
+        	
+        	if(modelC.makeExeFile()==false) {
+        		throw new ModelException("Can not make exe file!");
+        	}
+        	
+        	modelC.simulate();
+        	
+        	JSONObject jb=new JSONObject();
+        	jb.put("code", code);
+        	jb.put("ver", 1);
+        	jb.put("resultsFile", "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json");
+        	
+        	response.getWriter().write(jb.toString());
+        	/*
+        	response.getWriter().write("{\"code\":"+code+","
+    	        	+"\"msg\":"+"\""+errorMsgs+"\""
+    	        	+"}");*/
+        	
+        	/*
+        	if(modelC.getErrorList().size()==0) {
+        		if(modelC.makeExeFile()) {
+        			//modelC.saveToDatabase();
+        			errorMsgs += "make exe success.";
+        		}        		
+        	}else {
+        		for(ErrorMessage em: modelC.getErrorList()) {
+        			errorMsgs += em.getMessage();
+        		}
+        		code = 400;
+        		throw new ModelException(errorMsgs);
+        	}
+        	
+        	response.getWriter().write("{\"code\":"+code+","
+	        	+"\"msg\":"+"\""+errorMsgs+"\""
+	        	+"}");*/
+        }
+        catch(ModelException e) {
+        	System.err.println(e.getMessage());
+        	System.err.println("Code generatrion terminated unsuccessfully������");
+        	//response.getWriter().write("{\"code\":\"400\",\"message\":\""+e.getMessage()+"\"}");
+        	JSONObject jb=new JSONObject();
+        	jb.put("code", 400);
+        	jb.put("message",e.getMessage());
+        	response.getWriter().write(jb.toString());
+        }
+        
+        /*
         try {
         	//����M���Ե�������CodeModelM
         	CodeModelM model=CodeModelM.createFromJSON(jsonIn,ModelMode.Simulation);
@@ -85,16 +154,16 @@ public class simulate extends HttpServlet {
         	
         	response.getWriter().append(jb.toString());
 
-        	/*
-        	if(model.getErrorList().size()==0) {
-        		System.out.println(model.getCode());
-        	}*/
+        	
+        	//if(model.getErrorList().size()==0) {
+        	//	System.out.println(model.getCode());
+        	//}
         }
         catch(ModelException e) {
         	System.err.println(e.getMessage());
         	System.err.println("Code generatrion terminated unsuccessfully������");
         	response.getWriter().write("{\"code\":400,\"message\":\""+e.getMessage()+"\"}");
-        }
+        }*/
 	}
 
 }

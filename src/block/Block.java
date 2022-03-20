@@ -259,7 +259,15 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public void generateDerivativeCodeC(CodeStructC code) {
 		
 	}
-
+	
+	public void generateBlockTerminateCodeC(CodeStructC code) {
+		generateTerminateCodeC(code);
+	}
+	
+	public void generateTerminateCodeC(CodeStructC code) {
+		
+	}
+	
 	public boolean isSFcnBlock() {
 		// TODO Auto-generated method stub
 		return false;
@@ -279,6 +287,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		// TODO Auto-generated method stub
 		generateStatementCodeC(code);
 	}
+	
+	
 	
 	
 	public void generateStatementCodeC(CodeStructC code) {

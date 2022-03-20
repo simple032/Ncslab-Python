@@ -77,6 +77,10 @@ public class CodeModelM extends CodeModel{
 		block.generateBlockOutputCodeM(code);
 	}
 	
+	protected void generateTerminateCode(CodeGenerationOption option) {
+		
+	}
+	
 	protected void generateDerivativeCode(CodeGenerationOption option) {
 		System.out.println("Generating derivative mainCodes......");
 		

@@ -120,18 +120,43 @@ typedef struct {
 	BLOCK **blocks;
 	int majorStep;
 	struct timeval tv;
+	
+	int terminalNum;
+	
 }MODEL;
+
+enum TERMINALTYPE{Scope};
+
+typedef struct{
+	enum TERMINALTYPE type;
+	void *terminal;
+}TERMINAL;
+
+typedef struct{
+	char *name;
+	int maxDataLength;
+	int width;
+	int height;
+	int cursor;
+	REAL *buffer;
+	REAL *timeBuffer;
+	
+	int isFull;
+}SCOPE;
 
 void NCSLabInit();
 void NCSLabOneStep();
 void NCSLabOutput();
 void NCSLabDerivative();
 void NCSLabUpdate();
+void NCSLabTerminate();
 void storeState();
 void restoreState();
 void storeDerivative(int);
 void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
+
+void NCSLabSaveResult();
 
 unsigned char calcSum(unsigned char bytes[]);
 

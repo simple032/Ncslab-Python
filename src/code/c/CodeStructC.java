@@ -18,6 +18,8 @@ import block.io.InputPort;
 
 import block.data.DataType;
 
+import block.io.terminal.Terminal;
+
 abstract public class CodeStructC {
 
 
@@ -42,6 +44,8 @@ abstract public class CodeStructC {
 	public String statementCode="";
 	//微分计算的代码
 	public String derivativeCode="";
+	
+	public String terminateCode="";
 
 	/*����Parameter�Ĵ��� ��*REAL Block5_Parameter_P*/
 
@@ -85,6 +89,10 @@ abstract public class CodeStructC {
 
 	public void addOutputCode(String code) {
 		outputCode+=code;
+	}
+	
+	public void addTerminateCode(String code) {
+		terminateCode+=code;
 	}
 
 	public String getUpdateCode() {
@@ -145,6 +153,10 @@ abstract public class CodeStructC {
 				+updateCode+"\n"
 				+"}\n"
 				
+				+"void NCSLabTerminate(){\n"
+				+terminateCode+"\n"
+				+"}\n"
+				
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
 				+"}\n"
@@ -175,8 +187,7 @@ abstract public class CodeStructC {
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
-
-
+	
 	//生成定义Parameter的代码
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";
@@ -223,6 +234,10 @@ abstract public class CodeStructC {
 	protected String codePathBase=utils.Property.instance.getProperty("CCodePath");
 	//目标文件夹的位置codePathBase/用户id/modelId
 	protected String codePath;
+	
+	public String getCodePath() {
+		return codePath;
+	}
 
 	private void writeMakefile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
@@ -467,6 +482,16 @@ abstract public class CodeStructC {
 	//建立数据结构的定义
 	private void generateDataStrucure() {
 		dataStructureCode+="/*Define data structures*/\n";
+		
+		if(model.getModelMode()==ncslablink.ModelMode.Simulation) {
+			dataStructureCode+="/*Define terminal structures*/\n";
+		
+			for(Terminal terminal:model.getTerminalList()) {
+				dataStructureCode+=terminal.getDefineCodeC();
+			}
+			
+			dataStructureCode+="TERMINAL *terminals["+model.getTerminalList().size()+"];\n";
+		}
 
 		dataStructureCode+="/*Define inputPort structures*/\n";
 		for(Block block:model.getBlockList()) {
@@ -587,6 +612,18 @@ abstract public class CodeStructC {
 	//初始化数据结构，实现数据结构之间的指针连接
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
+		
+		if(model.getModelMode()==ncslablink.ModelMode.Simulation) {
+			dataStructureInitCode+="/*Initialize terminals*/\n";
+		
+			int i=0;
+			for(Terminal terminal:model.getTerminalList()) {
+				dataStructureInitCode+="terminals["+i+"]=&"+terminal.getTerminalName()+";\n";
+				i++;
+			}
+			
+			dataStructureInitCode+="model.terminalNum="+model.getTerminalList().size()+";\n";
+		}
 
 		dataStructureInitCode+="/*Initialize inputs*/\n";
 		for(Block block:model.getBlockList()) {

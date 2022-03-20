@@ -117,6 +117,18 @@ abstract public class CodeModelC extends CodeModel {
 		}
 	}
 	
+	protected void generateBlockTerminateCode(Block block) {
+		block.generateBlockTerminateCodeC(getCodeStructC());
+	}
+	
+	protected void generateTerminateCode(CodeGenerationOption option) {
+		System.out.println("Generating terminate codes......");
+		
+		for(Block block:blockList) {
+			generateBlockTerminateCode(block);
+		}
+	}
+	
 	protected void generateBlockStatementCode(Block block) {
 		block.generateBlockStatementCodeC(getCodeStructC());
 	}

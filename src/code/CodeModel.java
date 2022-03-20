@@ -85,6 +85,8 @@ abstract public class CodeModel extends NCSLabModel {
 		}
 		
 		generateStatementCode(option);
+		
+		generateTerminateCode(option);
 	}
 
 	//初始化的代码，继承的类可以重载
@@ -97,6 +99,8 @@ abstract public class CodeModel extends NCSLabModel {
 	abstract protected void generateDerivativeCode(CodeGenerationOption option);
 	
 	abstract protected void generateStatementCode(CodeGenerationOption option);
+	
+	abstract protected void generateTerminateCode(CodeGenerationOption option);
 
 	private void scanInputPort(InputPort inputPort) {
 		Line line=inputPort.getLinkedLine();

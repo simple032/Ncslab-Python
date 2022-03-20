@@ -10,6 +10,8 @@ import block.BlockType;
 
 import line.Line;
 
+import block.io.terminal.Terminal;
+
 abstract public class NCSLabModel {
 	
 	private static int modelSeqCount=0;
@@ -46,6 +48,8 @@ abstract public class NCSLabModel {
 	//所有的错误信息
 	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
 	
+	protected Vector<Terminal> terminalList=new Vector<Terminal>();
+	
 	//解析model，变成数据结构
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		this.mode=mode;
@@ -60,6 +64,10 @@ abstract public class NCSLabModel {
 		modelSeqCount++;
 		
 		//System.out.println(config.getFixedStep());
+	}
+	
+	public ModelMode getModelMode() {
+		return this.mode;
 	}
 	
 	public int getModelSeq() {
@@ -104,6 +112,14 @@ abstract public class NCSLabModel {
 	
 	public Vector<Block> getBlockList(){
 		return this.blockList;
+	}
+	
+	public void addTerminal(Terminal terminal){
+		terminalList.add(terminal);
+	}
+	
+	public Vector<Terminal> getTerminalList(){
+		return this.terminalList;
 	}
 	
 	private void parseModel() throws ModelException{
