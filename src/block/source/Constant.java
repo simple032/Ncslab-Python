@@ -17,11 +17,8 @@ public class Constant extends block.Block{
 		
 		//һ�����
 		outputPortList.add(new OutputPort(this,1,false));
-		
-		//value=new Parameter(this,1,"value");
 		value=new Parameter(this,1,"value",paramValues.getString("Value"));
 		parameterList.add(value);
-		
 		outputPortList.get(0).setHeight(value.getHeight());
 		outputPortList.get(0).setWidth(value.getWidth());
 	}
@@ -30,19 +27,25 @@ public class Constant extends block.Block{
 		super.generateInitCodeM(code);
 		
 		String initCode="";
-		
-		//initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n";
 		initCode+=value.getInitCodeM();
-		
 		code.addInitCode(initCode);
 	}
 	
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 		String outputCode="";
-				
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
-		
+		switch(value.getDataType()) {
+		case REAL:
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
+			break;
+		case MATRIX:
+			for(int i=1;i<value.getHeight()+1;i++) {
+				for(int j=1;j<value.getWidth()+1;j++) {
+					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+value.getName()+"("+i+","+j+");\n";
+				}
+			}
+			break;
+		}		
 		code.addOutputCode(outputCode);
 	}
 	
