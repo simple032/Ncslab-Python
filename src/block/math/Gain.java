@@ -51,13 +51,87 @@ public class Gain extends Block{
 		parameterList.add(gain);
 		
 	}
-	
+	public void generateInitCodeM(CodeStructM code) {
+		super.generateInitCodeM(code);
+		String initCode="";
+		initCode+=gain.getInitCodeM();
+		code.addInitCode(initCode);
+	}
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		//String code="Block"+this.getBlockId()+"_Output1="+paramValues.getDouble("Gain")+"*Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+"_Output"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()+";\n";
-		String ouputCode=outputPortList.get(0).getOutputSignalC().getName()+"="+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"*"+paramValues.getString("Gain")+";\n";
-		
-		code.addOutputCode(ouputCode);
+		OutputPort out  = outputPortList.get(0);
+		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+		String outputCode="";
+		//outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"*"+paramValues.getString("Gain")+";\n";
+		if(this.multiplication==false) {
+			switch(gain.getDataType()) {
+			case REAL:
+				switch(ops.getOutputSignalC().getDataType()) {
+				case REAL:
+					outputCode+=out.getOutputSignalC().getName()+"=";
+					outputCode+=gain.getName()+"*"+ops.getOutputSignalC().getName()+";\n";
+					break;
+				case MATRIX:
+					for(int i=1; i<ops.getHeight()+1; i++) {
+						for(int j=1;j<ops.getWidth()+1;j++) {
+							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
+							outputCode+=gain.getName()+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
+						}	
+					}
+					break;
+				}
+				break;
+			case MATRIX:
+				switch(ops.getOutputSignalC().getDataType()) {
+				case REAL:
+					for(int i=1; i<gain.getHeight()+1; i++) {
+						for(int j=1;j<gain.getWidth()+1;j++) {
+							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
+							outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+";\n";
+						}	
+					}
+					break;
+				case MATRIX:
+				for(int i=1; i<ops.getHeight()+1; i++) {
+					for(int j=1;j<ops.getWidth()+1;j++) {
+						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
+						outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
+					}	
+				}
+				break;
+			}
+				break;
+		  }
+		}
+		else {
+			switch(gain.getDataType()) {
+			case REAL:
+				switch(ops.getOutputSignalC().getDataType()) {
+				case REAL:
+					outputCode+=out.getOutputSignalC().getName()+"=";
+					outputCode+=gain.getName()+"*"+ops.getOutputSignalC().getName()+";\n";
+					break;
+				case MATRIX:
+					for(int i=1;i<ops.getHeight()+1;i++) {
+					outputCode+=out.getOutputSignalC().getName()+"("+i+",1)"+"="+gain.getName()+"*"+ops.getOutputSignalC().getName()+"("+i+",1);\n";
+					}
+					break;
+				}
+				break;
+			case MATRIX:
+				switch(ops.getOutputSignalC().getDataType()) {
+				case REAL:
+					for(int i=1;i<gain.getWidth()+1;i++){
+					outputCode+=out.getOutputSignalC().getName()+"(1,"+i+")"+"="+gain.getName()+"(1,"+i+")*"+ops.getOutputSignalC().getName()+";\n";
+					}
+					break;
+				case MATRIX:
+					outputCode+=out.getOutputSignalC().getName()+"="+ops.getOutputSignalC().getName()+"*"+gain.getName()+";\n";
+					break;
+				}				
+			}
+		}
+		code.addOutputCode(outputCode);
 	}
 	
 	
@@ -65,7 +139,6 @@ public class Gain extends Block{
 		super.generateInitCodeC(code);
 		
 		String initCode="/*Code for initialization of block Gain:("+getBlockId()+")"+getBlockName()+"*/\n";
-		//initCode+=gain.getName()+"="+paramValues.getDouble("Gain")+";\n"; 
 		initCode+=gain.getInitCodeC();
 		code.addInitCode(initCode);
 	}
@@ -87,19 +160,31 @@ public class Gain extends Block{
 				case MATRIX:
 					for(int i=0; i<ops.getHeight(); i++) {
 						for(int j=0;j<ops.getWidth();j++) {
-							outputCode+=out.getOutputSignalC().getName()+"["+i+"]["+j+"]=";
-							outputCode+=gain.getName()+"*"+ops.getOutputSignalC().getName()+"["+i+"]["+j+"];\n";
+							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
+							outputCode+=gain.getName()+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
 						}	
 					}
 					break;
 				}
 				break;
 			case MATRIX:
+				switch(ops.getOutputSignalC().getDataType()) {
+				case REAL:
+					for(int i=0; i<gain.getHeight(); i++) {
+						for(int j=0;j<gain.getWidth();j++) {
+							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
+							outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+";\n";
+						}	
+					}
+					break;
+				case MATRIX:
 				for(int i=0; i<ops.getHeight(); i++) {
 					for(int j=0;j<ops.getWidth();j++) {
-						outputCode+=out.getOutputSignalC().getName()+"["+i+"]["+j+"]=";
-						outputCode+=gain.getName()+"["+i+"]["+j+"]"+"*"+ops.getOutputSignalC().getName()+"["+i+"]["+j+"];\n";
+						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
+						outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
 					}	
+				   }
+				break;
 				}
 				break;
 			}
@@ -114,7 +199,7 @@ public class Gain extends Block{
 					break;
 				case MATRIX:
 					outputCode+="for(int i=0;i<"+ops.getHeight()+";i++){\n";
-					outputCode+=out.getOutputSignalC().getName()+"[i][0]"+"="+gain.getName()+"*"+ops.getOutputSignalC().getName()+"[i][0];\n";
+					outputCode+=out.getOutputSignalC().getName()+"(i,0)"+"="+gain.getName()+"*"+ops.getOutputSignalC().getName()+"(i,0);\n";
 					outputCode+="}\n";
 					break;
 				}
@@ -127,14 +212,7 @@ public class Gain extends Block{
 					outputCode+="}\n";
 					break;
 				case MATRIX:
-					outputCode+="for(int i=0;i<"+ops.getHeight()+";i++){\n";
-					outputCode+="for(int j=0;j<"+gain.getWidth()+";j++){\n";
-					outputCode+=out.getOutputSignalC().getName()+"[i][j]"+"=0;\n";
-					outputCode+="for(int k=0;k<"+gain.getHeight()+";k++){\n";
-					outputCode+=out.getOutputSignalC().getName()+"[i][j]"+"+="+ops.getOutputSignalC().getName()+"[i][k]*"+gain.getName()+"[k][j]"+";\n";
-					outputCode+="}\n";
-					outputCode+="}\n";
-					outputCode+="}\n";
+					outputCode+=out.getOutputSignalC().getName()+"="+ops.getOutputSignalC().getName()+"*"+gain.getName()+";\n";
 					break;
 				}				
 			}
@@ -149,21 +227,9 @@ public class Gain extends Block{
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		/*
-		if(!this.multiplication) {			
-			out.setWidth(in.getWidth());
-			out.getOutputSignalC().setWidth(in.getWidth());
-		}else {
-			
-		}*/
 		if(this.multiplication==false) {
 			switch(gain.getDataType()) {
 			case REAL:
-				/*
-				if(signal.getHeight()!=in.getHeight()||signal.getWidth()!=in.getWidth()) {
-					MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n \n");
-					throw(e);
-				}*/
 				out.setHeight(signal.getHeight());
 				out.setWidth(signal.getWidth());
 				out.getOutputSignalC().setHeight(signal.getHeight());
@@ -171,11 +237,15 @@ public class Gain extends Block{
 				out.getOutputSignalC().setDataType(signal.getDataType());
 				break;
 			case MATRIX:
-				/*
-				if(signal.getHeight()!=in.getHeight()||signal.getWidth()!=in.getWidth()) {
-					MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n \n");
-					throw(e);
-				}*/
+				switch(signal.getDataType()) {
+				case REAL:
+					out.setHeight(gain.getHeight());
+					out.setWidth(gain.getWidth());
+					out.getOutputSignalC().setHeight(gain.getHeight());
+					out.getOutputSignalC().setWidth(gain.getWidth());
+					out.getOutputSignalC().setDataType(gain.getDataType());
+					break;
+				case MATRIX:
 				if(signal.getHeight()!=gain.getHeight()||signal.getWidth()!=gain.getWidth()) {
 					MatDimException e=new MatDimException("Block "+this.blockName+" input dimension doesn't match the gain dimension!\n \n");
 					throw(e);
@@ -185,6 +255,8 @@ public class Gain extends Block{
 				out.getOutputSignalC().setHeight(signal.getHeight());
 				out.getOutputSignalC().setWidth(signal.getWidth());
 				out.getOutputSignalC().setDataType(signal.getDataType());
+				break;
+				}
 				break;
 			}
 		}
@@ -200,5 +272,8 @@ public class Gain extends Block{
 			out.getOutputSignalC().setWidth(gain.getWidth());
 			out.getOutputSignalC().setDataType(DataType.MATRIX);
 		}
+	}
+	
+	public void checkDimension() throws MatDimException{
 	}
 }
