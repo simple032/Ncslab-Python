@@ -25,15 +25,25 @@ abstract public class CodeModel extends NCSLabModel {
 	//输出链，应该先输出哪个，然后再输出哪个
 	protected Vector<Block> outputChain=new Vector<Block>();
 
-	protected Solver solver=Solver.ode1;
+	protected Solver solver=Solver.ode4;
 
 	protected CodeModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
+		
+		setupSolver();
 	}
 
 	protected CodeModel(JSONObject jsonIn,ModelMode mode,Solver solver) throws ModelException{
 		super(jsonIn,mode);
 		this.solver=solver;
+	}
+	
+	private void setupSolver() {
+		String solverString=this.getConfig().getSolver();
+		
+		if(solverString.equals("VariableStepAuto")) {
+			solver=Solver.ode23;
+		}
 	}
 
 	private void generateOutputCodeFromChain(CodeGenerationOption option) {

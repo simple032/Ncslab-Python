@@ -10,7 +10,6 @@ ExtModeData extModeData;
 
 timer_t main_timer;
 
-
 int main(int argc, char *argv[]){
 
 	double endTime=10;
@@ -33,13 +32,10 @@ int main(int argc, char *argv[]){
 	extModeData.mp=mp;
 
 	startMyServerThread(&extModeData);
-
-    while(mp->time<endTime){
-        mp->time+=mp->stepSize;
-        NCSLabOneStep();
-
-        //printf("time:%f\n",mp->time);
-    }
+	
+	mp->time=mp->startTime;
+	
+	ncslabLoop();
     
     NCSLabTerminate();
     NCSLabSaveResult();

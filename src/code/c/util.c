@@ -7,17 +7,13 @@
 
 extern MODEL *mp;
 
-//extern double stateReserve[STATE_NUM];
+extern double singleStateReserve[][SINGLE_STATE_NUM];
+extern Matrix matrixStateReserve[][MATRIX_STATE_NUM];
 
-extern double singleStateReserve[SINGLE_STATE_NUM];
-extern Matrix matrixStateReserve[MATRIX_STATE_NUM];
+extern double singleDerivativeReserve[][SINGLE_STATE_NUM];
+extern Matrix matrixDerivativeReserve[][MATRIX_STATE_NUM];
 
-//extern double derivativeReserve[][STATE_NUM];
-
-extern double singleDerivativeReserve[4][SINGLE_STATE_NUM];
-extern Matrix matrixDerivativeReserve[4][SINGLE_STATE_NUM];
-
-void storeState(){
+void storeState(int num){
   /*
   for(int i=0;i<STATE_NUM;i++){
     stateReserve[i]=*((REAL *)(mp->states[i]->vp));
@@ -27,16 +23,16 @@ void storeState(){
   for(int i=0;i<STATE_NUM;i++){
   	switch(mp->states[i]->type){
   	case SINGLE:
-  		singleStateReserve[single++]=*((REAL *)(mp->states[i]->vp));
+  		singleStateReserve[num][single++]=*((REAL *)(mp->states[i]->vp));
   		break;
   	case MATRIX:
-  		matrixStateReserve[matrix++]=*((Matrix *)(mp->states[i]->vp));
+  		matrixStateReserve[num][matrix++]=*((Matrix *)(mp->states[i]->vp));
   		break;
   	}
   }
 }
 
-void restoreState(){
+void restoreState(int num){
   /*	
   for(int i=0;i<STATE_NUM;i++){
     *((REAL *)(mp->states[i]->vp))=stateReserve[i];
@@ -46,10 +42,10 @@ void restoreState(){
   for(int i=0;i<STATE_NUM;i++){
   	switch(mp->states[i]->type){
   	case SINGLE:
-  		*((REAL *)(mp->states[i]->vp))=singleStateReserve[single++];
+  		*((REAL *)(mp->states[i]->vp))=singleStateReserve[num][single++];
   		break;
   	case MATRIX:
-  		*((Matrix *)(mp->states[i]->vp))=matrixStateReserve[matrix++];
+  		*((Matrix *)(mp->states[i]->vp))=matrixStateReserve[num][matrix++];
   		break;
   	}
     
@@ -107,4 +103,29 @@ void caculateDerivative(double *weights,int num){
   	}
     
   }
+}
+
+REAL calculateStateDif(int seq1,int seq2){
+	REAL dif=0;
+	for(int i=0;i<SINGLE_STATE_NUM;i++){
+		REAL difn=abs(singleStateReserve[seq1][i]-singleStateReserve[seq2][i]);
+		if(dif<difn){
+			dif=difn;
+		}
+	}
+	
+	for(int i=0;i<MATRIX_STATE_NUM;i++){
+		Matrix *pm1=&(matrixStateReserve[seq1][i]);
+		Matrix *pm2=&(matrixStateReserve[seq2][i]);
+		for(int h=0;h<pm1->rows();h++){
+			for(int w=0;w<pm1->cols();w++){
+				REAL difn=abs((*pm1)(h,w)-(*pm2)(h,w));
+				if(dif<difn){
+					dif=difn;
+				}
+			}
+		}
+	}
+	
+	return dif;
 }

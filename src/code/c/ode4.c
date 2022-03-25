@@ -15,9 +15,21 @@ Matrix matrixStateReserve[MATRIX_STATE_NUM];
 //double derivativeReserve[4][STATE_NUM];
 
 double singleDerivativeReserve[4][SINGLE_STATE_NUM];
-Matrix matrixDerivativeReserve[4][SINGLE_STATE_NUM];
+Matrix matrixDerivativeReserve[4][MATRIX_STATE_NUM];
 
 double weight1[4]={1.0/6, 2.0/6, 2.0/6, 1.0/6};
+
+#ifdef _SIMU
+void ncslabLoop(){
+	while(mp->time<mp->stopTime){
+        mp->time+=mp->stepSize;
+        NCSLabOneStep();
+
+        //printf("time:%f\n",mp->time);
+    }
+}
+#endif
+
 
 void NCSLabOneStep(){
 
@@ -30,7 +42,7 @@ void NCSLabOneStep(){
   storeDerivative(0);
   mp->majorStep=0;
   //Calculate K1
-  storeState();
+  storeState(0);
   mp->stepSize=STEP_SIZE/2;
 	NCSLabUpdate();
   mp->offset=STEP_SIZE/2;
@@ -39,7 +51,7 @@ void NCSLabOneStep(){
   storeDerivative(1);
 
   //Calculate K2
-  restoreState();
+  restoreState(0);
   mp->stepSize=STEP_SIZE/2;
   NCSLabUpdate();
   mp->offset=STEP_SIZE/2;
@@ -48,7 +60,7 @@ void NCSLabOneStep(){
   storeDerivative(2);
 
   //Calculate K3
-  restoreState();
+  restoreState(0);
   mp->stepSize=STEP_SIZE;
   NCSLabUpdate();
   mp->offset=STEP_SIZE;
@@ -57,7 +69,7 @@ void NCSLabOneStep(){
   storeDerivative(3);
 
   //Update
-  restoreState();
+  restoreState(0);
   mp->stepSize=STEP_SIZE;
   caculateDerivative(weight1,4);
   NCSLabUpdate();

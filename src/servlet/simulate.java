@@ -66,7 +66,7 @@ public class simulate extends HttpServlet {
         	//����C���Ե�������CodeModelC
         	//CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
         	CodeModelCLinuxPCSimulation modelC=CodeModelCLinuxPCSimulation.createFromJSON(jsonIn,ModelMode.Simulation);
-        	modelC.setSolver(Solver.ode4);
+        	//modelC.setSolver(Solver.ode4);
 
         	modelC.generate();
         	

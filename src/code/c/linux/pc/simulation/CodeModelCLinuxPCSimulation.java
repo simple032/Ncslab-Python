@@ -45,6 +45,7 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 	
 	public void simulate() throws ModelException{
 		Process process=null;
+		System.out.println("Executing simulation codes...");
 		try {
 			process=Runtime.getRuntime().exec("./ncslab "+this.getConfig().getStopTime(),null, new File(codeRaspberry.getCodePath()));
 			try {
@@ -62,6 +63,8 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 				process.destroy();
 			}
 		}
+		
+		System.out.println("Simulation codes executed successfully!");
 		
 	}
 }

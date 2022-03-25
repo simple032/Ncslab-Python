@@ -150,11 +150,14 @@ void NCSLabOutput();
 void NCSLabDerivative();
 void NCSLabUpdate();
 void NCSLabTerminate();
-void storeState();
-void restoreState();
+void storeState(int);
+void restoreState(int);
 void storeDerivative(int);
+REAL calculateStateDif(int,int);
 void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
+
+void ncslabLoop();
 
 void NCSLabSaveResult();
 

@@ -114,7 +114,7 @@ public class Scope extends block.Block{
 		
 		OutputSignal signal=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		scopeStruct.setDimension(signal.getWidth(), signal.getHeight());
-		scopeStruct.setMaxDataLength(500);
+		scopeStruct.setMaxDataLength(3000);
 		
 		model.addTerminal(scopeStruct);
 		
