@@ -110,6 +110,11 @@ public class Scope extends block.Block{
 	}
 	
 	public void updateDimension() throws MatDimException{
+		
+		
+	}
+	
+	public void checkDimension() throws MatDimException{
 		scopeStruct=new ScopeStruct(this,1,this.blockName);
 		
 		OutputSignal signal=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -117,10 +122,5 @@ public class Scope extends block.Block{
 		scopeStruct.setMaxDataLength(3000);
 		
 		model.addTerminal(scopeStruct);
-		
-	}
-	
-	public void checkDimension() throws MatDimException{
-		
 	}
 }
