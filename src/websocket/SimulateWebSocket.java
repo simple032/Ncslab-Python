@@ -29,6 +29,13 @@ public class SimulateWebSocket {
 		session.getBasicRemote().sendText(jb.toString());
 	}
 	
+	private void sendResultMessage(Session session,CodeModelCLinuxPCSimulation modelC) throws IOException{
+		JSONObject jb=new JSONObject();
+		jb.put("msg", "result");
+		jb.put("resultsFile", "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json");
+		session.getBasicRemote().sendText(jb.toString());
+	}
+	
 	private void sendErrorMessage(Session session,String msgString) throws IOException{
 		JSONObject jb=new JSONObject();
 		jb.put("msg", "error");
@@ -88,6 +95,7 @@ public class SimulateWebSocket {
 	        	modelC.simulate();
 	        	
 	        	sendMessage(session,"simulated");
+	        	sendResultMessage(session,modelC);
 	        }
 			catch(IOException e) {
 				System.err.println(e.getMessage());
@@ -108,6 +116,14 @@ public class SimulateWebSocket {
 	        	}
 	        	catch(IOException ee) {
 	        	}
+			}
+			finally {
+				try {
+					session.close();
+				}
+				catch(IOException e) {
+					
+				}
 			}
 		}
 	}
