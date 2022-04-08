@@ -140,6 +140,17 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	//生成M语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateInitCodeM(CodeStructM code) {
 	}
+	
+	//Author:xiazhiqiang
+	public void  generateArraysCodeM(CodeStructM code) {
+		
+	}
+	public void generateBlockArraysCodeM(CodeStructM code) {
+		System.out.println("Generating block arrays code ("+blockId+"):"+blockName);
+		
+		generateArraysCodeM(code);
+	}
+ //end
 
 	//生成M语言的Init代码，供上一级调用
 	public void generateBlockInitCodeM(CodeStructM code) {
@@ -236,6 +247,17 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public void generateBlockUpdateCodeC(CodeStructC code) throws MatDimException {
 		generateUpdateCodeC(code);
 	}
+	
+	//define arrays to save data for discrete blocks
+	//author:xiazhiqiang
+	public void generateBlockArraysCodeC(CodeStructC code) {
+		System.out.println("Generating block arrays code ("+blockId+"):"+blockName);
+		generateArraysCodeC(code);
+	}
+	public void generateArraysCodeC(CodeStructC code) {
+		
+	}
+	//end	
 	
 	//生成C语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateUpdateCodeC(CodeStructC code) throws MatDimException {

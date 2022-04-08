@@ -31,6 +31,11 @@ abstract public class CodeStructC {
 
 
 	//头文件的代码
+	
+	//author:xiazhiqiang
+	//define arrays to save data
+	public String arraysCode="";
+    //end
 
 	public String includeCode="";
 	//init初始化的代码
@@ -82,6 +87,14 @@ abstract public class CodeStructC {
 	public void addInitCode(String code) {
 		initCode+=code;
 	}
+	//author:xiazhiqiang
+	public String getArraysCode() {
+		return this.arraysCode;
+	}
+	public void addArraysCode(String code) {
+		arraysCode+=code;
+	}
+    //end
 
 	public String getOutputCode() {
 		return this.outputCode;
@@ -127,6 +140,11 @@ abstract public class CodeStructC {
 					+stateDefineCode+"\n"
 					+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
+				//author:xiazhiqiang
+				//add define arrays code
+				+arraysCode+"\n"
+				//end
+				
 				+preCode+"\n"				
 				+dataStructureCode+"\n"
 				+"void NCSLabInit(){\n"

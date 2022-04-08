@@ -62,9 +62,21 @@ public class BlockType {
 		case "DiscreteStateSpace":
 			block=new block.discrete.DiscreteStateSpace(blockJSON, model);
 			break;	
+		case "Zero-Order Hold":
+			block=new block.discrete.Zero_Order_Hold(blockJSON,model);
+			break;
 		case "Delay":
-			block=new block.discrete.Delay(blockJSON, model);
-			break;	
+			block=new block.discrete.Delay(blockJSON,model);
+			break;
+		case "Unit Delay":
+			block=new block.discrete.UnitDelay(blockJSON,model);
+			break;
+		case "Discrete-Time Integrator":
+			block=new block.discrete.Discrete_Time_Integrator(blockJSON,model);
+			break;
+		case "Discrete Transfer Fcn":
+			block=new block.discrete.Discrete_Transfer_Fcn(blockJSON,model);
+			break;
 		//routing
 		case "Mux":
 			block=new block.route.Mux(blockJSON, model);
@@ -83,6 +95,12 @@ public class BlockType {
 			break;
 		case "Dead Zone":
 			block=new block.discontinuous.DeadZone(blockJSON,model);
+			break;
+		case "Coulomb Viscous Friction":
+			block=new block.discontinuous.Coulomb(blockJSON,model);
+			break;
+		case "Backlash":
+			block=new block.discontinuous.Backlash(blockJSON,model);
 			break;
 		case "Trigonometric Function":
 			block=new block.math.TrigFunction(blockJSON,model);

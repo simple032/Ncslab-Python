@@ -115,18 +115,26 @@ public class Add extends Block{
 	}
 	public void updateDimension() throws MatDimException{
 		OutputPort out  = outputPortList.get(0);
-		OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		if(signal1.getHeight()!=signal2.getHeight()||signal1.getWidth()!=signal2.getWidth()) {
-			MatDimException e=new MatDimException("Block "+this.blockName+" two input dimensions doesn't match !\n \n");
-			throw(e);
+		OutputSignal signal[]=new OutputSignal[seq.length()];
+		for(int i=0;i<seq.length();i++){
+			signal[i]=inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		}
-		else {
-			out.setHeight(signal1.getHeight());
-			out.setWidth(signal1.getWidth());
-			out.getOutputSignalC().setHeight(signal1.getHeight());
-			out.getOutputSignalC().setWidth(signal1.getWidth());
-			out.getOutputSignalC().setDataType(signal1.getDataType());	
+		int m=signal[0].getHeight();
+		int n=signal[0].getWidth();
+		int v=1;
+		for(OutputSignal x:signal) {
+			if((x.getHeight()!=m)||(x.getWidth()!=n)) {
+				v=0;
+				MatDimException e=new MatDimException("Block "+this.blockName+" "+seq.length()+" input dimensions doesn't match !\n \n");
+				throw(e);
+			}
+		}
+		if(v==1) {
+			out.setHeight(signal[0].getHeight());
+			out.setWidth(signal[0].getWidth());
+			out.getOutputSignalC().setHeight(signal[0].getHeight());
+			out.getOutputSignalC().setWidth(signal[0].getWidth());
+			out.getOutputSignalC().setDataType(signal[0].getDataType());	
 		}
 	}
 	public void checkDimension() throws MatDimException{
