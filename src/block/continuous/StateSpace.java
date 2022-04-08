@@ -182,9 +182,21 @@ public class StateSpace extends Block{
 	   super.generateDerivativeCodeC(code);
 	   
 	   String derivativeCode="/*Code for Derivative of block State Space:("+getBlockId()+")"+getBlockName()+"*/\n";
-	   
-	   derivativeCode+=xState.getDerivativeName()+"="+A.getName()+"*"+xState.getName()+"+"+B.getName()+"*"+this.getInputPortVariable(0)+";\n";
-	   
+		
+		 for(int i=0;i<A.getHeight();i++) {
+		 derivativeCode+=xState.getDerivativeName()+"("+i+",0)=0;\n";
+		 }
+		 
+	  /*
+	   for(int i=0;i<A.getHeight();i++) {
+		   for(int j=0;j<A.getWidth();j++) {
+	   derivativeCode+=xState.getDerivativeName()+"("+i+",0)+="+A.getName()+"("+i+","+j+")*"+xState.getName()+"("+j+",0);\n";
+		   }
+	   }
+	   for(int i=0;i<A.getHeight();i++) {
+		   derivativeCode+=xState.getDerivativeName()+"("+i+",0)+="+B.getName()+"("+i+",0)*"+this.getInputPortVariable(0)+";\n";   
+	   }*/
+	   derivativeCode+=xState.getDerivativeName()+"="+A.getName()+"*"+xState.getName()+"+"+B.getName()+"*"+this.getInputPortVariable(0)+";\n"; 
 	   code.addDerivativeCode(derivativeCode);
    }
    
@@ -200,7 +212,7 @@ public class StateSpace extends Block{
 					||A.getWidth()!=xState.getHeight() //A和状态是否匹配
 					||D.getWidth()!=B.getWidth() //B和D是否匹配
 					||D.getHeight()!=C.getHeight() //D和C是否匹配
-					//||B.getWidth()!=in.getHeight() //输入和B是否匹配
+					||B.getWidth()!=in.getHeight() //输入和B是否匹配
 					||in.getWidth()!=1 //输入必须是列向量
 					||X0.getHeight()!=A.getHeight()
 					||X0.getWidth()!=1

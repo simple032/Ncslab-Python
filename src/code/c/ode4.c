@@ -22,9 +22,9 @@ double weight1[4]={1.0/6, 2.0/6, 2.0/6, 1.0/6};
 #ifdef _SIMU
 void ncslabLoop(){
 	while(mp->time<mp->stopTime){
-        mp->time+=mp->stepSize;
+        //mp->time+=mp->stepSize;
         NCSLabOneStep();
-
+       mp->time+=mp->stepSize;
         //printf("time:%f\n",mp->time);
     }
 }
