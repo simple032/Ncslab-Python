@@ -18,9 +18,9 @@ public class ScopeStruct extends Terminal {
 	public String getDefineCodeC() {
 		String code="";
 		
-		code+="REAL "+this.name+"_Buffer["+this.maxDataLength*this.width*this.height+"];\n";
-		code+="REAL "+this.name+"_Time["+this.maxDataLength+"];\n";
-		code+="SCOPE "+this.name+"={(char *)\""+this.localName+"\","+maxDataLength+","+width+","+height+",0,"+this.name+"_Buffer"+","+this.name+"_Time"+"};\n";
+		//code+="REAL "+this.name+"_Buffer["+this.maxDataLength*this.width*this.height+"];\n";
+		//code+="REAL "+this.name+"_Time["+this.maxDataLength+"];\n";
+		code+="SCOPE "+this.name+"={(char *)\""+this.localName+"\","+maxDataLength+","+width+","+height+"};\n";//",0,"+this.name+"_Buffer"+","+this.name+"_Time"+"};\n";
 		code+=this.getTerminalDefineCode("Scope");
 		
 		return code;

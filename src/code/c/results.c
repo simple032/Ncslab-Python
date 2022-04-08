@@ -23,6 +23,29 @@ void writeScope(int cursor,TERMINAL *terminal,Json::Value *pJsonScopes){
 	jsonScope["height"]=scope->height;
 	jsonScope["name"]=scope->name;
 
+	unsigned int size=scope->timeList.size();
+	jsonScope["length"]=size;
+
+	int timePos=0;
+	int dataPos=0;
+	while(scope->timeList.empty()==false&&scope->dataList.empty()==false){
+		time[timePos]=scope->timeList.front();
+		scope->timeList.pop_front();
+
+		for(int h=0;h<scope->height;h++){
+			for(int w=0;w<scope->width;w++){
+				data[dataPos]=scope->dataList.front();
+				scope->dataList.pop_front();
+				dataPos++;
+			}
+		}
+
+		timePos++;
+	}
+	
+
+	/*
+
 	if(scope->isFull){
 		int pos=scope->cursor;
 		for(int i=0;i<scope->maxDataLength;i++){
@@ -56,7 +79,7 @@ void writeScope(int cursor,TERMINAL *terminal,Json::Value *pJsonScopes){
 			}
 		}
 		jsonScope["length"]=scope->cursor;
-	}
+	}*/
 
 	jsonScope["time"]=time;
 	jsonScope["data"]=data;

@@ -54,8 +54,8 @@ public class Scope extends block.Block{
 		
 			String initCode="/*Code for initialization of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
-			initCode+=scopeStruct.getName()+".cursor=0;\n";
-			initCode+=scopeStruct.getName()+".isFull=0;\n";
+			//initCode+=scopeStruct.getName()+".cursor=0;\n";
+			//initCode+=scopeStruct.getName()+".isFull=0;\n";
 		
 			code.addInitCode(initCode);
 		}
@@ -70,6 +70,23 @@ public class Scope extends block.Block{
 			String outputCode="/*Code for output of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
 			
 			outputCode+="if(sfcnIsMajorStep()){\n";
+			outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+			
+			switch(signal.getDataType()) {
+			case REAL:
+				outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+				break;
+			case MATRIX:
+				outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
+				outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
+				outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
+				outputCode+="}\n";
+				outputCode+="}\n";
+				break;
+			}
+			
+			/*
+			
 			outputCode+=scopeStruct.getName()+".timeBuffer["+scopeStruct.getName()+".cursor]=sfcnGetT();\n";
 			
 			switch(signal.getDataType()) {
@@ -90,7 +107,7 @@ public class Scope extends block.Block{
 			outputCode+="if("+scopeStruct.getName()+".cursor>="+scopeStruct.getName()+".maxDataLength){\n";
 			outputCode+=scopeStruct.getName()+".cursor-="+scopeStruct.getName()+".maxDataLength;\n";
 			outputCode+=scopeStruct.getName()+".isFull=1;\n";
-			outputCode+="}\n";
+			outputCode+="}\n";*/
 			
 			outputCode+="}\n";
 			code.addOutputCode(outputCode);

@@ -17,6 +17,10 @@
 #include "arpa/inet.h"
 #include "fcntl.h"
 
+#include<list>
+
+using namespace std;
+
 #define REAL double
 #define real_T REAL
 #define uint_T unsigned int
@@ -137,9 +141,12 @@ typedef struct{
 	int maxDataLength;
 	int width;
 	int height;
-	int cursor;
-	REAL *buffer;
-	REAL *timeBuffer;
+	//int cursor;
+	//REAL *buffer;
+	//REAL *timeBuffer;
+	
+	list<REAL> dataList;
+	list<REAL> timeList;
 	
 	int isFull;
 }SCOPE;
