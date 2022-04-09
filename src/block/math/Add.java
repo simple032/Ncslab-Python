@@ -20,8 +20,10 @@ public class Add extends Block{
 	public Add(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
 		
-		//����һ������
-		outputPortList.add(new OutputPort(this,1,true));
+		//因为输入的Dimension必须相互配合，因此设置成DimThrough
+		OutputPort output=new OutputPort(this,1,true);
+		output.setDimThrough(false);
+		outputPortList.add(output);
 		
 		paraseParamValues();
 	}

@@ -19,7 +19,11 @@ public class OutputPort {
 	
 	private boolean isFeedThrough=false;
 	
+	private boolean isDimThrough=true;
+	
 	private boolean isCodeGenerated=false;
+	
+	private boolean isDimScaned=false;
 	
 	private block.io.OutputSignal outputSignalC=null;
 	
@@ -73,9 +77,26 @@ public class OutputPort {
 		return this.isFeedThrough;
 	}
 	
+	public boolean getDimThrough() {
+		return this.isDimThrough;
+	}
+	
+	public void setDimThrough(boolean isDimThrough) {
+		this.isDimThrough=isDimThrough;
+	}
+	
 	public boolean getIsCodeGenerated() {
 		return this.isCodeGenerated;
 	}
+	
+	public boolean getIsDimScaned() {
+		return this.isDimScaned;
+	}
+	
+	public void setIsDimScaned(boolean isDimScaned) {
+		this.isDimScaned=isDimScaned;
+	}
+	
 	
 	public void setIsCodeGenerated(boolean isCodeGenerated) {
 		this.isCodeGenerated=isCodeGenerated;

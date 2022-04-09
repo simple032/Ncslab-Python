@@ -38,6 +38,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	//是否输出的代码已经生成，如果生成，遍历到这个模块的时候，直接引用就行了，就不需要进一步遍历了
 	protected boolean isOutputCodeGenerated=false;
 	
+	protected boolean isDimScaned=false;
+	
 	//指向上级Model模型的指针
 	protected NCSLabModel model;
 	
@@ -104,6 +106,10 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return this.isOutputCodeGenerated;
 	}
 	
+	public boolean getIsDimScaned() {
+		return this.isDimScaned;
+	}
+	
 	public String getInputPortVariable(int n) {
 		return inputPortList.get(n).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
 	}
@@ -121,6 +127,13 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		this.isOutputCodeGenerated=isOutputCodeGenerated;
 		for(OutputPort outputPort:outputPortList) {
 			outputPort.setIsCodeGenerated(true);
+		}
+	}
+	
+	public void setIsDimScaned(boolean isDimScaned) {
+		this.isDimScaned=isDimScaned;
+		for(OutputPort outputPort:outputPortList) {
+			outputPort.setIsDimScaned(true);
 		}
 	}
 	

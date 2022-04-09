@@ -9,7 +9,8 @@ import block.Block;
 import block.BlockType;
 
 import line.Line;
-
+import block.io.InputPort;
+import block.io.OutputPort;
 import block.io.terminal.Terminal;
 
 abstract public class NCSLabModel {
@@ -41,6 +42,11 @@ abstract public class NCSLabModel {
 	
 	//所有的模块
 	protected Vector<Block> blockList=new Vector<Block>();
+	
+	private Vector<Block> dimensionList=new Vector<Block>();
+	private Vector<Block> scanDimList=new Vector<Block>();
+	private Vector<Block> dimTerminalBlockList=new Vector<Block>();
+	private Vector<OutputPort> dimOutputPortPathList=new Vector<OutputPort>();
 	
 	//所有的连线
 	protected Vector<Line> lineList=new Vector<Line>();
@@ -143,6 +149,8 @@ abstract public class NCSLabModel {
 		//解析各条连线
 		parseLines();
 		
+		setupDimensionList();
+		
 		updateDimensions();
 		
 		//showBlocks();
@@ -211,12 +219,135 @@ abstract public class NCSLabModel {
 	
 	
 	private void updateDimensions() throws MatDimException{
-		for(Block block:blockList) {
+		for(Block block:dimensionList) {
 			block.updateDimension();
 		}
 		
-		for(Block block:blockList) {
+		for(Block block:dimensionList) {
 			block.checkDimension();
 		}
+	}
+	
+	private void findDimTerminalBlocks() {
+		System.out.println("Looking for terminal blocks");
+		for(Block block:blockList) {
+			if(block.isTerminalBlock()) {
+				System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
+				dimTerminalBlockList.add(block);
+			}
+		}
+	}
+	
+	private void scanDimInputPort(InputPort inputPort) {
+		Line line=inputPort.getLinkedLine();
+		OutputPort outputPort=line.getLinkedOutputPort();
+		
+		//如果输出端口已经生成完毕，则不用再生成，结束这一个分支的遍历
+		if(outputPort.getIsDimScaned()==true) {
+			return;
+		}
+		
+		for(OutputPort output:dimOutputPortPathList) {
+			if(output==outputPort) {
+				return;
+			}
+		}
+		
+		//记录这个OutputPort已经在现有路径回路中，作为记忆
+		dimOutputPortPathList.add(outputPort);
+		
+		//如果没有生成，那就遍历block，生成这个block的代码
+		Block block = outputPort.getBLock();
+
+		boolean isDimThroughBlock = false;
+		Vector<OutputPort> outputPortList = block.getOutputPortList();
+		for (OutputPort output : outputPortList) {
+			if (output.getDimThrough()== true) {
+				isDimThroughBlock = true;
+			}
+		}
+		
+		//如果有Feedthrough的模块，则要遍历整个模块的InputPort
+		if(isDimThroughBlock) {
+			Vector<InputPort> InputPortList=block.getInputPortList();
+			for(InputPort input:InputPortList) {
+				//递归调用，实现遍历
+				scanDimInputPort(input);
+			}
+			//遍历完成，也要生成模块的输出代码
+			//generateBlockOutputCode(block);
+			dimensionList.add(block);
+			block.setIsDimScaned(true);
+		}
+		else {
+			Vector<InputPort> InputPortList=block.getInputPortList();
+			
+			//如果dimThrough是真的话，说明这是类似Sum和Add的模块，输入的Dimension必须相互配合
+			//扫描第一个输入
+			if(InputPortList.size()!=0) {
+				scanDimInputPort(InputPortList.get(0));
+			}
+			
+			if(InputPortList.size()>1) {
+				for(int i=1;i<InputPortList.size();i++) {
+					InputPort input=InputPortList.get(i);
+					Block linkedBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
+					if(linkedBlock.getIsDimScaned()==false) {
+						scanDimList.add(linkedBlock);
+					}
+				}
+			}
+			
+			dimensionList.add(block);
+			block.setIsDimScaned(true);
+
+			//尽管这个模块的输出计算不取决于当前的输入，但是它的Update还是需要输入量的计算。因此将这个模块加入scanBlockList，进入二次遍历
+			//scanDimList.add(block);
+		}
+		//清除记忆的路径回路中的这个模块
+		dimOutputPortPathList.remove(dimOutputPortPathList.size()-1);
+	}
+	
+	/*进行遍历的方法*/
+	private void scanDimChain() {
+		System.out.println("scaning outputChain");
+
+		//遍历所有的终端模块
+		for(Block block:dimTerminalBlockList) {
+			Vector<InputPort> inputPortList=block.getInputPortList();
+			for(InputPort inputPort:inputPortList) {
+				scanDimInputPort(inputPort);
+			}
+			dimensionList.add(block);
+			block.setIsDimScaned(true);
+		}
+		
+		
+		//进行二次遍历，因为二次遍历过程中，scanDimList中的元素动态变化，所有要用while循环
+		while(scanDimList.isEmpty()==false) {
+			//取出第一个元素进行遍历
+			Block block=scanDimList.remove(0);
+			Vector<InputPort> inputPortList=block.getInputPortList();
+			for(InputPort inputPort:inputPortList) {
+				scanDimInputPort(inputPort);
+			}
+			dimensionList.add(block);
+			block.setIsDimScaned(true);
+		}
+	}
+	
+	private void showDimBlocks() {
+		int i=1;
+		for(Block block:dimensionList) {
+			System.out.println("("+i+")"+block.getBlockName()+"("+block.getBlockId()+")");
+			i++;
+		}
+	}
+	
+	private void setupDimensionList() {
+		findDimTerminalBlocks();
+		scanDimChain();
+		
+		showDimBlocks();
 	}
 }
