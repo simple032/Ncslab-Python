@@ -302,6 +302,9 @@ abstract public class CodeStructC {
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
 		File file=new File(codePath+"/"+fileName);
+		if(file.exists()) {
+			return;
+		}
 		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(file);						
@@ -322,6 +325,9 @@ abstract public class CodeStructC {
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
 		File file=new File(codePath+"/"+fileNameOut);
+		if(file.exists()) {
+			return;
+		}
 		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(file);
