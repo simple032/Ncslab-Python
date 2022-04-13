@@ -13,7 +13,19 @@ LDFLAG=-lm -lpthread -lrt -ljsoncpp -Wdate-time -D_FORTIFY_SOURCE=2 -I/usr/inclu
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)
+	
+mainccode.o: mainccode.c ncslab.h
+	$(CC) $(CCFlag)  -c mainccode.c
+	
+onestep.o: onestep.c ncslab.h
+	$(CC) $(CCFlag)  -c onestep.c
 
+results.o: results.c ncslab.h
+	$(CC) $(CCFlag)  -c results.c
+	
+util.o: util.c ncslab.h
+	$(CC) $(CCFlag)  -c util.c
+	
 %.o : %.c
 	$(CC) $(CCFlag)  -c "$<"
 

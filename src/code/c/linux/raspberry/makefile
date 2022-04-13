@@ -13,8 +13,14 @@ LDFLAG=-lm -lpthread -lrt -lwiringPi -L /opt/pi/lib -L /opt/cross-pi-gcc/arm-lin
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)
 
-ncslabmain.o: ncslabmain.c
-	$(CC) $(CCFlag) -c ncslabmain.c
+mainccode.o: mainccode.c ncslab.h
+	$(CC) $(CCFlag)  -c mainccode.c
+	
+onestep.o: onestep.c ncslab.h
+	$(CC) $(CCFlag)  -c onestep.c
+	
+util.o: util.c ncslab.h
+	$(CC) $(CCFlag)  -c util.c
 
 %.o : %.c
 	$(CC) $(CCFlag)  -c "$<"

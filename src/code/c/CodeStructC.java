@@ -321,11 +321,15 @@ abstract public class CodeStructC {
 	}
 	
 	protected void writeNCSLabFile(String fileName,String fileNameOut) {
+		writeNCSLabFile(fileName,fileNameOut,false);
+	}
+	
+	protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
 		File file=new File(codePath+"/"+fileNameOut);
-		if(file.exists()) {
+		if(file.exists()&&overwrite==false) {
 			return;
 		}
 		FileOutputStream outputStream;

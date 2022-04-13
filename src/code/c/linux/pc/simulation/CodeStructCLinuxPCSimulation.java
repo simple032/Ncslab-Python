@@ -53,11 +53,11 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../DataApi.c","DataApi.c");
 		writeNCSLabFile("../../../DataApi.h","DataApi.h");
 		
-		writeNCSLabFile("../../../util.c","util.c");
+		writeNCSLabFile("../../../util.c","util.c",true);
 		
 		writeNCSLabFile("../../../ncslabdefines.h","ncslabdefines.h");
 		
-		writeNCSLabFile("../../../results.c","results.c");
+		writeNCSLabFile("../../../results.c","results.c",true);
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
 		writeNCSLabFile("../../ServerThread.c","ServerThread.c");
@@ -77,19 +77,19 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("../../../ode1.c","onestep.c");
+			writeNCSLabFile("../../../ode1.c","onestep.c",true);
 			break;
 		case ode2:
-			writeNCSLabFile("../../../ode2.c","onestep.c");
+			writeNCSLabFile("../../../ode2.c","onestep.c",true);
 			break;
 		case ode3:
-			writeNCSLabFile("../../../ode3.c","onestep.c");
+			writeNCSLabFile("../../../ode3.c","onestep.c",true);
 			break;
 		case ode4:
-			writeNCSLabFile("../../../ode4.c","onestep.c");
+			writeNCSLabFile("../../../ode4.c","onestep.c",true);
 			break;
 		case ode23:
-			writeNCSLabFile("../../../ode23.c","onestep.c");
+			writeNCSLabFile("../../../ode23.c","onestep.c",true);
 			break;
 		}
 		
