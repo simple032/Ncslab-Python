@@ -60,6 +60,8 @@ bool terminateUploadThread(CLIENT_STRUCT *p)
 		//WaitForSingleObject(p->upload.hUploadThread,INFINITE);
 		printf("Old upload thread stopped\n");
 	}
+	
+	return true;
 }
 
 bool startUpload(CLIENT_STRUCT *p)
@@ -149,6 +151,8 @@ void * ClientThreadFunction( void * lpParam )
     }
 
     closeClient(p);
+    
+    return NULL;
 
 }
 

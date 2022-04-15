@@ -216,6 +216,8 @@ void * UploadThreadFunction( void * lpParam )
 	}
 
     onUploadTermination(p);
+    
+    return NULL;
 }
 
 void onUploadTermination(CLIENT_STRUCT *p)
