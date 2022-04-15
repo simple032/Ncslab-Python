@@ -13,6 +13,7 @@ timer_t main_timer;
 int main(int argc, char *argv[]){
 
 	double endTime=10;
+	double end=-1;
     NCSLabInit();
 
 	extModeData.acc=1;
@@ -31,7 +32,7 @@ int main(int argc, char *argv[]){
 	mp=NCSLabGetModelP();
 	extModeData.mp=mp;
 
-	startMyServerThread(&extModeData);
+	//startMyServerThread(&extModeData);
 	
 	mp->time=mp->startTime;
 	
@@ -39,5 +40,7 @@ int main(int argc, char *argv[]){
     
     NCSLabTerminate();
     NCSLabSaveResult();
+    
+    fwrite(&end,1,sizeof(end),stdout);
 }
 

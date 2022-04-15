@@ -43,6 +43,14 @@ public class SimulateWebSocket {
 		session.getBasicRemote().sendText(jb.toString());
 	}
 	
+	private void sendSimulatingMessage(Session session,double endTime) throws IOException{
+		JSONObject jb=new JSONObject();
+		jb.put("msg", "simulating");
+		jb.put("time", 0);
+		jb.put("timeLength",endTime);
+		session.getBasicRemote().sendText(jb.toString());
+	}
+	
 	@OnMessage	
 	public void onMessage(Session session,String msgString){	
 		System.out.println(msgString);
@@ -90,9 +98,10 @@ public class SimulateWebSocket {
 	        	
 	        	sendMessage(session,"compiled");
 	        	
-	        	sendMessage(session,"simulating");
+	        	//sendMessage(session,"simulating");
+	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());
 	        	
-	        	modelC.simulate();
+	        	modelC.simulate(session);
 	        	
 	        	sendMessage(session,"simulated");
 	        	sendResultMessage(session,modelC);

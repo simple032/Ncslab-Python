@@ -22,11 +22,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-        <groupId>javax.websocket</groupId>
-        <artifactId>javax.websocket-api</artifactId>
-        <version>1.0</version>
-        <scope>provided</scope>
-</dependency>
+			<groupId>javax.websocket</groupId>
+			<artifactId>javax.websocket-api</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>toplink.essentials</groupId>
 			<artifactId>toplink-essentials</artifactId>
@@ -56,11 +56,16 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.4</version>
 		</dependency>
-		
+
 		<dependency>
-    		<groupId>gov.nist.math</groupId>
-    		<artifactId>jama</artifactId>
-    		<version>1.0.3</version>
+			<groupId>gov.nist.math</groupId>
+			<artifactId>jama</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.parquet</groupId>
+			<artifactId>parquet-avro</artifactId>
+			<version>1.12.2</version>
 		</dependency>
 	</dependencies>
 	<build>

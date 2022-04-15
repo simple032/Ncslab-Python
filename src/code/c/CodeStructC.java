@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.*;
 
 import code.CodeModel;
+import ncslablink.ModelMode;
 import block.Block;
 import block.io.OutputPort;
 import block.io.OutputSignal;
@@ -355,6 +356,10 @@ abstract public class CodeStructC {
 		code+="#define MATRIX_STATE_NUM "+model.getMatrixStateNum()+"\n";
 		
 		code+="#define STEP_SIZE (1.0*"+model.getConfig().getFixedStep()+")\n";
+		
+		if(model.getModelMode()==ModelMode.Simulation) {
+			code+="#define MAX_DATA_POINTS "+model.getConfig().getMaxDataPoints()+"\n";
+		}
 		
 		File file = new File(codePath+"ncslab.h");
 		FileOutputStream outputStream;

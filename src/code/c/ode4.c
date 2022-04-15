@@ -23,6 +23,7 @@ double weight1[4]={1.0/6, 2.0/6, 2.0/6, 1.0/6};
 void ncslabLoop(){
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
+        fwrite(&(mp->time),1,sizeof(mp->time),stdout);
         NCSLabOneStep();
        mp->time+=mp->stepSize;
         //printf("time:%f\n",mp->time);

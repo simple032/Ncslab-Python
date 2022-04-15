@@ -11,6 +11,18 @@ double derivativeReserve[3][STATE_NUM];
 double weight1[2]={-1.0,2.0};
 double weight2[3]={1.0/6,4.0/6,1.0/6};
 
+#ifdef _SIMU
+void ncslabLoop(){
+	while(mp->time<mp->stopTime){
+        //mp->time+=mp->stepSize;
+        fwrite(&(mp->time),1,sizeof(mp->time),stdout);
+        NCSLabOneStep();
+       mp->time+=mp->stepSize;
+        //printf("time:%f\n",mp->time);
+    }
+}
+#endif
+
 void NCSLabOneStep(){
 
   mp->offset=0;

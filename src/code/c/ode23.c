@@ -29,6 +29,7 @@ double nextStepSize;
 
 double maxStepSize;
 
+#ifdef _SIMU
 void ncslabLoop()
 {
   maxStepSize=stepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
@@ -36,11 +37,13 @@ void ncslabLoop()
   while (mp->time < mp->stopTime)
   {
   	//printf("time:%f\n",mp->time);
+  	fwrite(&(mp->time),1,sizeof(mp->time),stdout);
     NCSLabOneStep();
 	mp->time += stepSize;
     
   }
 }
+#endif
 
 void NCSLabOneStep()
 {

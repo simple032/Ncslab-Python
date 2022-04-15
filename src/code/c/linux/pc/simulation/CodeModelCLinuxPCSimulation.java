@@ -6,10 +6,16 @@ import java.time.format.DateTimeFormatter;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.websocket.Session;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
+import java.io.DataInputStream;
+
+import org.apache.parquet.bytes.LittleEndianDataInputStream;
 import org.json.JSONObject;
 
 import block.Block;
@@ -43,11 +49,40 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 		return model;
 	}
 	
-	public void simulate() throws ModelException{
+	private void sendSimulatingMessage(Session session,double time) throws IOException{
+		JSONObject jb=new JSONObject();
+		jb.put("msg", "simulating");
+		jb.put("time", time);
+		jb.put("timeLength",this.getConfig().getStopTime());
+		session.getBasicRemote().sendText(jb.toString());
+	}
+	
+	public void simulate(Session session) throws ModelException{
 		Process process=null;
 		System.out.println("Executing simulation codes...");
 		try {
 			process=Runtime.getRuntime().exec("./ncslab "+this.getConfig().getStopTime(),null, new File(codeRaspberry.getCodePath()));
+			LittleEndianDataInputStream out=new LittleEndianDataInputStream(process.getInputStream());
+			//LittleEndianInputStream out=new LittleEndianInputStream(process.getInputStream());
+			
+			long currentTime=new java.util.Date().getTime();
+			
+			while(true) {
+				double time=out.readDouble();
+				if(time<0) {
+					break;
+				}
+				
+				if((new java.util.Date().getTime())-currentTime>1000) {
+					currentTime=new java.util.Date().getTime();
+					sendSimulatingMessage(session,time);
+				}
+				
+				//System.out.println(time);
+			}
+			
+			out.close();
+			
 			try {
 				process.waitFor();
 			}

@@ -25,7 +25,16 @@ void writeScope(int cursor,TERMINAL *terminal,Json::Value *pJsonScopes){
 
 	unsigned int size=scope->timeList.size();
 	jsonScope["length"]=size;
-
+	
+	while(scope->timeList.size()>MAX_DATA_POINTS){
+		scope->timeList.pop_front();
+		for(int h=0;h<scope->height;h++){
+			for(int w=0;w<scope->width;w++){
+				scope->dataList.pop_front();
+			}
+		}
+	}
+		
 	int timePos=0;
 	int dataPos=0;
 	while(scope->timeList.empty()==false&&scope->dataList.empty()==false){
@@ -42,44 +51,6 @@ void writeScope(int cursor,TERMINAL *terminal,Json::Value *pJsonScopes){
 
 		timePos++;
 	}
-	
-
-	/*
-
-	if(scope->isFull){
-		int pos=scope->cursor;
-		for(int i=0;i<scope->maxDataLength;i++){
-			pos%=scope->maxDataLength;
-			time[i]=scope->timeBuffer[pos];
-
-			int dataPos=pos*scope->height*scope->width;
-			int dataCursorPos=i*scope->height*scope->width;
-			for(int h=0;h<scope->height;h++){
-				for(int w=0;w<scope->width;w++){
-					data[dataCursorPos]=scope->buffer[dataPos];
-					dataPos++;
-					dataCursorPos++;
-				}
-			}
-
-			pos++;
-		}
-
-		jsonScope["length"]=scope->maxDataLength;
-	}
-	else{
-		for(int i=0;i<scope->cursor;i++){
-			time[i]=scope->timeBuffer[i];
-			int dataCursorPos=i*scope->height*scope->width;
-			for(int h=0;h<scope->height;h++){
-				for(int w=0;w<scope->width;w++){
-					data[dataCursorPos]=scope->buffer[dataCursorPos];
-					dataCursorPos++;
-				}
-			}
-		}
-		jsonScope["length"]=scope->cursor;
-	}*/
 
 	jsonScope["time"]=time;
 	jsonScope["data"]=data;
