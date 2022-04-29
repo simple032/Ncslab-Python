@@ -37,7 +37,8 @@ void ncslabLoop()
   while (mp->time < mp->stopTime)
   {
   	//printf("time:%f\n",mp->time);
-  	fwrite(&(mp->time),1,sizeof(mp->time),stdout);
+  	//fwrite(&(mp->time),1,sizeof(mp->time),stdout);
+  	writeInformation();
     NCSLabOneStep();
 	mp->time += stepSize;
     

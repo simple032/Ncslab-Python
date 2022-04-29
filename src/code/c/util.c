@@ -129,3 +129,17 @@ REAL calculateStateDif(int seq1,int seq2){
 	
 	return dif;
 }
+
+static long oldSec=0;
+
+void writeInformation(){
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	if(tv.tv_sec!=oldSec){
+		fwrite(&(mp->time),1,sizeof(mp->time),stdout);
+		fflush(stdout); 
+		oldSec=tv.tv_sec;
+	}
+	
+}
+

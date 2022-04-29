@@ -170,5 +170,7 @@ void NCSLabSaveResult();
 
 unsigned char calcSum(unsigned char bytes[]);
 
+void writeInformation();
+
 #endif
 

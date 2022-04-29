@@ -11,7 +11,8 @@ double **derivativeReserve;
 void ncslabLoop(){
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
-        fwrite(&(mp->time),1,sizeof(mp->time),stdout);
+        //fwrite(&(mp->time),1,sizeof(mp->time),stdout);
+        writeInformation();
         NCSLabOneStep();
        mp->time+=mp->stepSize;
         //printf("time:%f\n",mp->time);

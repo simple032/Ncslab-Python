@@ -73,10 +73,12 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 					break;
 				}
 				
-				if((new java.util.Date().getTime())-currentTime>1000) {
-					currentTime=new java.util.Date().getTime();
+				sendSimulatingMessage(session,time);
+				
+				//if((new java.util.Date().getTime())-currentTime>1000) {
+				//	currentTime=new java.util.Date().getTime();
 					sendSimulatingMessage(session,time);
-				}
+				//}
 				
 				//System.out.println(time);
 			}

@@ -68,9 +68,12 @@ public class compile extends HttpServlet {
         	
         	if(modelC.getErrorList().size()==0) {
         		if(modelC.makeExeFile()) {
-        			//modelC.saveToDatabase();
+        			modelC.saveToDatabase();
         			errorMsgs += "make exe success.";
-        		}        		
+        		} 
+        		else {
+        			throw new ModelException("Can not make exe file!");
+        		}
         	}else {
         		for(ErrorMessage em: modelC.getErrorList()) {
         			errorMsgs += em.getMessage();
