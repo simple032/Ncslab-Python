@@ -93,6 +93,10 @@ abstract public class CodeModelC extends CodeModel {
 		
 		getCodeStructC().generateIncludeCode();
 		//code.writeCCodeFiles();
+		if(this.getModelMode()==ModelMode.Compilation) {
+			getCodeStructC().generateHardwareDefineCode();
+		}
+		
 		getCodeStructC().generateParameterDefineCode(); 
 		getCodeStructC().generateStateDefineCode();
 		getCodeStructC().generateOutputSignalDefineCode(); 		

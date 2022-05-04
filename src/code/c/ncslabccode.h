@@ -172,5 +172,7 @@ unsigned char calcSum(unsigned char bytes[]);
 
 void writeInformation();
 
+void initHardware();
+
 #endif
 

@@ -43,6 +43,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	//指向上级Model模型的指针
 	protected NCSLabModel model;
 	
+	protected boolean isHardware=false;
+	
 	//Block中Singal中的个数，Signal没有Java的数据结构，Signal可以是InputPort的量，也可以是OutputPort中的量，具体看代码生成时的认定
 	protected int signalNum=0;
 	
@@ -56,6 +58,10 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	public void setSignalNum(int signalNum) {
 		this.signalNum=signalNum;
+	}
+	
+	public boolean getIsHardware() {
+		return this.isHardware;
 	}
 	
 	public int getSignalNum() {
@@ -301,6 +307,10 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	public void generateTerminateCodeC(CodeStructC code) {
 		
+	}
+	
+	public String getHardwareDefineCodeC() {
+		return "";
 	}
 	
 	public boolean isSFcnBlock() {

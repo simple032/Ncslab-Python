@@ -65,6 +65,9 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		writeNCSLabFile("../UploadThread.c","UploadThread.c");
 		writeNCSLabFile("../UploadThread.h","UploadThread.h");
 		
+		writeNCSLabFile("hardware.h","hardware.h");
+		writeNCSLabFile("hardware.c","hardware.c");
+		
 		writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");
 

@@ -20,18 +20,37 @@ public class WaterLevel extends Block {
 	State pumpState;
 	State levelState;
 	
+	String hardwareDefineName;
+	
 	public WaterLevel(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
-		//Ò»¸öÊäÈë£¬Á½¸öÊä³ö
+		this.isHardware=true;
+		
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,"Pump_Speed",1,false));
 		outputPortList.add(new OutputPort(this,"Water_Level",2,false));
 		
-		pumpState=new State(this,1,"pumpState");
-		stateList.add(pumpState);
-		levelState=new State(this,2,"levelState");
-		stateList.add(levelState);
+		switch(model.getModelMode()) {
+		case Simulation:
+			pumpState=new State(this,1,"pumpState");
+			stateList.add(pumpState);
+			levelState=new State(this,2,"levelState");
+			stateList.add(levelState);
+			break;
+		case Compilation:
+			break;
+		}
+		
+	}
+	
+	public String getHardwareDefineCodeC() {
+		String hardwareDefineCode="";
+		hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
+		hardwareDefineCode+="WATER_LEVEL "+hardwareDefineName+";\n";
+		
+		return hardwareDefineCode;
 	}
 	
 	public void generateInitCodeM(CodeStructM code) {
@@ -80,17 +99,42 @@ public class WaterLevel extends Block {
 		super.generateInitCodeC(code);
 		
 		String initCode="/*Code for initialization of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
-		initCode+=pumpState.getName()+"="+0+";\n"
+		switch(model.getModelMode()) {
+		case Simulation:
+			initCode+=pumpState.getName()+"="+0+";\n"
 					+levelState.getName()+"="+0+";\n"; 
+			break;
+		case Compilation:
+			/*initCode+="pinMode(1, PWM_OUTPUT);\n" + 
+					"    pwmSetMode (PWM_MODE_MS) ;	\n" + 
+					"    pwmSetClock(3);\n" + 
+					"    pwmSetRange(1000);\n";*/
+			hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
+			initCode+="initWaterLevel(&"+hardwareDefineName+");\n";
+			break;
+		}
 		
 		code.addInitCode(initCode);
 	}
 	
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+pumpState.getName()+";\n";
-		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
+		switch(model.getModelMode()) {
+		case Simulation:
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+pumpState.getName()+";\n";
+			outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
+			break;
+		case Compilation:
+			//outputCode+="pwmWrite(1,(1-"+this.getInputPortVariable(0)+")*1000);\n";
+			hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
+			outputCode+="if(mp->majorStep>0) {\n";
+			outputCode+=hardwareDefineName+".pumpPWM="+this.getInputPortVariable(0)+";\n";
+			outputCode+="outputWaterLevel(&"+hardwareDefineName+");\n";
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+hardwareDefineName+".speed_counter_in;\n";
+			outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+hardwareDefineName+".level;\n";
+			outputCode+="}\n";
+			break;
+		}
 		
 		code.addOutputCode(outputCode);
 	}
@@ -98,6 +142,8 @@ public class WaterLevel extends Block {
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of WaterLevel:("+getBlockId()+")"+getBlockName()+"*/\n";
 		
+		switch(model.getModelMode()) {
+		case Simulation:
 		derivativeCode+=pumpState.getDerivativeName()+"=("
 				+this.getInputPortVariable(0)
 				+"*"+pumpK+"-"+pumpState.getName()+")"
@@ -108,7 +154,9 @@ public class WaterLevel extends Block {
 				+pumpState.getName()+"*"+waterLevelK+"-"+levelState.getName()+")"
 				+"*"+(1/waterLevelT)
 				+";\n";
-		
+		case Compilation:
+			break;
+		}
 		code.addDerivativeCode(derivativeCode);
 	}
 }

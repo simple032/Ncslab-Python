@@ -103,7 +103,8 @@ void startTimer(real_T stepSize)
 
 
 int main(int argc, char *argv[]){
-
+	
+	initHardware();
 	NCSLabInit();
 
 	extModeData.acc=1;
@@ -117,7 +118,7 @@ int main(int argc, char *argv[]){
 
 	mp=NCSLabGetModelP();
 	extModeData.mp=mp;
-
+	
 	startMyServerThread(&extModeData);
 	
 

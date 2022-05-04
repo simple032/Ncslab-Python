@@ -60,6 +60,9 @@ abstract public class CodeStructC {
 	public String stateDefineCode="";
 	/*����Output�źŵĴ��룬�� REAL Block1_Output1;*/
 	public String outputSignalDefineCode="";
+	
+	public String hardwareDefineCode="";
+
 
 
 	/*定义所有监控数据实体的代码，包括INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
@@ -127,6 +130,9 @@ abstract public class CodeStructC {
 				+"#include\"ncslabdefines.h\"\n"
 				+"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.h\"\n"
+				+"#ifdef _RT\n"
+				+"#include\"hardware.h\"\n"
+				+"#endif\n"
 				+"#include <iostream>\n"
 				+"#include <octave/oct.h>"
 				;
@@ -137,6 +143,7 @@ abstract public class CodeStructC {
 		//precode是参数，状态，和输出的定义，以全局变量的方式
 		String preCode="extern MODEL* mp;\n"
 					+statementCode+"\n"
+					+hardwareDefineCode+"\n"
 					+parameterDefineCode+"\n"
 					+stateDefineCode+"\n"
 					+outputSignalDefineCode+"\n";
@@ -205,6 +212,15 @@ abstract public class CodeStructC {
 	//加入全局的信号的列表
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
+	}
+	
+	public void generateHardwareDefineCode() {
+		hardwareDefineCode+="/*Define hardware structures*/\n";
+		for(Block block:model.getBlockList()) {
+			if(block.getIsHardware()) {
+				hardwareDefineCode+=block.getHardwareDefineCodeC();
+			}
+		}
 	}
 	
 	//生成定义Parameter的代码
@@ -433,6 +449,8 @@ abstract public class CodeStructC {
 		writeNCSLabFile("ncslabdefines.h");
 		writeNCSLabFile("ncs_serialport_pi.c");
 		writeNCSLabFile("ncs_serialport.h");
+		writeNCSLabFile("hardware.c");
+		writeNCSLabFile("hardware.h");
 
 		//写入生成的主代码ncslabccdoe.c
 		for(Block block: model.getBlockList()) {
