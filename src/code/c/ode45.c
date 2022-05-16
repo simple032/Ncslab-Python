@@ -6,21 +6,23 @@
 #include <octave/oct.h>
 
 #define INIT_POINT_NUM 100
-#define TOL 1E-4
+#define TOL 1E-7
 
 extern MODEL *mp;
 extern double sample_time[20];
 double singleStateReserve[3][SINGLE_STATE_NUM];
 Matrix matrixStateReserve[3][MATRIX_STATE_NUM];
 
-double singleDerivativeReserve[4][SINGLE_STATE_NUM];
-Matrix matrixDerivativeReserve[4][MATRIX_STATE_NUM];
+double singleDerivativeReserve[6][SINGLE_STATE_NUM];
+Matrix matrixDerivativeReserve[6][MATRIX_STATE_NUM];
 
-double weights3[] = {0.0, 1.0};
+double weights3[] = {1.0 / 4.0, 3.0 / 4.0};
 
-double weights4[] = {2.0 / 9.0, 3.0 / 9.0, 4.0 / 9.0};
-double weightss1[] = {2.0 / 9.0, 3.0 / 9.0, 4.0 / 9.0};
-double weightss2[] = {7.0 / 24.0, 6.0 / 24.0 , 8.0 / 24.0, 3.0 / 24.0};
+double weights4[] = {161.0 / 169.0, -600.0 / 169.0, 608.0 / 169.0};
+double weights5[] = {439.0 / 216.0, -8.0, 3680.0 / 513.0, -845.0 / 4104.0};
+double weights6[] = {-16.0 / 27.0 , 4.0, -7088.0 / 2565.0 , 3718.0 / 4104.0 , -22.0 / 40.0};
+double weightss1[] = {25.0 / 216.0, 0.0, 1408.0 / 2565.0, 2197.0 / 4104.0, -1.0 / 5.0};
+double weightss2[] = {16.0 / 135.0, 0.0, 6656.0 / 12825.0, 28561.0 / 56430.0, -9.0 / 50.0, 2.0 / 55.0};
 
 double stepSize;
 double nextStepSize;
@@ -40,15 +42,15 @@ void ncslabLoop()
         //end
   while (mp->time < mp->stopTime)
   {
- 
+        mp->time += stepSize;
       //printf("time:%f\n",mp->time);
-    NCSLabOneStep23(real_sample_time);
-	mp->time += stepSize;
+    NCSLabOneStep45(real_sample_time);
+	
     
   }
 }
 
-void NCSLabOneStep23(double real_sample_time)
+void NCSLabOneStep45(double real_sample_time)
 {
 
   REAL dif;
@@ -67,44 +69,64 @@ void NCSLabOneStep23(double real_sample_time)
     mp->majorStep = 0;
 
     // Calculate K2
-    mp->stepSize = stepSize / 2.0;
+    mp->stepSize = stepSize / 4.0;
     NCSLabUpdate();
-    mp->offset = stepSize / 2.0;
+    mp->offset = stepSize / 4.0;
     NCSLabOutput();
     NCSLabDerivative();
     storeDerivative(1);
 
     // Calculate K3
     restoreState(0);
-    mp->stepSize = stepSize * 3.0 / 4.0;
+    mp->stepSize = stepSize * 3.0 / 8.0;
     caculateDerivative(weights3, 2);
     NCSLabUpdate();
-    mp->offset = stepSize * 3.0 / 4.0;
+    mp->offset = stepSize * 3.0 / 8.0;
     NCSLabOutput();
     NCSLabDerivative();
     storeDerivative(2);
 
     // Calculate K4
     restoreState(0);
-    mp->stepSize = stepSize;
+    mp->stepSize = stepSize * 12.0 / 13.0;
     caculateDerivative(weights4, 3);
     NCSLabUpdate();
-    mp->offset = stepSize;
+    mp->offset = stepSize * 12.0 / 13.0;
     NCSLabOutput();
     NCSLabDerivative();
     storeDerivative(3);
 
+    // Calculate K5
+    restoreState(0);
+    mp->stepSize = stepSize;
+    caculateDerivative(weights5, 4);
+    NCSLabUpdate();
+    mp->offset = stepSize;
+    NCSLabOutput();
+    NCSLabDerivative();
+    storeDerivative(4);
+
+    // Calculate K6
+    restoreState(0);
+    mp->stepSize = stepSize * 1.0 / 2.0;
+    caculateDerivative(weights6, 5);
+    NCSLabUpdate();
+    mp->offset = stepSize*1.0/2.0;
+    NCSLabOutput();
+    NCSLabDerivative();
+    storeDerivative(5);
+
     // Update 1
     restoreState(0);
     mp->stepSize = stepSize;
-    caculateDerivative(weightss1, 3);
+    caculateDerivative(weightss1, 5);
     NCSLabUpdate();
     storeState(1);
 
     // Update 2
     restoreState(0);
     mp->stepSize = stepSize;
-    caculateDerivative(weightss2, 4);
+    caculateDerivative(weightss2, 6);
     NCSLabUpdate();
     storeState(2);
 

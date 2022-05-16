@@ -42,8 +42,8 @@ public class DiscreteStateSpace extends Block {
 		}
 		
 		//һ�����룬һ�����
-		inputPortList.add(new InputPort(this,1,this.B.column));
-		outputPortList.add(new OutputPort(this,1,feedThrough, this.C.row));
+		//inputPortList.add(new InputPort(this,1,this.B.column));
+		//outputPortList.add(new OutputPort(this,1,feedThrough, this.C.row));
 	}
 	
 	private void parseVector() {
@@ -148,7 +148,7 @@ public class DiscreteStateSpace extends Block {
 //		int len=num.length-1;
 		for(int i=0; i<this.A.row; i++) {
 			updateCode+=					
-					xStateList.elementAt(i).getName()+"=";
+					xStateList.elementAt(i).getName()+"=0";
 			for(int j=0; j<this.A.column; j++) {
 				updateCode+=
 						"+"+"Block"+getBlockId()+"_State_temp["+j+"]"+"*"+this.A.elements[i][j];

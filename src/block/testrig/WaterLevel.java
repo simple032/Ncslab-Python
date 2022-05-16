@@ -23,10 +23,10 @@ public class WaterLevel extends Block {
 	public WaterLevel(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
-		//Ò»¸öÊäÈë£¬Á½¸öÊä³ö
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,"Pump_Speed",1,false));
-		outputPortList.add(new OutputPort(this,"Water_Level",2,false));
+		outputPortList.add(new OutputPort(this,"Pump_Speed",1,true));
+		outputPortList.add(new OutputPort(this,"Water_Level",2,true));
 		
 		pumpState=new State(this,1,"pumpState");
 		stateList.add(pumpState);

@@ -83,7 +83,7 @@ public class Pulse extends block.Block{
 		case REAL:
 			    outputCode+="if(currentTime<"+phaseDelay.getName()+"){\n";
 			    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;}\n";
-			    outputCode+="else if(((int)((currentTime-"+phaseDelay.getName()+")*100)%(int)("+period.getName()+"*100))/100<"+period.getName()+"*"+pulseWidth.getName()+"/100){\n";
+			    outputCode+="else if(((int)((currentTime-"+phaseDelay.getName()+")*100)%(int)("+period.getName()+"*100))<"+period.getName()+"*"+pulseWidth.getName()+"){\n";
 			    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+amplitude.getName()+";}\n";
 			    outputCode+="else{\n";
 			    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;}\n";
@@ -93,7 +93,7 @@ public class Pulse extends block.Block{
 				for(int j=0;j<amplitude.getWidth();j++) {
 					outputCode+="if(currentTime<"+phaseDelay.getName()+"("+i+","+j+")){\n";
 				    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
-				    outputCode+="else if(((int)((currentTime-"+phaseDelay.getName()+"("+i+","+j+"))*100)%(int)("+period.getName()+"("+i+","+j+")*100))/100<"+period.getName()+"("+i+","+j+")*"+pulseWidth.getName()+"("+i+","+j+")/100){\n";
+				    outputCode+="else if(((int)((currentTime-"+phaseDelay.getName()+"("+i+","+j+"))*100)%(int)("+period.getName()+"("+i+","+j+")*100))<"+period.getName()+"("+i+","+j+")*"+pulseWidth.getName()+"("+i+","+j+")){\n";
 				    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+amplitude.getName()+"("+i+","+j+");}\n";
 				    outputCode+="else{\n";
 				    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
