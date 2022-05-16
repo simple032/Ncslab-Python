@@ -38,10 +38,10 @@ public class PIDController extends block.Block{
 		cparaN=new Parameter(this,parameterList.size()+1,"N",paramValues.getString("N"));
 		parameterList.add(cparaN);
 		
-		stateIntegral=new State(this,1,"integral");
+		/*stateIntegral=new State(this,1,"integral");
 		stateList.add(stateIntegral);
 		stateFilter=new State(this,2,"filter");
-		stateList.add(stateFilter);
+		stateList.add(stateFilter);*/
 		
 
 		if(paramValues.getString("LimitOutput").equals("on")) {
@@ -55,7 +55,7 @@ public class PIDController extends block.Block{
 	 public void generateArraysCodeC(CodeStructC code) {
 		 String arraysCode="/*Define arrays for block discrete_Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
 		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		 arraysCode+="double "+"Block"+getBlockId()+"save_data[5];\n";
+		// arraysCode+="double "+"Block"+getBlockId()+"save_data[5];\n";
 		 if(signal.getDataType()==DataType.MATRIX) {
 			 arraysCode+="double "+"Block"+getBlockId()+"save_data["+signal.getHeight()+"]["+signal.getWidth()+"*5];\n"; 
 		 }else if(signal.getDataType()==DataType.REAL&&cparaP.getDataType()==DataType.REAL) {

@@ -28,6 +28,7 @@ double weights6[] = {28.0 / 125.0 , -1.0 , 546.0 / 125.0 , 54.0 / 125.0 , -378.0
 void ncslabLoop(){
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
+        writeInformation();
         NCSLabOneStep();
        mp->time+=mp->stepSize;
         //printf("time:%f\n",mp->time);
