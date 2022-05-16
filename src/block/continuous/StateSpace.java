@@ -186,16 +186,6 @@ public class StateSpace extends Block{
 		 for(int i=0;i<A.getHeight();i++) {
 		 derivativeCode+=xState.getDerivativeName()+"("+i+",0)=0;\n";
 		 }
-		 
-	  /*
-	   for(int i=0;i<A.getHeight();i++) {
-		   for(int j=0;j<A.getWidth();j++) {
-	   derivativeCode+=xState.getDerivativeName()+"("+i+",0)+="+A.getName()+"("+i+","+j+")*"+xState.getName()+"("+j+",0);\n";
-		   }
-	   }
-	   for(int i=0;i<A.getHeight();i++) {
-		   derivativeCode+=xState.getDerivativeName()+"("+i+",0)+="+B.getName()+"("+i+",0)*"+this.getInputPortVariable(0)+";\n";   
-	   }*/
 	   derivativeCode+=xState.getDerivativeName()+"="+A.getName()+"*"+xState.getName()+"+"+B.getName()+"*"+this.getInputPortVariable(0)+";\n"; 
 	   code.addDerivativeCode(derivativeCode);
    }

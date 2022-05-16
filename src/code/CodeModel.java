@@ -41,10 +41,47 @@ abstract public class CodeModel extends NCSLabModel {
 	
 	private void setupSolver() {
 		String solverString=this.getConfig().getSolver();
-		
-		if(solverString.equals("VariableStepAuto")||solverString.equals("ode23")) {
+		switch(solverString) {	
+		case "VariableStepAuto":
+			solver=Solver.ode45;
+			break;
+		case "ode45":
+			solver=Solver.ode45;
+			break;
+		case "ode5":
+			solver=Solver.ode5;
+			break;
+		case "ode8":
+			solver=Solver.ode6;
+			break;
+		case "ode4":
+			solver=Solver.ode4;
+			break;
+		case "ode3":
+			solver=Solver.ode3;
+			break;
+		case "ode2":
+			solver=Solver.ode2;
+			break;
+		case "ode1":
+			solver=Solver.ode1;
+			break;
+		case "ode23":
 			solver=Solver.ode23;
+			break;
 		}
+		/*if(solverString.equals("VariableStepAuto")||solverString.equals("ode45")) {
+			solver=Solver.ode45;
+		}
+		if(solverString.equals("ode5")) {
+			solver=Solver.ode5;
+		}
+		if(solverString.equals("ode8")) {
+			solver=Solver.ode6;
+		}
+		if(solverString.equals("ode23")) {
+			solver=Solver.ode23;
+		}*/
 	}
 
 	private void generateOutputCodeFromChain(CodeGenerationOption option) {

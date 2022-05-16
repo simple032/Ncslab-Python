@@ -164,6 +164,15 @@ REAL calculateStateDif(int,int);
 void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
 
+//xiazhiqiang:These functions are defined in util.c
+double gcd( double, double);
+double gcd1(double *);
+int hasdiscrete(double *);
+void NCSLabOneStep45(double);
+double distance(double,double);
+void NCSLabOneStep23(double);
+//end
+
 void ncslabLoop();
 
 void NCSLabSaveResult();

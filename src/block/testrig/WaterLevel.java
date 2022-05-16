@@ -29,8 +29,8 @@ public class WaterLevel extends Block {
 		
 		//һ�����룬�������
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,"Pump_Speed",1,false));
-		outputPortList.add(new OutputPort(this,"Water_Level",2,false));
+		outputPortList.add(new OutputPort(this,"Pump_Speed",1,true));
+		outputPortList.add(new OutputPort(this,"Water_Level",2,true));
 		
 		switch(model.getModelMode()) {
 		case Simulation:

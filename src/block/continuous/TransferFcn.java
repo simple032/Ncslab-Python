@@ -35,7 +35,7 @@ public class TransferFcn extends Block {
 			stateList.add(xState);		
 		}
 		
-		//Ò»¸öÊäÈë£¬Ò»¸öÊä³ö
+		//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,feedThrough));
 	}
@@ -46,7 +46,7 @@ public class TransferFcn extends Block {
 		
 		//System.out.println(numStr+denStr);
 		
-		String regEx = "[' ']+"; // Ò»¸ö»ò¶à¸ö¿Õ¸ñ  
+		String regEx = "[' ']+"; // Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¸ï¿½  
 		Pattern p = Pattern.compile(regEx);  
 		Matcher m = p.matcher(numStr);
 		JSONArray numArray=new JSONArray(m.replaceAll(",").trim());
@@ -64,7 +64,7 @@ public class TransferFcn extends Block {
 			den[i]=denArray.getDouble(i);
 		}
 		
-		//¹éÒ»»¯
+		//ï¿½ï¿½Ò»ï¿½ï¿½
 		double unit=den[0];
 		for(int i=0;i<den.length;i++) {
 			den[i]=den[i]/unit;
@@ -131,12 +131,12 @@ public class TransferFcn extends Block {
 		
 		int i=num.length-1;
 		for(State xState:xStateList) {
-			outputCode+="+"+xState.getName()+"*"+num[i];
+			outputCode+="+"+xState.getName()+"*("+num[i]+")";
 			i--;
 		}
 		
 		if(feedThrough) {
-			outputCode+="+"+D+"*"+getInputPortVariable(0);
+			outputCode+="+("+D+")*"+getInputPortVariable(0);
 		}
 		
 		outputCode+=";\n";

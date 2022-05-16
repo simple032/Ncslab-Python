@@ -134,7 +134,11 @@ abstract public class CodeStructC {
 				+"#include\"hardware.h\"\n"
 				+"#endif\n"
 				+"#include <iostream>\n"
-				+"#include <octave/oct.h>"
+				+"#include <octave/oct.h>\n"
+				//xiazhiqiang:Stores the sampling time of discrete modules
+				+"double  sample_time[20]={};\n"
+				+"int sample_i=0;\n"
+				//end
 				;
 	}
 
@@ -476,6 +480,12 @@ abstract public class CodeStructC {
 		case ode4:
 			writeNCSLabFile("ode4.c","onestep.c");
 			break;
+		case ode5:
+			writeNCSLabFile("ode5.c","onestep.c");
+			break;	
+		case ode6:
+			writeNCSLabFile("ode6.c","onestep.c");
+			break;	
 		default:
 			System.out.println("error");
 			break;

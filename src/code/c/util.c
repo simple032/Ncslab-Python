@@ -13,6 +13,55 @@ extern Matrix matrixStateReserve[][MATRIX_STATE_NUM];
 extern double singleDerivativeReserve[][SINGLE_STATE_NUM];
 extern Matrix matrixDerivativeReserve[][MATRIX_STATE_NUM];
 
+//xiazhiqiang:Computes the greatest common divisor of the sampling time array
+double gcd( double x, double y )
+{   int a=(int)(x*1000);
+    int b=(int)(y*1000);
+    int result;
+    for(result=a;result>=0;result-=1)
+    {
+        if(0==a%result&&0==b%result)
+            return result/1000.0;
+    }
+    
+}
+
+double gcd1(double a[]){
+   double d=a[0];
+   int i;
+   for(i=0;i<20;i++)	{
+   	if(a[i]==0){
+   		break;
+	   }
+   	 d=gcd(d,a[i]);
+   }
+   return d;
+}
+
+//xiazhiqiang:Check whether there are discrete modules
+int hasdiscrete(double a[]){
+	  int i;
+   for(i=0;i<20;i++){
+   	if(a[i]==0){
+   		break;
+	   }
+	}
+	   if(i==0){
+	   	return 0;
+	   }
+	   else{
+	   	return 1;
+	   }
+	}
+//xiazhiqang:Distance from the next sampling point
+double distance(double t,double s){
+	long a=(long)(t*1000000000000000);
+        long b=(long)(s*1000000000000000);
+        double distance=s-(a%b)/1000000000000000.0;
+        return distance;
+}
+//end
+
 void storeState(int num){
   /*
   for(int i=0;i<STATE_NUM;i++){

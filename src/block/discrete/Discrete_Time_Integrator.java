@@ -33,6 +33,8 @@ public class Discrete_Time_Integrator extends Block{
 		  String initCode="/*Code for initialization of block discrete_time_integrator:("+getBlockId()+")"+getBlockName()+"*/\n";
 		  initCode+=gainval.getInitCodeC();
 		  initCode+=sampleTime.getInitCodeC();
+		  initCode+="sample_time[sample_i]="+sampleTime.getName()+";\n";
+			initCode+="sample_i=sample_i+1;\n";
 		  initCode+=initialCondition.getInitCodeC();
 		  if(gainval.getDataType()==DataType.REAL&&xState.getDataType()==DataType.REAL) {
 			  initCode+=xState.getName()+"="+initialCondition.getName()+";\n";
@@ -81,6 +83,18 @@ public class Discrete_Time_Integrator extends Block{
 			                    outputCode+=out.getOutputSignalC().getName()+"="+xState.getName()+"+"+sampleTime.getName()+"/2*"+signal.getName()+"*"+gainval.getName()+";\n";
 			                    outputCode+=xState.getName()+"="+out.getOutputSignalC().getName()+"+"+sampleTime.getName()+"/2*"+signal.getName()+"*"+gainval.getName()+";}}\n";
 			                 break;
+		                     case "Accumulation: Forward Euler":
+		                         outputCode+=out.getOutputSignalC().getName()+"="+xState.getName()+";\n";
+				                 outputCode+=xState.getName()+"="+xState.getName()+"+"+gainval.getName()+"*"+signal.getName()+";}}\n";
+				             break; 
+		                     case "Accumulation: Backward Euler":
+		                    	 outputCode+=out.getOutputSignalC().getName()+"="+xState.getName()+"+"+gainval.getName()+"*"+signal.getName()+";\n";
+				                 outputCode+=xState.getName()+"="+out.getOutputSignalC().getName()+";}}\n";
+				             break; 
+		                     case "Accumulation: Trapezoidal":
+				                 outputCode+=out.getOutputSignalC().getName()+"="+xState.getName()+"+"+signal.getName()+"*"+gainval.getName()+"*0.5;\n";
+				                 outputCode+=xState.getName()+"="+out.getOutputSignalC().getName()+"+"+signal.getName()+"*"+gainval.getName()+"*0.5;}}\n";
+				             break;
 	                         }
 	                     break;
             	    case MATRIX:
@@ -99,6 +113,18 @@ public class Discrete_Time_Integrator extends Block{
 			                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+sampleTime.getName()+"/2*"+signal.getName()+"*"+gainval.getName()+"("+i+","+j+");\n";
 			                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+")+"+sampleTime.getName()+"/2*"+signal.getName()+"*"+gainval.getName()+"("+i+","+j+");\n";
 			                 break;
+		                     case "Accumulation: Forward Euler":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+gainval.getName()+"("+i+","+j+")*"+signal.getName()+";\n";
+				                 break;
+			                 case "Accumulation: Backward Euler":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+gainval.getName()+"("+i+","+j+")*"+signal.getName()+";\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+");\n";
+				             break;
+			                 case "Accumulation: Trapezoidal":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+signal.getName()+"*"+gainval.getName()+"("+i+","+j+")*0.5;\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+")+"+signal.getName()+"*"+gainval.getName()+"("+i+","+j+")*0.5;\n";
+				             break;
 	                         }	
 						    }
 						 }
@@ -124,6 +150,18 @@ public class Discrete_Time_Integrator extends Block{
 			                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+sampleTime.getName()+"/2*"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+";\n";
 			                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+")+"+sampleTime.getName()+"/2*"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+";\n";
 			                 break;
+		                     case "Accumulation: Forward Euler":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+gainval.getName()+"*"+signal.getName()+"("+i+","+j+");\n";
+				                 break;
+		                     case "Accumulation: Backward Euler":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+gainval.getName()+"*"+signal.getName()+"("+i+","+j+")"+";\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+");\n";
+				                 break;
+		                     case "Accumulation: Trapezoidal":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+"*0.5;\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+")+"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+"*0.5;\n";
+				                 break;
 	                         }	
 						    }
 						  }
@@ -145,6 +183,18 @@ public class Discrete_Time_Integrator extends Block{
 			                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+sampleTime.getName()+"/2*"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+"("+i+","+j+");\n";
 			                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+")+"+sampleTime.getName()+"/2*"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+"("+i+","+j+");\n";
 			                 break;
+		                     case "Accumulation: Forward Euler":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+gainval.getName()+"("+i+","+j+")"+signal.getName()+"("+i+","+j+");\n";
+				                 break;
+		                     case "Accumulation: Backward Euler":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+gainval.getName()+"("+i+","+j+")*"+signal.getName()+"("+i+","+j+");\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+");\n";
+				                 break;
+		                     case "Accumulation: Trapezoidal":
+				                    outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+")+"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+"("+i+","+j+")*0.5;\n";
+				                    outputCode+=xState.getName()+"("+i+","+j+")="+out.getOutputSignalC().getName()+"("+i+","+j+")+"+signal.getName()+"("+i+","+j+")*"+gainval.getName()+"("+i+","+j+")*0.5;\n";
+				                 break;
 	                         }	
 						    }
 						 }

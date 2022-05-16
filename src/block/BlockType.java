@@ -24,6 +24,9 @@ public class BlockType {
 		case "PID Controller (s)":
 			block=new block.continuous.PIDController(blockJSON,model);
 			break;
+		case "Derivative":
+			block=new block.continuous.Derivative(blockJSON,model);
+			break;
 		case "WaterLevel":
 			block=new block.testrig.WaterLevel(blockJSON,model);
 			break;
@@ -39,6 +42,9 @@ public class BlockType {
 			break;
 		case "Integrator":
 			block=new block.continuous.Integrator(blockJSON,model);
+			break;
+		case "Transport Delay":
+			block=new block.continuous.TransportDelay(blockJSON, model);
 			break;
 		case "Transfer Fcn":
 			block=new block.continuous.TransferFcn(blockJSON, model);

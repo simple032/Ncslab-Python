@@ -28,6 +28,8 @@ public class Zero_Order_Hold extends Block{
 			super.generateInitCodeC(code);
 			String initCode="/*Code for initialization of block Zero_Order_Hold:("+getBlockId()+")"+getBlockName()+"*/\n";
 			initCode+=sampleTime.getInitCodeC();
+			initCode+="sample_time[sample_i]="+sampleTime.getName()+";\n";
+			initCode+="sample_i=sample_i+1;\n";
 			code.addInitCode(initCode);
 			}
 	 public void generateOutputCodeC (CodeStructC code){
@@ -39,13 +41,13 @@ public class Zero_Order_Hold extends Block{
 		  outputCode+="{real_T currentTime = model.time;\n";
 		  switch(signal.getDataType()) {
 		  case REAL:
-			  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.01) {\n";
+			  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001) {\n";
 			  outputCode+=out.getOutputSignalC().getName()+"="+signal.getName()+";}\n";
 			  break;
 		  case MATRIX:
 			  for(int i=0; i<ops.getHeight(); i++) {
 					for(int j=0;j<ops.getWidth();j++) {
-						outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.01) {\n";
+						outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001) {\n";
 						 outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
 						
 					}

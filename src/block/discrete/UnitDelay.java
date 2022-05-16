@@ -36,6 +36,8 @@ public class UnitDelay extends Block{
 			String initCode="/*Code for initialization of block Unit Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
 			initCode+=sampleTime.getInitCodeC();
 			initCode+=initialCondition.getInitCodeC();
+			initCode+="sample_time[sample_i]="+sampleTime.getName()+";\n";
+			initCode+="sample_i=sample_i+1;\n";
 			code.addInitCode(initCode);
 			}
 	 public void generateOutputCodeC (CodeStructC code){
@@ -83,7 +85,7 @@ public class UnitDelay extends Block{
 			InputPort in  = inputPortList.get(0);
 			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		    if(sampleTime.getDataType()!=DataType.REAL||initialCondition.getDataType()!=DataType.REAL) {
-						MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be a real double scalar(period)!\n \n");
+						MatDimException e=new MatDimException("Parameter(sampleTime/initial condition) of Block "+this.blockName+" must be a real double scalar(period)!\n \n");
 						throw(e);	
 					}
 			if((Double.parseDouble(paramValues.getString("SampleTime").trim())*100)%(model.getConfig().getFixedStep()*100)>0.000001) {
