@@ -1,11 +1,6 @@
 package code.c.linux.pc.simulation;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.util.Vector;
-import java.io.InputStream;
-import java.io.BufferedReader;
 import java.io.*;
 
 import code.CodeModel;
@@ -77,20 +72,28 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("../../../ode1.c","onestep.c");
+			writeNCSLabFile("../../../ode1.c","onestep.c",true);
 			break;
 		case ode2:
-			writeNCSLabFile("../../../ode2.c","onestep.c");
+			writeNCSLabFile("../../../ode2.c","onestep.c",true);
 			break;
 		case ode3:
-			writeNCSLabFile("../../../ode3.c","onestep.c");
+			writeNCSLabFile("../../../ode3.c","onestep.c",true);
 			break;
 		case ode4:
-			writeNCSLabFile("../../../ode4.c","onestep.c");
+			writeNCSLabFile("../../../ode4.c","onestep.c",true);
 			break;
 		case ode23:
-			writeNCSLabFile("../../../ode23.c","onestep.c");
+			writeNCSLabFile("../../../ode23.c","onestep.c",true);
 			break;
+		}
+		
+		try {
+			//Runtime.getRuntime().exec("python /home/pi/.config/antostart/GetPiId.py");
+			Runtime.getRuntime().exec("sudo chmod -R 777 /home/pi/NetConTop/NCSLabLink/CCode");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 	}

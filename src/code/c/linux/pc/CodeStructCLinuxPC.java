@@ -65,6 +65,14 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		writeNCSLabFile("../UploadThread.c","UploadThread.c");
 		writeNCSLabFile("../UploadThread.h","UploadThread.h");
 		
+		writeNCSLabFile("../../Debug.h","Debug.h");
+		writeNCSLabFile("../../DEV_Config.c","DEV_Config.c");
+		writeNCSLabFile("../../DEV_Config.h","DEV_Config.h");
+		writeNCSLabFile("../../ADS1256.c","ADS1256.c");
+		writeNCSLabFile("../../ADS1256.h","ADS1256.h");
+		writeNCSLabFile("../../DAC8532.c","DAC8532.c");
+		writeNCSLabFile("../../DAC8532.h","DAC8532.h");
+		
 		writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");
 

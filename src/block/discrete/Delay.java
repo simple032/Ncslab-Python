@@ -1,176 +1,106 @@
 package block.discrete;
 
 import org.json.JSONObject;
-import org.json.JSONArray;
-
-import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import block.Block;
+import block.data.DataType;
 import block.io.InputPort;
 import block.io.OutputPort;
-import block.io.State;
-import block.math.Matrix;
+import block.io.OutputSignal;
+import block.io.Parameter;
 import code.c.CodeStructC;
 import code.m.CodeStructM;
 import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
+import block.io.State;
 
 public class Delay extends Block {
-	private String name="Delay";
-	
-	private boolean feedThrough=false;	
-
-	private int delayLength = 0;
-	private Matrix initialConditions;
-	
-	private Vector<Vector<State>> xStatesList=new Vector<Vector<State>>();
-	
+	block.io.Parameter sampleTime;
+	block.io.Parameter initialCondition;
+	block.io.Parameter delayLength;
 	public Delay(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
-		
-		parseVector();		
-		
-		if(initialConditions.isScalar()) {
-			
-		}else {					
-			
-			for(int i=0;i<delayLength+1;i++) {
-				Vector<State> xStateList = new Vector<State>();
-				for(int j=0; j<initialConditions.row; j++) {
-					State xState=new State(this,
-							i*initialConditions.row+(j+1)
-							,"x"+(j+1)+(i+1));
-					xStateList.add(xState);
-					stateList.add(xState);
-				}			
-				xStatesList.add(xStateList);	
-			}
-		}
-		
-		
-		
-		//һ�����룬һ�����
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,feedThrough));
-	}
-	
-	private void parseVector() {
-		
-		delayLength = paramValues.getInt("DelayLength");
-		
-		String initCond=paramValues.getString("InitialCondition");	
-		this.initialConditions = new Matrix(initCond);
-			
-	}
+		outputPortList.add(new OutputPort(this,1,true));
+		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
+		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
+		delayLength=new Parameter(this,3,"delayLength",paramValues.getString("DelayLength"));
+		parameterList.add(sampleTime);
+		parameterList.add(initialCondition);
+		parameterList.add(delayLength);	
+  }
 
-	public void generateInitCodeM(CodeStructM code) {
-		super.generateInitCodeM(code);
-		
-		String initCode="";
-		
-		code.addInitCode(initCode);
-	}
-	
-	
-	
-	public void generateOutputCodeM(CodeStructM code) {
-		super.generateOutputCodeM(code);
-			
-		String outputCode=getOutputPortVariable(0)+"=0";
-		
-		code.addOutputCode(outputCode);
-	}
-	
-	public void generateDerivativeCodeM(CodeStructM code) {
-		super.generateDerivativeCodeM(code);
-		
-		String derivativeCode="";
-		
-		derivativeCode+=");\n";
-		
-		code.addDerivativeCode(derivativeCode);
-	}
-	
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
-		
-		String initCode="/*Code for initialization of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		//initialConditions.print();
-		Vector<State> xStateList;
-		for(int i=0; i<xStatesList.size()-1; i++) {
-			xStateList = xStatesList.elementAt(i);
-			//System.out.println("i="+i);
-			for(int j=0; j<xStateList.size(); j++) {
-				//System.out.println("j="+j);
-				initCode+=xStateList.elementAt(j).getName()+
-						"="+initialConditions.elements[i][j]+";\n";
-			}			
-		}			
-		xStateList = xStatesList.lastElement();			
-		for(int i=0; i<xStateList.size(); i++) {			
-			initCode+=xStateList.elementAt(i).getName()+"="
-					+this.getInputPortVariable(0)+"["+i+"];\n";	
-		}							
-		
-		code.addInitCode(initCode);
-	}
-	
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		//y(k)=x(k)		
-		Vector<State> xStateList = xStatesList.elementAt(0);			
-		for(int j=0; j<xStateList.size(); j++) {
-			outputCode+=getOutputPortVariable(0)+"["+j+"]="
-					+xStateList.elementAt(j).getName()+";\n";
-		}												
-		
-
-		code.addOutputCode(outputCode);
-	}
-	
-	public void  generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		code.addDerivativeCode(derivativeCode);
-	}
-	
-	public void  generateUpdateCodeC(CodeStructC code) throws MatDimException {
-		String updateCode="/*Code for Update of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		if(this.getInputPortList().elementAt(0).getWidth()*delayLength
-				!=initialConditions.length())
-			throw new MatDimException("The dimension of input is " 
-				+this.getInputPortList().elementAt(0).getWidth()+ "*" + delayLength
-				+" while the dimension of the initial conditions is " +initialConditions.length()
-				+" in \""+ getBlockName() +"\"\n");
-		
-		//x(k)=x(k-1)
-		Vector<State> xStateList;	
-		for(int i=0;i<xStatesList.size()-1;i++) {
-			xStateList = xStatesList.elementAt(i);
-			Vector<State> oldxStateList = xStatesList.elementAt(i+1);
-			for(int j=0; j<xStateList.size(); j++) {
-				updateCode+=xStateList.elementAt(j).getName()+"="
-					+oldxStateList.elementAt(j).getName()+";\n";
-			}			
-		}
-		xStateList = xStatesList.lastElement();			
-		for(int i=0; i<xStateList.size(); i++) {			
-			updateCode+=xStateList.elementAt(i).getName()+"="
-					+this.getInputPortVariable(0)+"["+i+"];\n";	
-		}						
-		
-		code.addUpdateCode(updateCode);	
-	}
-	
-	public void updateDimension() {
+	 //define arrays to save data
+	 public void generateArraysCodeC(CodeStructC code) {
+		 String arraysCode="/*Define arrays for block discrete_Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
+		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		 arraysCode+="double "+"Block"+getBlockId()+"_discrete_delay_savedata["+signal.getHeight()+"]["+signal.getWidth()+"*((int)"+paramValues.getDouble("DelayLength")+"+1)];\n";
+		 code.addArraysCode(arraysCode);
+	 }
+	 public void generateInitCodeC(CodeStructC code) {
+			super.generateInitCodeC(code);
+			String initCode="/*Code for initialization of block Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
+			initCode+=sampleTime.getInitCodeC();
+			initCode+=initialCondition.getInitCodeC();
+			initCode+=delayLength.getInitCodeC();
+			code.addInitCode(initCode);
+			}
+	 public void generateOutputCodeC (CodeStructC code){
+		  String outputCode="/*Code for output of block Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
+			  
+		  OutputPort out  = outputPortList.get(0);
+		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();	
+		  int h=(int)paramValues.getDouble("DelayLength")+1;
+		  outputCode+="{real_T currentTime = model.time;\n";
+		  switch(signal.getDataType()) {
+		  case REAL:
+			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
+			  for(int i=0;i<+(int)paramValues.getDouble("DelayLength");i++){
+				  int k=i+1;
+			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0]["+i+"]="+"Block"+getBlockId()+"_discrete_delay_savedata[0]["+k+"];\n";}
+			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0][(int)"+paramValues.getDouble("DelayLength")+"]="+signal.getName()+";}\n";
+			  outputCode+="if((currentTime+0.00001)<("+delayLength.getName()+"*"+sampleTime.getName()+")) {\n";
+			  outputCode+=out.getOutputSignalC().getName()+"="+initialCondition.getName()+";}\n";
+			  outputCode+="else {\n";
+			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
+			  outputCode+=out.getOutputSignalC().getName()+"=Block"+getBlockId()+"_discrete_delay_savedata[0][0];}}\n";
+		      break;
+		  case MATRIX:
+			  for(int i=0; i<ops.getHeight(); i++) {
+					for(int j=0;j<ops.getWidth();j++) {
+						outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
+						  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/"+sampleTime.getName()+")%"+h+")+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
+						  outputCode+="if(currentTime<"+delayLength.getName()+"*"+sampleTime.getName()+") {\n";
+						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+initialCondition.getName()+";}\n";
+						  outputCode+="else {\n";
+						  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
+						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/"+sampleTime.getName()+"+1)%"+h+")+"+h+"*"+j+"];}}\n";
+				   }	
+				}
+			  break;
+			  }
+		  outputCode+="}\n";
+		  code.addOutputCode(outputCode);	
+		  }
+    public void updateDimension() throws MatDimException{
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);
-				
-		out.setWidth(in.getWidth());
-		out.getOutputSignalC().setWidth(in.getWidth());
-		
+		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+	   
+		if((Double.parseDouble(paramValues.getString("SampleTime").trim())*100)%(model.getConfig().getFixedStep()*100)>0.000001) {
+			  MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be an integer multiple of the fixed-step size!\n \n");
+				throw(e);
+	  }
+		out.setHeight(signal.getHeight());
+		out.setWidth(signal.getWidth());
+		out.getOutputSignalC().setHeight(signal.getHeight());
+		out.getOutputSignalC().setWidth(signal.getWidth());
+		out.getOutputSignalC().setDataType(signal.getDataType());
 	}
+	public void checkDimension() throws MatDimException{
+		 if(sampleTime.getDataType()!=DataType.REAL||initialCondition.getDataType()!=DataType.REAL||delayLength.getDataType()!=DataType.REAL) {
+				MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be a real double scalar(period) and the Parameter(initialCondition delayLength) can't be Matrix!\n \n");
+				throw(e);	
+			}
+	} 
 }

@@ -31,6 +31,11 @@ abstract public class CodeStructC {
 
 
 	//头文件的代码
+	
+	//author:xiazhiqiang
+	//define arrays to save data
+	public String arraysCode="";
+    //end
 
 	public String includeCode="";
 	//init初始化的代码
@@ -82,6 +87,14 @@ abstract public class CodeStructC {
 	public void addInitCode(String code) {
 		initCode+=code;
 	}
+	//author:xiazhiqiang
+	public String getArraysCode() {
+		return this.arraysCode;
+	}
+	public void addArraysCode(String code) {
+		arraysCode+=code;
+	}
+    //end
 
 	public String getOutputCode() {
 		return this.outputCode;
@@ -127,9 +140,16 @@ abstract public class CodeStructC {
 					+stateDefineCode+"\n"
 					+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
+				//author:xiazhiqiang
+				//add define arrays code
+				+arraysCode+"\n"
+				//end
+				
 				+preCode+"\n"				
 				+dataStructureCode+"\n"
 				+"void NCSLabInit(){\n"
+				+"uint AD_init_Flag=0;\n"  //ad初始化标志位
+				+"uint DA_init_Flag=0;\n"  //da初始化标志位
 				+dataStructureInitCode+"\n"
 				+initCode+"\n"
 				+"}\n"
@@ -284,6 +304,9 @@ abstract public class CodeStructC {
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
 		File file=new File(codePath+"/"+fileName);
+        if(file.exists()) {
+            return;
+        }
 		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(file);						
@@ -300,10 +323,18 @@ abstract public class CodeStructC {
 	}
 	
 	protected void writeNCSLabFile(String fileName,String fileNameOut) {
+        writeNCSLabFile(fileName,fileNameOut,false);
+    }
+    
+    protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
 		File file=new File(codePath+"/"+fileNameOut);
+//        if(file.exists()) {
+        if(file.exists()&&overwrite==false) {
+            return;
+        }
 		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(file);
@@ -398,6 +429,16 @@ abstract public class CodeStructC {
 		writeNCSLabFile("UploadThread.c");
 		writeNCSLabFile("UploadThread.h");
 		writeNCSLabFile("ncslabdefines.h");
+		
+		//��ݮ��GPIO��AD���ʼ��
+		writeNCSLabFile("Debug.h");
+		writeNCSLabFile("DEV_Config.c");
+		writeNCSLabFile("DEV_Config.h");
+		writeNCSLabFile("ADS1256.c");
+		writeNCSLabFile("ADS1256.h");
+		writeNCSLabFile("DAC8532.c");
+		writeNCSLabFile("DAC8532.h");
+				
 		writeNCSLabFile("ncs_serialport_pi.c");
 		writeNCSLabFile("ncs_serialport.h");
 

@@ -13,7 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import code.Solver;
-import code.c.raspberry.CodeModelCRaspberry;
+import code.c.linux.raspberry.CodeModelCLinuxRaspberry;
+import code.c.linux.pc.CodeModelCLinuxPC;
 import ncslablink.ErrorMessage;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
@@ -57,7 +58,8 @@ public class compile extends HttpServlet {
         try {
 
         	//����C���Ե�������CodeModelC
-        	CodeModelCRaspberry modelC=CodeModelCRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
+        	CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
+        	//CodeModelCLinuxPC modelC=CodeModelCLinuxPC.createFromJSON(jsonIn,ModelMode.Compilation);
         	modelC.setSolver(Solver.ode4);
 
         	modelC.generate();
@@ -84,7 +86,11 @@ public class compile extends HttpServlet {
         catch(ModelException e) {
         	System.err.println(e.getMessage());
         	System.err.println("Code generatrion terminated unsuccessfully������");
-        	response.getWriter().write("{\"code\":400,\"msg\":\""+e.getMessage()+"\"}");
+        	//response.getWriter().write("{\"code\":\"400\",\"message\":\""+e.getMessage()+"\"}");
+        	JSONObject jb=new JSONObject();
+        	jb.put("code", 400);
+        	jb.put("message",e.getMessage());
+        	response.getWriter().write(jb.toString());
         }
 		
 	}

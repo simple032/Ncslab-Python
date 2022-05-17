@@ -1,11 +1,6 @@
 package code.c.linux.raspberry;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.util.Vector;
-import java.io.InputStream;
-import java.io.BufferedReader;
 import java.io.*;
 
 import code.CodeModel;
@@ -34,7 +29,7 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 			file.mkdir();
 		}
 
-		String modelPath=userPath+"/"+model.getModelId();
+		String modelPath=userPath+"/"+model.getModelId()+"_RT";
 		file=new File(modelPath);
 		if(file.exists()==false) {
 			file.mkdir();
@@ -65,6 +60,14 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		writeNCSLabFile("../UploadThread.c","UploadThread.c");
 		writeNCSLabFile("../UploadThread.h","UploadThread.h");
 		
+		writeNCSLabFile("../../Debug.h","Debug.h");
+		writeNCSLabFile("../../DEV_Config.c","DEV_Config.c");
+		writeNCSLabFile("../../DEV_Config.h","DEV_Config.h");
+		writeNCSLabFile("../../ADS1256.c","ADS1256.c");
+		writeNCSLabFile("../../ADS1256.h","ADS1256.h");
+		writeNCSLabFile("../../DAC8532.c","DAC8532.c");
+		writeNCSLabFile("../../DAC8532.h","DAC8532.h");
+		
 		writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");
 
@@ -75,17 +78,25 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("../../ode1.c","onestep.c");
+			writeNCSLabFile("../../ode1.c","onestep.c",true);
 			break;
 		case ode2:
-			writeNCSLabFile("../../ode2.c","onestep.c");
+			writeNCSLabFile("../../ode2.c","onestep.c",true);
 			break;
 		case ode3:
-			writeNCSLabFile("../../ode3.c","onestep.c");
+			writeNCSLabFile("../../ode3.c","onestep.c",true);
 			break;
 		case ode4:
-			writeNCSLabFile("../../ode4.c","onestep.c");
+			writeNCSLabFile("../../ode4.c","onestep.c",true);
 			break;
+		}
+		
+		try {
+			//Runtime.getRuntime().exec("python /home/pi/.config/antostart/GetPiId.py");
+			Runtime.getRuntime().exec("sudo chmod -R 777 /home/pi/NetConTop/NCSLabLink/CCode");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 	}

@@ -115,12 +115,23 @@ public class NewMotor extends Block {
 //		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
 		int bufLen = 255;
 		
-		outputCode+="char recvBuff["+bufLen+"];\n";
+		outputCode+="if(mp->majorStep>0){\n";
+		outputCode+="char recvBuff["+bufLen+"]={0};\n";
 			
 		outputCode+="Serialport_Recv(hComm,recvBuff,7);\n";		
-		outputCode+="int speed=recvBuff[4]+(recvBuff[5]<<8);\n";			
-		
+		outputCode+="int speed=recvBuff[4]+(recvBuff[5]<<8)+(recvBuff[5]<<16)+(recvBuff[5]<<24);\n";	
 		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=speed;\n";
+		
+		outputCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
+		outputCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
+//		outputCode+="printf(\"speed is %d,pwm is %d\\n\",speed,pwm);\n";
+		outputCode+="pwm = pwm>=10000?10000:pwm;\n";
+		outputCode+="pwm = pwm<=-10000?-10000:pwm;\n";
+		outputCode+="cmd[4] = (pwm&0xFF);\n";
+		
+		outputCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
+		outputCode+="cmd[6] = calcSum(cmd);\n";
+		outputCode+="}\n";
 		
 		code.addOutputCode(outputCode);
 	}
@@ -131,6 +142,8 @@ public class NewMotor extends Block {
 		int bufLen = 255;	
 		derivativeCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
 		derivativeCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
+		derivativeCode+="pwm = pwm>=8000?8000:pwm;\n";
+		derivativeCode+="pwm = pwm<=-8000?-8000:pwm;\n";
 		derivativeCode+="cmd[4] = (pwm&0xFF);\n";
 		derivativeCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
 		derivativeCode+="cmd[6] = calcSum(cmd);\n";

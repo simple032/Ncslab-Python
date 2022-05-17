@@ -17,6 +17,12 @@
 #include "arpa/inet.h"
 #include "fcntl.h"
 
+#include "ADS1256.h"
+#include "DAC8532.h"
+#include "ncs_serialport.h"
+#include <wiringPi.h>
+
+
 #define REAL double
 #define real_T REAL
 #define uint_T unsigned int

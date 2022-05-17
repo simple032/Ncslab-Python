@@ -31,6 +31,7 @@ abstract public class CodeModel extends NCSLabModel {
 		super(jsonIn,mode);
 		
 		setupSolver();
+		System.out.println(this.solver);
 	}
 
 	protected CodeModel(JSONObject jsonIn,ModelMode mode,Solver solver) throws ModelException{
@@ -41,7 +42,7 @@ abstract public class CodeModel extends NCSLabModel {
 	private void setupSolver() {
 		String solverString=this.getConfig().getSolver();
 		
-		if(solverString.equals("VariableStepAuto")) {
+		if(solverString.equals("VariableStepAuto")||solverString.equals("ode23")) {
 			solver=Solver.ode23;
 		}
 	}
@@ -85,6 +86,10 @@ abstract public class CodeModel extends NCSLabModel {
 		generateOutputCodeFromChain(option);
 		//计算为分量的代码
 		generateDerivativeCode(option);
+		
+		//author:xiazhiqiang
+		generateArraysCode(option);
+		//end
 
 		//根据微分量，建立Update的代码 
 		try {
@@ -105,6 +110,10 @@ abstract public class CodeModel extends NCSLabModel {
 	abstract protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException;
 	//某个模块输出的代码，继承的类可以重载
 	abstract protected void generateBlockOutputCode(Block block,CodeGenerationOption option); 
+	
+	//author:xiazhiqiang
+	abstract protected void generateArraysCode(CodeGenerationOption option);
+	//end
 
 	abstract protected void generateDerivativeCode(CodeGenerationOption option);
 	

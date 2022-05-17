@@ -1,9 +1,11 @@
 #include"ncslabccode.h"
 #include"ServerThread.h"
 #include"ncslab.h"
-#include "json/json.h"
+#include "jsoncpp/json.h"
 #include <iostream>
 #include <fstream>
+
+#include <cstdlib>
 
 using namespace std;
 
@@ -90,6 +92,7 @@ void NCSLabSaveResult(){
 
 	ofstream ofs;
 	ofs.open("results.json");
+	system("sudo chmod -R 777 /home/pi/NetConTop/NCSLabLink/CCode");
 	//assert(ofs.is_open());
 	ofs<<jsonFile;
 	

@@ -22,7 +22,7 @@
 
 /*****************************serialport***************************************/
 
-
+HANDLE hComm;
 /* Function: Serialport_Open =====================================================
  * Abstract:
  *    Open the serialport

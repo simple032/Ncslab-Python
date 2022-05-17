@@ -103,6 +103,22 @@ abstract public class CodeModelC extends CodeModel {
 		block.generateBlockOutputCodeC(getCodeStructC());
 	}
 	
+	//generate arrays code for discrete blocks
+	//author:xiazhiqiang
+	protected void generateBlockArraysCode(Block block) {
+		block.generateBlockArraysCodeC(getCodeStructC());
+	}
+	protected void generateArraysCode(CodeGenerationOption option) {
+		System.out.println("Generating arrays codes......");
+		
+		for(Block block:blockList) {
+			System.out.println("Generating arrays codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			generateBlockArraysCode(block);
+		}
+	}
+//end
+	
 	protected void generateBlockUpdateCode(Block block) throws MatDimException {
 		block.generateBlockUpdateCodeC(getCodeStructC());
 	}

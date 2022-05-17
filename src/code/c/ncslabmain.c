@@ -27,13 +27,14 @@ unsigned char calcSum(unsigned char bytes[])
 { 
 
     pthread_mutex_lock(&(extModeData.timerCritical));
-    
-    mp->time+=mp->stepSize;
+    setAllClientUploadEvents();
     NCSLabOneStep();
+    mp->time+=mp->stepSize;
+    //NCSLabOneStep();
     
 	gettimeofday(&(mp->tv), NULL);
 	//printf("%f\n",mp->time);
-	setAllClientUploadEvents();
+	
     pthread_mutex_unlock(&(extModeData.timerCritical));
     
 }
