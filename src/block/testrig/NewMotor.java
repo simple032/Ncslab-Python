@@ -15,26 +15,36 @@ public class NewMotor extends Block {
 	
 	private String name = "NewMotor";
 	
-	State speedState;
-	State spState;
+	private State speedState;
+	
+	private double motorK=0.01;
+	private double motorT=0.09;
 	
 	public NewMotor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
-		//һ�����룬�������
+		
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,"Speed",1,false));
-		//outputPortList.add(new OutputPort(this,"Water_Level",2,false));
+	
+		this.isHardware=true;
 		
-		spState=new State(this,1,"SerialPortState");
-		stateList.add(spState);
+		switch(model.getModelMode()) {
+		case Simulation:
+			speedState=new State(this,1,"speedState");
+			stateList.add(speedState);
+			break;
+		case Compilation:
+			break;
+		}
+	}
+	
+	public String getHardwareDefineCodeC() {
+		String hardwareDefineCode="";
+		//hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
+		hardwareDefineCode+="HANDLE hComm;\n";
 		
-		
-		
-		//pumpState=new State(this,1,"pumpState");
-		//stateList.add(pumpState);
-		//levelState=new State(this,2,"levelState");
-		//stateList.add(levelState);
+		return hardwareDefineCode;
 	}
 	
 	public void generateInitCodeM(CodeStructM code) {
@@ -85,22 +95,25 @@ public class NewMotor extends Block {
 		super.generateInitCodeC(code);
 		
 		String initCode="/*Code for initialization of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-//		initCode+=pumpState.getName()+"="+0+";\n";
-//		initCode+=levelState.getName()+"="+0+";\n"; 
 		
-		//1.Open the serial port
-		String port = "\"/dev/ttyUSB0\"";
-		int baudrate = 115200;
-		initCode+="char msg[255];\n";
-		initCode+="hComm = Serialport_Open("+port+", "+baudrate+",msg);\n";
-	
-		//initCode+="ssSetIWorkValue(0,hComm);\n"		
+		switch(model.getModelMode()) {
+		case Simulation:
+			initCode+=speedState.getName()+"="+0+";\n"; 
+			break;
+		case Compilation:
+			//1.Open the serial port
+			String port = "\"/dev/ttyUSB0\"";
+			int baudrate = 115200;
+			initCode+="char msg[255];\n";
+			initCode+="hComm = Serialport_Open("+port+", "+baudrate+",msg);\n";
+			break;
+		}
 		
 		code.addInitCode(initCode);
 	}
 	
 	public void generateIncludeCodeC(CodeStructC code) {
-		String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+		//String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 //		code.addIncludeCode(includeCode);
 	}
 	
@@ -113,14 +126,35 @@ public class NewMotor extends Block {
 		
 //		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+pumpState.getName()+";\n";
 //		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
-		int bufLen = 255;
 		
-		outputCode+="char recvBuff["+bufLen+"];\n";
+		
+		switch(model.getModelMode()) {
+		case Simulation:
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+speedState.getName()+";\n";
+			break;
+		case Compilation:
+			int bufLen = 255;
 			
-		outputCode+="Serialport_Recv(hComm,recvBuff,7);\n";		
-		outputCode+="int speed=recvBuff[4]+(recvBuff[5]<<8);\n";			
-		
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=speed;\n";
+			outputCode+="if(mp->majorStep>0){\n";
+			outputCode+="char recvBuff["+bufLen+"]={0};\n";
+				
+			outputCode+="Serialport_Recv(hComm,recvBuff,7);\n";		
+			outputCode+="int speed=recvBuff[4]+(recvBuff[5]<<8)+(recvBuff[5]<<16)+(recvBuff[5]<<24);\n";	
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=speed;\n";
+			
+			outputCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
+			outputCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
+//			outputCode+="printf(\"speed is %d,pwm is %d\\n\",speed,pwm);\n";
+			outputCode+="pwm = pwm>=10000?10000:pwm;\n";
+			outputCode+="pwm = pwm<=-10000?-10000:pwm;\n";
+			outputCode+="cmd[4] = (pwm&0xFF);\n";
+			
+			outputCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
+			outputCode+="cmd[6] = calcSum(cmd);\n";
+			outputCode+="Serialport_Send(hComm,cmd,7);\n";		
+			outputCode+="}\n";
+			break;
+		}
 		
 		code.addOutputCode(outputCode);
 	}
@@ -128,25 +162,17 @@ public class NewMotor extends Block {
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 		
-		int bufLen = 255;	
-		derivativeCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
-		derivativeCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
-		derivativeCode+="cmd[4] = (pwm&0xFF);\n";
-		derivativeCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
-		derivativeCode+="cmd[6] = calcSum(cmd);\n";
-		//outputCode+="int hComm=ssGetIWorkValue(0);\n";
-	
-		derivativeCode+="Serialport_Send(hComm,cmd,7);\n";		
-//		derivativeCode+=pumpState.getDerivativeName()+"=("
-//				+this.getInputPortVariable(0)
-//				+"*"+pumpK+"-"+pumpState.getName()+")"
-//				+"*"+(1/pumpT)
-//				+";\n";
-//		
-//		derivativeCode+=levelState.getDerivativeName()+"=("
-//				+pumpState.getName()+"*"+waterLevelK+"-"+levelState.getName()+")"
-//				+"*"+(1/waterLevelT)
-//				+";\n";
+		switch(model.getModelMode()) {
+		case Simulation:
+		derivativeCode+=speedState.getDerivativeName()+"=("
+				+this.getInputPortVariable(0)
+				+"*"+motorK+"-"+speedState.getName()+")"
+				+"*"+(1/motorT)
+				+";\n";
+		
+		case Compilation:
+			break;
+		}
 		
 		code.addDerivativeCode(derivativeCode);
 	}
