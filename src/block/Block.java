@@ -22,7 +22,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	protected String blockName;
 	
 	protected int blockId=0;
-	
+	//Block所在画布的位置，不在子系统时为modelName，存在子系统时为modelName/subsystem
+	protected String blockPath;
 	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
 	protected JSONObject paramValues;
 	
@@ -53,7 +54,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		this.blockName=blockIn.getString("blockName");
 		this.paramValues=blockIn.getJSONObject("paramValues");
 		this.model=model;
-		
+		this.blockPath=blockIn.getString("blockPath");
 	}
 	
 	public void setSignalNum(int signalNum) {
@@ -78,6 +79,14 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	public String getBlockName() {
 		return blockName;
+	}
+	//xiazhiqiang:获取模块所处子系统的位置两个方法getBlockPath与getSubSystemName
+	public String getBlockPath() {
+		return blockPath;
+	}
+	public String getSubSystemName() {
+		int index=this.blockPath.lastIndexOf("/");
+        return this.blockPath.substring(index+1);
 	}
 	
 	public String getBlockType() {

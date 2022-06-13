@@ -135,6 +135,15 @@ public class BlockType {
 		case "Sine Wave":
 			block=new block.source.SineWave(blockJSON,model);
 			break;
+		case "In":
+			block=new block.subsystem.In(blockJSON,model);
+			break;
+		case "Out":
+			block=new block.subsystem.Out(blockJSON,model);
+			break;
+		case "Subsystem":
+			block=new block.subsystem.Subsystem(blockJSON,model);
+			break;
 		}
 		
 		if(block==null) {

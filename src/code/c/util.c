@@ -23,7 +23,7 @@ double gcd( double x, double y )
         if(0==a%result&&0==b%result)
             return result/1000.0;
     }
-    
+	return 0;    
 }
 
 double gcd1(double a[]){

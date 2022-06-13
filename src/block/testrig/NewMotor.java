@@ -105,7 +105,7 @@ public class NewMotor extends Block {
 			String port = "\"/dev/ttyUSB0\"";
 			int baudrate = 115200;
 			initCode+="char msg[255];\n";
-			initCode+="hComm = Serialport_Open("+port+", "+baudrate+",msg);\n";
+			initCode+="hComm = Serialport_Open((char *)"+port+", "+baudrate+",(char *)msg);\n";
 			break;
 		}
 		
@@ -138,7 +138,7 @@ public class NewMotor extends Block {
 			outputCode+="if(mp->majorStep>0){\n";
 			outputCode+="char recvBuff["+bufLen+"]={0};\n";
 				
-			outputCode+="Serialport_Recv(hComm,recvBuff,7);\n";		
+			outputCode+="Serialport_Recv(hComm,(uint8_t*)recvBuff,7);\n";		
 			outputCode+="int speed=recvBuff[4]+(recvBuff[5]<<8)+(recvBuff[5]<<16)+(recvBuff[5]<<24);\n";	
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=speed;\n";
 			
