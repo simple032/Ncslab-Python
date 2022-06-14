@@ -62,6 +62,8 @@ abstract public class NCSLabModel {
 		
 		this.jsonIn=jsonIn;
 		
+	
+		
 		//解析model，变成数据结构
 		parseModel();
 		
@@ -146,6 +148,8 @@ abstract public class NCSLabModel {
 		
 		//解析各个Block
 		parseBlocks();
+		//xiazhiqiang:检查模块命名是否唯一
+		checkBlocksName();
 		//解析各条连线
 		parseLines();
 		
@@ -204,7 +208,9 @@ abstract public class NCSLabModel {
 		JSONArray lineJSONList=jsonIn.getJSONArray("lines");
 		for(int i=0;i<lineJSONList.length();i++) {
 			JSONObject lineJSON=lineJSONList.getJSONObject(i);
-			
+			//xiazhiqiang:隐去子系统连线，并将输入连线链接到子系统的In，输出连线链接到子系统的Out
+			replaceInLine(lineJSON);
+			replaceOutLine(lineJSON); 
 			//解析各条连线
 			Line line=Line.createLine(lineJSON, this);
 			line.setLineId(i+1);
@@ -349,5 +355,59 @@ abstract public class NCSLabModel {
 		scanDimChain();
 		
 		showDimBlocks();
+	}
+	//xiazhiqiang:获取JsonIn
+	public JSONObject getJsonIn() {
+		return this.jsonIn;
+	}
+	//xiazhiqiang:检查前端模块是否存在命名相同的情况
+	private void checkBlocksName() throws MatDimException{
+		for(Block block:blockList) {
+			int i=0;
+			String name=block.getBlockName();
+			for(Block block1:blockList) {
+				if(name.equals(block1.getBlockName())) {
+					i=i+1;
+				}
+			}
+			if(i>1) {
+				MatDimException e=new MatDimException(block.getBlockName()+" Name is not unique!\n \n");
+				throw(e);
+			}
+		}
+	}
+	//xiazhiqiang:隐去Subsystem的输入连线，同时将该连线的输出连接到子系统中的In
+	private void replaceInLine(JSONObject lineJSON) {
+		String toBlockName=lineJSON.getString("toBlockName");
+		String blockPath=null;
+		for(Block block:blockList) {
+			if(block.getBlockName().equals(toBlockName)&&block.getBlockType().equals("Subsystem")) {
+				blockPath=block.getBlockPath()+"/"+toBlockName;
+				break;
+			}
+		}
+		for(Block block1:blockList) {
+			if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("In")){
+				lineJSON.put("toBlockName", block1.getBlockName());
+				break;
+			}
+		}
+	}
+	//xiazhiqiang:隐去Subsystem的输出连线，同时将该连线的输入连接到子系统中的out
+	private void replaceOutLine(JSONObject lineJSON) {
+		String fromBlockName=lineJSON.getString("fromBlockName");
+		String blockPath=null;
+		for(Block block:blockList) {
+			if(block.getBlockName().equals(fromBlockName)&&block.getBlockType().equals("Subsystem")) {
+				blockPath=block.getBlockPath()+"/"+fromBlockName;
+				break;
+			}
+		}
+		for(Block block1:blockList) {
+			if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("Out")){
+				lineJSON.put("fromBlockName", block1.getBlockName());
+				break;
+			}
+		}
 	}
 }
