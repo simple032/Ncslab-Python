@@ -42,10 +42,10 @@ void ncslabLoop()
         //end
   while (mp->time < mp->stopTime)
   {
-        mp->time += stepSize;
+        //mp->time += stepSize;
       //printf("time:%f\n",mp->time);
     NCSLabOneStep45(real_sample_time);
-	
+	mp->time += stepSize;
     
   }
 }

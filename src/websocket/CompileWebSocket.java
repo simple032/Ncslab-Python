@@ -22,6 +22,8 @@ public class CompileWebSocket {
 	@OnOpen
 	public void onOpen(Session session) {
 		System.out.println("WEBopen Experiment");
+		session.setMaxTextMessageBufferSize(1024*1024);
+		session.setMaxBinaryMessageBufferSize(1024*1024);
 	}
 	
 	private void sendMessage(Session session,String msgString) throws IOException{
