@@ -130,6 +130,7 @@ abstract public class CodeStructC {
 				+"#include\"ncslabdefines.h\"\n"
 				+"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.h\"\n"
+				+"#include\"math.h\"\n"
 				+"#ifdef _RT\n"
 				+"#include\"hardware.h\"\n"
 				+"#endif\n"
