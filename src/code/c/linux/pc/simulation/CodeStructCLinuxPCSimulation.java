@@ -58,6 +58,9 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../ncslabdefines.h","ncslabdefines.h");
 		
 		writeNCSLabFile("../../../results.c","results.c",true);
+		
+		writeNCSLabFile("../../../Matrix.c","Matrix.c");
+		writeNCSLabFile("../../../Matrix.h","Matrix.h");
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
 		writeNCSLabFile("../../ServerThread.c","ServerThread.c");

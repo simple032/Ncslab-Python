@@ -3,7 +3,9 @@
 #include"ncslab.h"
 
 #include <iostream>
-#include <octave/oct.h>
+//#include <octave/oct.h>
+#include "Matrix.h"
+#include "math.h"
 
 extern MODEL *mp;
 
@@ -64,7 +66,7 @@ double distance(double t,double s){
 
 void storeState(int num){
   /*
-  for(int i=0;i<STATE_NUM;i++){
+  for(int i=0;i<STATE_NUM;i++){mbiguous
     stateReserve[i]=*((REAL *)(mp->states[i]->vp));
   }*/
   int single=0;
@@ -157,7 +159,7 @@ void caculateDerivative(double *weights,int num){
 REAL calculateStateDif(int seq1,int seq2){
 	REAL dif=0;
 	for(int i=0;i<SINGLE_STATE_NUM;i++){
-		REAL difn=abs(singleStateReserve[seq1][i]-singleStateReserve[seq2][i]);
+		REAL difn=fabs(singleStateReserve[seq1][i]-singleStateReserve[seq2][i]);
 		if(dif<difn){
 			dif=difn;
 		}
@@ -168,7 +170,7 @@ REAL calculateStateDif(int seq1,int seq2){
 		Matrix *pm2=&(matrixStateReserve[seq2][i]);
 		for(int h=0;h<pm1->rows();h++){
 			for(int w=0;w<pm1->cols();w++){
-				REAL difn=abs((*pm1)(h,w)-(*pm2)(h,w));
+				REAL difn=fabs((*pm1)(h,w)-(*pm2)(h,w));
 				if(dif<difn){
 					dif=difn;
 				}

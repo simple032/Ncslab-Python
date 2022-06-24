@@ -134,7 +134,8 @@ abstract public class CodeStructC {
 				+"#include\"hardware.h\"\n"
 				+"#endif\n"
 				+"#include <iostream>\n"
-				+"#include <octave/oct.h>\n"
+				//+"#include <octave/oct.h>\n"
+				+"#include \"Matrix.h\"\n"
 				//xiazhiqiang:Stores the sampling time of discrete modules
 				+"double  sample_time[20]={};\n"
 				+"int sample_i=0;\n"

@@ -3,7 +3,9 @@
 #include "ncslab.h"
 
 #include <iostream>
-#include <octave/oct.h>
+//#include <octave/oct.h>
+#include "math.h"
+#include "Matrix.h"
 
 #define INIT_POINT_NUM 100
 #define TOL 1E-4
