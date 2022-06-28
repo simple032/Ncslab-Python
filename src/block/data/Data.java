@@ -1,6 +1,7 @@
 package block.data;
 
 import Jama.Matrix;
+import com.greenpineyu.fel.*;
 
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
 public class Data {
@@ -8,6 +9,63 @@ public class Data {
 	private DataType dataType=DataType.REAL;
 	private double initValue=0;
 	private Matrix initMatrix=null;
+	
+	static FelEngine fel=new FelEngineImpl();
+	static {
+		setupFel();
+	}
+	
+	static private void setupFel() {
+		fel.getContext().set("pi", 3.1415926);
+	}
+	
+	public Data() {
+		this(1,1);
+	}
+	
+	public Data(int height,int width) {
+		//setupFel();
+		
+		if(height>1||width>1) {
+			this.dataType=DataType.MATRIX;
+			initMatrix=new Matrix(height,width);
+		}
+		else {
+			initValue=0;
+		}
+		
+	}
+	
+	/*根据从前端传递来的字符串建立数据*/
+	public Data(String dataString) {
+		
+		//setupFel();
+		
+		dataString=formatDataString(dataString);
+		
+		try {
+			initValue=Double.parseDouble(dataString);
+			dataType=DataType.REAL;
+			
+			return;
+		}
+		catch(NumberFormatException e) {
+			
+		}
+		
+		if(isStringMatrix(dataString)) {
+			System.out.println("Matrix: "+dataString);
+			dataType=DataType.MATRIX;
+			
+			initMatrix=parseMatrix(dataString);
+		}
+		else {
+			//使用fel进行表达式分析
+			initValue=Double.parseDouble(fel.eval(dataString).toString());
+		}
+		
+	}
+
 	
 	private static String formatDataString(String dataString) {
 		dataString=dataString.trim();
@@ -57,50 +115,20 @@ public class Data {
 	        childMat[i] = new double[child.length];
 	        for (int j = 0; j < child.length; j++) {
 	        	String doubleString=child[j].replaceAll("\\s+", "");
-	            childMat[i][j] = Double.parseDouble(doubleString);
+	            //childMat[i][j] = Double.parseDouble(doubleString);
+	        	//使用fel进行表达式分析
+	        	childMat[i][j] = Double.parseDouble(fel.eval(doubleString).toString());
 	        }
 	    }
 	    
 	    return new Matrix(childMat);
 	}
 	
-	public Data(int height,int width) {
-		if(height>1||width>1) {
-			this.dataType=DataType.MATRIX;
-			initMatrix=new Matrix(height,width);
-		}
-		else {
-			initValue=0;
-		}
-	}
 	
-	public Data() {
-		this(1,1);
-	}
 	
-	/*根据从前端传递来的字符串建立数据*/
-	public Data(String dataString) {
-		
-		dataString=formatDataString(dataString);
-		
-		try {
-			initValue=Double.parseDouble(dataString);
-			dataType=DataType.REAL;
-			
-			return;
-		}
-		catch(NumberFormatException e) {
-			
-		}
-		
-		if(isStringMatrix(dataString)) {
-			System.out.println("Matrix: "+dataString);
-			dataType=DataType.MATRIX;
-			
-			initMatrix=parseMatrix(dataString);
-		}
-		
-	}
+	
+	
+	
 	
 	public double getInitValue() {
 		return this.initValue;
