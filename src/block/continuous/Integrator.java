@@ -28,7 +28,7 @@ public class Integrator extends Block {
 		parameterList.add(initialCondition);
 		input = new InputPort(this, 1);
 		inputPortList.add(input);
-		output = new OutputPort(this, 1, false);
+		output = new OutputPort(this, 1, true);
 		outputPortList.add(output);
 	}
 
@@ -204,8 +204,7 @@ public class Integrator extends Block {
 				out.getOutputSignalC().setHeight(initialCondition.getHeight());
 				out.getOutputSignalC().setWidth(initialCondition.getWidth());
 				out.getOutputSignalC().setDataType(DataType.MATRIX);
-				stateIntegral = new State(this, 1, "integral", initialCondition.getHeight(),
-						initialCondition.getWidth());
+				stateIntegral = new State(this, 1, "integral", initialCondition.getHeight(),initialCondition.getWidth());
 				break;
 			}
 			break;
