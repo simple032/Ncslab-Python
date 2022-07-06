@@ -83,9 +83,9 @@ public class BlockType {
 		case "Discrete Transfer Fcn":
 			block=new block.discrete.Discrete_Transfer_Fcn(blockJSON,model);
 			break;
-		case "Discrete Transfer Fcn (z)":
-			block=new block.discrete.Discrete_Transfer_Fcnz(blockJSON,model);
-			break;
+		//case "Discrete Transfer Fcn (z)":
+			//block=new block.discrete.Discrete_Transfer_Fcnz(blockJSON,model);
+			//break;
 		//routing
 		case "Mux":
 			block=new block.route.Mux(blockJSON, model);
@@ -140,9 +140,6 @@ public class BlockType {
 			break;
 		case "Sine Wave":
 			block=new block.source.SineWave(blockJSON,model);
-			break;
-		case "TestPoint":
-			block=new block.math.TestPoint(blockJSON,model);
 			break;
 		case "In":
 			block=new block.subsystem.In(blockJSON,model);
