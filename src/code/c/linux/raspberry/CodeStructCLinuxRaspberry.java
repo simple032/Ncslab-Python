@@ -44,7 +44,8 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 
 		//写锟斤拷锟杰边碉拷锟斤拷源锟侥硷拷
 		//makefile
-		writeNCSLabFile("makefile");
+		//writeNCSLabFile("makefile");
+		writeMakefile("makefile");
 		//锟斤拷锟斤拷锟捷结构
 		writeNCSLabFile("../../ncslabccode.h","ncslabccode.h");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
@@ -56,7 +57,7 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		writeNCSLabFile("../../util.c","util.c",true);
 		
 		writeNCSLabFile("../../ncslabdefines.h","ncslabdefines.h");
-
+		writeNCSLabFile("../../ncslabsfun.h","ncslabsfun.h");
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
 		writeNCSLabFile("../ServerThread.c","ServerThread.c");
 		writeNCSLabFile("../ServerThread.h","ServerThread.h");
@@ -73,6 +74,13 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		
 		writeNCSLabFile("../../Matrix.c","Matrix.c");
 		writeNCSLabFile("../../Matrix.h","Matrix.h");
+		
+		//写入生成的主代码ncslabccdoe.c
+				for(Block block: model.getBlockList()) {
+					if(block.isSFcnBlock()) {
+						block.generateSourceFile();
+					}
+				}
 
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();
