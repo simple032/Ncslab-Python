@@ -19,7 +19,11 @@ public class Config {
 			this.fixedStep=configIn.getDouble("FixedStep");
 		}
 		
-		this.solver=configIn.getString("Solver");
+		this.solver="auto";
+		if(configIn.isNull("Solver")==false) {
+			this.solver=configIn.getString("Solver");
+		}
+		
 		
 		if(mode==ModelMode.Simulation) {
 			this.startTime=configIn.getDouble("StartTime");

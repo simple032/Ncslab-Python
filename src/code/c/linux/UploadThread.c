@@ -18,18 +18,45 @@ void createUploadThread(CLIENT_STRUCT *p)
 {
 	int ret;
 	pthread_t id;
+	int i;
 
+	pthread_mutex_lock(&(p->upload.mutex));
+		pthread_cond_wait(&(p->upload.cond),&(p->upload.mutex));
+		pthread_mutex_unlock(&(p->upload.mutex));
+	
 	printf("Creating client thread...\n");
+	
+	#define MAX_TRY 3
+	
+	for(i=0;i<MAX_TRY;i++)
+	{
+		ret=pthread_create(&id,NULL,UploadThreadFunction,p);
 
+	
+    	if(ret!=0)
+    	{
+        	printf ("Create pthread error (%d)\n",ret);
+			//return;
+        	//exit (1);
+    	}
+    	else{
+    		break;
+    	}
+	}
+	
+	if(i==MAX_TRY){
+		return;
+	}
+	/*
 	ret=pthread_create(&id,NULL,UploadThreadFunction,p);
 
-
+	
     if(ret!=0)
     {
-        printf ("Create pthread error!\n");
+        printf ("Create pthread error (%d)\n",ret);
 		return;
         //exit (1);
-    }
+    }*/
 
 	p->upload.hUploadThread=id;
 	p->upload.loop=true;

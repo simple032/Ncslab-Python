@@ -3,8 +3,9 @@
 #include"ncslab.h"
 
 #include <iostream>
-#include <octave/oct.h>
-
+//#include <octave/oct.h>
+#include "math.h"
+#include "Matrix.h"
 extern MODEL *mp;
 
 //double stateReserve[STATE_NUM];

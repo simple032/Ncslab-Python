@@ -43,11 +43,15 @@ public class TestPoint extends Block{
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		//switch(signal.getDataType()) {
+		//case MATRIX:
 			out.setWidth(signal.getWidth());
 			out.setHeight(signal.getHeight());
 			out.getOutputSignalC().setHeight(signal.getWidth());
 			out.getOutputSignalC().setWidth(signal.getWidth());
 			out.getOutputSignalC().setDataType(signal.getDataType());
+			//break;
+		//}
 	}
 }
 

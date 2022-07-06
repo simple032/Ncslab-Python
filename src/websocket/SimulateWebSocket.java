@@ -20,7 +20,9 @@ public class SimulateWebSocket {
 	
 	@OnOpen
 	public void onOpen(Session session) {
-		//System.out.println("WEBopen Experiment");
+		System.out.println("WEBopen Experiment for Simulation");
+		session.setMaxTextMessageBufferSize(1024*1024);
+		session.setMaxBinaryMessageBufferSize(1024*1024);
 	}
 	
 	private void sendMessage(Session session,String msgString) throws IOException{
