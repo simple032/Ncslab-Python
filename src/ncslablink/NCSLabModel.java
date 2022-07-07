@@ -13,6 +13,8 @@ import block.io.InputPort;
 import block.io.OutputPort;
 import block.io.terminal.Terminal;
 
+import circuit.CircuitParser;
+
 abstract public class NCSLabModel {
 	
 	private static int modelSeqCount=0;
@@ -110,6 +112,14 @@ abstract public class NCSLabModel {
 		return modelName;
 	}
 	
+	public JSONArray getBlocksJSON() {
+		return jsonIn.getJSONArray("blocks");
+	}
+	
+	public JSONArray getLinesJSON() {
+		return jsonIn.getJSONArray("lines");
+	}
+	
 	public Vector<ErrorMessage> getErrorList(){
 		return this.errorList;
 	}
@@ -145,6 +155,9 @@ abstract public class NCSLabModel {
 		config=Config.createFromJSON(jsonIn.getJSONObject("config"),mode);
 		
 		saveInfo=jsonIn.getJSONObject("saveInfo");
+		
+		//解析电路模块
+		CircuitParser circuitPaser=new CircuitParser(this);
 		
 		//解析各个Block
 		parseBlocks();
