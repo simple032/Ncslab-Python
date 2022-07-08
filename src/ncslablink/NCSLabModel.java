@@ -158,6 +158,9 @@ abstract public class NCSLabModel {
 		
 		//解析电路模块
 		CircuitParser circuitPaser=new CircuitParser(this);
+		//circuitPaser.showBlocks();
+		circuitPaser.getCircuitModel().setupModel();
+		
 		
 		//解析各个Block
 		parseBlocks();

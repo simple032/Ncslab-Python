@@ -21,6 +21,9 @@ public class CircuitBlockType {
 		case "Inductor":
 			block=new circuit.block.element.Inductor(blockJSON, model);
 			break;
+		case "Capacitor":
+			block=new circuit.block.element.Capacitor(blockJSON, model);
+			break;
 		}
 		
 		if(block==null) {
