@@ -83,9 +83,9 @@ public class BlockType {
 		case "Discrete Transfer Fcn":
 			block=new block.discrete.Discrete_Transfer_Fcn(blockJSON,model);
 			break;
-		//case "Discrete Transfer Fcn (z)":
-			//block=new block.discrete.Discrete_Transfer_Fcnz(blockJSON,model);
-			//break;
+		case "Discrete Transfer Fcn (z)":
+			block=new block.discrete.Discrete_Transfer_Fcnz(blockJSON,model);
+			break;
 		//routing
 		case "Mux":
 			block=new block.route.Mux(blockJSON, model);
