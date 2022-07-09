@@ -19,6 +19,10 @@ public class CircuitBlock {
 	protected JSONObject paramValues;
 	// 指向上级Model模型的指针
 	protected NCSLabModel model;
+	
+	protected BlockModeType blockModeType=BlockModeType.Anything;
+	
+	protected BlockMode blockMode;
 
 	// 电气端口的列表
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
@@ -34,6 +38,19 @@ public class CircuitBlock {
 		circuitPortList.add(new CircuitPort(this,"RConn1",1));
 	}
 	
+	public CircuitPort getAnotherCircuitPort(CircuitPort circuitPort) {
+		if(circuitPort==circuitPortList.get(0)) {
+			return circuitPortList.get(1);
+		}
+		else
+		if(circuitPort==circuitPortList.get(1)) {
+			return circuitPortList.get(0);
+		}
+		else {
+			return null;
+		}
+	}
+	
 	public String getBlockName() {
 		return this.blockName;
 	}
@@ -44,5 +61,22 @@ public class CircuitBlock {
 	
 	public String getBlockType() {
 		return this.blockType;
+	}
+	
+	public BlockMode getBlockMode() {
+		return this.blockMode;
+	}
+	
+	public void setBlockMode(BlockMode blockMode) {
+		this.blockMode=blockMode;
+	}
+	
+	public boolean isBranchPossible() {
+		if(blockModeType==BlockModeType.Anything||blockModeType==BlockModeType.BranchOnly) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }
