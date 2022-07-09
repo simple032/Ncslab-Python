@@ -27,11 +27,17 @@ public class CircuitModel {
 	
 	private void getTree() {
 		
+		/*
 		for(CircuitNode startNode:nodeList) {
+			nodeListNew.add(startNode);
 			searchTree(startNode);
-		}
-		//CircuitNode startNode=nodeList.get(1);
-		//searchTree(startNode);
+			nodeListNew.remove(startNode);
+		}*/
+		
+		CircuitNode startNode=nodeList.get(0);
+		nodeListNew.add(startNode);
+		searchTree(startNode);
+		nodeListNew.remove(startNode);
 	}
 	
 	private void showNewNodes() {
@@ -39,6 +45,7 @@ public class CircuitModel {
 			System.out.print(node.getNodeId()+":");
 		}
 		System.out.println();
+		
 		
 		for(CircuitBlock block:blockList) {
 			System.out.print(block.getBlockName()+":"+block.getBlockMode()+"\t");
@@ -55,6 +62,98 @@ public class CircuitModel {
 		return false;
 	}
 	
+	private void searchTree(CircuitNode node) {
+		Vector<CircuitPort> circuitPortList = node.getCircuitPortList();
+
+		// 寻找只能做branch的block
+		Vector<CircuitPort> branchOnlyList = new Vector<CircuitPort>();
+		Vector<CircuitPort> anythingList = new Vector<CircuitPort>();
+		for (CircuitPort circuitPort : circuitPortList) {
+			CircuitBlock block = circuitPort.getBlock();
+			// 是否没有折回
+			if (isNewNodeIncluded(block.getAnotherCircuitPort(circuitPort).getCircuitNode()) == false) {
+				// 是否时只能做树枝
+				if (block.isBranchOnly()) {
+					branchOnlyList.add(circuitPort);
+				} else if (block.isAnything()) {
+					anythingList.add(circuitPort);
+				}
+			}
+		}
+		
+		//如果增加必须的树枝,超过了节点总数,说明这样增加是不行的,必须返回
+		if(branchOnlyList.size()+nodeListNew.size()>nodeList.size()) {
+			return;
+		}
+		
+		// 把必须做树枝的设为树枝,加入路径
+		for (CircuitPort circuitPort : branchOnlyList) {
+			CircuitBlock block = circuitPort.getBlock();
+			//设为树枝
+			block.setBlockMode(BlockMode.Branch);
+			
+			//如果增加的节点引来重复,说明这个图有问题,无解,需要给出异常
+			if (isNewNodeIncluded(block.getAnotherCircuitPort(circuitPort).getCircuitNode()) == true) {
+				
+			}
+			//节点增加进去
+			nodeListNew.add(block.getAnotherCircuitPort(circuitPort).getCircuitNode());
+			showNewNodes();
+		}
+		
+		int n=(1<<anythingList.size());
+		//System.out.println(anythingList.size()+":"+n);
+		
+		for(int i=0;i<n;i++) {
+			int j=0;
+			for (CircuitPort circuitPort : anythingList) {
+				int on=(i>>j)%2;
+				j++;
+				if(on==1) {
+					circuitPort.getBlock().setBlockMode(BlockMode.Branch);
+					nodeListNew.add(circuitPort.getBlock().getAnotherCircuitPort(circuitPort).getCircuitNode());
+					showNewNodes();
+				}
+			}
+			
+			//如果节点数没有超出,就递归搜索
+			if(nodeListNew.size()<nodeList.size()) {
+				for (CircuitPort circuitPort : branchOnlyList) {
+					searchTree(circuitPort.getBlock().getAnotherCircuitPort(circuitPort).getCircuitNode());
+				}
+				for (CircuitPort circuitPort : anythingList) {
+					if(circuitPort.getBlock().getBlockMode()==BlockMode.Branch) {
+						searchTree(circuitPort.getBlock().getAnotherCircuitPort(circuitPort).getCircuitNode());
+					}
+				}
+			}
+			else 
+			if(nodeListNew.size()==nodeList.size()) {
+				showNewNodes();
+			}
+			
+			j=0;
+			for (CircuitPort circuitPort : anythingList) {
+				int on=(i>>j)%2;
+				j++;
+				if(on==1) {
+					circuitPort.getBlock().setBlockMode(null);
+					nodeListNew.remove(circuitPort.getBlock().getAnotherCircuitPort(circuitPort).getCircuitNode());
+				}
+			}
+		}
+		
+		
+		//搜索完毕,返回
+		for (CircuitPort circuitPort : branchOnlyList) {
+			CircuitBlock block = circuitPort.getBlock();
+			block.setBlockMode(null);
+			nodeListNew.remove(block.getAnotherCircuitPort(circuitPort).getCircuitNode());
+		}
+	}
+
+	
+	/*
 	private void searchTree(CircuitNode node) {
 		nodeListNew.add(node);
 		//showNewNodes();
@@ -78,7 +177,7 @@ public class CircuitModel {
 			}
 		}
 		nodeListNew.remove(node);
-	}
+	}*/
 	
 	private void createCircuitNodes() {
 		int nodeId=1;

@@ -79,4 +79,22 @@ public class CircuitBlock {
 			return false;
 		}
 	}
+	
+	public boolean isBranchOnly() {
+		if(blockModeType==BlockModeType.BranchOnly) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public boolean isAnything() {
+		if(blockModeType==BlockModeType.Anything) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 }
