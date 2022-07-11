@@ -9,35 +9,79 @@ import circuit.block.io.CircuitNode;
 import circuit.block.io.CircuitPort;
 import ncslablink.NCSLabModel;
 
+import ncslablink.ModelException;
+
 public class CircuitModel {
 	private NCSLabModel model;
 	private Vector<CircuitBlock> blockList=new Vector<CircuitBlock>();
 	private Vector<CircuitLine> lineList=new Vector<CircuitLine>();
 	private Vector<CircuitNode> nodeList=new Vector<CircuitNode>();
-	CircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList){
+	
+	private Vector<BlockMode> blockModeList=new Vector<BlockMode>();
+	
+	private boolean isTreeFound=false;
+	
+	CircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{
 		this.model=model;
 		this.blockList=blockList;
 		this.lineList=lineList;
 		createCircuitNodes();
 		
 		getTree();
+		
+		if(isTreeFound==false) {
+			throw(new ModelException("The circuit part can not be resolved."));
+		}
+		showBranches();
 	}
 	
 	private Vector<CircuitNode> nodeListNew=new Vector<CircuitNode>();
 	
 	private void getTree() {
 		
-		/*
+		//开始从各个顶点搜索
 		for(CircuitNode startNode:nodeList) {
 			nodeListNew.add(startNode);
 			searchTree(startNode);
 			nodeListNew.remove(startNode);
-		}*/
+		}
 		
+		for(int i=0;i<blockModeList.size();i++) {
+			blockList.get(i).setBlockMode(blockModeList.get(i));
+		}
+		
+		/*
 		CircuitNode startNode=nodeList.get(0);
 		nodeListNew.add(startNode);
 		searchTree(startNode);
-		nodeListNew.remove(startNode);
+		nodeListNew.remove(startNode);*/
+	}
+	
+	private void showBranches() {
+		for(CircuitBlock block:blockList) {
+			System.out.print(block.getBlockName()+":"+block.getBlockMode()+"\t");
+		}
+		System.out.println();
+	}
+	
+	private boolean isValidTree() {
+		
+		for(CircuitBlock block:blockList) {
+			if(block.isBranchOnly()&&block.getBlockMode()!=BlockMode.Branch) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	private void setupLinks() {
+		for(CircuitBlock block:blockList) {
+			if(block.getBlockMode()==null) {
+				block.setBlockMode(BlockMode.Link);
+			}
+			blockModeList.add(block.getBlockMode());
+		}
 	}
 	
 	private void showNewNodes() {
@@ -62,7 +106,13 @@ public class CircuitModel {
 		return false;
 	}
 	
+	
+	
 	private void searchTree(CircuitNode node) {
+		if(isTreeFound) {
+			return;
+		}
+		
 		Vector<CircuitPort> circuitPortList = node.getCircuitPortList();
 
 		// 寻找只能做branch的block
@@ -98,7 +148,7 @@ public class CircuitModel {
 			}
 			//节点增加进去
 			nodeListNew.add(block.getAnotherCircuitPort(circuitPort).getCircuitNode());
-			showNewNodes();
+			//showNewNodes();
 		}
 		
 		int n=(1<<anythingList.size());
@@ -112,7 +162,7 @@ public class CircuitModel {
 				if(on==1) {
 					circuitPort.getBlock().setBlockMode(BlockMode.Branch);
 					nodeListNew.add(circuitPort.getBlock().getAnotherCircuitPort(circuitPort).getCircuitNode());
-					showNewNodes();
+					//showNewNodes();
 				}
 			}
 			
@@ -129,7 +179,11 @@ public class CircuitModel {
 			}
 			else 
 			if(nodeListNew.size()==nodeList.size()) {
-				showNewNodes();
+				if(isValidTree()) {
+					setupLinks();
+					//showNewNodes();
+					isTreeFound=true;
+				}
 			}
 			
 			j=0;
@@ -212,7 +266,7 @@ public class CircuitModel {
 		System.out.println("Setup Circuit Model");
 	}
 	
-	public static CircuitModel CreateCircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) {
+	public static CircuitModel CreateCircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{
 		return new CircuitModel(model,blockList,lineList);
 	}
 }  
