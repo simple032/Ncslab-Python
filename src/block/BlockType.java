@@ -24,6 +24,9 @@ public class BlockType {
 		case "PID Controller (s)":
 			block=new block.continuous.PIDController(blockJSON,model);
 			break;
+		case "PID Controller":
+			block=new block.continuous.OldPIDController(blockJSON,model);
+			break;	
 		case "Derivative":
 			block=new block.continuous.Derivative(blockJSON,model);
 			break;
