@@ -7,6 +7,7 @@ import circuit.block.CircuitBlock;
 import circuit.line.CircuitLine;
 import circuit.block.io.CircuitNode;
 import circuit.block.io.CircuitPort;
+import circuit.block.io.BlockVoltage;
 import ncslablink.NCSLabModel;
 
 import ncslablink.ModelException;
@@ -238,8 +239,11 @@ public class CircuitModel {
 	}
 	
 	public void setupModel() {
-		System.out.println("Setup Circuit Model nodes...");
-		setupNodes();
+		System.out.println("Setup Circuit Model Node Current...");
+		setupNodeCurrent();
+		
+		System.out.println("Setup Circuit Model Block Voltage...");
+		setupBlockVoltage();
 		
 		System.out.println("Setup Circuit Model blocks...");
 		
@@ -247,17 +251,80 @@ public class CircuitModel {
 		for(CircuitBlock block:blockList) {
 			block.setupBlocks();
 		}
+		
+		showNodes();
 	}
 	
-	public void setupNodes() {
+	private Vector<CircuitBlock> linkBlockList=new Vector<CircuitBlock>();
+	private Vector<BlockVoltage> voltagePath;
+	//private CircuitBlock targetBlock;
+	private void setupBlockVoltage() {
+		for(CircuitBlock block:blockList) {
+			if(block.getBlockMode()==BlockMode.Link) {
+				linkBlockList.add(block);
+			}
+		}
+		
+		for(CircuitBlock block:linkBlockList) {
+			voltagePath=new Vector<BlockVoltage>();
+			searchBlock(block,true,null);
+		}
+	}
+	
+	private boolean isBlockInPath(CircuitBlock block) {
+		for(BlockVoltage voltage:voltagePath) {
+			if(voltage.getCircuitBlock()==block) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void showBlockPath() {
+		System.out.println("Found Loop");
+		for(BlockVoltage voltage:voltagePath) {
+			System.out.print(voltage.getCircuitBlock().getBlockName()+"\t");
+		}
+		System.out.println();
+	}
+	
+	private void searchBlock(CircuitBlock baseBlock,boolean sign,CircuitPort basePort) {
+		BlockVoltage blockVoltage=new BlockVoltage(baseBlock,sign);
+		voltagePath.add(blockVoltage);
+		
+		if(basePort==null) {
+			basePort=baseBlock.getCurcuitPortList().get(0);
+		}
+		
+		CircuitPort anotherPort=baseBlock.getAnotherCircuitPort(basePort);
+		CircuitNode anotherNode=anotherPort.getCircuitNode();
+		
+		Vector<CircuitPort> portList=anotherNode.getOtherCircuitPortList(anotherPort);
+		for(CircuitPort port:portList) {
+			CircuitBlock block=port.getBlock();
+			if(isBlockInPath(block)==false) {
+				if(block.getBlockMode()==BlockMode.Branch) {
+					searchBlock(block,true,port);
+				}
+			}
+			else {
+				showBlockPath();
+			}
+		}
+		
+		voltagePath.remove(blockVoltage);
+	}
+	
+	private void showNodes() {
+		for(CircuitNode node:nodeList) {
+			node.showNode();
+		}
+	}
+	
+	private void setupNodeCurrent() {
 		for(CircuitNode node:nodeList) {
 			node.searchNode(null);
 			//System.out.println(node.getIsNodeCurrentDecided());
-		}
-		
-		for(CircuitNode node:nodeList) {
-			//System.out.println(node.getIsNodeCurrentDecided());
-			node.showNode();
 		}
 	}
 	

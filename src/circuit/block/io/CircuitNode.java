@@ -59,6 +59,16 @@ public class CircuitNode {
 		
 	}
 	
+	public Vector<CircuitPort> getOtherCircuitPortList(CircuitPort basePort){
+		Vector<CircuitPort> otherPortList=new Vector<CircuitPort>();
+		for(CircuitPort port:circuitPortList) {
+			if(basePort!=port) {
+				otherPortList.add(port);
+			}
+		}
+		return otherPortList;
+	}
+	
 	private void setupLastPortCurrent() {
 		CircuitPort lastPort=null;
 		Vector<CircuitPort> otherPortList=new Vector<CircuitPort>();
@@ -83,7 +93,7 @@ public class CircuitNode {
 			return;
 		}
 		
-		System.out.println("Setup node "+nodeId+"...");
+		//System.out.println("Setup node "+nodeId+"...");
 		
 		//记录被确定电流表达的Port的个数,记录到n
 		Vector<CircuitPort> undecidedPortList=new Vector<CircuitPort>();

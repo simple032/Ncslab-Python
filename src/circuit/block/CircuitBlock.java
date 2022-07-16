@@ -5,6 +5,7 @@ import java.util.Vector;
 import org.json.JSONObject;
 
 import circuit.block.io.CircuitPort;
+import circuit.block.io.CircuitNode;
 import ncslablink.NCSLabModel;
 
 import block.Block;
@@ -118,6 +119,12 @@ abstract public class CircuitBlock {
 			return false;
 		}
 	}
+	
+	/*
+	public void searchBlock(Vector<CircuitBlock> blockPath,CircuitPort port) {
+		CircuitNode node=port.getCircuitNode();
+		node.getOtherCircuitPortList(port);
+	}*/
 	
 	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum) {
 		JSONObject lineObject=new JSONObject();
