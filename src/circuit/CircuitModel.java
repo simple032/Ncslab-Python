@@ -33,6 +33,8 @@ public class CircuitModel {
 			throw(new ModelException("The circuit part can not be resolved."));
 		}
 		showBranches();
+		
+		//setupBlocks();
 	}
 	
 	private Vector<CircuitNode> nodeListNew=new Vector<CircuitNode>();
@@ -205,33 +207,6 @@ public class CircuitModel {
 			nodeListNew.remove(block.getAnotherCircuitPort(circuitPort).getCircuitNode());
 		}
 	}
-
-	
-	/*
-	private void searchTree(CircuitNode node) {
-		nodeListNew.add(node);
-		//showNewNodes();
-		if(nodeListNew.size()==nodeList.size()) {
-			showNewNodes();
-		}
-		else {
-			Vector<CircuitPort> circuitPortList=node.getCircuitPortList();
-			for(CircuitPort circuitPort:circuitPortList) {
-				CircuitBlock block=circuitPort.getBlock();
-				if(block.isBranchPossible()) {
-					
-					CircuitPort otherPort=block.getAnotherCircuitPort(circuitPort);
-					CircuitNode newNode=otherPort.getCircuitNode();
-					if(isNewNodeIncluded(newNode)==false) {
-						block.setBlockMode(BlockMode.Branch);
-						searchTree(newNode);
-						block.setBlockMode(null);
-					}
-				}
-			}
-		}
-		nodeListNew.remove(node);
-	}*/
 	
 	private void createCircuitNodes() {
 		int nodeId=1;
@@ -263,7 +238,27 @@ public class CircuitModel {
 	}
 	
 	public void setupModel() {
-		System.out.println("Setup Circuit Model");
+		System.out.println("Setup Circuit Model nodes...");
+		setupNodes();
+		
+		System.out.println("Setup Circuit Model blocks...");
+		
+		//一个个设置Block,并建立连接关系
+		for(CircuitBlock block:blockList) {
+			block.setupBlocks();
+		}
+	}
+	
+	public void setupNodes() {
+		for(CircuitNode node:nodeList) {
+			node.searchNode(null);
+			//System.out.println(node.getIsNodeCurrentDecided());
+		}
+		
+		for(CircuitNode node:nodeList) {
+			//System.out.println(node.getIsNodeCurrentDecided());
+			node.showNode();
+		}
 	}
 	
 	public static CircuitModel CreateCircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{

@@ -7,7 +7,11 @@ import org.json.JSONObject;
 import circuit.block.io.CircuitPort;
 import ncslablink.NCSLabModel;
 
-public class CircuitBlock {
+import block.Block;
+
+import line.Line;
+
+abstract public class CircuitBlock {
 	protected String blockType;
 	protected String blockName;
 
@@ -23,6 +27,12 @@ public class CircuitBlock {
 	protected BlockModeType blockModeType=BlockModeType.Anything;
 	
 	protected BlockMode blockMode;
+	
+	//等价的Block组合
+	protected Vector<Block> blockList=new Vector<Block>();
+	
+	//等价的Line组合
+	protected Vector<Line> lineList=new Vector<Line>();
 
 	// 电气端口的列表
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
@@ -35,8 +45,19 @@ public class CircuitBlock {
 		this.blockPath = blockIn.getString("blockPath");
 		
 		circuitPortList.add(new CircuitPort(this,"LConn1",1));
-		circuitPortList.add(new CircuitPort(this,"RConn1",1));
+		circuitPortList.add(new CircuitPort(this,"RConn1",2));
+		
+		setupBlockModeType();
+		//setupBlockList();
 	}
+	
+	public void setupBlocks() {
+		setupBlockList();
+	}
+	
+	protected abstract void setupBlockList();
+	
+	protected abstract void setupBlockModeType();
 	
 	public CircuitPort getAnotherCircuitPort(CircuitPort circuitPort) {
 		if(circuitPort==circuitPortList.get(0)) {
@@ -96,5 +117,17 @@ public class CircuitBlock {
 		else {
 			return false;
 		}
+	}
+	
+	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum) {
+		JSONObject lineObject=new JSONObject();
+		lineObject.put("fromBlockName", fromBlockName);
+		lineObject.put("fromPortNo", fromBlockNum);
+		
+		lineObject.put("toBlockName", toBlockName);
+		lineObject.put("toPortNo", toBlockNum);
+		
+		Line line=Line.createLine(lineObject,blockList);
+		lineList.add(line);
 	}
 }

@@ -102,5 +102,10 @@ public class Line {
 		return line;
 	}
 	
+	public static Line createLine(JSONObject lineJSON,Vector<Block> blockList) {
+		Line line=new Line(lineJSON,blockList);
+		
+		return line;
+	}
 
 }

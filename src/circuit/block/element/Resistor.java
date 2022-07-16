@@ -9,6 +9,14 @@ import ncslablink.NCSLabModel;
 public class Resistor extends CircuitBlock {
 	public Resistor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
+		
+	}
+	
+	protected void setupBlockList() {
+		
+	}
+	
+	protected void setupBlockModeType() {
 		blockModeType=BlockModeType.Anything;
 	}
 }
