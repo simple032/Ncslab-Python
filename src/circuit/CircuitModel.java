@@ -257,7 +257,8 @@ public class CircuitModel {
 	
 	private Vector<CircuitBlock> linkBlockList=new Vector<CircuitBlock>();
 	private Vector<BlockVoltage> voltagePath;
-	//private CircuitBlock targetBlock;
+	private boolean isLoopFound=false;
+	private CircuitPort refPort;
 	private void setupBlockVoltage() {
 		for(CircuitBlock block:blockList) {
 			if(block.getBlockMode()==BlockMode.Link) {
@@ -267,7 +268,9 @@ public class CircuitModel {
 		
 		for(CircuitBlock block:linkBlockList) {
 			voltagePath=new Vector<BlockVoltage>();
+			isLoopFound=false;
 			searchBlock(block,true,null);
+			showBlockPath(block);
 		}
 	}
 	
@@ -280,20 +283,38 @@ public class CircuitModel {
 		return false;
 	}
 	
-	private void showBlockPath() {
-		System.out.println("Found Loop");
-		for(BlockVoltage voltage:voltagePath) {
-			System.out.print(voltage.getCircuitBlock().getBlockName()+"\t");
+	private void showBlockPath(CircuitBlock block) {
+		System.out.println("Found Loop for "+block.getBlockName());
+		for(BlockVoltage voltage:block.getVoltageList()) {
+			System.out.print(voltage.getCircuitBlock().getBlockName()+"/"+voltage.getSign()+"\t");
 		}
 		System.out.println();
 	}
 	
-	private void searchBlock(CircuitBlock baseBlock,boolean sign,CircuitPort basePort) {
-		BlockVoltage blockVoltage=new BlockVoltage(baseBlock,sign);
+	private void saveLoop() {
+		
+		CircuitBlock block=voltagePath.get(0).getCircuitBlock();
+		
+		Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
+		
+		for(int i=1;i<voltagePath.size();i++) {
+			BlockVoltage voltage=voltagePath.get(i);
+			voltageList.add(voltage);
+		}
+		
+		block.setVoltageList(voltageList);
+	}
+	
+	private void searchBlock(CircuitBlock baseBlock,boolean baseSign,CircuitPort basePort) {
+		if(isLoopFound) {
+			return;
+		}
+		BlockVoltage blockVoltage=new BlockVoltage(baseBlock,baseSign);
 		voltagePath.add(blockVoltage);
 		
 		if(basePort==null) {
 			basePort=baseBlock.getCurcuitPortList().get(0);
+			refPort=basePort;
 		}
 		
 		CircuitPort anotherPort=baseBlock.getAnotherCircuitPort(basePort);
@@ -304,11 +325,13 @@ public class CircuitModel {
 			CircuitBlock block=port.getBlock();
 			if(isBlockInPath(block)==false) {
 				if(block.getBlockMode()==BlockMode.Branch) {
-					searchBlock(block,true,port);
+					boolean sign=!(refPort.getCircuitPortType()==port.getCircuitPortType());
+					searchBlock(block,sign,port);
 				}
 			}
 			else {
-				showBlockPath();
+				saveLoop();
+				isLoopFound=true;
 			}
 		}
 		

@@ -16,10 +16,13 @@ public class CircuitPort {
 	
 	private Vector<PortCurrent> currentList=new Vector<PortCurrent>();
 	
-	public CircuitPort(CircuitBlock block,String name,int number){
+	private CircuitPortType circuitPortType;
+	
+	public CircuitPort(CircuitBlock block,String name,CircuitPortType circuitPortType,int number){
 		this.block=block;
 		this.name=name;
 		this.number=number;
+		this.circuitPortType=circuitPortType;
 	}
 	
 	public void setCurrentList(Vector<PortCurrent> currentList) {
@@ -29,6 +32,10 @@ public class CircuitPort {
 	
 	public void setCircuitNode(CircuitNode circuitNode) {
 		this.circuitNode=circuitNode;
+	}
+	
+	public CircuitPortType getCircuitPortType() {
+		return this.circuitPortType;
 	}
 	
 	public CircuitNode getCircuitNode() {

@@ -5,6 +5,8 @@ import java.util.Vector;
 import org.json.JSONObject;
 
 import circuit.block.io.CircuitPort;
+import circuit.block.io.CircuitPortType;
+import circuit.block.io.BlockVoltage;
 import circuit.block.io.CircuitNode;
 import ncslablink.NCSLabModel;
 
@@ -37,6 +39,8 @@ abstract public class CircuitBlock {
 
 	// 电气端口的列表
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
+	
+	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
 
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
@@ -45,8 +49,8 @@ abstract public class CircuitBlock {
 		this.model = model;
 		this.blockPath = blockIn.getString("blockPath");
 		
-		circuitPortList.add(new CircuitPort(this,"LConn1",1));
-		circuitPortList.add(new CircuitPort(this,"RConn1",2));
+		circuitPortList.add(new CircuitPort(this,"LConn1",CircuitPortType.Left,1));
+		circuitPortList.add(new CircuitPort(this,"RConn1",CircuitPortType.Right,2));
 		
 		setupBlockModeType();
 		//setupBlockList();
@@ -54,6 +58,14 @@ abstract public class CircuitBlock {
 	
 	public void setupBlocks() {
 		setupBlockList();
+	}
+	
+	public void setVoltageList(Vector<BlockVoltage> voltageList) {
+		this.voltageList=voltageList;
+	}
+	
+	public Vector<BlockVoltage> getVoltageList(){
+		return this.voltageList;
 	}
 	
 	protected abstract void setupBlockList();
