@@ -24,6 +24,9 @@ public class BlockType {
 		case "PID Controller (s)":
 			block=new block.continuous.PIDController(blockJSON,model);
 			break;
+		case "PID Controller":
+			block=new block.continuous.OldPIDController(blockJSON,model);
+			break;	
 		case "Derivative":
 			block=new block.continuous.Derivative(blockJSON,model);
 			break;
@@ -80,6 +83,12 @@ public class BlockType {
 		case "Discrete-Time Integrator":
 			block=new block.discrete.Discrete_Time_Integrator(blockJSON,model);
 			break;
+		case "Discrete Transfer Fcn":
+			block=new block.discrete.Discrete_Transfer_Fcn(blockJSON,model);
+			break;
+		case "Discrete Transfer Fcn (z)":
+			block=new block.discrete.Discrete_Transfer_Fcnz(blockJSON,model);
+			break;
 		//routing
 		case "Mux":
 			block=new block.route.Mux(blockJSON, model);
@@ -135,9 +144,6 @@ public class BlockType {
 		case "Sine Wave":
 			block=new block.source.SineWave(blockJSON,model);
 			break;
-		case "TestPoint":
-			block=new block.math.TestPoint(blockJSON,model);
-			break;
 		case "In":
 			block=new block.subsystem.In(blockJSON,model);
 			break;
@@ -146,6 +152,15 @@ public class BlockType {
 			break;	
 		case "Subsystem":
 			block=new block.subsystem.Subsystem(blockJSON,model);
+			break;
+		case "Switch":
+			block=new block.route.Switch(blockJSON,model);
+			break;
+		case "Clock":
+			block=new block.source.Clock(blockJSON,model);
+			break;
+		case "TestPoint":
+			block=new block.math.TestPoint(blockJSON, model);
 			break;
 		}
 		

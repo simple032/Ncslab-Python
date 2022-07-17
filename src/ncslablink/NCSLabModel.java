@@ -291,6 +291,7 @@ abstract public class NCSLabModel {
 		
 		//如果有Feedthrough的模块，则要遍历整个模块的InputPort
 		if(isDimThroughBlock) {
+			block.setIsDimScaned(true);
 			Vector<InputPort> InputPortList=block.getInputPortList();
 			for(InputPort input:InputPortList) {
 				//递归调用，实现遍历
@@ -299,9 +300,10 @@ abstract public class NCSLabModel {
 			//遍历完成，也要生成模块的输出代码
 			//generateBlockOutputCode(block);
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 		}
 		else {
+			block.setIsDimScaned(true);
 			Vector<InputPort> InputPortList=block.getInputPortList();
 			
 			//如果dimThrough是真的话，说明这是类似Sum和Add的模块，输入的Dimension必须相互配合
@@ -321,7 +323,7 @@ abstract public class NCSLabModel {
 			}
 			
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 
 			//尽管这个模块的输出计算不取决于当前的输入，但是它的Update还是需要输入量的计算。因此将这个模块加入scanBlockList，进入二次遍历
 			//scanDimList.add(block);

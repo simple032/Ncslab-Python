@@ -46,7 +46,7 @@ public class Discrete_Transfer_Fcn extends Block{
 	
 	//define arrays to save data
 		 public void generateArraysCodeC(CodeStructC code) {
-			 String arraysCode="/*Define arrays for block discrete_Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
+			 String arraysCode="/*Define arrays for block discrete_Transfer_Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
 			 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			 arraysCode+="double "+"Block"+getBlockId()+"_discrete_transfer_savedata["+signal.getHeight()+"]["+signal.getWidth()+"];\n";
 			 code.addArraysCode(arraysCode);
@@ -62,12 +62,16 @@ public class Discrete_Transfer_Fcn extends Block{
 			initCode+=den.getInitCodeC();
 			initCode+=initialStates.getInitCodeC();
 		    int k;
+		    if(initialStates.getDataType()==DataType.REAL&&xState.getDataType()==DataType.REAL) {
+		    	initCode+=xState.getName()+"(0,0)="+initialStates.getName()+";\n";
+		    }else {
 			for(int i=0;i<xState.getHeight();i++) {
 				for(int j=0;j<xState.getWidth();j++) {
 					k=j%(den.getWidth()-1);
 					initCode+=xState.getName()+"("+i+","+j+")="+initialStates.getName()+"(0,"+k+");\n";
 				}
-			}
+			  }
+		    }
 			code.addInitCode(initCode);
 			}
 	 public void generateOutputCodeC(CodeStructC code) {

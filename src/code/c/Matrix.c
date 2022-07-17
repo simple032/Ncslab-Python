@@ -157,3 +157,9 @@ Matrix Matrix::getcol(Index_T index)//������
     }
     return ret;
 }
+
+void Matrix::set(int nRow, int nCol, double value){
+     if(nRow<m_row&&nCol<m_col){
+     m_ptr[nRow*m_col+nCol]=value;
+    }
+}

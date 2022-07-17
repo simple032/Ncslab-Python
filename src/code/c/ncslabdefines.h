@@ -18,17 +18,12 @@
 #define ssGetGlobalT() (mp->tv.tv_sec * 1000000.0 + mp->tv.tv_usec)
 
 
-#define sfcnStart(S) ( S.start?\
-									S.start((struct SimStruct_tag *)&S):S )
+#define sfcnStart(S) if(S.start){S.start((struct SimStruct_tag *)&S);}
 
-#define sfcnInitializeSizes(S) ( S.initializeSize?\
-									S.initializeSize((struct SimStruct_tag *)&S):S )
-#define sfcnUpdate(S) ( S.update?\
-									S.update((struct SimStruct_tag *)&S):S )
-#define sfcnOutputs(S,tid) ( S.outputs?\
-									S.outputs((struct SimStruct_tag *)&S, tid):S )
-#define sfcnDerivatives(S) ( S.derivatives?\
-									S.derivatives((struct SimStruct_tag *)&S):S )
+#define sfcnInitializeSizes(S) if(S.initializeSize){S.initializeSize((struct SimStruct_tag *)&S); }
+#define sfcnUpdate(S) if(S.update){S.update((struct SimStruct_tag *)&S);}
+#define sfcnOutputs(S,tid) if(S.outputs){S.outputs((struct SimStruct_tag *)&S, tid);}
+#define sfcnDerivatives(S) if(S.derivatives){S.derivatives((struct SimStruct_tag *)&S); }
 
 #define sfcnGetT() (mp->time)
 

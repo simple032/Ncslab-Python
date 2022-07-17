@@ -44,7 +44,8 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 
 		//写锟斤拷锟杰边碉拷锟斤拷源锟侥硷拷
 		//makefile
-		writeNCSLabFile("makefile");
+		//writeNCSLabFile("makefile");
+		writeMakefile("makefile");
 		//锟斤拷锟斤拷锟捷结构
 		writeNCSLabFile("../../../ncslabccode.h","ncslabccode.h");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
@@ -56,7 +57,7 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../util.c","util.c",true);
 		
 		writeNCSLabFile("../../../ncslabdefines.h","ncslabdefines.h");
-		
+		writeNCSLabFile("../../../ncslabsfun.h","ncslabsfun.h");
 		writeNCSLabFile("../../../results.c","results.c",true);
 		
 		writeNCSLabFile("../../../Matrix.c","Matrix.c");
@@ -72,6 +73,13 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		
 		writeNCSLabFile("../../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../../ncs_serialport.h","ncs_serialport.h");
+		
+		//写入生成的主代码ncslabccdoe.c
+		for(Block block: model.getBlockList()) {
+			if(block.isSFcnBlock()) {
+				block.generateSourceFile();
+			}
+		}
 
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();

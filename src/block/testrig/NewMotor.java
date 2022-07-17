@@ -130,7 +130,7 @@ public class NewMotor extends Block {
 		
 		switch(model.getModelMode()) {
 		case Simulation:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+speedState.getName()+";\n";
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=10000*"+speedState.getName()+";\n";
 			break;
 		case Compilation:
 			int bufLen = 255;
