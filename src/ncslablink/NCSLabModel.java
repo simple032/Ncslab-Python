@@ -58,6 +58,9 @@ abstract public class NCSLabModel {
 	
 	protected Vector<Terminal> terminalList=new Vector<Terminal>();
 	
+	private int blockSeq=0;
+	private int lineSeq=0;
+	
 	//解析model，变成数据结构
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		this.mode=mode;
@@ -140,6 +143,26 @@ abstract public class NCSLabModel {
 		return this.terminalList;
 	}
 	
+	private void addCircuitBlocks(CircuitParser circuitPaser) {
+		Vector<Block> circuitBlockList=circuitPaser.getCircuitModel().getModelBlocks();
+		
+		for(Block block:circuitBlockList) {
+			block.setBlockId(blockSeq+1);
+			blockSeq++;
+			blockList.add(block);
+		}
+	}
+	
+	private void addCircuitLines(CircuitParser circuitPaser) {
+		Vector<Line> circuitLineList=circuitPaser.getCircuitModel().getModelLines();
+		
+		for(Line line:circuitLineList) {
+			line.setLineId(lineSeq+1);
+			lineSeq++;
+			lineList.add(line);
+		}
+	}
+	
 	private void parseModel() throws ModelException{
 
 		//解析各个JSON项目
@@ -161,6 +184,8 @@ abstract public class NCSLabModel {
 		//circuitPaser.showBlocks();
 		circuitPaser.getCircuitModel().setupModel();
 		
+		addCircuitBlocks(circuitPaser);
+		addCircuitLines(circuitPaser);
 		
 		//解析各个Block
 		parseBlocks();
@@ -173,7 +198,7 @@ abstract public class NCSLabModel {
 		
 		updateDimensions();
 		
-		//showBlocks();
+		showBlocks();
 	}
 	
 	public JSONObject getSaveInfo() {
@@ -183,6 +208,7 @@ abstract public class NCSLabModel {
 	private void showBlocks() {
 		for(Block block:blockList) {
 			System.out.println("+++++++++++++++++++++++++++");
+			System.out.println("ID: "+block.getBlockId());
 			System.out.println("Name: "+block.getBlockName());
 			System.out.println("Type: "+block.getBlockType());
 			System.out.println("In: "+block.getInputPortList().size()+" Out:"+block.getOutputPortList().size());
@@ -202,6 +228,8 @@ abstract public class NCSLabModel {
 		}
 	}
 	
+	
+	
 	/*解析各个Block*/
 	private void parseBlocks() throws ModelException{
 		
@@ -209,7 +237,8 @@ abstract public class NCSLabModel {
 		for(int i=0;i<blockJSONList.length();i++) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
 
-			Block block=BlockType.createBlock(i+1,blockJSON,this);
+			Block block=BlockType.createBlock(blockSeq+1,blockJSON,this);
+			blockSeq++;
 			
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 			
@@ -229,7 +258,8 @@ abstract public class NCSLabModel {
 			replaceOutLine(lineJSON); 
 			//解析各条连线
 			Line line=Line.createLine(lineJSON, this);
-			line.setLineId(i+1);
+			line.setLineId(lineSeq+1);
+			lineSeq++;
 			
 			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
 			

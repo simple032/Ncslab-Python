@@ -6,11 +6,14 @@ import org.json.JSONObject;
 
 import circuit.block.io.CircuitPort;
 import circuit.block.io.CircuitPortType;
+import circuit.block.io.PortCurrent;
 import circuit.block.io.BlockVoltage;
 import circuit.block.io.CircuitNode;
 import ncslablink.NCSLabModel;
 
 import block.Block;
+import block.io.OutputPort;
+import block.io.InputPort;
 
 import line.Line;
 
@@ -41,6 +44,9 @@ abstract public class CircuitBlock {
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
 	
 	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
+	
+	private Block outputBlock;
+	private Block inputBlock;
 
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
@@ -60,6 +66,63 @@ abstract public class CircuitBlock {
 		setupBlockList();
 	}
 	
+	public void setupBlockConnections() {
+		setupBlockListConnections();
+	}
+	
+	protected void setupBlockListConnections() {
+		if(inputBlock==null) {
+			return;
+		}
+		
+		Vector<InputPort> inputPortList=inputBlock.getInputPortList();
+		for(int i=0;i<inputPortList.size();i++) {
+			InputPort input=inputPortList.get(i);
+			OutputPort output=null;
+			switch(blockMode) {
+			case Branch:
+				PortCurrent current=this.getCurcuitPortList().get(0).getCurrentList().get(i);
+				output=current.getCircuitBlock().getOutputPort();
+				break;
+			case Link:
+				BlockVoltage voltage=getVoltageList().get(i);
+				output=voltage.getCircuitBlock().getOutputPort();
+				break;
+			}
+			
+			Vector<Block> blocks=new Vector<Block>();
+			blocks.add(input.getBLock());
+			blocks.add(output.getBLock());
+			
+			createLine(output.getBLock().getBlockName(), 1, input.getBLock().getBlockName(), 1+1);
+		}
+		
+	}
+	
+	public void setOutputBlock(Block outputPort) {
+		this.outputBlock=outputPort;
+	}
+	
+	public void setupInputBlock(Block inputBlock) {
+		this.inputBlock=inputBlock;
+	}
+	
+	public OutputPort getOutputPort() {
+		return outputBlock.getOutputPortList().get(0);
+	}
+	
+	public Vector<Block> getBlockList(){
+		/*
+		for(Block block:blockList) {
+			System.out.println(block.getBlockName());
+		}*/
+		return this.blockList;
+	}
+	
+	public Vector<Line> getLineList(){
+		return this.lineList;
+	}
+	
 	public void setVoltageList(Vector<BlockVoltage> voltageList) {
 		this.voltageList=voltageList;
 	}
@@ -71,6 +134,8 @@ abstract public class CircuitBlock {
 	protected abstract void setupBlockList();
 	
 	protected abstract void setupBlockModeType();
+	
+	
 	
 	public CircuitPort getAnotherCircuitPort(CircuitPort circuitPort) {
 		if(circuitPort==circuitPortList.get(0)) {
@@ -139,6 +204,18 @@ abstract public class CircuitBlock {
 	}*/
 	
 	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum) {
+		JSONObject lineObject=new JSONObject();
+		lineObject.put("fromBlockName", fromBlockName);
+		lineObject.put("fromPortNo", fromBlockNum);
+		
+		lineObject.put("toBlockName", toBlockName);
+		lineObject.put("toPortNo", toBlockNum);
+		
+		Line line=Line.createLine(lineObject,blockList);
+		lineList.add(line);
+	}
+	
+	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum,Vector<Block> blockList) {
 		JSONObject lineObject=new JSONObject();
 		lineObject.put("fromBlockName", fromBlockName);
 		lineObject.put("fromPortNo", fromBlockNum);

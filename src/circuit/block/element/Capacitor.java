@@ -4,11 +4,11 @@ import org.json.JSONObject;
 
 import block.continuous.Integrator;
 import block.math.Gain;
-import block.source.Constant;
 import block.math.Add;
 import circuit.block.BlockModeType;
 import circuit.block.CircuitBlock;
 import ncslablink.NCSLabModel;
+import circuit.block.io.PortCurrent;
 
 import line.Line;
 
@@ -24,15 +24,11 @@ public class Capacitor extends CircuitBlock {
 		
 	}
 	
-	protected void setupBlockList() {
-		setupEquivilentBlockModels();
-	}
-	
 	protected void setupBlockModeType() {
 		blockModeType=BlockModeType.BranchOnly;
 	}
 	
-	private void setupEquivilentBlockModels() {
+	protected void setupBlockList() {
 		System.out.println("Setup equivilent blocks for '"+this.blockName+"'");
 		
 		String c=paramValues.getString("c");
@@ -50,7 +46,7 @@ public class Capacitor extends CircuitBlock {
 		
 		JSONObject integratorJSON=new JSONObject();
 		integratorJSON.put("blockType", "Integrator");
-		integratorJSON.put("blockName", this.blockName+"_integrator");
+		integratorJSON.put("blockName", this.blockName+"_Integrator");
 		integratorJSON.put("blockPath", this.blockPath);
 		JSONObject integratorParamValues=new JSONObject();
 		integratorParamValues.put("InitialCondition", "0");
@@ -59,6 +55,30 @@ public class Capacitor extends CircuitBlock {
 		integrator=new Integrator(integratorJSON,this.model);
 		this.blockList.add(integrator);
 		
+		JSONObject addJSON=new JSONObject();
+		addJSON.put("blockType", "Add");
+		addJSON.put("blockName", this.blockName+"_Add");
+		addJSON.put("blockPath", this.blockPath);
+		JSONObject addParamValues=new JSONObject();
+		String inputs="";
+		for(PortCurrent current:this.getCurcuitPortList().get(0).getCurrentList()) {
+			if(current.getSign()) {
+				inputs+="+";
+			}
+			else {
+				inputs+="-";
+			}
+		}
+		addParamValues.put("Inputs", inputs);
+		addJSON.put("paramValues", addParamValues);
+		
+		add=new Add(addJSON,this.model);
+		this.blockList.add(add);
+		
 		createLine(gain.getBlockName(), 1, integrator.getBlockName(), 1);
+		createLine(add.getBlockName(), 1, gain.getBlockName(), 1);
+		
+		this.setOutputBlock(integrator);
+		this.setupInputBlock(add);
 	}
 }

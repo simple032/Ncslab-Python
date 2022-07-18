@@ -42,5 +42,7 @@ public class DCVoltageSource extends CircuitBlock {
 		
 		//System.out.println(dcVoltageSourceJSON);
 		
+		this.setOutputBlock(dcVoltageSource);
+		this.setupInputBlock(null);
 	}
 }

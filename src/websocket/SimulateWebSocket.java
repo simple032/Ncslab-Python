@@ -122,6 +122,7 @@ public class SimulateWebSocket {
 	        	System.err.println("Code generatrion terminated unsuccessfully������");
 	        }
 			catch(Exception e) {
+				e.printStackTrace();
 				try {
 	        		sendErrorMessage(session,e.getMessage());
 	        	}

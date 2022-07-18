@@ -10,6 +10,9 @@ import circuit.block.io.CircuitPort;
 import circuit.block.io.BlockVoltage;
 import ncslablink.NCSLabModel;
 
+import block.Block;
+import line.Line;
+
 import ncslablink.ModelException;
 
 public class CircuitModel {
@@ -237,24 +240,7 @@ public class CircuitModel {
 			}
 		}
 	}
-	
-	public void setupModel() {
-		System.out.println("Setup Circuit Model Node Current...");
-		setupNodeCurrent();
 		
-		System.out.println("Setup Circuit Model Block Voltage...");
-		setupBlockVoltage();
-		
-		System.out.println("Setup Circuit Model blocks...");
-		
-		//一个个设置Block,并建立连接关系
-		for(CircuitBlock block:blockList) {
-			block.setupBlocks();
-		}
-		
-		showNodes();
-	}
-	
 	private Vector<CircuitBlock> linkBlockList=new Vector<CircuitBlock>();
 	private Vector<BlockVoltage> voltagePath;
 	private boolean isLoopFound=false;
@@ -349,6 +335,52 @@ public class CircuitModel {
 			node.searchNode(null);
 			//System.out.println(node.getIsNodeCurrentDecided());
 		}
+	}
+	
+	public Vector<Block> getModelBlocks() {
+		Vector<Block> modelBlockList=new Vector<Block>();
+		
+		for(CircuitBlock block:blockList) {
+			modelBlockList.addAll(block.getBlockList());
+		}
+		
+		return modelBlockList;
+	}
+	
+	public Vector<Line> getModelLines(){
+		Vector<Line> modelLineList=new Vector<Line>();
+		
+		for(CircuitBlock block:blockList) {
+			modelLineList.addAll(block.getLineList());
+		}
+		
+		return modelLineList;
+	}
+	
+	public void setupModel() {
+		System.out.println("Setup Circuit Model Node Current...");
+		setupNodeCurrent();
+		
+		System.out.println("Setup Circuit Model Block Voltage...");
+		setupBlockVoltage();
+		
+		System.out.println("Setup Circuit Model blocks...");
+		
+		//一个个设置Block,并建立内部连接关系
+		for(CircuitBlock block:blockList) {
+			block.setupBlocks();
+		}
+		
+		for(Block block:getModelBlocks()) {
+			block.updateBlock();
+		}
+		
+		// 设置各个Block之间的连接线
+		for (CircuitBlock block : blockList) {
+			block.setupBlockConnections();
+		}
+		
+		showNodes();
 	}
 	
 	public static CircuitModel CreateCircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{
