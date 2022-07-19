@@ -15,6 +15,8 @@ import block.Block;
 import block.io.OutputPort;
 import block.io.InputPort;
 
+import block.sink.Scope;
+import block.source.Constant;
 import line.Line;
 
 abstract public class CircuitBlock {
@@ -47,6 +49,8 @@ abstract public class CircuitBlock {
 	
 	private Block outputBlock;
 	private Block inputBlock;
+	
+	private Block terminalBlock;
 
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
@@ -64,6 +68,7 @@ abstract public class CircuitBlock {
 	
 	public void setupBlocks() {
 		setupBlockList();
+		addTerminalBlock(); 
 	}
 	
 	public void setupBlockConnections() {
@@ -94,9 +99,33 @@ abstract public class CircuitBlock {
 			blocks.add(input.getBLock());
 			blocks.add(output.getBLock());
 			
-			createLine(output.getBLock().getBlockName(), 1, input.getBLock().getBlockName(), 1+1);
+			createLine(output.getBLock().getBlockName(), 1, input.getBLock().getBlockName(), i+1,blocks);
 		}
 		
+		
+	}
+	
+	private void addTerminalBlock() {
+		JSONObject terminatorJSON=new JSONObject();
+		terminatorJSON.put("blockType", "Scope");
+		String type=null;
+		switch(this.blockMode) {
+		case Branch:
+			type="_voltage";
+			break;
+		case Link:
+			type="_current";
+			break;
+		}
+		terminatorJSON.put("blockName", this.blockName.replaceAll(" ", "_")+type);
+		terminatorJSON.put("blockPath", this.blockPath);
+		JSONObject terminatorParamValues=new JSONObject();
+		terminatorJSON.put("paramValues", terminatorParamValues);
+		
+		terminalBlock=new Scope(terminatorJSON,this.model);
+		this.blockList.add(terminalBlock);
+		
+		createLine(outputBlock.getBlockName(), 1, terminalBlock.getBlockName(), 1);
 	}
 	
 	public void setOutputBlock(Block outputPort) {

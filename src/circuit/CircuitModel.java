@@ -371,7 +371,9 @@ public class CircuitModel {
 			block.setupBlocks();
 		}
 		
-		for(Block block:getModelBlocks()) {
+		Vector<Block> modelBlocks=getModelBlocks();
+		
+		for(Block block:modelBlocks) {
 			block.updateBlock();
 		}
 		

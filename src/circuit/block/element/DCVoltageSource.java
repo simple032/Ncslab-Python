@@ -13,6 +13,7 @@ public class DCVoltageSource extends CircuitBlock {
 	
 	public DCVoltageSource(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
+		//this.blockName=this.blockName.replaceAll(" ", "_");
 		//setupEquivilentBlockModels();
 		
 	}
@@ -31,7 +32,7 @@ public class DCVoltageSource extends CircuitBlock {
 		
 		JSONObject dcVoltageSourceJSON=new JSONObject();
 		dcVoltageSourceJSON.put("blockType", "Constant");
-		dcVoltageSourceJSON.put("blockName", this.blockName+"_v0");
+		dcVoltageSourceJSON.put("blockName", this.blockName.replaceAll(" ", "_")+"_v0");
 		dcVoltageSourceJSON.put("blockPath", this.blockPath);
 		JSONObject dcVoltageSourceParamValues=new JSONObject();
 		dcVoltageSourceParamValues.put("Value", v0);

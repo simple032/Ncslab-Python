@@ -381,6 +381,9 @@ abstract public class NCSLabModel {
 		while(scanDimList.isEmpty()==false) {
 			//取出第一个元素进行遍历
 			Block block=scanDimList.remove(0);
+			if(block.getIsDimScaned()) {
+				continue;
+			}
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
 				scanDimInputPort(inputPort);

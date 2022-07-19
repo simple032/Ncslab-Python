@@ -34,7 +34,7 @@ public class Inductor extends CircuitBlock {
 		gainJSON.put("blockName", this.blockName+"_l");
 		gainJSON.put("blockPath", this.blockPath);
 		JSONObject gainParamValues=new JSONObject();
-		gainParamValues.put("Gain", c);
+		gainParamValues.put("Gain", "(1.0/"+c+")");
 		gainParamValues.put("Multiplication", "Element-wise(K.*u)");
 		gainJSON.put("paramValues", gainParamValues);
 		
