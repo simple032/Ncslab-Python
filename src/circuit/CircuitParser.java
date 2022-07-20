@@ -11,6 +11,8 @@ import circuit.block.CircuitBlockType;
 import circuit.line.CircuitLine;
 import circuit.CircuitModel;
 
+import block.Block;
+
 import ncslablink.ModelException;
 
 public class CircuitParser {
@@ -61,18 +63,71 @@ public class CircuitParser {
 		return true;
 	}
 	
+	private boolean isFromCircuitLine(JSONObject lineJSON) {
+		String fromBlockName=lineJSON.getString("fromBlockName");
+		
+		int i;
+		for(i=0;i<blockList.size();i++) {
+			CircuitBlock block=blockList.get(i);
+			if(block.getBlockName().equals(fromBlockName)) {
+				break;
+			}
+		}
+		if(i==blockList.size()) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public CircuitParser(NCSLabModel model) throws ModelException{
 		this.model=model;
 		parseCircuit();
 		
 		circuitModel=CircuitModel.CreateCircuitModel(model, blockList, lineList);
+		
+		circuitModel.setupModel();
+		
+		parseExternalConnections();
+	}
+	
+	private void parseFromLine(JSONObject lineJSON) {
+		String fromBlockName=lineJSON.getString("fromBlockName");
+		
+		CircuitBlock fromCircuitBlock=null;
+		for(CircuitBlock circuitBlock:blockList) {
+			if(circuitBlock.getBlockName().equals(fromBlockName)) {
+				fromCircuitBlock=circuitBlock;
+			}
+		}
+		
+		Block fromBlock=fromCircuitBlock.getOutputBlockList().get(0);
+		//System.out.println(fromBlock.getBlockName()+":"+fromBlock.getOutputPortList().get(0).getNumber());
+		lineJSON.put("fromBlockName", fromBlock.getBlockName());
+		lineJSON.put("fromPortNo", fromBlock.getOutputPortList().get(0).getNumber());
+		lineJSON.put("toPortNo", "1");
+	}
+	
+	private void parseExternalConnections() {
+		JSONArray lineJSONList=model.getLinesJSON();
+		int i=0;
+		while(i<lineJSONList.length()) {
+			JSONObject lineJSON=lineJSONList.getJSONObject(i);
+			if(isFromCircuitLine(lineJSON)) {
+				
+				System.out.println(lineJSON);
+				parseFromLine(lineJSON);
+				System.out.println(lineJSON);
+			}
+			i++;
+		}
 	}
 	
 	public CircuitModel getCircuitModel() {
 		return this.circuitModel;
 	}
 	
-	public void parseCircuit() throws ModelException{
+	private void parseCircuit() throws ModelException{
 		
 		//剥离所有的电气模块
 		int id=1;
@@ -99,7 +154,7 @@ public class CircuitParser {
 			//System.out.println(lineJSON);
 			
 			if(isCircuitLine(lineJSON)) {
-				//System.out.println(lineJSON);
+				System.out.println(lineJSON);
 				
 				CircuitLine line=new CircuitLine(lineJSON,blockList);
 				lineList.add(line);

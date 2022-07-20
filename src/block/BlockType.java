@@ -162,6 +162,10 @@ public class BlockType {
 		case "TestPoint":
 			block=new block.math.TestPoint(blockJSON, model);
 			break;
+		case "PS-Simulink Converter":
+			blockJSON.put("blockType", "TestPoint");
+			block=new block.math.TestPoint(blockJSON, model);
+			break;
 		}
 		
 		if(block==null) {

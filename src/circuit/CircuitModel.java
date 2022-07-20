@@ -215,6 +215,7 @@ public class CircuitModel {
 	private void createCircuitNodes() {
 		int nodeId=1;
 		for(CircuitLine line:lineList) {
+			//System.out.println(line.getFromPort().getBlock().getBlockName()+":"+line.getToPort().getBlock().getBlockName());
 			boolean found;
 			CircuitPort fromPort=line.getFromPort();
 			CircuitPort toPort=line.getToPort();

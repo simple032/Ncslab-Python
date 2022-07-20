@@ -45,11 +45,17 @@ abstract public class CircuitBlock {
 	// 电气端口的列表
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
 	
+	//与外界连接的等价Block列表
+	protected Vector<Block> outputBlockList=new Vector<Block>();
+	
 	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
 	
+	//与其他的CircuitBlock生成的Block相连的输出Block
 	private Block outputBlock;
+	//与其他的CircuitBlock生成的Block相连的输入Block
 	private Block inputBlock;
 	
+	//模块的输出值,测试用
 	private Block terminalBlock;
 
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
@@ -64,6 +70,10 @@ abstract public class CircuitBlock {
 		
 		setupBlockModeType();
 		//setupBlockList();
+	}
+	
+	public Vector<Block> getOutputBlockList() {
+		return this.outputBlockList;
 	}
 	
 	public void setupBlocks() {

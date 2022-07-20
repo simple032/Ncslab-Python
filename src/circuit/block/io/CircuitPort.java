@@ -25,6 +25,10 @@ public class CircuitPort {
 		this.circuitPortType=circuitPortType;
 	}
 	
+	public void setName(String name) {
+		this.name=name;
+	}
+	
 	public void setCurrentList(Vector<PortCurrent> currentList) {
 		this.currentList=currentList;
 		isCurrentDecided=true;

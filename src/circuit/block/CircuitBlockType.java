@@ -24,6 +24,9 @@ public class CircuitBlockType {
 		case "Capacitor":
 			block=new circuit.block.element.Capacitor(blockJSON, model);
 			break;
+		case "Voltage Sensor":
+			block=new circuit.block.element.VoltageSensor(blockJSON, model);
+			break;
 		}
 		
 		if(block==null) {

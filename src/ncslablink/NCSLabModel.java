@@ -164,7 +164,8 @@ abstract public class NCSLabModel {
 	}
 	
 	private void parseModel() throws ModelException{
-
+		//System.out.println(this.getBlocksJSON());
+		//System.out.println(this.getLinesJSON());
 		//解析各个JSON项目
 		modelName=jsonIn.getString("modelName");
 		modelRealName=jsonIn.getString("modelRealName");
@@ -182,7 +183,7 @@ abstract public class NCSLabModel {
 		//解析电路模块
 		CircuitParser circuitPaser=new CircuitParser(this);
 		//circuitPaser.showBlocks();
-		circuitPaser.getCircuitModel().setupModel();
+		//circuitPaser.getCircuitModel().setupModel();
 		
 		addCircuitBlocks(circuitPaser);
 		addCircuitLines(circuitPaser);
