@@ -86,6 +86,7 @@ public class CircuitNode {
 		lastPort.setupDirectCurrent(otherPortList);
 	}
 	
+	//搜索一个Node
 	public void searchNode(CircuitPort basePort) {
 		
 		//如果节点已经被确定了,那就不用遍历了,返回.直接引用即可
@@ -122,6 +123,7 @@ public class CircuitNode {
 		
 		//如果没有被决定电流的Port个数只有一个,根据节点总电流为0,那就可以决定剩余的那一个节点的电流
 		if(circuitPortList.size()-n==1) {
+			//根据其他节点决定剩余一个节点
 			setupLastPortCurrent();
 		}
 		//否则就要递归遍历

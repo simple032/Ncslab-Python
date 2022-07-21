@@ -180,12 +180,13 @@ abstract public class NCSLabModel {
 		
 		saveInfo=jsonIn.getJSONObject("saveInfo");
 		
-		//解析电路模块
+		//解析电路模块,把电路图转换成框图
 		CircuitParser circuitPaser=new CircuitParser(this);
 		//circuitPaser.showBlocks();
-		//circuitPaser.getCircuitModel().setupModel();
 		
+		//把电路图中转换生成的模块都加入到BlockList中
 		addCircuitBlocks(circuitPaser);
+		//把电路图中转换生成的都加入LineList
 		addCircuitLines(circuitPaser);
 		
 		//解析各个Block

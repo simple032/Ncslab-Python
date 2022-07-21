@@ -79,6 +79,7 @@ public class VoltageSensor extends CircuitBlock {
 		outputBlockList.add(add);
 	}
 	
+	//建立Add模块与其他模块之间的关系,作为Voltage Sensor的输出
 	protected void setupBlockListConnections() {
 		super.setupBlockListConnections();
 		

@@ -20,14 +20,14 @@ public class Capacitor extends CircuitBlock {
 	
 	public Capacitor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-	
-		
 	}
 	
+	//电容只能时树枝
 	protected void setupBlockModeType() {
 		blockModeType=BlockModeType.BranchOnly;
 	}
 	
+	//设置add,gain和integrator
 	protected void setupBlockList() {
 		System.out.println("Setup equivilent blocks for '"+this.blockName+"'");
 		
@@ -55,6 +55,7 @@ public class Capacitor extends CircuitBlock {
 		integrator=new Integrator(integratorJSON,this.model);
 		this.blockList.add(integrator);
 		
+		//根据自己获得自己Block的电流
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Add");
 		addJSON.put("blockName", this.blockName+"_Add");
@@ -75,6 +76,7 @@ public class Capacitor extends CircuitBlock {
 		add=new Add(addJSON,this.model);
 		this.blockList.add(add);
 		
+		//连接Block内部的线路
 		createLine(gain.getBlockName(), 1, integrator.getBlockName(), 1);
 		createLine(add.getBlockName(), 1, gain.getBlockName(), 1);
 		

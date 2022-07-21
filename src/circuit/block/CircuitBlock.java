@@ -48,6 +48,7 @@ abstract public class CircuitBlock {
 	//与外界连接的等价Block列表
 	protected Vector<Block> outputBlockList=new Vector<Block>();
 	
+	//模块的电压方程
 	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
 	
 	//与其他的CircuitBlock生成的Block相连的输出Block
@@ -78,7 +79,7 @@ abstract public class CircuitBlock {
 	
 	public void setupBlocks() {
 		setupBlockList();
-		addTerminalBlock(); 
+		//addTerminalBlock(); 
 	}
 	
 	public void setupBlockConnections() {
@@ -170,6 +171,7 @@ abstract public class CircuitBlock {
 		return this.voltageList;
 	}
 	
+	//每个模块根据自己的模式,以及电压和电流方程,生成对应的Block
 	protected abstract void setupBlockList();
 	
 	protected abstract void setupBlockModeType();
