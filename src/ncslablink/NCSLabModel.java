@@ -370,12 +370,13 @@ abstract public class NCSLabModel {
 
 		//遍历所有的终端模块
 		for(Block block:dimTerminalBlockList) {
+			block.setIsDimScaned(true);
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
 				scanDimInputPort(inputPort);
 			}
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 		}
 		
 		
@@ -386,12 +387,13 @@ abstract public class NCSLabModel {
 			if(block.getIsDimScaned()) {
 				continue;
 			}
+			block.setIsDimScaned(true);
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
 				scanDimInputPort(inputPort);
 			}
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 		}
 	}
 	
