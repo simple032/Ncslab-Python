@@ -11,6 +11,8 @@ import circuit.block.CircuitBlockType;
 import circuit.line.CircuitLine;
 import circuit.CircuitModel;
 
+import block.Block;
+
 import ncslablink.ModelException;
 
 public class CircuitParser {
@@ -61,27 +63,91 @@ public class CircuitParser {
 		return true;
 	}
 	
+	private boolean isFromCircuitLine(JSONObject lineJSON) {
+		String fromBlockName=lineJSON.getString("fromBlockName");
+		
+		int i;
+		for(i=0;i<blockList.size();i++) {
+			CircuitBlock block=blockList.get(i);
+			if(block.getBlockName().equals(fromBlockName)) {
+				break;
+			}
+		}
+		if(i==blockList.size()) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public CircuitParser(NCSLabModel model) throws ModelException{
 		this.model=model;
+		
+		//剥离所有的电路模块和电路连接线,建立电气模块blockList和线路lineList
 		parseCircuit();
 		
+		//建立电路模型CircuitModel,建立节点模型,产生生成树
 		circuitModel=CircuitModel.CreateCircuitModel(model, blockList, lineList);
+		
+		//根据生成的Block电压方程和node电流方程,建立等效的M2PLink的block
+		circuitModel.setupModel();
+		
+		//处理与外部相连的模块的连接线
+		parseExternalConnections();
+	}
+	
+	
+	//修改JSON中原来与CircuitBlock的连接线,变成与CircuitBlock输出端口相连的连接线
+	private void parseFromLine(JSONObject lineJSON) {
+		String fromBlockName=lineJSON.getString("fromBlockName");
+		
+		CircuitBlock fromCircuitBlock=null;
+		for(CircuitBlock circuitBlock:blockList) {
+			if(circuitBlock.getBlockName().equals(fromBlockName)) {
+				fromCircuitBlock=circuitBlock;
+			}
+		}
+		
+		//改变连接线
+		Block fromBlock=fromCircuitBlock.getOutputBlockList().get(0);
+		//System.out.println(fromBlock.getBlockName()+":"+fromBlock.getOutputPortList().get(0).getNumber());
+		lineJSON.put("fromBlockName", fromBlock.getBlockName());
+		lineJSON.put("fromPortNo", fromBlock.getOutputPortList().get(0).getNumber());
+		lineJSON.put("toPortNo", "1");
+	}
+	
+	
+	//处理与外部相连的模块的线路
+	private void parseExternalConnections() {
+		JSONArray lineJSONList=model.getLinesJSON();
+		int i=0;
+		while(i<lineJSONList.length()) {
+			JSONObject lineJSON=lineJSONList.getJSONObject(i);
+			if(isFromCircuitLine(lineJSON)) {
+				//修改JSON中原来与CircuitBlock的连接线,变成与CircuitBlock输出端口相连的连接线
+				parseFromLine(lineJSON);
+			}
+			i++;
+		}
 	}
 	
 	public CircuitModel getCircuitModel() {
 		return this.circuitModel;
 	}
 	
-	public void parseCircuit() throws ModelException{
-		
+	//剥离所有的电路模块和电路连接线,建立电气模块blockList和线路lineList
+	private void parseCircuit() throws ModelException{
 		//剥离所有的电气模块
 		int id=1;
 		JSONArray blockJSONList=model.getBlocksJSON();
 		int i=0;
 		while(i<blockJSONList.length()) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
+			
+			//如果是电路模块
 			if(isCircuitBlock(blockJSON)) {
 				//System.out.println(blockJSON);
+				//建立电路模块
 				CircuitBlock block=CircuitBlockType.createBlock(id++, blockJSON, model);
 				blockList.add(block);
 				blockJSONList.remove(i);
@@ -99,7 +165,7 @@ public class CircuitParser {
 			//System.out.println(lineJSON);
 			
 			if(isCircuitLine(lineJSON)) {
-				//System.out.println(lineJSON);
+				System.out.println(lineJSON);
 				
 				CircuitLine line=new CircuitLine(lineJSON,blockList);
 				lineList.add(line);

@@ -93,7 +93,7 @@ public:
     Matrix getcol(Index_T index); // ���ص�index ��
     Index_T rows()const{ return m_row; }
     Index_T cols()const{ return m_col; }
-
+    void set(int nRow, int nCol, double value);
 };
 
 #endif //C___CLASS_MATRIX_H

@@ -17,6 +17,7 @@ import block.io.Parameter;
 import block.io.State;
 import code.c.CodeStructC;
 import code.m.CodeStructM;
+import ncslablink.ModelMode;
 import ncslablink.NCSLabModel;
 
 public class SFunctionBuilder extends Block {
@@ -76,7 +77,7 @@ public class SFunctionBuilder extends Block {
 		parameters = paramValues.getString("Parameters").split(",");
 		for(int i=0; i<parameters.length; i++) 
 		{
-			parameterList.add(new block.io.Parameter(this, i+1, "Para"+(i+1)));
+			parameterList.add(new block.io.Parameter(this, i+1, "Para"+(i+1),parameters[i]));
 		}				
 		//TODO:deal s-function modules	
 		if(paramValues.getString("SFunctionModules").length()>0) {
@@ -106,8 +107,15 @@ public class SFunctionBuilder extends Block {
 		FileOutputStream outputStream;
 		String filename = this.fcnName + "_" + getBlockId() + ".c";
 		System.out.println("Writing file "+ filename);
-		String filepath = utils.Property.instance.getProperty("CCodePath")
-				+ "/" + model.getUserId() + "/" + model.getModelId();
+		String filepath;
+		if(this.model.getModelMode()==ModelMode.Compilation) {
+		filepath = utils.Property.instance.getProperty("CCodePath")
+				+ "/" + model.getUserId() + "/" + model.getModelId()+"_RT";
+		}else {
+			filepath = utils.Property.instance.getProperty("CCodePath")
+					+ "/" + model.getUserId() + "/" + model.getModelId();	
+		}
+		
 		File file = new File(filepath +"/"+ filename);
 		String code = "";
 		try {
@@ -216,8 +224,8 @@ public class SFunctionBuilder extends Block {
 //		initCode+=levelState.getName()+"="+0+";\n"; 
 		initCode += fcnName+"_"+getBlockId()+"(&sfcnStruc"+getBlockId()+");\n";
 		//init number of inputs and outputs
-		initCode += "block"+getBlockId()+".inputPortNum="+inputPortList.size()+";";
-		initCode += "block"+getBlockId()+".outputPortNum="+outputPortList.size()+";";
+		initCode += "block"+getBlockId()+".inputPortNum="+inputPortList.size()+";\n";
+		initCode += "block"+getBlockId()+".outputPortNum="+outputPortList.size()+";\n";
 		initCode += "sfcnStruc"+getBlockId()+".parentBlock=(BLOCK*)&block"+getBlockId()+";\n";
 		initCode +=  "sfcnStart(sfcnStruc" + getBlockId() + ");\n";
 		

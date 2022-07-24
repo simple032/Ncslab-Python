@@ -5,9 +5,21 @@ import java.util.Vector;
 import org.json.JSONObject;
 
 import circuit.block.io.CircuitPort;
+import circuit.block.io.CircuitPortType;
+import circuit.block.io.PortCurrent;
+import circuit.block.io.BlockVoltage;
+import circuit.block.io.CircuitNode;
 import ncslablink.NCSLabModel;
 
-public class CircuitBlock {
+import block.Block;
+import block.io.OutputPort;
+import block.io.InputPort;
+
+import block.sink.Scope;
+import block.source.Constant;
+import line.Line;
+
+abstract public class CircuitBlock {
 	protected String blockType;
 	protected String blockName;
 
@@ -23,9 +35,29 @@ public class CircuitBlock {
 	protected BlockModeType blockModeType=BlockModeType.Anything;
 	
 	protected BlockMode blockMode;
+	
+	//等价的Block组合
+	protected Vector<Block> blockList=new Vector<Block>();
+	
+	//等价的Line组合
+	protected Vector<Line> lineList=new Vector<Line>();
 
 	// 电气端口的列表
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
+	
+	//与外界连接的等价Block列表
+	protected Vector<Block> outputBlockList=new Vector<Block>();
+	
+	//模块的电压方程
+	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
+	
+	//与其他的CircuitBlock生成的Block相连的输出Block
+	private Block outputBlock;
+	//与其他的CircuitBlock生成的Block相连的输入Block
+	private Block inputBlock;
+	
+	//模块的输出值,测试用
+	private Block terminalBlock;
 
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
@@ -34,9 +66,117 @@ public class CircuitBlock {
 		this.model = model;
 		this.blockPath = blockIn.getString("blockPath");
 		
-		circuitPortList.add(new CircuitPort(this,"LConn1",1));
-		circuitPortList.add(new CircuitPort(this,"RConn1",1));
+		circuitPortList.add(new CircuitPort(this,"LConn1",CircuitPortType.Left,1));
+		circuitPortList.add(new CircuitPort(this,"RConn1",CircuitPortType.Right,2));
+		
+		setupBlockModeType();
+		//setupBlockList();
 	}
+	
+	public Vector<Block> getOutputBlockList() {
+		return this.outputBlockList;
+	}
+	
+	public void setupBlocks() {
+		setupBlockList();
+		//addTerminalBlock(); 
+	}
+	
+	public void setupBlockConnections() {
+		setupBlockListConnections();
+	}
+	
+	protected void setupBlockListConnections() {
+		if(inputBlock==null) {
+			return;
+		}
+		
+		Vector<InputPort> inputPortList=inputBlock.getInputPortList();
+		for(int i=0;i<inputPortList.size();i++) {
+			InputPort input=inputPortList.get(i);
+			OutputPort output=null;
+			switch(blockMode) {
+			case Branch:
+				PortCurrent current=this.getCurcuitPortList().get(0).getCurrentList().get(i);
+				output=current.getCircuitBlock().getOutputPort();
+				break;
+			case Link:
+				BlockVoltage voltage=getVoltageList().get(i);
+				output=voltage.getCircuitBlock().getOutputPort();
+				break;
+			}
+			
+			Vector<Block> blocks=new Vector<Block>();
+			blocks.add(input.getBLock());
+			blocks.add(output.getBLock());
+			
+			createLine(output.getBLock().getBlockName(), 1, input.getBLock().getBlockName(), i+1,blocks);
+		}
+		
+		
+	}
+	
+	private void addTerminalBlock() {
+		JSONObject terminatorJSON=new JSONObject();
+		terminatorJSON.put("blockType", "Scope");
+		String type=null;
+		switch(this.blockMode) {
+		case Branch:
+			type="_voltage";
+			break;
+		case Link:
+			type="_current";
+			break;
+		}
+		terminatorJSON.put("blockName", this.blockName.replaceAll(" ", "_")+type);
+		terminatorJSON.put("blockPath", this.blockPath);
+		JSONObject terminatorParamValues=new JSONObject();
+		terminatorJSON.put("paramValues", terminatorParamValues);
+		
+		terminalBlock=new Scope(terminatorJSON,this.model);
+		this.blockList.add(terminalBlock);
+		
+		createLine(outputBlock.getBlockName(), 1, terminalBlock.getBlockName(), 1);
+	}
+	
+	public void setOutputBlock(Block outputPort) {
+		this.outputBlock=outputPort;
+	}
+	
+	public void setupInputBlock(Block inputBlock) {
+		this.inputBlock=inputBlock;
+	}
+	
+	public OutputPort getOutputPort() {
+		return outputBlock.getOutputPortList().get(0);
+	}
+	
+	public Vector<Block> getBlockList(){
+		/*
+		for(Block block:blockList) {
+			System.out.println(block.getBlockName());
+		}*/
+		return this.blockList;
+	}
+	
+	public Vector<Line> getLineList(){
+		return this.lineList;
+	}
+	
+	public void setVoltageList(Vector<BlockVoltage> voltageList) {
+		this.voltageList=voltageList;
+	}
+	
+	public Vector<BlockVoltage> getVoltageList(){
+		return this.voltageList;
+	}
+	
+	//每个模块根据自己的模式,以及电压和电流方程,生成对应的Block
+	protected abstract void setupBlockList();
+	
+	protected abstract void setupBlockModeType();
+	
+	
 	
 	public CircuitPort getAnotherCircuitPort(CircuitPort circuitPort) {
 		if(circuitPort==circuitPortList.get(0)) {
@@ -96,5 +236,35 @@ public class CircuitBlock {
 		else {
 			return false;
 		}
+	}
+	
+	/*
+	public void searchBlock(Vector<CircuitBlock> blockPath,CircuitPort port) {
+		CircuitNode node=port.getCircuitNode();
+		node.getOtherCircuitPortList(port);
+	}*/
+	
+	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum) {
+		JSONObject lineObject=new JSONObject();
+		lineObject.put("fromBlockName", fromBlockName);
+		lineObject.put("fromPortNo", fromBlockNum);
+		
+		lineObject.put("toBlockName", toBlockName);
+		lineObject.put("toPortNo", toBlockNum);
+		
+		Line line=Line.createLine(lineObject,blockList);
+		lineList.add(line);
+	}
+	
+	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum,Vector<Block> blockList) {
+		JSONObject lineObject=new JSONObject();
+		lineObject.put("fromBlockName", fromBlockName);
+		lineObject.put("fromPortNo", fromBlockNum);
+		
+		lineObject.put("toBlockName", toBlockName);
+		lineObject.put("toPortNo", toBlockNum);
+		
+		Line line=Line.createLine(lineObject,blockList);
+		lineList.add(line);
 	}
 }

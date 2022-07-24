@@ -58,6 +58,9 @@ abstract public class NCSLabModel {
 	
 	protected Vector<Terminal> terminalList=new Vector<Terminal>();
 	
+	private int blockSeq=0;
+	private int lineSeq=0;
+	
 	//解析model，变成数据结构
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		this.mode=mode;
@@ -140,8 +143,29 @@ abstract public class NCSLabModel {
 		return this.terminalList;
 	}
 	
+	private void addCircuitBlocks(CircuitParser circuitPaser) {
+		Vector<Block> circuitBlockList=circuitPaser.getCircuitModel().getModelBlocks();
+		
+		for(Block block:circuitBlockList) {
+			block.setBlockId(blockSeq+1);
+			blockSeq++;
+			blockList.add(block);
+		}
+	}
+	
+	private void addCircuitLines(CircuitParser circuitPaser) {
+		Vector<Line> circuitLineList=circuitPaser.getCircuitModel().getModelLines();
+		
+		for(Line line:circuitLineList) {
+			line.setLineId(lineSeq+1);
+			lineSeq++;
+			lineList.add(line);
+		}
+	}
+	
 	private void parseModel() throws ModelException{
-
+		//System.out.println(this.getBlocksJSON());
+		//System.out.println(this.getLinesJSON());
 		//解析各个JSON项目
 		modelName=jsonIn.getString("modelName");
 		modelRealName=jsonIn.getString("modelRealName");
@@ -156,11 +180,14 @@ abstract public class NCSLabModel {
 		
 		saveInfo=jsonIn.getJSONObject("saveInfo");
 		
-		//解析电路模块
+		//解析电路模块,把电路图转换成框图
 		CircuitParser circuitPaser=new CircuitParser(this);
 		//circuitPaser.showBlocks();
-		circuitPaser.getCircuitModel().setupModel();
 		
+		//把电路图中转换生成的模块都加入到BlockList中
+		addCircuitBlocks(circuitPaser);
+		//把电路图中转换生成的都加入LineList
+		addCircuitLines(circuitPaser);
 		
 		//解析各个Block
 		parseBlocks();
@@ -173,7 +200,7 @@ abstract public class NCSLabModel {
 		
 		updateDimensions();
 		
-		//showBlocks();
+		showBlocks();
 	}
 	
 	public JSONObject getSaveInfo() {
@@ -183,6 +210,7 @@ abstract public class NCSLabModel {
 	private void showBlocks() {
 		for(Block block:blockList) {
 			System.out.println("+++++++++++++++++++++++++++");
+			System.out.println("ID: "+block.getBlockId());
 			System.out.println("Name: "+block.getBlockName());
 			System.out.println("Type: "+block.getBlockType());
 			System.out.println("In: "+block.getInputPortList().size()+" Out:"+block.getOutputPortList().size());
@@ -202,6 +230,8 @@ abstract public class NCSLabModel {
 		}
 	}
 	
+	
+	
 	/*解析各个Block*/
 	private void parseBlocks() throws ModelException{
 		
@@ -209,7 +239,8 @@ abstract public class NCSLabModel {
 		for(int i=0;i<blockJSONList.length();i++) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
 
-			Block block=BlockType.createBlock(i+1,blockJSON,this);
+			Block block=BlockType.createBlock(blockSeq+1,blockJSON,this);
+			blockSeq++;
 			
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 			
@@ -229,7 +260,8 @@ abstract public class NCSLabModel {
 			replaceOutLine(lineJSON); 
 			//解析各条连线
 			Line line=Line.createLine(lineJSON, this);
-			line.setLineId(i+1);
+			line.setLineId(lineSeq+1);
+			lineSeq++;
 			
 			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
 			
@@ -291,6 +323,7 @@ abstract public class NCSLabModel {
 		
 		//如果有Feedthrough的模块，则要遍历整个模块的InputPort
 		if(isDimThroughBlock) {
+			block.setIsDimScaned(true);
 			Vector<InputPort> InputPortList=block.getInputPortList();
 			for(InputPort input:InputPortList) {
 				//递归调用，实现遍历
@@ -299,9 +332,10 @@ abstract public class NCSLabModel {
 			//遍历完成，也要生成模块的输出代码
 			//generateBlockOutputCode(block);
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 		}
 		else {
+			block.setIsDimScaned(true);
 			Vector<InputPort> InputPortList=block.getInputPortList();
 			
 			//如果dimThrough是真的话，说明这是类似Sum和Add的模块，输入的Dimension必须相互配合
@@ -321,7 +355,7 @@ abstract public class NCSLabModel {
 			}
 			
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 
 			//尽管这个模块的输出计算不取决于当前的输入，但是它的Update还是需要输入量的计算。因此将这个模块加入scanBlockList，进入二次遍历
 			//scanDimList.add(block);
@@ -336,12 +370,13 @@ abstract public class NCSLabModel {
 
 		//遍历所有的终端模块
 		for(Block block:dimTerminalBlockList) {
+			block.setIsDimScaned(true);
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
 				scanDimInputPort(inputPort);
 			}
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 		}
 		
 		
@@ -349,12 +384,16 @@ abstract public class NCSLabModel {
 		while(scanDimList.isEmpty()==false) {
 			//取出第一个元素进行遍历
 			Block block=scanDimList.remove(0);
+			if(block.getIsDimScaned()) {
+				continue;
+			}
+			block.setIsDimScaned(true);
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
 				scanDimInputPort(inputPort);
 			}
 			dimensionList.add(block);
-			block.setIsDimScaned(true);
+			//block.setIsDimScaned(true);
 		}
 	}
 	

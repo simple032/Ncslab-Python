@@ -67,8 +67,11 @@ public class State {
 	
 	public String getDefineCodeC() {
 		String code;
-		
+		if(this.block.getBlockType().equals("Discrete Transfer Fcn")&&this.data.getDataType()==DataType.REAL) {
+			code="Matrix "+name+"(1,1);\n";
+		}else {
 		code=data.getDefineCodeC(this.getName());
+		}
 		
 		switch(data.getDataType()) {
 		case REAL:

@@ -280,7 +280,7 @@ abstract public class CodeStructC {
 		return codePath;
 	}
 
-	private void writeMakefile(String fileName) {
+	protected void writeMakefile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 

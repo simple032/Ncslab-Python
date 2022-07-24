@@ -204,8 +204,7 @@ public class Integrator extends Block {
 				out.getOutputSignalC().setHeight(initialCondition.getHeight());
 				out.getOutputSignalC().setWidth(initialCondition.getWidth());
 				out.getOutputSignalC().setDataType(DataType.MATRIX);
-				stateIntegral = new State(this, 1, "integral", initialCondition.getHeight(),
-						initialCondition.getWidth());
+				stateIntegral = new State(this, 1, "integral", initialCondition.getHeight(),initialCondition.getWidth());
 				break;
 			}
 			break;
