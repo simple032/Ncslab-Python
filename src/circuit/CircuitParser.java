@@ -165,7 +165,7 @@ public class CircuitParser {
 			//System.out.println(lineJSON);
 			
 			if(isCircuitLine(lineJSON)) {
-				System.out.println(lineJSON);
+				//System.out.println(lineJSON);
 				
 				CircuitLine line=new CircuitLine(lineJSON,blockList);
 				lineList.add(line);

@@ -9,6 +9,7 @@ import circuit.block.io.CircuitPortType;
 import circuit.block.io.PortCurrent;
 import circuit.block.io.BlockVoltage;
 import circuit.block.io.CircuitNode;
+import circuit.CircuitModel;
 import ncslablink.NCSLabModel;
 
 import block.Block;
@@ -58,6 +59,8 @@ abstract public class CircuitBlock {
 	
 	//模块的输出值,测试用
 	private Block terminalBlock;
+	
+	private CircuitModel circuitModel=null;
 
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
@@ -71,6 +74,14 @@ abstract public class CircuitBlock {
 		
 		setupBlockModeType();
 		//setupBlockList();
+	}
+	
+	public void setCircuitModel(CircuitModel circuitModel) {
+		this.circuitModel=circuitModel;
+	}
+	
+	public CircuitModel getCircuitModel() {
+		return this.circuitModel;
 	}
 	
 	public Vector<Block> getOutputBlockList() {

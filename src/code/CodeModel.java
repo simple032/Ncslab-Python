@@ -188,10 +188,13 @@ abstract public class CodeModel extends NCSLabModel {
 					errorString+=output.getBLock().getBlockName()+"->";
 				}
 			}
-
+			
 			errorString+=outputPort.getBLock().getBlockName();
-			ErrorMessage errorMessage=new ErrorMessage(ErrorMessage.AlgebraicLoop,errorString);
+			
+			System.err.println(errorString);
+			ErrorMessage errorMessage=new ErrorMessage(ErrorMessage.AlgebraicLoop,errorString+"\n");
 			addErrorMessage(errorMessage);
+			isAlgebraicLoop=false;
 			return;
 		}
 

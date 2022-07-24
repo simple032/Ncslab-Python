@@ -12,6 +12,12 @@ import ncslablink.NCSLabModel;
 
 import block.Block;
 import line.Line;
+import block.io.InputPort;
+
+import block.math.Add;
+
+import circuit.loop.LoopSolver;
+import circuit.loop.LinearBlockElement;
 
 import ncslablink.ModelException;
 
@@ -23,12 +29,18 @@ public class CircuitModel {
 	
 	private Vector<BlockMode> blockModeList=new Vector<BlockMode>();
 	
+	private Vector<Block> terminalBlockList=new Vector<Block>();
+	
 	private boolean isTreeFound=false;
 	
 	CircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{
 		this.model=model;
 		this.blockList=blockList;
 		this.lineList=lineList;
+		
+		for(CircuitBlock block:blockList) {
+			block.setCircuitModel(this);
+		}
 		
 		//建立节点的数学模型
 		createCircuitNodes();
@@ -43,6 +55,10 @@ public class CircuitModel {
 		showBranches();
 		
 		//setupBlocks();
+	}
+	
+	public void addTerminalBlocks(Block terminalBlock) {
+		terminalBlockList.add(terminalBlock);
 	}
 	
 	//记录生成树的路径
@@ -84,13 +100,19 @@ public class CircuitModel {
 		return true;
 	}
 	
+	private boolean isSetupLinkCalled=false;
+	
 	private void setupLinks() {
+		if(isSetupLinkCalled) {
+			return;
+		}
 		for(CircuitBlock block:blockList) {
 			if(block.getBlockMode()==null) {
 				block.setBlockMode(BlockMode.Link);
 			}
 			blockModeList.add(block.getBlockMode());
 		}
+		isSetupLinkCalled=true;
 	}
 	
 	private void showNewNodes() {
@@ -431,7 +453,110 @@ public class CircuitModel {
 			block.setupBlockConnections();
 		}
 		
-		showNodes();
+		loopProcess();
+		
+		//showNodes();
+	}
+	
+	private Vector<LinearBlockElement> blockPath;
+	
+	private LoopSolver loopSolver;
+	
+	private boolean isInBlockPath(Block baseBlock) {
+		for(LinearBlockElement element:blockPath) {
+			if(element.getBlock()==baseBlock) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void showBlockPath() {
+		for(LinearBlockElement element:blockPath) {
+			System.out.print(element.getBlock().getBlockName()+"/"+(element.getSign()?"+":"-")+"\t");
+		}
+		System.out.println();
+	}
+	
+	private void searchBlock(Block block) {
+		//如果在BlockPath中,说明发现环路
+		if(isInBlockPath(block)) {
+			//要先保存环路
+			LinearBlockElement element=new LinearBlockElement(block,true);
+			blockPath.add(element);
+			loopSolver.addLoop(blockPath,block);
+			//System.out.println("Loop:");
+			//showBlockPath();
+			blockPath.remove(element);
+			return;
+		}
+		
+		//如果时终端模块或者是feedthrough==false的模块,说明发现前向通道
+		if(block.getInputPortList().size()==0
+				||block.getOutputPortList().get(0).getFeedThrough()==false) {
+			//保存前向通道
+			
+			LinearBlockElement element=new LinearBlockElement(block,true);
+			blockPath.add(element);
+			loopSolver.addForward(blockPath);
+			//System.out.println("Forward:");
+			//showBlockPath();
+			blockPath.remove(element);
+			return;
+		}
+		
+		LinearBlockElement element=new LinearBlockElement(block,true);
+		blockPath.add(element);
+		
+		//如果是Add,说明需要动态调整符号
+		if(block.getBlockType().equals("Add")){
+			Vector<InputPort> inputPortList=block.getInputPortList();
+			
+			int i=0;
+			for(InputPort input:inputPortList) {
+				Add add=(Add)block; 
+				element.setSign(add.getSign(i));
+				i++;
+				Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
+				//System.out.println(input.getLinkedLine().getLinkedOutputPort().getBLock().getBlockName());
+				searchBlock(newBlock);
+			}
+		}
+		else {
+			Vector<InputPort> inputPortList=block.getInputPortList();
+			InputPort input=inputPortList.get(0);
+			Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
+			searchBlock(newBlock);
+		}
+		
+		
+		blockPath.remove(element);
+	}
+	
+	private void loopProcess() {
+		System.out.println("Solving possible linear algebraic loops...");
+		//terminalBlockList.clear();
+		for(Block block:this.getModelBlocks()) {
+			if(block.getOutputPortList().size()==0) {
+				terminalBlockList.add(block);
+			}
+			else
+			if(block.getOutputPortList().get(0).getFeedThrough()==false&&block.getInputPortList().size()!=0)
+			{
+				terminalBlockList.add(block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock());
+				//terminalBlockList.add(block);
+			}
+		}
+		for(Block terminalBlock:terminalBlockList) {
+			//System.out.println(terminalBlock.getBlockName()+"...");
+			
+			blockPath=new Vector<LinearBlockElement>();
+			loopSolver=new LoopSolver(terminalBlock);
+			searchBlock(terminalBlock);
+			if(loopSolver.isLoopIncluded()) {
+				loopSolver.showLoopSolver();
+			}
+		}
 	}
 	
 	public static CircuitModel CreateCircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{

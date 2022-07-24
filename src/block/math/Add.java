@@ -37,6 +37,16 @@ public class Add extends Block{
 		}
 	}
 	
+	public boolean getSign(int n) {
+		if(seq.charAt(n)=='+') {
+			return true;
+		}
+		else {
+			return false;
+		}
+		
+	}
+	
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 		OutputPort out  = outputPortList.get(0);
