@@ -482,12 +482,12 @@ public class CircuitModel {
 		//如果在BlockPath中,说明发现环路
 		if(isInBlockPath(block)) {
 			//要先保存环路
-			LinearBlockElement element=new LinearBlockElement(block,true);
-			blockPath.add(element);
+			//LinearBlockElement element=new LinearBlockElement(block,true);
+			//blockPath.add(element);
 			loopSolver.addLoop(blockPath,block);
 			//System.out.println("Loop:");
 			//showBlockPath();
-			blockPath.remove(element);
+			//blockPath.remove(element);
 			return;
 		}
 		
@@ -547,15 +547,25 @@ public class CircuitModel {
 				//terminalBlockList.add(block);
 			}
 		}
+		
+		Vector<LoopSolver> loopSolverList=new Vector<LoopSolver>();
+		
 		for(Block terminalBlock:terminalBlockList) {
 			//System.out.println(terminalBlock.getBlockName()+"...");
 			
 			blockPath=new Vector<LinearBlockElement>();
-			loopSolver=new LoopSolver(terminalBlock);
+			loopSolver=new LoopSolver(terminalBlock,this);
 			searchBlock(terminalBlock);
 			if(loopSolver.isLoopIncluded()) {
-				loopSolver.showLoopSolver();
+				//loopSolver.showLoopSolver();
+				loopSolverList.add(loopSolver);
 			}
+		}
+		
+		//建立面向代数环节点的前馈通道
+		for(LoopSolver loopSolver:loopSolverList) {
+			loopSolver.solveLoop();
+			loopSolver.showLoopSolver();
 		}
 	}
 	
