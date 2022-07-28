@@ -10,10 +10,12 @@ import circuit.block.io.BlockVoltage;
 import circuit.block.io.PortCurrent;
 import ncslablink.NCSLabModel;
 
+import circuit.block.electblock.*;
+
 public class Resistor extends CircuitBlock {
 	
-	private Gain gain;
-	private Add add;
+	private GainElect gain;
+	private AddElect add;
 	
 	public Resistor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -44,7 +46,7 @@ public class Resistor extends CircuitBlock {
 		gainParamValues.put("Multiplication", "Element-wise(K.*u)");
 		gainJSON.put("paramValues", gainParamValues);
 		
-		gain=new Gain(gainJSON,this.model);
+		gain=new GainElect(gainJSON,this.model);
 		this.blockList.add(gain);
 		
 		JSONObject addJSON=new JSONObject();
@@ -64,7 +66,7 @@ public class Resistor extends CircuitBlock {
 		addParamValues.put("Inputs", inputs);
 		addJSON.put("paramValues", addParamValues);
 		
-		add=new Add(addJSON,this.model);
+		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
 		
 		createLine(add.getBlockName(), 1, gain.getBlockName(), 1);
@@ -86,7 +88,7 @@ public class Resistor extends CircuitBlock {
 		gainParamValues.put("Multiplication", "Element-wise(K.*u)");
 		gainJSON.put("paramValues", gainParamValues);
 		
-		gain=new Gain(gainJSON,this.model);
+		gain=new GainElect(gainJSON,this.model);
 		this.blockList.add(gain);
 		
 		JSONObject addJSON=new JSONObject();
@@ -106,7 +108,7 @@ public class Resistor extends CircuitBlock {
 		addParamValues.put("Inputs", inputs);
 		addJSON.put("paramValues", addParamValues);
 		
-		add=new Add(addJSON,this.model);
+		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
 		
 		createLine(add.getBlockName(), 1, gain.getBlockName(), 1);

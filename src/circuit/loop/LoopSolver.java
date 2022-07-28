@@ -113,7 +113,9 @@ public class LoopSolver {
 					}
 					
 				}
+				System.out.println("Code :"+forwardGroup.getGroupString());
 			}
+			System.out.println("Code :"+targetGroup.getTargetGroupString());
 		}
 		
 		
@@ -241,7 +243,7 @@ public class LoopSolver {
 			}
 			
 			if(isFound==false) {
-				ForwardGroup forwardGroup=new ForwardGroup(forward);
+				ForwardGroup forwardGroup=new ForwardGroup(forward,loopList);
 				forwardGroupList.add(forwardGroup);
 			}
 			

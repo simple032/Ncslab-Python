@@ -22,4 +22,23 @@ public class TargetGroup {
 	public Vector<ForwardGroup> getForwardGroupList(){
 		return this.forwardGroupList;
 	}
+	
+	public String getTargetGroupString() {
+		String targerGroupString="";
+		
+		boolean first=true;
+		
+		for(ForwardGroup forwardGroup:forwardGroupList) {
+			if(first) {
+				first=false;
+			}
+			else {
+				targerGroupString+="+";
+			}
+			
+			targerGroupString+=forwardGroup.getGroupString();
+		}
+		
+		return targerGroupString;
+	}
 }

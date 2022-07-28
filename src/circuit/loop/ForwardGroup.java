@@ -7,17 +7,19 @@ public class ForwardGroup {
 	private LinearBlockElement startElement;
 	private LinearBlockElement endElement;
 	
-	//private Vector<Vector<LinearBlockElement>> forwardList=new Vector<Vector<LinearBlockElement>>();
+	private Vector<Vector<LinearBlockElement>> loopList=new Vector<Vector<LinearBlockElement>>();
 	
 	private Vector<ForwardLine> forwardLineList=new Vector<ForwardLine>();
 	
-	public ForwardGroup(Vector<LinearBlockElement> forward) {
+	public ForwardGroup(Vector<LinearBlockElement> forward,Vector<Vector<LinearBlockElement>> loopList) {
 		startElement=forward.lastElement();
 		endElement=forward.firstElement();
 		//forwardList.add(forward);
 		
 		ForwardLine forwardLine=new ForwardLine(forward);
 		forwardLineList.add(forwardLine);
+		
+		this.loopList=loopList;
 	}
 	
 	public boolean isSameStartEnd(LinearBlockElement startElement,LinearBlockElement endElement) {
@@ -42,5 +44,37 @@ public class ForwardGroup {
 	
 	public LinearBlockElement getEndElement() {
 		return this.endElement;
+	}
+	
+	public String getGroupString() {
+		String groupString="";
+		
+		String numString="";
+		
+		boolean first=true;
+		
+		for(ForwardLine forwardLine:forwardLineList) {
+			if(first) {
+				first=false;
+			}
+			else {
+				numString+="+";
+			}
+			numString+=forwardLine.getForwardLineString();
+		}
+		
+		groupString+=startElement.getOutputNameString()+"*("+numString+")";
+		
+		String denString="/(1";
+		
+		for(Vector<LinearBlockElement> loop:loopList) {
+			denString+="-"+ForwardLine.getLineString(loop);
+		}
+		
+		denString+=")";
+		
+		groupString+=denString;
+				
+		return groupString;
 	}
 }

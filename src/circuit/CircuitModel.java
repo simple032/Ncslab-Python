@@ -453,7 +453,7 @@ public class CircuitModel {
 			block.setupBlockConnections();
 		}
 		
-		loopProcess();
+		//loopProcess();
 		
 		//showNodes();
 	}
@@ -533,7 +533,7 @@ public class CircuitModel {
 		blockPath.remove(element);
 	}
 	
-	private void loopProcess() {
+	public void loopProcess() {
 		System.out.println("Solving possible linear algebraic loops...");
 		//terminalBlockList.clear();
 		for(Block block:this.getModelBlocks()) {

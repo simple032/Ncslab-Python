@@ -21,4 +21,8 @@ public class LinearBlockElement {
 	public void setSign(boolean sign) {
 		this.sign=sign;
 	}
+	
+	public String getOutputNameString() {
+		return block.getOutputPortList().get(0).getOutputSignalC().getName(); 
+	}
 }

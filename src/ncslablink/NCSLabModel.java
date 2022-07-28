@@ -189,6 +189,8 @@ abstract public class NCSLabModel {
 		//把电路图中转换生成的都加入LineList
 		addCircuitLines(circuitPaser);
 		
+		circuitPaser.getCircuitModel().loopProcess();
+		
 		//解析各个Block
 		parseBlocks();
 		//xiazhiqiang:检查模块命名是否唯一

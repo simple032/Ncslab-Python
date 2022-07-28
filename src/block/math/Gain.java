@@ -14,7 +14,7 @@ import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 
 public class Gain extends Block{
-	block.io.Parameter gain;
+	protected block.io.Parameter gain;
 	//Matrix gain;
 	boolean multiplication = false;
 	public Gain(JSONObject blockJSON,NCSLabModel model) {

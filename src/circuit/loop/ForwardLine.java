@@ -2,6 +2,9 @@ package circuit.loop;
 
 import java.util.Vector;
 
+import block.Block;
+import circuit.block.electblock.ElectBlock;
+
 public class ForwardLine {
 	private Vector<LinearBlockElement> forward=new Vector<LinearBlockElement>();
 	
@@ -49,5 +52,46 @@ public class ForwardLine {
 	
 	public Vector<Vector<LinearBlockElement>> getOtherLoopList(){
 		return this.otherLoopList;
+	}
+	
+	public static String getLineString(Vector<LinearBlockElement> line) {
+		String lineString="";
+		
+		boolean first=true;
+		for(LinearBlockElement element:line) {
+			Block block=element.getBlock();
+			
+			if(block instanceof ElectBlock) {
+				if(first) {
+					first=false;
+				}
+				else {
+					lineString+="*";
+				}
+				ElectBlock electBlock=(ElectBlock)block;
+				lineString+="("+electBlock.getGainBlock()+"*"+(element.getSign()?"1":"(-1)")+")";
+			}
+			else {
+				//此处应该抛出异常
+			}
+		}
+		
+		return lineString;
+	}
+	
+	public String getForwardLineString() {
+		String forwardLineString="";
+		
+		forwardLineString+=getLineString(forward);
+		
+		forwardLineString+="*(1";
+		for(Vector<LinearBlockElement> otherLoop:otherLoopList) {
+			forwardLineString+="-";
+			forwardLineString+=getLineString(otherLoop);
+		}
+		
+		forwardLineString+=")";
+		
+		return forwardLineString;
 	}
 }
