@@ -2,6 +2,10 @@ package circuit.loop;
 
 import java.util.Vector;
 
+import block.Block;
+
+import circuit.block.electblock.ElectBlock;
+
 public class TargetGroup {
 	private LinearBlockElement targetElement;
 	
@@ -23,8 +27,27 @@ public class TargetGroup {
 		return this.forwardGroupList;
 	}
 	
+	public void setupRelatedBlockList(){
+		Vector<Block> relatedBlockList=new Vector<Block>();
+		for(ForwardGroup forwardGroup:forwardGroupList) {
+			relatedBlockList.add(forwardGroup.getStartElement().getBlock());
+		}
+		
+		Block block=targetElement.getBlock();
+		
+		if(block instanceof ElectBlock) {
+			ElectBlock electBlock=(ElectBlock)block;
+			electBlock.setRelatedBlockList(relatedBlockList);
+			
+			electBlock.setElecLoopString(getTargetGroupString());
+		}
+		else {
+			//应该抛出异常 
+		}
+	}
+	
 	public String getTargetGroupString() {
-		String targerGroupString="";
+		String targerGroupString=targetElement.getBlock().getOutputPortVariable(0)+"=";
 		
 		boolean first=true;
 		

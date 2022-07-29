@@ -14,6 +14,8 @@ import ncslablink.ModelException;
 import ncslablink.ModelMode;
 import ncslablink.NCSLabModel;
 
+import circuit.block.electblock.ElectBlock;
+
 abstract public class CodeModel extends NCSLabModel {
 
 	protected Vector<Block> terminalBlockList=new Vector<Block>();
@@ -91,8 +93,39 @@ abstract public class CodeModel extends NCSLabModel {
 		}
 	}
 	
+	private void setupElectBlocks() {
+		System.out.println("Looking for elect blocks");
+		for(Block block:blockList) {
+			if(block instanceof ElectBlock) {
+				ElectBlock electBlock=(ElectBlock)block;
+				//如果是loopPoint
+				if(electBlock.isLoopPoint()) {
+					System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
+					block.setFeedThrough(false);
+					
+					Vector<Block> relatedBlockList=electBlock.getRelatedBlockList();
+					
+					for(Block relatedBlock:relatedBlockList) {
+						if(relatedBlock.getIsOutputCodeGenerated()==false) {
+							outputChain.add(relatedBlock);
+							//terminalBlockList.add(relatedBlock);
+							relatedBlock.setIsOuputCodeGenerated(true);
+							scanBlockList.add(relatedBlock);
+						}
+					}
+					outputChain.add(block);
+					block.setIsOuputCodeGenerated(true);
+					scanBlockList.add(block);
+				}
+			}
+		}
+	}
+	
 	/*建立输出链，决定应该先嫉妒是你哪个模块，再计算哪个模块*/
 	private void setupOuputChain() {
+		
+		setupElectBlocks();
+		
 		//找到终端的Block
 		findTerminalBlocks();
 		//沿着终端模块，建立输出链

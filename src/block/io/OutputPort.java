@@ -77,6 +77,10 @@ public class OutputPort {
 		return this.isFeedThrough;
 	}
 	
+	public void setFeedThrough(boolean feedThrough) {
+		this.isFeedThrough=feedThrough;
+	}
+	
 	public boolean getDimThrough() {
 		return this.isDimThrough;
 	}

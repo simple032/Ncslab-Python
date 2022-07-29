@@ -46,6 +46,10 @@ public class ForwardGroup {
 		return this.endElement;
 	}
 	
+	public LinearBlockElement getStartElement() {
+		return this.startElement;
+	}
+	
 	public String getGroupString() {
 		String groupString="";
 		
