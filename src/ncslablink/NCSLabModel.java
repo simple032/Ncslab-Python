@@ -189,6 +189,7 @@ abstract public class NCSLabModel {
 		//把电路图中转换生成的都加入LineList
 		addCircuitLines(circuitPaser);
 		
+		//解开代数环的代码
 		circuitPaser.getCircuitModel().loopProcess();
 		
 		//解析各个Block

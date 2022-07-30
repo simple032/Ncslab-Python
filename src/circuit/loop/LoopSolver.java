@@ -48,12 +48,14 @@ public class LoopSolver {
 		forwardList.add(forward);
 	}
 	
+	//将发现的环路加入LoopList,并且找到LoopPoint,加入loopPointList
 	public void addLoop(Vector<LinearBlockElement> blockPath,Block block) {
 		Vector<LinearBlockElement> loop=new Vector<LinearBlockElement>();
 		boolean isLoopStarted=false;
 		for(LinearBlockElement element:blockPath) {
 			if(block==element.getBlock()) {
 				isLoopStarted=true;
+				//block相关的节点是LoopPoint
 				loopPointList.add(element);
 			}
 			if(isLoopStarted) {
@@ -202,22 +204,29 @@ public class LoopSolver {
 		blockPath.remove(element);
 	}
 	
-	// 寻找面向代数环节点的Forward通道
+	// //解开代数环 
 	public void solveLoop() {
 		System.out.println("Solver loops for " + outputBlock.getBlockName() + "...");
+		//寻找面向代数环节点LoopPoint的Forward通道
 		for (LinearBlockElement element : loopPointList) {
-			System.out.println(element.getBlock().getBlockName());
+			//System.out.println(element.getBlock().getBlockName());
 			blockPath = new Vector<LinearBlockElement>();
+			//根据LoopPoint,重新搜索Forward和Loop节点
 			searchBlock(element.getBlock());
 		}
-
+		
+		//重新设置Forward的列表,新的列表面向LoopPoint
 		forwardList = loopForwardList;
 		
+		//设置ForwardGroup,ForwardGroup是起点和终点一样的前向通道集合
 		setupForwardGroupList();
+		//设置TargetGroup,TargetGroup是计算某一个LoopPoint的ForwardGroup集合,每个ForwardGroup面向一个输入点
 		setupTargetGroupList();
 	}
 	
+	//设置TargetGroup,生成TargetGroup的代码,TargetGroup是计算某一个LoopPoint的ForwardGroup集合,每个ForwardGroup面向一个输入点
 	private void setupTargetGroupList() {
+		//根据LoopPoint,建立TargetGroup
 		for(LinearBlockElement element:loopPointList) {
 			TargetGroup targetGroup=new TargetGroup(element);
 			for(ForwardGroup forwardGroup:forwardGroupList) {
@@ -229,15 +238,23 @@ public class LoopSolver {
 		}
 		
 		for(TargetGroup targetGroup:targetGroupList) {
+			
+			//建立TargetGroup的相关Block
 			targetGroup.setupRelatedBlockList();
+			
+			//生成每一个TargerGroup的代码
+			targetGroup.generateTargetGroupCode();
 		}
 	}
 	
+	//设置ForwardGroup,ForwardGroup是起点和终点一样的前向通道集合
 	private void setupForwardGroupList() {
+		//将起点和终点相同的Forward列表,放入一个ForwardGroup
 		for(Vector<LinearBlockElement> forward:forwardList) {
 			LinearBlockElement startElement=forward.lastElement();
 			LinearBlockElement endElement=forward.firstElement();
 			
+			//如果group存在,就插进去
 			boolean isFound=false;
 			for(ForwardGroup forwardGroup:forwardGroupList) {
 				if(forwardGroup.isSameStartEnd(startElement, endElement)) {
@@ -246,6 +263,7 @@ public class LoopSolver {
 				}
 			}
 			
+			//如果不存在,就建立一个
 			if(isFound==false) {
 				ForwardGroup forwardGroup=new ForwardGroup(forward,loopList);
 				forwardGroupList.add(forwardGroup);
@@ -253,8 +271,10 @@ public class LoopSolver {
 			
 		}
 		
+		//将Loop也放入ForwardGroup一起处理
 		for(ForwardGroup forwardGroup:forwardGroupList) {
 			for(ForwardLine forwardLine:forwardGroup.getForwardLineList()) {
+				//处理Loop,看前向通道和Loop是否有接触
 				forwardLine.setupLoops(loopList);
 			}
 		}

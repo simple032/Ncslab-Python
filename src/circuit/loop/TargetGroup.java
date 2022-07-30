@@ -7,9 +7,14 @@ import block.Block;
 import circuit.block.electblock.ElectBlock;
 
 public class TargetGroup {
+	
+	//用来计算的目标节点,是LoopPoint
 	private LinearBlockElement targetElement;
 	
+	//所有前向通道集合
 	private Vector<ForwardGroup> forwardGroupList=new Vector<ForwardGroup>();
+	
+	private Vector<Block> relatedBlockList;
 	
 	public TargetGroup(LinearBlockElement targetElement) {
 		this.targetElement=targetElement;
@@ -27,18 +32,23 @@ public class TargetGroup {
 		return this.forwardGroupList;
 	}
 	
+	//寻找与解开loop代码相关的模块
 	public void setupRelatedBlockList(){
-		Vector<Block> relatedBlockList=new Vector<Block>();
+		relatedBlockList=new Vector<Block>();
 		for(ForwardGroup forwardGroup:forwardGroupList) {
 			relatedBlockList.add(forwardGroup.getStartElement().getBlock());
-		}
-		
+		}	
+	}
+	
+	//生成解开Loop的代码
+	public void generateTargetGroupCode() {
 		Block block=targetElement.getBlock();
 		
 		if(block instanceof ElectBlock) {
 			ElectBlock electBlock=(ElectBlock)block;
 			electBlock.setRelatedBlockList(relatedBlockList);
 			
+			//生成Loop的代码,放在这个LoopPoint上面
 			electBlock.setElecLoopString(getTargetGroupString());
 		}
 		else {

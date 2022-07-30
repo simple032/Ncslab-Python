@@ -35,7 +35,9 @@ public class ForwardLine {
 		return isFound;
 	}
 	
+	
 	public void setupLoops(Vector<Vector<LinearBlockElement>> loopList) {
+		//建立与前向通道先接触的LoopList,以及不想连的LoopList
 		for(Vector<LinearBlockElement> loop:loopList) {
 			if(isContact(loop,forward)) {
 				contactLoopList.add(loop);
@@ -54,6 +56,7 @@ public class ForwardLine {
 		return this.otherLoopList;
 	}
 	
+	//生成Forward通道的乘积Code
 	public static String getLineString(Vector<LinearBlockElement> line) {
 		String lineString="";
 		
@@ -79,6 +82,7 @@ public class ForwardLine {
 		return lineString;
 	}
 	
+	//获得前向通道的梅逊公式分子计算公式,考虑不接触回路
 	public String getForwardLineString() {
 		String forwardLineString="";
 		

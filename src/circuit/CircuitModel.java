@@ -478,6 +478,7 @@ public class CircuitModel {
 		System.out.println();
 	}
 	
+	//搜索模块,寻找前向通道和相关的Loop
 	private void searchBlock(Block block) {
 		//如果在BlockPath中,说明发现环路
 		if(isInBlockPath(block)) {
@@ -519,6 +520,7 @@ public class CircuitModel {
 				i++;
 				Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
 				//System.out.println(input.getLinkedLine().getLinkedOutputPort().getBLock().getBlockName());
+				//向前递归搜索
 				searchBlock(newBlock);
 			}
 		}
@@ -526,6 +528,7 @@ public class CircuitModel {
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			InputPort input=inputPortList.get(0);
 			Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
+			//向前递归搜索
 			searchBlock(newBlock);
 		}
 		
@@ -533,9 +536,11 @@ public class CircuitModel {
 		blockPath.remove(element);
 	}
 	
+	//解开代数环的代码
 	public void loopProcess() {
 		System.out.println("Solving possible linear algebraic loops...");
 		//terminalBlockList.clear();
+		//找到Circuit部分的终端模块和广义终端模块(输出连接到Feedthrough=false的模块)
 		for(Block block:this.getModelBlocks()) {
 			if(block.getOutputPortList().size()==0) {
 				terminalBlockList.add(block);
@@ -548,14 +553,20 @@ public class CircuitModel {
 			}
 		}
 		
+		//解开代数环的解算器组合,计算每一个终端模块都可能产生代数环
 		Vector<LoopSolver> loopSolverList=new Vector<LoopSolver>();
 		
+		//搜索每一个模块的解算流程,寻找可能有代数环的输出
 		for(Block terminalBlock:terminalBlockList) {
 			//System.out.println(terminalBlock.getBlockName()+"...");
 			
+			//准备搜索这个接单,建立路径的数据结构
 			blockPath=new Vector<LinearBlockElement>();
+			//建立LoopSolver模型
 			loopSolver=new LoopSolver(terminalBlock,this);
+			//搜索这个节点
 			searchBlock(terminalBlock);
+			//如果节点有Loop,则需要处理,放入需要处理的队列
 			if(loopSolver.isLoopIncluded()) {
 				//loopSolver.showLoopSolver();
 				loopSolverList.add(loopSolver);
@@ -564,6 +575,7 @@ public class CircuitModel {
 		
 		//建立面向代数环节点的前馈通道
 		for(LoopSolver loopSolver:loopSolverList) {
+			//解开代数环
 			loopSolver.solveLoop();
 			loopSolver.showLoopSolver();
 		}
