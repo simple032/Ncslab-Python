@@ -177,21 +177,35 @@ abstract public class NCSLabModel {
 		
 		//解析JSON的Config
 		config=Config.createFromJSON(jsonIn.getJSONObject("config"),mode);
-		
 		saveInfo=jsonIn.getJSONObject("saveInfo");
+		JSONArray blockJSONList=jsonIn.getJSONArray("blocks");
+		//在解析电路模块时增加判断，防止出现在单独进行控制类实验时出现无法解析电路模块的问题
+		int i = 0;
+		int j = 0;
+		while (i < blockJSONList.length()) {
+			JSONObject blockJSON = blockJSONList.getJSONObject(i);
+			// 如果含电路模块
+			if (blockJSON.getString("srcBlock").startsWith("fl_lib")) {
+				j = j + 1;
+			}
+			i++;
+		}
+		if(j!=0) {
+			// 解析电路模块,把电路图转换成框图
+			CircuitParser circuitPaser = new CircuitParser(this);
+			// circuitPaser.showBlocks();
+
+			// 把电路图中转换生成的模块都加入到BlockList中
+			addCircuitBlocks(circuitPaser);
+			// 把电路图中转换生成的都加入LineList
+			addCircuitLines(circuitPaser);
+
+			// 解开代数环的代码
+			circuitPaser.getCircuitModel().loopProcess();
 		
-		//解析电路模块,把电路图转换成框图
-		CircuitParser circuitPaser=new CircuitParser(this);
-		//circuitPaser.showBlocks();
-		
-		//把电路图中转换生成的模块都加入到BlockList中
-		addCircuitBlocks(circuitPaser);
-		//把电路图中转换生成的都加入LineList
-		addCircuitLines(circuitPaser);
-		
-		//解开代数环的代码
-		circuitPaser.getCircuitModel().loopProcess();
-		
+
+		}
+
 		//解析各个Block
 		parseBlocks();
 		//xiazhiqiang:检查模块命名是否唯一
