@@ -116,6 +116,43 @@ public class CircuitParser {
 		lineJSON.put("toPortNo", "1");
 	}
 	
+	private boolean isToCircuitLine(JSONObject lineJSON) {
+		String toBlockName=lineJSON.getString("toBlockName");
+		
+		int i;
+		for(i=0;i<blockList.size();i++) {
+			CircuitBlock block=blockList.get(i);
+			if(block.getBlockName().equals(toBlockName)) {
+				break;
+			}
+		}
+		if(i==blockList.size()) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	//修改JSON中原来与CircuitBlock的连接线,变成与CircuitBlock输出端口相连的连接线
+		private void parseToLine(JSONObject lineJSON) {
+			String toBlockName=lineJSON.getString("toBlockName");
+			
+			CircuitBlock toCircuitBlock=null;
+			for(CircuitBlock circuitBlock:blockList) {
+				if(circuitBlock.getBlockName().equals(toBlockName)) {
+					toCircuitBlock=circuitBlock;
+				}
+			}
+			
+			
+			//改变连接线
+			Block toBlock=toCircuitBlock.getInputBlockList().get(0);
+			//System.out.println(fromBlock.getBlockName()+":"+fromBlock.getOutputPortList().get(0).getNumber());
+			lineJSON.put("toBlockName", toBlock.getBlockName());
+			lineJSON.put("toPortNo", toBlock.getOutputPortList().get(0).getNumber());
+			lineJSON.put("fromPortNo", "1");
+		}
+	
 	
 	//处理与外部相连的模块的线路
 	private void parseExternalConnections() {
@@ -123,9 +160,17 @@ public class CircuitParser {
 		int i=0;
 		while(i<lineJSONList.length()) {
 			JSONObject lineJSON=lineJSONList.getJSONObject(i);
+			//System.out.println(lineJSON);
 			if(isFromCircuitLine(lineJSON)) {
 				//修改JSON中原来与CircuitBlock的连接线,变成与CircuitBlock输出端口相连的连接线
 				parseFromLine(lineJSON);
+			}
+			else
+			if(isToCircuitLine(lineJSON)) {
+				//System.out.println(lineJSON);
+				parseToLine(lineJSON);
+				
+				//System.out.println(lineJSON);
 			}
 			i++;
 		}

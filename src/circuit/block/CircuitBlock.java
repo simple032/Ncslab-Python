@@ -46,8 +46,11 @@ abstract public class CircuitBlock {
 	// 电气端口的列表
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
 	
-	//与外界连接的等价Block列表
+	//输出与外界连接的等价Block列表
 	protected Vector<Block> outputBlockList=new Vector<Block>();
+	
+	//输入与外界连接的等价Block列表
+	protected Vector<Block> inputBlockList=new Vector<Block>();
 	
 	//模块的电压方程
 	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
@@ -86,6 +89,10 @@ abstract public class CircuitBlock {
 	
 	public Vector<Block> getOutputBlockList() {
 		return this.outputBlockList;
+	}
+	
+	public Vector<Block> getInputBlockList() {
+		return this.inputBlockList;
 	}
 	
 	public void setupBlocks() {

@@ -527,9 +527,14 @@ public class CircuitModel {
 		else {
 			Vector<InputPort> inputPortList=block.getInputPortList();
 			InputPort input=inputPortList.get(0);
-			Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
-			//向前递归搜索
-			searchBlock(newBlock);
+			
+			//如果和Input有连接,则搜索(Input可能与Circuit之外的模块连接,此时还没有处理,LinkedLine应该是null)
+			if(input.getLinkedLine()!=null) {
+				Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
+				//向前递归搜索
+				searchBlock(newBlock);
+			}
+			
 		}
 		
 		
