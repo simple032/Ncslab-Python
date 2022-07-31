@@ -12,6 +12,7 @@ import circuit.line.CircuitLine;
 import circuit.CircuitModel;
 
 import block.Block;
+import block.io.InputPort;
 
 import ncslablink.ModelException;
 
@@ -146,10 +147,11 @@ public class CircuitParser {
 			
 			
 			//改变连接线
-			Block toBlock=toCircuitBlock.getInputBlockList().get(0);
+			InputPort toPort=toCircuitBlock.getInputPortList().get(0);
+			Block toBlock=toPort.getBLock();
 			//System.out.println(fromBlock.getBlockName()+":"+fromBlock.getOutputPortList().get(0).getNumber());
 			lineJSON.put("toBlockName", toBlock.getBlockName());
-			lineJSON.put("toPortNo", toBlock.getOutputPortList().get(0).getNumber());
+			lineJSON.put("toPortNo", toPort.getNumber());
 			lineJSON.put("fromPortNo", "1");
 		}
 	
@@ -188,7 +190,7 @@ public class CircuitParser {
 		int i=0;
 		while(i<blockJSONList.length()) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
-			
+			//System.out.println(blockJSON);
 			//如果是电路模块
 			if(isCircuitBlock(blockJSON)) {
 				//System.out.println(blockJSON);

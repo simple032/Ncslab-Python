@@ -190,18 +190,18 @@ abstract public class NCSLabModel {
 			}
 			i++;
 		}
+		CircuitParser circuitParser=null;
 		if(j!=0) {
 			// 解析电路模块,把电路图转换成框图
-			CircuitParser circuitPaser = new CircuitParser(this);
+			circuitParser = new CircuitParser(this);
 			// circuitPaser.showBlocks();
 
 			// 把电路图中转换生成的模块都加入到BlockList中
-			addCircuitBlocks(circuitPaser);
+			addCircuitBlocks(circuitParser);
 			// 把电路图中转换生成的都加入LineList
-			addCircuitLines(circuitPaser);
+			addCircuitLines(circuitParser);
 
-			// 解开代数环的代码
-			circuitPaser.getCircuitModel().loopProcess();
+			
 		
 
 		}
@@ -212,6 +212,11 @@ abstract public class NCSLabModel {
 		checkBlocksName();
 		//解析各条连线
 		parseLines();
+		if(j!=0) {
+			// 解开代数环的代码
+			circuitParser.getCircuitModel().loopProcess();
+		}
+		
 		
 		setupDimensionList();
 		

@@ -50,7 +50,7 @@ public class ControlledVoltageSource extends CircuitBlock {
 		this.setOutputBlock(controlledVoltageSource);
 		
 		//controlledVoltageSource模块的输出作为外界的输入,加入到列表中
-		inputBlockList.add(controlledVoltageSource);
+		inputPortList.add(controlledVoltageSource.getInputPortList().get(0));
 	}
 
 }
