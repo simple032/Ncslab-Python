@@ -27,6 +27,12 @@ public class CircuitBlockType {
 		case "Voltage Sensor":
 			block=new circuit.block.element.VoltageSensor(blockJSON, model);
 			break;
+		case "Controlled Voltage Source":
+			block=new circuit.block.element.ControlledVoltageSource(blockJSON, model);
+			break;
+		case "Variable Resistor":
+			block=new circuit.block.element.VariableResistor(blockJSON, model);
+			break;
 		}
 		
 		if(block==null) {

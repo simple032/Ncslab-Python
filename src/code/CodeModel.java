@@ -14,6 +14,8 @@ import ncslablink.ModelException;
 import ncslablink.ModelMode;
 import ncslablink.NCSLabModel;
 
+import circuit.block.electblock.ElectBlock;
+
 abstract public class CodeModel extends NCSLabModel {
 
 	protected Vector<Block> terminalBlockList=new Vector<Block>();
@@ -91,8 +93,46 @@ abstract public class CodeModel extends NCSLabModel {
 		}
 	}
 	
-	/*建立输出链，决定应该先嫉妒是你哪个模块，再计算哪个模块*/
+	//将电路系统有代数环模块设置好
+	private void setupElectBlocks() {
+		System.out.println("Looking for elect blocks");
+		for(Block block:blockList) {
+			if(block instanceof ElectBlock) {
+				ElectBlock electBlock=(ElectBlock)block;
+				//如果是loopPoint
+				if(electBlock.isLoopPoint()) {
+					System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
+					//将它设置成FeedThrough
+					block.setFeedThrough(false);
+					
+					Vector<Block> relatedBlockList=electBlock.getRelatedBlockList();
+					
+					for(Block relatedBlock:relatedBlockList) {
+						if(relatedBlock.getIsOutputCodeGenerated()==false) {
+							//将与loop计算相关的模块加入OutputChain
+							outputChain.add(relatedBlock);
+							//terminalBlockList.add(relatedBlock);
+							relatedBlock.setIsOuputCodeGenerated(true);
+							//同时加入二次搜索的列表,二次搜索的时候搜索输入的路径
+							scanBlockList.add(relatedBlock);
+						}
+					}
+					
+					//将模块加入OutputChain,进行二次搜索
+					outputChain.add(block);
+					block.setIsOuputCodeGenerated(true);
+					scanBlockList.add(block);
+				}
+			}
+		}
+	}
+	
+	/*建立输出链，决定应该先计算是你哪个模块，再计算哪个模块*/
 	private void setupOuputChain() {
+		
+		//将电路系统有代数环模块设置好
+		setupElectBlocks();
+		
 		//找到终端的Block
 		findTerminalBlocks();
 		//沿着终端模块，建立输出链
@@ -188,10 +228,13 @@ abstract public class CodeModel extends NCSLabModel {
 					errorString+=output.getBLock().getBlockName()+"->";
 				}
 			}
-
+			
 			errorString+=outputPort.getBLock().getBlockName();
-			ErrorMessage errorMessage=new ErrorMessage(ErrorMessage.AlgebraicLoop,errorString);
+			
+			System.err.println(errorString);
+			ErrorMessage errorMessage=new ErrorMessage(ErrorMessage.AlgebraicLoop,errorString+"\n");
 			addErrorMessage(errorMessage);
+			isAlgebraicLoop=false;
 			return;
 		}
 

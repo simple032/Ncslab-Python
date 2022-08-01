@@ -2,27 +2,28 @@ package circuit.block.element;
 
 import org.json.JSONObject;
 
-import block.math.Add;
-import block.math.Gain;
 import circuit.block.BlockModeType;
 import circuit.block.CircuitBlock;
+import circuit.block.electblock.AddElect;
+import circuit.block.electblock.GainElect;
+import circuit.block.electblock.ProductElect;
 import circuit.block.io.BlockVoltage;
 import circuit.block.io.PortCurrent;
 import ncslablink.NCSLabModel;
 
-import circuit.block.electblock.*;
-
-public class Resistor extends CircuitBlock {
+public class VariableResistor extends CircuitBlock {
 	
-	private GainElect gain;
+	private ProductElect product;
 	private AddElect add;
 	
-	public Resistor(JSONObject blockJSON,NCSLabModel model) {
+	public VariableResistor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-		
+		circuitPortList.get(0).setName("LConn2");
 	}
 	
+	@Override
 	protected void setupBlockList() {
+		// TODO Auto-generated method stub
 		switch(this.blockMode) {
 		case Branch:
 			setupBranchBlockList();
@@ -32,22 +33,27 @@ public class Resistor extends CircuitBlock {
 			break;
 		}
 	}
+
+	@Override
+	protected void setupBlockModeType() {
+		// TODO Auto-generated method stub
+		blockModeType=BlockModeType.Anything;
+	}
 	
 	private void setupBranchBlockList() {
 		System.out.println("Setup equivilent blocks for '"+this.blockName+"' as a branch");
 		
-		String R=paramValues.getString("R");
-		JSONObject gainJSON=new JSONObject();
-		gainJSON.put("blockType", "Gain");
-		gainJSON.put("blockName", this.blockName+"_R");
-		gainJSON.put("blockPath", this.blockPath);
-		JSONObject gainParamValues=new JSONObject();
-		gainParamValues.put("Gain", R);
-		gainParamValues.put("Multiplication", "Element-wise(K.*u)");
-		gainJSON.put("paramValues", gainParamValues);
+		JSONObject ProcuctJSON=new JSONObject();
+		ProcuctJSON.put("blockType", "Gain");
+		ProcuctJSON.put("blockName", this.blockName+"_R");
+		ProcuctJSON.put("blockPath", this.blockPath);
+		JSONObject productParamValues=new JSONObject();
+		productParamValues.put("Inputs", "**");
+		productParamValues.put("Multiplication", "Element-wise(.*)");
+		ProcuctJSON.put("paramValues", productParamValues);
 		
-		gain=new GainElect(gainJSON,this.model);
-		this.blockList.add(gain);
+		product=new ProductElect(ProcuctJSON,this.model);
+		this.blockList.add(product);
 		
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Add");
@@ -69,27 +75,28 @@ public class Resistor extends CircuitBlock {
 		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
 		
-		createLine(add.getBlockName(), 1, gain.getBlockName(), 1);
+		createLine(add.getBlockName(), 1, product.getBlockName(), 1);
 		
-		this.setOutputBlock(gain);
+		this.setOutputBlock(product);
 		this.setupInputBlock(add);
+		
+		this.inputPortList.add(product.getInputPortList().get(1));
 	}
 	
 	private void setupLinkBlockList() {
 		System.out.println("Setup equivilent blocks for '"+this.blockName+"' as a link");
 		
-		String R=paramValues.getString("R");
-		JSONObject gainJSON=new JSONObject();
-		gainJSON.put("blockType", "Gain");
-		gainJSON.put("blockName", this.blockName+"_R");
-		gainJSON.put("blockPath", this.blockPath);
-		JSONObject gainParamValues=new JSONObject();
-		gainParamValues.put("Gain", "1.0/("+R+")");
-		gainParamValues.put("Multiplication", "Element-wise(K.*u)");
-		gainJSON.put("paramValues", gainParamValues);
+		JSONObject ProcuctJSON=new JSONObject();
+		ProcuctJSON.put("blockType", "Gain");
+		ProcuctJSON.put("blockName", this.blockName+"_R");
+		ProcuctJSON.put("blockPath", this.blockPath);
+		JSONObject productParamValues=new JSONObject();
+		productParamValues.put("Inputs", "*/");
+		productParamValues.put("Multiplication", "Element-wise(.*)");
+		ProcuctJSON.put("paramValues", productParamValues);
 		
-		gain=new GainElect(gainJSON,this.model);
-		this.blockList.add(gain);
+		product=new ProductElect(ProcuctJSON,this.model);
+		this.blockList.add(product);
 		
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Add");
@@ -111,13 +118,12 @@ public class Resistor extends CircuitBlock {
 		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
 		
-		createLine(add.getBlockName(), 1, gain.getBlockName(), 1);
+		createLine(add.getBlockName(), 1, product.getBlockName(), 1);
 		
-		this.setOutputBlock(gain);
+		this.setOutputBlock(product);
 		this.setupInputBlock(add);
+		
+		this.inputPortList.add(product.getInputPortList().get(1));
 	}
-	
-	protected void setupBlockModeType() {
-		blockModeType=BlockModeType.Anything;
-	}
+
 }

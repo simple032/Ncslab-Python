@@ -9,6 +9,7 @@ import circuit.block.io.CircuitPortType;
 import circuit.block.io.PortCurrent;
 import circuit.block.io.BlockVoltage;
 import circuit.block.io.CircuitNode;
+import circuit.CircuitModel;
 import ncslablink.NCSLabModel;
 
 import block.Block;
@@ -45,8 +46,12 @@ abstract public class CircuitBlock {
 	// 电气端口的列表
 	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
 	
-	//与外界连接的等价Block列表
+	//输出与外界连接的等价Block列表
 	protected Vector<Block> outputBlockList=new Vector<Block>();
+	
+	//输入与外界连接的等价Block列表
+	//protected Vector<Block> inputBlockList=new Vector<Block>();
+	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
 	
 	//模块的电压方程
 	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
@@ -58,6 +63,8 @@ abstract public class CircuitBlock {
 	
 	//模块的输出值,测试用
 	private Block terminalBlock;
+	
+	private CircuitModel circuitModel=null;
 
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
@@ -73,8 +80,20 @@ abstract public class CircuitBlock {
 		//setupBlockList();
 	}
 	
+	public void setCircuitModel(CircuitModel circuitModel) {
+		this.circuitModel=circuitModel;
+	}
+	
+	public CircuitModel getCircuitModel() {
+		return this.circuitModel;
+	}
+	
 	public Vector<Block> getOutputBlockList() {
 		return this.outputBlockList;
+	}
+	
+	public Vector<InputPort> getInputPortList() {
+		return this.inputPortList;
 	}
 	
 	public void setupBlocks() {
