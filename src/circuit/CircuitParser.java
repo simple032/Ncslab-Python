@@ -12,6 +12,7 @@ import circuit.line.CircuitLine;
 import circuit.CircuitModel;
 
 import block.Block;
+import block.io.InputPort;
 
 import ncslablink.ModelException;
 
@@ -116,6 +117,44 @@ public class CircuitParser {
 		lineJSON.put("toPortNo", "1");
 	}
 	
+	private boolean isToCircuitLine(JSONObject lineJSON) {
+		String toBlockName=lineJSON.getString("toBlockName");
+		
+		int i;
+		for(i=0;i<blockList.size();i++) {
+			CircuitBlock block=blockList.get(i);
+			if(block.getBlockName().equals(toBlockName)) {
+				break;
+			}
+		}
+		if(i==blockList.size()) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	//修改JSON中原来与CircuitBlock的连接线,变成与CircuitBlock输出端口相连的连接线
+		private void parseToLine(JSONObject lineJSON) {
+			String toBlockName=lineJSON.getString("toBlockName");
+			
+			CircuitBlock toCircuitBlock=null;
+			for(CircuitBlock circuitBlock:blockList) {
+				if(circuitBlock.getBlockName().equals(toBlockName)) {
+					toCircuitBlock=circuitBlock;
+				}
+			}
+			
+			
+			//改变连接线
+			InputPort toPort=toCircuitBlock.getInputPortList().get(0);
+			Block toBlock=toPort.getBLock();
+			//System.out.println(fromBlock.getBlockName()+":"+fromBlock.getOutputPortList().get(0).getNumber());
+			lineJSON.put("toBlockName", toBlock.getBlockName());
+			lineJSON.put("toPortNo", toPort.getNumber());
+			lineJSON.put("fromPortNo", "1");
+		}
+	
 	
 	//处理与外部相连的模块的线路
 	private void parseExternalConnections() {
@@ -123,9 +162,17 @@ public class CircuitParser {
 		int i=0;
 		while(i<lineJSONList.length()) {
 			JSONObject lineJSON=lineJSONList.getJSONObject(i);
+			//System.out.println(lineJSON);
 			if(isFromCircuitLine(lineJSON)) {
 				//修改JSON中原来与CircuitBlock的连接线,变成与CircuitBlock输出端口相连的连接线
 				parseFromLine(lineJSON);
+			}
+			else
+			if(isToCircuitLine(lineJSON)) {
+				//System.out.println(lineJSON);
+				parseToLine(lineJSON);
+				
+				//System.out.println(lineJSON);
 			}
 			i++;
 		}
@@ -143,7 +190,7 @@ public class CircuitParser {
 		int i=0;
 		while(i<blockJSONList.length()) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
-			
+			//System.out.println(blockJSON);
 			//如果是电路模块
 			if(isCircuitBlock(blockJSON)) {
 				//System.out.println(blockJSON);
@@ -165,7 +212,7 @@ public class CircuitParser {
 			//System.out.println(lineJSON);
 			
 			if(isCircuitLine(lineJSON)) {
-				System.out.println(lineJSON);
+				//System.out.println(lineJSON);
 				
 				CircuitLine line=new CircuitLine(lineJSON,blockList);
 				lineList.add(line);

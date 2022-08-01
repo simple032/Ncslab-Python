@@ -10,13 +10,15 @@ import circuit.block.CircuitBlock;
 import ncslablink.NCSLabModel;
 import circuit.block.io.PortCurrent;
 
+import circuit.block.electblock.*;
+
 import line.Line;
 
 public class Capacitor extends CircuitBlock {
 	
 	private Integrator integrator;
-	private Gain gain;
-	private Add add;
+	private GainElect gain;
+	private AddElect add;
 	
 	public Capacitor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -41,7 +43,7 @@ public class Capacitor extends CircuitBlock {
 		gainParamValues.put("Multiplication", "Element-wise(K.*u)");
 		gainJSON.put("paramValues", gainParamValues);
 		
-		gain=new Gain(gainJSON,this.model);
+		gain=new GainElect(gainJSON,this.model);
 		this.blockList.add(gain);
 		
 		JSONObject integratorJSON=new JSONObject();
@@ -73,7 +75,7 @@ public class Capacitor extends CircuitBlock {
 		addParamValues.put("Inputs", inputs);
 		addJSON.put("paramValues", addParamValues);
 		
-		add=new Add(addJSON,this.model);
+		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
 		
 		//连接Block内部的线路

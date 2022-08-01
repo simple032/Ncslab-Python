@@ -11,10 +11,12 @@ import circuit.block.io.BlockVoltage;
 import circuit.block.io.CircuitPort;
 import ncslablink.NCSLabModel;
 
+import circuit.block.electblock.*;
+
 public class Inductor extends CircuitBlock {
 	private Integrator integrator;
-	private Gain gain;
-	private Add add;
+	private GainElect gain;
+	private AddElect add;
 	
 	public Inductor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -38,7 +40,7 @@ public class Inductor extends CircuitBlock {
 		gainParamValues.put("Multiplication", "Element-wise(K.*u)");
 		gainJSON.put("paramValues", gainParamValues);
 		
-		gain=new Gain(gainJSON,this.model);
+		gain=new GainElect(gainJSON,this.model);
 		this.blockList.add(gain);
 		
 		JSONObject integratorJSON=new JSONObject();
@@ -69,7 +71,7 @@ public class Inductor extends CircuitBlock {
 		addParamValues.put("Inputs", inputs);
 		addJSON.put("paramValues", addParamValues);
 		
-		add=new Add(addJSON,this.model);
+		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
 		
 		createLine(gain.getBlockName(), 1, integrator.getBlockName(), 1);

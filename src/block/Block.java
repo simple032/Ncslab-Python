@@ -61,6 +61,10 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		this.signalNum=signalNum;
 	}
 	
+	public void setFeedThrough(boolean feedThrough) {
+		this.outputPortList.get(0).setFeedThrough(feedThrough);
+	}
+	
 	public boolean getIsHardware() {
 		return this.isHardware;
 	}
