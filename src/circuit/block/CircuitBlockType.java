@@ -33,6 +33,9 @@ public class CircuitBlockType {
 		case "Variable Resistor":
 			block=new circuit.block.element.VariableResistor(blockJSON, model);
 			break;
+		case "Diode":
+			block=new circuit.block.element.Diode(blockJSON, model);
+			break;
 		}
 		
 		if(block==null) {
