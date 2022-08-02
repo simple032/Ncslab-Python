@@ -36,6 +36,9 @@ public class CircuitBlockType {
 		case "Diode":
 			block=new circuit.block.element.Diode(blockJSON, model);
 			break;
+		case "AC Voltage Source":
+			block=new circuit.block.element.ACVoltageSource(blockJSON, model);
+			break;
 		}
 		
 		if(block==null) {
