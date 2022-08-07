@@ -38,7 +38,7 @@ public class Diode extends CircuitBlock {
 	@Override
 	protected void setupBlockModeType() {
 		// TODO Auto-generated method stub
-		blockModeType=BlockModeType.LinkOnly;
+		blockModeType=BlockModeType.Anything;
 	}
 	
 	private void setupBranchBlockList() {

@@ -10,38 +10,37 @@ import ncslablink.NCSLabModel;
 
 public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
 	
+	private String electLoopString;
+	
+	private Vector<Block> relatedBlockList=new Vector<Block>();
+	
 	public DiodeCurrentElect(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
 	}
 	
-	@Override
 	public String getGainBlock() {
-		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
+	
 	public void setElecLoopString(String electLoopString) {
-		// TODO Auto-generated method stub
-
+		this.electLoopString=electLoopString;
 	}
-
-	@Override
+	
 	public void setRelatedBlockList(Vector<Block> relatedBlockList) {
-		// TODO Auto-generated method stub
-
+		this.relatedBlockList=relatedBlockList;
 	}
-
-	@Override
-	public Vector<Block> getRelatedBlockList() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public Vector<Block> getRelatedBlockList(){
+		return this.relatedBlockList;
 	}
-
-	@Override
+	
 	public boolean isLoopPoint() {
-		// TODO Auto-generated method stub
-		return false;
+		if(relatedBlockList.size()>0) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 }
