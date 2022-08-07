@@ -46,8 +46,9 @@ void ncslabLoop()
   {
         //mp->time += stepSize;
       //printf("time:%f\n",mp->time);
+    writeInformation();
     NCSLabOneStep45(real_sample_time);
-	mp->time += stepSize;
+	//mp->time += stepSize;
     
   }
 }
@@ -164,6 +165,7 @@ void NCSLabOneStep45(double real_sample_time)
 
     if (nextStepSize > stepSize || i == 1)
     {
+      mp->time += stepSize;
       stepSize = nextStepSize;
       break;
     }
