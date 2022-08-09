@@ -77,7 +77,7 @@ public class LoopSolver {
 		}
 	}
 	
-	public void showLoopSolver() {
+	public void showLoopSolver() throws CircuitLoopException{
 		System.out.println("+++++++++++++++++++++++++++");
 		System.out.println(outputBlock.getBlockName()+"...");
 		System.out.println("Forward:");
@@ -205,7 +205,7 @@ public class LoopSolver {
 	}
 	
 	// //解开代数环 
-	public void solveLoop() {
+	public void solveLoop() throws CircuitLoopException{
 		System.out.println("Solver loops for " + outputBlock.getBlockName() + "...");
 		//寻找面向代数环节点LoopPoint的Forward通道
 		for (LinearBlockElement element : loopPointList) {
@@ -225,7 +225,7 @@ public class LoopSolver {
 	}
 	
 	//设置TargetGroup,生成TargetGroup的代码,TargetGroup是计算某一个LoopPoint的ForwardGroup集合,每个ForwardGroup面向一个输入点
-	private void setupTargetGroupList() {
+	private void setupTargetGroupList() throws CircuitLoopException{
 		//根据LoopPoint,建立TargetGroup
 		for(LinearBlockElement element:loopPointList) {
 			TargetGroup targetGroup=new TargetGroup(element);
