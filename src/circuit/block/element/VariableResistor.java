@@ -2,9 +2,12 @@ package circuit.block.element;
 
 import org.json.JSONObject;
 
+import block.elect.Limiting;
+import block.source.SineWave;
 import circuit.block.BlockModeType;
 import circuit.block.CircuitBlock;
 import circuit.block.electblock.AddElect;
+import circuit.block.electblock.DiodeElect;
 import circuit.block.electblock.GainElect;
 import circuit.block.electblock.ProductElect;
 import circuit.block.io.BlockVoltage;
@@ -15,6 +18,7 @@ public class VariableResistor extends CircuitBlock {
 	
 	private ProductElect product;
 	private AddElect add;
+	private Limiting limiting;
 	
 	public VariableResistor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -37,7 +41,7 @@ public class VariableResistor extends CircuitBlock {
 	@Override
 	protected void setupBlockModeType() {
 		// TODO Auto-generated method stub
-		blockModeType=BlockModeType.Anything;
+		blockModeType=BlockModeType.BranchOnly;
 	}
 	
 	private void setupBranchBlockList() {
@@ -75,19 +79,29 @@ public class VariableResistor extends CircuitBlock {
 		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
 		
+		JSONObject limitingJSON=new JSONObject();
+		limitingJSON.put("blockType", "Limiting");
+		limitingJSON.put("blockName", this.blockName+"_Limiting");
+		limitingJSON.put("blockPath", this.blockPath);
+		limitingJSON.put("paramValues", this.paramValues);
+		
+		limiting=new Limiting(limitingJSON,this.model);
+		this.blockList.add(limiting);
+		
 		createLine(add.getBlockName(), 1, product.getBlockName(), 1);
+		createLine(limiting.getBlockName(),1,product.getBlockName(),2);
 		
 		this.setOutputBlock(product);
 		this.setupInputBlock(add);
 		
-		this.inputPortList.add(product.getInputPortList().get(1));
+		this.inputPortList.add(limiting.getInputPortList().get(0));
 	}
 	
 	private void setupLinkBlockList() {
 		System.out.println("Setup equivilent blocks for '"+this.blockName+"' as a link");
 		
 		JSONObject ProcuctJSON=new JSONObject();
-		ProcuctJSON.put("blockType", "Gain");
+		ProcuctJSON.put("blockType", "Product");
 		ProcuctJSON.put("blockName", this.blockName+"_R");
 		ProcuctJSON.put("blockPath", this.blockPath);
 		JSONObject productParamValues=new JSONObject();
@@ -117,13 +131,22 @@ public class VariableResistor extends CircuitBlock {
 		
 		add=new AddElect(addJSON,this.model);
 		this.blockList.add(add);
+		JSONObject limitingJSON=new JSONObject();
+		limitingJSON.put("blockType", "Limiting");
+		limitingJSON.put("blockName", this.blockName+"_Limiting");
+		limitingJSON.put("blockPath", this.blockPath);
+		limitingJSON.put("paramValues", this.paramValues);
+		
+		limiting=new Limiting(limitingJSON,this.model);
+		this.blockList.add(limiting);
 		
 		createLine(add.getBlockName(), 1, product.getBlockName(), 1);
+		createLine(limiting.getBlockName(),1,product.getBlockName(),2);
 		
 		this.setOutputBlock(product);
 		this.setupInputBlock(add);
 		
-		this.inputPortList.add(product.getInputPortList().get(1));
+		this.inputPortList.add(limiting.getInputPortList().get(0));
 	}
 
 }
