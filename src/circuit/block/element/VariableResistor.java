@@ -43,9 +43,7 @@ public class VariableResistor extends CircuitBlock {
 	@Override
 	protected void setupBlockModeType() {
 		// TODO Auto-generated method stub
-		//blockModeType=BlockModeType.Anything;
-		blockModeType=BlockModeType.LinkOnly;
-		//blockModeType=BlockModeType.BranchOnly;
+		blockModeType=BlockModeType.Anything;
 	}
 	
 	private void setupBranchBlockList() {
