@@ -39,6 +39,9 @@ public class CircuitBlockType {
 		case "AC Voltage Source":
 			block=new circuit.block.element.ACVoltageSource(blockJSON, model);
 			break;
+		case "Variable Capacitor":
+			block=new circuit.block.element.VariableCapacitor(blockJSON, model);
+			break;
 		}
 		
 		if(block==null) {

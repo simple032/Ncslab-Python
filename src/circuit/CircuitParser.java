@@ -27,7 +27,7 @@ public class CircuitParser {
 	private static boolean isCircuitBlock(JSONObject blockJSON) {
 		String srcBlock=blockJSON.getString("srcBlock");
 		//System.out.println(srcBlock);
-		if(srcBlock.startsWith("fl_lib")) {
+		if(srcBlock.startsWith("fl_lib")||srcBlock.startsWith("elec_lib")) {
 			return true;
 		}
 		else {
