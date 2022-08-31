@@ -143,7 +143,7 @@ public class NewMotor extends Block {
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=speed;\n";
 			
 			outputCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
-			outputCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
+			outputCode+="int pwm = "+this.getInputPortVariable(0) +"*10000;\n";
 //			outputCode+="printf(\"speed is %d,pwm is %d\\n\",speed,pwm);\n";
 			outputCode+="pwm = pwm>=10000?10000:pwm;\n";
 			outputCode+="pwm = pwm<=-10000?-10000:pwm;\n";
