@@ -228,7 +228,7 @@ void outputWaterLevel(WATER_LEVEL *device){
 	pwmWrite(1,(1-device->pumpPWM)*1000);
 	
 	pthread_mutex_lock(&(device->speed_timerCritical));
-    device->speed_counter_in=device->speed_counter_out;
+    device->speed_counter_in=100.0*device->speed_counter_out;
     pthread_mutex_unlock(&(device->speed_timerCritical));
     
     pthread_mutex_lock(&(device->level_timerCritical));
