@@ -48,8 +48,8 @@ public class MathFunction extends Block{
 				int width=signal.getWidth();
 				int height=signal.getHeight();
 				
-				outputCode+="for(int i=0;i<"+height+";i++){\n";
-				outputCode+="for(int j=0;j<"+width+";j++){\n";
+				outputCode+="for(int i=0;i<"+width+";i++){\n";
+				outputCode+="for(int j=0;j<"+height+";j++){\n";
 				outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(i,j)="+signal.getName()+"(j,i);\n";
 				outputCode+="}\n";
 				outputCode+="}\n";

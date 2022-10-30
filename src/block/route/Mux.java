@@ -101,7 +101,7 @@ public class Mux extends Block {
 		for(InputPort inputPort:inputPortList) {
 			OutputSignal signal=inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			if(signal.getDataType()==DataType.REAL) {
-				outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
+				outputCode+=getOutputPortVariable(0)+"("+fetch+",0)="
 						+getInputPortVariable(i)
 						+";\n";
 				
@@ -160,10 +160,10 @@ public class Mux extends Block {
 		}
 		
 		OutputPort output=getOutputPortList().get(0);
-		output.setHeight(1);
-		output.setWidth(size);
-		output.getOutputSignalC().setHeight(1);
-		output.getOutputSignalC().setWidth(size);
+		output.setHeight(size);
+		output.setWidth(1);
+		output.getOutputSignalC().setHeight(size);
+		output.getOutputSignalC().setWidth(1);
 		output.getOutputSignalC().setDataType(DataType.MATRIX);
 	}
 	
