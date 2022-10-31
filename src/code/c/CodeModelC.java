@@ -7,7 +7,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
+
+import com.mybatis1.utils.AlgorithmsMapper;
+import com.mybatis1.utils.Mybatis1Utils;
 
 import block.Block;
 import block.io.InputPort;
@@ -189,9 +193,10 @@ abstract public class CodeModelC extends CodeModel {
 	}
 	
 	public void saveToDatabase() {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory("piscesPU");
-        final EntityManager em = emf.createEntityManager();
- 
+		//final EntityManagerFactory emf = Persistence.createEntityManagerFactory("piscesPU");
+        //final EntityManager em = emf.createEntityManager();
+        SqlSession  sqlSession = Mybatis1Utils.getSqlSession();
+        AlgorithmsMapper mapper = sqlSession.getMapper( AlgorithmsMapper.class);
         Algorithms algorithm = new Algorithms();
         
         algorithm.setAuthor(getSaveInfo().getInt("userId"));
@@ -208,13 +213,15 @@ abstract public class CodeModelC extends CodeModel {
         algorithm.setUuid(getSaveInfo().getLong("uuid"));
         algorithm.setPublicFlag(getSaveInfo().getInt("publicFlag"));
         algorithm.setTargetPlatform(getSaveInfo().getInt("targetPlatform"));
- 
-        try {
-            em.getTransaction().begin();
-            em.persist(algorithm);
-            em.getTransaction().commit();
-        } finally {
-            em.close();
-        }
+        mapper.insert(algorithm);
+        sqlSession.commit();
+        sqlSession.close();
+       // try {
+         //   em.getTransaction().begin();
+           // em.persist(algorithm);
+         //   em.getTransaction().commit();
+       // } finally {
+         //   em.close();
+        //}
 	}
 }
