@@ -29,8 +29,8 @@ public class WaterLevel extends Block {
 		
 		//һ�����룬�������
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,"Pump_Speed",1,true));
-		outputPortList.add(new OutputPort(this,"Water_Level",2,true));
+		outputPortList.add(new OutputPort(this,"Pump_Speed",1,false));
+		outputPortList.add(new OutputPort(this,"Water_Level",2,false));
 		
 		switch(model.getModelMode()) {
 		case Simulation:
@@ -128,7 +128,9 @@ public class WaterLevel extends Block {
 			//outputCode+="pwmWrite(1,(1-"+this.getInputPortVariable(0)+")*1000);\n";
 			hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
 			outputCode+="if(mp->majorStep>0) {\n";
-			outputCode+=hardwareDefineName+".pumpPWM="+this.getInputPortVariable(0)+";\n";
+			outputCode+=hardwareDefineName+".pumpPWM=0.0002*"+this.getInputPortVariable(0)+";\n";
+			outputCode+=hardwareDefineName+".pumpPWM="+hardwareDefineName+".pumpPWM>1.0?1.0:"+hardwareDefineName+".pumpPWM;\n";
+			outputCode+=hardwareDefineName+".pumpPWM="+hardwareDefineName+".pumpPWM<0.15?0.15:"+hardwareDefineName+".pumpPWM;\n";
 			outputCode+="outputWaterLevel(&"+hardwareDefineName+");\n";
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+hardwareDefineName+".speed_counter_in;\n";
 			outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+hardwareDefineName+".level;\n";

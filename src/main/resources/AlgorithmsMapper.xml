@@ -1,0 +1,8 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis1.utils.AlgorithmsMapper">
+	<insert id="insert" parameterType="main.database.Algorithms">
+		insert into algorithms(id,uuid,name,step_time,packet_size,algorithm_type,target_platform,public,author,test_rig,description,bin,last_update,model_id,copy_num) values(#{id},#{uuid},#{name},#{stepTime},#{packetSize},#{algorithmType},#{targetPlatform},#{publicFlag},#{author},#{testRig},Null,#{bin},#{lastUpdate},#{modelId},-1)
+	</insert>
+</mapper>
