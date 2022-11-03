@@ -41,13 +41,13 @@ public class Zero_Order_Hold extends Block{
 		  outputCode+="{real_T currentTime = model.time;\n";
 		  switch(signal.getDataType()) {
 		  case REAL:
-			  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001) {\n";
+			  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001&&mp->majorStep>0) {\n";
 			  outputCode+=out.getOutputSignalC().getName()+"="+signal.getName()+";}\n";
 			  break;
 		  case MATRIX:
 			  for(int i=0; i<ops.getHeight(); i++) {
 					for(int j=0;j<ops.getWidth();j++) {
-						outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001) {\n";
+						outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001&&mp->majorStep>0) {\n";
 						 outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
 						
 					}
