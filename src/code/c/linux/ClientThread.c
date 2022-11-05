@@ -4,7 +4,8 @@
 #include "UploadThread.h"
 
 #include <iostream>
-#include <octave/oct.h>
+#include "math.h"
+#include "Matrix.h"
 
 #ifndef MSG_WAITALL
 	#define MSG_WAITALL 0x08
