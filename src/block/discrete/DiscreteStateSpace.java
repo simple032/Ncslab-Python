@@ -16,7 +16,7 @@ import code.c.CodeStructC;
 import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
-public class DiscreteStateSpace extends Block {
+public class DiscreteStateSpace extends DiscreteBlock {
 	private String name="Discrete State Space";
 	
 	private boolean feedThrough=false;	

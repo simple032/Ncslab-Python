@@ -140,7 +140,7 @@ void NCSLabOneStep45(double real_sample_time)
     nextStepSize = sqrt(sqrt((TOL * stepSize) / dif))*0.84*stepSize;
     
    //xiazhiqiang:Interpolation is required when discrete modules exist
-  
+  	/*
     if(hasdiscrete(sample_time)==0){
         if(nextStepSize>maxStepSize){
     	      nextStepSize=maxStepSize;
@@ -160,13 +160,21 @@ void NCSLabOneStep45(double real_sample_time)
         else{
              nextStepSize=nextStepSize;
         }
-    }
+    }*/
     // printf("%f\n", nextStepSize);
 
     if (nextStepSize > stepSize || i == 1)
     {
       mp->time += stepSize;
       stepSize = nextStepSize;
+      
+      if(hasdiscrete(sample_time)){
+      	double nextHit=distance(mp->time,real_sample_time);
+      	if(stepSize>nextHit){
+      		stepSize=nextHit;
+      	}
+      }
+      
       break;
     }
 

@@ -15,7 +15,7 @@ import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 import block.io.State;
 
-public class Discrete_Transfer_Fcn extends Block{
+public class Discrete_Transfer_Fcn extends DiscreteBlock{
 	block.io.Parameter sampleTime;
 	block.io.Parameter num;
 	block.io.Parameter den;
@@ -39,6 +39,9 @@ public class Discrete_Transfer_Fcn extends Block{
 		}	*/
 		
 		parameterList.add(sampleTime);
+		
+		setSampleTime(sampleTime);
+		
 		parameterList.add(num);
 		parameterList.add(den);	
 		parameterList.add(initialStates);

@@ -12,7 +12,7 @@ import code.c.CodeStructC;
 import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 
-public class Discrete_Transfer_Fcnz extends Block{
+public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 	
 	public Discrete_Transfer_Fcnz(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);

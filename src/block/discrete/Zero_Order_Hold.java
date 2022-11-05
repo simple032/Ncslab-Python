@@ -14,7 +14,7 @@ import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 import Jama.Matrix;
 
-public class Zero_Order_Hold extends Block{
+public class Zero_Order_Hold extends DiscreteBlock{
 	block.io.Parameter sampleTime;
 	public Zero_Order_Hold(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
@@ -22,6 +22,8 @@ public class Zero_Order_Hold extends Block{
 		outputPortList.add(new OutputPort(this,1,true));
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		parameterList.add(sampleTime);
+		
+		setSampleTime(sampleTime);
   }
 	
 	 public void generateInitCodeC(CodeStructC code) {
