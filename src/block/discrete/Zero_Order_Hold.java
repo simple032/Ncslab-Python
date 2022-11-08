@@ -16,6 +16,7 @@ import Jama.Matrix;
 
 public class Zero_Order_Hold extends DiscreteBlock{
 	block.io.Parameter sampleTime;
+	private State stateOutput;
 	public Zero_Order_Hold(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
@@ -40,6 +41,7 @@ public class Zero_Order_Hold extends DiscreteBlock{
 		  OutputPort out  = outputPortList.get(0);
 		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		  /*
 		  outputCode+="{real_T currentTime = model.time;\n";
 		  switch(signal.getDataType()) {
 		  case REAL:
@@ -57,8 +59,18 @@ public class Zero_Order_Hold extends DiscreteBlock{
 			  break;
 		  }
 		  outputCode+="}\n";
+		  */
+		  outputCode+=out.getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
 		  code.addOutputCode(outputCode);
 		 }
+	 
+	 
+	 public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException{
+		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		 String disceteUpdateCode="/*Code for discrete update of block Zero_Order_Hold(Inside):("+getBlockId()+")"+getBlockName()+"*/\n";
+		 disceteUpdateCode+=stateOutput.getName()+"="+signal.getName()+";\n";
+		 code.addDiscreteUpdateCode(disceteUpdateCode);
+	 }
 	 
 	 public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);
@@ -76,7 +88,17 @@ public class Zero_Order_Hold extends DiscreteBlock{
 			out.setWidth(signal.getWidth());
 			out.getOutputSignalC().setHeight(signal.getHeight());
 			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());	 
+			out.getOutputSignalC().setDataType(signal.getDataType());
+			
+			switch (signal.getDataType()) {
+			case REAL:
+				stateOutput = new State(this, 1, "integral", 1, 1);
+				break;
+			case MATRIX:
+				stateOutput = new State(this, 1, "integral", signal.getHeight(),signal.getWidth());
+				break;
+			}
+			stateList.add(stateOutput);
 	 }
 	 public void checkDimension() throws MatDimException{
 	}  	

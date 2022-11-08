@@ -309,6 +309,13 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		code.addUpdateCode(updateCode);
 	}
 	
+	public void generateDiscreteBlockUpdateCodeC(CodeStructC code) throws MatDimException{
+		generateDiscreteUpdateCodeC(code);
+	}
+	public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException{
+		
+	}
+	
 	public void generateBlockDerivativeCodeC(CodeStructC code) {
 		generateDerivativeCodeC(code);
 	}

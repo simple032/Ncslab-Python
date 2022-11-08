@@ -171,6 +171,7 @@ abstract public class CodeModel extends NCSLabModel {
 		//根据微分量，建立Update的代码 
 		try {
 			generateUpdateCode(option);
+			generateDiscreteUpdateCode(option);
 		} catch (MatDimException e) {
 			// TODO Auto-generated catch block
 			errorList.add(new ErrorMessage(100, e.getMessage()));
@@ -197,6 +198,7 @@ abstract public class CodeModel extends NCSLabModel {
 	abstract protected void generateStatementCode(CodeGenerationOption option);
 	
 	abstract protected void generateTerminateCode(CodeGenerationOption option);
+	abstract protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException;
 
 	private void scanInputPort(InputPort inputPort) {
 		Line line=inputPort.getLinkedLine();

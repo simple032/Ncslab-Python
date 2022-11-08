@@ -45,6 +45,8 @@ abstract public class CodeStructC {
 	public String outputCode="";
 	//update的代码
 	public String updateCode="";
+	
+	public String discreteUpdateCode="";
 
 	//定义的代码
 	public String statementCode="";
@@ -119,6 +121,10 @@ abstract public class CodeStructC {
 	public void addUpdateCode(String code) {
 		updateCode+=code;
 	}
+	
+	public void addDiscreteUpdateCode(String code) {
+		discreteUpdateCode+=code;
+	}
 
 	public void addDerivativeCode(String code) {
 		derivativeCode+=code;
@@ -138,7 +144,7 @@ abstract public class CodeStructC {
 				//+"#include <octave/oct.h>\n"
 				+"#include \"Matrix.h\"\n"
 				//xiazhiqiang:Stores the sampling time of discrete modules
-				+"double  sample_time[20]={};\n"
+				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
 				+"int sample_i=0;\n"
 				//end
 				;
@@ -183,6 +189,11 @@ abstract public class CodeStructC {
 				
 				+"void NCSLabUpdate(){\n"
 				+updateCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabDiscreteUpdate(){\n"
+				+"double dist;\n"
+				+discreteUpdateCode+"\n"
 				+"}\n"
 				
 				+"void NCSLabTerminate(){\n"

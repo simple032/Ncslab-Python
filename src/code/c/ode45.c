@@ -11,7 +11,7 @@
 #define TOL 1E-7
 
 extern MODEL *mp;
-extern double sample_time[20];
+extern double sample_time[];
 double singleStateReserve[3][SINGLE_STATE_NUM];
 Matrix matrixStateReserve[3][MATRIX_STATE_NUM];
 
@@ -165,11 +165,18 @@ void NCSLabOneStep45(double real_sample_time)
 
     if (nextStepSize > stepSize || i == 1)
     {
+      if(hasdiscrete(sample_time)){
+      	double dist=distance(mp->time,real_sample_time);
+      	if(fabs(dist-real_sample_time)<0.000000001){
+      		NCSLabDiscreteUpdate();
+      	}
+      }	
       mp->time += stepSize;
       stepSize = nextStepSize;
       
       if(hasdiscrete(sample_time)){
       	double nextHit=distance(mp->time,real_sample_time);
+      	
       	if(stepSize>nextHit){
       		stepSize=nextHit;
       	}

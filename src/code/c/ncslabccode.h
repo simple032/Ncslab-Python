@@ -156,6 +156,7 @@ void NCSLabOneStep();
 void NCSLabOutput();
 void NCSLabDerivative();
 void NCSLabUpdate();
+void NCSLabDiscreteUpdate();
 void NCSLabTerminate();
 void storeState(int);
 void restoreState(int);

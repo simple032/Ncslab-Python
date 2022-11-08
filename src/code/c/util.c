@@ -31,7 +31,7 @@ double gcd( double x, double y )
 double gcd1(double a[]){
    double d=a[0];
    int i;
-   for(i=0;i<20;i++)	{
+   for(i=0;i<mp->blockNum;i++)	{
    	if(a[i]==0){
    		break;
 	   }
@@ -43,7 +43,7 @@ double gcd1(double a[]){
 //xiazhiqiang:Check whether there are discrete modules
 int hasdiscrete(double a[]){
 	  int i;
-   for(i=0;i<20;i++){
+   for(i=0;i<mp->blockNum;i++){
    	if(a[i]==0){
    		break;
 	   }
@@ -56,12 +56,27 @@ int hasdiscrete(double a[]){
 	   }
 	}
 //xiazhiqang:Distance from the next sampling point
+/*
 double distance(double t,double s){
 	long a=(long)(t*1000000000000000);
         long b=(long)(s*1000000000000000);
         double distance=s-(a%b)/1000000000000000.0;
+        if(distance<0){
+        	distance=0;
+        }
         return distance;
+}*/
+
+
+double distance(double t,double s){
+	long num=t/s;
+    double dist=(num+1)*s-t;
+    if(dist<0){
+    	dist=0;
+    }
+    return dist;
 }
+
 //end
 
 void storeState(int num){

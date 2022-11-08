@@ -141,6 +141,20 @@ abstract public class CodeModelC extends CodeModel {
 		}
 	}
 	
+	protected void generateDiscreteBlockUpdateCode(Block block) throws MatDimException {
+		block.generateDiscreteBlockUpdateCodeC(getCodeStructC());
+	}
+	
+	protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException {
+		System.out.println("Generating discrete update codes......");
+		
+		for(Block block:blockList) {
+			System.out.println("Generating discrete update codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			generateDiscreteBlockUpdateCode(block);
+		}
+	}
+	
 	protected void generateBlockTerminateCode(Block block) {
 		block.generateBlockTerminateCodeC(getCodeStructC());
 	}

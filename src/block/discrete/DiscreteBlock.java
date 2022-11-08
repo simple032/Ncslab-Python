@@ -3,8 +3,10 @@ package block.discrete;
 import org.json.JSONObject;
 
 import block.Block;
+import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 import block.io.Parameter;
+import code.c.CodeStructC;
 
 public class DiscreteBlock extends Block {
 	
@@ -24,6 +26,22 @@ public class DiscreteBlock extends Block {
 	
 	public void setSampleTime(Parameter sampleTime) {
 		this.sampleTime=sampleTime.getData().getInitValue();
+	}
+	
+	public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException{
+		
+	}
+	
+	public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException{
+		String discreteUpdateCode="/*Code for update of discrete block "+getBlockType()+":("+getBlockId()+")"+getBlockName()+"*/\n";
+		discreteUpdateCode+="dist=distance(mp->time,"+sampleTime+");\n";
+		discreteUpdateCode+="if(fabs(floor(mp->time/"+sampleTime+"+0.5)-mp->time/"+sampleTime+")<0.000001) {\n";
+		code.addDiscreteUpdateCode(discreteUpdateCode);
+		
+		generateDiscreteUpdateCodeCInside(code);
+		
+		discreteUpdateCode="}\n";
+		code.addDiscreteUpdateCode(discreteUpdateCode);
 	}
 
 }
