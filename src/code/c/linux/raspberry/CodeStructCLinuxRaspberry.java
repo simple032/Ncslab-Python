@@ -75,6 +75,12 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		writeNCSLabFile("../../Matrix.c","Matrix.c");
 		writeNCSLabFile("../../Matrix.h","Matrix.h");
 		
+		writeNCSLabFile("DEV_Config.c","DEV_Config.c");
+		writeNCSLabFile("DEV_Config.h","DEV_Config.h");
+		
+		writeNCSLabFile("DAC8532.c","DAC8532.c");
+		writeNCSLabFile("DAC8532.h","DAC8532.h");
+		writeNCSLabFile("Debug.h","Debug.h");
 		//写入生成的主代码ncslabccdoe.c
 				for(Block block: model.getBlockList()) {
 					if(block.isSFcnBlock()) {
