@@ -672,7 +672,7 @@ abstract public class CodeStructC {
 		dataStructureCode+="/*Define block structures*/\n";
 		if(model.getBlockList().size()>0) {
 			for(Block block:model.getBlockList()) {			
-				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+"};\n";
+				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+","+model.getConfig().getStartTime()+",0};\n";
 			}
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
 		}
@@ -832,6 +832,7 @@ abstract public class CodeStructC {
 		dataStructureInitCode+="model.blocks=blocks;\n";
 		dataStructureInitCode+="model.time=model.startTime;\n";
 		dataStructureInitCode+="model.offset=0;\n";
+		dataStructureInitCode+="model.discreteTime=model.startTime;\n";
 
 		dataStructureInitCode+="model.signalNum="+signalNum+";\n";
 		dataStructureInitCode+="model.signals=signals;\n";

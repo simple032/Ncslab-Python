@@ -42,6 +42,10 @@ void ncslabLoop()
           real_sample_time=gcd1(sample_time);
           }
         //end
+  mp->discreteUpdate=1;
+  if(mp->stepSize>real_sample_time){
+  	mp->stepSize=real_sample_time;
+  }
   while (mp->time < mp->stopTime)
   {
         //mp->time += stepSize;
@@ -59,8 +63,16 @@ void NCSLabOneStep45(double real_sample_time)
   REAL dif;
 
   mp->offset = 0;
+  
+  if(mp->discreteUpdate){
+  	
+  	NCSLabDiscreteUpdate();
+  	mp->discreteUpdate=0;
+  }
+  
   mp->majorStep = 1;
   NCSLabOutput();
+  
   storeState(0);
 
   for (int i = 0; i < 2; i++)
@@ -135,51 +147,30 @@ void NCSLabOneStep45(double real_sample_time)
 
     dif = calculateStateDif(1, 2);
 
-    // printf("%f\n",dif);
-
     nextStepSize = sqrt(sqrt((TOL * stepSize) / dif))*0.84*stepSize;
     
-   //xiazhiqiang:Interpolation is required when discrete modules exist
-  	/*
-    if(hasdiscrete(sample_time)==0){
-        if(nextStepSize>maxStepSize){
-    	      nextStepSize=maxStepSize;
-         }
-    }
-    else{
-          if(nextStepSize>distance(mp->time,real_sample_time)){
-             if(distance(mp->time,real_sample_time)<0.000000001){
-               nextStepSize=0.01;
-              }
-            else if(nextStepSize>real_sample_time&&distance(mp->time,real_sample_time)>0.95*real_sample_time){
-               nextStepSize=0.01;
-             }else{
-            nextStepSize=distance(mp->time,real_sample_time);
-              }
-           }
-        else{
-             nextStepSize=nextStepSize;
-        }
-    }*/
-    // printf("%f\n", nextStepSize);
 
     if (nextStepSize > stepSize || i == 1)
     {
-      if(hasdiscrete(sample_time)){
-      	double dist=distance(mp->time,real_sample_time);
-      	if(fabs(dist-real_sample_time)<0.000000001){
-      		NCSLabDiscreteUpdate();
-      	}
-      }	
       mp->time += stepSize;
       stepSize = nextStepSize;
       
       if(hasdiscrete(sample_time)){
-      	double nextHit=distance(mp->time,real_sample_time);
       	
-      	if(stepSize>nextHit){
-      		stepSize=nextHit;
+      	while(mp->discreteTime<=mp->time){
+      		mp->discreteTime+=real_sample_time;
+      		//mp->offset = 0;
+  			//NCSLabOutput();
+      		//NCSLabDiscreteUpdate();
+      		mp->discreteUpdate=1;
       	}
+      	
+      	double dist=mp->discreteTime-mp->time;
+      	if(stepSize>dist){
+      		stepSize=dist;
+      	}
+      	
+      	
       }
       
       break;

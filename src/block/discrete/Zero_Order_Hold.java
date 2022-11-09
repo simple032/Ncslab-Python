@@ -60,8 +60,15 @@ public class Zero_Order_Hold extends DiscreteBlock{
 		  }
 		  outputCode+="}\n";
 		  */
+		  /*
+		  outputCode+="if(sfcnIsMajorStep()){\n";
+		  outputCode+=out.getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
+		  outputCode+="block"+this.getBlockId()+".discreteUpdated=0;\n";
+		  outputCode+="}\n";*/
+		  
 		  outputCode+=out.getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
 		  code.addOutputCode(outputCode);
+		  
 		 }
 	 
 	 
@@ -92,10 +99,10 @@ public class Zero_Order_Hold extends DiscreteBlock{
 			
 			switch (signal.getDataType()) {
 			case REAL:
-				stateOutput = new State(this, 1, "integral", 1, 1);
+				stateOutput = new State(this, 1, "stateOutput", 1, 1);
 				break;
 			case MATRIX:
-				stateOutput = new State(this, 1, "integral", signal.getHeight(),signal.getWidth());
+				stateOutput = new State(this, 1, "stateOutput", signal.getHeight(),signal.getWidth());
 				break;
 			}
 			stateList.add(stateOutput);

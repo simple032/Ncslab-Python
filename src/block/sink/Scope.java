@@ -11,6 +11,7 @@ import ncslablink.NCSLabModel;
 
 import block.discrete.DiscreteBlock;
 import block.io.OutputSignal;
+import block.io.OutputPort;
 
 import block.io.terminal.ScopeStruct;
 
@@ -68,6 +69,8 @@ public class Scope extends block.Block{
 		
 			OutputSignal signal=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			
+			OutputPort out=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+			
 			double sampleTime=-1;
 			
 			//如果连接的是离散模块,就读出采样周期
@@ -85,8 +88,7 @@ public class Scope extends block.Block{
 			case REAL:
 				//如果是离散模块,就画出阶梯图
 				if(sampleTime>0) {
-					outputCode+="double dist=distance(mp->time,"+sampleTime+");\n";
-					outputCode+="if(fabs(dist)<0.000000001||fabs(dist-"+sampleTime+")<0.000000001){\n";
+					outputCode+="if(block"+out.getBLock().getBlockId()+".discreteUpdated){\n";
 					//画当前时间的点
 					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
 					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
