@@ -64,14 +64,15 @@ void NCSLabOneStep45(double real_sample_time)
 
   mp->offset = 0;
   
+  mp->majorStep = 1;
+  NCSLabOutput();
+  
   if(mp->discreteUpdate){
   	
   	NCSLabDiscreteUpdate();
   	mp->discreteUpdate=0;
   }
-  
-  mp->majorStep = 1;
-  NCSLabOutput();
+  NCSLabSinkOutput();
   
   storeState(0);
 

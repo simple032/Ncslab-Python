@@ -47,6 +47,9 @@ abstract public class CodeStructC {
 	public String updateCode="";
 	
 	public String discreteUpdateCode="";
+	
+	public String sinkOutputCode="";
+	public String sinkStatusClearCode="";
 
 	//定义的代码
 	public String statementCode="";
@@ -125,6 +128,14 @@ abstract public class CodeStructC {
 	public void addDiscreteUpdateCode(String code) {
 		discreteUpdateCode+=code;
 	}
+	
+	public void addSinkOutputCode(String code) {
+		sinkOutputCode+=code;
+	}
+	
+	public void addSinkStatusClearCode(String code) {
+		sinkOutputCode+=code;
+	}
 
 	public void addDerivativeCode(String code) {
 		derivativeCode+=code;
@@ -194,6 +205,11 @@ abstract public class CodeStructC {
 				+"void NCSLabDiscreteUpdate(){\n"
 				+"double dist;\n"
 				+discreteUpdateCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabSinkOutput(){\n"
+				+sinkOutputCode+"\n"
+				+sinkStatusClearCode+"\n"
 				+"}\n"
 				
 				+"void NCSLabTerminate(){\n"

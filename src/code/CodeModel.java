@@ -89,7 +89,13 @@ abstract public class CodeModel extends NCSLabModel {
 	private void generateOutputCodeFromChain(CodeGenerationOption option) {
 		for(Block block:outputChain) {
 			//根据输出链，建立Ouput的代码
-			generateBlockOutputCode(block,option);
+			if(block instanceof block.sink.SinkBlock) {
+				generateBlockSinkOutputCode(block,option); 
+			}
+			else {
+				generateBlockOutputCode(block,option);
+			}
+			
 		}
 	}
 	
@@ -188,6 +194,8 @@ abstract public class CodeModel extends NCSLabModel {
 	abstract protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException;
 	//某个模块输出的代码，继承的类可以重载
 	abstract protected void generateBlockOutputCode(Block block,CodeGenerationOption option); 
+	
+	abstract protected void generateBlockSinkOutputCode(Block block,CodeGenerationOption option); 
 	
 	//author:xiazhiqiang
 	abstract protected void generateArraysCode(CodeGenerationOption option);

@@ -111,6 +111,10 @@ abstract public class CodeModelC extends CodeModel {
 		block.generateBlockOutputCodeC(getCodeStructC());
 	}
 	
+	protected void generateBlockSinkOutputCode(Block block,CodeGenerationOption option) {
+		block.generateBlockSinkOutputCodeC(getCodeStructC());
+	}
+	
 	//generate arrays code for discrete blocks
 	//author:xiazhiqiang
 	protected void generateBlockArraysCode(Block block) {

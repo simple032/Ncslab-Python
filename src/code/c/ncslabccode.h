@@ -164,6 +164,7 @@ void NCSLabDerivative();
 void NCSLabUpdate();
 void NCSLabDiscreteUpdate();
 void NCSLabTerminate();
+void NCSLabSinkOutput();
 void storeState(int);
 void restoreState(int);
 void storeDerivative(int);

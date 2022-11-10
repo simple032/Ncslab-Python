@@ -76,6 +76,7 @@ public class Zero_Order_Hold extends DiscreteBlock{
 		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		 String disceteUpdateCode="/*Code for discrete update of block Zero_Order_Hold(Inside):("+getBlockId()+")"+getBlockName()+"*/\n";
 		 disceteUpdateCode+=stateOutput.getName()+"="+signal.getName()+";\n";
+		 disceteUpdateCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
 		 code.addDiscreteUpdateCode(disceteUpdateCode);
 	 }
 	 
