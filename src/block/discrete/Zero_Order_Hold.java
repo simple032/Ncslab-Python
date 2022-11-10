@@ -39,32 +39,6 @@ public class Zero_Order_Hold extends DiscreteBlock{
 		  String outputCode="/*Code for output of block Zero_Order_Hold:("+getBlockId()+")"+getBlockName()+"*/\n";
 			  
 		  OutputPort out  = outputPortList.get(0);
-		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  /*
-		  outputCode+="{real_T currentTime = model.time;\n";
-		  switch(signal.getDataType()) {
-		  case REAL:
-			  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001&&mp->majorStep>0) {\n";
-			  outputCode+=out.getOutputSignalC().getName()+"="+signal.getName()+";}\n";
-			  break;
-		  case MATRIX:
-			  for(int i=0; i<ops.getHeight(); i++) {
-					for(int j=0;j<ops.getWidth();j++) {
-						outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001&&mp->majorStep>0) {\n";
-						 outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
-						
-					}
-				} 
-			  break;
-		  }
-		  outputCode+="}\n";
-		  */
-		  /*
-		  outputCode+="if(sfcnIsMajorStep()){\n";
-		  outputCode+=out.getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
-		  outputCode+="block"+this.getBlockId()+".discreteUpdated=0;\n";
-		  outputCode+="}\n";*/
 		  
 		  outputCode+=out.getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
 		  code.addOutputCode(outputCode);

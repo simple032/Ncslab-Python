@@ -48,12 +48,13 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock{
   }
 	
 	//define arrays to save data
-		 public void generateArraysCodeC(CodeStructC code) {
-			 String arraysCode="/*Define arrays for block discrete_Transfer_Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-			 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			 arraysCode+="double "+"Block"+getBlockId()+"_discrete_transfer_savedata["+signal.getHeight()+"]["+signal.getWidth()+"];\n";
-			 code.addArraysCode(arraysCode);
-		 }
+	
+		 //public void generateArraysCodeC(CodeStructC code) {
+		//	 String arraysCode="/*Define arrays for block discrete_Transfer_Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+			// OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+			 //arraysCode+="double "+"Block"+getBlockId()+"_discrete_transfer_savedata["+signal.getHeight()+"]["+signal.getWidth()+"];\n";
+			 //code.addArraysCode(arraysCode);
+		 //}
 		 
 	 public void generateInitCodeC(CodeStructC code) {
 			super.generateInitCodeC(code);
@@ -77,21 +78,68 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock{
 		    }
 			code.addInitCode(initCode);
 			}
+	 
+	 public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException{
+		 
+		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		 
+		 String disceteUpdateCode="/*Code for discrete update of discrete_transfer_fun(Inside):("+getBlockId()+")"+getBlockName()+"*/\n";
+		 disceteUpdateCode+="double "+"Block"+getBlockId()+"_discrete_transfer_savedata["+signal.getHeight()+"]["+signal.getWidth()+"];\n";
+		 
+		 switch(signal.getDataType()) {
+		  case REAL:
+			  
+			  disceteUpdateCode+="Block"+getBlockId()+"_discrete_transfer_savedata[0][0]=("+signal.getName();
+			  for(int i=1;i<den.getWidth();i++) {
+				disceteUpdateCode+="-"+den.getName()+"(0,"+i+")*"+xState.getName()+"(0,"+(i-1)+")";
+			  }
+			  disceteUpdateCode+=")/"+den.getName()+"(0,0);\n";
+			  for(int i=den.getWidth()-2;i>0;i--) {
+				disceteUpdateCode+=xState.getName()+"(0,"+i+")="+xState.getName()+"(0,"+i+"-1);\n";
+			  }
+			  disceteUpdateCode+=xState.getName()+"(0,0)=Block"+getBlockId()+"_discrete_transfer_savedata[0][0];\n";
+			  break;
+		  case MATRIX:
+			  for(int m=0;m<signal.getHeight();m++) {
+				  for(int n=0;n<signal.getWidth();n++) {
+					  disceteUpdateCode+="Block"+getBlockId()+"_discrete_transfer_savedata["+m+"]["+n+"]=("+signal.getName()+"("+m+","+n+")";
+					  for(int i=1;i<den.getWidth();i++) {
+						  disceteUpdateCode+="-"+den.getName()+"(0,"+i+")*"+xState.getName()+"("+m+","+(i-1)+"+"+n+"*"+(den.getWidth()-1)+")";
+					  }
+					  disceteUpdateCode+=")/"+den.getName()+"(0,0);\n";
+				  }
+			  }
+			  for(int m=0;m<signal.getHeight();m++) {
+				  for(int n=0;n<signal.getWidth();n++) {
+					  for(int i=den.getWidth()-2;i>0;i--) {
+						  disceteUpdateCode+=xState.getName()+"("+m+","+n+"*"+(den.getWidth()-1)+"+"+i+")="+xState.getName()+"("+m+","+n+"*"+(den.getWidth()-1)+"+"+i+"-1);\n";
+					  }
+					  disceteUpdateCode+=xState.getName()+"("+m+","+n+"*"+(den.getWidth()-1)+")=Block"+getBlockId()+"_discrete_transfer_savedata["+m+"]["+n+"];\n";
+				  }
+			  }
+			  break;
+		 }
+		 
+		 code.addDiscreteUpdateCode(disceteUpdateCode);
+	 }
+	 
 	 public void generateOutputCodeC(CodeStructC code) {
-		    OutputPort out  = outputPortList.get(0);
-			OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+		    //OutputPort out  = outputPortList.get(0);
+			//OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		  String outputCode="/*Code for output of discrete_transfer_fun:("+getBlockId()+")"+getBlockName()+"*/\n";
-		  outputCode+="{real_T currentTime = model.time;\n";
-		  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-		  int h=den.getWidth()-num.getWidth()-1;
+		  //outputCode+="{real_T currentTime = model.time;\n";
+		  //outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
+		  //int h=den.getWidth()-num.getWidth()-1;
+		  outputCode+="double "+"Block"+getBlockId()+"_discrete_transfer_savedata["+signal.getHeight()+"]["+signal.getWidth()+"];\n";
 		  switch(signal.getDataType()) {
 			  case REAL:
+				  /*
 		  outputCode+="Block"+getBlockId()+"_discrete_transfer_savedata[0][0]=("+signal.getName();
 			for(int i=1;i<den.getWidth();i++) {
 				outputCode+="-"+den.getName()+"(0,"+i+")*"+xState.getName()+"(0,"+(i-1)+")";
 			}
-			outputCode+=")/"+den.getName()+"(0,0);\n";
+			outputCode+=")/"+den.getName()+"(0,0);\n";*/
 			
 			if(feedThrough==true) {
 				  outputCode+=this.getOutputPortVariable(0)+"=Block"+getBlockId()+"_discrete_transfer_savedata[0][0]*"+num.getName()+"(0,0)";
@@ -110,21 +158,24 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock{
 					  }
 				  }  
 				  outputCode+=";\n";
-			
+			/*
 			for(int i=den.getWidth()-2;i>0;i--) {
 				outputCode+=xState.getName()+"(0,"+i+")="+xState.getName()+"(0,"+i+"-1);\n";
 			}
 			outputCode+=xState.getName()+"(0,0)=Block"+getBlockId()+"_discrete_transfer_savedata[0][0];\n";
-			  outputCode+="}}\n";
+			*/
+			  //outputCode+="}}\n";
 			  break;
 			  case MATRIX:
 				  for(int m=0;m<signal.getHeight();m++) {
 					  for(int n=0;n<signal.getWidth();n++) {
+						  /*
 						  outputCode+="Block"+getBlockId()+"_discrete_transfer_savedata["+m+"]["+n+"]=("+signal.getName()+"("+m+","+n+")";
 							for(int i=1;i<den.getWidth();i++) {
 								outputCode+="-"+den.getName()+"(0,"+i+")*"+xState.getName()+"("+m+","+(i-1)+"+"+n+"*"+(den.getWidth()-1)+")";
 							}
 							outputCode+=")/"+den.getName()+"(0,0);\n";
+							*/
 							
 							if(feedThrough==true) {
 								  outputCode+=this.getOutputPortVariable(0)+"("+m+","+n+")=Block"+getBlockId()+"_discrete_transfer_savedata["+m+"]["+n+"]*"+num.getName()+"(0,0)";
@@ -145,6 +196,7 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock{
 								  outputCode+=";\n";  
 					  }
 				  }
+				  /*
 				  for(int m=0;m<signal.getHeight();m++) {
 					  for(int n=0;n<signal.getWidth();n++) {
 						  for(int i=den.getWidth()-2;i>0;i--) {
@@ -153,7 +205,8 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock{
 							outputCode+=xState.getName()+"("+m+","+n+"*"+(den.getWidth()-1)+")=Block"+getBlockId()+"_discrete_transfer_savedata["+m+"]["+n+"];\n";
 						  }
 					  }
-				  outputCode+="}}\n";
+					  */
+				  //outputCode+="}}\n";
 				  break;
 		  }
 		  code.addOutputCode(outputCode);
