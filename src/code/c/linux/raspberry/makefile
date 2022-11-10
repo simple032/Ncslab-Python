@@ -1,4 +1,4 @@
-OBJS=$(SFCNOBJS) mainccode.o hardware.o ServerThread.o ClientThread.o DataApi.o UploadThread.o ncs_serialport_pi.o onestep.o util.o ncslabmain.o Matrix.o
+OBJS=$(SFCNOBJS) mainccode.o hardware.o ServerThread.o ClientThread.o DataApi.o UploadThread.o ncs_serialport_pi.o onestep.o util.o ncslabmain.o Matrix.o DAC8532.o DEV_Config.o
 
 CC=/opt/pi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-g++
 //CC=gcc

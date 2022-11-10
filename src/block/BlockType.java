@@ -58,6 +58,9 @@ public class BlockType {
 		case "DCMotorAngle":
 			block=new block.testrig.DCMotorAngle(blockJSON, model);
 			break;
+		case "ServoMotorSlider":
+			block=new block.testrig.ServoMotorSlider(blockJSON, model);
+			break;
 		case "S-Function":
 			block=new block.function.SFunction(blockJSON, model);
 			break;
