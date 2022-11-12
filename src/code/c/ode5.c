@@ -10,8 +10,8 @@ extern MODEL *mp;
 
 //double stateReserve[STATE_NUM];
 
-double singleStateReserve[SINGLE_STATE_NUM];
-Matrix matrixStateReserve[MATRIX_STATE_NUM];
+double singleStateReserve[][SINGLE_STATE_NUM];
+Matrix matrixStateReserve[][MATRIX_STATE_NUM];
 
 //double derivativeReserve[4][STATE_NUM];
 
