@@ -13,6 +13,8 @@ extern MODEL *mp;
 double singleStateReserve[SINGLE_STATE_NUM];
 Matrix matrixStateReserve[MATRIX_STATE_NUM];
 
+extern double sample_time[];
+
 //double derivativeReserve[4][STATE_NUM];
 
 double singleDerivativeReserve[6][SINGLE_STATE_NUM];
@@ -25,12 +27,24 @@ double weights4[] = {0.0, -1.0, 2.0};
 double weights5[] = {7.0 / 18.0, 5.0 / 9.0, 0.0, 1.0 / 18.0};
 double weights6[] = {28.0 / 125.0 , -1.0 , 546.0 / 125.0 , 54.0 / 125.0 , -378.0 / 125.0};
 
+void NCSLabOneStep5(double);
+
 #ifdef _SIMU
 void ncslabLoop(){
+	//xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
+    extern int sample_i;
+    //extern double sample_time[];
+    double real_sample_time=0.0;
+    if(hasdiscrete(sample_time)==1){
+      real_sample_time=gcd1(sample_time);
+    }
+    //end
+  	mp->discreteUpdate=1;
+  	
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
         writeInformation();
-        NCSLabOneStep();
+        NCSLabOneStep5(real_sample_time);
        mp->time+=mp->stepSize;
         //printf("time:%f\n",mp->time);
     }
@@ -38,11 +52,30 @@ void ncslabLoop(){
 #endif
 
 
-void NCSLabOneStep(){
+void NCSLabOneStep5(double real_sample_time){
 
   mp->offset=0;
+  
+  if (hasdiscrete(sample_time)){
+
+    while (mp->discreteTime <= mp->time){
+      mp->discreteTime += real_sample_time;
+      // mp->offset = 0;
+      // NCSLabOutput();
+      // NCSLabDiscreteUpdate();
+      mp->discreteUpdate = 1;
+    }
+  }
+  
   mp->majorStep=1;
   NCSLabOutput();
+  
+  if(mp->discreteUpdate){
+  	
+  	NCSLabDiscreteUpdate();
+  	mp->discreteUpdate=0;
+  }
+  NCSLabSinkOutput();
 
   //Calculate K1
   NCSLabDerivative();
