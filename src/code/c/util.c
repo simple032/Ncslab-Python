@@ -15,6 +15,37 @@ extern Matrix matrixStateReserve[][MATRIX_STATE_NUM];
 extern double singleDerivativeReserve[][SINGLE_STATE_NUM];
 extern Matrix matrixDerivativeReserve[][MATRIX_STATE_NUM];
 
+extern double sample_time[];
+
+double real_sample_time=0.0;
+
+void discreteInit(){
+	//xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
+        extern int sample_i;
+        //extern double sample_time[];
+        
+         if(hasdiscrete(sample_time)==1){
+          real_sample_time=gcd1(sample_time);
+          }
+        //end
+  mp->discreteUpdate=1;
+  if(mp->stepSize>real_sample_time){
+  	mp->stepSize=real_sample_time;
+  }
+}
+
+void discreteInitFixed(){
+	//xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
+        extern int sample_i;
+        //extern double sample_time[];
+        
+         if(hasdiscrete(sample_time)==1){
+          real_sample_time=gcd1(sample_time);
+          }
+        //end
+  mp->discreteUpdate=1;
+}
+
 //xiazhiqiang:Computes the greatest common divisor of the sampling time array
 double gcd( double x, double y )
 {   int a=(int)(x*1000);

@@ -20,32 +20,24 @@ extern double sample_time[];
 double singleDerivativeReserve[2][SINGLE_STATE_NUM];
 Matrix matrixDerivativeReserve[2][MATRIX_STATE_NUM];
 
-void NCSLabOneStep2(double real_sample_time);
+extern double real_sample_time;
 
 #ifdef _SIMU
 void ncslabLoop(){
-	//xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
-    extern int sample_i;
-    //extern double sample_time[];
-    double real_sample_time=0.0;
-    if(hasdiscrete(sample_time)==1){
-      real_sample_time=gcd1(sample_time);
-    }
-    //end
-  	mp->discreteUpdate=1;
+	discreteInitFixed();
   	
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
         //fwrite(&(mp->time),1,sizeof(mp->time),stdout);
         writeInformation();
-        NCSLabOneStep2(real_sample_time);
+        NCSLabOneStep();
        mp->time+=mp->stepSize;
         //printf("time:%f\n",mp->time);
     }
 }
 #endif
 
-void NCSLabOneStep2(double real_sample_time){
+void NCSLabOneStep(){
 
   mp->offset=0;
   

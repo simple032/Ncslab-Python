@@ -31,33 +31,26 @@ double nextStepSize;
 
 double maxStepSize;
 
+extern double real_sample_time;
+
 void ncslabLoop()
 {
   maxStepSize=stepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
-        //xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
-        extern int sample_i;
-        //extern double sample_time[];
-        double real_sample_time=0.0;
-         if(hasdiscrete(sample_time)==1){
-          real_sample_time=gcd1(sample_time);
-          }
-        //end
-  mp->discreteUpdate=1;
-  if(mp->stepSize>real_sample_time){
-  	mp->stepSize=real_sample_time;
-  }
+  
+  discreteInit();
+  	 	
   while (mp->time < mp->stopTime)
   {
         //mp->time += stepSize;
       //printf("time:%f\n",mp->time);
     writeInformation();
-    NCSLabOneStep45(real_sample_time);
+    NCSLabOneStep();
 	//mp->time += stepSize;
     
   }
 }
 
-void NCSLabOneStep45(double real_sample_time)
+void NCSLabOneStep()
 {
 
   REAL dif;

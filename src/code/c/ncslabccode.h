@@ -179,6 +179,9 @@ int hasdiscrete(double *);
 void NCSLabOneStep45(double);
 double distance(double,double);
 void NCSLabOneStep23(double);
+
+void discreteInit();
+void discreteInitFixed();
 //end
 
 void ncslabLoop();
