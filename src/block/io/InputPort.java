@@ -22,8 +22,8 @@ public class InputPort {
 		this.number=number;
 		
 		this.linkedOutputPort=null;
-		
-		this.name="in"+number;
+		//区分监控组态中不同模块中的输入,replace方法用于处理部分模块的非连续字符串命名问题
+		this.name=block.getBlockName().replace(" ", "_").replace("(s)", "s")+"_in"+number;
 	}
 	
 	public int getNumber() {

@@ -23,7 +23,9 @@ public class Parameter {
 	}
 	
 	public String getName() {
-		this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
+		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
+		//区分监控组态中不同模块中的参数,replace方法用于处理部分模块的非连续字符串命名问题
+		this.name=block.getBlockName().replace(" ", "_").replace("(s)", "s")+"_"+localName;
 		return this.name;
 	}
 	
@@ -89,7 +91,8 @@ public class Parameter {
 	
 	public String getDataStructureInitCodeC() {
 		String code="";
-		code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.getLocalName()+"\";\n";
+		//code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.getLocalName()+"\";\n";
+		code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.name+"\";\n";
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".width="+this.getWidth()+";\n";
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".height="+this.getHeight()+";\n";
 		if(data.getDataType()==DataType.REAL) {

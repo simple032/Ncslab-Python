@@ -32,20 +32,23 @@ public class OutputPort {
 	public OutputPort(Block block,int number){
 		this.block=block;
 		this.number=number;
-		this.name="out"+number;
+		//区分监控组态中不同模块中的输出信号,replace方法用于处理部分模块的非连续字符串命名问题
+		this.name=block.getBlockName().replace(" ", "_").replace("(s)", "s")+"_out"+number;
 	}
 	
 	public OutputPort(Block block,int number,boolean isFeedThrough){
 		this.block=block;
 		this.number=number;
-		this.name="out"+number;
+		//区分监控组态中不同模块中的输出信号,replace方法用于处理部分模块的非连续字符串命名问题
+		this.name=block.getBlockName().replace(" ", "_").replace("(s)", "s")+"_out"+number;
 		this.isFeedThrough=isFeedThrough;
 	}
 	
 	public OutputPort(Block block,String name,int number,boolean isFeedThrough){
 		this.block=block;
 		this.number=number;
-		this.name=name;
+		//区分监控组态中不同模块中的输出信号,replace方法用于处理部分模块的非连续字符串命名问题
+		this.name=block.getBlockName().replace(" ", "_").replace("(s)", "s")+"_"+name;
 		this.isFeedThrough=isFeedThrough;
 	}
 	
