@@ -15,6 +15,24 @@ extern Matrix matrixStateReserve[][MATRIX_STATE_NUM];
 extern double singleDerivativeReserve[][SINGLE_STATE_NUM];
 extern Matrix matrixDerivativeReserve[][MATRIX_STATE_NUM];
 
+double calalpoutput(double inputvalue) {
+     double result;
+     if(inputvalue<230) {
+	result=inputvalue;
+     }else if(inputvalue>=230&&inputvalue<240) {
+	result=1.5*(inputvalue-230)+230;
+     }else if(inputvalue>=240&&inputvalue<250) {
+	result=2.5*(inputvalue-240)+245;
+     }else if(inputvalue>=250&&inputvalue<270) {
+	result=1.25*(inputvalue-250)+270;
+     }else if(inputvalue>=270&&inputvalue<300) {
+	result=0.66*(inputvalue-270)+295;
+     }else {
+	result=inputvalue+15;	
+     }
+	return result;
+}
+
 //xiazhiqiang:Computes the greatest common divisor of the sampling time array
 double gcd( double x, double y )
 {   int a=(int)(x*1000);

@@ -31,5 +31,26 @@ typedef struct {
 	
 }WATER_LEVEL;
 
+typedef struct {
+	REAL alpPWM;
+	unsigned int fanspeed_lastEdge = 0;
+
+	double fanspeed_frequency=0;
+
+	pthread_mutex_t  fanspeed_timerCritical;
+	timer_t fanspeed_main_timer;
+
+	unsigned int fanspeed_lastTimer = 0;
+
+	unsigned int fanspeed_counter=0;
+	unsigned int fanspeed_counter_out=0;
+	unsigned int fanspeed_counter_in;
+       unsigned int fanspeed_output;
+	double position;	
+}ALP;
+
 void initWaterLevel(WATER_LEVEL *);
 void outputWaterLevel(WATER_LEVEL *);
+
+void initAlp(ALP *);
+void outputAlp(ALP *);

@@ -165,6 +165,7 @@ void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
 
 //xiazhiqiang:These functions are defined in util.c
+double calalpoutput(double);
 double gcd( double, double);
 double gcd1(double *);
 int hasdiscrete(double *);

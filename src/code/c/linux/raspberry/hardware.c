@@ -9,10 +9,16 @@ void initHardware(){
 
 #define ADDO 2
 #define ADSK 3
-
+#define Trig 27
+#define Echo 22
+#define PIN_FAN 6
 #define FIFOLENGTH 10
 
+float height[7]={0,0,0,0,0,0,0};
+float speed[5]={0,0,0,0,0};
+
 static WATER_LEVEL *deviceGlobal;
+static ALP *deviceGlobalAlp;
 
 static unsigned long readCount(void)
 {
@@ -235,3 +241,136 @@ void outputWaterLevel(WATER_LEVEL *device){
     device->level=device->level_out;
     pthread_mutex_unlock(&(device->level_timerCritical));
 }
+
+//气浮装置处理函数
+static void alp_fanspeed_timer_in_callback(union sigval v){
+	unsigned int now,diff;
+  	pthread_mutex_lock(&(deviceGlobalAlp->fanspeed_timerCritical));
+  	deviceGlobalAlp->fanspeed_counter_out=deviceGlobalAlp->fanspeed_counter;
+  	deviceGlobalAlp->fanspeed_counter=0;
+  	pthread_mutex_unlock(&(deviceGlobalAlp->fanspeed_timerCritical));
+}
+
+static void startAlpTimer(ALP *device){
+	struct sigevent evp; 
+    memset(&evp, 0, sizeof(evp));
+    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它  
+    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数 
+    evp.sigev_notify_function = alp_fanspeed_timer_in_callback; //这个就是指定回调函数
+
+    int ret = 0;
+    ret = timer_create(CLOCK_REALTIME, &evp, &(device->fanspeed_main_timer));
+    if(ret < 0)
+    {
+        printf("timer_create() fail, ret:%d", ret);
+        exit(0);
+    }
+    pthread_mutex_init(&(device->fanspeed_timerCritical),NULL);
+    struct itimerspec ts;
+    ts.it_interval.tv_sec = 0;
+    ts.it_interval.tv_nsec = 100000000;
+    ts.it_value.tv_sec = ts.it_interval.tv_sec;
+    ts.it_value.tv_nsec = ts.it_interval.tv_nsec; 
+    ret = timer_settime(device->fanspeed_main_timer, TIMER_ABSTIME, &ts, NULL);
+    if(ret < 0){
+        printf("main_timer() fail, ret:%d", ret); 
+        timer_delete(device->fanspeed_main_timer);
+        exit(1);
+    } 
+}
+static void alp_fanspeed_edgeDetect()
+{
+  pthread_mutex_lock(&(deviceGlobalAlp->fanspeed_timerCritical));
+  deviceGlobalAlp->fanspeed_counter++;	
+  pthread_mutex_unlock(&(deviceGlobalAlp->fanspeed_timerCritical));
+}
+
+float disMeasure()
+{
+    struct timeval tv1;  //timeval是time.h中的预定义结构体 其中包含两个一个是秒，一个是微秒
+    /*
+    struct timeval
+    {
+        time_t tv_sec;  //Seconds.
+        suseconds_t tv_usec;  //Microseconds.
+    };
+    */
+    struct timeval tv2;
+    long start, stop;
+    float dis;
+    int e; 
+    delayMicroseconds(100);
+//     printf("------triggering...-------\n");
+    digitalWrite(Trig, 0);
+    delayMicroseconds(5);
+    digitalWrite(Trig, 1);
+    delayMicroseconds(15);      //发出超声波脉冲
+    digitalWrite(Trig, 0);
+//     printf("------waiting for echo------\n");
+    while(!(digitalRead(Echo) == 1));//满足条件会一直阻塞
+    gettimeofday(&tv1, NULL);           //获取当前时间 开始接收到返回信号的时候
+    while(!(digitalRead(Echo) == 0));
+    gettimeofday(&tv2, NULL);           //获取当前时间  最后接收到返回信号的时候
+//     printf("------echo recieved------\n");
+    
+    /*
+    int gettimeofday(struct timeval *tv, struct timezone *tz);
+    The functions gettimeofday() and settimeofday() can get and set the time as well as a timezone.
+    The use of the timezone structure is obsolete; the tz argument should normally be specified as NULL.
+    */
+    start = tv1.tv_sec * 1000000 + tv1.tv_usec;   //微秒级的时间
+    stop  = tv2.tv_sec * 1000000 + tv2.tv_usec;
+    dis = (float)(stop - start) / 1000000 * 34000 / 2;  //计算时间差求出距离cm   
+//     printf("------dis calculated:%f------\n",dis);
+    return dis;
+}
+
+void initAlp(ALP *device){
+   //PWMout
+   if(wiringPiSetupGpio() < 0 )
+    {
+        printf("wiringPiSetupGpio failed in PWMOut\n");
+        exit(1);
+    }
+    pinMode(13, PWM_OUTPUT);
+    pwmSetMode (PWM_MODE_MS) ;	
+    pwmSetClock(3);
+    pwmSetRange(1000);
+   //FanSpeed
+    pinMode(PIN_FAN, INPUT);
+    pullUpDnControl(PIN_FAN,PUD_UP);
+    deviceGlobalAlp=device;
+    wiringPiISR(PIN_FAN, INT_EDGE_FALLING, alp_fanspeed_edgeDetect);
+    startAlpTimer(device);
+    pinMode(Echo, INPUT);  //设置端口为输入
+    pullUpDnControl (Echo,PUD_UP);
+    pinMode(Trig, OUTPUT);
+}
+
+void outputAlp(ALP *device){
+    pwmWrite(13,(int)(device->alpPWM*1000));
+    //Fanspeed
+    int i;
+    float v;
+    pthread_mutex_lock(&(device->fanspeed_timerCritical));
+    device->fanspeed_counter_in=device->fanspeed_counter_out;
+    pthread_mutex_unlock(&(device->fanspeed_timerCritical));
+    for(i=0;i<4;i++){
+       speed[i]=speed[i+1];}
+    v=device->fanspeed_counter_in*100.0;
+    for(i=0;i<4;i++){
+        v=v+speed[i];}
+    speed[4]=v/5;
+    device->fanspeed_output=speed[4];
+    //Getposition
+    float h;
+    int j;
+    for(j=0;j<6;j++){
+        height[j]=height[j+1];}
+    h=disMeasure();
+    for(j=0;j<6;j++){
+        h=h+height[j];}
+    height[6]=h/7;
+    device->position=(real_T)(height[6]);
+}
+
