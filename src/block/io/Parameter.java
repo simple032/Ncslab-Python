@@ -17,7 +17,7 @@ public class Parameter {
 		this.block=block;
 		this.id=id;
 		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
-		this.name=block.getBlockName().replace(" ", "_").replace("(", "_").replace(")", "")+"_"+localName;
+		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
 		this.localName=localName;
 		
 		data=new Data(dataString);
@@ -26,7 +26,7 @@ public class Parameter {
 	public String getName() {
 		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
 		//区分监控组态中不同模块中的参数,replace方法用于处理部分模块的非连续字符串命名问题
-		this.name=block.getBlockName().replace(" ", "_").replace("(", "_").replace(")", "")+"_"+localName;
+		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
 		return this.name;
 	}
 	
