@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <wiringPi.h>
 
+
 typedef struct {
 	REAL pumpPWM;
 	unsigned int speed_lastEdge = 0;
@@ -49,8 +50,17 @@ typedef struct {
 	double position;	
 }ALP;
 
+typedef struct {
+       REAL fanCMD;
+       unsigned int fan_time;
+       unsigned int speed_rpm;    
+}FAN;
+
 void initWaterLevel(WATER_LEVEL *);
 void outputWaterLevel(WATER_LEVEL *);
 
 void initAlp(ALP *);
 void outputAlp(ALP *);
+
+void initFan(FAN *,int,int,int,char *,char *);
+void outputFan(FAN *);

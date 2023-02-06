@@ -64,6 +64,9 @@ public class BlockType {
 		case "ALP":
 			block=new block.testrig.Alp(blockJSON, model);
 			break;	
+		case "Fans":
+			block=new block.testrig.Fan(blockJSON, model);
+			break;	
 		case "S-Function":
 			block=new block.function.SFunction(blockJSON, model);
 			break;

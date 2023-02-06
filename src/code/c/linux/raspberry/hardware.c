@@ -1,6 +1,7 @@
 #include"hardware.h"
-
-
+#include"malloc.h"
+#include"ncs_packet.h"
+#include"ncs_udp.h"
 void initHardware(){
 
 	//printf("Init hardware\n");
@@ -16,9 +17,12 @@ void initHardware(){
 
 float height[7]={0,0,0,0,0,0,0};
 float speed[5]={0,0,0,0,0};
+static ControlFrame SystemControlFrame;
+static SampleFrame SystemSampleFrame;  
 
 static WATER_LEVEL *deviceGlobal;
 static ALP *deviceGlobalAlp;
+static FAN *deviceGlobalFan;
 
 static unsigned long readCount(void)
 {
@@ -374,3 +378,65 @@ void outputAlp(ALP *device){
     device->position=(real_T)(height[6]);
 }
 
+//风扇初始化和输出函数
+void initFan(FAN *device,int copyNum,int local_port,int remote_port,char *remote_addr,char *local_addr){
+     char* strRemote=(char*)malloc(sizeof(remote_addr));
+     strRemote=remote_addr;
+     char* strLocal=(char*)malloc(sizeof(local_addr));
+     strLocal=local_addr;
+     int portRemote=remote_port;
+     int portLocal=local_port;
+     int nNetTimeout=5;
+    {
+     SOCKET socketLocal=UDP_OpenClient(strRemote,portRemote,nNetTimeout);
+     free(strRemote);
+     free(strLocal);
+    }
+    SystemControlFrame.dir=0x90;
+    SystemControlFrame.mode1=PWMO_IDX;
+    SystemControlFrame.modenum1=0x01;
+    switch(copyNum)
+   {
+    case 0:SystemControlFrame.chn1=0;
+    break;
+    case 1:SystemControlFrame.chn1=1;
+    break;
+    case 2:SystemControlFrame.chn1=2;
+    break;
+    case 3:SystemControlFrame.chn1=3;
+    break;
+   }
+    SystemControlFrame.mode2=PWMI_IDX;
+    SystemControlFrame.modenum2=0x01;
+    switch(copyNum)
+   {
+    case 0:SystemControlFrame.chn2=0;
+    break;
+    case 1:SystemControlFrame.chn2=1;
+    break;
+    case 2:SystemControlFrame.chn2=2;
+    break;
+    case 3:SystemControlFrame.chn2=3;
+    break;
+   }
+  //deviceGlobalFan=device;
+}
+
+void outputFan(FAN *device){
+    static uint8_t sendData[1024];
+    SystemControlFrame.value1=device->fanCMD;
+    uint16_t sendLength=ControlFrame2ValidData(sendData,&SystemControlFrame);
+    SendFrame(UDP_Send,device,sendData,sendLength);
+    utime_t currT=SystemControlFrame.timestamp1;
+    static uint8_t recvBuff[1024];
+    //int recvLen=UDP_Recv(recvBuff,sizeof(recvBuff));
+    int recvLen=UDP_Recv(recvBuff,1024);
+    if(recvLen>0){
+    Byte2Frame(&SystemSampleFrame,recvBuff,recvLen);
+    device->fan_time=SystemSampleFrame.timestamp1;
+    device->speed_rpm=SystemSampleFrame.value1;
+    SystemControlFrame.value2=SystemSampleFrame.value1;
+    SystemControlFrame.timestamp1=SystemSampleFrame.timestamp1;
+    SystemControlFrame.timestamp2=SystemSampleFrame.timestamp1;
+   }
+}
