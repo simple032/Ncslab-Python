@@ -43,7 +43,7 @@ public class NewMotor extends Block {
 		String hardwareDefineCode="";
 		//hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
 		hardwareDefineCode+="HANDLE hComm;\n";
-		
+		hardwareDefineCode+="HANDLE hComm1;\n";
 		return hardwareDefineCode;
 	}
 	
@@ -103,9 +103,12 @@ public class NewMotor extends Block {
 		case Compilation:
 			//1.Open the serial port
 			String port = "\"/dev/ttyUSB0\"";
+			String port1 = "\"/dev/ttyUSB1\"";
 			int baudrate = 115200;
 			initCode+="char msg[255];\n";
+			initCode+="char msg1[255];\n";
 			initCode+="hComm = Serialport_Open((char *)"+port+", "+baudrate+",(char *)msg);\n";
+			initCode+="hComm1 = Serialport_Open((char *)"+port1+", "+baudrate+",(char *)msg1);\n";
 			break;
 		}
 		
@@ -134,7 +137,7 @@ public class NewMotor extends Block {
 			break;
 		case Compilation:
 			int bufLen = 255;
-			
+			outputCode+="int sendLength=0;\n";
 			outputCode+="if(mp->majorStep>0){\n";
 			outputCode+="char recvBuff["+bufLen+"]={0};\n";
 				
@@ -148,10 +151,14 @@ public class NewMotor extends Block {
 			outputCode+="pwm = pwm>=10000?10000:pwm;\n";
 			outputCode+="pwm = pwm<=-10000?-10000:pwm;\n";
 			outputCode+="cmd[4] = (pwm&0xFF);\n";
-			
 			outputCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
 			outputCode+="cmd[6] = calcSum(cmd);\n";
-			outputCode+="Serialport_Send(hComm,cmd,7);\n";		
+			outputCode+="Serialport_Send(hComm,cmd,7);\n";	
+			//数码管显示
+			outputCode+="char sendData[1024];\n";
+            outputCode+="sprintf(sendData,\"$001,%02d#\",speed);\n";
+			outputCode+="sendLength=strlen(sendData);\n";
+			outputCode+="Serialport_Send(hComm1,sendData,sendLength);\n";	
 			outputCode+="}\n";
 			break;
 		}
