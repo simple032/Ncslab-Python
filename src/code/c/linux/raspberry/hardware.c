@@ -17,12 +17,14 @@ void initHardware(){
 
 float height[7]={0,0,0,0,0,0,0};
 float speed[5]={0,0,0,0,0};
+float speed1[5]={0,0,0,0,0};
 static ControlFrame SystemControlFrame;
 static SampleFrame SystemSampleFrame;  
 
 static WATER_LEVEL *deviceGlobal;
 static ALP *deviceGlobalAlp;
 static FAN *deviceGlobalFan;
+static RASPFAN *deviceGlobalRaspFan;
 
 static unsigned long readCount(void)
 {
@@ -439,4 +441,84 @@ void outputFan(FAN *device){
     SystemControlFrame.timestamp1=SystemSampleFrame.timestamp1;
     SystemControlFrame.timestamp2=SystemSampleFrame.timestamp1;
    }
+}
+//RaspFan处理函数
+static void raspFan_fanspeed_timer_in_callback(union sigval v){
+	unsigned int now,diff;
+  	pthread_mutex_lock(&(deviceGlobalRaspFan->fanspeed_timerCritical));
+  	deviceGlobalRaspFan->fanspeed_counter_out=deviceGlobalRaspFan->fanspeed_counter;
+  	deviceGlobalRaspFan->fanspeed_counter=0;
+  	pthread_mutex_unlock(&(deviceGlobalRaspFan->fanspeed_timerCritical));
+}
+
+static void startRaspFanTimer(RASPFAN *device){
+	struct sigevent evp; 
+    memset(&evp, 0, sizeof(evp));
+    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它  
+    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数 
+    evp.sigev_notify_function = raspFan_fanspeed_timer_in_callback; //这个就是指定回调函数
+
+    int ret = 0;
+    ret = timer_create(CLOCK_REALTIME, &evp, &(device->fanspeed_main_timer));
+    if(ret < 0)
+    {
+        printf("timer_create() fail, ret:%d", ret);
+        exit(0);
+    }
+    pthread_mutex_init(&(device->fanspeed_timerCritical),NULL);
+    struct itimerspec ts;
+    ts.it_interval.tv_sec = 0;
+    ts.it_interval.tv_nsec = 100000000;
+    ts.it_value.tv_sec = ts.it_interval.tv_sec;
+    ts.it_value.tv_nsec = ts.it_interval.tv_nsec; 
+    ret = timer_settime(device->fanspeed_main_timer, TIMER_ABSTIME, &ts, NULL);
+    if(ret < 0){
+        printf("main_timer() fail, ret:%d", ret); 
+        timer_delete(device->fanspeed_main_timer);
+        exit(1);
+    } 
+}
+static void raspFan_fanspeed_edgeDetect()
+{
+  pthread_mutex_lock(&(deviceGlobalRaspFan->fanspeed_timerCritical));
+  deviceGlobalRaspFan->fanspeed_counter++;	
+  pthread_mutex_unlock(&(deviceGlobalRaspFan->fanspeed_timerCritical));
+}
+void initRaspFan(RASPFAN *device){
+  //PWMout
+   if(wiringPiSetupGpio() < 0 )
+    {
+        printf("wiringPiSetupGpio failed in PWMOut\n");
+        exit(1);
+    }
+    pinMode(13, PWM_OUTPUT);
+    pwmSetMode (PWM_MODE_MS) ;	
+    pwmSetClock(3);
+    pwmSetRange(1000);
+   //FanSpeed
+    pinMode(PIN_FAN, INPUT);
+    pullUpDnControl(PIN_FAN,PUD_UP);
+    deviceGlobalRaspFan=device;
+    wiringPiISR(PIN_FAN, INT_EDGE_FALLING, raspFan_fanspeed_edgeDetect);
+    startRaspFanTimer(device);
+    pinMode(Echo, INPUT);  //设置端口为输入
+    pullUpDnControl (Echo,PUD_UP);
+    pinMode(Trig, OUTPUT);
+}
+
+void outputRaspFan(RASPFAN *device){
+    pwmWrite(13,(int)(device->raspFanPWM*1000));
+    //Fanspeed
+    int i;
+    float v;
+    pthread_mutex_lock(&(device->fanspeed_timerCritical));
+    device->fanspeed_counter_in=device->fanspeed_counter_out;
+    pthread_mutex_unlock(&(device->fanspeed_timerCritical));
+    for(i=0;i<4;i++){
+       speed1[i]=speed1[i+1];}
+    v=device->fanspeed_counter_in*100.0;
+    for(i=0;i<4;i++){
+        v=v+speed1[i];}
+    speed1[4]=v/5;
+    device->fanspeed_output=speed1[4];
 }

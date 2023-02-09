@@ -51,6 +51,23 @@ typedef struct {
 }ALP;
 
 typedef struct {
+	REAL raspFanPWM;
+	unsigned int fanspeed_lastEdge = 0;
+
+	double fanspeed_frequency=0;
+
+	pthread_mutex_t  fanspeed_timerCritical;
+	timer_t fanspeed_main_timer;
+
+	unsigned int fanspeed_lastTimer = 0;
+
+	unsigned int fanspeed_counter=0;
+	unsigned int fanspeed_counter_out=0;
+	unsigned int fanspeed_counter_in;
+       unsigned int fanspeed_output;
+}RASPFAN;
+
+typedef struct {
        REAL fanCMD;
        unsigned int fan_time;
        unsigned int speed_rpm;    
@@ -64,3 +81,6 @@ void outputAlp(ALP *);
 
 void initFan(FAN *,int,int,int,char *,char *);
 void outputFan(FAN *);
+
+void initRaspFan(RASPFAN *);
+void outputRaspFan(RASPFAN *);
