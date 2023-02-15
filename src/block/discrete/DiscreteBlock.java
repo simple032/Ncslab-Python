@@ -48,7 +48,8 @@ public class DiscreteBlock extends Block {
 		//discreteUpdateCode+="block"+this.getBlockId()+".discreteUpdated=0;\n";
 		//discreteUpdateCode+="}\n";
 		
-		discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time){\n";
+		//discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time){\n";
+		discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time||"+"block"+this.getBlockId()+".discreteTime-mp->time<0.0000001){\n";
 		code.addDiscreteUpdateCode(discreteUpdateCode);
 		
 		generateDiscreteUpdateCodeCInside(code);
