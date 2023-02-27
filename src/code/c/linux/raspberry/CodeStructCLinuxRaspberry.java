@@ -77,10 +77,7 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		
 		writeNCSLabFile("DEV_Config.c","DEV_Config.c");
 		writeNCSLabFile("DEV_Config.h","DEV_Config.h");
-		writeNCSLabFile("ncs_packet.c","ncs_packet.c");
-		writeNCSLabFile("ncs_packet.h","ncs_packet.h");
-		writeNCSLabFile("ncs_udp.c","ncs_udp.c");
-		writeNCSLabFile("ncs_udp.h","ncs_udp.h");
+		
 		writeNCSLabFile("DAC8532.c","DAC8532.c");
 		writeNCSLabFile("DAC8532.h","DAC8532.h");
 		writeNCSLabFile("Debug.h","Debug.h");

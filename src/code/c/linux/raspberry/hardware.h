@@ -67,11 +67,7 @@ typedef struct {
        unsigned int fanspeed_output;
 }RASPFAN;
 
-typedef struct {
-       REAL fanCMD;
-       unsigned int fan_time;
-       unsigned int speed_rpm;    
-}FAN;
+
 
 void initWaterLevel(WATER_LEVEL *);
 void outputWaterLevel(WATER_LEVEL *);
@@ -79,8 +75,6 @@ void outputWaterLevel(WATER_LEVEL *);
 void initAlp(ALP *);
 void outputAlp(ALP *);
 
-void initFan(FAN *,int,int,int,char *,char *);
-void outputFan(FAN *);
 
 void initRaspFan(RASPFAN *);
 void outputRaspFan(RASPFAN *);
