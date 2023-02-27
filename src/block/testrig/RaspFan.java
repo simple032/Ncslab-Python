@@ -50,10 +50,10 @@ public class RaspFan extends Block {
 			hardwareDefineName="Block"+this.getBlockId()+"_RaspFan";
 			outputCode+="int sendLength=0;\n";
 			outputCode+="if(mp->majorStep>0) {\n";
-			outputCode+=hardwareDefineName+".raspFanPWM=2600.0*"+this.getInputPortVariable(0)+";\n";
-			outputCode+=hardwareDefineName+".raspFanPWM="+hardwareDefineName+".raspFanPWM>2400.0?2400.0:"+hardwareDefineName+".raspFanPWM;\n";
+			outputCode+=hardwareDefineName+".raspFanPWM=1.0/3000.0*"+this.getInputPortVariable(0)+";\n";
+			outputCode+=hardwareDefineName+".raspFanPWM="+hardwareDefineName+".raspFanPWM>1.0?1.0:"+hardwareDefineName+".raspFanPWM;\n";
 			outputCode+=hardwareDefineName+".raspFanPWM="+hardwareDefineName+".raspFanPWM<0?0:"+hardwareDefineName+".raspFanPWM;\n";
-			outputCode+=hardwareDefineName+".raspFanPWM="+hardwareDefineName+".raspFanPWM*1.0/2600;\n";
+			outputCode+=hardwareDefineName+".raspFanPWM="+hardwareDefineName+".raspFanPWM;\n";
 			outputCode+="outputRaspFan(&"+hardwareDefineName+");\n";
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=2.0*"+hardwareDefineName+".fanspeed_output;\n";
 			outputCode+="int speed="+hardwareDefineName+".fanspeed_output*2.0;\n";
