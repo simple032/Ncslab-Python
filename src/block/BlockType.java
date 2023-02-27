@@ -182,6 +182,27 @@ public class BlockType {
 			blockJSON.put("blockType", "TestPoint");
 			block=new block.math.TestPoint(blockJSON, model);
 			break;
+		case "Substitution":
+			block=new block.testrig.Substitution(blockJSON,model);
+			break;
+		case "Superposition":
+			block=new block.testrig.Superposition(blockJSON,model);
+			break;
+		case "Telegenic":
+			block=new block.testrig.Telegenic(blockJSON,model);
+			break;
+		case "Kirchhoff":
+			block=new block.testrig.Kirchhoff(blockJSON,model);
+			break;
+		case "AD":
+			block=new block.route.AD(blockJSON,model);
+			break;
+		case "DA":
+			block=new block.route.DA(blockJSON,model);
+			break;
+		case "GPIO":
+			block=new block.route.GPIO(blockJSON,model);
+			break;
 		}
 		
 		if(block==null) {

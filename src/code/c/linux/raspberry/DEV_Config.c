@@ -45,7 +45,10 @@ Info:
 ******************************************************************************/
 static void DEV_GPIOConfig(void)
 {
+   pinMode(DEV_RST_PIN, OUTPUT);
     pinMode(DEV_CS_PIN, OUTPUT);
+    pinMode(DEV_CS1_PIN, OUTPUT);
+    pinMode(DEV_DRDY_PIN, INPUT);
 }
 
 /******************************************************************************
@@ -94,6 +97,7 @@ UBYTE SPI_ReadByte()
 
 void DEV_ModuleExit(void)
 {
-
+//  LCD_RST_1;
+	DEV_Digital_Write(DEV_RST_PIN,1);
 }
 

@@ -133,8 +133,15 @@ abstract public class CodeStructC {
 				+"#include\"math.h\"\n"
 				+"#ifdef _RT\n"
 				+"#include\"hardware.h\"\n"
+				+"#include\"ADS1256.h\"\n"
+				+"#include\"DAC8532.h\"\n"
+				+"#include\"Debug.h\"\n"
+				+"#include\"wiringPi.h\"\n"
+				+"#include\"wiringPiSPI.h\"\n"
 				+"#endif\n"
 				+"#include <iostream>\n"
+				
+				
 				//+"#include <octave/oct.h>\n"
 				+"#include \"Matrix.h\"\n"
 				//xiazhiqiang:Stores the sampling time of discrete modules
