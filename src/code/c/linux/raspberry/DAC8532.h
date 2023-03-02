@@ -41,6 +41,6 @@
 #define DAC_VREF  5
 
 void DAC8532_Out_Voltage(UBYTE Channel, float Voltage);
-
+void Write_DAC8532(UBYTE channel, UWORD Data);
 
 #endif

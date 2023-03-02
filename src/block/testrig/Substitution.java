@@ -148,11 +148,11 @@ public class Substitution extends Block {
 		outputCode+="if("+DA.getName()+"){\n";
 		outputCode+="DAC8532_Out_Voltage(channel_B,"+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+");}\n";
 		outputCode+="else{\n";
-		outputCode+="DAC8532_Out_Voltage(channel_A,("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+")/6.0606061);}\n";
+		outputCode+="DAC8532_Out_Voltage(channel_A,("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+")/4);}\n";
 		
 		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD1.getName()+")*16.6666667/0x7fffff;\n";
 		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD2.getName()+")*(-5.0)/0x7fffff;\n";
-		outputCode+=outputPortList.get(2).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD3.getName()+")*5.0/0x7fffff;\n";
+		outputCode+=outputPortList.get(2).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD3.getName()+")*16.6666667/0x7fffff;\n";
 		outputCode+=outputPortList.get(3).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD4.getName()+")*(-5.0)/0x7fffff;\n";
 		outputCode+=outputPortList.get(4).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD5.getName()+")*16.6666667/0x7fffff;\n";
 		outputCode+=outputPortList.get(5).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD6.getName()+")*16.6666667/0x7fffff;\n";

@@ -136,7 +136,7 @@ public class Telegenic extends Block {
 		outputCode+="if("+DA.getName()+"){\n";
 		outputCode+="DAC8532_Out_Voltage(channel_B,"+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+");}\n";
 		outputCode+="else{\n";
-		outputCode+="DAC8532_Out_Voltage(channel_A,("+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+")/6.0606061);}\n";
+		outputCode+="DAC8532_Out_Voltage(channel_A,("+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+")/4);}\n";
 		
 		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD1.getName()+")*5.0/0x7fffff;\n";
 		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD2.getName()+")*16.6666667/0x7fffff;\n";

@@ -23,7 +23,11 @@ public class InputPort {
 		
 		this.linkedOutputPort=null;
 		//区分监控组态中不同模块中的输入,replace方法用于处理部分模块的非连续字符串命名问题
+		if(block.getBlockType().equals("Scope")) {
+			this.name=block.getBlockName();
+		}else {
 		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_in"+number;
+		}
 	}
 	
 	public int getNumber() {

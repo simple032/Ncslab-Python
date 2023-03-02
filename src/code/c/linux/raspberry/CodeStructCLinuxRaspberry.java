@@ -86,8 +86,8 @@ public class CodeStructCLinuxRaspberry extends CodeStructC{
 		writeNCSLabFile("ADS1256.c","ADS1256.c");
 		writeNCSLabFile("bcm2835.h","bcm2835.h");
 		writeNCSLabFile("bcm2835.c","bcm2835.c");
-		writeNCSLabFile("WiringPi.h","WiringPi.h");
-		writeNCSLabFile("WiringPiSPI.h","WiringPiSPI.h");
+		writeNCSLabFile("wiringPi.h","wiringPi.h");
+		writeNCSLabFile("wiringPiSPI.h","wiringPiSPI.h");
 		//写入生成的主代码ncslabccdoe.c
 				for(Block block: model.getBlockList()) {
 					if(block.isSFcnBlock()) {
