@@ -100,4 +100,8 @@ public class OutputSignal {
 	public void setDataType(DataType type) {
 		this.type=type;
 	}
+	
+	public Block getBlock() {
+		return this.block;
+	}
 }

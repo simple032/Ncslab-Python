@@ -89,7 +89,13 @@ abstract public class CodeModel extends NCSLabModel {
 	private void generateOutputCodeFromChain(CodeGenerationOption option) {
 		for(Block block:outputChain) {
 			//根据输出链，建立Ouput的代码
-			generateBlockOutputCode(block,option);
+			if(block instanceof block.sink.SinkBlock) {
+				generateBlockSinkOutputCode(block,option); 
+			}
+			else {
+				generateBlockOutputCode(block,option);
+			}
+			
 		}
 	}
 	
@@ -171,6 +177,7 @@ abstract public class CodeModel extends NCSLabModel {
 		//根据微分量，建立Update的代码 
 		try {
 			generateUpdateCode(option);
+			generateDiscreteUpdateCode(option);
 		} catch (MatDimException e) {
 			// TODO Auto-generated catch block
 			errorList.add(new ErrorMessage(100, e.getMessage()));
@@ -188,6 +195,8 @@ abstract public class CodeModel extends NCSLabModel {
 	//某个模块输出的代码，继承的类可以重载
 	abstract protected void generateBlockOutputCode(Block block,CodeGenerationOption option); 
 	
+	abstract protected void generateBlockSinkOutputCode(Block block,CodeGenerationOption option); 
+	
 	//author:xiazhiqiang
 	abstract protected void generateArraysCode(CodeGenerationOption option);
 	//end
@@ -197,6 +206,7 @@ abstract public class CodeModel extends NCSLabModel {
 	abstract protected void generateStatementCode(CodeGenerationOption option);
 	
 	abstract protected void generateTerminateCode(CodeGenerationOption option);
+	abstract protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException;
 
 	private void scanInputPort(InputPort inputPort) {
 		Line line=inputPort.getLinkedLine();

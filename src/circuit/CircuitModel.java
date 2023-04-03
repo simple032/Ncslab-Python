@@ -17,7 +17,10 @@ import block.io.InputPort;
 import block.math.Add;
 
 import circuit.loop.LoopSolver;
+import circuit.loop.CircuitLoopException;
 import circuit.loop.LinearBlockElement;
+
+import circuit.block.electblock.ElectBlock;
 
 import ncslablink.ModelException;
 
@@ -55,6 +58,16 @@ public class CircuitModel {
 		showBranches();
 		
 		//setupBlocks();
+	}
+	
+	public void clearElectBlockLoop() {
+		Vector<Block> blockList=this.getModelBlocks();
+		for(Block block:blockList) {
+			if(block instanceof ElectBlock) {
+				ElectBlock electBlock=(ElectBlock)block;
+				electBlock.clearLoop();
+			}
+		}
 	}
 	
 	public void addTerminalBlocks(Block terminalBlock) {
@@ -542,7 +555,7 @@ public class CircuitModel {
 	}
 	
 	//解开代数环的代码
-	public void loopProcess() {
+	public void loopProcess() throws CircuitLoopException{
 		System.out.println("Solving possible linear algebraic loops...");
 		//terminalBlockList.clear();
 		//找到Circuit部分的终端模块和广义终端模块(输出连接到Feedthrough=false的模块)
@@ -577,6 +590,7 @@ public class CircuitModel {
 				loopSolverList.add(loopSolver);
 			}
 		}
+		
 		
 		//建立面向代数环节点的前馈通道
 		for(LoopSolver loopSolver:loopSolverList) {

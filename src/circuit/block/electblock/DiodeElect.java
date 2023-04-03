@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import block.Block;
 import block.elect.Diode;
+import circuit.loop.CircuitLoopException;
 import ncslablink.NCSLabModel;
 
 public class DiodeElect extends Diode implements ElectBlock {
@@ -18,10 +19,10 @@ public class DiodeElect extends Diode implements ElectBlock {
 		super(blockJSON,model);
 	}
 	
-	public String getGainBlock() {
-		String gainString="(("+this.getOutputPortVariable(0)+"!=0)?("+this.getOutputPortVariable(0)+"/"+this.getInputPortVariable(0)+"):0)\n";
-
-		return gainString;
+	public String getGainBlock() throws CircuitLoopException {
+		//String gainString="(("+this.getOutputPortVariable(0)+"!=0)?("+this.getOutputPortVariable(0)+"/"+this.getInputPortVariable(0)+"):0)\n";
+		
+		throw(new CircuitLoopException(""));
 	}
 	
 	public void setElecLoopString(String electLoopString) {
@@ -43,6 +44,13 @@ public class DiodeElect extends Diode implements ElectBlock {
 		else {
 			return false;
 		}
+	}
+	
+	@Override
+	public void clearLoop() {
+		// TODO Auto-generated method stub
+		relatedBlockList=new Vector<Block>();
+		electLoopString=null;
 	}
 
 }

@@ -111,6 +111,10 @@ abstract public class CodeModelC extends CodeModel {
 		block.generateBlockOutputCodeC(getCodeStructC());
 	}
 	
+	protected void generateBlockSinkOutputCode(Block block,CodeGenerationOption option) {
+		block.generateBlockSinkOutputCodeC(getCodeStructC());
+	}
+	
 	//generate arrays code for discrete blocks
 	//author:xiazhiqiang
 	protected void generateBlockArraysCode(Block block) {
@@ -138,6 +142,20 @@ abstract public class CodeModelC extends CodeModel {
 			System.out.println("Generating update codes for ("+block.getBlockId()+")"+block.getBlockName());
 			
 			generateBlockUpdateCode(block);
+		}
+	}
+	
+	protected void generateDiscreteBlockUpdateCode(Block block) throws MatDimException {
+		block.generateDiscreteBlockUpdateCodeC(getCodeStructC());
+	}
+	
+	protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException {
+		System.out.println("Generating discrete update codes......");
+		
+		for(Block block:blockList) {
+			System.out.println("Generating discrete update codes for ("+block.getBlockId()+")"+block.getBlockName());
+			
+			generateDiscreteBlockUpdateCode(block);
 		}
 	}
 	
