@@ -13,7 +13,7 @@ import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 import block.io.State;
 
-public class Delay extends Block {
+public class Delay extends DiscreteBlock {
 	block.io.Parameter sampleTime;
 	block.io.Parameter initialCondition;
 	block.io.Parameter delayLength;
@@ -25,6 +25,7 @@ public class Delay extends Block {
 		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
 		delayLength=new Parameter(this,3,"delayLength",paramValues.getString("DelayLength"));
 		parameterList.add(sampleTime);
+		setSampleTime(sampleTime);
 		parameterList.add(initialCondition);
 		parameterList.add(delayLength);	
   }

@@ -8,6 +8,8 @@ import block.Block;
 import block.elect.DiodeCurrent;
 import ncslablink.NCSLabModel;
 
+import circuit.loop.CircuitLoopException;
+
 public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
 	
 	private String electLoopString;
@@ -18,8 +20,10 @@ public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
 		super(blockJSON,model);
 	}
 	
-	public String getGainBlock() {
-		return null;
+	public String getGainBlock() throws CircuitLoopException {
+		//String gainString="(("+this.getOutputPortVariable(0)+"!=0)?("+this.getOutputPortVariable(0)+"/"+this.getInputPortVariable(0)+"):0)\n";
+		
+		throw(new CircuitLoopException(""));
 	}
 	
 	public void setElecLoopString(String electLoopString) {
@@ -41,6 +45,13 @@ public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
 		else {
 			return false;
 		}
+	}
+	
+	@Override
+	public void clearLoop() {
+		// TODO Auto-generated method stub
+		relatedBlockList=new Vector<Block>();
+		electLoopString=null;
 	}
 
 }

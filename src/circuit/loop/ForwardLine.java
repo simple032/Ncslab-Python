@@ -5,6 +5,8 @@ import java.util.Vector;
 import block.Block;
 import circuit.block.electblock.ElectBlock;
 
+import circuit.loop.CircuitLoopException;
+
 public class ForwardLine {
 	private Vector<LinearBlockElement> forward=new Vector<LinearBlockElement>();
 	
@@ -57,7 +59,7 @@ public class ForwardLine {
 	}
 	
 	//生成Forward通道的乘积Code
-	public static String getLineString(Vector<LinearBlockElement> line) {
+	public static String getLineString(Vector<LinearBlockElement> line) throws CircuitLoopException{
 		String lineString="";
 		
 		boolean first=true;
@@ -83,7 +85,7 @@ public class ForwardLine {
 	}
 	
 	//获得前向通道的梅逊公式分子计算公式,考虑不接触回路
-	public String getForwardLineString() {
+	public String getForwardLineString() throws CircuitLoopException{
 		String forwardLineString="";
 		
 		forwardLineString+=getLineString(forward);

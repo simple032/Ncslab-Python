@@ -9,11 +9,13 @@ import code.m.CodeStructM;
 import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 
+import block.discrete.DiscreteBlock;
 import block.io.OutputSignal;
+import block.io.OutputPort;
 
 import block.io.terminal.ScopeStruct;
 
-public class Scope extends block.Block{
+public class Scope extends SinkBlock{
 	
 	ScopeStruct scopeStruct;
 	
@@ -67,50 +69,164 @@ public class Scope extends block.Block{
 		
 			OutputSignal signal=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			
+			OutputPort out=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+			
+			double sampleTime=-1;
+			
+			//如果连接的是离散模块,就读出采样周期
+			if(signal.getBlock() instanceof DiscreteBlock) {
+				DiscreteBlock block=(DiscreteBlock)signal.getBlock();
+				sampleTime=block.getSampleTime();
+			}
+			
 			String outputCode="/*Code for output of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
 			
 			outputCode+="if(sfcnIsMajorStep()){\n";
-			outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+			
 			
 			switch(signal.getDataType()) {
 			case REAL:
-				outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+				//如果是离散模块,就画出阶梯图
+				if(sampleTime>0) {
+					outputCode+="if(block"+out.getBLock().getBlockId()+".discreteUpdated){\n";
+					//画当前时间的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+					//保持一个采样周期sampleTime,画下一个周期的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT()+"+sampleTime+");\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+					outputCode+="}\n";
+				}
+				//否则就一般的画法
+				else {
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+				}
+				
 				break;
 			case MATRIX:
-				outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
-				outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
-				outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
-				outputCode+="}\n";
-				outputCode+="}\n";
+				//如果是离散模块,就画出阶梯图
+				if(sampleTime>0) {
+					outputCode+="if(block"+out.getBLock().getBlockId()+".discreteUpdated){\n";
+					//画当前时间的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
+					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
+					outputCode+="}\n";
+					outputCode+="}\n";
+					//保持一个采样周期sampleTime,画下一个周期的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT()+"+sampleTime+");\n";
+					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
+					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
+					outputCode+="}\n";
+					outputCode+="}\n";
+					
+					outputCode+="}\n";
+				}
+				//否则就一般的画法
+				else {
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
+					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
+					outputCode+="}\n";
+					outputCode+="}\n";
+				}
 				break;
 			}
 			
-			/*
 			
-			outputCode+=scopeStruct.getName()+".timeBuffer["+scopeStruct.getName()+".cursor]=sfcnGetT();\n";
-			
-			switch(signal.getDataType()) {
-			case REAL:
-				outputCode+=scopeStruct.getName()+".buffer["+scopeStruct.getName()+".cursor]="+signal.getName()+";\n";
-				break;
-			case MATRIX:
-				outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
-				outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
-				outputCode+="int pos=i*"+signal.getWidth()+"+j+"+scopeStruct.getName()+".cursor*"+signal.getHeight()+"*"+signal.getWidth()+";\n";
-				outputCode+=scopeStruct.getName()+".buffer[pos]="+signal.getName()+"(i,j);\n";
-				outputCode+="}\n";
-				outputCode+="}\n";
-				break;
-			}
-			
-			outputCode+=scopeStruct.getName()+".cursor++;\n";
-			outputCode+="if("+scopeStruct.getName()+".cursor>="+scopeStruct.getName()+".maxDataLength){\n";
-			outputCode+=scopeStruct.getName()+".cursor-="+scopeStruct.getName()+".maxDataLength;\n";
-			outputCode+=scopeStruct.getName()+".isFull=1;\n";
-			outputCode+="}\n";*/
 			
 			outputCode+="}\n";
 			code.addOutputCode(outputCode);
+		}
+	}
+	
+	public void generateOutputSinkCodeC(CodeStructC code) {
+		
+		if(model.getModelMode()==ncslablink.ModelMode.Simulation) {
+		
+			OutputSignal signal=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+			
+			OutputPort out=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+			
+			double sampleTime=-1;
+			
+			//如果连接的是离散模块,就读出采样周期
+			if(signal.getBlock() instanceof DiscreteBlock) {
+				DiscreteBlock block=(DiscreteBlock)signal.getBlock();
+				sampleTime=block.getSampleTime();
+			}
+			
+			String outputCode="/*Code for output of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
+			
+			outputCode+="if(sfcnIsMajorStep()){\n";
+			
+			
+			switch(signal.getDataType()) {
+			case REAL:
+				//如果是离散模块,就画出阶梯图
+				if(sampleTime>0) {
+					outputCode+="if(block"+out.getBLock().getBlockId()+".discreteUpdated){\n";
+					//画当前时间的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+					//保持一个采样周期sampleTime,画下一个周期的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT()+"+sampleTime+");\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+					outputCode+="}\n";
+				}
+				//否则就一般的画法
+				else {
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
+				}
+				
+				break;
+			case MATRIX:
+				//如果是离散模块,就画出阶梯图
+				if(sampleTime>0) {
+					outputCode+="double dist=distance(mp->time,"+sampleTime+");\n";
+					outputCode+="if(fabs(dist)<0.000000001||fabs(dist-"+sampleTime+")<0.000000001){\n";
+					//画当前时间的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
+					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
+					outputCode+="}\n";
+					outputCode+="}\n";
+					//保持一个采样周期sampleTime,画下一个周期的点
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT()+"+sampleTime+");\n";
+					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
+					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
+					outputCode+="}\n";
+					outputCode+="}\n";
+					
+					outputCode+="}\n";
+				}
+				//否则就一般的画法
+				else {
+					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
+					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
+					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
+					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
+					outputCode+="}\n";
+					outputCode+="}\n";
+				}
+				break;
+			}
+			
+			
+			
+			outputCode+="}\n";
+			code.addSinkOutputCode(outputCode);
+			
+			String sinkStatusClearCode="";
+			sinkStatusClearCode+="block"+this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+".discreteUpdated=0;\n";
+			code.addSinkStatusClearCode(sinkStatusClearCode);
 		}
 	}
 	

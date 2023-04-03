@@ -14,14 +14,17 @@ import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 import Jama.Matrix;
 
-public class Zero_Order_Hold extends Block{
+public class Zero_Order_Hold extends DiscreteBlock{
 	block.io.Parameter sampleTime;
+	private State stateOutput;
 	public Zero_Order_Hold(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		parameterList.add(sampleTime);
+		
+		setSampleTime(sampleTime);
   }
 	
 	 public void generateInitCodeC(CodeStructC code) {
@@ -36,27 +39,20 @@ public class Zero_Order_Hold extends Block{
 		  String outputCode="/*Code for output of block Zero_Order_Hold:("+getBlockId()+")"+getBlockName()+"*/\n";
 			  
 		  OutputPort out  = outputPortList.get(0);
-		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  outputCode+="{real_T currentTime = model.time;\n";
-		  switch(signal.getDataType()) {
-		  case REAL:
-			  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001&&mp->majorStep>0) {\n";
-			  outputCode+=out.getOutputSignalC().getName()+"="+signal.getName()+";}\n";
-			  break;
-		  case MATRIX:
-			  for(int i=0; i<ops.getHeight(); i++) {
-					for(int j=0;j<ops.getWidth();j++) {
-						outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001&&mp->majorStep>0) {\n";
-						 outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
-						
-					}
-				} 
-			  break;
-		  }
-		  outputCode+="}\n";
+		  
+		  outputCode+=out.getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
 		  code.addOutputCode(outputCode);
+		  
 		 }
+	 
+	 
+	 public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException{
+		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		 String disceteUpdateCode="/*Code for discrete update of block Zero_Order_Hold(Inside):("+getBlockId()+")"+getBlockName()+"*/\n";
+		 disceteUpdateCode+=stateOutput.getName()+"="+signal.getName()+";\n";
+		 disceteUpdateCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+stateOutput.getName()+";\n";
+		 code.addDiscreteUpdateCode(disceteUpdateCode);
+	 }
 	 
 	 public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);
@@ -74,7 +70,17 @@ public class Zero_Order_Hold extends Block{
 			out.setWidth(signal.getWidth());
 			out.getOutputSignalC().setHeight(signal.getHeight());
 			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());	 
+			out.getOutputSignalC().setDataType(signal.getDataType());
+			
+			switch (signal.getDataType()) {
+			case REAL:
+				stateOutput = new State(this, 1, "stateOutput", 1, 1);
+				break;
+			case MATRIX:
+				stateOutput = new State(this, 1, "stateOutput", signal.getHeight(),signal.getWidth());
+				break;
+			}
+			stateList.add(stateOutput);
 	 }
 	 public void checkDimension() throws MatDimException{
 	}  	

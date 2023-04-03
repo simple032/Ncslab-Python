@@ -62,5 +62,12 @@ public class ProductElect extends Product implements ElectBlock {
 		
 		
 	}
+	
+	@Override
+	public void clearLoop() {
+		// TODO Auto-generated method stub
+		relatedBlockList=new Vector<Block>();
+		electLoopString=null;
+	}
 }
 

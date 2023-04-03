@@ -70,6 +70,10 @@ public class Parameter {
 		return code;
 	}
 	
+	public Data getData() {
+		return this.data;
+	}
+	
 	public String getInitCodeC() {
 		String code;
 		

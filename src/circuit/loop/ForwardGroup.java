@@ -50,7 +50,7 @@ public class ForwardGroup {
 		return this.startElement;
 	}
 	
-	public String getGroupString() {
+	public String getGroupString() throws CircuitLoopException{
 		String groupString="";
 		
 		String numString="";

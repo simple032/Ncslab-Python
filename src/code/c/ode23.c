@@ -29,32 +29,30 @@ double nextStepSize;
 
 double maxStepSize;
 
+extern double real_sample_time;
+
+
 #ifdef _SIMU
 void ncslabLoop()
 {
   maxStepSize=stepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
-        //xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
-        extern int sample_i;
-        //extern double sample_time[];
-        double real_sample_time=0.0;
-         if(hasdiscrete(sample_time)==1){
-          real_sample_time=gcd1(sample_time);
-          }
-        //end
+  
+  discreteInit();
+  
   while (mp->time < mp->stopTime)
   {
   	//printf("time:%f\n",mp->time);
   	//fwrite(&(mp->time),1,sizeof(mp->time),stdout);
   	writeInformation();
       //printf("time:%f\n",mp->time);
-    NCSLabOneStep23(real_sample_time);
-	mp->time += stepSize;
+    NCSLabOneStep();
+	//mp->time += stepSize;
     
   }
 }
 #endif
 
-void NCSLabOneStep23(double real_sample_time)
+void NCSLabOneStep()
 {
 
   REAL dif;
@@ -62,6 +60,14 @@ void NCSLabOneStep23(double real_sample_time)
   mp->offset = 0;
   mp->majorStep = 1;
   NCSLabOutput();
+  
+  if(mp->discreteUpdate){
+  	
+  	NCSLabDiscreteUpdate();
+  	mp->discreteUpdate=0;
+  }
+  NCSLabSinkOutput();
+  
   storeState(0);
 
   for (int i = 0; i < 2; i++)
@@ -120,33 +126,27 @@ void NCSLabOneStep23(double real_sample_time)
 
     nextStepSize = sqrt(sqrt((TOL * stepSize) / dif))*0.84*stepSize;
     
-   //xiazhiqiang:Interpolation is required when discrete modules exist
-  
-    if(hasdiscrete(sample_time)==0){
-        if(nextStepSize>maxStepSize){
-    	      nextStepSize=maxStepSize;
-         }
-    }
-    else{
-          if(nextStepSize>distance(mp->time,real_sample_time)){
-             if(distance(mp->time,real_sample_time)<0.000000001){
-               nextStepSize=0.01;
-              }
-            else if(nextStepSize>real_sample_time&&distance(mp->time,real_sample_time)>0.95*real_sample_time){
-               nextStepSize=0.01;
-             }else{
-            nextStepSize=distance(mp->time,real_sample_time);
-              }
-           }
-        else{
-             nextStepSize=nextStepSize;
-        }
-    }
-    // printf("%f\n", nextStepSize);
-
-    if (nextStepSize > stepSize || i == 1)
+   if (nextStepSize > stepSize || i == 1)
     {
+      mp->time += stepSize;
       stepSize = nextStepSize;
+      
+      if(hasdiscrete(sample_time)){
+      	
+      	while(mp->discreteTime<=mp->time){
+      		mp->discreteTime+=real_sample_time;
+      		//mp->offset = 0;
+  			//NCSLabOutput();
+      		//NCSLabDiscreteUpdate();
+      		mp->discreteUpdate=1;
+      	}
+      	
+      	double dist=mp->discreteTime-mp->time;
+      	if(stepSize>dist){
+      		stepSize=dist;
+      	}
+      }
+      
       break;
     }
 

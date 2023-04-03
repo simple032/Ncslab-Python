@@ -41,7 +41,7 @@ public class TargetGroup {
 	}
 	
 	//生成解开Loop的代码
-	public void generateTargetGroupCode() {
+	public void generateTargetGroupCode() throws CircuitLoopException{
 		Block block=targetElement.getBlock();
 		
 		if(block instanceof ElectBlock) {
@@ -56,7 +56,7 @@ public class TargetGroup {
 		}
 	}
 	
-	public String getTargetGroupString() {
+	public String getTargetGroupString() throws CircuitLoopException{
 		String targerGroupString=targetElement.getBlock().getOutputPortVariable(0)+"=";
 		
 		boolean first=true;

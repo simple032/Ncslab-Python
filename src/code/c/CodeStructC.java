@@ -45,6 +45,11 @@ abstract public class CodeStructC {
 	public String outputCode="";
 	//update的代码
 	public String updateCode="";
+	
+	public String discreteUpdateCode="";
+	
+	public String sinkOutputCode="";
+	public String sinkStatusClearCode="";
 
 	//定义的代码
 	public String statementCode="";
@@ -119,6 +124,18 @@ abstract public class CodeStructC {
 	public void addUpdateCode(String code) {
 		updateCode+=code;
 	}
+	
+	public void addDiscreteUpdateCode(String code) {
+		discreteUpdateCode+=code;
+	}
+	
+	public void addSinkOutputCode(String code) {
+		sinkOutputCode+=code;
+	}
+	
+	public void addSinkStatusClearCode(String code) {
+		sinkOutputCode+=code;
+	}
 
 	public void addDerivativeCode(String code) {
 		derivativeCode+=code;
@@ -145,7 +162,7 @@ abstract public class CodeStructC {
 				//+"#include <octave/oct.h>\n"
 				+"#include \"Matrix.h\"\n"
 				//xiazhiqiang:Stores the sampling time of discrete modules
-				+"double  sample_time[20]={};\n"
+				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
 				+"int sample_i=0;\n"
 				//end
 				;
@@ -190,6 +207,16 @@ abstract public class CodeStructC {
 				
 				+"void NCSLabUpdate(){\n"
 				+updateCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabDiscreteUpdate(){\n"
+				+"double dist;\n"
+				+discreteUpdateCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabSinkOutput(){\n"
+				+sinkOutputCode+"\n"
+				+sinkStatusClearCode+"\n"
 				+"}\n"
 				
 				+"void NCSLabTerminate(){\n"
@@ -668,7 +695,7 @@ abstract public class CodeStructC {
 		dataStructureCode+="/*Define block structures*/\n";
 		if(model.getBlockList().size()>0) {
 			for(Block block:model.getBlockList()) {			
-				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+"};\n";
+				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+","+model.getConfig().getStartTime()+",0};\n";
 			}
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
 		}
@@ -828,6 +855,7 @@ abstract public class CodeStructC {
 		dataStructureInitCode+="model.blocks=blocks;\n";
 		dataStructureInitCode+="model.time=model.startTime;\n";
 		dataStructureInitCode+="model.offset=0;\n";
+		dataStructureInitCode+="model.discreteTime=model.startTime;\n";
 
 		dataStructureInitCode+="model.signalNum="+signalNum+";\n";
 		dataStructureInitCode+="model.signals=signals;\n";
