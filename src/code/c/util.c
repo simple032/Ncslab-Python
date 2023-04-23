@@ -31,7 +31,7 @@ double calalpoutput(double inputvalue) {
 	result=inputvalue+15;	
      }
 	return result;
-
+}
 extern double sample_time[];
 
 double real_sample_time=0.0;

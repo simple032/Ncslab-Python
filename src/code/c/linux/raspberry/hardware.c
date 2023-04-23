@@ -15,7 +15,7 @@ void initHardware(){
 
 float height[7]={0,0,0,0,0,0,0};
 float speed[5]={0,0,0,0,0};
-float speed1[5]={0,0,0,0,0};
+float speed1[7]={0,0,0,0,0,0,0};
 
 
 static WATER_LEVEL *deviceGlobal;
@@ -450,11 +450,11 @@ void outputRaspFan(RASPFAN *device){
     pthread_mutex_lock(&(device->fanspeed_timerCritical));
     device->fanspeed_counter_in=device->fanspeed_counter_out;
     pthread_mutex_unlock(&(device->fanspeed_timerCritical));
-    for(i=0;i<4;i++){
+    for(i=0;i<6;i++){
        speed1[i]=speed1[i+1];}
     v=device->fanspeed_counter_in*100.0;
-    for(i=0;i<4;i++){
+    for(i=0;i<6;i++){
         v=v+speed1[i];}
-    speed1[4]=v/5;
-    device->fanspeed_output=speed1[4];
+    speed1[6]=v/7;
+    device->fanspeed_output=speed1[6];
 }
