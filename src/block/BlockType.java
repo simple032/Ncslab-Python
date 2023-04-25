@@ -203,6 +203,9 @@ public class BlockType {
 		case "GPIO":
 			block=new block.route.GPIO(blockJSON,model);
 			break;
+		case "Compare To Constant":
+			block=new block.logicAndBit.CompareToConstant(blockJSON,model);
+			break;
 		}
 		
 		if(block==null) {
