@@ -206,6 +206,12 @@ public class BlockType {
 		case "Compare To Constant":
 			block=new block.logicAndBit.CompareToConstant(blockJSON,model);
 			break;
+		case "Shift Arithmetic":
+			block=new block.logicAndBit.ShiftArithmetic(blockJSON,model);
+			break;
+		case "Logical Operator":
+			block=new block.logicAndBit.LogicOperator(blockJSON,model);
+			break;
 		}
 		
 		if(block==null) {
