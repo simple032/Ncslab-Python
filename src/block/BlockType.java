@@ -2,6 +2,7 @@ package block;
 
 import org.json.JSONObject;
 
+
 import ncslablink.NCSLabModel;
 
 import ncslablink.ModelException;
@@ -211,6 +212,9 @@ public class BlockType {
 			break;
 		case "Logical Operator":
 			block=new block.logicAndBit.LogicOperator(blockJSON,model);
+			break;
+		case "Relational Operator":
+			block=new block.logicAndBit.RelationalOperator(blockJSON,model);
 			break;
 		}
 		

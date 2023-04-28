@@ -36,6 +36,9 @@ public class CompareToConstant extends Block{
 		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		String relop=paramValues.getString("relop");
+		if(relop.equals("~=")) {
+			relop = "!=";
+		}
 		switch(signal.getDataType()) {
 		case REAL:
 			switch(value.getDataType()) {
