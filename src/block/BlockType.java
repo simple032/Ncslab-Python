@@ -216,6 +216,9 @@ public class BlockType {
 		case "Relational Operator":
 			block=new block.logicAndBit.RelationalOperator(blockJSON,model);
 			break;
+		case "Compare To Zero":
+			block=new block.logicAndBit.CompareToZero(blockJSON,model);
+			break;
 		}
 		
 		if(block==null) {
