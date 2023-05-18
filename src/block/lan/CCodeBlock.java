@@ -13,4 +13,7 @@ public interface CCodeBlock {
 	
 	public void generateBlockDerivativeCodeC(CodeStructC code);
 	public void generateDerivativeCodeC(CodeStructC code);
+	
+	public void generateDiscreteBlockUpdateCodeC(CodeStructC code) throws MatDimException;
+	public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException;
 }

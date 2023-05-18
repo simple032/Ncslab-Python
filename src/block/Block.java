@@ -272,8 +272,17 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		
 	}
 	
+	public void generateBlockSinkOutputCodeC(CodeStructC code) {
+		System.out.println("Generating block sink output code ("+blockId+"):"+blockName);
+		generateOutputSinkCodeC(code);
+	}
+	
 	//生成C语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void generateOutputCodeC(CodeStructC code) {
+		
+	}
+	
+	public void generateOutputSinkCodeC(CodeStructC code) {
 		
 	}
 	
@@ -307,6 +316,13 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}
 		
 		code.addUpdateCode(updateCode);
+	}
+	
+	public void generateDiscreteBlockUpdateCodeC(CodeStructC code) throws MatDimException{
+		generateDiscreteUpdateCodeC(code);
+	}
+	public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException{
+		
 	}
 	
 	public void generateBlockDerivativeCodeC(CodeStructC code) {

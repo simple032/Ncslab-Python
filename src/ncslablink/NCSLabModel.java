@@ -14,6 +14,7 @@ import block.io.OutputPort;
 import block.io.terminal.Terminal;
 
 import circuit.CircuitParser;
+import circuit.loop.CircuitLoopException;
 
 abstract public class NCSLabModel {
 	
@@ -214,7 +215,14 @@ abstract public class NCSLabModel {
 		parseLines();
 		if(j!=0) {
 			// 解开代数环的代码
-			circuitParser.getCircuitModel().loopProcess();
+			
+			try {
+				circuitParser.getCircuitModel().loopProcess();
+			}
+			catch(CircuitLoopException e) {
+				//throw(new ModelException("Loop error"));
+				circuitParser.getCircuitModel().clearElectBlockLoop();
+			}
 		}
 		
 		

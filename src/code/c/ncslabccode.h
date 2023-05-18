@@ -88,6 +88,9 @@ typedef struct {
 	int stateNum;
 	int signalNum;
 	
+	REAL discreteTime;
+	int discreteUpdated;
+	
 	INPUT_PORT **inputPorts;
 	OUTPUT_PORT **outputPorts;
 	PARAMETER **parameters;
@@ -113,6 +116,9 @@ typedef struct {
 	REAL stopTime;
 	REAL time;
 	REAL offset;
+	REAL discreteTime;
+	
+	int discreteUpdate;
 	
 	int signalNum;
 	int parameterNum;
@@ -156,7 +162,9 @@ void NCSLabOneStep();
 void NCSLabOutput();
 void NCSLabDerivative();
 void NCSLabUpdate();
+void NCSLabDiscreteUpdate();
 void NCSLabTerminate();
+void NCSLabSinkOutput();
 void storeState(int);
 void restoreState(int);
 void storeDerivative(int);
@@ -172,6 +180,9 @@ int hasdiscrete(double *);
 void NCSLabOneStep45(double);
 double distance(double,double);
 void NCSLabOneStep23(double);
+
+void discreteInit();
+void discreteInitFixed();
 //end
 
 void ncslabLoop();

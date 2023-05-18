@@ -11,7 +11,7 @@ import code.m.CodeStructM;
 import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 import block.io.State;
-public class UnitDelay extends Block{
+public class UnitDelay extends DiscreteBlock{
 	block.io.Parameter sampleTime;
 	block.io.Parameter initialCondition;
 	public UnitDelay(JSONObject blockIn,NCSLabModel model) {
@@ -21,6 +21,9 @@ public class UnitDelay extends Block{
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
 		parameterList.add(sampleTime);
+		
+		setSampleTime(sampleTime);
+		
 		parameterList.add(initialCondition);	
   }
 	 //define arrays to save data

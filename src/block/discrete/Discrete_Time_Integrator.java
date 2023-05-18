@@ -12,7 +12,7 @@ import code.c.CodeStructC;
 import code.m.CodeStructM;
 import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
-public class Discrete_Time_Integrator extends Block{
+public class Discrete_Time_Integrator extends DiscreteBlock{
 	block.io.Parameter gainval;
 	block.io.Parameter sampleTime;
 	block.io.Parameter initialCondition;
@@ -26,6 +26,7 @@ public class Discrete_Time_Integrator extends Block{
 		initialCondition=new Parameter(this,3,"initialCondition",paramValues.getString("InitialCondition"));
 		parameterList.add(gainval);
 		parameterList.add(sampleTime);
+		setSampleTime(sampleTime);
 		parameterList.add(initialCondition);
   } 
 	 public void generateInitCodeC(CodeStructC code) {

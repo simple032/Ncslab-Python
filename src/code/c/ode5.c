@@ -13,6 +13,8 @@ extern MODEL *mp;
 double singleStateReserve[SINGLE_STATE_NUM];
 Matrix matrixStateReserve[MATRIX_STATE_NUM];
 
+extern double sample_time[];
+
 //double derivativeReserve[4][STATE_NUM];
 
 double singleDerivativeReserve[6][SINGLE_STATE_NUM];
@@ -25,8 +27,13 @@ double weights4[] = {0.0, -1.0, 2.0};
 double weights5[] = {7.0 / 18.0, 5.0 / 9.0, 0.0, 1.0 / 18.0};
 double weights6[] = {28.0 / 125.0 , -1.0 , 546.0 / 125.0 , 54.0 / 125.0 , -378.0 / 125.0};
 
+extern double real_sample_time;
+
 #ifdef _SIMU
 void ncslabLoop(){
+
+	discreteInitFixed();
+  	
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
         writeInformation();
@@ -41,8 +48,27 @@ void ncslabLoop(){
 void NCSLabOneStep(){
 
   mp->offset=0;
+  
+  if (hasdiscrete(sample_time)){
+
+    while (mp->discreteTime <= mp->time){
+      mp->discreteTime += real_sample_time;
+      // mp->offset = 0;
+      // NCSLabOutput();
+      // NCSLabDiscreteUpdate();
+      mp->discreteUpdate = 1;
+    }
+  }
+  
   mp->majorStep=1;
   NCSLabOutput();
+  
+  if(mp->discreteUpdate){
+  	
+  	NCSLabDiscreteUpdate();
+  	mp->discreteUpdate=0;
+  }
+  NCSLabSinkOutput();
 
   //Calculate K1
   NCSLabDerivative();

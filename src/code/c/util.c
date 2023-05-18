@@ -32,6 +32,37 @@ double calalpoutput(double inputvalue) {
      }
 	return result;
 }
+extern double sample_time[];
+
+double real_sample_time=0.0;
+
+void discreteInit(){
+	//xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
+        extern int sample_i;
+        //extern double sample_time[];
+        
+         if(hasdiscrete(sample_time)==1){
+          real_sample_time=gcd1(sample_time);
+          }
+        //end
+  mp->discreteUpdate=1;
+  if(mp->stepSize>real_sample_time){
+  	mp->stepSize=real_sample_time;
+  }
+}
+
+void discreteInitFixed(){
+	//xiazhiqiang:Evaluates the greatest common divisor by referencing the sampling time array:(The definition location is at line 31 of codeStructC)
+        extern int sample_i;
+        //extern double sample_time[];
+        
+         if(hasdiscrete(sample_time)==1){
+          real_sample_time=gcd1(sample_time);
+          }
+        //end
+  mp->discreteUpdate=1;
+
+}
 
 //xiazhiqiang:Computes the greatest common divisor of the sampling time array
 double gcd( double x, double y )
@@ -49,7 +80,7 @@ double gcd( double x, double y )
 double gcd1(double a[]){
    double d=a[0];
    int i;
-   for(i=0;i<20;i++)	{
+   for(i=0;i<mp->blockNum;i++)	{
    	if(a[i]==0){
    		break;
 	   }
@@ -61,7 +92,7 @@ double gcd1(double a[]){
 //xiazhiqiang:Check whether there are discrete modules
 int hasdiscrete(double a[]){
 	  int i;
-   for(i=0;i<20;i++){
+   for(i=0;i<mp->blockNum;i++){
    	if(a[i]==0){
    		break;
 	   }
@@ -74,12 +105,27 @@ int hasdiscrete(double a[]){
 	   }
 	}
 //xiazhiqang:Distance from the next sampling point
+/*
 double distance(double t,double s){
 	long a=(long)(t*1000000000000000);
         long b=(long)(s*1000000000000000);
         double distance=s-(a%b)/1000000000000000.0;
+        if(distance<0){
+        	distance=0;
+        }
         return distance;
+}*/
+
+
+double distance(double t,double s){
+	long num=t/s;
+    double dist=(num+1)*s-t;
+    if(dist<0){
+    	dist=0;
+    }
+    return dist;
 }
+
 //end
 
 void storeState(int num){

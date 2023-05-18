@@ -2,6 +2,7 @@ package block;
 
 import org.json.JSONObject;
 
+
 import ncslablink.NCSLabModel;
 
 import ncslablink.ModelException;
@@ -202,6 +203,21 @@ public class BlockType {
 			break;
 		case "GPIO":
 			block=new block.route.GPIO(blockJSON,model);
+			break;
+		case "Compare To Constant":
+			block=new block.logicAndBit.CompareToConstant(blockJSON,model);
+			break;
+		case "Shift Arithmetic":
+			block=new block.logicAndBit.ShiftArithmetic(blockJSON,model);
+			break;
+		case "Logical Operator":
+			block=new block.logicAndBit.LogicOperator(blockJSON,model);
+			break;
+		case "Relational Operator":
+			block=new block.logicAndBit.RelationalOperator(blockJSON,model);
+			break;
+		case "Compare To Zero":
+			block=new block.logicAndBit.CompareToZero(blockJSON,model);
 			break;
 		}
 		

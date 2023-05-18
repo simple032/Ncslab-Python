@@ -57,4 +57,11 @@ public class GainElect extends Gain implements ElectBlock {
 		
 		
 	}
+	
+	@Override
+	public void clearLoop() {
+		// TODO Auto-generated method stub
+		relatedBlockList=new Vector<Block>();
+		electLoopString=null;
+	}
 }

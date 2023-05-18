@@ -6,7 +6,7 @@ import block.io.InputPort;
 import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
-public class Terminator extends block.Block{
+public class Terminator extends SinkBlock{
 	public Terminator(JSONObject scopeIn,NCSLabModel model) {
 		super(scopeIn,model);
 		
