@@ -22,6 +22,7 @@ import main.database.Algorithms;
 import code.c.CodeModelC;
 import code.c.CodeStructC;
 
+// TODO: currently this class is not used
 public class CodeModelCLinuxPC extends CodeModelC{
 	
 	private CodeStructCLinuxPC codeRaspberry=new CodeStructCLinuxPC(this);

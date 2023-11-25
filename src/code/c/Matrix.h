@@ -1,6 +1,3 @@
-//
-// Created by Lenovo on 2022/6/22.
-//
 #include "iostream"
 #ifndef C___CLASS_MATRIX_H
 #define C___CLASS_MATRIX_H
@@ -14,7 +11,7 @@ private:
     Index_T m_curIndex;
     double *m_ptr;
 public:
-    Matrix() :m_row(1), m_col(1)//�Ƿ�����
+    Matrix() :m_row(1), m_col(1) // size = 1
     {
         m_size = 1;
         if (m_size>0)
@@ -26,7 +23,7 @@ public:
             m_ptr[i] = 0;
         }
     };
-    Matrix(Index_T r, Index_T c) :m_row(r), m_col(c)//�Ƿ�����
+    Matrix(Index_T r, Index_T c) :m_row(r), m_col(c) // common matrix
     {
         m_size = r*c;
         if (m_size>0)
@@ -42,7 +39,7 @@ public:
         }
     };
 
-    Matrix(Index_T n):m_row(n),m_col(n) //������
+    Matrix(Index_T n):m_row(n),m_col(n) // square matrix
     {
         m_size = n*n;
         if (m_size>0)
@@ -58,7 +55,7 @@ public:
         }
     };
 
-    Matrix(const Matrix &rhs)//��������
+    Matrix(const Matrix &rhs)// user-defined copy constructor
     {
         m_row = rhs.m_row;
         m_col = rhs.m_col;
@@ -68,7 +65,7 @@ public:
             m_ptr[i] = rhs.m_ptr[i];
     }
 
-    ~Matrix() //��������
+    ~Matrix() // destructor
     {
         if (m_ptr != NULL)
         {
@@ -77,20 +74,20 @@ public:
         }
     }
 
-    Matrix  &operator=(const Matrix&);  //������Ա��ָ�������д��ֵ������������ǳ�Ա
+    Matrix  &operator=(const Matrix&);  // assignment operator
     friend Matrix  operator+(const Matrix&, const Matrix&);
     friend Matrix  operator-(const Matrix&, const Matrix&);
-    friend Matrix  operator*(const Matrix&, const Matrix&);  //����˷�
-    friend Matrix  operator*(double, const Matrix&);  //����˷�
-    friend Matrix  operator*(const Matrix&, double);  //����˷�
+    friend Matrix  operator*(const Matrix&, const Matrix&);  // matrix multiplication
+    friend Matrix  operator*(double, const Matrix&);  // scalar multiplication
+    friend Matrix  operator*(const Matrix&, double);  // scalar multiplication
     Matrix &operator+=(const Matrix&);
     Matrix &operator-=(const Matrix&);
     double& operator()(Index_T r, Index_T c){ return *(m_ptr + r*m_col + c); }
 
     Index_T row()const{ return m_row; }
     Index_T col()const{ return m_col; }
-    Matrix getrow(Index_T index); // ���ص�index ��,������0 ����
-    Matrix getcol(Index_T index); // ���ص�index ��
+    Matrix getrow(Index_T index); // get the index row
+    Matrix getcol(Index_T index); // get the index column
     Index_T rows()const{ return m_row; }
     Index_T cols()const{ return m_col; }
     void set(int nRow, int nCol, double value);

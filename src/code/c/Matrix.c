@@ -1,6 +1,3 @@
-//
-// Created by Lenovo on 2022/6/22.
-//
 #include "iostream"
 using namespace std;
 #include "Matrix.h"
@@ -8,10 +5,10 @@ using namespace std;
 Matrix& Matrix::operator+=(const Matrix & rhs) {
     if (this->m_col != rhs.m_col || this->m_row != rhs.m_row)
     {
-        cout << "operator+(): ����shape ������,m_col:"
+        cout << "operator+(): invalid shape, m_row, m_col:"
              << this->m_col << "," << rhs.m_col << ".  m_row:" << this->m_row << ", " << rhs.m_row << endl;
         this->m_ptr = NULL;
-        return *this; //���ݲ��Ϸ�ʱ�򣬷��ؿվ���
+        return *this; // null matrix
     }
     for (Index_T i = 0; i<this->m_size; i++)
     {
@@ -24,10 +21,10 @@ Matrix& Matrix::operator+=(const Matrix & rhs) {
 Matrix& Matrix::operator-=(const Matrix & rhs) {
     if (this->m_col != rhs.m_col || this->m_row != rhs.m_row)
     {
-        cout << "operator-(): ����shape ������,m_col:"
+        cout << "operator-(): invalid shape, m_row, m_col:"
              << this->m_col << "," << rhs.m_col << ".  m_row:" << this->m_row << ", " << rhs.m_row << endl;
         this->m_ptr = NULL;
-        return *this; //���ݲ��Ϸ�ʱ�򣬷��ؿվ���
+        return *this; // null matrix
     }
     for (Index_T i = 0; i<this->m_size; i++)
     {
@@ -59,9 +56,9 @@ Matrix operator+(const Matrix& lm, const Matrix& rm)
     {
         Matrix temp(0, 0);
         temp.m_ptr = NULL;
-        cout << "operator+(): ����shape ������,m_col:"
+        cout << "operator+(): invalid shape, m_row, m_col:"
              << lm.m_col << "," << rm.m_col << ".  m_row:" << lm.m_row << ", " << rm.m_row << endl;
-        return temp; //���ݲ��Ϸ�ʱ�򣬷��ؿվ���
+        return temp; // null matrix
     }
     Matrix ret(lm.m_row, lm.m_col);
     for (Index_T i = 0; i<ret.m_size; i++)
@@ -77,10 +74,10 @@ Matrix operator-(const Matrix& lm, const Matrix& rm)
     {
         Matrix temp(0, 0);
         temp.m_ptr = NULL;
-        cout << "operator-(): ����shape ������,m_col:"
+        cout << "operator-(): invalid shape, m_row, m_col:"
              <<lm.m_col<<","<<rm.m_col<<".  m_row:"<< lm.m_row <<", "<< rm.m_row << endl;
 
-        return temp; //���ݲ��Ϸ�ʱ�򣬷��ؿվ���
+        return temp; // null matrix
     }
     Matrix ret(lm.m_row, lm.m_col);
     for (Index_T i = 0; i<ret.m_size; i++)
@@ -96,16 +93,16 @@ Matrix operator*(const Matrix& lm, const Matrix& rm)  //����˷�
     {
         Matrix temp(0, 0);
         temp.m_ptr = NULL;
-        cout << "operator*(): ����shape ������,m_col:"
+        cout << "operator*(): invalid shape, m_row, m_col:"
              << lm.m_col << "," << rm.m_col << ".  m_row:" << lm.m_row << ", " << rm.m_row << endl;
-        return temp; //���ݲ��Ϸ�ʱ�򣬷��ؿվ���
+        return temp; // null matrix
     }
     Matrix ret(lm.m_row, rm.m_col);
-    for (Index_T i = 0; i<lm.m_row; i++) //����� ��
+    for (Index_T i = 0; i<lm.m_row; i++) 
     {
-        for (Index_T j = 0; j< rm.m_col; j++) //�ҳ��� ��
+        for (Index_T j = 0; j< rm.m_col; j++) 
         {
-            for (Index_T k = 0; k< lm.m_col; k++)//lm.m_col == rm.m_row
+            for (Index_T k = 0; k< lm.m_col; k++) //lm.m_col == rm.m_row
             {
                 ret.m_ptr[i*rm.m_col + j] += lm.m_ptr[i*lm.m_col + k] * rm.m_ptr[k*rm.m_col + j];
             }
@@ -113,7 +110,7 @@ Matrix operator*(const Matrix& lm, const Matrix& rm)  //����˷�
     }
     return ret;
 }
-Matrix operator*(double val, const Matrix& rm)  //����� ����
+Matrix operator*(double val, const Matrix& rm)  // elem * matrix
 {
     Matrix ret(rm.m_row, rm.m_col);
     for (Index_T i = 0; i<ret.m_size; i++)
@@ -122,7 +119,7 @@ Matrix operator*(double val, const Matrix& rm)  //����� ����
     }
     return ret;
 }
-Matrix operator*(const Matrix&lm, double val)  //����� ����
+Matrix operator*(const Matrix&lm, double val)  // matrix * elem
 {
     Matrix ret(lm.m_row, lm.m_col);
     for (Index_T i = 0; i<ret.m_size; i++)
@@ -132,9 +129,9 @@ Matrix operator*(const Matrix&lm, double val)  //����� ����
     return ret;
 }
 
-Matrix Matrix::getrow(Index_T index)//������
+Matrix Matrix::getrow(Index_T index)
 {
-    Matrix ret(1, m_col); //һ�еķ���ֵ
+    Matrix ret(1, m_col); 
 
     for (Index_T i = 0; i< m_col; i++)
     {
@@ -145,9 +142,9 @@ Matrix Matrix::getrow(Index_T index)//������
     return ret;
 }
 
-Matrix Matrix::getcol(Index_T index)//������
+Matrix Matrix::getcol(Index_T index)
 {
-    Matrix ret(m_row, 1); //һ�еķ���ֵ
+    Matrix ret(m_row, 1); 
 
     for (Index_T i = 0; i< m_row; i++)
     {

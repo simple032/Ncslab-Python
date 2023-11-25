@@ -6,13 +6,11 @@ abstract public class Terminal {
 	protected int id;
 	protected String name;
 	protected String localName;
-	
 	protected String terminalName;
-	
 	
 	protected Block block;
 	
-	public Terminal(Block block,int id,String localName){
+	public Terminal(Block block, int id, String localName){
 		this.id=id;
 		this.block=block;
 		this.localName=localName;

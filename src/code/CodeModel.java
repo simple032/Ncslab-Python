@@ -154,7 +154,19 @@ abstract public class CodeModel extends NCSLabModel {
 	}
 
 
-	//生成代码的通用范式，不同的语言的生成，可以重载
+	
+	/**
+	 * general paradigm of code generation
+	 * 1. generate init code
+	 * 2. generate output code
+	 * 3. generate derivative code
+	 * 4. generate update code
+	 * 5. generate statement code
+	 * 6. generate terminate code
+	 * 
+	 * @param void
+	 * @throws MatDimException
+	 */
 	public void generate() {
 
 		CodeGenerationOption option=new CodeGenerationOption();
@@ -319,6 +331,7 @@ abstract public class CodeModel extends NCSLabModel {
 	}
 
 	/*寻找终端Block的函数，将所有的终端block加入terminalBlockList，为遍历做准备 */
+	// TODO: this method is duplicated with the one in NCSLabModel
 	private void findTerminalBlocks() {
 		System.out.println("Looking for terminal blocks");
 		for(Block block:blockList) {

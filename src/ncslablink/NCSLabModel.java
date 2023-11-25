@@ -22,16 +22,10 @@ abstract public class NCSLabModel {
 	
 	protected int modelSeq;
 	
-	//从Web传递过来的JSON文件
-	private JSONObject jsonIn;
-	
-	//model的名称，S开头后面跟数字
-	private String modelName;
-	//model的真正名字
+	private JSONObject jsonIn; // json from the web
+	private String modelName; // format: S + number
 	private String modelRealName;
-	
-	//Model的配置文件
-	private Config config;
+	private Config config; // config file for the model
 	
 	private int userId;
 	private int modelId;
@@ -41,20 +35,20 @@ abstract public class NCSLabModel {
 	
 	private JSONObject saveInfo;
 	
-	private ModelMode mode=ModelMode.Simulation;
+	private ModelMode mode = ModelMode.Simulation;
 	
-	//所有的模块
+	// all blocks in the model
 	protected Vector<Block> blockList=new Vector<Block>();
-	
+
 	private Vector<Block> dimensionList=new Vector<Block>();
 	private Vector<Block> scanDimList=new Vector<Block>();
 	private Vector<Block> dimTerminalBlockList=new Vector<Block>();
 	private Vector<OutputPort> dimOutputPortPathList=new Vector<OutputPort>();
 	
-	//所有的连线
+	// all lines
 	protected Vector<Line> lineList=new Vector<Line>();
 	
-	//所有的错误信息
+	// all error info
 	protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
 	
 	protected Vector<Terminal> terminalList=new Vector<Terminal>();

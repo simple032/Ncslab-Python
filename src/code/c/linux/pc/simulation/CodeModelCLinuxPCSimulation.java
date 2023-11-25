@@ -33,7 +33,7 @@ import code.c.CodeStructC;
 
 public class CodeModelCLinuxPCSimulation extends CodeModelC{
 	
-	private CodeStructCLinuxPCSimulation codeRaspberry=new CodeStructCLinuxPCSimulation(this);
+	private CodeStructCLinuxPCSimulation codeRaspberry = new CodeStructCLinuxPCSimulation(this);
 	
 	CodeModelCLinuxPCSimulation(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
@@ -77,7 +77,7 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 				
 				//if((new java.util.Date().getTime())-currentTime>1000) {
 				//	currentTime=new java.util.Date().getTime();
-					sendSimulatingMessage(session,time);
+				//	sendSimulatingMessage(session,time);
 				//}
 				
 				//System.out.println(time);

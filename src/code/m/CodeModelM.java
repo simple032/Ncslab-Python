@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import java.util.Vector;
 
 import ncslablink.ErrorMessage;
+import ncslablink.MatDimException;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 import ncslablink.NCSLabModel;
@@ -89,6 +90,24 @@ public class CodeModelM extends CodeModel{
 			
 			block.generateBlockDerivativeCodeM(code);
 		}
+	}
+
+	@Override
+	protected void generateBlockSinkOutputCode(Block block, CodeGenerationOption option) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'generateBlockSinkOutputCode'");
+	}
+
+	@Override
+	protected void generateArraysCode(CodeGenerationOption option) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'generateArraysCode'");
+	}
+
+	@Override
+	protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'generateDiscreteUpdateCode'");
 	}
 	
 }

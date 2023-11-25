@@ -27,7 +27,7 @@ import main.database.Algorithms;
 
 abstract public class CodeModelC extends CodeModel {
 	
-	private static final String REAL="real_t";
+	private static final String REAL = "real_t";
 	
 		
 	//生成代码的时候统计singal和parameter的个数
@@ -77,16 +77,18 @@ abstract public class CodeModelC extends CodeModel {
 		return this.stateNum;
 	}
 	
+	@Override
 	public void generate()  {
 		super.generate();
 		writeCCodeFiles(); 
 	}
 	
-	/*将代码变成C语言的一系列文件 */
+	// genetate C++ code files
 	private void writeCCodeFiles() {
 		getCodeStructC().writeCCodeFiles();
 	}
 	
+	@Override
 	protected void generateInitCode(CodeGenerationOption option) {
 		System.out.println("Generating init codes......");
 		for(Block block:blockList) {
@@ -107,10 +109,12 @@ abstract public class CodeModelC extends CodeModel {
 		getCodeStructC().gnenrateDataStructureCode();
 	}
 	
+	@Override
 	protected void generateBlockOutputCode(Block block,CodeGenerationOption option) {
 		block.generateBlockOutputCodeC(getCodeStructC());
 	}
 	
+	@Override
 	protected void generateBlockSinkOutputCode(Block block,CodeGenerationOption option) {
 		block.generateBlockSinkOutputCodeC(getCodeStructC());
 	}
@@ -120,6 +124,8 @@ abstract public class CodeModelC extends CodeModel {
 	protected void generateBlockArraysCode(Block block) {
 		block.generateBlockArraysCodeC(getCodeStructC());
 	}
+
+	@Override
 	protected void generateArraysCode(CodeGenerationOption option) {
 		System.out.println("Generating arrays codes......");
 		
@@ -135,6 +141,7 @@ abstract public class CodeModelC extends CodeModel {
 		block.generateBlockUpdateCodeC(getCodeStructC());
 	}
 	
+	@Override
 	protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException {
 		System.out.println("Generating update codes......");
 		
@@ -149,6 +156,7 @@ abstract public class CodeModelC extends CodeModel {
 		block.generateDiscreteBlockUpdateCodeC(getCodeStructC());
 	}
 	
+	@Override
 	protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException {
 		System.out.println("Generating discrete update codes......");
 		
@@ -163,6 +171,7 @@ abstract public class CodeModelC extends CodeModel {
 		block.generateBlockTerminateCodeC(getCodeStructC());
 	}
 	
+	@Override
 	protected void generateTerminateCode(CodeGenerationOption option) {
 		System.out.println("Generating terminate codes......");
 		
@@ -175,6 +184,7 @@ abstract public class CodeModelC extends CodeModel {
 		block.generateBlockStatementCodeC(getCodeStructC());
 	}
 	
+	@Override
 	protected void generateStatementCode(CodeGenerationOption option) {
 		System.out.println("Generating statement codes......");
 		
@@ -187,7 +197,12 @@ abstract public class CodeModelC extends CodeModel {
 		}
 	}
 	
-	/*调用make命令，生成可执行代码 */
+	/**
+	 * use make to generate executable file
+	 * 
+	 * @param void
+	 * @return whether the executable file is generated successfully
+	 */
 	public boolean makeExeFile() {
 		System.out.println("Making exe file ncslab...");
 		boolean flag = getCodeStructC().makeExeFile();
@@ -200,6 +215,7 @@ abstract public class CodeModelC extends CodeModel {
 		return flag;
 	}
 	
+	@Override
 	protected void generateDerivativeCode(CodeGenerationOption option) {
 		System.out.println("Generating derivative codes......");
 		

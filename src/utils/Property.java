@@ -9,7 +9,10 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.io.*;
 
-
+/**
+ * This class is used to read the config.properties file.
+ * You can get the value of the property based on the key.
+ */
 public class Property {
 	
 	public static Property instance=new Property();
@@ -21,11 +24,11 @@ public class Property {
 		try {
 
 			
-			// 通过输入缓冲流进行读取配置文件
+			// read config from file
 			InputStream InputStream = this.getClass().getResourceAsStream(filePath); 
-			// 加载输入流
+			// load the properties
 			prop.load(InputStream);
-			// 根据关键字获取value值
+			// get the value of the property based on the key
 			value = prop.getProperty(key);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -34,7 +37,6 @@ public class Property {
 		//System.out.println(value);
 		
 		return value;
-
 	}
 	
 }

@@ -15,41 +15,41 @@ import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
-public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
+public class Block implements block.lan.MCodeBlock, block.lan.CCodeBlock{
 	
 	//Block的类型，需要在BlockType中建立block的时候分别对待
 	protected String blockType;
 	protected String blockName;
 	
-	protected int blockId=0;
+	protected int blockId = 0;
 	//Block所在画布的位置，不在子系统时为modelName，存在子系统时为modelName/subsystem
 	protected String blockPath;
 	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
 	protected JSONObject paramValues;
 	
 	//输入与输出端口的列表
-	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
-	protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
+	protected Vector<InputPort> inputPortList = new Vector<InputPort>();
+	protected Vector<OutputPort> outputPortList = new Vector<OutputPort>();
 	
-	protected Vector<Parameter> parameterList=new Vector<Parameter>();
-	protected Vector<State> stateList=new Vector<State>();
+	protected Vector<Parameter> parameterList = new Vector<Parameter>();
+	protected Vector<State> stateList = new Vector<State>();
 	
-	protected Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
+	protected Vector<OutputSignal> outputSignalList = new Vector<OutputSignal>();
 	
 	//是否输出的代码已经生成，如果生成，遍历到这个模块的时候，直接引用就行了，就不需要进一步遍历了
-	protected boolean isOutputCodeGenerated=false;
+	protected boolean isOutputCodeGenerated = false;
 	
-	protected boolean isDimScaned=false;
+	protected boolean isDimScaned = false;
 	
 	//指向上级Model模型的指针
 	protected NCSLabModel model;
 	
-	protected boolean isHardware=false;
+	protected boolean isHardware = false;
 	
 	//Block中Singal中的个数，Signal没有Java的数据结构，Signal可以是InputPort的量，也可以是OutputPort中的量，具体看代码生成时的认定
-	protected int signalNum=0;
+	protected int signalNum = 0;
 	
-	protected Block(JSONObject blockIn,NCSLabModel model) {
+	protected Block(JSONObject blockIn, NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
 		this.paramValues=blockIn.getJSONObject("paramValues");
@@ -58,7 +58,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 	
 	public void setSignalNum(int signalNum) {
-		this.signalNum=signalNum;
+		this.signalNum = signalNum;
 	}
 	
 	public void setFeedThrough(boolean feedThrough) {
@@ -78,7 +78,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 	
 	public boolean isTerminalBlock() {
-		return (outputPortList.size()==0);
+		return (outputPortList.size() == 0);
 	}
 	
 	public String getBlockName() {
@@ -89,7 +89,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return blockPath;
 	}
 	public String getSubSystemName() {
-		int index=this.blockPath.lastIndexOf("/");
+		int index = this.blockPath.lastIndexOf("/");
         return this.blockPath.substring(index+1);
 	}
 	
@@ -114,7 +114,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 	
 	public void setBlockId(int blockId) {
-		this.blockId=blockId;
+		this.blockId = blockId;
 	}
 	
 	public int getBlockId() {
@@ -136,29 +136,49 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public String getOutputPortVariable(int n) {
 		return outputPortList.get(n).getOutputSignalC().getName();
 	}
-	
-	//生成M语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
-	public void  generateOutputCodeM(CodeStructM code) {
-	
-	}
-	
+		
 	public void setIsOuputCodeGenerated(boolean isOutputCodeGenerated) {
-		this.isOutputCodeGenerated=isOutputCodeGenerated;
-		for(OutputPort outputPort:outputPortList) {
+		this.isOutputCodeGenerated = isOutputCodeGenerated;
+		for(OutputPort outputPort : outputPortList) {
 			outputPort.setIsCodeGenerated(true);
 		}
 	}
 	
 	public void setIsDimScaned(boolean isDimScaned) {
-		this.isDimScaned=isDimScaned;
-		for(OutputPort outputPort:outputPortList) {
+		this.isDimScaned = isDimScaned;
+		for(OutputPort outputPort: outputPortList) {
 			outputPort.setIsDimScaned(true);
 		}
 	}
-	
+
+	// start: matlab code generation
+	//生成M语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
+	@Override
+	public void generateInitCodeM(CodeStructM code) {}
+
+	//生成M语言的Init代码，供上一级调用
+	@Override
+	public void generateBlockInitCodeM(CodeStructM code) {
+		for(OutputSignal outputSignal : outputSignalList) {
+			code.addOutputSignal(outputSignal);
+		}
+		for(Parameter parameter : parameterList) {
+			code.addParameter(parameter);
+		}
+		for(State state : stateList) {
+			code.addState(state);
+		}
+		generateInitCodeM(code);
+	}
+
+	//生成M语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
+	@Override
+	public void  generateOutputCodeM(CodeStructM code) {}
+
 	//生成M语言的Output代码，供上一级调用
+	@Override
 	public void generateBlockOutputCodeM(CodeStructM code) {
-		System.out.println("Generating block output code ("+blockId+"):"+blockName);
+		System.out.format("Generating block output code (%d):%s\n", blockId, blockName);
 		
 		generateOutputCodeM(code);
 		
@@ -168,70 +188,56 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 			outputPort.setIsCodeGenerated(true);
 		}*/
 	}
-	
-	//生成M语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
-	public void generateInitCodeM(CodeStructM code) {
-	}
-	
-	//Author:xiazhiqiang
-	public void  generateArraysCodeM(CodeStructM code) {
-		
-	}
-	public void generateBlockArraysCodeM(CodeStructM code) {
-		System.out.println("Generating block arrays code ("+blockId+"):"+blockName);
-		
-		generateArraysCodeM(code);
-	}
- //end
 
-	//生成M语言的Init代码，供上一级调用
-	public void generateBlockInitCodeM(CodeStructM code) {
-		for(OutputSignal outputSignal:outputSignalList) {
-			code.addOutputSignal(outputSignal);
-		}
-		for(Parameter parameter:parameterList) {
-			code.addParameter(parameter);
-		}
-		for(State state:stateList) {
-			code.addState(state);
-		}
-		generateInitCodeM(code);
-	}
-	
-	//生成M语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
+	/**
+	 * generate output M code
+	 * override this for different block
+	 * @param code
+	 */	
+	@Override
 	public void generateUpdateCodeM(CodeStructM code) {
-		String updateCode="";
-		
-		for(State state:stateList) {
-			updateCode+=state.getName()+"="
-					+state.getName()+"+"
-					+state.getDerivativeName()
-					+"*"
-					+"stepSize"
-					+";\n";
+		StringBuilder updateCode = new StringBuilder();
+
+		for (State state : stateList) {
+			updateCode.append(String.format("%s = %s + %s * stepSize;\n",
+				state.getName(), state.getName(), state.getDerivativeName()));
 		}
 		
-		code.addUpdateCode(updateCode);
+		code.addUpdateCode(updateCode.toString());
 	}
 	
 	//生成M语言的Update代码，供上一级调用
+	@Override
 	public void generateBlockUpdateCodeM(CodeStructM code) {
 		generateUpdateCodeM(code);
-	}
+	}	
+
+	@Override
+	public void generateDerivativeCodeM(CodeStructM code) {}	
 	
+	@Override
 	public void generateBlockDerivativeCodeM(CodeStructM code) {
 		generateDerivativeCodeM(code);
 	}
-	public void generateDerivativeCodeM(CodeStructM code) {
+
 		
+	public void  generateArraysCodeM(CodeStructM code) {}
+
+	public void generateBlockArraysCodeM(CodeStructM code) {
+		System.out.format("Generating block arrays code (%d):%s\n", blockId, blockName);
+		
+		generateArraysCodeM(code);
 	}
-	
+ 	//end
+
 	
 	public void updateBlock() {
 		int i=0;
 		//建立模块OutputPort对应的Signal
-		for(OutputPort outputPort:outputPortList) {
-			OutputSignal outputSignal=new OutputSignal(this,i,outputPort.getNumber(),outputPort.getName(),outputPort.getWidth(),outputPort.getHeight());
+		for(OutputPort outputPort : outputPortList) {
+			OutputSignal outputSignal = new OutputSignal(this, i, outputPort.getNumber(), 
+				outputPort.getName(), outputPort.getWidth(), outputPort.getHeight());
+
 			outputPort.setOutputSignalC(outputSignal);
 			outputSignalList.add(outputSignal);
 			i++;
@@ -239,29 +245,31 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 	
 	
-	//c语言的代码生成方法，与M语言相同
+	//start: C code generation
 	//生成C语言的Init代码，供上一级调用
+	@Override
 	public void generateBlockInitCodeC(CodeStructC code) {
-		for(OutputSignal outputSignal:outputSignalList) {
+		for(OutputSignal outputSignal : outputSignalList) {
 			code.addOutputSignal(outputSignal);
 		}
 		generateInitCodeC(code);
 	}
 	
 	//生成C语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
+	@Override
 	public void generateInitCodeC(CodeStructC code) {
-		for(Parameter parameter:parameterList) {
+		for(Parameter parameter : parameterList) {
 			code.addParameter(parameter);
 		}
-		for(State state:stateList) {
+		for(State state : stateList) {
 			code.addState(state);
 		}
 	}
 	
 	//生成C语言的Output代码，供上一级调用
+	@Override
 	public void generateBlockOutputCodeC(CodeStructC code) {
-		System.out.println("Generating block output code ("+blockId+"):"+blockName);
-		
+		System.out.format("Generating block output code (%d):%s\n", blockId, blockName);
 		generateOutputCodeC(code);
 		
 		/*
@@ -271,66 +279,62 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		}*/
 		
 	}
+
+	//生成C语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
+	@Override
+	public void generateOutputCodeC(CodeStructC code) {}
 	
 	public void generateBlockSinkOutputCodeC(CodeStructC code) {
-		System.out.println("Generating block sink output code ("+blockId+"):"+blockName);
+		System.out.format("Generating block sink output code (%d):%s\n", blockId, blockName);
 		generateOutputSinkCodeC(code);
 	}
 	
-	//生成C语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
-	public void generateOutputCodeC(CodeStructC code) {
-		
-	}
+	public void generateOutputSinkCodeC(CodeStructC code) {}
 	
-	public void generateOutputSinkCodeC(CodeStructC code) {
+	//生成C语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
+	@Override
+	public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
+		StringBuilder updateCode = new StringBuilder(String.format(
+			"/*Code for update of block %s:(%d)%s*/\n",
+			getBlockType(), getBlockId(), getBlockName()));
+
+		for (State state : stateList) {
+			updateCode.append(String.format("%s = %s + %s * stepSize;\n",
+				state.getName(), state.getName(), state.getDerivativeName()));
+		}
 		
+		code.addUpdateCode(updateCode.toString());
 	}
-	
+
 	//生成C语言的Update代码，供上一级调用
+	@Override
 	public void generateBlockUpdateCodeC(CodeStructC code) throws MatDimException {
 		generateUpdateCodeC(code);
 	}
+
+	@Override
+	public void generateDiscreteBlockUpdateCodeC(CodeStructC code) throws MatDimException{
+		generateDiscreteUpdateCodeC(code);
+	}
+
+	@Override
+	public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException{}
+	
+	@Override
+	public void generateBlockDerivativeCodeC(CodeStructC code) {
+		generateDerivativeCodeC(code);
+	}
+
+	@Override
+	public void generateDerivativeCodeC(CodeStructC code) {}	
 	
 	//define arrays to save data for discrete blocks
 	//author:xiazhiqiang
 	public void generateBlockArraysCodeC(CodeStructC code) {
-		System.out.println("Generating block arrays code ("+blockId+"):"+blockName);
+		System.out.format("Generating block arrays code (%d):%s\n", blockId, blockName);
 		generateArraysCodeC(code);
 	}
-	public void generateArraysCodeC(CodeStructC code) {
-		
-	}
-	//end	
-	
-	//生成C语言的Update代码,不同的Block类型，重载这个方法，生成自己的代码
-	public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
-		String updateCode="/*Code for update of block "+getBlockType()+":("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		for(State state:stateList) {
-			updateCode+=state.getName()+"="
-					+state.getName()+"+"
-					+state.getDerivativeName()
-					+"*"
-					+"model.stepSize"
-					+";\n";
-		}
-		
-		code.addUpdateCode(updateCode);
-	}
-	
-	public void generateDiscreteBlockUpdateCodeC(CodeStructC code) throws MatDimException{
-		generateDiscreteUpdateCodeC(code);
-	}
-	public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException{
-		
-	}
-	
-	public void generateBlockDerivativeCodeC(CodeStructC code) {
-		generateDerivativeCodeC(code);
-	}
-	public void generateDerivativeCodeC(CodeStructC code) {
-		
-	}
+	public void generateArraysCodeC(CodeStructC code) {}
 	
 	public void generateBlockTerminateCodeC(CodeStructC code) {
 		generateTerminateCodeC(code);
@@ -384,10 +388,10 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	/*检查数据宽度是否匹配，可以重载，如果不匹配，可以throw Exception*/
 	/*默认检查输入的宽度，默认的宽度为1，如果不为1，需要重载这个函数*/
 	public void checkDimension() throws MatDimException{
-		for(InputPort input:inputPortList) {
-			OutputSignal signal=input.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			if(signal.getDataType()!=DataType.REAL) {
-				MatDimException e=new MatDimException("Block "+this.blockName+" doesn't support Matrix!");
+		for(InputPort input : inputPortList) {
+			OutputSignal signal = input.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+			if(signal.getDataType() != DataType.REAL) {
+				MatDimException e = new MatDimException(String.format("Block %s doesn't support Matrix!", this.blockName));
 				throw(e);
 			}
 		}
