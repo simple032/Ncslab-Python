@@ -1,0 +1,57 @@
+package com.ncslab.circuit.block;
+
+import org.json.JSONObject;
+
+import com.ncslab.ncslablink.ModelException;
+import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.circuit.block.element.*;
+
+public class CircuitBlockType {
+	/*根据BlockType的类型，生成不同的Block */
+	public static CircuitBlock createBlock(int id,JSONObject blockJSON,NCSLabModel model) throws ModelException {
+		CircuitBlock block=null;
+		String blockType=blockJSON.getString("blockType");
+		
+		switch(blockType) {		
+		case "DC Voltage Source":
+			block=new DCVoltageSource(blockJSON, model);
+			break;
+		case "Resistor":
+			block=new Resistor(blockJSON, model);
+			break;
+		case "Inductor":
+			block=new Inductor(blockJSON, model);
+			break;
+		case "Capacitor":
+			block=new Capacitor(blockJSON, model);
+			break;
+		case "Voltage Sensor":
+			block=new VoltageSensor(blockJSON, model);
+			break;
+		case "Controlled Voltage Source":
+			block=new ControlledVoltageSource(blockJSON, model);
+			break;
+		case "Variable Resistor":
+			block=new VariableResistor(blockJSON, model);
+			break;
+		case "Diode":
+			block=new Diode(blockJSON, model);
+			break;
+		case "AC Voltage Source":
+			block=new ACVoltageSource(blockJSON, model);
+			break;
+		case "Variable Capacitor":
+			block=new VariableCapacitor(blockJSON, model);
+			break;
+		}
+		
+		if(block==null) {
+			throw(new ModelException("Can not find blocktype \""+blockType+"\""));
+		}
+		
+		//block.setBlockId(id);
+		//block.updateBlock();
+		
+		return block;
+	}
+}

@@ -61,6 +61,19 @@
     "iostream": "c",
     "matrix.h": "c",
     "serverthread.h": "c",
-    "ncslabccode.h": "c"
+    "ncslabccode.h": "c",
+    "ncs_serialport.h": "c",
+    "wiringpi.h": "c",
+    "unistd.h": "c",
+    "math.h": "c",
+    "types.h": "c",
+    "pthread.h": "c",
+    "errno.h": "c",
+    "socket.h": "c",
+    "in.h": "c",
+    "time.h": "c",
+    "list": "c",
+    "inet.h": "c",
+    "signal.h": "c"
   }
 }

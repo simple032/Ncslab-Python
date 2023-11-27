@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/square/Documents/Code/ncslablink/ncslablink/src/code/c",
-      "program": "/Users/square/Documents/Code/ncslablink/ncslablink/src/code/c/build/Debug/outDebug"
+      "cwd": "/Users/square/Documents/Code/ncslablink/CCode/994/1553",
+      "program": "/Users/square/Documents/Code/ncslablink/CCode/994/1553/build/Debug/outDebug"
     }
   ]
 }
