@@ -8,11 +8,9 @@ import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.*;
 
-import com.ncslab.code.CodeModel;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.*;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.terminal.Terminal;
 import com.ncslab.utils.Property;
 
@@ -374,7 +372,8 @@ abstract public class CodeStructC {
 	}
 	
 	protected void writeNCSLabFile(String fileName, String fileNameOut) {
-		writeNCSLabFile(fileName,fileNameOut,false);
+		// TODO: writeNCSLabFile(fileName, fileNameOut, false);
+		writeNCSLabFile(fileName, fileNameOut, true);
 	}
 	
 	protected void writeNCSLabFile(String fileName, String fileNameOut, boolean overwrite) {

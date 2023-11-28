@@ -13,7 +13,6 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.InputPort;
 
 import com.ncslab.block.sink.Scope;
-import com.ncslab.block.source.Constant;
 import com.ncslab.line.Line;
 
 abstract public class CircuitBlock {

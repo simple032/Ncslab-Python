@@ -4,12 +4,9 @@ import org.json.JSONObject;
 
 import com.ncslab.block.elect.Limiting;
 import com.ncslab.block.elect.LimitingLink;
-import com.ncslab.block.source.SineWave;
 import com.ncslab.circuit.block.BlockModeType;
 import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.circuit.block.electblock.AddElect;
-import com.ncslab.circuit.block.electblock.DiodeElect;
-import com.ncslab.circuit.block.electblock.GainElect;
 import com.ncslab.circuit.block.electblock.ProductElect;
 import com.ncslab.circuit.block.io.BlockVoltage;
 import com.ncslab.circuit.block.io.PortCurrent;

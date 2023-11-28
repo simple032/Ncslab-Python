@@ -9,14 +9,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
-
-import com.ncslab.code.Solver;
-import com.ncslab.code.c.CodeModelC;
-import com.ncslab.code.m.CodeModelM;
-import com.ncslab.ncslablink.ModelException;
-import com.ncslab.ncslablink.ModelMode;
-
 /**
  * Servlet implementation class compile
  */

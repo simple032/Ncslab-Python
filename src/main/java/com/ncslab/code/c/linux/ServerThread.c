@@ -96,8 +96,8 @@ void* ServerThreadFunction(void *arg)
     }
 
     //rtwCAPI_ModelMappingInfo *mmi=&(pExtModeData->mmi);
-
-    if( (listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 ){
+	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (listenfd  == -1){
         printf("create socket error: %s(errno: %d)\n",strerror(errno),errno);
         exit(0);
     }
@@ -107,7 +107,7 @@ void* ServerThreadFunction(void *arg)
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(port);
 
-    if( bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1){
+    if (::bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1){
         printf("bind socket error: %s(errno: %d)\n",strerror(errno),errno);
         exit(0);
     }

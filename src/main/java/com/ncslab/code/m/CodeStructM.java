@@ -2,14 +2,11 @@ package com.ncslab.code.m;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.Vector;
 
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
-import com.ncslab.code.c.CodeModelC;
-
 import com.ncslab.utils.Property;
 
 public class CodeStructM {
@@ -491,6 +488,8 @@ public class CodeStructM {
 			code+="tol=1E-6;\n";
 			code+="while t<"+model.getConfig().getStopTime()+"\n";
 			break;
+		default:
+			break;
 		}
 		
 		
@@ -511,6 +510,8 @@ public class CodeStructM {
 		case ode23:
 			code+=getOde23Code();
 			break;
+		default:
+			break;
 		}
 		
 		switch(model.getSolver())
@@ -525,6 +526,8 @@ public class CodeStructM {
 			code+="t=t+h;\n";
 			code+="h=nh;\n;";
 			code+="end\n";
+			break;
+		default:
 			break;
 		}		
 		

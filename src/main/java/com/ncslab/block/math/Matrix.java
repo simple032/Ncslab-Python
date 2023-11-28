@@ -1,17 +1,6 @@
 package com.ncslab.block.math;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.ncslab.block.Block;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
-import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.io.InputPort;
 
 public class Matrix {
 	

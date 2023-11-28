@@ -1,12 +1,8 @@
 package com.ncslab.block.continuous;
-import org.json.JSONArray;
 import org.json.JSONObject;
 //import org.json.JSONArray;
 
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;

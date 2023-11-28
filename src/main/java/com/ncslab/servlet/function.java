@@ -3,7 +3,6 @@ package com.ncslab.servlet;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
@@ -15,13 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-import com.ncslab.code.Solver;
-import com.ncslab.code.c.CodeModelC;
-import com.ncslab.code.m.CodeModelM;
-
 import com.ncslab.ncslablink.SFcnException;
-import com.ncslab.ncslablink.ModelMode;
-
 import com.ncslab.utils.Property;
 
 /**

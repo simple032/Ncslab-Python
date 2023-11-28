@@ -1,20 +1,8 @@
 package com.ncslab.code.c.linux.pc;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.util.Vector;
-import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.*;
-
-import com.ncslab.code.CodeModel;
-import com.ncslab.block.Block;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.io.Parameter;
-import com.ncslab.block.io.State;
-import com.ncslab.block.io.InputPort;
 
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.c.CodeModelC;
@@ -85,6 +73,8 @@ public class CodeStructCLinuxPC extends CodeStructC{
 			break;
 		case ode4:
 			writeNCSLabFile("../../ode4.c","onestep.c");
+			break;
+		default:
 			break;
 		}
 		

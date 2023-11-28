@@ -7,25 +7,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import org.json.JSONObject;
 import java.io.*;
-import java.util.*;
-
-import com.ncslab.code.Solver;
-import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
-import com.ncslab.code.m.CodeModelM;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
-
-
-import com.ncslab.server.SimulationServer;
-import com.ncslab.server.SimulationThread;
 
 /**
  * Servlet implementation class simulate

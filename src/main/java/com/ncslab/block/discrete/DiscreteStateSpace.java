@@ -7,9 +7,6 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.State;
 import com.ncslab.block.math.Matrix;
 import com.ncslab.code.c.CodeStructC;

@@ -74,6 +74,10 @@
     "time.h": "c",
     "list": "c",
     "inet.h": "c",
-    "signal.h": "c"
-  }
+    "signal.h": "c",
+    "json.h": "c",
+    "dataapi.h": "c",
+    "_pthread_types.h": "c"
+  },
+  "java.compile.nullAnalysis.mode": "automatic"
 }

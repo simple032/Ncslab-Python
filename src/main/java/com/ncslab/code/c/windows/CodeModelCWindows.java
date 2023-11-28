@@ -1,19 +1,9 @@
 package com.ncslab.code.c.windows;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
-import com.ncslab.code.CodeGenerationOption;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.database.Algorithms;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 

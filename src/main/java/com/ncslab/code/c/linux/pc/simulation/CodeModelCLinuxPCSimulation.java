@@ -1,34 +1,15 @@
 package com.ncslab.code.c.linux.pc.simulation;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.websocket.Session;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-
-import java.io.DataInputStream;
-
 // import org.apache.parquet.bytes.LittleEndianDataInputStream;
 import com.google.common.io.LittleEndianDataInputStream;
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.code.CodeGenerationOption;
-import com.ncslab.code.CodeModel;
-import com.ncslab.line.Line;
-import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
-import com.ncslab.database.Algorithms;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
 

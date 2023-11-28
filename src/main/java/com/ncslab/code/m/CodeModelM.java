@@ -1,15 +1,10 @@
 package com.ncslab.code.m;
 
 import org.json.JSONObject;
-import java.util.Vector;
-
 import com.ncslab.ncslablink.*;
 import com.ncslab.block.Block;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
 import com.ncslab.code.CodeGenerationOption;
 import com.ncslab.code.CodeModel;
-import com.ncslab.line.Line;
 
 public class CodeModelM extends CodeModel{
 	

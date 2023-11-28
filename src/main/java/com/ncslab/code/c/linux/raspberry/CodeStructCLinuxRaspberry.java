@@ -1,13 +1,8 @@
 package com.ncslab.code.c.linux.raspberry;
 
-import java.util.Vector;
 import java.io.*;
 
-import com.ncslab.code.CodeModel;
 import com.ncslab.block.Block;
-import com.ncslab.block.io.*;
-import com.ncslab.block.io.InputPort;
-
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.c.CodeModelC;
 

@@ -1,6 +1,8 @@
 #ifndef NCSLABCCODE
 #define NCSLABCCODE
 
+// TODO: decouple this header file
+
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>

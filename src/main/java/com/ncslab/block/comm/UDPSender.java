@@ -4,8 +4,6 @@ import org.json.JSONObject;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;

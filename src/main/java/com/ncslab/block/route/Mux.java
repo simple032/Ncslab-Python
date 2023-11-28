@@ -1,19 +1,11 @@
 package com.ncslab.block.route;
 
 import org.json.JSONObject;
-import org.json.JSONArray;
-
-import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.State;
 import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.math.Matrix;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;

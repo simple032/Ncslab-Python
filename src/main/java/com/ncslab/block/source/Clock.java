@@ -2,9 +2,7 @@ package com.ncslab.block.source;
 
 import org.json.JSONObject;
 
-import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;

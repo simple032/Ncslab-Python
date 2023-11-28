@@ -1,10 +1,7 @@
 package com.ncslab.block.math;
 
 import org.json.JSONObject;
-import java.util.Vector;
-
 import com.ncslab.block.Block;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;

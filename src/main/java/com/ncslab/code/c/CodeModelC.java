@@ -3,10 +3,6 @@ package com.ncslab.code.c;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
 
@@ -14,12 +10,8 @@ import com.ncslab.utils.AlgorithmsMapper;
 import com.ncslab.utils.Mybatis1Utils;
 
 import com.ncslab.block.Block;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
 import com.ncslab.code.CodeGenerationOption;
 import com.ncslab.code.CodeModel;
-import com.ncslab.line.Line;
-import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;

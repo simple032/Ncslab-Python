@@ -1,16 +1,13 @@
 package com.ncslab.block.discrete;
 import org.json.JSONObject;
-import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.io.State;
 
 public class UnitDelay extends DiscreteBlock{
 	Parameter sampleTime;

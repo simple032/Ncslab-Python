@@ -3,12 +3,9 @@ package com.ncslab.circuit.block.element;
 import org.json.JSONObject;
 
 import com.ncslab.block.continuous.Integrator;
-import com.ncslab.block.math.Add;
-import com.ncslab.block.math.Gain;
 import com.ncslab.circuit.block.BlockModeType;
 import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.circuit.block.io.BlockVoltage;
-import com.ncslab.circuit.block.io.CircuitPort;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import com.ncslab.circuit.block.electblock.*;

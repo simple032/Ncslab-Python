@@ -9,7 +9,8 @@
                 "/Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include",
                 "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
                 "/Library/Developer/CommandLineTools/usr/include",
-                "/Users/square/Documents/Code/lib"
+                "/Users/square/Documents/Code/lib/pi/**",
+                "/Users/square/vcpkg/packages/jsoncpp_arm64-osx/include/json/"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",

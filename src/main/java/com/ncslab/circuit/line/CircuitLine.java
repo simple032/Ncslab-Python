@@ -4,12 +4,8 @@ import java.util.Vector;
 
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.io.OutputPort;
 import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.circuit.block.io.CircuitPort;
-import com.ncslab.line.Line;
-import com.ncslab.ncslablink.NCSLabModel;
 
 public class CircuitLine {
 	private Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
