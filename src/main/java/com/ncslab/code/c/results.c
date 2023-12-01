@@ -1,7 +1,7 @@
 #include "ncslabccode.h"
 #include "ServerThread.h"
 #include "ncslab.h"
-#include "json/json.h"
+#include "jsoncpp/json/json.h"
 #include <iostream>
 #include <fstream>
 

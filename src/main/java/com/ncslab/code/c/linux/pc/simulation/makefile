@@ -8,12 +8,14 @@ CC=g++
 LD=g++
 # LD=/opt/homebrew/Cellar/llvm/17.0.5/bin/clang++
 
+srcdir=/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c
+pidir=/home/square/ncslablink/WiringPi-2.61-1/wiringPi
 # CCFlag=-D_SIMU -fpermissive -Wwrite-strings -I /Users/square/vcpkg/packages/jsoncpp_arm64-osx/include -I /Users/square/Documents/Code/lib/pi -I /Users/square/Documents/Code/ncslablink/src/code/c -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -pthread -fopenmp -g -O2 -std=c++11 -fstack-protector-strong -Wformat -Werror=format-security -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
-CCFlag=-D_SIMU -fpermissive -Wwrite-strings -I /Users/square/vcpkg/packages/jsoncpp_arm64-osx/include -I /Users/square/Documents/Code/lib/pi -I /Users/square/Documents/Code/ncslablink/src/code/c -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -pthread -g -O2 -std=gnu++11 -fstack-protector-strong -Wformat -Werror=format-security -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+CCFlag=-D_SIMU -fpermissive -Wwrite-strings -I $(srcdir) -I $(pidir) -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -pthread -g -O2 -std=gnu++11 -fstack-protector-strong -fopenmp -Wformat -Werror=format-security
 # -ljsoncpp
 # -Wl,-Bsymbolic-functions -Wl,-z,relro
 # LDFLAG=-lm -lpthread -L /Users/square/vcpkg/packages/jsoncpp_arm64-osx/lib -Wdate-time -D_FORTIFY_SOURCE=2 -pthread -fopenmp -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -rdynamic  -fPIC -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
-LDFLAG=-lm -lpthread -L /Users/square/vcpkg/packages/jsoncpp_arm64-osx/lib -Wdate-time -D_FORTIFY_SOURCE=2 -pthread -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -rdynamic  -fPIC -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+LDFLAG=-lm -lpthread -ljsoncpp -Wdate-time -D_FORTIFY_SOURCE=2 -pthread -g -O2 -fstack-protector-strong -fopenmp -Wformat -Werror=format-security -rdynamic  -fPIC
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)
