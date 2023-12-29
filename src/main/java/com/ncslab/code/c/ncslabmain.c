@@ -17,7 +17,7 @@ unsigned char calcSum(unsigned char bytes[])
 {
     int i = 0;  
     unsigned char res = 0x00;
-    for(i=0; i<6; i++){
+    for(i = 0; i < 6; i++){
  	res += bytes[i];
     }
     return res;

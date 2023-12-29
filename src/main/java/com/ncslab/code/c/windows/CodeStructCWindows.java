@@ -12,6 +12,7 @@ public class CodeStructCWindows extends CodeStructC {
 		super(model);
 	}
 	
+	@Override
 	public void writeCCodeFiles() {
 
 		//锟斤拷锟斤拷目锟斤拷锟侥硷拷锟叫碉拷位锟斤拷codePathBase/锟矫伙拷id/modelId

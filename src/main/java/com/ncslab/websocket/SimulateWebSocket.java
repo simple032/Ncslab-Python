@@ -110,7 +110,7 @@ public class SimulateWebSocket {
 	        }
 			catch(IOException e) {
 				System.err.println(e.getMessage());
-	        	System.err.println("Code generatrion terminated unsuccessfully������");
+	        	System.err.println("Code generatrion terminated unsuccessfully");
 			}
 	        catch(ModelException e) {
 	        	try {
@@ -119,7 +119,7 @@ public class SimulateWebSocket {
 	        	catch(IOException ee) {
 	        	}
 	        	System.err.println(e.getMessage());
-	        	System.err.println("Code generatrion terminated unsuccessfully������");
+	        	System.err.println("Code generatrion terminated unsuccessfully");
 	        }
 			catch(Exception e) {
 				e.printStackTrace();

@@ -1,5 +1,4 @@
 #include"ncslabccode.h"
-#include"ServerThread.h"
 #include"ncslab.h"
 
 #include <iostream>

@@ -11,9 +11,10 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 		super(model);
 	}
 
+	@Override
 	public void writeCCodeFiles() {
 
-		// 锟斤拷锟斤拷目锟斤拷锟侥硷拷锟叫碉拷位锟斤拷codePathBase/锟矫伙拷id/modelId
+		// codePath = codePathBase/Userid/modelId_RT
 		String userPath = codePathBase + model.getUserId();
 
 		File file = new File(userPath);
@@ -106,10 +107,12 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 
 	}
 
+	@Override
 	public byte[] readExeFile() {
 		return readFile("ncslab");
 	}
 
+	@Override
 	public boolean makeExeFile() {
 		try {
 			// start make, generate executable file

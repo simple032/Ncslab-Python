@@ -3,7 +3,6 @@ package com.ncslab.block.io;
 import java.util.Vector;
 
 import com.ncslab.block.Block;
-import com.ncslab.block.io.OutputSignal;
 
 import com.ncslab.line.Line;
 

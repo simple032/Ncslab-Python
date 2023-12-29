@@ -234,6 +234,7 @@ public class StateSpace extends Block{
 			out.getOutputSignalC().setDataType(DataType.MATRIX);
 		}
 		else {
+			// TODO: if there is no D but the height of C > 1, the output should be a matrix
 			out.getOutputSignalC().setDataType(DataType.REAL);
 		}
    }

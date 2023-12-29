@@ -14,6 +14,7 @@ public class CodeModelCWindows extends CodeModelC {
 		super(jsonIn,mode);
 	}
 	
+	@Override
 	protected CodeStructC getCodeStructC() {
 		return codeWindows;
 	}

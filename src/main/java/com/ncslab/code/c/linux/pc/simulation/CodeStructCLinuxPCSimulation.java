@@ -53,12 +53,12 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../Matrix.h","Matrix.h");
 
 		// Implement the general file of the Netcon protocol
-		writeNCSLabFile("../../ServerThread.c","ServerThread.c");
-		writeNCSLabFile("../../ServerThread.h","ServerThread.h");
-		writeNCSLabFile("../../ClientThread.c","ClientThread.c");
-		writeNCSLabFile("../../ClientThread.h","ClientThread.h");
-		writeNCSLabFile("../../UploadThread.c","UploadThread.c");
-		writeNCSLabFile("../../UploadThread.h","UploadThread.h");
+		// writeNCSLabFile("../../ServerThread.c","ServerThread.c");
+		// writeNCSLabFile("../../ServerThread.h","ServerThread.h");
+		// writeNCSLabFile("../../ClientThread.c","ClientThread.c");
+		// writeNCSLabFile("../../ClientThread.h","ClientThread.h");
+		// writeNCSLabFile("../../UploadThread.c","UploadThread.c");
+		// writeNCSLabFile("../../UploadThread.h","UploadThread.h");
 		
 		writeNCSLabFile("../../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../../ncs_serialport.h","ncs_serialport.h");
@@ -100,6 +100,7 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 			writeNCSLabFile("../../../ode6.c","onestep.c",true);
 			break;	
 		default:
+			writeNCSLabFile("../../../ode45.c","onestep.c",true);
 			break;
 		}
 		

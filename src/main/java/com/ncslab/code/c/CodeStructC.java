@@ -305,7 +305,7 @@ abstract public class CodeStructC {
 	protected String codePath;
 	
 	public String getCodePath() {
-		return codePath;
+		return this.codePath;
 	}
 
 	protected void writeMakefile(String fileName) {
@@ -459,7 +459,7 @@ abstract public class CodeStructC {
 			file.mkdir();
 		}
 
-		codePath=modelPath+"/";
+		this.codePath=modelPath+"/";
 
 		//写入周边的资源文件
 		//makefile

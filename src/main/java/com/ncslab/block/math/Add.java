@@ -17,7 +17,7 @@ public class Add extends Block{
 	public Add(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
 		
-		//因为输入的Dimension必须相互配合，因此设置成DimThrough
+		// 因为输入的Dimension必须相互配合，因此设置成DimThrough
 		OutputPort output=new OutputPort(this,1,true);
 		output.setDimThrough(false);
 		outputPortList.add(output);
@@ -25,7 +25,7 @@ public class Add extends Block{
 		paraseParamValues();
 	}
 	
-	//�������빹���������
+	// get inputport list
 	public void paraseParamValues( ) {
 		seq = paramValues.getString("Inputs");
 		
