@@ -58,7 +58,7 @@ public class LQRController extends Block {
         super.generateInitCodeC(code);
 
         StringBuilder initCode = new StringBuilder();
-        initCode.append(String.format("/*Code for initialization of block State Space: (%d)%s*/\n", getBlockId(),
+        initCode.append(String.format("/*Code for initialization of block LQR Controller: (%d)%s*/\n", getBlockId(),
                 getBlockName()));
         initCode.append(A.getInitCodeC());
         initCode.append(B.getInitCodeC());

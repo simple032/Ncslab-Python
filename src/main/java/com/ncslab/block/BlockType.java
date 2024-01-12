@@ -219,6 +219,50 @@ public class BlockType {
 		case "Compare To Zero":
 			block=new com.ncslab.block.logicAndBit.CompareToZero(blockJSON,model);
 			break;
+				// matrix
+				case "Create Diagonal Matrix":
+				block = new com.ncslab.block.matrix.CreateDiagonalMatrix(blockJSON,model);
+				break;
+			case "Cross Product":
+				block = new com.ncslab.block.matrix.CrossProduct(blockJSON,model);
+				break;
+			case "Extract Diagonal":
+				block = new com.ncslab.block.matrix.ExtractDiagonal(blockJSON,model);
+				break;
+			case "Identity Matrix":
+				block = new com.ncslab.block.matrix.IdentityMatrix(blockJSON,model);
+				break;
+			case "IsHermitian":
+				block = new com.ncslab.block.matrix.IsHermitian(blockJSON,model);
+				break;
+			case "IsSymmetric":
+				block = new com.ncslab.block.matrix.IsSymmetric(blockJSON,model);
+				break;
+			case "IsTriangular":
+				block = new com.ncslab.block.matrix.IsTriangular(blockJSON,model);
+				break;
+			case "Matrix Multiply":
+				block = new com.ncslab.block.matrix.MatrixMultiply(blockJSON,model);
+				break;
+			case "Matrix Concatenate":
+				block = new com.ncslab.block.matrix.MatrixConcatenate(blockJSON,model);
+				break;
+			case "Matrix Square":
+				block = new com.ncslab.block.matrix.MatrixSquare(blockJSON,model);
+				break;
+			case "Permute Matrix":
+				block = new com.ncslab.block.matrix.PermuteMatrix(blockJSON,model);
+				break;
+			case "Submatrix":
+				block = new com.ncslab.block.matrix.Submatrix(blockJSON,model);
+				break;
+			case "Transpose":
+				block = new com.ncslab.block.matrix.Transpose(blockJSON,model);
+				break;
+			// advanced control
+			case "LQR Controller":
+				block = new com.ncslab.block.advancedControl.LQRController(blockJSON,model);
+				break;
 		}
 		
 		if(block==null) {
