@@ -1,4 +1,4 @@
-#include "ServerThread.h"
+#include "ServerThread.hpp"
 #include "clientThread.h"
 
 #define DEFAULT_PORT "27015"

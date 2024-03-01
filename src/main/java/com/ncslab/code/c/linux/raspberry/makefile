@@ -19,8 +19,8 @@ mainccode.o: mainccode.c ncslab.h
 onestep.o: onestep.c ncslab.h
 	$(CC) $(CCFlag)  -c onestep.c
 	
-util.o: util.c ncslab.h
-	$(CC) $(CCFlag)  -c util.c
+util.o: util.cpp ncslab.h
+	$(CC) $(CCFlag)  -c util.cpp
 
 %.o : %.c
 	$(CC) $(CCFlag)  -c "$<"

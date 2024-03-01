@@ -1,5 +1,5 @@
 #include "winsock2.h"
-#include "UploadThread.h"
+#include "UploadThread.hpp"
 #include "ncslabccode.h"
 #include "DataApi.h"
 

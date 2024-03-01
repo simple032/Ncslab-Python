@@ -138,7 +138,7 @@ abstract public class CodeStructC {
 	public void generateIncludeCode() {
 		includeCode+=""
 				+"#include\"ncslabccode.h\"\n"
-				+"#include\"ncslabdefines.h\"\n"
+				+"#include\"ncslabdefines.hpp\"\n"
 				+"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.h\"\n"
 				+"#include\"math.h\"\n"
@@ -154,7 +154,7 @@ abstract public class CodeStructC {
 				
 				
 				//+"#include <octave/oct.h>\n"
-				+"#include \"Matrix.h\"\n"
+				+"#include \"Matrix.hpp\"\n"
 				//xiazhiqiang:Stores the sampling time of discrete modules
 				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
 				+"int sample_i=0;\n"
@@ -472,16 +472,16 @@ abstract public class CodeStructC {
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
 		
-		writeNCSLabFile("util.c");
+		writeNCSLabFile("util.cpp");
 
 		//实现Netcon协议的通用文件
-		writeNCSLabFile("ServerThread.c");
-		writeNCSLabFile("ServerThread.h");
-		writeNCSLabFile("ClientThread.c");
-		writeNCSLabFile("ClientThread.h");
-		writeNCSLabFile("UploadThread.c");
-		writeNCSLabFile("UploadThread.h");
-		writeNCSLabFile("ncslabdefines.h");
+		writeNCSLabFile("ServerThread.cpp");
+		writeNCSLabFile("ServerThread.hpp");
+		writeNCSLabFile("ClientThread.cpp");
+		writeNCSLabFile("ClientThread.hpp");
+		writeNCSLabFile("UploadThread.cpp");
+		writeNCSLabFile("UploadThread.hpp");
+		writeNCSLabFile("ncslabdefines.hpp");
 		writeNCSLabFile("ncs_serialport_pi.c");
 		writeNCSLabFile("ncs_serialport.h");
 		writeNCSLabFile("hardware.c");

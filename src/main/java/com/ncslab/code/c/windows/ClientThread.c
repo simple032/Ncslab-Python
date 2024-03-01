@@ -1,8 +1,8 @@
 #include "winsock2.h"
-#include "ClientThread.h"
+#include "ClientThread.hpp"
 #include "ncslabccode.h"
 #include "DataApi.h"
-#include "UploadThread.h"
+#include "UploadThread.hpp"
 
 #ifndef MSG_WAITALL
 	#define MSG_WAITALL 0x08

@@ -17,23 +17,23 @@ mainccode.o: mainccode.c
 ncslabmain.o: ncslabmain.c ncslabccode.h
 	$(CC) $(CCFlag) -c ncslabmain.c
 
-ServerThread.o: ServerThread.c ServerThread.h 
-	$(CC) $(CCFlag) -c ServerThread.c
+ServerThread.o: ServerThread.cpp ServerThread.hpp 
+	$(CC) $(CCFlag) -c ServerThread.cpp
 
-ClientThread.o: ClientThread.c ClientThread.h
-	$(CC) $(CCFlag) -c ClientThread.c
+ClientThread.o: ClientThread.cpp ClientThread.hpp
+	$(CC) $(CCFlag) -c ClientThread.cpp
 	
 DataApi.o: DataApi.c DataApi.h
 	$(CC) $(CCFlag) -c DataApi.c
 	
-UploadThread.o: UploadThread.c UploadThread.h
-	$(CC) $(CCFlag) -c UploadThread.c
+UploadThread.o: UploadThread.cpp UploadThread.hpp
+	$(CC) $(CCFlag) -c UploadThread.cpp
 
 onestep.o: onestep.c
 	$(CC) $(CCFlag) -c onestep.c
 
-util.o: util.c
-	$(CC) $(CCFlag) -c util.c
+util.o: util.cpp
+	$(CC) $(CCFlag) -c util.cpp
 
 clean:
 	rm ncslab.exe mainccode.o ncslabmain.o

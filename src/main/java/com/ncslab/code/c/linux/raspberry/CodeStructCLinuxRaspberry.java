@@ -42,17 +42,17 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 		writeNCSLabFile("../../DataApi.c", "DataApi.c");
 		writeNCSLabFile("../../DataApi.h", "DataApi.h");
 
-		writeNCSLabFile("../../util.c", "util.c", true);
+		writeNCSLabFile("../../util.cpp", "util.cpp", true);
 
-		writeNCSLabFile("../../ncslabdefines.h", "ncslabdefines.h");
-		writeNCSLabFile("../../ncslabsfun.h", "ncslabsfun.h");
+		writeNCSLabFile("../../ncslabdefines.hpp", "ncslabdefines.hpp");
+		writeNCSLabFile("../../ncslabsfun.hpp", "ncslabsfun.hpp");
 		// Implement the general file of the Netcon protocol
-		writeNCSLabFile("../ServerThread.c", "ServerThread.c");
-		writeNCSLabFile("../ServerThread.h", "ServerThread.h");
-		writeNCSLabFile("../ClientThread.c", "ClientThread.c");
-		writeNCSLabFile("../ClientThread.h", "ClientThread.h");
-		writeNCSLabFile("../UploadThread.c", "UploadThread.c");
-		writeNCSLabFile("../UploadThread.h", "UploadThread.h");
+		writeNCSLabFile("../ServerThread.cpp", "ServerThread.cpp");
+		writeNCSLabFile("../ServerThread.hpp", "ServerThread.hpp");
+		writeNCSLabFile("../ClientThread.cpp", "ClientThread.cpp");
+		writeNCSLabFile("../ClientThread.hpp", "ClientThread.hpp");
+		writeNCSLabFile("../UploadThread.cpp", "UploadThread.cpp");
+		writeNCSLabFile("../UploadThread.hpp", "UploadThread.hpp");
 
 		writeNCSLabFile("hardware.h", "hardware.h");
 		writeNCSLabFile("hardware.c", "hardware.c");
@@ -60,8 +60,11 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 		writeNCSLabFile("../../ncs_serialport_pi.c", "ncs_serialport_pi.c");
 		writeNCSLabFile("../../ncs_serialport.h", "ncs_serialport.h");
 
-		writeNCSLabFile("../../Matrix.c", "Matrix.c");
-		writeNCSLabFile("../../Matrix.h", "Matrix.h");
+		writeNCSLabFile("../../Matrix.cpp", "Matrix.cpp");
+		writeNCSLabFile("../../Matrix.hpp", "Matrix.hpp");
+		writeNCSLabFile("../../ricatti.cpp", "ricatti.cpp");
+		writeNCSLabFile("../../ricatti.hpp", "ricatti.hpp");
+		writeNCSLabFile("../../onestep.hpp", "onestep.hpp");
 
 		writeNCSLabFile("DEV_Config.c", "DEV_Config.c");
 		writeNCSLabFile("DEV_Config.h", "DEV_Config.h");

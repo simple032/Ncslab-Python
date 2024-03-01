@@ -1,5 +1,5 @@
 #include"ncslabccode.h"
-#include"ncslabdefines.h"
+#include"ncslabdefines.hpp"
 #include"ncs_serialport.h"
 #include"ncslab.h"
 #include <sys/time.h>

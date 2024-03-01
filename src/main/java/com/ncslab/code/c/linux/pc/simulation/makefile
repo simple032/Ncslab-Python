@@ -1,4 +1,3 @@
-# TODO: this file need modification
 
 # OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncslabmain.o results.o Matrix.o
 OBJS = mainccode.o onestep.o util.o ncslabmain.o results.o Matrix.o
@@ -29,16 +28,16 @@ ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)
 
 mainccode.o: mainccode.c ncslab.h
-	$(CC) $(CCFlag)  -c mainccode.c
+	$(CC) $(CCFlag)  -c mainccode.cpp
 
 onestep.o: onestep.c ncslab.h
-	$(CC) $(CCFlag)  -c onestep.c
+	$(CC) $(CCFlag)  -c onestep.cpp
 
-results.o: results.c ncslab.h
-	$(CC) $(CCFlag)  -c results.c
+results.o: results.cpp ncslab.h
+	$(CC) $(CCFlag)  -c results.cpp
 
-util.o: util.c ncslab.h
-	$(CC) $(CCFlag)  -c util.c
+util.o: util.cpp ncslab.h
+	$(CC) $(CCFlag)  -c util.cpp
 
 %.o: %.c
 	$(CC) $(CCFlag)  -c "$<"

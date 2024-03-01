@@ -41,17 +41,17 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		writeNCSLabFile("../../DataApi.c","DataApi.c");
 		writeNCSLabFile("../../DataApi.h","DataApi.h");
 		
-		writeNCSLabFile("../../util.c","util.c");
+		writeNCSLabFile("../../util.cpp","util.cpp");
 		
-		writeNCSLabFile("../../ncslabdefines.h","ncslabdefines.h");
+		writeNCSLabFile("../../ncslabdefines.hpp","ncslabdefines.hpp");
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
-		writeNCSLabFile("../ServerThread.c","ServerThread.c");
-		writeNCSLabFile("../ServerThread.h","ServerThread.h");
-		writeNCSLabFile("../ClientThread.c","ClientThread.c");
-		writeNCSLabFile("../ClientThread.h","ClientThread.h");
-		writeNCSLabFile("../UploadThread.c","UploadThread.c");
-		writeNCSLabFile("../UploadThread.h","UploadThread.h");
+		writeNCSLabFile("../ServerThread.cpp","ServerThread.cpp");
+		writeNCSLabFile("../ServerThread.hpp","ServerThread.hpp");
+		writeNCSLabFile("../ClientThread.cpp","ClientThread.cpp");
+		writeNCSLabFile("../ClientThread.hpp","ClientThread.hpp");
+		writeNCSLabFile("../UploadThread.cpp","UploadThread.cpp");
+		writeNCSLabFile("../UploadThread.hpp","UploadThread.hpp");
 		
 		writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");

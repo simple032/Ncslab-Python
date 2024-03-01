@@ -124,7 +124,7 @@ public class SFunctionBuilder extends Block {
 			//1.Predefines
 			code += "#define S_FUNCTION_NAME " + this.fcnName + "_" + getBlockId() + " \n"
 					+ "#include \"ncslabccode.h\"\n"
-					+ "#include \"ncslabdefines.h\"\n";			
+					+ "#include \"ncslabdefines.hpp\"\n";			
 			
 			
 			code += replaceParameters(this.code.getString("predefine")) +"\n";
@@ -162,7 +162,7 @@ public class SFunctionBuilder extends Block {
 					+ "}\n";
 			
 			//5.Interface
-			code += "\n\n#include \"ncslabsfun.h\"\n";
+			code += "\n\n#include \"ncslabsfun.hpp\"\n";
 			osw.write(code);
 			osw.close();
 			outputStream.close();

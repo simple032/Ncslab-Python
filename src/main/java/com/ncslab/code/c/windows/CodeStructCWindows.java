@@ -42,15 +42,15 @@ public class CodeStructCWindows extends CodeStructC {
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
 		
-		writeNCSLabFile("util.c");
+		writeNCSLabFile("util.cpp");
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
-		writeNCSLabFile("ServerThread.c");
-		writeNCSLabFile("ServerThread.h");
-		writeNCSLabFile("ClientThread.c");
-		writeNCSLabFile("ClientThread.h");
-		writeNCSLabFile("UploadThread.c");
-		writeNCSLabFile("UploadThread.h");
+		writeNCSLabFile("ServerThread.cpp");
+		writeNCSLabFile("ServerThread.hpp");
+		writeNCSLabFile("ClientThread.cpp");
+		writeNCSLabFile("ClientThread.hpp");
+		writeNCSLabFile("UploadThread.cpp");
+		writeNCSLabFile("UploadThread.hpp");
 
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();
