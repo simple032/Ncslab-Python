@@ -86,6 +86,10 @@ public class Line {
 		return this.linkedOutputPort;
 	}
 	
+	public void setLinkedOutputPort(OutputPort outputPort) {
+		this.linkedOutputPort=outputPort;
+	}
+	
 	public void setLineId(int lineId) {
 		this.lineId=lineId;
 	}
@@ -97,6 +101,12 @@ public class Line {
 	public static Line createLine(JSONObject lineJSON,NCSLabModel model) {
 		Vector<Block> blockList=model.getBlockList();
 		
+		Line line=new Line(lineJSON,blockList);
+		
+		return line;
+	}
+	
+	public static Line createLine(JSONObject lineJSON,Vector<Block> blockList) {
 		Line line=new Line(lineJSON,blockList);
 		
 		return line;

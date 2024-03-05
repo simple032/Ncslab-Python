@@ -1,24 +1,24 @@
-package octaveserver;
+package pythonServer;
 
 import java.net.*;
 import java.util.*;
 
 
-public class OctaveServer extends Thread {
+public class PythonServer extends Thread {
 
-public static OctaveServer instance=new OctaveServer();
+public static PythonServer instance=new PythonServer();
 	
-	public static int Server_Port=2002;
-	private Vector<OctaveThread> octaveThreadList=new Vector<OctaveThread>();
+	public static int Server_Port=2004;
+	private Vector<PythonThread> octaveThreadList=new Vector<PythonThread>();
 	
-	public void removeOctaveThread(OctaveThread thread) {
+	public void removeOctaveThread(PythonThread thread) {
 		octaveThreadList.remove(thread);
 	}
 	
-	public OctaveThread getVacantOctaveThread() {
-		OctaveThread thread=null;
+	public PythonThread getVacantOctaveThread() {
+		PythonThread thread=null;
 		synchronized(octaveThreadList) {
-			for(OctaveThread octaveThread:octaveThreadList) {
+			for(PythonThread octaveThread:octaveThreadList) {
 				if(octaveThread.getIsBusy()==false) {
 					thread=octaveThread;
 					octaveThread.setIsBusy(true);
@@ -31,7 +31,7 @@ public static OctaveServer instance=new OctaveServer();
 	
 	
 	public void run() {
-		System.out.println("HelloOctave!");
+		System.out.println("HelloPython!");
 		try {
 			// ���������socket
 			ServerSocket serverSocket = new ServerSocket(Server_Port);
@@ -44,13 +44,13 @@ public static OctaveServer instance=new OctaveServer();
             	// �����ͻ���
             	socket = serverSocket.accept();
             	
-            	OctaveThread thread = new OctaveThread(socket,this);
+            	PythonThread thread = new PythonThread(socket,this);
             	octaveThreadList.add(thread);
             	thread.start();
             	
             	InetAddress address=socket.getInetAddress();
-                System.out.println("��ǰOctave�ͻ��˵�IP��"+address.getHostAddress());
-                System.out.println("HelloOctaveServer");
+                System.out.println("��Python�ͻ��˵�IP��"+address.getHostAddress());
+                System.out.println("HelloPythonServer");
             }
 		} catch (Exception e) {
 			// TODO: handle exception

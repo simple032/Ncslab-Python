@@ -17,7 +17,7 @@ public class Constant extends block.Block{
 		
 		//һ�����
 		outputPortList.add(new OutputPort(this,1,false));
-		value=new Parameter(this,1,"value",paramValues.getString("Value"));
+		value=new Parameter(this,1,getBlockName(),paramValues.getString("Value"));
 		parameterList.add(value);
 		outputPortList.get(0).setHeight(value.getHeight());
 		outputPortList.get(0).setWidth(value.getWidth());

@@ -1,24 +1,24 @@
-package octaveserver;
+package mfcalcServer;
 
 import java.net.*;
 import java.util.*;
 
 
-public class OctaveServer extends Thread {
+public class MfcalcServer extends Thread {
 
-public static OctaveServer instance=new OctaveServer();
+public static MfcalcServer instance=new MfcalcServer();
 	
-	public static int Server_Port=2002;
-	private Vector<OctaveThread> octaveThreadList=new Vector<OctaveThread>();
+	public static int Server_Port=2003;
+	private Vector<MfcalcThread> octaveThreadList=new Vector<MfcalcThread>();
 	
-	public void removeOctaveThread(OctaveThread thread) {
+	public void removeOctaveThread(MfcalcThread thread) {
 		octaveThreadList.remove(thread);
 	}
 	
-	public OctaveThread getVacantOctaveThread() {
-		OctaveThread thread=null;
+	public MfcalcThread getVacantOctaveThread() {
+		MfcalcThread thread=null;
 		synchronized(octaveThreadList) {
-			for(OctaveThread octaveThread:octaveThreadList) {
+			for(MfcalcThread octaveThread:octaveThreadList) {
 				if(octaveThread.getIsBusy()==false) {
 					thread=octaveThread;
 					octaveThread.setIsBusy(true);
@@ -31,7 +31,7 @@ public static OctaveServer instance=new OctaveServer();
 	
 	
 	public void run() {
-		System.out.println("HelloOctave!");
+		System.out.println("HelloMfcalc!");
 		try {
 			// ���������socket
 			ServerSocket serverSocket = new ServerSocket(Server_Port);
@@ -44,7 +44,7 @@ public static OctaveServer instance=new OctaveServer();
             	// �����ͻ���
             	socket = serverSocket.accept();
             	
-            	OctaveThread thread = new OctaveThread(socket,this);
+            	MfcalcThread thread = new MfcalcThread(socket,this);
             	octaveThreadList.add(thread);
             	thread.start();
             	

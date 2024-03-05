@@ -1,4 +1,4 @@
-package octaveserver;
+package mfcalcServer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,9 +11,9 @@ import code.m.CodeOctaveM;
 
 import java.io.*;
 
-public class OctaveThread extends Thread {
+public class MfcalcThread extends Thread {
 	private Socket socket;
-	private OctaveServer server;
+	private MfcalcServer server;
 	
 	private DataInputStream in;
 	private DataOutputStream out;
@@ -25,7 +25,7 @@ public class OctaveThread extends Thread {
 
 	private CodeOctaveM model=null;
 	
-	public OctaveThread(Socket socket,OctaveServer server){
+	public MfcalcThread(Socket socket,MfcalcServer server){
 		this.socket=socket;
 		this.server=server;
 	}
@@ -176,7 +176,7 @@ public class OctaveThread extends Thread {
 				String matline2 = "";
 		        try {
 		        	//��ݮ���ϲ���ʹ���������
-		            proc = Runtime.getRuntime().exec("python /home/pi/NetConTop/NCSLabLink/octavecode/matload.py");// ִ��py�ļ�
+		            proc = Runtime.getRuntime().exec("python /home/pi/NetConTop/NCSLabLink/mfcalccode/matload.py");// ִ��py�ļ�
 		            //���ص���ʹ���������
 //		        	proc = Runtime.getRuntime().exec("python D:\\Project\\react_antd\\faker\\NetConTop\\ncslablink\\src\\octaveserver\\matload.py");
 		            //���������������ȡ���
@@ -188,7 +188,6 @@ public class OctaveThread extends Thread {
 		                System.out.println(matline);
 		                matline2 = matline2 + matline;
 		            }
-		            System.out.println("matline2 in octaveThread:"+matline2);
 		            this.model.OutputMat = matline2;
 		            in.close();
 		            proc.waitFor();

@@ -23,6 +23,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	protected int blockId=0;
 	
+	//Block所在画布的位置，不在子系统时为modelName，存在子系统时为modelName/subsystem
+	protected String blockPath;
 	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
 	protected JSONObject paramValues;
 	
@@ -38,6 +40,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	//是否输出的代码已经生成，如果生成，遍历到这个模块的时候，直接引用就行了，就不需要进一步遍历了
 	protected boolean isOutputCodeGenerated=false;
 	
+	protected boolean isDimScaned=false;
+	
 	//指向上级Model模型的指针
 	protected NCSLabModel model;
 	
@@ -49,6 +53,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		this.blockName=blockIn.getString("blockName");
 		this.paramValues=blockIn.getJSONObject("paramValues");
 		this.model=model;
+//		this.blockPath=blockIn.getString("blockPath");
 		
 	}
 	
@@ -70,6 +75,14 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	public String getBlockName() {
 		return blockName;
+	}
+	//xiazhiqiang:获取模块所处子系统的位置两个方法getBlockPath与getSubSystemName
+	public String getBlockPath() {
+		return blockPath;
+	}
+	public String getSubSystemName() {
+		int index=this.blockPath.lastIndexOf("/");
+        return this.blockPath.substring(index+1);
 	}
 	
 	public String getBlockType() {
@@ -104,6 +117,10 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		return this.isOutputCodeGenerated;
 	}
 	
+	public boolean getIsDimScaned() {
+		return this.isDimScaned;
+	}
+	
 	public String getInputPortVariable(int n) {
 		return inputPortList.get(n).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
 	}
@@ -121,6 +138,13 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		this.isOutputCodeGenerated=isOutputCodeGenerated;
 		for(OutputPort outputPort:outputPortList) {
 			outputPort.setIsCodeGenerated(true);
+		}
+	}
+	
+	public void setIsDimScaned(boolean isDimScaned) {
+		this.isDimScaned=isDimScaned;
+		for(OutputPort outputPort:outputPortList) {
+			outputPort.setIsDimScaned(true);
 		}
 	}
 	

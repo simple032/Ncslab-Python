@@ -14,6 +14,8 @@ import org.json.JSONObject;
 
 import code.m.CodeModelM;
 import code.m.CodeOctaveM;
+import mfcalcServer.MfcalcServer;
+import mfcalcServer.MfcalcThread;
 import ncslablink.ModelMode;
 import octaveserver.OctaveServer;
 import octaveserver.OctaveThread;
@@ -21,14 +23,14 @@ import octaveserver.OctaveThread;
 /**
  * Servlet implementation class octave
  */
-@WebServlet("/octave")
-public class octave extends HttpServlet {
+@WebServlet("/mfcalc")
+public class mfcalc extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public octave() {
+    public mfcalc() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -40,7 +42,7 @@ public class octave extends HttpServlet {
 		// TODO Auto-generated method stub
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		
-		System.out.println("octave");
+		System.out.println("mfcalc");
 		//��ȡPost��JSON����
 		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
         String result = "";
@@ -64,7 +66,7 @@ public class octave extends HttpServlet {
 			JSONObject jb=new JSONObject();
 			jb.put("code", 2000);
 			
-			OctaveThread thread=OctaveServer.instance.getVacantOctaveThread();
+			MfcalcThread thread=MfcalcServer.instance.getVacantOctaveThread();
 			System.out.println(thread);
 			
 			if(thread!=null) {
@@ -75,8 +77,8 @@ public class octave extends HttpServlet {
 				data.put("log", model.OutputResult);
 				data.put("BeginFigFileIndex", model.OutputFigBeginIndex);//"/home/pi/Prj/octave/"+
 				data.put("EndFigFileIndex", model.OutputFigEndIndex);//"/home/pi/Prj/octave/"+
-				data.put("figFileUrl", "/octavecode/figure");//"/home/pi/NetConTop/NCSLabLink/octavecode/"
-				data.put("dataFileUrl", "/octavecode");
+				data.put("figFileUrl", "/mfcalccode/figure");//"/home/pi/NetConTop/NCSLabLink/octavecode/"
+				data.put("dataFileUrl", "/mfcalccode");
 				data.put("mat", model.OutputMat);
 //    		data.put("figFileUrl", "/MCode/"+model.getUserId()+"/"+model.getModelId()+"/scope");
 				jb.put("data", data);

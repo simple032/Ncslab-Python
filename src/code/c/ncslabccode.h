@@ -3,6 +3,7 @@
 
 #include <float.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -21,6 +22,9 @@
 #include "DAC8532.h"
 #include "ncs_serialport.h"
 #include <wiringPi.h>
+#include <termios.h>
+
+#include <linux/input.h>
 
 
 #define REAL double

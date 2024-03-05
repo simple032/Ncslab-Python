@@ -10,20 +10,22 @@ import code.c.CodeStructC;
 import code.m.CodeStructM;
 import ncslablink.NCSLabModel;
 
-public class NewMotor extends Block {
+public class InvertedPendulum extends Block {
 
 	
-	private String name = "NewMotor";
+	private String name = "InvertedPendulum";
 	
 	State speedState;
 	State spState;
 	
-	public NewMotor(JSONObject blockJSON,NCSLabModel model) {
+	public InvertedPendulum(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
 		//һ�����룬�������
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,"Speed",1,false));
+		outputPortList.add(new OutputPort(this,"Angle",1,false));
+		outputPortList.add(new OutputPort(this,"Set_X",2,false));
+		outputPortList.add(new OutputPort(this,"Real_X",3,false));
 		//outputPortList.add(new OutputPort(this,"Water_Level",2,false));
 		
 		spState=new State(this,1,"SerialPortState");
@@ -90,14 +92,17 @@ public class NewMotor extends Block {
 		
 		//1.Open the serial port
 		String port = "\"/dev/ttyUSB0\"";
+		String port2 = "\"/dev/ttyUSB1\"";
 		int baudrate = 115200;
 		initCode+="char msg[255];\n";
-		initCode+="hComm = Serialport_Open("+port+", "+baudrate+",msg);\n";
+		initCode+="int tmpHCommon1 = -1,tmpHCommon2 = -1;\n";
 		
-		String port2 = "\"/dev/ttyUSB1\"";
-		int baudrate2 = 115200;
-		initCode+="char msg2[255];\n";
-		initCode+="hComm2 = Serialport_Open("+port2+", "+baudrate2+",msg2);\n";
+		//initCode+="hComm = Serialport_Open("+port+", "+baudrate+",msg);\n";
+		//initCode+="if(hComm==-1){hComm = Serialport_Open("+port2+", "+baudrate+",msg);};\n";
+		
+		initCode+="while((tmpHCommon1=Serialport_Open("+port+", "+baudrate+",msg))<0&&(tmpHCommon2=Serialport_Open("+port2+", "+baudrate+",msg))<0){}\n";
+		//initCode+="	fprintf (stderr, "Unable to open serial device: %s\n", strerror (errno)) ;\n";
+		initCode+="hComm = tmpHCommon1>0?tmpHCommon1:tmpHCommon2;\n";
 	
 		//initCode+="ssSetIWorkValue(0,hComm);\n"		
 		
@@ -120,67 +125,60 @@ public class NewMotor extends Block {
 //		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
 		int bufLen = 255;
 		
+		outputCode+="union float_data\n";
+		outputCode+="{\n";
+		outputCode+="float f_data;\n";
+		outputCode+="uint8_t byte[4];\n";
+		outputCode+="}tx_float_data,rx_Angle_float_data,rx_xSet_float_data,rx_x_float_data;\n";
+		
 		outputCode+="if(mp->majorStep>0){\n";
 		outputCode+="char recvBuff["+bufLen+"]={0};\n";
 			
-		outputCode+="Serialport_Recv(hComm,recvBuff,7);\n";		
-		outputCode+="speed=recvBuff[4]+(recvBuff[5]<<8)+(recvBuff[5]<<16)+(recvBuff[5]<<24);\n";	
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=speed;\n";
+		outputCode+="Serialport_Recv(hComm,recvBuff,17);\n";
 		
-		outputCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
-		outputCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
-//		outputCode+="printf(\"speed is %d,pwm is %d\\n\",speed,pwm);\n";
-		outputCode+="pwm = pwm>=10000?10000:pwm;\n";
-		outputCode+="pwm = pwm<=-10000?-10000:pwm;\n";
-		outputCode+="cmd[4] = (pwm&0xFF);\n";
+		outputCode+="for(int i=0;i<17-12;i++){\n";
+		outputCode+="if(recvBuff[i]==0x05&&recvBuff[i+1]==0x03&&recvBuff[i+2]==0xE1){\n";
+		outputCode+="rx_Angle_float_data.byte[0]=recvBuff[i+3];\n";
+		outputCode+="rx_Angle_float_data.byte[1]=recvBuff[i+4];\n";
+		outputCode+="rx_Angle_float_data.byte[2]=recvBuff[i+5];\n";
+		outputCode+="rx_Angle_float_data.byte[3]=recvBuff[i+6];\n";
 		
-		outputCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
-		outputCode+="cmd[6] = calcSum(cmd);\n";
+		outputCode+="rx_xSet_float_data.byte[0]=recvBuff[i+7];\n";
+		outputCode+="rx_xSet_float_data.byte[1]=recvBuff[i+8];\n";
+		outputCode+="rx_xSet_float_data.byte[2]=recvBuff[i+9];\n";
+		outputCode+="rx_xSet_float_data.byte[3]=recvBuff[i+10];\n";
+		
+		outputCode+="rx_x_float_data.byte[0]=recvBuff[i+11];\n";
+		outputCode+="rx_x_float_data.byte[1]=recvBuff[i+12];\n";
+		outputCode+="rx_x_float_data.byte[2]=recvBuff[i+13];\n";
+		outputCode+="rx_x_float_data.byte[3]=recvBuff[i+14];\n";
+		outputCode+="break;\n";
+		outputCode+="}}\n";
+		outputCode+="Serialport_Flush(hComm);\n";
+		
+		outputCode+="float Angle=rx_Angle_float_data.f_data;\n";	
+		outputCode+="float xSet=rx_xSet_float_data.f_data;\n";
+		outputCode+="float x=rx_x_float_data.f_data;\n";
+		
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=Angle;\n";
+		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=xSet;\n";
+		outputCode+=outputPortList.get(2).getOutputSignalC().getName()+"=x;\n";
 		
 		
+		outputCode+="unsigned char cmd[]={0x00,0x00,0x00,0x00,0x00,0x0D,0x0A};\n";
+		outputCode+="float xSet2 = "+this.getInputPortVariable(0) +";\n";
+		
+		outputCode+="tx_float_data.f_data = xSet2;\n";
+		outputCode+="cmd[1] = tx_float_data.byte[0];\n";
+		outputCode+="cmd[2] = tx_float_data.byte[1];\n";
+		outputCode+="cmd[3] = tx_float_data.byte[2];\n";
+		outputCode+="cmd[4] = tx_float_data.byte[3];\n";
+		outputCode+="cmd[0] = calcSum(cmd);\n";
+		
+		outputCode+="Serialport_Send(hComm,cmd,7);\n";	
 		
 		outputCode+="}\n";
 		
 		code.addOutputCode(outputCode);
-	}
-	
-	public void  generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		int bufLen = 255;	
-		derivativeCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
-		derivativeCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
-		derivativeCode+="pwm = pwm>=8000?8000:pwm;\n";
-		derivativeCode+="pwm = pwm<=-8000?-8000:pwm;\n";
-		derivativeCode+="cmd[4] = (pwm&0xFF);\n";
-		derivativeCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
-		derivativeCode+="cmd[6] = calcSum(cmd);\n";
-		//outputCode+="int hComm=ssGetIWorkValue(0);\n";
-	
-		derivativeCode+="Serialport_Send(hComm,cmd,7);\n";	
-		
-		derivativeCode+="unsigned char cmd2[12];\n"
-				+ "sprintf(cmd2,\"$001,%03d#\",speed);\n"
-				+ "Serialport_Send(hComm2,cmd2,strlen(cmd2));\n";
-		
-//		derivativeCode+=pumpState.getDerivativeName()+"=("
-//				+this.getInputPortVariable(0)
-//				+"*"+pumpK+"-"+pumpState.getName()+")"
-//				+"*"+(1/pumpT)
-//				+";\n";
-//		
-//		derivativeCode+=levelState.getDerivativeName()+"=("
-//				+pumpState.getName()+"*"+waterLevelK+"-"+levelState.getName()+")"
-//				+"*"+(1/waterLevelT)
-//				+";\n";
-		
-		code.addDerivativeCode(derivativeCode);
-	}
-	
-	public void generateStatementCodeC(CodeStructC code) {
-		String statementCode = "/*Code for statement of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";	
-		statementCode +="HANDLE hComm2;\n"
-				+ "int speed=0;\n";
-		code.addStatementCode(statementCode);
 	}
 }

@@ -5,5 +5,6 @@ public enum Solver {
 	ode2,
 	ode3,
 	ode4,
+	ode5,
 	ode23
 }

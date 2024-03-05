@@ -1,4 +1,4 @@
-package octaveserver;
+package pythonServer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,9 +11,9 @@ import code.m.CodeOctaveM;
 
 import java.io.*;
 
-public class OctaveThread extends Thread {
+public class PythonThread extends Thread {
 	private Socket socket;
-	private OctaveServer server;
+	private PythonServer server;
 	
 	private DataInputStream in;
 	private DataOutputStream out;
@@ -25,7 +25,7 @@ public class OctaveThread extends Thread {
 
 	private CodeOctaveM model=null;
 	
-	public OctaveThread(Socket socket,OctaveServer server){
+	public PythonThread(Socket socket,PythonServer server){
 		this.socket=socket;
 		this.server=server;
 	}
@@ -175,20 +175,26 @@ public class OctaveThread extends Thread {
 				String matline = null;
 				String matline2 = "";
 		        try {
-		        	//��ݮ���ϲ���ʹ���������
-		            proc = Runtime.getRuntime().exec("python /home/pi/NetConTop/NCSLabLink/octavecode/matload.py");// ִ��py�ļ�
-		            //���ص���ʹ���������
+		            //proc = Runtime.getRuntime().exec("python3 /home/pi/NetConTop/NCSLabLink/pythoncode/matload.py");
 //		        	proc = Runtime.getRuntime().exec("python D:\\Project\\react_antd\\faker\\NetConTop\\ncslablink\\src\\octaveserver\\matload.py");
-		            //���������������ȡ���
-		            System.out.println("proc:"+proc);
-
+		            //System.out.println("proc:"+proc);
+		            ProcessBuilder processBuilder = new ProcessBuilder("python3", "/home/pi/NetConTop/NCSLabLink/pythoncode/matload.py");
+		            processBuilder.redirectErrorStream(true);
+		            processBuilder.environment().put("PYTHONPATH", "/home/pi/.local/lib/python3.7/site-packages");  // 请将路径替换为dill模块所在的实际路径
+		            proc = processBuilder.start();
+		            
 		            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		            
 		            while ((matline = in.readLine()) != null) {
-		                System.out.println(matline);
+		                //System.out.println(matline);
 		                matline2 = matline2 + matline;
 		            }
-		            System.out.println("matline2 in octaveThread:"+matline2);
+		            BufferedReader errorReader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+		            String errorLine;
+		            while ((errorLine = errorReader.readLine()) != null) {
+		                System.err.println("Python Error: " + errorLine);
+		            }		
+		            System.out.println("matline2 in pythonThread:"+matline2);
 		            this.model.OutputMat = matline2;
 		            in.close();
 		            proc.waitFor();

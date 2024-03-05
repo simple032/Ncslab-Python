@@ -31,11 +31,17 @@ public class BlockType {
 		case "Constant":
 			block=new block.source.Constant(blockJSON,model);
 			break;
+		case "Clock":
+			block=new block.source.Clock(blockJSON,model);
+			break;	
 		case "Sum":
 			block=new block.math.Sum(blockJSON,model);
 			break;
 		case "Gain":
 			block=new block.math.Gain(blockJSON,model);
+			break;
+		case "Derivative":
+			block=new block.continuous.Derivative(blockJSON,model);
 			break;
 		case "Integrator":
 			block=new block.continuous.Integrator(blockJSON,model);
@@ -46,6 +52,24 @@ public class BlockType {
 		case "NewMotor":
 			block=new block.testrig.NewMotor(blockJSON, model);
 			break;
+		case "InvertedPendulum":
+			block=new block.testrig.InvertedPendulum(blockJSON, model);
+			break;
+		case "InvertedPendulumSUST":
+			block=new block.testrig.InvertedPendulumSUST(blockJSON, model);
+			break;
+		case "EnergySwingUpInvertedPendulumSUST":
+			block=new block.testrig.EnergySwingUpInvertedPendulumSUST(blockJSON, model);
+			break;
+		case "BangbangSwingUpInvertedPendulumSUST":
+			block=new block.testrig.BangbangSwingUpInvertedPendulumSUST(blockJSON, model);
+			break;
+		case "xzInvertedPendulumSUST":
+			block=new block.testrig.xzInvertedPendulumSUST(blockJSON, model);
+			break;
+		case "BallPlateSUST":
+			block=new block.testrig.BallPlateSUST(blockJSON, model);
+			break;
 		case "S-Function":
 			block=new block.function.SFunction(blockJSON, model);
 			break;
@@ -55,8 +79,14 @@ public class BlockType {
 		case "UDPSender":
 			block=new block.comm.UDPSender(blockJSON, model);
 			break;
+		case "UDPSend":
+			block=new block.driver.UDPSend(blockJSON, model);
+			break;
 		case "UDPReceiver":
 			block=new block.comm.UDPReceiver(blockJSON, model);
+			break;
+		case "UDPReceive":
+			block=new block.driver.UDPReceive(blockJSON, model);
 			break;
 		//discrete
 		case "DiscreteStateSpace":
@@ -83,6 +113,9 @@ public class BlockType {
 			break;	
 		case "Demux":
 			block=new block.route.Demux(blockJSON, model);
+			break;	
+		case "Switch":
+			block=new block.route.Switch(blockJSON, model);
 			break;	
 		case "State-Space":
 			block=new block.continuous.StateSpace(blockJSON,model);

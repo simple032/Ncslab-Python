@@ -23,6 +23,7 @@ extern HANDLE hComm;
 
 HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg);
 void Serialport_Close(HANDLE handle);
+void Serialport_Flush(HANDLE handle);
 BOOL Serialport_Send(HANDLE hComm, uint8_t* sendBuff, DWORD bytesToSend);
 DWORD Serialport_Recv(HANDLE hComm, uint8_t* recvBuff, DWORD bytesToRead);
 

@@ -22,7 +22,7 @@ public class Gain extends Block{
 		
 		
 		//this.gain = new Matrix(paramValues.getString("Gain"));
-		this.gain=new Parameter(this,1,"gain",paramValues.getString("Gain"));
+		this.gain=new Parameter(this,1,getBlockName(),paramValues.getString("Gain"));
 		this.multiplication = "Matrix(*)".equals(paramValues.getString("Multiplication"));
 
 		InputPort in;

@@ -127,7 +127,8 @@ abstract public class CodeStructC {
 				+"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.h\"\n"
 				+"#include <iostream>\n"
-				+"#include <octave/oct.h>"
+				+"#include <octave/oct.h>\n"
+				+"#include <sys/socket.h>"
 				;
 	}
 
@@ -147,6 +148,17 @@ abstract public class CodeStructC {
 				
 				+preCode+"\n"				
 				+dataStructureCode+"\n"
+				
+				+ "union data_union{\n"
+				+ "    float v;\n"
+				+ "    unsigned char c[4];\n"
+				+ "};\n"//float&char 
+				
+				+ "union data_union_double{\n"
+				+ "    double v;\n"
+				+ "    unsigned char c[8];\n"
+				+ "};\n"//double&char 
+				
 				+"void NCSLabInit(){\n"
 				+"uint AD_init_Flag=0;\n"  //ad初始化标志位
 				+"uint DA_init_Flag=0;\n"  //da初始化标志位
