@@ -3,6 +3,15 @@
 ## Introduction
 NCSLabLink, or M2PLink, is a tool that compile block diagram to executable c++ code which can be used to simulate or run on the Raspberry Pi.
 
+## Usage
+```shell
+$ maven clean
+$ maven compile
+$ maven package
+```
+
+deploy packaged war on Tomcat 8.5
+
 ## Environment
 ### M2PLink Environment Configuration for Linux
 > Based on Ubuntu 22.04 and VS Code.
@@ -69,39 +78,53 @@ $ sudo snap install code
 
 #### 3. Nginx
 Reverse proxy
+
+3.0 Installation
+
 ```shell
 $ sudo apt install nginx
-$ sudo chmod 755 /ect/nginx/nginx.conf
-// you can also use vs code to edit the file
-$ sudo vim /etc/nginx/nginx.conf
+# Verify that the installation was successful
+$ nginx -v
 ```
-add such content in http block in "nginx.conf".
+
 
 3.1 
 
+Edit nginx config file
+
+```shell
+$ sudo vim /etc/nginx/nginx.conf
+# you can also use vs code to edit the file
+$ code /etc/nginx/nginx.conf
+```
+
+Add such content in http block in "nginx.conf".
+
 change the root path to actual path of folder in your computer.
+
 ```shell
 server {
 		listen 8100;
 		location ^~/CCode/{
 			root /home/square/ncslablink/;
 		}
-		location ^~/result/{
-			root /home/square/ncslablink/matlab_ncs;
-		}
 	}
 ```
+
 3.2 
 
 Try to visit a file in the proxy folder
 
 For example, create a "test.txt" in "CCode" folder, then type `IP:port/CCode/test.txt` in your browser to visit the test file. If you can see its content, CONGRATULATIONS!
 
-If you encounter **"403 Forbidden"**, there are two ways to solve it (I prefer the first one, though it is unsafe):
+If you encounter **"403 Forbidden"**, there are two ways to solve it (The first one is strongly **not** recommended. It is unsafe and make you omit some permission problems):
 - directly change the first line of "nginx.conf" from `user xxx` to `user root`
 
 - modify the permission of target folder and all its father folder to "755"
 
+```shell
+sudo chmod -R 755 <TARGET_FOLDER>
+```
 
 3.3 
 
