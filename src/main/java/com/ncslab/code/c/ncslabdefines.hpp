@@ -2,6 +2,7 @@
 #define NCSLABDEFINES_HPP
 
 #include <list>
+#include <sys/time.h>
 
 //Input and Output
 #define ssSetNumInputPorts(S, num)  

@@ -137,24 +137,23 @@ abstract public class CodeStructC {
 
 	public void generateIncludeCode() {
 		includeCode+=""
-				+"#include\"ncslabccode.h\"\n"
-				+"#include\"ncslabdefines.hpp\"\n"
-				+"#include\"ncs_serialport.h\"\n"
-				+"#include\"ncslab.h\"\n"
-				+"#include\"math.h\"\n"
-				+"#ifdef _RT\n"
-				+"#include\"hardware.h\"\n"
-				+"#include\"ADS1256.h\"\n"
-				+"#include\"DAC8532.h\"\n"
-				+"#include\"Debug.h\"\n"
-				+"#include\"wiringPi.h\"\n"
-				+"#include\"wiringPiSPI.h\"\n"
-				+"#endif\n"
 				+"#include <iostream>\n"
-				
-				
-				//+"#include <octave/oct.h>\n"
+				+"#include <cmath>\n"
 				+"#include \"Matrix.hpp\"\n"
+				+"#include \"ricatti.hpp\"\n"
+				+"#include \"mainccode.hpp\"\n"
+				+"#include \"ncslabdefines.hpp\"\n"
+				+"#include \"ncs_serialport.h\"\n"
+				+"#include \"ncslab.h\"\n"
+				+"#ifdef _RT\n"
+				+"#include \"hardware.h\"\n"
+				+"#include \"ADS1256.h\"\n"
+				+"#include \"DAC8532.h\"\n"
+				+"#include \"Debug.h\"\n"
+				+"#include \"wiringPi.h\"\n"
+				+"#include \"wiringPiSPI.h\"\n"
+				+"#endif\n"
+
 				//xiazhiqiang:Stores the sampling time of discrete modules
 				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
 				+"int sample_i=0;\n"
@@ -163,7 +162,7 @@ abstract public class CodeStructC {
 	}
 
 	protected void writeMainCodeFile() {
-		System.out.println("Writing file mainccode.c...");
+		System.out.println("Writing file mainccode.cpp...");
 		//precode是参数，状态，和输出的定义，以全局变量的方式
 		String preCode="extern MODEL* mp;\n"
 					+statementCode+"\n"
@@ -223,7 +222,7 @@ abstract public class CodeStructC {
 
 				+"\n";
 
-		File file = new File(codePath+"mainccode.c");
+		File file = new File(codePath+"mainccode.cpp");
 		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(file);
@@ -467,7 +466,7 @@ abstract public class CodeStructC {
 		//主数据结构
 		writeNCSLabFile("ncslabccode.h");
 		//main函数以及定时器
-		writeNCSLabFile("ncslabmain.c");
+		writeNCSLabFile("ncslabmain.cpp");
 		//访问主数据结构的接口API定义
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");

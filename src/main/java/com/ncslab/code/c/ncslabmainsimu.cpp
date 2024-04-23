@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <cstdio>
 #include "mainccode.hpp"
 #include "ncslabdefines.hpp"
 #include "onestep.hpp"

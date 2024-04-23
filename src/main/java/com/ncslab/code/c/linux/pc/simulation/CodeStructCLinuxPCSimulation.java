@@ -35,10 +35,10 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		// makefile
 		// writeNCSLabFile("makefile");
 		writeMakefile("makefile");
-		// main data structure
-		writeNCSLabFile("../../../ncslabccode.h","ncslabccode.h");
 		// main function and timer
-		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.c");
+		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.cpp");
+		// write the header file for generated main code
+		writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp");
 		// Define the API to access the main data structure
 		writeNCSLabFile("../../../DataApi.c","DataApi.c");
 		writeNCSLabFile("../../../DataApi.h","DataApi.h");
@@ -48,6 +48,7 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../ncslabdefines.hpp","ncslabdefines.hpp");
 		writeNCSLabFile("../../../ncslabsfun.hpp","ncslabsfun.hpp");
 		writeNCSLabFile("../../../results.cpp","results.cpp",true);
+		writeNCSLabFile("../../../results.hpp","results.hpp",true);
 		
 		writeNCSLabFile("../../../Matrix.cpp","Matrix.cpp");
 		writeNCSLabFile("../../../Matrix.hpp","Matrix.hpp");
@@ -79,31 +80,31 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("../../../ode1.c","onestep.c",true);
+			writeNCSLabFile("../../../ode1.cpp","onestep.cpp",true);
 			break;
 		case ode2:
-			writeNCSLabFile("../../../ode2.c","onestep.c",true);
+			writeNCSLabFile("../../../ode2.cpp","onestep.cpp",true);
 			break;
 		case ode3:
-			writeNCSLabFile("../../../ode3.c","onestep.c",true);
+			writeNCSLabFile("../../../ode3.cpp","onestep.cpp",true);
 			break;
 		case ode4:
-			writeNCSLabFile("../../../ode4.c","onestep.c",true);
+			writeNCSLabFile("../../../ode4.cpp","onestep.cpp",true);
 			break;
 		case ode45:
-			writeNCSLabFile("../../../ode45.c","onestep.c",true);
+			writeNCSLabFile("../../../ode45.cpp","onestep.cpp",true);
 			break;
 		case ode23:
-			writeNCSLabFile("../../../ode23.c","onestep.c",true);
+			writeNCSLabFile("../../../ode23.cpp","onestep.cpp",true);
 			break;
 		case ode5:
-			writeNCSLabFile("../../../ode5.c","onestep.c",true);
+			writeNCSLabFile("../../../ode5.cpp","onestep.cpp",true);
 			break;	
 		case ode6:
-			writeNCSLabFile("../../../ode6.c","onestep.c",true);
+			writeNCSLabFile("../../../ode6.cpp","onestep.cpp",true);
 			break;	
 		default:
-			writeNCSLabFile("../../../ode45.c","onestep.c",true);
+			writeNCSLabFile("../../../ode45.cpp","onestep.cpp",true);
 			break;
 		}
 		
