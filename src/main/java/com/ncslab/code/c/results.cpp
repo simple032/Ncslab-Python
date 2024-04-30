@@ -60,7 +60,13 @@ void writeScope(int cursor, TERMINAL* terminal, Json::Value* pJsonScopes) {
 void NCSLabSaveResult() {
 	Json::Value result;
 	Json::Value jsonScopes;
-	Json::FastWriter writer;
+	// Json::FastWriter is deprecated, use Json::StreamWriterBuilder instead
+	// refer to https://blog.csdn.net/shaosunrise/article/details/84680602
+	// Json::FastWriter writer;
+	Json::StreamWriterBuilder builder;
+	builder.settings_["indentation"] = "";
+	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+	std::ostringstream os;
 
 	int scopeCursor = 0;
 
@@ -79,7 +85,9 @@ void NCSLabSaveResult() {
 	result["version"] = "0.1";
 	result["scopes"] = jsonScopes;
 
-	std::string jsonFile = writer.write(result);
+	// std::string jsonFile = writer.write(result);
+	writer->write(result, &os);
+	std::string jsonFile = os.str();
 
 	std::ofstream ofs;
 	ofs.open("results.json");

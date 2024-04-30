@@ -34,27 +34,26 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		// write resource files
 		// makefile
 		// writeNCSLabFile("makefile");
-		writeMakefile("makefile");
+		// writeMakefile("makefile");
+		writeNCSLabFile("CMakeLists.txt","CMakeLists.txt", true);
 		// main function and timer
-		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.cpp");
+		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 		// write the header file for generated main code
-		writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp");
-		// Define the API to access the main data structure
-		writeNCSLabFile("../../../DataApi.c","DataApi.c");
-		writeNCSLabFile("../../../DataApi.h","DataApi.h");
+		writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp", true);
 		
+		writeNCSLabFile("../../../util.hpp","util.hpp",true);
 		writeNCSLabFile("../../../util.cpp","util.cpp",true);
 		
-		writeNCSLabFile("../../../ncslabdefines.hpp","ncslabdefines.hpp");
-		writeNCSLabFile("../../../ncslabsfun.hpp","ncslabsfun.hpp");
+		writeNCSLabFile("../../../ncslabdefines.hpp","ncslabdefines.hpp", true);
+		writeNCSLabFile("../../../ncslabsfun.hpp","ncslabsfun.hpp", true);
 		writeNCSLabFile("../../../results.cpp","results.cpp",true);
 		writeNCSLabFile("../../../results.hpp","results.hpp",true);
 		
-		writeNCSLabFile("../../../Matrix.cpp","Matrix.cpp");
-		writeNCSLabFile("../../../Matrix.hpp","Matrix.hpp");
-		writeNCSLabFile("../../../ricatti.cpp","ricatti.cpp");
-		writeNCSLabFile("../../../ricatti.hpp","ricatti.hpp");
-		writeNCSLabFile("../../../onestep.hpp","onestep.hpp");
+		writeNCSLabFile("../../../Matrix.cpp","Matrix.cpp", true);
+		writeNCSLabFile("../../../Matrix.hpp","Matrix.hpp", true);
+		writeNCSLabFile("../../../ricatti.cpp","ricatti.cpp", true);
+		writeNCSLabFile("../../../ricatti.hpp","ricatti.hpp", true);
+		writeNCSLabFile("../../../onestep.hpp","onestep.hpp", true);
 
 		// Implement the general file of the Netcon protocol
 		// writeNCSLabFile("../../ServerThread.cpp","ServerThread.cpp");
@@ -120,6 +119,12 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 	public boolean makeExeFile() {
 		try {
 			// start make, generate executable file
+			// Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+			// using cmake instead of make
+			String cmakeCommand[] = {"cmake","."};
+			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
+			makeProcess.waitFor();
+
 			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
 			// get OutputStream and errStream of the process, in case of blocking
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
