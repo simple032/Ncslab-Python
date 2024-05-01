@@ -54,7 +54,8 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../ricatti.cpp","ricatti.cpp", true);
 		writeNCSLabFile("../../../ricatti.hpp","ricatti.hpp", true);
 		writeNCSLabFile("../../../onestep.hpp","onestep.hpp", true);
-
+		
+		writeNCSLabFile("../../../ml/LR/LinearRegression.hpp","LinearRegression.hpp", true);
 		// Implement the general file of the Netcon protocol
 		// writeNCSLabFile("../../ServerThread.cpp","ServerThread.cpp");
 		// writeNCSLabFile("../../ServerThread.hpp","ServerThread.hpp");
