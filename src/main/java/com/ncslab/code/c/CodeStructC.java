@@ -142,6 +142,8 @@ abstract public class CodeStructC {
 				+"#include \"Matrix.hpp\"\n"
 				+"#include \"ricatti.hpp\"\n"
 				+"#include \"LinearRegression.hpp\"\n"
+				+"#include \"Python.h\"\n"
+
 				+"#include \"mainccode.hpp\"\n"
 				+"#include \"ncslabdefines.hpp\"\n"
 				+"#include \"ncs_serialport.h\"\n"

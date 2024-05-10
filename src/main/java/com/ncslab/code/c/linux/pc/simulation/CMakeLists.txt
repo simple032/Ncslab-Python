@@ -20,24 +20,32 @@ message("${JSONCPP_LIBRARIES}")
 # list header files for IDEs (not necessary)
 file(GLOB ncslab_src CONFIGURE_DEPENDS "*.h" "*.hpp" "*.c" "*.cpp")
 
-
 add_executable(${PROJECT_NAME} ${ncslab_src})
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-# set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
-
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${PROJECT_SOURCE_DIR}
         ${JSONCPP_INCLUDE_DIRS}
         /home/square/ncslablink/WiringPi-2.61-1/wiringPi
+        /usr/include/python3.10
+)
+
+target_link_directories(${PROJECT_NAME} PRIVATE
+    ${TORCH_LIBRARIES}
+    /usr/lib/python3.10/config-3.10-x86_64-linux-gnu
+    /usr/lib/x86_64-linux-gnu
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-    	${JSONCPP_LIBRARIES}
+        ${JSONCPP_LIBRARIES}
         ${TORCH_LIBRARIES}
+        crypt
+        dl
+        m
+        python3.10
 )
 
 target_compile_options(${PROJECT_NAME}
