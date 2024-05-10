@@ -44,6 +44,7 @@ public class LinearRegression extends Block{
         initCode += this.learningRate.getInitCodeC();
         initCode += this.lossFunction.getInitCodeC();
         initCode += this.dataset.getInitCodeC();
+        initCode += "#include <Python.h>\n";
         initCode += "Py_Initialize();\n";
         initCode += "PyRun_SimpleString(\"import sys\");\n";
         initCode += "PyRun_SimpleString(\"sys.path.append('/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/ml/LR')\");\n";
@@ -56,10 +57,11 @@ public class LinearRegression extends Block{
     public void generateOutputCodeC(CodeStructC code) {
         StringBuilder sb = new StringBuilder("/*Code for output of block Constant:("+getBlockId()+")"+getBlockName()+"*/\n");
         sb.append(outputPortList.get(0).getOutputSignalC().getName());
-        sb.append(String.format("=getResult(%s,%s,%f);\n", 
-                            inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(), 
-                            inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(),
-                            0.0));
+        // sb.append(String.format("=getResult(%s,%s,%f);\n", 
+        //                     inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(), 
+        //                     inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(),
+        //                     0.0));
+        sb.append("=getResult(1.0, 2.0, 3.0);\n");
         sb.append("Py_Finalize();\n");
         code.addOutputCode(sb.toString());
     }
