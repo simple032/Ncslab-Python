@@ -2,18 +2,10 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 # set project name and language
 project(
-    ncslablink
+    ncslab
     VERSION 1.0
     LANGUAGES CXX
 )
-
-
-if (APPLE)
-    # change this to the real path
-    set(CMAKE_PREFIX_PATH "/Users/square/Documents/Code/libtorch")
-elseif(UNIX)
-    set(CMAKE_PREFIX_PATH "/home/square/ncslablink/libtorch")
-endif()
 
 find_package(nlohmann_json REQUIRED)
 
@@ -27,7 +19,8 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
-        ${PROJECT_SOURCE_DIR}      
+        ${PROJECT_SOURCE_DIR} 
+        /usr/include/python3.10     
 )
 
 target_link_directories(${PROJECT_NAME} 
