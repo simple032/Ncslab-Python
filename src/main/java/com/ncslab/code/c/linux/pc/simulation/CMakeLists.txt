@@ -7,14 +7,16 @@ project(
     LANGUAGES CXX
 )
 
-set(CMAKE_PREFIX_PATH "/home/square/ncslablink/libtorch")
+if (APPLE)
+    # change this to the real path
+    set(CMAKE_PREFIX_PATH "/Users/square/Documents/Code/libtorch")
+elseif(UNIX)
+    set(CMAKE_PREFIX_PATH "/home/square/ncslablink/libtorch")
+endif()
 
 find_package(Torch REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(JSONCPP jsoncpp)
+find_package(nlohmann_json REQUIRED)
 
-message("${JSONCPP_INCLUDE_DIRS}")
-message("${JSONCPP_LIBRARIES}")
 
 # you can also manually list source files with "set(SOURCES ...)" command
 # list header files for IDEs (not necessary)
@@ -30,14 +32,12 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${PROJECT_SOURCE_DIR}
-        ${JSONCPP_INCLUDE_DIRS}
-        /home/square/ncslablink/WiringPi-2.61-1/wiringPi
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-    	${JSONCPP_LIBRARIES}
         ${TORCH_LIBRARIES}
+        nlohmann_json::nlohmann_json
 )
 
 target_compile_options(${PROJECT_NAME}
