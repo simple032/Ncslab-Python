@@ -13,9 +13,9 @@ public:
         Py_DECREF(pName);
         if (pModule == nullptr) {
             PyErr_Print();
-            throw std::runtime_error("Failed to load Python module");
+            // throw std::runtime_error("Failed to load Python module");
         } else {
-            std::cout << "Successfully load Python module" << std::endl;
+            // std::cout << "Successfully load Python module" << std::endl;
         }
 
         pFuncInitModel = PyObject_GetAttrString(pModule, "init_model");
@@ -27,7 +27,7 @@ public:
             Py_XDECREF(pFuncInitModel);
             Py_XDECREF(pFuncTrainModel);
             Py_XDECREF(pFuncPredict);
-            throw std::runtime_error("Failed to load necessary Python functions");
+            // throw std::runtime_error("Failed to load necessary Python functions");
         }
     }
 
@@ -46,7 +46,7 @@ public:
 
     double predict(const std::vector<double>& inputs) {
         if (pFuncPredict == nullptr) {
-            std::cout << "Error: pFuncPredict is nullptr when trying to predict" << std::endl;
+            // std::cout << "Error: pFuncPredict is nullptr when trying to predict" << std::endl;
             return 0.0;
         }
 
@@ -92,16 +92,16 @@ double predict(const std::vector<double>& inputs) {
 }
 
 double getResult(double d1, double d2, double d3) {
-    std::cout << "===INTO Getting results===" << std::endl;
+    // std::cout << "===INTO Getting results===" << std::endl;
     std::vector<double> inputs = {d1, d2 * d2, d3};
 
-    std::cout << "Vector elements: ";
-    for (const auto& element : inputs) {
-        std::cout << element << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Vector elements: ";
+    // for (const auto& element : inputs) {
+        // std::cout << element << " ";
+    // }
+    // std::cout << std::endl;
     
-    std::cout << "===INTO Getting results===" << std::endl;
+    // std::cout << "===INTO Getting results===" << std::endl;
     return linearRegressionModel->predict(inputs);
 }
 

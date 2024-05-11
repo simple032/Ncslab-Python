@@ -7,16 +7,12 @@ project(
     LANGUAGES CXX
 )
 
-set(CMAKE_PREFIX_PATH "/home/square/ncslablink/libtorch")
-
-find_package(Torch REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 
 message("${JSONCPP_INCLUDE_DIRS}")
 message("${JSONCPP_LIBRARIES}")
 
-# you can also manually list source files with "set(SOURCES ...)" command
 # list header files for IDEs (not necessary)
 file(GLOB ncslab_src CONFIGURE_DEPENDS "*.h" "*.hpp" "*.c" "*.cpp")
 
@@ -33,7 +29,6 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_directories(${PROJECT_NAME} PRIVATE
-    ${TORCH_LIBRARIES}
     /usr/lib/python3.10/config-3.10-x86_64-linux-gnu
     /usr/lib/x86_64-linux-gnu
 )
@@ -41,7 +36,6 @@ target_link_directories(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${JSONCPP_LIBRARIES}
-        ${TORCH_LIBRARIES}
         crypt
         dl
         m
@@ -55,7 +49,6 @@ target_compile_options(${PROJECT_NAME}
         -g
         -O2
         -Wformat
-        ${TORCH_CXX_FLAGS}
 )
 
 target_link_options(${PROJECT_NAME}
@@ -65,8 +58,6 @@ target_link_options(${PROJECT_NAME}
 )
 
 # The following code block is suggested to be used on Windows.
-# According to https://github.com/pytorch/pytorch/issues/25457,
-# the DLLs need to be copied to avoid memory errors.
 if (MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
   add_custom_command(TARGET ${PROJECT_NAME}
