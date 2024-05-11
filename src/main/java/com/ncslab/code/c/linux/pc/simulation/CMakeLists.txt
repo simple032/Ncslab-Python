@@ -7,6 +7,7 @@ project(
     LANGUAGES CXX
 )
 
+
 if (APPLE)
     # change this to the real path
     set(CMAKE_PREFIX_PATH "/Users/square/Documents/Code/libtorch")
@@ -14,30 +15,35 @@ elseif(UNIX)
     set(CMAKE_PREFIX_PATH "/home/square/ncslablink/libtorch")
 endif()
 
-find_package(Torch REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 
-# you can also manually list source files with "set(SOURCES ...)" command
 # list header files for IDEs (not necessary)
 file(GLOB ncslab_src CONFIGURE_DEPENDS "*.h" "*.hpp" "*.c" "*.cpp")
-
 
 add_executable(${PROJECT_NAME} ${ncslab_src})
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-# set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
-
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
-        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}      
+)
+
+target_link_directories(${PROJECT_NAME} 
+    PRIVATE
+    /usr/lib/python3.10/config-3.10-x86_64-linux-gnu
+    /usr/lib/x86_64-linux-gnu
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        ${TORCH_LIBRARIES}
+        ${JSONCPP_LIBRARIES}
         nlohmann_json::nlohmann_json
+        crypt
+        dl
+        m
+        python3.10
 )
 
 target_compile_options(${PROJECT_NAME}
@@ -47,7 +53,6 @@ target_compile_options(${PROJECT_NAME}
         -g
         -O2
         -Wformat
-        ${TORCH_CXX_FLAGS}
 )
 
 target_link_options(${PROJECT_NAME}
@@ -57,8 +62,6 @@ target_link_options(${PROJECT_NAME}
 )
 
 # The following code block is suggested to be used on Windows.
-# According to https://github.com/pytorch/pytorch/issues/25457,
-# the DLLs need to be copied to avoid memory errors.
 if (MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
   add_custom_command(TARGET ${PROJECT_NAME}
