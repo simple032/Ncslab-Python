@@ -69,11 +69,22 @@ e.g. `$ sudo apt install openjdk-17-jdk`
 then use `$ sudo update-alternative --config java` to select openjdk8 as your default jdk.
 
 #### 2. C++
+2.1 Install toolchains
 ```shell
 $ sudo apt install build-essential
-$ sudo apt install libjsoncpp-dev
-// if you like vs code
+# snap, not apt!
+$ sudo snap install cmake
+# if you like vs code
 $ sudo snap install code
+```
+
+2.2 install libraries
+```shell
+git clone https://github.com/nlohmann/json.git
+cd json
+cmake .
+cmake --build . --config Release
+sudo cmake --install . --config Release
 ```
 
 #### 3. Nginx
