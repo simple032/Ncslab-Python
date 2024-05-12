@@ -15,7 +15,7 @@ class LinearRegression(nn.Module):
 model = LinearRegression(3, 1)
 
 def init_model():
-    global model
+    # global model
     model = LinearRegression(3, 1)
     return model
 
