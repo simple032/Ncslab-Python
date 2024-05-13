@@ -141,8 +141,13 @@ abstract public class CodeStructC {
 				+"#include <cmath>\n"
 				+"#include \"Matrix.hpp\"\n"
 				+"#include \"ricatti.hpp\"\n"
+
+				// NCS machine learning toolbox
+				+"#include \"MLModel.hpp\"\n"
 				+"#include \"LinearRegression.hpp\"\n"
 				+"#include \"Python.h\"\n"
+
+				//end NCS machine learning toolbox
 
 				+"#include \"mainccode.hpp\"\n"
 				+"#include \"ncslabdefines.hpp\"\n"

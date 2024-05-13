@@ -13,10 +13,10 @@ class LogisticRegression(nn.Module):
     def forward(self, x):
         return self.sigmoid(self.linear(x))
 
-ml_model = LogisticRegression(3, 1)
+ml_model = None
 
-def init_model():
-    ml_model = LogisticRegression(3, 1)
+def init_model(input_feature, output_feature):
+    ml_model = LogisticRegression(input_feature, output_feature)
     return ml_model
 
 def train_model(filename, epochs, lr):

@@ -44,26 +44,24 @@ public class LinearRegression extends Block{
         initCode += this.learningRate.getInitCodeC();
         initCode += this.lossFunction.getInitCodeC();
         initCode += this.dataset.getInitCodeC();
-        // initCode += "#include <Python.h>\n";
+
         initCode += "Py_Initialize();\n";
         initCode += "PyRun_SimpleString(\"import sys\");\n";
-        // initCode += "PyRun_SimpleString(\"sys.path.append('/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/ml/LR')\");\n";
         initCode += "PyRun_SimpleString(\"sys.path.append('./')\");\n";
-        initCode += "initModel();\n";
-        initCode += "trainModel(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/winddata1.csv\", 100, 0.01);\n";
+        initCode += "linearRegressionModel = std::make_unique<LinearRegression>(3,1);\n";
+        initCode += "linearRegressionModel->trainModel(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/winddata1.csv\", 100, 0.01);\n";
         code.addInitCode(initCode);
     }
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
         StringBuilder sb = new StringBuilder("/*Code for output of block Constant:("+getBlockId()+")"+getBlockName()+"*/\n");
+        
+        sb.append("std::vector<double> v = {1.0,2.0,3.0};");
         sb.append(outputPortList.get(0).getOutputSignalC().getName());
-        // sb.append(String.format("=getResult(%s,%s,%f);\n", 
-        //                     inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(), 
-        //                     inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(),
-        //                     0.0));
-        sb.append("=getResult(1.0, 2.0, 3.0);\n");
-        // sb.append("Py_Finalize();\n");
+        
+        sb.append("=linearRegressionModel->predict(v)[0];\n");
+        
         code.addOutputCode(sb.toString());
     }
 }

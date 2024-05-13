@@ -12,11 +12,12 @@ class LinearRegression(nn.Module):
     def forward(self, x):
         return self.linear(x)
 
-model = LinearRegression(3, 1)
+# model = None
 
-def init_model():
-    # global model
-    model = LinearRegression(3, 1)
+def init_model(input_feature=3, output_feature=1):
+    # todo: in CPP, change it to call this function.
+    global model
+    model = LinearRegression(input_feature, output_feature)
     return model
 
 def train_model(filename, epochs, lr):
@@ -38,3 +39,7 @@ def predict(inputs):
     with torch.no_grad():
         output = model(input_tensor)
     return output.numpy()[0].tolist()
+
+# if __name__ == '__main__':
+#     init_model()
+#     print(predict([1, 2, 3]))
