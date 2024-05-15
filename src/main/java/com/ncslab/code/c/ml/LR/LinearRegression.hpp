@@ -1,111 +1,40 @@
-#include <Python.h>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <stdexcept>
-#include <memory> 
+#ifndef NCS_LINEARREGRESSION
+#define NCS_LINEARREGRESSION 1
+#include "MLModel.hpp"
 
-class LinearRegression {
+using ncsml::MLModel;
+
+class LinearRegression : public MLModel {
 public:
-    LinearRegression() {
-        PyObject* pName = PyUnicode_DecodeFSDefault("linear_regression_model");
-        pModule = PyImport_Import(pName);
-        Py_DECREF(pName);
-        if (pModule == nullptr) {
+    LinearRegression(size_t inputFeatures, size_t outputFeatures) 
+    : MLModel("linear_regression_model", "LinearRegression") {
+        //init linear regression model
+        // PyObject* pArgs = Py_BuildValue("(ii)", inputFeatures, outputFeatures);
+        // PyObject_CallObject(this->pFuncInitModel, pArgs);
+        // Py_DECREF(pArgs);
+
+        PyObject* pArgs = Py_BuildValue("(ii)", inputFeatures, outputFeatures);
+        this->pInstance = PyObject_CallObject(pClass, pArgs);
+        Py_DECREF(pArgs);
+        if(pInstance == nullptr){
             PyErr_Print();
-            // throw std::runtime_error("Failed to load Python module");
-        } else {
-            // std::cout << "Successfully load Python module" << std::endl;
+            Py_XDECREF(pInstance);
+            throw std::runtime_error("Failed to create instance of the class");
         }
-
-        pFuncInitModel = PyObject_GetAttrString(pModule, "init_model");
-        pFuncTrainModel = PyObject_GetAttrString(pModule, "train_model");
-        pFuncPredict = PyObject_GetAttrString(pModule, "predict");
-
-        if (!pFuncInitModel || !pFuncTrainModel || !pFuncPredict) {
+        pFuncTrainByFile = PyObject_GetAttrString(pInstance, "train_by_file");
+        pFuncPredict = PyObject_GetAttrString(pInstance, "predict");
+        if (!pFuncTrainByFile || !pFuncPredict) {
             PyErr_Print();
-            Py_XDECREF(pFuncInitModel);
-            Py_XDECREF(pFuncTrainModel);
+            Py_XDECREF(pFuncTrainByFile);
             Py_XDECREF(pFuncPredict);
-            // throw std::runtime_error("Failed to load necessary Python functions");
+            throw std::runtime_error("Failed to load necessary Python functions");
         }
     }
 
     ~LinearRegression() {
+        
     }
-
-    PyObject* initModel() {
-        return PyObject_CallObject(pFuncInitModel, nullptr);
-    }
-
-    void trainModel(const std::string& filename, int epochs, double lr) {
-        PyObject* pArgs = Py_BuildValue("(sid)", filename.c_str(), epochs, lr);
-        PyObject_CallObject(pFuncTrainModel, pArgs);
-        Py_DECREF(pArgs);
-    }
-
-    double predict(const std::vector<double>& inputs) {
-        if (pFuncPredict == nullptr) {
-            // std::cout << "Error: pFuncPredict is nullptr when trying to predict" << std::endl;
-            return 0.0;
-        }
-
-        PyObject* pList = PyList_New(inputs.size());
-        for (size_t i = 0; i < inputs.size(); ++i) {
-            PyObject* pFloat = PyFloat_FromDouble(inputs[i]);
-            PyList_SetItem(pList, i, pFloat);
-        }
-
-        PyObject* pArgs = Py_BuildValue("(O)", pList);
-        PyObject* pResult = PyObject_CallObject(pFuncPredict, pArgs);
-
-        Py_DECREF(pArgs);
-        Py_DECREF(pList);
-
-        if (pResult == nullptr) {
-            PyErr_Print();
-            PyErr_Clear();
-            return 0.0;
-        }
-
-        double result = PyFloat_AsDouble(pResult);
-        Py_DECREF(pResult);
-        return result;
-}
-
-private:
-    PyObject *pModule, *pFuncInitModel, *pFuncTrainModel, *pFuncPredict;
 };
 
-std::unique_ptr<LinearRegression> linearRegressionModel;
-
-void initModel() {
-    linearRegressionModel = std::make_unique<LinearRegression>();
-}
-
-void trainModel(const std::string& filename, int epochs, double lr) {
-    linearRegressionModel->trainModel(filename, epochs, lr);
-}
-
-double predict(const std::vector<double>& inputs) {
-    return linearRegressionModel->predict(inputs);
-}
-
-double getResult(double d1, double d2, double d3) {
-    // std::cout << "===INTO Getting results===" << std::endl;
-    std::vector<double> inputs = {d1, d2 * d2, d3};
-
-    // std::cout << "Vector elements: ";
-    // for (const auto& element : inputs) {
-        // std::cout << element << " ";
-    // }
-    // std::cout << std::endl;
-    
-    // std::cout << "===INTO Getting results===" << std::endl;
-    return linearRegressionModel->predict(inputs);
-}
-
-double getTestResult(double d1, LinearRegression* linearRegressionModel) {
-    std::vector<double> inputs = {d1};
-    return linearRegressionModel->predict(inputs);
-}
+// std::unique_ptr<LinearRegression> linearRegressionModel;
+#endif

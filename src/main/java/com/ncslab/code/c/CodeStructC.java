@@ -32,6 +32,9 @@ abstract public class CodeStructC {
 	public String arraysCode="";
     //end
 
+	// Global variables
+	public String globalVariable="";
+
 	public String includeCode="";
 	//init初始化的代码
 	public String initCode="";
@@ -69,18 +72,32 @@ abstract public class CodeStructC {
 	/*定义监控数据实体初始化的代码，初始化各个组件结构的名称，path等，让指针指向指定的位置，建立数据结构， */
 	public String dataStructureInitCode="";
 
+	/**
+	 * End code, that will be run after the simulation ends
+	 */
+	public String finalizeCode = "";
+
 	private int parameterIndex=1;
 	private int stateIndex=1;
 
 	private Vector<Parameter> parameterList=new Vector<Parameter>();
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
+	private Vector<GlobalVariable> variableList = new Vector<>();
+	
 
 	protected CodeModelC model;
 
 	public CodeStructC(CodeModelC model) {
 		this.model=model;
+	}
 
+	public String getGlobalVariable(){
+		return this.globalVariable;
+	}
+
+	public void addGlobalVariable(String code){
+		this.globalVariable += code;
 	}
 
 	public String getInitCode() {
@@ -105,6 +122,14 @@ abstract public class CodeStructC {
 
 	public void addOutputCode(String code) {
 		outputCode+=code;
+	}
+
+	public String getFinalizeCode(){
+		return this.finalizeCode;
+	}
+
+	public void addFinalizeCode(String code){
+		this.finalizeCode += code;
 	}
 	
 	public void addTerminateCode(String code) {
@@ -141,8 +166,13 @@ abstract public class CodeStructC {
 				+"#include <cmath>\n"
 				+"#include \"Matrix.hpp\"\n"
 				+"#include \"ricatti.hpp\"\n"
+
+				// NCS machine learning toolbox
+				+"#include \"MLModel.hpp\"\n"
 				+"#include \"LinearRegression.hpp\"\n"
 				+"#include \"Python.h\"\n"
+
+				//end NCS machine learning toolbox
 
 				+"#include \"mainccode.hpp\"\n"
 				+"#include \"ncslabdefines.hpp\"\n"
@@ -174,6 +204,8 @@ abstract public class CodeStructC {
 					+stateDefineCode+"\n"
 					+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
+				//global variables
+				+this.globalVariable+"\n"
 				//author:xiazhiqiang
 				//add define arrays code
 				+arraysCode+"\n"
@@ -182,6 +214,12 @@ abstract public class CodeStructC {
 				+preCode+"\n"				
 				+dataStructureCode+"\n"
 				+"void NCSLabInit(){\n"
+				
+				//python init code
+				+ "Py_Initialize();\n"
+				+ "PyRun_SimpleString(\"import sys\");\n"
+				+ "PyRun_SimpleString(\"sys.path.append('./')\");\n"
+
 				+dataStructureInitCode+"\n"
 				+initCode+"\n"
 				+"}\n"
@@ -218,6 +256,10 @@ abstract public class CodeStructC {
 				+"void NCSLabTerminate(){\n"
 				+terminateCode+"\n"
 				+"}\n"
+
+				+"void NCSLabFinalize(){\n"
+				+finalizeCode+"\n"
+				+"}\n"
 				
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
@@ -249,6 +291,10 @@ abstract public class CodeStructC {
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
+	// add global variables
+	public void addGlobalVariable(GlobalVariable variable){
+		this.variableList.add(variable);
+	}
 	
 	public void generateHardwareDefineCode() {
 		hardwareDefineCode+="/*Define hardware structures*/\n";
@@ -265,6 +311,13 @@ abstract public class CodeStructC {
 		for(Parameter parameter:parameterList) {
 			//parameterDefineCode+=parameter.getDefineString()+" "+parameter.getName()+";\n";
 			parameterDefineCode+=parameter.getDefineCodeC();
+		}
+	}
+
+	public void generateGlobalVariableDefineCode(){
+		globalVariable+="/*Define variables for global variables*/\n";
+		for(GlobalVariable variable:variableList){
+			globalVariable += variable.getDefineCodeC();
 		}
 	}
 

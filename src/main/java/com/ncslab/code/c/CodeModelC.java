@@ -99,6 +99,7 @@ abstract public class CodeModelC extends CodeModel {
 		getCodeStructC().generateStateDefineCode();
 		getCodeStructC().generateOutputSignalDefineCode(); 		
 		getCodeStructC().gnenrateDataStructureCode();
+		getCodeStructC().generateGlobalVariableDefineCode();
 	}
 	
 	@Override
