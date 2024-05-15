@@ -10,6 +10,10 @@
 namespace ncsml{
 class MLModel {
 public:
+    /**
+     * @Param model_name: file name without ".py"
+     * @Param model_type: python class, like "LinearRegression" in "class LinearRegression".
+    */
     MLModel(const char* model_name, const char* model_type) {
         PyObject* pName = PyUnicode_DecodeFSDefault(model_name);
         pModule = PyImport_Import(pName);
@@ -38,23 +42,6 @@ public:
             Py_XDECREF(pClass);
             throw std::runtime_error("Failed to load necessary Python class!");
         }
-        // SAMPLE CODE
-        // PyObject* pArgs = Py_BuildValue("(ii)", input_features, output_features);
-        // this->pInstance = PyObject_CallObject(pClass, pArgs);
-        // Py_DECREF(pArgs);
-        // if(pInstance == nullptr){
-        //     PyErr_Print();
-        //     Py_XDECREF(pInstance);
-        //     throw std::runtime_error("Failed to create instance of the class");
-        // }
-        // pFuncTrainByFile = PyObject_GetAttrString(pInstance, "train_by_file");
-        // pFuncPredict = PyObject_GetAttrString(pInstance, "predict");
-        // if (!pFuncTrainByFile || !pFuncPredict) {
-        //     PyErr_Print();
-        //     Py_XDECREF(pFuncTrainByFile);
-        //     Py_XDECREF(pFuncPredict);
-        //     throw std::runtime_error("Failed to load necessary Python functions");
-        // }
         // <<<<<<<<<<<<<<<<< FEATED code
 
     }

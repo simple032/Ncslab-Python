@@ -8,11 +8,6 @@ class LinearRegression : public MLModel {
 public:
     LinearRegression(size_t inputFeatures, size_t outputFeatures) 
     : MLModel("linear_regression_model", "LinearRegression") {
-        //init linear regression model
-        // PyObject* pArgs = Py_BuildValue("(ii)", inputFeatures, outputFeatures);
-        // PyObject_CallObject(this->pFuncInitModel, pArgs);
-        // Py_DECREF(pArgs);
-
         PyObject* pArgs = Py_BuildValue("(ii)", inputFeatures, outputFeatures);
         this->pInstance = PyObject_CallObject(pClass, pArgs);
         Py_DECREF(pArgs);
