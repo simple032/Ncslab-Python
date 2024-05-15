@@ -10,7 +10,7 @@
 namespace ncsml{
 class MLModel {
 public:
-    MLModel(const char* model_name) {
+    MLModel(const char* model_name, const char* model_type) {
         PyObject* pName = PyUnicode_DecodeFSDefault(model_name);
         pModule = PyImport_Import(pName);
         Py_DECREF(pName);
@@ -21,32 +21,55 @@ public:
             // std::cout << "Successfully load Python module" << std::endl;
         }
 
-        pFuncInitModel = PyObject_GetAttrString(pModule, "init_model");
-        pFuncTrainModel = PyObject_GetAttrString(pModule, "train_model");
-        pFuncPredict = PyObject_GetAttrString(pModule, "predict");
-
-        if (!pFuncInitModel || !pFuncTrainModel || !pFuncPredict) {
+        // >>>>>>>>>>>>>>>>> Previously used code 
+        // pFuncInitModel = PyObject_GetAttrString(pModule, "init_model");
+        // pFuncTrainModel = PyObject_GetAttrString(pModule, "train_model");
+        // pFuncPredict = PyObject_GetAttrString(pModule, "predict");
+        // if (!pFuncInitModel || !pFuncTrainModel || !pFuncPredict) {
+        //     PyErr_Print();
+        //     Py_XDECREF(pFuncInitModel);
+        //     Py_XDECREF(pFuncTrainModel);
+        //     Py_XDECREF(pFuncPredict);
+        //     throw std::runtime_error("Failed to load necessary Python functions");
+        // }
+        pClass = PyObject_GetAttrString(pModule, model_type); // class of the python
+        if (!pClass || !PyCallable_Check(pClass)) {
             PyErr_Print();
-            Py_XDECREF(pFuncInitModel);
-            Py_XDECREF(pFuncTrainModel);
-            Py_XDECREF(pFuncPredict);
-            throw std::runtime_error("Failed to load necessary Python functions");
+            Py_XDECREF(pClass);
+            throw std::runtime_error("Failed to load necessary Python class!");
         }
+        // SAMPLE CODE
+        // PyObject* pArgs = Py_BuildValue("(ii)", input_features, output_features);
+        // this->pInstance = PyObject_CallObject(pClass, pArgs);
+        // Py_DECREF(pArgs);
+        // if(pInstance == nullptr){
+        //     PyErr_Print();
+        //     Py_XDECREF(pInstance);
+        //     throw std::runtime_error("Failed to create instance of the class");
+        // }
+        // pFuncTrainByFile = PyObject_GetAttrString(pInstance, "train_by_file");
+        // pFuncPredict = PyObject_GetAttrString(pInstance, "predict");
+        // if (!pFuncTrainByFile || !pFuncPredict) {
+        //     PyErr_Print();
+        //     Py_XDECREF(pFuncTrainByFile);
+        //     Py_XDECREF(pFuncPredict);
+        //     throw std::runtime_error("Failed to load necessary Python functions");
+        // }
+        // <<<<<<<<<<<<<<<<< FEATED code
+
     }
 
-    ~MLModel() {
-        Py_XDECREF(pFuncInitModel);
-        Py_XDECREF(pFuncTrainModel);
+    virtual ~MLModel() {
+        Py_XDECREF(pInstance);
+        Py_XDECREF(pClass);
+        Py_XDECREF(pFuncTrainByFile);
         Py_XDECREF(pFuncPredict);
-    }
-
-    PyObject* initModel() {
-        return PyObject_CallObject(pFuncInitModel, nullptr);
+        Py_DECREF(pModule);
     }
 
     virtual void trainModel(const std::string& filename, int epochs, double lr) {
         PyObject* pArgs = Py_BuildValue("(sid)", filename.c_str(), epochs, lr);
-        PyObject_CallObject(pFuncTrainModel, pArgs);
+        PyObject_CallObject(pFuncTrainByFile, pArgs);
         Py_DECREF(pArgs);
     }
 
@@ -74,7 +97,6 @@ public:
             throw new std::runtime_error("Failed to load necessary Python functions");
         }
 
-        //todo: check this.
         std::vector<double> results;
         if (PyList_Check(pResult)) {
             Py_ssize_t size = PyList_Size(pResult);
@@ -102,7 +124,8 @@ public:
     //todos: switch loss function, activation function, and other functions.
 
 protected:
-    PyObject *pModule, *pFuncInitModel, *pFuncTrainModel, *pFuncPredict;
+    // PyObject *pModule, *pFuncInitModel, *pFuncTrainModel, *pFuncPredict;
+    PyObject *pModule, *pClass, *pInstance, *pFuncTrainByFile, *pFuncPredict;
 };
 };
 #endif
