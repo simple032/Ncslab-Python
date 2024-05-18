@@ -78,6 +78,7 @@ public class CodeStructCLinuxPC extends CodeStructC{
 			break;
 		}
 		
+		writeNCSWrittenFiles(); // write the files in <code>CodeStructC.writtenFileSet</code>.
 	}
 	
 	public byte[] readExeFile() {
@@ -119,5 +120,10 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		}
 
 		return false;
+	}
+
+	@Override
+	protected void writeNCSWrittenFiles(){
+		super.writeNCSWrittenFiles();
 	}
 }

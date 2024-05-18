@@ -3,6 +3,9 @@ package com.ncslab.code.c;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.io.InputStream;
 import java.io.BufferedReader;
@@ -17,7 +20,80 @@ import com.ncslab.utils.Property;
 
 abstract public class CodeStructC {
 
+	public static Set<String> globalDeclareCodeSet = new LinkedHashSet<>();
+	public static Set<String> globalInitCodeSet = new LinkedHashSet<>();
+	public static Set<String> globalEndCodeSet = new LinkedHashSet<>();
+	public static Set<String> includeCodeSet = new LinkedHashSet<>();
+	public static Set<WrittenFile> writtenFileSet = new HashSet<>();
+	
+	/**
+	 * You can freely add declare code in this function, and it will be added to the
+	 * cpp file.
+	 * @param code The code you want to add. ples add "\n" at the end for each line.
+	 * @author Ethy9160
+	 */
+	public static void addGlobalDeclareCode(String code) {
+		globalDeclareCodeSet.add(code);
+	}
 
+	/**
+	 * You can freely add init code in this function, and it will be added to the
+	 * global init code.
+	 * @param code The code you want to add. ples add "\n" at the end for each line.
+	 * @author Ethy9160
+	 */
+	public static void addGlobalInitCode(String code) {
+		globalInitCodeSet.add(code);
+	}
+
+	/**
+	 * You can freely add end code in this function, and it will be added to the
+	 * global end code.
+	 * @param code The code you want to add. ples add "\n" at the end for each line.
+	 * @author Ethy9160
+	 */
+	public static void addGlobalEndCode(String code) {
+		globalEndCodeSet.add(code);
+	}
+
+	/**
+	 * You can freely add include code in this function, and it will be added to the
+	 * cpp file.
+	 * @param code The code you want to add. ples add "\n" at the end for each line.
+	 * @author Ethy9160
+	 */
+	public static void addIncludeCode(String code) {
+		includeCodeSet.add(code);
+	}
+
+	/**
+	 * Add written file to the set. <br>
+	 * <b>ATTENTION</b><br>
+	 * If you use reletive path ,you <b>should be able to know the source folder!</b>
+	 * i.e. in Ubuntu22.04, the source folder is "src/main/java/com/ncslab/code/c/linux/pc/simulation/".<br>
+	 * Or, you can use the absolute path for the filePath.
+	 * @param filePath the reletive path of the file in the source folder.
+	 * @param targetPath the target path of the file.
+	 * @param overwrite whether to overwrite the file if it exists.
+	 */
+	public static void addWrittenFile(String filePath, String targetPath, boolean overwrite) {
+		writtenFileSet.add(new WrittenFile(filePath, targetPath, overwrite));
+	}
+
+	/**
+	 * Add written file to the set. <br>
+	 * <b>ATTENTION</b><br>
+	 * If you use reletive path ,you <b>should be able to know the source folder!</b>
+	 * i.e. in Ubuntu22.04, the source folder is "src/main/java/com/ncslab/code/c/linux/pc/simulation/".<br>
+	 * Or, you can use the absolute path for the filePath.
+	 * @param filePath the reletive path of the file in the source folder.
+	 * @param targetPath the target path of the file.
+	 * @see addWrittenFile(String filePath, String targetPath, boolean overwrite)
+	 */
+	public static void addWrittenFile(String filePath, String targetPath) {
+		addWrittenFile(filePath, targetPath, true);
+	}
+	
 	//模块的输入是否作为信号
 
 	public boolean inputAsSignal=true;
@@ -31,6 +107,12 @@ abstract public class CodeStructC {
 	//define arrays to save data
 	public String arraysCode="";
     //end
+
+	// Global variables
+	public String globalVariable="";
+	// public String globalDeclare="";
+	public String globalInit="";
+	// public String globalEnd="";
 
 	public String includeCode="";
 	//init初始化的代码
@@ -69,18 +151,32 @@ abstract public class CodeStructC {
 	/*定义监控数据实体初始化的代码，初始化各个组件结构的名称，path等，让指针指向指定的位置，建立数据结构， */
 	public String dataStructureInitCode="";
 
+	/**
+	 * End code, that will be run after the simulation ends
+	 */
+	public String finalizeCode = "";
+
 	private int parameterIndex=1;
 	private int stateIndex=1;
 
 	private Vector<Parameter> parameterList=new Vector<Parameter>();
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
+	private Vector<GlobalVariable> variableList = new Vector<>();
+	
 
 	protected CodeModelC model;
 
 	public CodeStructC(CodeModelC model) {
 		this.model=model;
+	}
 
+	public String getGlobalVariable(){
+		return this.globalVariable;
+	}
+
+	public void addGlobalVariable(String code){
+		this.globalVariable += code;
 	}
 
 	public String getInitCode() {
@@ -105,6 +201,14 @@ abstract public class CodeStructC {
 
 	public void addOutputCode(String code) {
 		outputCode+=code;
+	}
+
+	public String getFinalizeCode(){
+		return this.finalizeCode;
+	}
+
+	public void addFinalizeCode(String code){
+		this.finalizeCode += code;
 	}
 	
 	public void addTerminateCode(String code) {
@@ -141,6 +245,9 @@ abstract public class CodeStructC {
 				+"#include <cmath>\n"
 				+"#include \"Matrix.hpp\"\n"
 				+"#include \"ricatti.hpp\"\n"
+
+				//end NCS machine learning toolbox
+
 				+"#include \"mainccode.hpp\"\n"
 				+"#include \"ncslabdefines.hpp\"\n"
 				+"#include \"ncs_serialport.h\"\n"
@@ -159,11 +266,19 @@ abstract public class CodeStructC {
 				+"int sample_i=0;\n"
 				//end
 				;
+				//then, add include code.
+				addIncludeCode();
 	}
 
 	protected void writeMainCodeFile() {
 		System.out.println("Writing file mainccode.cpp...");
 		//precode是参数，状态，和输出的定义，以全局变量的方式
+
+		// Static codes
+		addGlobalDeclareCode();
+		addGlobalInitCode();
+		addGlobalEndCode();
+
 		String preCode="extern MODEL* mp;\n"
 					+statementCode+"\n"
 					+hardwareDefineCode+"\n"
@@ -171,6 +286,8 @@ abstract public class CodeStructC {
 					+stateDefineCode+"\n"
 					+outputSignalDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
+				//global variables
+				+this.globalVariable+"\n"
 				//author:xiazhiqiang
 				//add define arrays code
 				+arraysCode+"\n"
@@ -179,6 +296,8 @@ abstract public class CodeStructC {
 				+preCode+"\n"				
 				+dataStructureCode+"\n"
 				+"void NCSLabInit(){\n"
+				
+				+globalInit+"\n"
 				+dataStructureInitCode+"\n"
 				+initCode+"\n"
 				+"}\n"
@@ -215,6 +334,10 @@ abstract public class CodeStructC {
 				+"void NCSLabTerminate(){\n"
 				+terminateCode+"\n"
 				+"}\n"
+
+				+"void NCSLabFinalize(){\n"
+				+finalizeCode+"\n"
+				+"}\n"
 				
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
@@ -246,6 +369,10 @@ abstract public class CodeStructC {
 	public void addOutputSignal(OutputSignal outputSignal) {
 		outputSignalList.add(outputSignal);
 	}
+	// add global variables
+	public void addGlobalVariable(GlobalVariable variable){
+		this.variableList.add(variable);
+	}
 	
 	public void generateHardwareDefineCode() {
 		hardwareDefineCode+="/*Define hardware structures*/\n";
@@ -262,6 +389,20 @@ abstract public class CodeStructC {
 		for(Parameter parameter:parameterList) {
 			//parameterDefineCode+=parameter.getDefineString()+" "+parameter.getName()+";\n";
 			parameterDefineCode+=parameter.getDefineCodeC();
+		}
+	}
+
+	public void generateGlobalVariableDefineCode(){
+		globalVariable+="/*Define variables for global variables*/\n";
+		for(GlobalVariable variable:variableList){
+			globalVariable += variable.getDefineCodeC();
+		}
+	}
+
+	public void generateGlobalVariableEndCode(){
+		finalizeCode+="/*End of global variables*/\n";
+		for(GlobalVariable variable:variableList){
+			finalizeCode += variable.getEndCodeC();
 		}
 	}
 
@@ -394,6 +535,16 @@ abstract public class CodeStructC {
 			outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Write the file to be used here.
+	 * @see addWrittenFile(String filePath, String targetPath, boolean overwrite)
+	 */
+	protected void writeNCSWrittenFiles(){
+		for(WrittenFile file:writtenFileSet){
+			writeNCSLabFile(file.getFilePath(), file.getTargetPath(), file.isOverritten());
 		}
 	}
 	
@@ -866,4 +1017,67 @@ abstract public class CodeStructC {
 		this.statementCode += code;
 	}
 
+	private void addGlobalDeclareCode() {
+		for(String code:globalDeclareCodeSet) {
+			this.globalVariable+=code;
+		}
+	}
+
+	private void addGlobalInitCode() {
+		for(String code:globalInitCodeSet) {
+			this.globalInit+=code;
+		}
+	}
+
+	private void addGlobalEndCode() {
+		generateGlobalVariableEndCode();
+		for(String code:globalEndCodeSet) {
+			this.finalizeCode+=code;
+		}
+	}
+
+	private void addIncludeCode(){
+		for(String code:includeCodeSet) {
+			this.includeCode+=code;
+		}
+	}
+
+}
+
+class WrittenFile{
+	String filePath;
+	String targetPath;
+	boolean overritten;
+	WrittenFile(String filePath,String targetPath, boolean overritten){
+		this.filePath=filePath;
+		this.targetPath=targetPath;
+		this.overritten = overritten;
+	}
+
+	String getFilePath() {
+		return filePath;
+	}
+
+	String getTargetPath(){
+		return targetPath;
+	}
+
+	boolean isOverritten(){
+		return overritten;
+	}
+
+	// Override hashCode and equals to make the set unique
+	@Override
+	public int hashCode() {
+		return targetPath.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof WrittenFile) {
+			WrittenFile file=(WrittenFile)obj;
+			return file.targetPath.equals(this.targetPath);
+		}
+		return false;
+	}
 }

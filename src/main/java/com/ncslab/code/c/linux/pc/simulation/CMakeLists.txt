@@ -14,31 +14,39 @@ elseif(UNIX)
     set(CMAKE_TOOLCHAIN_FILE "/home/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
 endif()
 
-
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(nlohmann_json REQUIRED)
-
 
 # you can also manually list source files with "set(SOURCES ...)" command
 # list header files for IDEs (not necessary)
 file(GLOB ncslab_src CONFIGURE_DEPENDS "*.h" "*.hpp" "*.c" "*.cpp")
 
-
 add_executable(${PROJECT_NAME} ${ncslab_src})
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-# set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
-
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
-        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR} 
+        /usr/include/python3.10     
+)
+
+target_link_directories(${PROJECT_NAME} 
+    PRIVATE
+        /usr/lib/python3.10/config-3.10-x86_64-linux-gnu
+        /usr/lib/x86_64-linux-gnu
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
+        ${JSONCPP_LIBRARIES}
         nlohmann_json::nlohmann_json
         Eigen3::Eigen
+        # python support
+        crypt
+        dl
+        m
+        python3.10
 )
 
 target_compile_options(${PROJECT_NAME}
@@ -55,3 +63,4 @@ target_link_options(${PROJECT_NAME}
         -rdynamic
         -fPIC
 )
+

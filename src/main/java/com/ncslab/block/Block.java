@@ -8,6 +8,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
+import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
@@ -35,7 +36,8 @@ public class Block implements MCodeBlock, CCodeBlock{
 	
 	protected Vector<Parameter> parameterList = new Vector<Parameter>();
 	protected Vector<State> stateList = new Vector<State>();
-	
+	protected Vector<GlobalVariable> globalVariableList = new Vector<>(); // global variables
+
 	protected Vector<OutputSignal> outputSignalList = new Vector<OutputSignal>();
 	
 	//是否输出的代码已经生成，如果生成，遍历到这个模块的时候，直接引用就行了，就不需要进一步遍历了
@@ -113,6 +115,10 @@ public class Block implements MCodeBlock, CCodeBlock{
 	
 	public Vector<State> getStateList(){
 		return stateList;
+	}
+
+	public Vector<GlobalVariable> getGlobalVariableList(){
+		return this.globalVariableList;
 	}
 	
 	public void setBlockId(int blockId) {
@@ -265,6 +271,10 @@ public class Block implements MCodeBlock, CCodeBlock{
 		}
 		for(State state : stateList) {
 			code.addState(state);
+		}
+		// Add global variables into the variableList.
+		for (GlobalVariable variable : globalVariableList) {
+			code.addGlobalVariable(variable);
 		}
 	}
 	

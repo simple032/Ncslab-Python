@@ -14,6 +14,7 @@ void NCSLabUpdate();
 void NCSLabDiscreteUpdate();
 void NCSLabTerminate();
 void NCSLabSinkOutput();
+void NCSLabFinalize();
 MODEL *  NCSLabGetModelP();
 
 #endif
