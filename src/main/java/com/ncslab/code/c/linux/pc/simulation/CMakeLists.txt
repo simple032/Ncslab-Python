@@ -9,12 +9,13 @@ project(
 
 if (APPLE)
     # change this to the real path
-    set(CMAKE_PREFIX_PATH "/Users/square/Documents/Code/libtorch")
+    set(CMAKE_TOOLCHAIN_FILE "/Users/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
 elseif(UNIX)
-    set(CMAKE_PREFIX_PATH "/home/square/ncslablink/libtorch")
+    set(CMAKE_TOOLCHAIN_FILE "/home/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
 endif()
 
-find_package(Torch REQUIRED)
+
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(nlohmann_json REQUIRED)
 
 
@@ -36,8 +37,8 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        ${TORCH_LIBRARIES}
         nlohmann_json::nlohmann_json
+        Eigen3::Eigen
 )
 
 target_compile_options(${PROJECT_NAME}
@@ -47,7 +48,6 @@ target_compile_options(${PROJECT_NAME}
         -g
         -O2
         -Wformat
-        ${TORCH_CXX_FLAGS}
 )
 
 target_link_options(${PROJECT_NAME}
@@ -55,15 +55,3 @@ target_link_options(${PROJECT_NAME}
         -rdynamic
         -fPIC
 )
-
-# The following code block is suggested to be used on Windows.
-# According to https://github.com/pytorch/pytorch/issues/25457,
-# the DLLs need to be copied to avoid memory errors.
-if (MSVC)
-  file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
-  add_custom_command(TARGET ${PROJECT_NAME}
-                     POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                     ${TORCH_DLLS}
-                     $<TARGET_FILE_DIR:ncslab>)
-endif (MSVC)

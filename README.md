@@ -78,13 +78,41 @@ $ sudo snap install cmake
 $ sudo snap install code
 ```
 
-2.2 install libraries
+p.s. out-of-source build is highly recommended for cmake, i.e. create a build folder in the root directory and run cmake in the build folder.
+
+2.2 install vcpkg
+
+- vcpkg
+We use vcpkg to manage the dependencies. Refer to the [official website](https://github.com/microsoft/vcpkg).
+
 ```shell
-git clone https://github.com/nlohmann/json.git
-cd json
-cmake .
-cmake --build . --config Release
-sudo cmake --install . --config Release
+git clone https://github.com/microsoft/vcpkg
+./vcpkg/bootstrap-vcpkg.sh
+```
+
+(Optional) You can create an alias to use vcpkg more conveniently.
+```sh
+# Assume that you have installed vcpkg in the home directory
+# bash
+echo "alias vcpkg='~/vcpkg/vcpkg'" >> ~/.bashrc
+# zsh (default shell in macOS)
+echo "alias vcpkg='~/vcpkg/vcpkg'" >> ~/.zshrc
+
+source ~/.bashrc
+```
+
+2.3 Install libraries
+
+- nlohmann/json
+If you have install nlohmann-json with "cmake install", you can skip this step.
+```sh
+vcpkg install nlohmann-json
+```
+
+- eigen3
+A C++ template library for linear algebra.
+```sh
+vcpgk install eigen3
 ```
 
 #### 3. Nginx
@@ -168,17 +196,15 @@ If you use homebrew to install nginx, its config file is located in "/opt/homebr
 Do it your self, ditto.
 
 ## Code
-### C++ 
-```bash
-$ sudo apt install libjsoncpp-dev
-```
-Modify "config.properties" and makefile.
 
 ### Java Part
-Clean, compile and package the project. Then right click "ncslablink-1.0-SNAPSHOT" (in target folder) and select "run on server".
+
+Use Maven to clean, compile and package the project. Then right click "ncslablink-1.0-SNAPSHOT" (in target folder) and select "run on server".
 
 
 ## Contributing
 - HU Wenshan
 - XIA Zhiqiang
 - ZHONG Wuzizheng
+- DONG Jinda
+- JU Xinyan
