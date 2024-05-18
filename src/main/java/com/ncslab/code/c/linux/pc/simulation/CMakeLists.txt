@@ -7,9 +7,17 @@ project(
     LANGUAGES CXX
 )
 
+if (APPLE)
+    # change this to the real path
+    set(CMAKE_TOOLCHAIN_FILE "/Users/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
+elseif(UNIX)
+    set(CMAKE_TOOLCHAIN_FILE "/home/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
+endif()
+
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(nlohmann_json REQUIRED)
 
-
+# you can also manually list source files with "set(SOURCES ...)" command
 # list header files for IDEs (not necessary)
 file(GLOB ncslab_src CONFIGURE_DEPENDS "*.h" "*.hpp" "*.c" "*.cpp")
 
@@ -25,14 +33,16 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_directories(${PROJECT_NAME} 
     PRIVATE
-    /usr/lib/python3.10/config-3.10-x86_64-linux-gnu
-    /usr/lib/x86_64-linux-gnu
+        /usr/lib/python3.10/config-3.10-x86_64-linux-gnu
+        /usr/lib/x86_64-linux-gnu
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${JSONCPP_LIBRARIES}
         nlohmann_json::nlohmann_json
+        Eigen3::Eigen
+        # python support
         crypt
         dl
         m
@@ -54,12 +64,3 @@ target_link_options(${PROJECT_NAME}
         -fPIC
 )
 
-# The following code block is suggested to be used on Windows.
-if (MSVC)
-  file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
-  add_custom_command(TARGET ${PROJECT_NAME}
-                     POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                     ${TORCH_DLLS}
-                     $<TARGET_FILE_DIR:ncslab>)
-endif (MSVC)
