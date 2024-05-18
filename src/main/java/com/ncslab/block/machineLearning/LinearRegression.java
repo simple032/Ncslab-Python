@@ -19,6 +19,10 @@ public class LinearRegression extends MachineLearning{
     public LinearRegression(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
+        CodeStructC.addIncludeCode("#include \"LinearRegression.hpp\"");
+        CodeStructC.addWrittenFile("../../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
+        CodeStructC.addWrittenFile("../../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
+        
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.activationFunction = new Parameter(this, 2, "activationFunction", paramValues.getString("activationFunction"));
         this.learningRate = new Parameter(this, 3, "learningRate", paramValues.getString("learningRate"));

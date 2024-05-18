@@ -127,6 +127,6 @@ int main(int argc, char *argv[]){
 	startTimer(mp->stepSize);
 	pthread_join(extModeData.servetThread,NULL);
 
-	
+	NCSLabFinalize();
 	//WaitForSingleObject(CreateEvent(NULL,FALSE,FALSE,NULL),INFINITE);
 }

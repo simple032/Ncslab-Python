@@ -55,10 +55,6 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../ricatti.hpp","ricatti.hpp", true);
 		writeNCSLabFile("../../../onestep.hpp","onestep.hpp", true);
 		
-		//NCS machine learning toolbox
-		writeNCSLabFile("../../../ml/MLModel.hpp","MLModel.hpp", true);
-		writeNCSLabFile("../../../ml/LR/LinearRegression.hpp","LinearRegression.hpp", true);
-		writeNCSLabFile("../../../ml/LR/linear_regression_model.py", "linear_regression_model.py", true);
 
 		// Implement the general file of the Netcon protocol
 		// writeNCSLabFile("../../ServerThread.cpp","ServerThread.cpp");
@@ -112,6 +108,7 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 			break;
 		}
 		
+		writeNCSWrittenFiles();// write the files in <code>CodeStructC.writtenFileSet</code>.
 	}
 	
 	// TODO: similar to its super implementation
@@ -162,5 +159,10 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		}
 
 		return false;
+	}
+
+	@Override
+	protected void writeNCSWrittenFiles(){
+		super.writeNCSWrittenFiles();
 	}
 }

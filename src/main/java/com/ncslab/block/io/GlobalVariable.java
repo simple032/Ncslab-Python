@@ -91,6 +91,15 @@ public abstract class GlobalVariable {
      * @author Ethy9160
      */
     public abstract String getInitCodeC();
+
+	/**
+	 * This is for the project managers to control the finallized code in the cpp file.
+	 * @return String for your final operator on the local variable. DO NOT RETURN NULL!
+	 * @author Ethy9160
+	 */
+	public String getEndCodeC(){
+		return "";
+	}
 	
 	public int getId() {
 		return this.id;
