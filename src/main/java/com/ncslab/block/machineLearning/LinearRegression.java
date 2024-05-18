@@ -19,6 +19,10 @@ public class LinearRegression extends MachineLearning{
     public LinearRegression(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
+        CodeStructC.addIncludeCode("#include \"LinearRegression.hpp\"");
+        CodeStructC.addWrittenFile("../../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
+        CodeStructC.addWrittenFile("../../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
+        
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.activationFunction = new Parameter(this, 2, "activationFunction", paramValues.getString("activationFunction"));
         this.learningRate = new Parameter(this, 3, "learningRate", paramValues.getString("learningRate"));
@@ -48,14 +52,10 @@ public class LinearRegression extends MachineLearning{
         initCode += this.learningRate.getInitCodeC();
         initCode += this.lossFunction.getInitCodeC();
         initCode += this.dataset.getInitCodeC();
-        // initCode += "Py_Initialize();\n";
-        // initCode += "PyRun_SimpleString(\"import sys\");\n";
-        // initCode += "PyRun_SimpleString(\"sys.path.append('./')\");\n";
         initCode += this.modelVariable.getInitCodeC();
 
         initCode += String.format("%s->trainModel(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/winddata1.csv\", %d, %f);\n", this.modelVariable.getName(), 100, 0.01);
-        // initCode += "linearRegressionModel = std::make_unique<LinearRegression>(3,1);\n";
-        // initCode += "linearRegressionModel->trainModel(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/winddata1.csv\", 100, 0.01);\n";
+        
         code.addInitCode(initCode);
     }
 
@@ -75,19 +75,11 @@ public class LinearRegression extends MachineLearning{
 
     @Override
     public String getVariableName() {
-        // TODO Auto-generated method stub
-        // throw new UnsupportedOperationException("Unimplemented method 'getVariableName'");
         return "std::unique_ptr<LinearRegression>";
     }
 
     @Override
     public String getVariableParameters() {
-        // TODO Auto-generated method stub
-        // throw new UnsupportedOperationException("Unimplemented method 'getVariableParameters'");
-        // Vector<String> v = new Vector<String>();
-        // v.add("3");
-        // v.add("1");
-        // return v;
         return "std::make_unique<LinearRegression>(3,1)";
     }
 }

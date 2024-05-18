@@ -9,31 +9,43 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
-import com.greenpineyu.fel.parser.FelParser.program_return;
 import com.ncslab.block.Block;
 import com.ncslab.ncslablink.NCSLabModel;
 
 public abstract class MachineLearning extends Block{
+    protected static String PY_INIT = "Py_Initialize();";
+    protected static String PY_INCLUDE = "\nPyRun_SimpleString(\"import sys\");\nPyRun_SimpleString(\"sys.path.append('./')\");\n";
+    protected static String PY_FINALIZE = "Py_Finalize();\n";
+
     // protected MLVariable modelVariable;
     // private Parameter layersNumber, lossFunction, learningRate, inputFeatures, activationFunction, dataset;
     public MachineLearning(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
+        CodeStructC.addGlobalInitCode(PY_INIT);
+        CodeStructC.addGlobalInitCode(PY_INCLUDE);
+        CodeStructC.addGlobalEndCode(PY_FINALIZE);
+
+        //add include code for MLModel.hpp and Python.h
+        CodeStructC.addIncludeCode("#include<Python.h>\n");
+        CodeStructC.addIncludeCode("#include \"MLModel.hpp\"\n");
+        //write file MLModel.hpp
+        CodeStructC.addWrittenFile("../../../ml/MLModel.hpp", "MLModel.hpp");
     }
 
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
         String initCode = "/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
-        // initCode += "Py_Initialize();\n";
-        // initCode += "PyRun_SimpleString(\"import sys\");\n";
-        // initCode += "PyRun_SimpleString(\"sys.path.append('./')\");\n";
-        // initCode += this.inputFeatures.getInitCodeC();
         code.addInitCode(initCode);
     }
 
     public abstract String getVariableName();
 
     public abstract String getVariableParameters();
+
+    public String getEndCode(){
+        return "";
+    }
 
     protected class MLVariable extends GlobalVariable{
         public MLVariable(Block block, int id, String localName, String dataString) {
@@ -42,15 +54,6 @@ public abstract class MachineLearning extends Block{
     
         @Override
         public String getInitCodeC() {
-            // StringBuilder parameters = new StringBuilder();
-            // Vector<String> variableParameters = getVariableParameters();
-            // for(String s:variableParameters){
-            //     parameters.append(s);
-            //     parameters.append(",");
-            // }
-            // if(parameters.length()>0){
-            //     parameters.deleteCharAt(parameters.length()-1);
-            // }
             return String.format("%s = %s;\n", 
                         MLVariable.this.getName(), 
                         MachineLearning.this.getVariableParameters());   
@@ -61,6 +64,11 @@ public abstract class MachineLearning extends Block{
             return String.format("%s %s;\n", 
             MachineLearning.this.getVariableName(), 
             MLVariable.this.getName());
+        }
+
+        @Override
+        public String getEndCodeC() {
+            return MachineLearning.this.getEndCode();
         }
     }
 }
