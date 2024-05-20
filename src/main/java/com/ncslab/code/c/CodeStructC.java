@@ -25,7 +25,7 @@ abstract public class CodeStructC {
 	public static Set<String> globalEndCodeSet = new LinkedHashSet<>();
 	public static Set<String> includeCodeSet = new LinkedHashSet<>();
 	public static Set<WrittenFile> writtenFileSet = new HashSet<>();
-	
+
 	/**
 	 * You can freely add declare code in this function, and it will be added to the
 	 * cpp file.
@@ -88,12 +88,12 @@ abstract public class CodeStructC {
 	 * Or, you can use the absolute path for the filePath.
 	 * @param filePath the reletive path of the file in the source folder.
 	 * @param targetPath the target path of the file.
-	 * @see addWrittenFile(String filePath, String targetPath, boolean overwrite)
+	 * @see #addWrittenFile(String filePath, String targetPath, boolean overwrite)
 	 */
 	public static void addWrittenFile(String filePath, String targetPath) {
 		addWrittenFile(filePath, targetPath, true);
 	}
-	
+
 	//模块的输入是否作为信号
 
 	public boolean inputAsSignal=true;
@@ -102,7 +102,7 @@ abstract public class CodeStructC {
 
 
 	//头文件的代码
-	
+
 	//author:xiazhiqiang
 	//define arrays to save data
 	public String arraysCode="";
@@ -121,9 +121,9 @@ abstract public class CodeStructC {
 	public String outputCode="";
 	//update的代码
 	public String updateCode="";
-	
+
 	public String discreteUpdateCode="";
-	
+
 	public String sinkOutputCode="";
 	public String sinkStatusClearCode="";
 
@@ -131,7 +131,7 @@ abstract public class CodeStructC {
 	public String statementCode="";
 	//微分计算的代码
 	public String derivativeCode="";
-	
+
 	public String terminateCode="";
 
 	/*����Parameter�Ĵ��� ��*REAL Block5_Parameter_P*/
@@ -141,7 +141,7 @@ abstract public class CodeStructC {
 	public String stateDefineCode="";
 	/*����Output�źŵĴ��룬�� REAL Block1_Output1;*/
 	public String outputSignalDefineCode="";
-	
+
 	public String hardwareDefineCode="";
 
 
@@ -163,7 +163,7 @@ abstract public class CodeStructC {
 	private Vector<State> stateList=new Vector<State>();
 	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 	private Vector<GlobalVariable> variableList = new Vector<>();
-	
+
 
 	protected CodeModelC model;
 
@@ -210,7 +210,7 @@ abstract public class CodeStructC {
 	public void addFinalizeCode(String code){
 		this.finalizeCode += code;
 	}
-	
+
 	public void addTerminateCode(String code) {
 		terminateCode+=code;
 	}
@@ -222,15 +222,15 @@ abstract public class CodeStructC {
 	public void addUpdateCode(String code) {
 		updateCode+=code;
 	}
-	
+
 	public void addDiscreteUpdateCode(String code) {
 		discreteUpdateCode+=code;
 	}
-	
+
 	public void addSinkOutputCode(String code) {
 		sinkOutputCode+=code;
 	}
-	
+
 	public void addSinkStatusClearCode(String code) {
 		sinkOutputCode+=code;
 	}
@@ -292,11 +292,11 @@ abstract public class CodeStructC {
 				//add define arrays code
 				+arraysCode+"\n"
 				//end
-				
-				+preCode+"\n"				
+
+				+preCode+"\n"
 				+dataStructureCode+"\n"
 				+"void NCSLabInit(){\n"
-				
+
 				+globalInit+"\n"
 				+dataStructureInitCode+"\n"
 				+initCode+"\n"
@@ -312,25 +312,25 @@ abstract public class CodeStructC {
 				+"void NCSLabOutput(){\n"
 				+outputCode+"\n"
 				+"}\n"
-				
+
 				+"void NCSLabDerivative(){\n"
 				+derivativeCode+"\n"
 				+"}\n"
-				
+
 				+"void NCSLabUpdate(){\n"
 				+updateCode+"\n"
 				+"}\n"
-				
+
 				+"void NCSLabDiscreteUpdate(){\n"
 				+"double dist;\n"
 				+discreteUpdateCode+"\n"
 				+"}\n"
-				
+
 				+"void NCSLabSinkOutput(){\n"
 				+sinkOutputCode+"\n"
 				+sinkStatusClearCode+"\n"
 				+"}\n"
-				
+
 				+"void NCSLabTerminate(){\n"
 				+terminateCode+"\n"
 				+"}\n"
@@ -338,7 +338,7 @@ abstract public class CodeStructC {
 				+"void NCSLabFinalize(){\n"
 				+finalizeCode+"\n"
 				+"}\n"
-				
+
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
 				+"}\n"
@@ -373,7 +373,7 @@ abstract public class CodeStructC {
 	public void addGlobalVariable(GlobalVariable variable){
 		this.variableList.add(variable);
 	}
-	
+
 	public void generateHardwareDefineCode() {
 		hardwareDefineCode+="/*Define hardware structures*/\n";
 		for(Block block:model.getBlockList()) {
@@ -382,7 +382,7 @@ abstract public class CodeStructC {
 			}
 		}
 	}
-	
+
 	// generate code for defining parameters
 	public void generateParameterDefineCode() {
 		parameterDefineCode+="/*Define variables for parameters*/\n";
@@ -443,7 +443,7 @@ abstract public class CodeStructC {
 	protected String codePathBase=Property.instance.getProperty("CCodePath");
 	//目标文件夹的位置codePathBase/用户id/modelId
 	protected String codePath;
-	
+
 	public String getCodePath() {
 		return this.codePath;
 	}
@@ -461,7 +461,7 @@ abstract public class CodeStructC {
 			for(Block block : model.getBlockList())
 			{
 				if(block.isSFcnBlock()) {
-					sfcn += 
+					sfcn +=
 					block.getSFcnName()+"_"+block.getBlockId()+".o ";
 					for(String module : block.getSFunctionModuleList())
 					{
@@ -469,24 +469,24 @@ abstract public class CodeStructC {
 					}
 				}
 			}
-			sfcn += "\n";	
-					
+			sfcn += "\n";
+
 			byte[] buffer = sfcn.getBytes();
 			outputStream.write(buffer,0,buffer.length);
-			
+
 			buffer = new byte[1024];
-			
+
 			int len;
 			while((len=InputStream.read(buffer))>0) {
 				outputStream.write(buffer,0,len);
 			}
-			
+
 			outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	//写文件的方法，将文件从resource中拷贝出来，写在目标文件夹
 	protected void writeNCSLabFile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
@@ -498,24 +498,24 @@ abstract public class CodeStructC {
 		}
 		FileOutputStream outputStream;
 		try {
-			outputStream = new FileOutputStream(file);						
-			byte[] buffer = new byte[1024];			
+			outputStream = new FileOutputStream(file);
+			byte[] buffer = new byte[1024];
 			int len;
 			while((len=InputStream.read(buffer))>0) {
 				outputStream.write(buffer,0,len);
 			}
-			
+
 			outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected void writeNCSLabFile(String fileName, String fileNameOut) {
 		// TODO: writeNCSLabFile(fileName, fileNameOut, false);
 		writeNCSLabFile(fileName, fileNameOut, true);
 	}
-	
+
 	protected void writeNCSLabFile(String fileName, String fileNameOut, boolean overwrite) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
@@ -540,28 +540,28 @@ abstract public class CodeStructC {
 
 	/**
 	 * Write the file to be used here.
-	 * @see addWrittenFile(String filePath, String targetPath, boolean overwrite)
+	 * @see #addWrittenFile(String filePath, String targetPath, boolean overwrite)
 	 */
 	protected void writeNCSWrittenFiles(){
 		for(WrittenFile file:writtenFileSet){
-			writeNCSLabFile(file.getFilePath(), file.getTargetPath(), file.isOverritten());
+			writeNCSLabFile(file.getFilePath(), file.getTargetPath(), file.isOverwritten());
 		}
 	}
-	
+
 	/*生成宏定义，定义各种数据结构的个数*/
 	protected void wirteDefineFile() {
-		
+
 		String code="#define STATE_NUM "+stateList.size()+"\n";
-		
+
 		code+="#define SINGLE_STATE_NUM "+model.getSingleStateNum()+"\n";
 		code+="#define MATRIX_STATE_NUM "+model.getMatrixStateNum()+"\n";
-		
+
 		code+="#define STEP_SIZE (1.0*"+model.getConfig().getFixedStep()+")\n";
-		
+
 		if(model.getModelMode()==ModelMode.Simulation) {
 			code+="#define MAX_DATA_POINTS "+model.getConfig().getMaxDataPoints()+"\n";
 		}
-		
+
 		File file = new File(codePath+"ncslab.h");
 		FileOutputStream outputStream;
 		try {
@@ -572,7 +572,7 @@ abstract public class CodeStructC {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected byte[] readFile(String fileName) {
 		File file = new File(codePath+fileName);
 		FileInputStream inputStream;
@@ -587,7 +587,7 @@ abstract public class CodeStructC {
 		}
 		return fileData;
 	}
-	
+
 	public byte[] readExeFile() {
 		return readFile("ncslab");
 	}
@@ -621,7 +621,7 @@ abstract public class CodeStructC {
 		//访问主数据结构的接口API定义
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
-		
+
 		writeNCSLabFile("util.cpp");
 
 		//实现Netcon协议的通用文件
@@ -645,9 +645,9 @@ abstract public class CodeStructC {
 		}
 
 		writeMainCodeFile();
-		
+
 		wirteDefineFile();
-		
+
 		switch(model.getSolver()) {
 		case ode1:
 			writeNCSLabFile("ode1.c","onestep.c");
@@ -663,15 +663,15 @@ abstract public class CodeStructC {
 			break;
 		case ode5:
 			writeNCSLabFile("ode5.c","onestep.c");
-			break;	
+			break;
 		case ode6:
 			writeNCSLabFile("ode6.c","onestep.c");
-			break;	
+			break;
 		default:
 			System.out.println("error");
 			break;
 		}
-		
+
 	}
 
 	public boolean makeExeFile() {
@@ -724,14 +724,14 @@ abstract public class CodeStructC {
 	//建立数据结构的定义
 	private void generateDataStrucure() {
 		dataStructureCode+="/*Define data structures*/\n";
-		
+
 		if(model.getModelMode()==ModelMode.Simulation) {
 			dataStructureCode+="/*Define terminal structures*/\n";
-		
+
 			for(Terminal terminal:model.getTerminalList()) {
 				dataStructureCode+=terminal.getDefineCodeC();
 			}
-			
+
 			dataStructureCode+="TERMINAL *terminals["+model.getTerminalList().size()+"];\n";
 		}
 
@@ -839,7 +839,7 @@ abstract public class CodeStructC {
 
 		dataStructureCode+="/*Define block structures*/\n";
 		if(model.getBlockList().size()>0) {
-			for(Block block:model.getBlockList()) {			
+			for(Block block:model.getBlockList()) {
 				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+","+model.getConfig().getStartTime()+",0};\n";
 			}
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
@@ -847,23 +847,23 @@ abstract public class CodeStructC {
 		else {
 			dataStructureCode+="BLOCK **blocks=NULL";
 		}
-		dataStructureCode+="MODEL model={(char *)\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";  
+		dataStructureCode+="MODEL model={(char *)\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";
 	}
 
 
 	//初始化数据结构，实现数据结构之间的指针连接
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
-		
+
 		if(model.getModelMode()==ModelMode.Simulation) {
 			dataStructureInitCode+="/*Initialize terminals*/\n";
-		
+
 			int i=0;
 			for(Terminal terminal:model.getTerminalList()) {
 				dataStructureInitCode+="terminals["+i+"]=&"+terminal.getTerminalName()+";\n";
 				i++;
 			}
-			
+
 			dataStructureInitCode+="model.terminalNum="+model.getTerminalList().size()+";\n";
 		}
 
@@ -1041,43 +1041,53 @@ abstract public class CodeStructC {
 			this.includeCode+=code;
 		}
 	}
-
 }
 
-class WrittenFile{
-	String filePath;
-	String targetPath;
-	boolean overritten;
-	WrittenFile(String filePath,String targetPath, boolean overritten){
-		this.filePath=filePath;
-		this.targetPath=targetPath;
-		this.overritten = overritten;
-	}
+class WrittenFile implements Comparable<WrittenFile>{
+    String filePath;
+    String targetPath;
+    boolean overwritten;
+    WrittenFile(String filePath,String targetPath, boolean overwritten){
+        this.filePath=filePath;
+        this.targetPath=targetPath;
+        this.overwritten = overwritten;
+    }
 
-	String getFilePath() {
-		return filePath;
-	}
+    String getFilePath() {
+        return filePath;
+    }
 
-	String getTargetPath(){
-		return targetPath;
-	}
+    String getTargetPath(){
+        return targetPath;
+    }
 
-	boolean isOverritten(){
-		return overritten;
-	}
+    boolean isOverwritten(){
+        return overwritten;
+    }
 
-	// Override hashCode and equals to make the set unique
-	@Override
-	public int hashCode() {
-		return targetPath.hashCode();
-	}
+    // Override hashCode and equals to make the set unique
+    @Override
+    public int hashCode() {
+        return targetPath.hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if(obj instanceof WrittenFile) {
-			WrittenFile file=(WrittenFile)obj;
-			return file.targetPath.equals(this.targetPath);
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof WrittenFile) {
+            WrittenFile file=(WrittenFile)obj;
+            return file.targetPath.equals(this.targetPath);
+        }
+        return false;
+    }
+
+    /**
+     * Impliment compareTo in order to defeat hash attack.
+     * Though I don't think our project will suffer from hash attack...
+     * @param o the object to be compared.
+     * @return int value...
+     */
+    @Override
+    public int compareTo(WrittenFile o) {
+        return this.targetPath.compareTo(o.targetPath);
+    }
 }
