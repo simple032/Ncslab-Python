@@ -22,9 +22,9 @@ public class LogisticRegression extends MachineLearning {
         super(jsonObject, model);
 
         //todo: change linear regression model to logistic
-        // CodeStructC.addIncludeCode("#include \"LogisticRegression.hpp\"");
-        CodeStructC.addWrittenFile("../../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
-        CodeStructC.addWrittenFile("../../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
+        CodeStructC.addIncludeCode("#include \"LogisticRegression.hpp\"");
+        CodeStructC.addWrittenFile("../../../ml/LogisticRegression/LogisticRegression.hpp", "LinearRegression.hpp");
+        CodeStructC.addWrittenFile("../../../ml/LogisticRegression/logistic_regression_model.py", "logistic_regression_model.py");
         
 
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
@@ -32,7 +32,7 @@ public class LogisticRegression extends MachineLearning {
         this.learningRate = new Parameter(this, 3, "learningRate", paramValues.getString("learningRate"));
         this.lossFunction = new Parameter(this, 4,"lossFunction", paramValues.getString("lossFunction"));
         this.dataset = new Parameter(this, 5, "dataset", paramValues.getString("dataset"));
-        this.modelVariable = new MLVariable(this, 1, "linearRegression", "2333");
+        this.modelVariable = new MLVariable(this, 1, "logisticRegression", "2333");
 
         this.parameterList.add(this.inputFeatures);
         this.parameterList.add(this.activationFunction);
@@ -63,7 +63,7 @@ public class LogisticRegression extends MachineLearning {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder sb = new StringBuilder("/*Code for output of block Linear Regression:("+getBlockId()+")"+getBlockName()+"*/\n");
+        StringBuilder sb = new StringBuilder("/*Code for output of block Logistic Regression:("+getBlockId()+")"+getBlockName()+"*/\n");
         
         sb.append(String.format("std::vector<double> %s_v = {1.0,2.0,3.0};", this.modelVariable.getName()));
         sb.append(outputPortList.get(0).getOutputSignalC().getName());     
@@ -77,13 +77,13 @@ public class LogisticRegression extends MachineLearning {
     @Override
     public String getVariableName() {
         // return "std::unique_ptr<LinearRegression>";
-        return "LinearRegression*";
+        return "LogisticRegression*";
     }
 
     @Override
     public String getVariableParameters() {
         // return "std::make_unique<LinearRegression>(3,1)";
-        return "new LinearRegression(3,1)";
+        return "new LogisticRegression(3,1)";
     }
 
     @Override

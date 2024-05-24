@@ -13,22 +13,22 @@ import com.ncslab.block.Block;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.data.DataType;
 
-public class LinearRegression extends MachineLearning{
+public class CNN extends MachineLearning{
     public Parameter layersNumber, lossFunction, learningRate, inputFeatures, activationFunction, dataset;
     private MLVariable modelVariable;
-    public LinearRegression(JSONObject jsonObject, NCSLabModel model){
+    public CNN(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"LinearRegression.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
-        CodeStructC.addWrittenFile("../../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
+        CodeStructC.addIncludeCode("#include \"CNN.hpp\"\n");
+        CodeStructC.addWrittenFile("../../../ml/CNN/CNN.hpp", "CNN.hpp");
+        CodeStructC.addWrittenFile("../../../ml/CNN/cnn_model.py", "cnn_model.py");
         
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.activationFunction = new Parameter(this, 2, "activationFunction", paramValues.getString("activationFunction"));
         this.learningRate = new Parameter(this, 3, "learningRate", paramValues.getString("learningRate"));
         this.lossFunction = new Parameter(this, 4,"lossFunction", paramValues.getString("lossFunction"));
         this.dataset = new Parameter(this, 5, "dataset", paramValues.getString("dataset"));
-        this.modelVariable = new MLVariable(this, 1, "linearRegression", "2333");
+        this.modelVariable = new MLVariable(this, 1, "CNN", "2333");
 
         this.parameterList.add(this.inputFeatures);
         this.parameterList.add(this.activationFunction);
@@ -62,24 +62,25 @@ public class LinearRegression extends MachineLearning{
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder sb = new StringBuilder("/*Code for output of block Linear Regression:("+getBlockId()+")"+getBlockName()+"*/\n");
-        
+        StringBuilder sb = new StringBuilder("/*Code for output of block CNN:("+getBlockId()+")"+getBlockName()+"*/\n");
+    
         sb.append(String.format("std::vector<double> %s_v = {1.0,2.0,3.0};", this.modelVariable.getName()));
-        sb.append(outputPortList.get(0).getOutputSignalC().getName());     
+        sb.append(outputPortList.get(0).getOutputSignalC().getName());
         sb.append(String.format("=%s->predict(%s_v)[0];\n", 
                     this.modelVariable.getName(),
                     this.modelVariable.getName()));
-        
+    
         code.addOutputCode(sb.toString());
     }
-
+    
     @Override
     public String getVariableName() {
-        return "std::unique_ptr<LinearRegression>";
+        return "std::unique_ptr<CNN>";
     }
-
+    
     @Override
     public String getVariableParameters() {
-        return "std::make_unique<LinearRegression>(3,1)";
+        return "std::make_unique<CNN>(10)";
     }
+    
 }

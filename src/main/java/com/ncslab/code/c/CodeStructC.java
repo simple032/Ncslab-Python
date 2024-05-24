@@ -1,14 +1,9 @@
 package com.ncslab.code.c;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Vector;
-import java.io.InputStream;
-import java.io.BufferedReader;
 import java.io.*;
 
 import com.ncslab.ncslablink.ModelMode;
@@ -1037,9 +1032,11 @@ abstract public class CodeStructC {
 	}
 
 	private void addIncludeCode(){
+		StringBuilder sb = new StringBuilder();
 		for(String code:includeCodeSet) {
-			this.includeCode+=code;
+			sb.append(code).append("\n");
 		}
+		this.includeCode+=sb.toString();
 	}
 }
 
