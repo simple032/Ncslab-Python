@@ -144,7 +144,7 @@ public class BlockType{
 
 		//machine learning
 		blockFactory.put("LinearRegression", com.ncslab.block.machineLearning.LinearRegression::new);
-
+		blockFactory.put("LogisticRegression", com.ncslab.block.machineLearning.LogisticRegression::new);
 
 		//New models that extends SoughtedBlock do not need to do any operation here!
 	}
