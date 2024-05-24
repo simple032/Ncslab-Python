@@ -37,14 +37,14 @@ public:
         Py_XDECREF(pInstance);
     }
 
-    void train_by_file(const std::string& filename, int epochs, float lr) {
-        PyObject* pValue = PyObject_CallFunction(pFuncTrainByFile, "sif", filename.c_str(), epochs, lr);
-        if (pValue == nullptr) {
-            PyErr_Print();
-            throw std::runtime_error("Failed to train model by file");
-        }
-        Py_DECREF(pValue);
-    }
+    // void train_by_file(const std::string& filename, int epochs, float lr) {
+    //     PyObject* pValue = PyObject_CallFunction(pFuncTrainByFile, "sif", filename.c_str(), epochs, lr);
+    //     if (pValue == nullptr) {
+    //         PyErr_Print();
+    //         throw std::runtime_error("Failed to train model by file");
+    //     }
+    //     Py_DECREF(pValue);
+    // }
 
     // std::vector<size_t> predict(const std::vector<double>& input) {
     //     PyObject* pInput = PyList_New(input.size());
@@ -67,10 +67,10 @@ public:
     //     return result;
     // }
 
-private:
-    PyObject *pFuncTrainByFile;
-    PyObject *pFuncPredict;
-    PyObject *pInstance;
+// private:
+//     PyObject *pFuncTrainByFile;
+//     PyObject *pFuncPredict;
+//     PyObject *pInstance;
 };
 
 #endif
