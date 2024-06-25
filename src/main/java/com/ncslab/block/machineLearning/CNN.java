@@ -14,7 +14,10 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.data.DataType;
 
 public class CNN extends MachineLearning{
-    public Parameter layersNumber, lossFunction, learningRate, inputFeatures, activationFunction, dataset;
+    public Parameter layersNumber, numClasses, lossFunction, 
+    learningRate, inputFeatures, 
+    channelSize, hiddenLayers,
+    activationFunction, dataset;
     private MLVariable modelVariable;
     public CNN(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
@@ -24,16 +27,21 @@ public class CNN extends MachineLearning{
         CodeStructC.addWrittenFile("../../../ml/CNN/cnn_model.py", "cnn_model.py");
         
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
-        this.activationFunction = new Parameter(this, 2, "activationFunction", paramValues.getString("activationFunction"));
-        this.learningRate = new Parameter(this, 3, "learningRate", paramValues.getString("learningRate"));
-        this.lossFunction = new Parameter(this, 4,"lossFunction", paramValues.getString("lossFunction"));
-        this.dataset = new Parameter(this, 5, "dataset", paramValues.getString("dataset"));
+        this.numClasses = new Parameter(this, 2, "numClasses", paramValues.getString("numClasses"));
+        this.activationFunction = new Parameter(this, 3, "activationFunction", paramValues.getString("activationFunction"));
+        this.learningRate = new Parameter(this, 4, "learningRate", paramValues.getString("learningRate"));
+        this.lossFunction = new Parameter(this, 5,"lossFunction", paramValues.getString("lossFunction"));
+        this.channelSize = new Parameter(this, 6, "channelSize", paramValues.getString("channelSize"));
+        this.hiddenLayers = new Parameter(this, 7, "hiddenLayers", paramValues.getString("hiddenLayers"));//todo: matrix 2 vector
+        this.dataset = new Parameter(this, 8, "dataset", paramValues.getString("dataset"));
         this.modelVariable = new MLVariable(this, 1, "CNN", "2333");
-
         this.parameterList.add(this.inputFeatures);
+        this.parameterList.add(this.numClasses);
         this.parameterList.add(this.activationFunction);
         this.parameterList.add(this.learningRate);
         this.parameterList.add(this.lossFunction);
+        this.parameterList.add(this.channelSize);
+        this.parameterList.add(this.hiddenLayers);
         this.parameterList.add(this.dataset);
         this.globalVariableList.add(this.modelVariable);
 
@@ -51,6 +59,8 @@ public class CNN extends MachineLearning{
         initCode += this.activationFunction.getInitCodeC();
         initCode += this.learningRate.getInitCodeC();
         initCode += this.lossFunction.getInitCodeC();
+        initCode += this.channelSize.getInitCodeC();
+        initCode += this.channelSize.getInitCodeC();
         initCode += this.dataset.getInitCodeC();
         initCode += this.modelVariable.getInitCodeC();
 
@@ -80,7 +90,7 @@ public class CNN extends MachineLearning{
     
     @Override
     public String getVariableParameters() {
-        return "std::make_unique<CNN>(10)";
+        return String.format("std::make_unique<CNN>(%s, %s, {1,2})", this.numClasses.getName,this.channelSize.getVariableName(), this.hiddenLayers.getVariableName();
     }
     
 }

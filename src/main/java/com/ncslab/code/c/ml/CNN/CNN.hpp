@@ -5,9 +5,16 @@
 
 class CNN : public ncsml::MLModel {
 public:
-    CNN(size_t num_classes)
+    CNN(size_t num_classes, size_t channel_size, std::vector<size_t> hidden_layers)
     : MLModel("cnn_model", "SimpleCNN"), pInstance(nullptr), pFuncTrainByFile(nullptr), pFuncPredict(nullptr) {
-        PyObject* pArgs = Py_BuildValue("(i)", num_classes);
+        // parameters:
+        // int: num_classes
+        // int: channel_size
+        // list: hidden_layers
+        PyObject* pArgs = Py_BuildValue("(iiO)", num_classes, channel_size, PyList_New(hidden_layers.size()));
+        for (size_t i = 0; i < hidden_layers.size(); ++i) {
+            PyList_SetItem(PyList_GetItem(pArgs, 2), i, PyLong_FromSize_t(hidden_layers[i]));
+        }
         pInstance = PyObject_CallObject(pClass, pArgs);
         Py_DECREF(pArgs);
         if (!pInstance) {
