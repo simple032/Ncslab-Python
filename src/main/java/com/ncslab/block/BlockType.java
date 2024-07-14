@@ -146,7 +146,7 @@ public class BlockType{
 		blockFactory.put("LinearRegression", com.ncslab.block.machineLearning.LinearRegression::new);
 		blockFactory.put("LogisticRegression", com.ncslab.block.machineLearning.LogisticRegression::new);
 		blockFactory.put("MultilayerPerceptron", com.ncslab.block.machineLearning.MultilayerPerceptron::new);
-		blockFactory.put("CNN", com.ncslab.block.machineLearning.CNN::new);
+		blockFactory.put("CNN1dModel", com.ncslab.block.machineLearning.CNN::new);
 
 		//New models that extends SoughtedBlock do not need to do any operation here!
 	}

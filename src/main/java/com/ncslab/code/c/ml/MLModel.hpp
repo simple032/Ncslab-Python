@@ -108,6 +108,11 @@ public:
         return results;
     }
 
+    virtual std::vector<double> predict(const Eigen::VectorXd& inputs) {
+        std::vector<double> inputs_vec(inputs.size());
+        memcpy(inputs_vec.data(), inputs.data(), inputs.size() * sizeof(double));
+        return predict(inputs_vec);
+    }
     //todos: switch loss function, activation function, and other functions.
 
 protected:

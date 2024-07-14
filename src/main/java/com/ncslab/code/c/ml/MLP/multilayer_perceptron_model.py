@@ -4,10 +4,12 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import pandas as pd
+import numpy as np
 
 class MLP(nn.Module):
     def __init__(self, input_size, output_size, hidden_layers, device='cpu'):
         super(MLP, self).__init__()
+        # print("start init")
         self.device = torch.device(device)
 
         layers = []
@@ -19,13 +21,17 @@ class MLP(nn.Module):
 
         layers.append(nn.Linear(in_features, output_size))
         self.model = nn.Sequential(*layers)
+        print("model layers: ", layers)
+        print(self.model)
         self.to(self.device)
+        # print("end init")
 
     def forward(self, x):
         x = x.to(self.device)
         return self.model(x)
 
     def fit(self, X_train, y_train, epochs=100, lr=0.01):
+        # print("start fit")
         X_train = X_train.to(self.device)
         y_train = y_train.to(self.device)
 
@@ -44,15 +50,31 @@ class MLP(nn.Module):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        # print("end fit")
 
-    def predict(self, X):
+    def predict233(self, X):
+        # print("start predict")
+        # if X is a list:
+        if isinstance(X, list):
+            X = np.array(X)
+        X = torch.tensor(X, dtype=torch.float32)
         X = X.to(self.device)
         self.eval()
         with torch.no_grad():
             outputs = self(X)
-            probabilities = F.softmax(outputs, dim=1)
-            _, predicted = torch.max(probabilities, 1)
-        return predicted.to(self.device)
+            # probabilities = F.softmax(outputs, dim=1)
+            # _, predicted = torch.max(probabilities, 1)
+        # return predicted.to(self.device)
+        # print("end predict")
+        res = [outputs.numpy()[0].tolist()]
+        # print(f'res type: {type(res)}, res: {res}.')
+        return res
+    
+    def predict(self, inputs):
+        input_tensor = torch.tensor([inputs], dtype=torch.float32).to(self.device)
+        with torch.no_grad():
+            output = self(input_tensor)
+        return output.numpy()[0].tolist()
         
     def train_by_file(self, filename, epochs, lr):
         data = pd.read_csv(filename)

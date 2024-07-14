@@ -6,13 +6,20 @@ using ncsml::MLModel;
 
 class MultilayerPerceptron : public MLModel {
 public:
-    MultilayerPerceptron(size_t input_layer, size_t output_layer, const std::vector<size_t>& hidden_layers) 
-    : MLModel("multilayer_perceptron_model", "MultilayerPerceptron") {
-        PyObject* pArgs = Py_BuildValue("(iiO)", input_layer, output_layer, PyList_New(hidden_layers.size()));
+    MultilayerPerceptron(size_t input_layer, size_t output_layer, const std::vector<size_t> hidden_layers) 
+    : MLModel("multilayer_perceptron_model", "MLP") {
+        // Create a Python list for hidden_layers
+        PyObject* py_hidden_layers = PyList_New(hidden_layers.size());
         for (size_t i = 0; i < hidden_layers.size(); ++i) {
-            PyList_SetItem(PyList_GetItem(pArgs, 2), i, PyLong_FromSize_t(hidden_layers[i]));
+            PyList_SetItem(py_hidden_layers, i, PyLong_FromSize_t(hidden_layers[i]));
         }
+
+        // Create argument tuple with (input_layer, output_layer, hidden_layers)
+        PyObject* pArgs = Py_BuildValue("(iiO)", input_layer, output_layer, py_hidden_layers);
+        
         this->pInstance = PyObject_CallObject(pClass, pArgs);
+        
+        Py_DECREF(py_hidden_layers);
         Py_DECREF(pArgs);
         if (pInstance == nullptr) {
             PyErr_Print();

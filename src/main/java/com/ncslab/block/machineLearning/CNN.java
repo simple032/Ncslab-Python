@@ -90,7 +90,10 @@ public class CNN extends MachineLearning{
     
     @Override
     public String getVariableParameters() {
-        return String.format("std::make_unique<CNN>(%s, %s, {1,2})", this.numClasses.getName,this.channelSize.getVariableName(), this.hiddenLayers.getVariableName();
+        return String.format("std::make_unique<CNN>(%s, %s, {1,2})",
+         this.numClasses.getName(),
+         this.channelSize.getName(), 
+         this.hiddenLayers.getName());
     }
     
 }

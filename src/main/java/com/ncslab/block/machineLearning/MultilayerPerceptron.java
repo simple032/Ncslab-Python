@@ -14,7 +14,10 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.data.DataType;
 
 public class MultilayerPerceptron extends MachineLearning {
-    public Parameter layersNumber, lossFunction, learningRate, inputFeatures, hiddenLayers, activationFunction, dataset;
+    public Parameter layersNumber, numClasses, lossFunction, 
+    learningRate, inputFeatures, 
+    channelSize, hiddenLayers,
+    activationFunction, dataset;
     private MLVariable modelVariable;
 
     public MultilayerPerceptron(JSONObject jsonObject, NCSLabModel model) {
@@ -58,7 +61,7 @@ public class MultilayerPerceptron extends MachineLearning {
         initCode += this.dataset.getInitCodeC();
         initCode += this.modelVariable.getInitCodeC();
 
-        initCode += String.format("%s->train_by_file(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/winddata1.csv\", %d, %f);\n", this.modelVariable.getName(), 100, 0.01);
+        initCode += String.format("%s->trainModel(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/winddata1.csv\", %d, %f);\n", this.modelVariable.getName(), 100, 0.01);
 
         code.addInitCode(initCode);
     }
@@ -83,6 +86,6 @@ public class MultilayerPerceptron extends MachineLearning {
 
     @Override
     public String getVariableParameters() {
-        return "std::make_unique<MultilayerPerceptron>(3, 1, std::vector<size_t>{4})";
+        return "std::make_unique<MultilayerPerceptron>(3, 1, std::vector<size_t>{6})";
     }
 }
