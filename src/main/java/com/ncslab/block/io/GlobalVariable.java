@@ -42,7 +42,7 @@ public abstract class GlobalVariable {
 		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
 		this.localName=localName;
 		
-		data=new Data("233");
+		data=new Data(dataString);
 	}
 	
 	/**

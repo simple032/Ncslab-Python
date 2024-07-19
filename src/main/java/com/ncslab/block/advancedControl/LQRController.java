@@ -3,6 +3,7 @@ package com.ncslab.block.advancedControl;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
+import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -22,6 +23,8 @@ public class LQRController extends Block {
     private Parameter Q;
     private Parameter R;
 
+    private LQRVariable LQR_K;
+
     public LQRController(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
 
@@ -35,6 +38,10 @@ public class LQRController extends Block {
         parameterList.add(B);
         parameterList.add(Q);
         parameterList.add(R);
+
+        // use "[]" to represent a pesudo matrix
+        this.LQR_K = new LQRVariable(this, 1, "LQR_K", "[]");
+        this.globalVariableList.add(this.LQR_K);
 
         // xState = new State(this, 1, "x", A.getWidth(), 1);
 
@@ -65,11 +72,7 @@ public class LQRController extends Block {
         initCode.append(Q.getInitCodeC());
         initCode.append(R.getInitCodeC());
 
-        // calculate K
-        // K.height = B.width
-        // K.width = A.width = A.height
-        initCode.append(
-                String.format("Matrix K = lqr(%s, %s, %s, %s);\n", A.getName(), B.getName(), Q.getName(), R.getName()));
+        initCode.append(this.LQR_K.getInitCodeC());
 
         code.addInitCode(initCode.toString());
     }
@@ -81,6 +84,7 @@ public class LQRController extends Block {
         StringBuilder outputCode = new StringBuilder();
         outputCode.append(
                 String.format("/*Code for output of block LQR Controller: (%d)%s*/\n", getBlockId(), getBlockName()));
+
         outputCode.append("/*******************************/\n");
 
         OutputPort out = this.getOutputPortList().get(0);
@@ -88,11 +92,17 @@ public class LQRController extends Block {
         switch (out.getOutputSignalC().getDataType()) {
             case MATRIX:
                 outputCode.append(
-                        String.format("%s = -K * %s;\n", this.getOutputPortVariable(0), this.getInputPortVariable(0)));
+                        String.format("%s = -%s * %s;\n",
+                                this.getOutputPortVariable(0),
+                                this.LQR_K.getName(),
+                                this.getInputPortVariable(0)));
                 break;
             case REAL:
-                outputCode.append(String.format("%s = (-K * %s)(0,0);\n", this.getOutputPortVariable(0),
-                        this.getInputPortVariable(0)));
+                outputCode.append(
+                        String.format("%s = (-%s * %s)(0,0);\n",
+                                this.getOutputPortVariable(0),
+                                this.LQR_K.getName(),
+                                this.getInputPortVariable(0)));
                 break;
         }
 
@@ -115,7 +125,7 @@ public class LQRController extends Block {
                     || R.getWidth() != B.getWidth() // if R and B match
                     || A.getHeight() != in.getHeight() // if A and input match
                     || out.getHeight() != B.getWidth() // if B and output match
-                    || in.getWidth() != 1 // 输入必须是列向量
+                    || in.getWidth() != 1 // input must be a vector
             ) {
                 MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match!");
                 throw (e);
@@ -134,6 +144,29 @@ public class LQRController extends Block {
 
     @Override
     public void checkDimension() throws MatDimException {
+        // calculate K
+        // K.height = B.width
+        // K.width = A.width = A.height
+    }
+
+    protected class LQRVariable extends GlobalVariable {
+        public LQRVariable(Block block, int id, String localName, String dataString) {
+            super(block, id, localName, dataString);
+        }
+
+        @Override
+        public String getInitCodeC() {
+            return String.format("%s = %s;\n",
+                    LQRVariable.this.getName(),
+                    String.format("lqr(%s, %s, %s, %s)", A.getName(), B.getName(), Q.getName(), R.getName()));
+        }
+
+        @Override
+        public String getDefineCodeC() {
+            return String.format("%s %s;\n",
+                    "Matrix",
+                    LQRVariable.this.getName());
+        }
 
     }
 }
