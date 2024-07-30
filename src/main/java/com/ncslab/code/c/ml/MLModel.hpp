@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <memory> 
 
+#include "Matrix.hpp"
+
 namespace ncsml{
 class MLModel {
 public:
@@ -24,25 +26,13 @@ public:
         } else {
             // std::cout << "Successfully load Python module" << std::endl;
         }
-
-        // >>>>>>>>>>>>>>>>> Previously used code 
-        // pFuncInitModel = PyObject_GetAttrString(pModule, "init_model");
-        // pFuncTrainModel = PyObject_GetAttrString(pModule, "train_model");
-        // pFuncPredict = PyObject_GetAttrString(pModule, "predict");
-        // if (!pFuncInitModel || !pFuncTrainModel || !pFuncPredict) {
-        //     PyErr_Print();
-        //     Py_XDECREF(pFuncInitModel);
-        //     Py_XDECREF(pFuncTrainModel);
-        //     Py_XDECREF(pFuncPredict);
-        //     throw std::runtime_error("Failed to load necessary Python functions");
-        // }
         pClass = PyObject_GetAttrString(pModule, model_type); // class of the python
         if (!pClass || !PyCallable_Check(pClass)) {
             PyErr_Print();
             Py_XDECREF(pClass);
+            Py_XDECREF(pFuncSetActivationFunction);
             throw std::runtime_error("Failed to load necessary Python class!");
         }
-        // <<<<<<<<<<<<<<<<< FEATED code
 
     }
 
@@ -50,7 +40,8 @@ public:
         Py_XDECREF(pInstance);
         Py_XDECREF(pClass);
         Py_XDECREF(pFuncTrainByFile);
-        Py_XDECREF(pFuncPredict);
+        Py_XDECREF(pFuncPredict);           
+        Py_XDECREF(pFuncSetActivationFunction);
         Py_DECREF(pModule);
     }
 
@@ -60,7 +51,8 @@ public:
         Py_DECREF(pArgs);
     }
 
-    virtual std::vector<double> predict(const std::vector<double>& inputs){
+    virtual std::vector<double> predict(const std::vector<double> inputs){
+        // std::cout << "debug in local predict\n";
         if (pFuncPredict == nullptr) {
             std::cout << "Error: pFuncPredict is nullptr when trying to predict" << std::endl;
             throw new std::runtime_error("Failed to load necessary Python functions");
@@ -104,20 +96,41 @@ public:
         }
 
         Py_DECREF(pResult);
-
+        // std::cout << results.size() << std::endl;
+        // std::cout << results[0] << std::endl;
         return results;
     }
 
-    virtual std::vector<double> predict(const Eigen::VectorXd& inputs) {
+    virtual std::vector<double> predict(const Matrix inputs) {
         std::vector<double> inputs_vec(inputs.size());
+        // std::cout << "debug in eigen predict\n";
         memcpy(inputs_vec.data(), inputs.data(), inputs.size() * sizeof(double));
+        return predict(inputs_vec);
+    }
+
+    virtual std::vector<double> predict(double input){
+        std::vector<double> inputs_vec(1, 0);
+        inputs_vec[0] = input;
+        // std::cout << "debug in double predict\n";
         return predict(inputs_vec);
     }
     //todos: switch loss function, activation function, and other functions.
 
+    void set_activation_function(const std::string activation_function) {
+        PyObject* pValue = Py_BuildValue("(s)", activation_function.c_str());
+        PyObject* pResult = PyObject_CallObject(pFuncSetActivationFunction, pValue);
+        Py_DECREF(pValue);
+        if (pResult == nullptr) {
+            PyErr_Print();
+            Py_XDECREF(pResult);
+            throw std::runtime_error("Failed to set activation function");
+        }
+        Py_DECREF(pResult);
+    }
+
 protected:
     // PyObject *pModule, *pFuncInitModel, *pFuncTrainModel, *pFuncPredict;
-    PyObject *pModule, *pClass, *pInstance, *pFuncTrainByFile, *pFuncPredict;
+    PyObject *pModule, *pClass, *pInstance, *pFuncTrainByFile, *pFuncPredict, *pFuncSetActivationFunction;;
 };
 };
 #endif

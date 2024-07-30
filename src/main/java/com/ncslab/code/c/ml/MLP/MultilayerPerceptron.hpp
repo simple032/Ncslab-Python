@@ -1,24 +1,29 @@
 #ifndef NCS_MULTILAYERPERCEPTRON
 #define NCS_MULTILAYERPERCEPTRON
+
 #include "MLModel.hpp"
+#include <Eigen/Dense>
+#include <stdexcept>
+#include <vector>
 
 using ncsml::MLModel;
 
 class MultilayerPerceptron : public MLModel {
 public:
-    MultilayerPerceptron(size_t input_layer, size_t output_layer, const std::vector<size_t> hidden_layers) 
+    MultilayerPerceptron(size_t input_layer, size_t output_layer, double hidden_layers_d, const std::string loss_function = "CE")
     : MLModel("multilayer_perceptron_model", "MLP") {
+        std::vector<uint32_t> hidden_layers(1, 0);
+        hidden_layers[0] = uint32_t(hidden_layers_d);
+
         // Create a Python list for hidden_layers
         PyObject* py_hidden_layers = PyList_New(hidden_layers.size());
         for (size_t i = 0; i < hidden_layers.size(); ++i) {
             PyList_SetItem(py_hidden_layers, i, PyLong_FromSize_t(hidden_layers[i]));
         }
 
-        // Create argument tuple with (input_layer, output_layer, hidden_layers)
-        PyObject* pArgs = Py_BuildValue("(iiO)", input_layer, output_layer, py_hidden_layers);
-        
+        // Create argument tuple with (input_layer, output_layer, hidden_layers, loss_function)
+        PyObject* pArgs = Py_BuildValue("(iiOs)", input_layer, output_layer, py_hidden_layers, loss_function.c_str());
         this->pInstance = PyObject_CallObject(pClass, pArgs);
-        
         Py_DECREF(py_hidden_layers);
         Py_DECREF(pArgs);
         if (pInstance == nullptr) {
@@ -26,6 +31,8 @@ public:
             Py_XDECREF(pInstance);
             throw std::runtime_error("Failed to create instance of the class");
         }
+                pFuncSetActivationFunction = PyObject_GetAttrString(pInstance, "set_activation_function");
+
         pFuncTrainByFile = PyObject_GetAttrString(pInstance, "train_by_file");
         pFuncPredict = PyObject_GetAttrString(pInstance, "predict");
         if (!pFuncTrainByFile || !PyCallable_Check(pFuncTrainByFile) ||
@@ -44,40 +51,41 @@ public:
         Py_XDECREF(pInstance);
     }
 
-    // void train_by_file(const std::string& filename, int epochs, float lr) {
-    //     PyObject* pValue = PyObject_CallFunction(pFuncTrainByFile, "sif", filename.c_str(), epochs, lr);
-    //     if (pValue == nullptr) {
-    //         PyErr_Print();
-    //         throw std::runtime_error("Failed to train model by file");
-    //     }
-    //     Py_DECREF(pValue);
-    // }
+    MultilayerPerceptron(size_t input_layer, size_t output_layer, Matrix hidden_layers_eigen, const std::string loss_function = "cross_entropy")
+    : MLModel("multilayer_perceptron_model", "MLP") {
+        std::vector<uint32_t> hidden_layers(hidden_layers_eigen.size());
+        for (uint32_t i = 0; i < hidden_layers_eigen.size(); ++i){
+            hidden_layers[i] = uint32_t(hidden_layers_eigen(i));
+        }
 
-    // std::vector<size_t> predict(const std::vector<double>& input) {
-    //     PyObject* pInput = PyList_New(input.size());
-    //     for (size_t i = 0; i < input.size(); ++i) {
-    //         PyList_SetItem(pInput, i, PyFloat_FromDouble(input[i]));
-    //     }
+        // Create a Python list for hidden_layers
+        PyObject* py_hidden_layers = PyList_New(hidden_layers.size());
+        for (size_t i = 0; i < hidden_layers.size(); ++i) {
+            PyList_SetItem(py_hidden_layers, i, PyLong_FromSize_t(hidden_layers[i]));
+        }
 
-    //     PyObject* pValue = PyObject_CallFunctionObjArgs(pFuncPredict, pInput, NULL);
-    //     Py_DECREF(pInput);
-    //     if (pValue == nullptr) {
-    //         PyErr_Print();
-    //         throw std::runtime_error("Failed to predict");
-    //     }
+        // Create argument tuple with (input_layer, output_layer, hidden_layers, loss_function)
+        PyObject* pArgs = Py_BuildValue("(iiOs)", input_layer, output_layer, py_hidden_layers, loss_function.c_str());
+        this->pInstance = PyObject_CallObject(pClass, pArgs);
 
-    //     std::vector<size_t> result(PyList_Size(pValue));
-    //     for (size_t i = 0; i < result.size(); ++i) {
-    //         result[i] = PyLong_AsSize_t(PyList_GetItem(pValue, i));
-    //     }
-    //     Py_DECREF(pValue);
-    //     return result;
-    // }
-
-// private:
-//     PyObject *pFuncTrainByFile;
-//     PyObject *pFuncPredict;
-//     PyObject *pInstance;
+        Py_DECREF(py_hidden_layers);
+        Py_DECREF(pArgs);
+        if (pInstance == nullptr) {
+            PyErr_Print();
+            Py_XDECREF(pInstance);
+            throw std::runtime_error("Failed to create instance of the class");
+        }
+        pFuncTrainByFile = PyObject_GetAttrString(pInstance, "train_by_file");
+        pFuncPredict = PyObject_GetAttrString(pInstance, "predict");
+        if (!pFuncTrainByFile || !PyCallable_Check(pFuncTrainByFile) ||
+            !pFuncPredict || !PyCallable_Check(pFuncPredict)) {
+            PyErr_Print();
+            Py_XDECREF(pFuncTrainByFile);
+            Py_XDECREF(pFuncPredict);
+            Py_XDECREF(pInstance);
+            throw std::runtime_error("Failed to load necessary Python functions");
+        }
+    }
 };
 
 #endif

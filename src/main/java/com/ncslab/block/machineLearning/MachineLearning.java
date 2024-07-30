@@ -10,6 +10,7 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.block.Block;
+import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 public abstract class MachineLearning extends Block{
@@ -46,6 +47,15 @@ public abstract class MachineLearning extends Block{
     public String getEndCode(){
         return "";
     }
+
+    /**
+     * Check the dimension of the input data
+     * Default, the machine learning toolbox support the matrix input.
+     */ 
+    @Override
+    public void checkDimension() throws MatDimException{
+		return;
+	}
 
     protected class MLVariable extends GlobalVariable{
         public MLVariable(Block block, int id, String localName, String dataString) {
