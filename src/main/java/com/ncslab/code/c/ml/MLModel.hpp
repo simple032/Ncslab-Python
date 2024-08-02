@@ -30,7 +30,6 @@ public:
         if (!pClass || !PyCallable_Check(pClass)) {
             PyErr_Print();
             Py_XDECREF(pClass);
-            Py_XDECREF(pFuncSetActivationFunction);
             throw std::runtime_error("Failed to load necessary Python class!");
         }
 
@@ -41,7 +40,6 @@ public:
         Py_XDECREF(pClass);
         Py_XDECREF(pFuncTrainByFile);
         Py_XDECREF(pFuncPredict);           
-        Py_XDECREF(pFuncSetActivationFunction);
         Py_DECREF(pModule);
     }
 
@@ -96,8 +94,6 @@ public:
         }
 
         Py_DECREF(pResult);
-        // std::cout << results.size() << std::endl;
-        // std::cout << results[0] << std::endl;
         return results;
     }
 
@@ -114,23 +110,11 @@ public:
         // std::cout << "debug in double predict\n";
         return predict(inputs_vec);
     }
-    //todos: switch loss function, activation function, and other functions.
 
-    void set_activation_function(const std::string activation_function) {
-        PyObject* pValue = Py_BuildValue("(s)", activation_function.c_str());
-        PyObject* pResult = PyObject_CallObject(pFuncSetActivationFunction, pValue);
-        Py_DECREF(pValue);
-        if (pResult == nullptr) {
-            PyErr_Print();
-            Py_XDECREF(pResult);
-            throw std::runtime_error("Failed to set activation function");
-        }
-        Py_DECREF(pResult);
-    }
+    
 
 protected:
-    // PyObject *pModule, *pFuncInitModel, *pFuncTrainModel, *pFuncPredict;
-    PyObject *pModule, *pClass, *pInstance, *pFuncTrainByFile, *pFuncPredict, *pFuncSetActivationFunction;;
+    PyObject *pModule, *pClass, *pInstance, *pFuncTrainByFile, *pFuncPredict;
 };
 };
 #endif

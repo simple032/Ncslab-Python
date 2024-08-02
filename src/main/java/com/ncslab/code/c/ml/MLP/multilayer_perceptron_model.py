@@ -7,16 +7,25 @@ import pandas as pd
 import numpy as np
 
 class MLP(nn.Module):
-    def __init__(self, input_size, output_size, hidden_layers, loss_function = "CE", device='cpu'):
+    def __init__(self, 
+                 input_size, 
+                 output_size, 
+                 hidden_layers, 
+                 loss_function = "CE", 
+                 activation_function = "relu",
+                 device='cpu'):
         super(MLP, self).__init__()
         # print("start init")
         self.device = torch.device(device)
 
         layers = []
         in_features = input_size
+
+        hidden_activate = self._get_activation_function(activation_function)
+
         for hidden_size in hidden_layers:
             layers.append(nn.Linear(in_features, hidden_size))
-            layers.append(nn.ReLU())
+            layers.append(hidden_activate)
             in_features = hidden_size
 
         layers.append(nn.Linear(in_features, output_size))
@@ -30,6 +39,7 @@ class MLP(nn.Module):
             print("CrossEntropyLoss")
         elif (isinstance(self.loss_function, nn.MSELoss)):
             print("MSELoss")
+        print('activation: ', hidden_activate)
 
     def set_loss_function(self, loss_function):
         self.loss_function = self._get_loss_function(loss_function)
@@ -73,10 +83,6 @@ class MLP(nn.Module):
         self.eval()
         with torch.no_grad():
             outputs = self(X)
-            # probabilities = F.softmax(outputs, dim=1)
-            # _, predicted = torch.max(probabilities, 1)
-        # return predicted.to(self.device)
-        # print("end predict")
         res = [outputs.numpy()[0].tolist()]
         # print(f'res type: {type(res)}, res: {res}.')
         return res
@@ -96,12 +102,6 @@ class MLP(nn.Module):
         self.fit(x, y, epochs, lr)
     
     def _get_loss_function(self, loss_function):
-        # loss_functions = {
-        #     'CE': nn.CrossEntropyLoss(),
-        #     'MSE': nn.MSELoss()
-        #     # 'bce': nn.BCELoss()
-        # }
-        # return loss_functions.get(loss_function.lower(), nn.CrossEntropyLoss())
         if (loss_function == 'CE'):
             return nn.CrossEntropyLoss()
         elif (loss_function == 'MSE'):
@@ -110,28 +110,15 @@ class MLP(nn.Module):
             return nn.CrossEntropyLoss()
         
     def _get_activation_function(self, activation_function):
-        activation_functions = {
-            'relu': nn.ReLU(),
-            'sigmoid': nn.Sigmoid(),
-            'tanh': nn.Tanh(),
-            'lrelu': nn.LeakyReLU(),
-            'none': nn.Identity()  # No activation function
-        }
-        return activation_functions.get(activation_function.lower(), nn.ReLU())
+        if (activation_function == 'relu'):
+            return nn.ReLU()
+        elif (activation_function == 'sigmoid'):
+            return nn.Sigmoid()
+        elif (activation_function == 'tanh'):
+            return nn.Tanh()
+        elif (activation_function == 'lrelu'):
+            return nn.LeakyReLU()
+        else:
+            return nn.ReLU()
 
-    def set_activation_function(self, activation_function):
-        self.activation_function = self._get_activation_function(activation_function)
-        print('current activation: ', activation_function)
-        self._rebuild_model()
-
-    def _rebuild_model(self):
-        layers = []
-        in_features = self.model[0].in_features
-        for layer in self.model:
-            if isinstance(layer, nn.Linear):
-                layers.append(layer)
-                if layer != self.model[-1]:
-                    layers.append(self.activation_function)
-        self.model = nn.Sequential(*layers)
-        self.to(self.device)
-
+    
