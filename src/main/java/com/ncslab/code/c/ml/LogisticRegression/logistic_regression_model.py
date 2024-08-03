@@ -2,13 +2,14 @@
 import pandas as pd
 import torch
 import torch.nn as nn
-
+import numpy as np
 
 class LogisticRegression(nn.Module):
-    def __init__(self, input_features, output_features, device='cpu'):
+    def __init__(self, input_features, output_features, loss_function = 'CE', device='cpu'):
         super(LogisticRegression, self).__init__()
         self.linear = nn.Linear(input_features, output_features)
         self.device = torch.device(device)
+        self.loss_function = self._get_loss_function(loss_function)
         self.to(self.device)
 
     def forward(self, x):
@@ -43,11 +44,27 @@ class LogisticRegression(nn.Module):
         self.fit(x, y, epochs, lr)
 
     def predict(self, X):
+        X = np.array(X)
+        X = torch.tensor(X, dtype=torch.float32)
         X = X.to(self.device)
+        if X.dim() == 1:
+            X = X.unsqueeze(0)
         self.eval()
         with torch.no_grad():
             outputs = self(X)
-            probabilities = nn.Softmax(dim=1)(outputs)
+            # print(f"Shape of outputs: {outputs.shape}")  # Debug print statement
+            if outputs.dim() == 1:
+                probabilities = nn.Softmax(dim=0)(outputs)
+            else:
+                probabilities = nn.Softmax(dim=1)(outputs)
             _, predicted = torch.max(probabilities, 1)
-        return predicted.to(self.device)
+        return [float(predicted.to('cpu').numpy()[0])]
+    
+    def _get_loss_function(self, loss_function):
+        if (loss_function == 'CE'):
+            return nn.CrossEntropyLoss()
+        elif (loss_function == 'MSE'):
+            return nn.MSELoss()
+        else:
+            return nn.MSELoss()
 

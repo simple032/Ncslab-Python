@@ -6,9 +6,9 @@ using ncsml::MLModel;
 
 class LinearRegression : public MLModel {
 public:
-    LinearRegression(size_t inputFeatures, size_t outputFeatures) 
+    LinearRegression(size_t inputFeatures, size_t outputFeatures, const std::string loss_function) 
     : MLModel("linear_regression_model", "LinearRegression") {
-        PyObject* pArgs = Py_BuildValue("(ii)", inputFeatures, outputFeatures);
+        PyObject* pArgs = Py_BuildValue("(iis)", inputFeatures, outputFeatures, loss_function.c_str());
         this->pInstance = PyObject_CallObject(pClass, pArgs);
         Py_DECREF(pArgs);
         if(pInstance == nullptr){

@@ -22,10 +22,7 @@ public class MultilayerPerceptron extends MachineLearning {
                 hiddenLayers,
                 learningRate, 
                 epoch;
-    private MLVariable modelVariable;
     private String lossFunctionString, datasetString, activationString;
-    private OutputPort outputPort;
-    private int _width, _height;
 
 
     public MultilayerPerceptron(JSONObject jsonObject, NCSLabModel model) {
@@ -55,11 +52,6 @@ public class MultilayerPerceptron extends MachineLearning {
 
         this.globalVariableList.add(this.modelVariable);
 
-        this.inputPortList.add(new InputPort(this, 1));
-
-        this.outputPort = new OutputPort(this, 1);
-        this.outputPortList.add(this.outputPort);
-
         this._height = 1;
         this._width = (int)(Double.parseDouble(paramValues.getString("outputFeatures")));
     }
@@ -87,51 +79,6 @@ public class MultilayerPerceptron extends MachineLearning {
                         this.learningRate.getName());
 
         code.addInitCode(initCode);
-    }
-
-    @Override
-    public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder sb = new StringBuilder("/*Code for output of block Multilayer Perceptron:(" + getBlockId() + ")" + getBlockName() + "*/\n");
-
-        OutputPort in_opt1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort(); // input source's output
-        OutputPort out_opt1 = outputPortList.get(0);
-
-        sb.append(String.format("auto %s_v = %s;\n", this.modelVariable.getName(), in_opt1.getOutputSignalC().getName()));
-
-        if (this._width == 1) {
-            // 调用 predict 方法返回 double
-            sb.append(out_opt1.getOutputSignalC().getName());
-            sb.append(String.format("=%s->predict(%s_v)[0];\n",
-            this.modelVariable.getName(),
-            this.modelVariable.getName()));
-        
-        }else{
-            // 调用 predict 方法返回 std::vector<double>
-            sb.append(String.format(
-                "std::vector<double> result = %s->predict(%s_v);\n",
-                this.modelVariable.getName(),
-                this.modelVariable.getName()
-            ));
-            // 定义 Eigen::VectorXd 并进行转换
-            sb.append(String.format("Matrix result_vector(%s);\n", out_opt1.getOutputSignalC().getName()));
-            sb.append("for (size_t i = 0; i < result.size(); ++i) {\n");
-            sb.append("    result_vector(i) = result[i];\n");
-            sb.append("}\n");
-            // 赋值给输出信号
-            sb.append(out_opt1.getOutputSignalC().getName());
-            sb.append("=result_vector;\n");
-        }
-
-        code.addOutputCode(sb.toString());
-    }
-
-    @Override
-    public void updateDimension() throws MatDimException{
-        this.outputPort.setHeight(this._width);
-        this.outputPort.setWidth(this._height);
-        this.outputPort.getOutputSignalC().setHeight(this._width);
-        this.outputPort.getOutputSignalC().setWidth(this._height);
-        this.outputPort.getOutputSignalC().setDataType(this._width > 1? DataType.MATRIX:DataType.REAL);    
     }
 
     @Override
