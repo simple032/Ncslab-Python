@@ -20,7 +20,7 @@ import block.data.DataType;
 
 import block.io.terminal.Terminal;
 
-abstract public class CodeStructC {
+abstract public class CodeStructC{
 
 
 	//模块的输入是否作为信号
@@ -38,12 +38,20 @@ abstract public class CodeStructC {
     //end
 
 	public String includeCode="";
+	public String includeCodeStm="";
 	//init初始化的代码
 	public String initCode="";
+	//init初始化STM32中的c初始化前的配置的的代码
+	public String initConfigCode="";
 	//Output的代码
 	public String outputCode="";
 	//update的代码
 	public String updateCode="";
+	
+	public String discreteUpdateCode="";
+	
+	public String sinkOutputCode="";
+	public String sinkStatusClearCode="";
 
 	//定义的代码
 	public String statementCode="";
@@ -77,7 +85,6 @@ abstract public class CodeStructC {
 
 	public CodeStructC(CodeModelC model) {
 		this.model=model;
-
 	}
 
 	public String getInitCode() {
@@ -86,6 +93,9 @@ abstract public class CodeStructC {
 
 	public void addInitCode(String code) {
 		initCode+=code;
+	}
+	public void addInitConfigCode(String code) {
+		initConfigCode+=code;
 	}
 	//author:xiazhiqiang
 	public String getArraysCode() {
@@ -115,6 +125,18 @@ abstract public class CodeStructC {
 	public void addUpdateCode(String code) {
 		updateCode+=code;
 	}
+	
+	public void addDiscreteUpdateCode(String code) {
+		discreteUpdateCode+=code;
+	}
+	
+	public void addSinkOutputCode(String code) {
+		sinkOutputCode+=code;
+	}
+	
+	public void addSinkStatusClearCode(String code) {
+		sinkOutputCode+=code;
+	}
 
 	public void addDerivativeCode(String code) {
 		derivativeCode+=code;
@@ -124,11 +146,27 @@ abstract public class CodeStructC {
 		includeCode+=""
 				+"#include\"ncslabccode.h\"\n"
 				+"#include\"ncslabdefines.h\"\n"
-				+"#include\"ncs_serialport.h\"\n"
+				// +"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.h\"\n"
-				+"#include <iostream>\n"
-				+"#include <octave/oct.h>\n"
-				+"#include <sys/socket.h>"
+				+"#include\"math.h\"\n"
+				// +"#include <iostream>\n"
+				// +"#include <octave/oct.h>\n"
+				+"#include <sys/socket.h>\n"
+				
+				//xiazhiqiang:Stores the sampling time of discrete modules
+				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
+				+"int sample_i=0;\n"
+				;
+		includeCodeStm+=""
+				+"#include\"ncslabccode.h\"\n"
+				+"#include\"ncslabdefines.h\"\n"
+				+"#include\"ncslab.h\"\n"
+				+"#include <math.h>\n"
+				+"#include <usart.h>\n"
+				
+				//xiazhiqiang:Stores the sampling time of discrete modules
+				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
+				+"int sample_i=0;\n"
 				;
 	}
 
@@ -172,6 +210,62 @@ abstract public class CodeStructC {
 				+derivativeCode+"\n"
 				+updateCode+"\n"
 				+"}\n"*/
+
+				+"void NCSLabOutput(){\n"
+				+outputCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabDerivative(){\n"
+				+derivativeCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabUpdate(){\n"
+				+updateCode+"\n"
+				+"}\n"
+				
+				+"void NCSLabTerminate(){\n"
+				+terminateCode+"\n"
+				+"}\n"
+				
+				+"MODEL * NCSLabGetModelP(){\n"
+				+"return &model;\n"
+				+"}\n"
+
+				+"\n";
+
+		File file = new File(codePath+"mainccode.c");
+		FileOutputStream outputStream;
+		try {
+			outputStream = new FileOutputStream(file);
+			outputStream.write(mainCCode.getBytes());
+			outputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected void writeMainCodeFileStm32() {
+		System.out.println("Writing file mainccode.c...");
+		//precode是参数，状态，和输出的定义，以全局变量的方式
+		String preCode="extern MODEL* mp;\n"
+					+statementCode+"\n"
+					+parameterDefineCode+"\n"
+					+stateDefineCode+"\n"
+					+outputSignalDefineCode+"\n";
+		String mainCCode=includeCodeStm+"\n"
+				//author:xiazhiqiang
+				//add define arrays code
+				+arraysCode+"\n"
+				//end
+				
+				+preCode+"\n"				
+				+dataStructureCode+"\n"
+				
+				+"void NCSLabInit(){\n"
+				+dataStructureInitCode+"\n"
+				+initConfigCode+"\n"
+				+initCode+"\n"
+				+"}\n"
 
 				+"void NCSLabOutput(){\n"
 				+outputCode+"\n"
@@ -263,7 +357,10 @@ abstract public class CodeStructC {
 
 
 
-	protected String codePathBase=utils.Property.instance.getProperty("CCodePath");
+	protected String codePathBase="deploy".equals(utils.Property.instance.getProperty("mode").trim())?
+			utils.Property.instance.getProperty("CCodePath")
+			:
+			utils.Property.instance.getProperty("CCodePathWin");
 	//目标文件夹的位置codePathBase/用户id/modelId
 	protected String codePath;
 	
@@ -361,6 +458,52 @@ abstract public class CodeStructC {
 		}
 	}
 	
+    //f 要复制的文件夹    nf 要复制到的地方
+  	//flag  true代表把a文件夹整个复制过去，false只复制子文件夹及文件。
+	  protected void copy(File f, File nf, boolean flag) throws Exception {
+		// 判断是否存在
+		if (f.exists()) {
+			// 判断是否是目录
+			if (f.isDirectory()) {
+				if (flag) {
+					// 制定路径，以便原样输出
+					nf = new File(nf + "/" + f.getName());
+					// 判断文件夹是否存在，不存在就创建
+					if (!nf.exists()) {
+						nf.mkdirs();
+					}
+				}
+				flag = true;
+				// 获取文件夹下所有的文件及子文件夹
+				File[] l = f.listFiles();
+				// 判断是否为null
+				if (null != l) {
+					for (File ll : l) {
+						// 循环递归调用
+						copy(ll, nf, flag);
+					}
+				}
+			} else {
+	//  				System.out.println("正在复制：" + f.getAbsolutePath());
+	//  				System.out.println("到：" + nf.getAbsolutePath() + "\\" + f.getName());
+				// 获取输入流
+				FileInputStream fis = new FileInputStream(f);
+				// 获取输出流
+				FileOutputStream fos = new FileOutputStream(nf + "/" + f.getName());
+				byte[] b = new byte[1024*1024*4];
+				int c = -1;
+				// 读取文件
+				while ((c = fis.read(b)) != -1) {
+					// 写入文件，复制，边读边写
+					fos.write(b,0,c);
+				}
+				fos.close();
+				fis.close();
+			}
+		}
+	  }
+      
+    
 	/*生成宏定义，定义各种数据结构的个数*/
 	protected void wirteDefineFile() {
 		
@@ -370,6 +513,12 @@ abstract public class CodeStructC {
 		code+="#define MATRIX_STATE_NUM "+model.getMatrixStateNum()+"\n";
 		
 		code+="#define STEP_SIZE (1.0*"+model.getConfig().getFixedStep()+")\n";
+		
+		code+="#define CONFIG_IP_ADDRESS {"+model.getIpAddress().replace('.', ',')+"}\n";
+		code+="#define CONFIG_NETMASK_ADDRESS {"+model.getNetmask().replace('.', ',')+"}\n";
+		code+="#define CONFIG_GATEWAY_ADDRESS {"+model.getGateway().replace('.', ',')+"}\n";
+		code+="#define MONITORPORT "+model.getMonitorPort()+"\n";
+		
 		
 		File file = new File(codePath+"ncslab.h");
 		FileOutputStream outputStream;
@@ -484,7 +633,7 @@ abstract public class CodeStructC {
 		}
 		
 	}
-
+	
 	public boolean makeExeFile() {
 		try {
 			//启动make，生成可执行代码

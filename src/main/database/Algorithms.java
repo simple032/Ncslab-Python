@@ -55,42 +55,16 @@ public class Algorithms implements Serializable {
 
     @Column(name = "model_id")
     private Integer modelId;
+    
+    @Column(name="description")
+    private String description;
 
     public static enum AlgorithmType {
         Real,
         Simu;
     }
-    public void setAuthor(Integer author) {
-    	this.author=author;
-    }
-    public void setName(String name) {
-    	this.name=name;
-    }
-    public void setBin(byte[] bin) {
-    	this.bin=bin;
-    }
-    public void setTestRig(Integer testRig) {
-    	this.testRig=testRig;
-    } 
-    public void setModelId(Integer modelId) {
-    	this.modelId=modelId;
-    }
-    public void setLastUpdate(String lastUpdate) {
-    	this.lastUpdate=lastUpdate;
-    }
-    public void setStepTime(Float stepTime) {
-    	this.stepTime=stepTime;
-    }
-    public void setPacketSize(Integer packetSize) {
-    	this.packetSize=packetSize;
-    }
-    public void setUuid(Long uuid) {
-    	this.uuid=uuid;
-    }
-    public void setPublicFlag(Integer publicFlag) {
-    	this.publicFlag=publicFlag;
-    }
-    public void setTargetPlatform(Integer targetPlatform) {
-    	this.targetPlatform=targetPlatform;
+
+    public void setDescription(String ipAddress,String monitorPort) {
+    	this.description=ipAddress+":"+monitorPort;
     }
 }

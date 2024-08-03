@@ -1,39 +1,50 @@
 package block;
 
-import java.util.Vector;
-import org.json.JSONObject;
-
 import block.data.DataType;
-import block.io.InputPort;
-import block.io.OutputPort;
-import block.io.Parameter;
-import block.io.State;
-import block.io.OutputSignal;
+import block.io.*;
 import code.c.CodeStructC;
 import code.m.CodeStructM;
+import code.plc.CodeStructPLC;
+import lombok.Getter;
+import lombok.Setter;
 import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
+import org.json.JSONObject;
+
+import java.util.Vector;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
 public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	//Block的类型，需要在BlockType中建立block的时候分别对待
-	protected String blockType;
-	protected String blockName;
+	@Getter
+    protected String blockType;
+	@Getter
+    protected String blockName;
 	
-	protected int blockId=0;
-	
-	//Block所在画布的位置，不在子系统时为modelName，存在子系统时为modelName/subsystem
-	protected String blockPath;
+	@Setter
+    @Getter
+    protected int blockId=0;
+
+    //xiazhiqiang:获取模块所处子系统的位置两个方法getBlockPath与getSubSystemName
+    //Block所在画布的位置，不在子系统时为modelName，存在子系统时为modelName/subsystem
+	@Getter
+    protected String blockPath;
 	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
-	protected JSONObject paramValues;
+	@Getter
+    protected JSONObject paramValues;
 	
 	//输入与输出端口的列表
-	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
-	protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
+	@Getter
+    protected Vector<InputPort> inputPortList=new Vector<InputPort>();
+	@Getter
+    protected Vector<OutputPort> outputPortList=new Vector<OutputPort>();
 	
-	protected Vector<Parameter> parameterList=new Vector<Parameter>();
-	protected Vector<State> stateList=new Vector<State>();
+	@Getter
+    protected Vector<Parameter> parameterList=new Vector<Parameter>();
+	@Getter
+    protected Vector<State> stateList=new Vector<State>();
+	protected Vector<RWork> rworkList=new Vector<RWork>();
 	
 	protected Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
 	
@@ -43,77 +54,33 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	protected boolean isDimScaned=false;
 	
 	//指向上级Model模型的指针
-	protected NCSLabModel model;
+	@Getter
+    protected NCSLabModel model;
 	
 	//Block中Singal中的个数，Signal没有Java的数据结构，Signal可以是InputPort的量，也可以是OutputPort中的量，具体看代码生成时的认定
-	protected int signalNum=0;
+	@Setter
+    @Getter
+    protected int signalNum=0;
 	
 	protected Block(JSONObject blockIn,NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
 		this.paramValues=blockIn.getJSONObject("paramValues");
 		this.model=model;
-//		this.blockPath=blockIn.getString("blockPath");
+		this.blockPath=blockIn.getString("blockPath");
 		
 	}
-	
-	public void setSignalNum(int signalNum) {
-		this.signalNum=signalNum;
-	}
-	
-	public int getSignalNum() {
-		return this.signalNum;
-	}
-	
-	public NCSLabModel getModel() {
-		return this.model;
-	}
-	
-	public boolean isTerminalBlock() {
+
+    public boolean isTerminalBlock() {
 		return (outputPortList.size()==0);
 	}
-	
-	public String getBlockName() {
-		return blockName;
-	}
-	//xiazhiqiang:获取模块所处子系统的位置两个方法getBlockPath与getSubSystemName
-	public String getBlockPath() {
-		return blockPath;
-	}
-	public String getSubSystemName() {
+
+    public String getSubSystemName() {
 		int index=this.blockPath.lastIndexOf("/");
         return this.blockPath.substring(index+1);
 	}
-	
-	public String getBlockType() {
-		return blockType;
-	}
-	
-	public Vector<InputPort> getInputPortList(){
-		return inputPortList;
-	}
-	
-	public Vector<OutputPort> getOutputPortList(){
-		return outputPortList;
-	}
-	
-	public Vector<Parameter> getParameterList(){
-		return parameterList;
-	}
-	
-	public Vector<State> getStateList(){
-		return stateList;
-	}
-	
-	public void setBlockId(int blockId) {
-		this.blockId=blockId;
-	}
-	
-	public int getBlockId() {
-		return this.blockId;
-	}
 
-	public boolean getIsOutputCodeGenerated() {
+    public boolean getIsOutputCodeGenerated() {
 		return this.isOutputCodeGenerated;
 	}
 	
@@ -128,6 +95,15 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public String getOutputPortVariable(int n) {
 		return outputPortList.get(n).getOutputSignalC().getName();
 	}
+
+	public String getStateVariable(int n) {
+		return stateList.get(n).getName();
+	}
+
+	public String getRWorkVariable(int n) {
+		return rworkList.get(n).getName();
+	}
+	
 	
 	//生成M语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
 	public void  generateOutputCodeM(CodeStructM code) {
@@ -299,6 +275,13 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 		code.addUpdateCode(updateCode);
 	}
 	
+	public void generateDiscreteBlockUpdateCodeC(CodeStructC code) throws MatDimException{
+		generateDiscreteUpdateCodeC(code);
+	}
+	public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException{
+		
+	}
+	
 	public void generateBlockDerivativeCodeC(CodeStructC code) {
 		generateDerivativeCodeC(code);
 	}
@@ -312,6 +295,30 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	
 	public void generateTerminateCodeC(CodeStructC code) {
 		
+	}
+
+	public void generateBlockInitCodePLC(CodeStructPLC code){
+		generateInitCodePLC(code);
+	}
+
+	public void generateInitCodePLC(CodeStructPLC code){
+
+	}
+
+	public void generateBlockUpdateCodePLC(CodeStructPLC code){
+		generateUpdateCodePLC(code);
+	}
+
+	public void generateUpdateCodePLC(CodeStructPLC code){
+
+	}
+
+	public void generateBlockOutputCodePLC(CodeStructPLC code){
+		generateOutputCodePLC(code);
+	}
+
+	public void generateOutputCodePLC(CodeStructPLC code){
+
 	}
 	
 	public boolean isSFcnBlock() {

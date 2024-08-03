@@ -20,7 +20,7 @@ public class Delay extends Block {
 	public Delay(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,false));
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
 		delayLength=new Parameter(this,3,"delayLength",paramValues.getString("DelayLength"));
@@ -52,29 +52,38 @@ public class Delay extends Block {
 		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();	
 		  int h=(int)paramValues.getDouble("DelayLength")+1;
 		  outputCode+="{real_T currentTime = model.time;\n";
+		  outputCode+="real_T sampleTimeTmp = "+sampleTime.getName()+"==-1?model.stepSize:"+sampleTime.getName()+";\n";
 		  switch(signal.getDataType()) {
 		  case REAL:
-			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
+			  //outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
+			  outputCode+="if(fabs((int)(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001&&mp->majorStep>0) {\n";
 			  for(int i=0;i<+(int)paramValues.getDouble("DelayLength");i++){
 				  int k=i+1;
 			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0]["+i+"]="+"Block"+getBlockId()+"_discrete_delay_savedata[0]["+k+"];\n";}
 			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0][(int)"+paramValues.getDouble("DelayLength")+"]="+signal.getName()+";}\n";
-			  outputCode+="if((currentTime+0.00001)<("+delayLength.getName()+"*"+sampleTime.getName()+")) {\n";
+//			  outputCode+="if((currentTime+0.00001)<("+delayLength.getName()+"*"+sampleTime.getName()+")) {\n";
+			  outputCode+="if((currentTime+0.00001)<("+delayLength.getName()+"*sampleTimeTmp)) {\n";
 			  outputCode+=out.getOutputSignalC().getName()+"="+initialCondition.getName()+";}\n";
 			  outputCode+="else {\n";
-			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
+			  outputCode+="if(fabs((int)(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
+			  //outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
 			  outputCode+=out.getOutputSignalC().getName()+"=Block"+getBlockId()+"_discrete_delay_savedata[0][0];}}\n";
 		      break;
 		  case MATRIX:
 			  for(int i=0; i<ops.getHeight(); i++) {
 					for(int j=0;j<ops.getWidth();j++) {
-						outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-						  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/"+sampleTime.getName()+")%"+h+")+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
-						  outputCode+="if(currentTime<"+delayLength.getName()+"*"+sampleTime.getName()+") {\n";
+						outputCode+="if(fabs((int)(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
+//						outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";  
+						outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/sampleTimeTmp)%"+h+")+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
+//						outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/"+sampleTime.getName()+")%"+h+")+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
+						  outputCode+="if(currentTime<"+delayLength.getName()+"*sampleTimeTmp) {\n";
+//						  outputCode+="if(currentTime<"+delayLength.getName()+"*"+sampleTime.getName()+") {\n";
 						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+initialCondition.getName()+";}\n";
 						  outputCode+="else {\n";
-						  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/"+sampleTime.getName()+"+1)%"+h+")+"+h+"*"+j+"];}}\n";
+						  outputCode+="if(fabs((int)(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
+//						  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
+//						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/"+sampleTime.getName()+"+1)%"+h+")+"+h+"*"+j+"];}}\n";
+						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_discrete_delay_savedata["+i+"][((int)(currentTime/sampleTime+1)%"+h+")+"+h+"*"+j+"];}}\n";
 				   }	
 				}
 			  break;
@@ -87,7 +96,7 @@ public class Delay extends Block {
 		InputPort in  = inputPortList.get(0);
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 	   
-		if((Double.parseDouble(paramValues.getString("SampleTime").trim())*100)%(model.getConfig().getFixedStep()*100)>0.000001) {
+		if((Double.parseDouble(paramValues.getString("SampleTime").trim())*1000000)%(model.getConfig().getFixedStep()*1000000)>0.000001) {
 			  MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be an integer multiple of the fixed-step size!\n \n");
 				throw(e);
 	  }

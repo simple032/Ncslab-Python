@@ -73,7 +73,9 @@ public class Discrete_Transfer_Fcn extends Block{
 			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		  String outputCode="/*Code for output of discrete_transfer_fun:("+getBlockId()+")"+getBlockName()+"*/\n";
 		  outputCode+="{real_T currentTime = model.time;\n";
-		  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
+		  outputCode+="real_T sampleTimeTmp = "+sampleTime.getName()+"==-1?model.stepSize:"+sampleTime.getName()+";\n";
+		  outputCode+="if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
+//		  outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
 		  int h=den.getWidth()-num.getWidth()-1;
 	
 		  
@@ -121,7 +123,7 @@ public class Discrete_Transfer_Fcn extends Block{
 		if(den.getWidth()==num.getWidth()) {
 			feedThrough=true;
 		}
-		if((Double.parseDouble(paramValues.getString("SampleTime").trim())*100)%(model.getConfig().getFixedStep()*100)>0.000001) {
+		if((Double.parseDouble(paramValues.getString("SampleTime").trim())*1000000)%(model.getConfig().getFixedStep()*1000000)>0.000001) {
 			  MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be an integer multiple of the fixed-step size!\n \n");
 				throw(e);
 	  }

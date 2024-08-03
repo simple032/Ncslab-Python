@@ -67,6 +67,10 @@ public class Parameter {
 		return code;
 	}
 	
+	public Data getData() {
+		return this.data;
+	}
+	
 	public String getInitCodeC() {
 		String code;
 		
@@ -79,6 +83,22 @@ public class Parameter {
 		String code;
 		
 		code=data.getDefineCodeC(this.getName());
+		
+		return code;
+	}
+
+	public String getInitCodePLC() {
+		String code;
+		
+		code=data.getInitCodePLC(this.getName());
+		
+		return code;
+	}
+	
+	public String getDefineCodePLC() {
+		String code;
+		
+		code=data.getDefineCodePLC(this.getName());
 		
 		return code;
 	}
@@ -100,7 +120,8 @@ public class Parameter {
 			code+="parameter"+block.getBlockId()+"_"+this.getId()+".type=MATRIX;\n";
 			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.getName()+";\n";
 		}
-		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getModel().getModelRealName()+"/"+block.getBlockName()+"\";\n";
+//		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getModel().getModelRealName()+"/"+block.getBlockName()+"\";\n";
+		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getBlockPath()+"/"+block.getBlockName()+"\";\n";
 		return code;
 	}
 }

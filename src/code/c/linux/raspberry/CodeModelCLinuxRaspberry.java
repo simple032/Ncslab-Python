@@ -26,7 +26,7 @@ public class CodeModelCLinuxRaspberry extends CodeModelC{
 	
 	private CodeStructCLinuxRaspberry codeRaspberry=new CodeStructCLinuxRaspberry(this);
 	
-	CodeModelCLinuxRaspberry(JSONObject jsonIn,ModelMode mode) throws ModelException{
+	CodeModelCLinuxRaspberry(JSONObject jsonIn, ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
 	}
 	

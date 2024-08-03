@@ -21,7 +21,7 @@ public class MathFunction extends Block{
 		//����һ������
 		inputPortList.add(new InputPort(this,1));
 		
-		seq=paramValues.getString("Operator");
+		seq=paramValues.getString("MathFunctionOperator");
 	}
 	
 	public void generateOutputCodeM(CodeStructM code) {
@@ -55,8 +55,42 @@ public class MathFunction extends Block{
 				outputCode+="}\n";
 				break;
 			}
+		}else if(seq.equals("reciprocal")) {
+			switch(signal.getDataType()) {
+			case REAL:
+				outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=1.0/("+signal.getName()+");\n";
+				break;
+			case MATRIX:
+				int width=signal.getWidth();
+				int height=signal.getHeight();
+				
+				outputCode+="for(int i=0;i<"+height+";i++){\n";
+				outputCode+="for(int j=0;j<"+width+";j++){\n";
+				outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(i,j)=1.0/("+signal.getName()+"(i,j));\n";
+				outputCode+="}\n";
+				outputCode+="}\n";
+				
+				break;
+			}
+		}else if(seq.equals("square")) {
+			switch(signal.getDataType()) {
+			case REAL:
+				outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=("+signal.getName()+")*("+signal.getName()+");\n";
+				break;
+			case MATRIX:
+				int width=signal.getWidth();
+				int height=signal.getHeight();
+				
+				outputCode+="for(int i=0;i<"+height+";i++){\n";
+				outputCode+="for(int j=0;j<"+width+";j++){\n";
+				outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(i,j)=("+signal.getName()+")*("+signal.getName()+"(i,j));\n";
+				outputCode+="}\n";
+				outputCode+="}\n";
+				
+				break;
+			}
 		}
-		else {
+		else if(seq.equals("exp")||seq.equals("log")||seq.equals("log10")) {
 			switch(signal.getDataType()) {
 			case REAL:
 				outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+seq+"("+signal.getName()+");\n";

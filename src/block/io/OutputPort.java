@@ -144,7 +144,8 @@ public class OutputPort {
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".width="+signal.getWidth()+";\n";
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".height="+signal.getHeight()+";\n";
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+//			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getBlockPath()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".type=SINGLE;\n";
 			break;
 		case MATRIX:
@@ -152,7 +153,8 @@ public class OutputPort {
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".width="+signal.getWidth()+";\n";
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".height="+signal.getHeight()+";\n";
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+//			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
+			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getBlockPath()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
 			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".type=MATRIX;\n";
 			break;
 		}

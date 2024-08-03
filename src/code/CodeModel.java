@@ -76,6 +76,7 @@ abstract public class CodeModel extends NCSLabModel {
 
 		CodeGenerationOption option=new CodeGenerationOption();
 
+		System.out.println("generate option is: "+option);
 		System.out.println("Generating codes......");
 
 		setupOuputChain();
@@ -103,6 +104,8 @@ abstract public class CodeModel extends NCSLabModel {
 		
 		generateTerminateCode(option);
 	}
+	
+	
 
 	//初始化的代码，继承的类可以重载
 	abstract protected void generateInitCode(CodeGenerationOption option);
@@ -238,6 +241,7 @@ abstract public class CodeModel extends NCSLabModel {
 			}
 		}
 	}
+
 
 
 }

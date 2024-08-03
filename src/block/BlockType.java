@@ -49,6 +49,9 @@ public class BlockType {
 		case "Transfer Fcn":
 			block=new block.continuous.TransferFcn(blockJSON, model);
 			break;
+		case "VariableTransport Delay":
+			block=new block.continuous.VariableTransportDelay(blockJSON, model);
+			break;
 		case "NewMotor":
 			block=new block.testrig.NewMotor(blockJSON, model);
 			break;
@@ -69,6 +72,12 @@ public class BlockType {
 			break;
 		case "BallPlateSUST":
 			block=new block.testrig.BallPlateSUST(blockJSON, model);
+			break;
+		case "BallBeamSystem":
+			block=new block.testrig.BallBeamSystem(blockJSON, model);
+			break;
+		case "LoongarchPLC":
+			block=new block.testrig.LoongarchPLC(blockJSON, model);
 			break;
 		case "S-Function":
 			block=new block.function.SFunction(blockJSON, model);
@@ -117,6 +126,12 @@ public class BlockType {
 		case "Switch":
 			block=new block.route.Switch(blockJSON, model);
 			break;	
+		case "From":
+			block=new block.route.From(blockJSON, model);
+			break;
+		case "Goto":
+			block=new block.route.To(blockJSON, model);
+			break;
 		case "State-Space":
 			block=new block.continuous.StateSpace(blockJSON,model);
 			break;
@@ -131,6 +146,9 @@ public class BlockType {
 			break;
 		case "Coulomb Viscous Friction":
 			block=new block.discontinuous.Coulomb(blockJSON,model);
+			break;
+		case "RateLimiter":
+			block=new block.discontinuous.RateLimiter(blockJSON,model);
 			break;
 		case "Backlash":
 			block=new block.discontinuous.Backlash(blockJSON,model);
@@ -150,6 +168,33 @@ public class BlockType {
 		case "Math Function":
 			block=new block.math.MathFunction(blockJSON,model);
 			break;
+		case "TestPoint":
+			block=new block.math.TestPoint(blockJSON,model);
+			break;
+		case "abc2dq":
+			block=new block.math.abc2dq0(blockJSON, model);
+			break;	
+		case "dq02abc":
+			block=new block.math.dq02abc(blockJSON, model);
+			break;	
+		case "SecondOrderFilter":
+			block=new block.powerSystem.secondOrderFiliter(blockJSON, model);
+			break;
+		case "Abs":
+			block=new block.math.Abs(blockJSON, model);
+			break;	
+		case "Bias":
+			block=new block.math.Bias(blockJSON, model);
+			break;
+		case "Sqrt":
+			block=new block.math.Sqrt(blockJSON, model);
+			break;
+		case "Compare To Constant":
+			block=new block.logicAndBit.CompareToConstant(blockJSON,model);
+			break;
+		case "Relational Operator":
+			block=new block.logicAndBit.RelationalOperator(blockJSON,model);
+			break;
 		case "Step":
 			block=new block.source.Step(blockJSON,model);
 			break;
@@ -165,6 +210,15 @@ public class BlockType {
 		case "Sine Wave":
 			block=new block.source.SineWave(blockJSON,model);
 			break;
+		case "In":
+			block=new block.subsystem.In(blockJSON,model);
+			break;
+		case "Out":
+			block=new block.subsystem.Out(blockJSON,model);
+			break;	
+		case "Subsystem":
+			block=new block.subsystem.Subsystem(blockJSON,model);
+			break;
 		case "Ad":
 			block=new block.driver.Ad(blockJSON, model);
 			break;
@@ -174,7 +228,24 @@ public class BlockType {
 		case "DA_Ouput":
 			block=new block.driver.Da(blockJSON, model);
 			break;
+		//driver for stm32
+		case "PWMForStm32":
+			block=new block.driverForStm32.PWMForStm32(blockJSON, model);
+			break;
+		case "AD_Collect_Stm32":
+			block=new block.driverForStm32.ADCForStm32(blockJSON, model);
+			break;
+		case "DA_Out_Stm32":
+			block=new block.driverForStm32.DACForStm32(blockJSON, model);
+			break;
+		case "UDPReceiverForStm32":
+			block=new block.driverForStm32.UDPReceiverForStm32(blockJSON, model);
+			break;
+		case "UDPSenderForStm32":
+			block=new block.driverForStm32.UDPSenderForStm32(blockJSON, model);
+			break;
 		}
+		
 		
 		if(block==null) {
 			throw(new ModelException("Can not find blocktype \""+blockType+"\""));

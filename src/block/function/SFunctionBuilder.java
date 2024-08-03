@@ -76,7 +76,11 @@ public class SFunctionBuilder extends Block {
 		parameters = paramValues.getString("Parameters").split(",");
 		for(int i=0; i<parameters.length; i++) 
 		{
-			parameterList.add(new block.io.Parameter(this, i+1, "Para"+(i+1)));
+			//TODO: java: constructor Parameter in class block.io.Parameter cannot be applied to given types;
+			//  required: block.Block,int,java.lang.String,java.lang.String
+			//  found: block.function.SFunctionBuilder,int,java.lang.String
+			//  reason: actual and formal argument lists differ in length
+//			parameterList.add(new block.io.Parameter(this, i+1, "Para"+(i+1)), "");
 		}				
 		//TODO:deal s-function modules	
 		if(paramValues.getString("SFunctionModules").length()>0) {

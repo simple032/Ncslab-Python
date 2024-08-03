@@ -305,7 +305,9 @@ abstract public class NCSLabModel {
 	
 		
 		//解析model，变成数据结构
+		System.out.println("Start parsing");
 		parseModel();
+		System.out.println("End parsing");
 		
 		modelSeq=modelSeqCount;
 		
@@ -523,8 +525,8 @@ abstract public class NCSLabModel {
 		for(int i=0;i<lineJSONList.length();i++) {
 			JSONObject lineJSON=lineJSONList.getJSONObject(i);
 			//xiazhiqiang:隐去子系统连线，并将输入连线链接到子系统的In，输出连线链接到子系统的Out
-//			replaceInLine(lineJSON);
-//			replaceOutLine(lineJSON); 
+			replaceInLine(lineJSON);
+			replaceOutLine(lineJSON); 
 			//解析各条连线
 			
 			/*if(lineSeq==12) {
@@ -540,7 +542,12 @@ abstract public class NCSLabModel {
 				System.out.println(line.getLinkedOutputPort().getBLock().getBlockName());
 				
 			}*/
-			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
+			System.out.println("Parsing line ("+line.getLineId()+"):'");
+			System.out.println(line.getLinkedOutputPort().getBLock().getBlockName());
+			System.out.println("("+line.getLinkedOutputPort().getNumber()+")-->");
+			System.out.println(line.getLinkedInputPort().getBLock().getBlockName());
+			System.out.println("("+line.getLinkedInputPort().getNumber()+")");
+//			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")"); 
 			
 			
 			if(line!=null) {
@@ -729,7 +736,7 @@ abstract public class NCSLabModel {
 		}
 	}
 	//xiazhiqiang:隐去Subsystem的输入连线，同时将该连线的输出连接到子系统中的In
-	private void replaceInLine(JSONObject lineJSON) {
+	private void replaceInLineBack(JSONObject lineJSON) {
 		String toBlockName=lineJSON.getString("toBlockName");
 		String blockPath=null;
 		for(Block block:blockList) {
@@ -739,14 +746,36 @@ abstract public class NCSLabModel {
 			}
 		}
 		for(Block block1:blockList) {
+			System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
+					"  getBlockType: "+block1.getBlockType());
 			if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("In")){
 				lineJSON.put("toBlockName", block1.getBlockName());
 				break;
 			}
 		}
 	}
+	private void replaceInLine(JSONObject lineJSON) {
+		String toBlockName=lineJSON.getString("toBlockName");
+		String blockPath=null;
+		String toPortNo=lineJSON.getString("toPortNo");
+		for(Block block:blockList) {
+			if(block.getBlockName().equals(toBlockName)&&block.getBlockType().equals("Subsystem")) {
+				blockPath=block.getBlockPath()+"/"+toBlockName;
+				break;
+			}
+		}
+		for(Block block1:blockList) {
+			System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
+					"  getBlockType: "+block1.getBlockType());
+			
+			if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("In")&&block1.getParamValues().getString("No").equals(toPortNo)){
+				lineJSON.put("toBlockName", block1.getBlockName());
+				break;
+			}
+		}
+	}
 	//xiazhiqiang:隐去Subsystem的输出连线，同时将该连线的输入连接到子系统中的out
-	private void replaceOutLine(JSONObject lineJSON) {
+	private void replaceOutLineBack(JSONObject lineJSON) {
 		String fromBlockName=lineJSON.getString("fromBlockName");
 		String blockPath=null;
 		for(Block block:blockList) {
@@ -757,6 +786,24 @@ abstract public class NCSLabModel {
 		}
 		for(Block block1:blockList) {
 			if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("Out")){
+				lineJSON.put("fromBlockName", block1.getBlockName());
+				break;
+			}
+		}
+	}
+	
+	private void replaceOutLine(JSONObject lineJSON) {
+		String fromBlockName=lineJSON.getString("fromBlockName");
+		String blockPath=null;
+		String fromPortNo=lineJSON.getString("fromPortNo");
+		for(Block block:blockList) {
+			if(block.getBlockName().equals(fromBlockName)&&block.getBlockType().equals("Subsystem")) {
+				blockPath=block.getBlockPath()+"/"+fromBlockName;
+				break;
+			}
+		}
+		for(Block block1:blockList) {
+			if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("Out")&&block1.getParamValues().getString("No").equals(fromPortNo)){
 				lineJSON.put("fromBlockName", block1.getBlockName());
 				break;
 			}

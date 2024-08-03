@@ -7,6 +7,7 @@ import block.io.OutputPort;
 import block.io.Parameter;
 import code.c.CodeStructC;
 import code.m.CodeStructM;
+import code.plc.CodeStructPLC;
 import ncslablink.NCSLabModel;
 
 public class Constant extends block.Block{
@@ -70,6 +71,42 @@ public class Constant extends block.Block{
 			break;
 		case MATRIX:
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
+			/*
+			for(int i=0;i<value.getHeight();i++) {
+				for(int j=0;j<value.getWidth();j++) {
+					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+value.getName()+"["+i+"]["+j+"];\n";
+				}
+			}*/
+			break;
+		}
+		
+		code.addOutputCode(outputCode);
+	}
+
+	public void generateInitCodePLC(CodeStructPLC code){
+		super.generateInitCodePLC(code);
+		
+		String initCode="(*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*)\n";
+		//initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n";
+		
+		initCode+=value.getInitCodePLC();
+		
+		code.addInitCode(initCode);
+	}
+
+	public void generateUpdateCodePLC(CodeStructC code){
+
+	}
+
+	public void generateOutputCodePLC(CodeStructC code){
+		String outputCode="(*Code for output of block Constant:("+getBlockId()+")"+getBlockName()+"*)\n";
+		
+		switch(value.getDataType()) {
+		case REAL:
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+":="+value.getName()+";\n";
+			break;
+		case MATRIX:
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+":="+value.getName()+";\n";
 			/*
 			for(int i=0;i<value.getHeight();i++) {
 				for(int j=0;j<value.getWidth();j++) {

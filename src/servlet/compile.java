@@ -2,6 +2,8 @@ package servlet;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.servlet.ServletException;
@@ -10,28 +12,35 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import code.c.CodeModelC;
+import code.c.CodeModelCFactory;
+import com.sun.org.apache.bcel.internal.classfile.Code;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.json.JSONObject;
 
 import code.Solver;
 import code.c.linux.raspberry.CodeModelCLinuxRaspberry;
+import code.c.linux.loong.CodeModelCLinuxLoong;
 import code.c.linux.pc.CodeModelCLinuxPC;
 import ncslablink.ErrorMessage;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 
+
+
+
 /**
  * Servlet implementation class compile
  */
-@WebServlet("/compile")
+@WebServlet("/compile/*")
 public class compile extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public compile() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**
@@ -42,7 +51,7 @@ public class compile extends HttpServlet {
 		
 		
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
-		
+		String pathInfo = request.getPathInfo();
 
 		//��ȡPost��JSON����
 		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
@@ -58,7 +67,15 @@ public class compile extends HttpServlet {
         try {
 
         	//����C���Ե�������CodeModelC
-        	CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
+			CodeModelC modelC = null;
+			String platform = "raspberry";
+			if(pathInfo != null && !pathInfo.equals("/")){			
+				String[] pathParts = pathInfo.split("/");
+				if(pathParts.length >= 2)
+					platform = pathParts[1];				
+			}
+			modelC = CodeModelCFactory.createInstance(platform, jsonIn, ModelMode.Compilation);
+
         	//CodeModelCLinuxPC modelC=CodeModelCLinuxPC.createFromJSON(jsonIn,ModelMode.Compilation);
         	modelC.setSolver(Solver.ode4);
 
@@ -92,7 +109,8 @@ public class compile extends HttpServlet {
         	jb.put("message",e.getMessage());
         	response.getWriter().write(jb.toString());
         }
-		
+
+
 	}
 
 }

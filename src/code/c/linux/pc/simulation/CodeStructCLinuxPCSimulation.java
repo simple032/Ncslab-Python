@@ -90,6 +90,8 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		
 		try {
 			//Runtime.getRuntime().exec("python /home/pi/.config/antostart/GetPiId.py");
+			String command = "sudo chmod -R 777 " + codePathBase;
+			Runtime.getRuntime().exec(command);
 			Runtime.getRuntime().exec("sudo chmod -R 777 /home/pi/NetConTop/NCSLabLink/CCode");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -11,7 +11,7 @@ public class To extends Block {
 	public To(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
-		tagName=paramValues.getString("Tag");
+		tagName=paramValues.getString("GotoTag");
 		//System.out.println(tagName);
 	}
 	

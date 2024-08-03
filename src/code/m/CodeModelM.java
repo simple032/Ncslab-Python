@@ -76,7 +76,12 @@ public class CodeModelM extends CodeModel{
 	protected void generateBlockOutputCode(Block block,CodeGenerationOption option) {
 		block.generateBlockOutputCodeM(code);
 	}
-	
+
+	@Override
+	protected void generateArraysCode(CodeGenerationOption option) {
+		// todo:
+	}
+
 	protected void generateTerminateCode(CodeGenerationOption option) {
 		
 	}

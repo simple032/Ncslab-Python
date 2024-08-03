@@ -43,11 +43,23 @@ public class Line {
 		OutputPort fromPort=null;
 		
 		Vector<OutputPort> outputPortList=fromBlock.getOutputPortList();
-		for(OutputPort outputPort:outputPortList) {
-			if(outputPort.getNumber()==fromPortNo) {
-				fromPort=outputPort;
+		//modified by zhou 20240520
+		if(fromBlock.getBlockType().equals("Out")) {
+			fromPort=fromBlock.getOutputPortList().get(0);
+		}
+		else {
+			for(OutputPort outputPort:outputPortList) {
+				if(outputPort.getNumber()==fromPortNo) {
+					fromPort=outputPort;
+				}
 			}
 		}
+
+//		for(OutputPort outputPort:outputPortList) {
+//			if(outputPort.getNumber()==fromPortNo) {
+//				fromPort=outputPort;
+//			}
+//		}
 		
 		if(fromPort==null) {
 			return;
@@ -61,9 +73,16 @@ public class Line {
 		InputPort toPort=null;
 		
 		Vector<InputPort> inputPortList=toBlock.getInputPortList();
-		for(InputPort inputPort:inputPortList) {
-			if(inputPort.getNumber()==toPortNo) {
-				toPort=inputPort;
+		//modified by zhou 20240520
+		if(toBlock.getBlockType().equals("In")) {
+			toPort=toBlock.getInputPortList().get(0);
+		}
+		else {
+			for(InputPort inputPort:inputPortList) {
+				System.out.println(" inputPort getNumber in Line.java is :"+inputPort.getNumber());
+				if(inputPort.getNumber()==toPortNo) {
+					toPort=inputPort;
+				}
 			}
 		}
 		

@@ -2,6 +2,10 @@ package block.data;
 
 import Jama.Matrix;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
 public class Data {
 	
@@ -79,18 +83,37 @@ public class Data {
 	}
 	
 	/*根据从前端传递来的字符串建立数据*/
-	public Data(String dataString) {
+	public Data(String dataString){
 		
 		dataString=formatDataString(dataString);
+		ScriptEngineManager manager = new ScriptEngineManager();
+        ScriptEngine engine = manager.getEngineByName("js");
 		
 		try {
-			initValue=Double.parseDouble(dataString);
+			// 如果表达式中包含 "pi"，则替换为 "Math.PI"
+            if (dataString.contains("pi")) {
+            	dataString = dataString.replaceAll("pi", "Math.PI");
+            }
+            if(dataString.isEmpty()) {
+            	dataString="0";
+            }
+			// 计算表达式
+            Object result = engine.eval(dataString);
+			
+//			System.out.println("dataString in Data.java is " + dataString);
+//			System.out.println("Double.parseDouble(dataString) in Data.java is " + Double.parseDouble(result.toString()));
+
+			initValue=Double.parseDouble(result.toString());
+//			initValue=Double.parseDouble(dataString);
 			dataType=DataType.REAL;
 			
 			return;
 		}
 		catch(NumberFormatException e) {
 			
+		} catch (ScriptException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		if(isStringMatrix(dataString)) {
@@ -179,6 +202,42 @@ public class Data {
 		case MATRIX:
 			//code+="REAL "+name+"["+initMatrix.getRowDimension()+"]["+initMatrix.getColumnDimension()+"]"+";\n";
 			code+="Matrix "+name+"("+initMatrix.getRowDimension()+","+initMatrix.getColumnDimension()+")"+";\n";
+			break;
+		}
+		return code;
+		
+	}
+
+	public String getInitCodePLC(String name) {
+		String code = "";
+		
+		switch(this.dataType) {
+			case REAL:
+				code += name + " := " + initValue + ";\n";
+				break;
+			case MATRIX:
+				for (int i = 0; i < initMatrix.getRowDimension(); i++) {
+					for (int j = 0; j < initMatrix.getColumnDimension(); j++) {
+						code += name + "[" + i + "," + j + "] := " + initMatrix.get(i, j) + ";\n";
+					}
+				}
+				break;
+		}
+		
+		return code;
+	}
+	
+	public String getDefineCodePLC(String name) {
+		String code="";
+		switch(dataType) {
+		case REAL:
+			code+="VAR "+name+" : REAL;\n";
+			break;
+		case MATRIX:
+			
+			code+="VAR "+name+ " : ARRAY " 
+			+"[1.."+initMatrix.getRowDimension()+", "
+			+ "1.." + initMatrix.getColumnDimension()+"]"+";\n";
 			break;
 		}
 		return code;

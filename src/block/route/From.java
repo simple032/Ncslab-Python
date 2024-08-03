@@ -13,7 +13,7 @@ public class From extends Block {
 	public From(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		outputPortList.add(new OutputPort(this,1,false));
-		tagName=paramValues.getString("Tag");
+		tagName=paramValues.getString("GotoTag");
 	}
 	
 	public String getTagName() {

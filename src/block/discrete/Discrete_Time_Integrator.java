@@ -62,7 +62,9 @@ public class Discrete_Time_Integrator extends Block{
          OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
          OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();	  
          outputCode+="{real_T currentTime = model.time;\n";
-         outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.0001&&mp->majorStep>0) {\n";
+         outputCode+="real_T sampleTimeTmp = "+sampleTime.getName()+"==-1?model.stepSize:"+sampleTime.getName()+";\n";
+         outputCode+="if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001&&mp->majorStep>0) {\n";
+         //outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
          String option=paramValues.getString("IntegratorMethod");
          switch(signal.getDataType()) {
               case REAL:
@@ -225,7 +227,7 @@ public class Discrete_Time_Integrator extends Block{
 				xState=new State(this,1,"save_data",signal.getHeight(),signal.getWidth());	
 			}
 			stateList.add(xState);
-	    if((Double.parseDouble(paramValues.getString("SampleTime").trim())*100)%(model.getConfig().getFixedStep()*100)>0.000001) {
+	    if((Double.parseDouble(paramValues.getString("SampleTime").trim())*1000000)%(model.getConfig().getFixedStep()*1000000)>0.000001) {
 		    MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be an integer multiple of the fixed-step size!\n \n");
 			throw(e);
            }
