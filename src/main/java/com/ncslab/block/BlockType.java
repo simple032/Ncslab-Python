@@ -139,13 +139,18 @@ public class BlockType{
 		blockFactory.put("Permute Matrix", com.ncslab.block.matrix.PermuteMatrix::new);
 		blockFactory.put("Submatrix", com.ncslab.block.matrix.Submatrix::new);
 		blockFactory.put("Transpose", com.ncslab.block.matrix.Transpose::new);
-		//advanced control
+		// advanced control
 		blockFactory.put("LQR Controller", com.ncslab.block.advancedControl.LQRController::new);
 
-		//machine learning
+		// machine learning
 		blockFactory.put("LinearRegression", com.ncslab.block.machineLearning.LinearRegression::new);
-
-
+		blockFactory.put("LogisticRegression", com.ncslab.block.machineLearning.LogisticRegression::new);
+		blockFactory.put("MultilayerPerceptron", com.ncslab.block.machineLearning.MultilayerPerceptron::new);
+		blockFactory.put("CNN1dModel", com.ncslab.block.machineLearning.CNN::new);
+		blockFactory.put("A2CBlock", com.ncslab.block.machineLearning.A2C::new);
+		
+		// ensemble model
+		blockFactory.put("InvertedPendulum", com.ncslab.block.ensembleModel.EnsembleModel::new);
 		//New models that extends SoughtedBlock do not need to do any operation here!
 	}
 	

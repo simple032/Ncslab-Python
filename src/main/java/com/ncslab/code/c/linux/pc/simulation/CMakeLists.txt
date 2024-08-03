@@ -9,10 +9,13 @@ project(
 
 if (APPLE)
     # change this to the real path
-    set(CMAKE_TOOLCHAIN_FILE "/Users/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "/Users/square/ncslablink/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
 elseif(UNIX)
-    set(CMAKE_TOOLCHAIN_FILE "/home/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "/home/square/ncslablink/vcpkg/scripts/buildsystems/vcpkg.cmake")
 endif()
+
+include(${CMAKE_TOOLCHAIN_FILE})
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(nlohmann_json REQUIRED)
@@ -39,7 +42,6 @@ target_link_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        ${JSONCPP_LIBRARIES}
         nlohmann_json::nlohmann_json
         Eigen3::Eigen
         # python support
