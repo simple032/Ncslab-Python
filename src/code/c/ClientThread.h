@@ -30,7 +30,9 @@
 
 #define NAME_LENGTH 80
 #define PATH_LENGTH 80
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef struct 
 {
 	uint_T type;
@@ -100,4 +102,7 @@ typedef struct
 
 void createClientThread(CLIENT_STRUCT *p);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

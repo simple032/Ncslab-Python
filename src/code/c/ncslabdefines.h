@@ -1,6 +1,8 @@
 #ifndef __NCSLABDEFINES_H
 #define __NCSLABDEFINES_H
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 //Input and Output
 #define ssSetNumInputPorts(S, num)  
 #define ssGetNumInputPorts(S) (S->parentBlock->inputPortNum)
@@ -34,6 +36,8 @@
 
 #define sfcnIsMajorStep() (mp->majorStep)
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif // __NCSLABDEFINES_H
 

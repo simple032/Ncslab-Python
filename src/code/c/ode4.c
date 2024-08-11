@@ -2,8 +2,6 @@
 #include"ServerThread.h"
 #include"ncslab.h"
 
-#include <iostream>
-#include <octave/oct.h>
 
 extern MODEL *mp;
 

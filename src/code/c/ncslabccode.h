@@ -18,22 +18,117 @@
 #include "arpa/inet.h"
 #include "fcntl.h"
 
+#ifdef RASP_PI
 #include "ADS1256.h"
 #include "DAC8532.h"
 #include "ncs_serialport.h"
 #include <wiringPi.h>
 #include <termios.h>
+#endif // RASP_PI
 
 #include <linux/input.h>
 
+#include <vector>
+#include <iostream>
+// #include <octave/oct.h>
+
+
+
+
+enum DATA_TYPE {SINGLE,MATRIX};
+
+class Matrix {
+private:
+    std::vector<std::vector<double>> data;
+    size_t _rows, _cols;
+
+public:
+    // Constructor to initialize matrix with given dimensions and initial value
+    Matrix(size_t rows, size_t cols, double initial = 0.0) 
+        : _rows(rows), _cols(cols), data(rows, std::vector<double>(cols, initial)) {}
+
+    // Overload the () operator to provide element access
+    double& operator()(size_t row, size_t col) {
+        if (row >= _rows || col >= _cols) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return data[row][col];
+    }
+
+    // Const overload for () operator to provide read-only element access
+    const double& operator()(size_t row, size_t col) const {
+        if (row >= _rows || col >= _cols) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return data[row][col];
+    }
+
+    // Get the number of rows
+    size_t rows() const {
+        return _rows;
+    }
+
+    // Get the number of columns
+    size_t cols() const {
+        return _cols;
+    }
+
+    // Print the matrix
+    void print() const {
+        for (size_t i = 0; i < _rows; ++i) {
+            for (size_t j = 0; j < _rows; ++j) {
+                std::cout << data[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+	// Overload the * operator for scalar multiplication
+    Matrix operator*(double scalar) const {
+        Matrix result(_rows, _cols);
+        for (size_t i = 0; i < _rows; ++i) {
+            for (size_t j = 0; j < _cols; ++j) {
+                result(i, j) = data[i][j] * scalar;
+            }
+        }
+        return result;
+    }
+
+    // Overload the * operator for scalar multiplication with scalar on the left
+    friend Matrix operator*(double scalar, const Matrix& mat) {
+        return mat * scalar;  // Reuse the member operator*
+    }
+
+    // Overload the += operator for matrix addition
+    Matrix& operator+=(const Matrix& other) {
+        if (_rows != other._rows || _cols != other._cols) {
+            throw std::invalid_argument("Matrix dimensions must match for addition");
+        }
+        for (size_t i = 0; i < _rows; ++i) {
+            for (size_t j = 0; j < _cols; ++j) {
+                data[i][j] += other(i, j);
+            }
+        }
+        return *this;
+    }
+
+    // Overload the + operator for matrix addition
+    Matrix operator+(const Matrix& other) const {
+        Matrix result = *this;
+        result += other;
+        return result;
+    }
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define REAL double
 #define real_T REAL
 #define uint_T unsigned int
 #define int_T int
 #define char_T char
-
-enum DATA_TYPE {SINGLE,MATRIX};
 
 typedef struct {
 	char *name;
@@ -172,6 +267,8 @@ void ncslabLoop();
 void NCSLabSaveResult();
 
 unsigned char calcSum(unsigned char bytes[]);
-
+#ifdef __cplusplus
+}
+#endif
 #endif
 
