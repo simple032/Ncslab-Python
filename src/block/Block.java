@@ -11,6 +11,8 @@ import ncslablink.MatDimException;
 import ncslablink.NCSLabModel;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
@@ -44,6 +46,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
     protected Vector<Parameter> parameterList=new Vector<Parameter>();
 	@Getter
     protected Vector<State> stateList=new Vector<State>();
+
 	protected Vector<RWork> rworkList=new Vector<RWork>();
 	
 	protected Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
@@ -99,6 +102,8 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	public String getStateVariable(int n) {
 		return stateList.get(n).getName();
 	}
+
+	public String getDerivativeVariable(int n) { return stateList.get(n).getDerivativeName(); }
 
 	public String getRWorkVariable(int n) {
 		return rworkList.get(n).getName();
@@ -369,4 +374,31 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 			}
 		}
 	}
+
+	protected String M2PCode2C(String content){
+		// 创建替换映射
+		Map<String, String> replacements = new HashMap<>();
+
+		for(int i=0; i<stateList.size(); i++)
+			replacements.put(String.format("<DSTATE%d>", i), getDerivativeVariable(i)) ;
+
+		for(int i=0; i<stateList.size(); i++)
+			replacements.put(String.format("<STATE%d>", i), getStateVariable(i)) ;
+
+		for(int i=0; i<inputPortList.size(); i++)
+			replacements.put(String.format("<INPUT%d>", i), getInputPortVariable(i)) ;
+
+		for(int i=0; i<outputPortList.size(); i++)
+			replacements.put(String.format("<OUTPUT%d>", i), getOutputPortVariable(i)) ;
+
+		for(int i=0; i<rworkList.size(); i++)
+			replacements.put(String.format("<RWORK%d>", i), getRWorkVariable(i)) ;
+
+		// 替换模板中的占位符
+		String result = content;
+		for (Map.Entry<String, String> entry : replacements.entrySet())
+			result = result.replace(entry.getKey(), entry.getValue());
+		return result;
+	}
+
 }

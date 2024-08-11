@@ -147,29 +147,6 @@ public class BallBeamSystem extends Block {
         code.addOutputCode(outputCode);
     }
 
-    private String M2PCode2C(String content){
-        // 创建替换映射
-        Map<String, String> replacements = new HashMap<>();
-        
-        for(int i=0; i<stateList.size(); i++)
-            replacements.put(String.format("<STATE%d>", i), getStateVariable(i)) ;
-        
-        for(int i=0; i<inputPortList.size(); i++)
-            replacements.put(String.format("<INPUT%d>", i), getInputPortVariable(i)) ; 
-        
-        for(int i=0; i<outputPortList.size(); i++)
-            replacements.put(String.format("<OUTPUT%d>", i), getOutputPortVariable(i)) ;        
-
-        for(int i=0; i<rworkList.size(); i++)
-            replacements.put(String.format("<RWORK%d>", i), getRWorkVariable(i)) ;      
-
-        // 替换模板中的占位符
-        String result = content;
-        for (Map.Entry<String, String> entry : replacements.entrySet()) 
-            result = result.replace(entry.getKey(), entry.getValue());
-        return result;
-    }
-
     public void  generateDerivativeCodeC(CodeStructC code) {
         String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 

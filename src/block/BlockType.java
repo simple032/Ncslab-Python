@@ -79,6 +79,9 @@ public class BlockType {
 		case "LoongarchPLC":
 			block=new block.testrig.LoongarchPLC(blockJSON, model);
 			break;
+		case "MagneticLevitationSystem":
+			block=new block.testrig.MagneticLevitationSystem(blockJSON, model);
+			break;
 		case "S-Function":
 			block=new block.function.SFunction(blockJSON, model);
 			break;
