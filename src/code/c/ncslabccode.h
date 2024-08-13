@@ -6,15 +6,23 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <pthread.h>
+
 #include<errno.h>
+
+#include<signal.h>
+#include<time.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#include "winsock2.h"
+#include <windows.h>
+
+#elif defined(__linux__)
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include <sys/time.h>
-#include<signal.h>
-#include<time.h>
+#include <unistd.h>
+#include <pthread.h>
 #include "arpa/inet.h"
 #include "fcntl.h"
 
@@ -27,6 +35,7 @@
 #endif // RASP_PI
 
 #include <linux/input.h>
+#endif //
 
 #include <vector>
 #include <iostream>
@@ -44,7 +53,7 @@ private:
 
 public:
     // Constructor to initialize matrix with given dimensions and initial value
-    Matrix(size_t rows, size_t cols, double initial = 0.0) 
+    Matrix(size_t rows, size_t cols, double initial = 0.0)
         : _rows(rows), _cols(cols), data(rows, std::vector<double>(cols, initial)) {}
 
     // Overload the () operator to provide element access

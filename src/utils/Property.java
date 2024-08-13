@@ -11,30 +11,30 @@ import java.io.*;
 
 
 public class Property {
-	
+
 	public static Property instance=new Property();
-	
+
 	public String getProperty(String key) {
 		Properties prop = new Properties();
 		String filePath="config.properties";
 		String value = null;
 		try {
 
-			
-			// Í¨¹ıÊäÈë»º³åÁ÷½øĞĞ¶ÁÈ¡ÅäÖÃÎÄ¼ş
-			InputStream InputStream = this.getClass().getResourceAsStream(filePath); 
-			// ¼ÓÔØÊäÈëÁ÷
+
+			// é€šè¿‡è¾“å…¥ç¼“å†²æµè¿›è¡Œè¯»å–é…ç½®æ–‡ä»¶
+			InputStream InputStream = this.getClass().getResourceAsStream(filePath);
+			// åŠ è½½è¾“å…¥æµ
 			prop.load(InputStream);
-			// ¸ù¾İ¹Ø¼ü×Ö»ñÈ¡valueÖµ
+			// æ ¹æ®å…³é”®å­—è·å–valueå€¼
 			value = prop.getProperty(key);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		//System.out.println(value);
-		
+
 		return value;
 
 	}
-	
+
 }

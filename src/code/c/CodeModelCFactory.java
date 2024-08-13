@@ -3,6 +3,7 @@ package code.c;
 
 import code.c.linux.loong.CodeModelCLinuxLoong;
 import code.c.linux.raspberry.CodeModelCLinuxRaspberry;
+import code.c.windows.CodeModelCWindows;
 import ncslablink.ModelException;
 import ncslablink.ModelMode;
 import org.json.JSONObject;
@@ -19,20 +20,9 @@ public class CodeModelCFactory {
             <JSONObject, ModelMode, CodeModelC>> registry =
             new HashMap<>();
     static {
-        registry.put("raspberry", (jsonIn, mode)->{
-          try{
-              return CodeModelCLinuxRaspberry.createFromJSON(jsonIn, mode);
-          }catch (ModelException e) {
-              throw e;
-          }
-        });
-        registry.put("loong", (jsonIn, mode)->{
-            try{
-                return CodeModelCLinuxLoong.createFromJSON(jsonIn, mode);
-            }catch (ModelException e) {
-                throw e;
-            }
-        });
+        registry.put("raspberry", CodeModelCLinuxRaspberry::createFromJSON);
+        registry.put("loong", CodeModelCLinuxLoong::createFromJSON);
+        registry.put("windows", CodeModelCWindows::createFromJSON);
     }
 
     public static CodeModelC createInstance(String type, JSONObject jsonIn, ModelMode mode) throws ModelException {

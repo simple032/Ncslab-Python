@@ -6,13 +6,14 @@ import java.io.InputStreamReader;
 
 import code.c.CodeModelC;
 import code.c.CodeStructC;
+import ncslablink.ModelException;
 
 public class CodeStructCWindows extends CodeStructC {
 	public CodeStructCWindows(CodeModelC model) {
 		super(model);
 	}
 	
-	public void writeCCodeFiles() {
+	public void writeCCodeFiles()  {
 
 		//锟斤拷锟斤拷目锟斤拷锟侥硷拷锟叫碉拷位锟斤拷codePathBase/锟矫伙拷id/modelId
 		String userPath=codePathBase+model.getUserId();
@@ -34,14 +35,16 @@ public class CodeStructCWindows extends CodeStructC {
 		//makefile
 		writeNCSLabFile("makefile");
 		//锟斤拷锟斤拷锟捷结构
-		writeNCSLabFile("ncslabccode.h");
+		writeNCSLabFile("../ncslabccode.h", "ncslabccode.h");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
 		writeNCSLabFile("ncslabmain.c");
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");
 		
-		writeNCSLabFile("util.c");
+		writeNCSLabFile("../util.c", "util.c");
+
+		writeNCSLabFile("../ncslabdefines.h", "ncslabdefines.h");
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
 		writeNCSLabFile("ServerThread.c");
@@ -68,6 +71,9 @@ public class CodeStructCWindows extends CodeStructC {
 			break;
 		case ode4:
 			writeNCSLabFile("../ode4.c","onestep.c");
+			break;
+		default:
+			System.err.println("Cannot find the solver file.");
 			break;
 		}
 		

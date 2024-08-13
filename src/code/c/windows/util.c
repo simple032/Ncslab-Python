@@ -5,8 +5,12 @@
 
 extern MODEL *mp;
 
-extern double stateReserve[STATE_NUM];
-extern double derivativeReserve[][STATE_NUM];
+
+extern double singleStateReserve[][SINGLE_STATE_NUM];
+extern Matrix matrixStateReserve[][MATRIX_STATE_NUM];
+
+extern double singleDerivativeReserve[][SINGLE_STATE_NUM];
+extern Matrix matrixDerivativeReserve[][MATRIX_STATE_NUM];
 
 void storeState(){
   for(int i=0;i<STATE_NUM;i++){

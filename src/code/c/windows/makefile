@@ -36,4 +36,4 @@ util.o: util.c
 	$(CC) $(CCFlag) -c util.c
 
 clean:
-	rm ncslab.exe mainccode.o ncslabmain.o
+	del ncslab.exe mainccode.o ncslabmain.o

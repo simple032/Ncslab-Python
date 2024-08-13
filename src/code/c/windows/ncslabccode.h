@@ -3,8 +3,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
-#include "winsock2.h"
-#include <windows.h>
+
 
 #define REAL double
 #define real_T REAL

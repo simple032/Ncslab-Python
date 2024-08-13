@@ -3,17 +3,22 @@ package block.io;
 import block.Block;
 import block.data.Data;
 import block.data.DataType;
+import lombok.Getter;
 
 public class State {
-	private int id;
+	@Getter
+    private int id;
 	private String name;
-	private String localName;
+	@Getter
+    private String localName;
 	private int width=1;
 	
 	private Block block;
 	
 	private Data data=null;
-	
+
+	private Data derivateData=null;
+
 	public State(Block block,int id,String localName){
 		this.block=block;
 		this.id=id;
@@ -21,6 +26,7 @@ public class State {
 		this.localName=localName;
 		
 		this.data=new Data();
+		this.derivateData=new Data();
 	}
 	
 	public State(Block block,int id,String localName,int height,int width){
@@ -30,6 +36,7 @@ public class State {
 		this.localName=localName;
 		
 		this.data=new Data(height,width);
+		this.derivateData=new Data(height,width);
 	}
 	
 	public String getName() {
@@ -42,12 +49,8 @@ public class State {
 		
 		return this.name+"_Derivative";
 	}
-	
-	public String getLocalName() {
-		return this.localName;
-	}
-	
-	public DataType getDataType() {
+
+    public DataType getDataType() {
 		return data.getDataType();
 	}
 	
@@ -81,12 +84,8 @@ public class State {
 		
 		return code;
 	}
-	
-	public int getId() {
-		return this.id;
-	}
-	
-	public int getWidth() {
+
+    public int getWidth() {
 		return data.getWidth();
 	}
 	

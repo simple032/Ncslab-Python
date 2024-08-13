@@ -19,6 +19,7 @@ import block.io.InputPort;
 import block.data.DataType;
 
 import block.io.terminal.Terminal;
+import lombok.Getter;
 
 abstract public class CodeStructC{
 
@@ -31,22 +32,27 @@ abstract public class CodeStructC{
 
 
 	//头文件的代码
-	
-	//author:xiazhiqiang
+
+    //author:xiazhiqiang
+    //author:xiazhiqiang
 	//define arrays to save data
-	public String arraysCode="";
+	@Getter
+    public String arraysCode="";
     //end
 
 	public String includeCode="";
 	public String includeCodeStm="";
 	//init初始化的代码
-	public String initCode="";
+	@Getter
+    public String initCode="";
 	//init初始化STM32中的c初始化前的配置的的代码
 	public String initConfigCode="";
 	//Output的代码
-	public String outputCode="";
+	@Getter
+    public String outputCode="";
 	//update的代码
-	public String updateCode="";
+	@Getter
+    public String updateCode="";
 	
 	public String discreteUpdateCode="";
 	
@@ -87,30 +93,19 @@ abstract public class CodeStructC{
 		this.model=model;
 	}
 
-	public String getInitCode() {
-		return this.initCode;
-	}
-
-	public void addInitCode(String code) {
+    public void addInitCode(String code) {
 		initCode+=code;
 	}
 	public void addInitConfigCode(String code) {
 		initConfigCode+=code;
 	}
-	//author:xiazhiqiang
-	public String getArraysCode() {
-		return this.arraysCode;
-	}
-	public void addArraysCode(String code) {
+
+    public void addArraysCode(String code) {
 		arraysCode+=code;
 	}
     //end
 
-	public String getOutputCode() {
-		return this.outputCode;
-	}
-
-	public void addOutputCode(String code) {
+    public void addOutputCode(String code) {
 		outputCode+=code;
 	}
 	
@@ -118,11 +113,7 @@ abstract public class CodeStructC{
 		terminateCode+=code;
 	}
 
-	public String getUpdateCode() {
-		return this.updateCode;
-	}
-
-	public void addUpdateCode(String code) {
+    public void addUpdateCode(String code) {
 		updateCode+=code;
 	}
 	
@@ -149,9 +140,10 @@ abstract public class CodeStructC{
 				// +"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.h\"\n"
 				+"#include\"math.h\"\n"
+				//TODO:这些有linux特定的api，需要根据平台类型来定制
 				// +"#include <iostream>\n"
 				// +"#include <octave/oct.h>\n"
-				+"#include <sys/socket.h>\n"
+				// +"#include <sys/socket.h>\n"
 				
 				//xiazhiqiang:Stores the sampling time of discrete modules
 				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
@@ -198,8 +190,8 @@ abstract public class CodeStructC{
 				+ "};\n"//double&char 
 				
 				+"void NCSLabInit(){\n"
-				+"uint AD_init_Flag=0;\n"  //ad初始化标志位
-				+"uint DA_init_Flag=0;\n"  //da初始化标志位
+				+"unsigned int AD_init_Flag=0;\n"  //ad初始化标志位
+				+"unsigned int DA_init_Flag=0;\n"  //da初始化标志位
 				+dataStructureInitCode+"\n"
 				+initCode+"\n"
 				+"}\n"
@@ -362,13 +354,10 @@ abstract public class CodeStructC{
 			:
 			utils.Property.instance.getProperty("CCodePathWin");
 	//目标文件夹的位置codePathBase/用户id/modelId
-	protected String codePath;
-	
-	public String getCodePath() {
-		return codePath;
-	}
+	@Getter
+    protected String codePath;
 
-	private void writeMakefile(String fileName) {
+    private void writeMakefile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
