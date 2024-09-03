@@ -96,9 +96,10 @@ git clone https://github.com/microsoft/vcpkg
 # bash
 echo "alias vcpkg='~/vcpkg/vcpkg'" >> ~/.bashrc
 # zsh (default shell in macOS)
-echo "alias vcpkg='~/vcpkg/vcpkg'" >> ~/.zshrc
+echo "alias vcpkg='sudo ~/vcpkg/vcpkg'" >> ~/.zshrc
 
 source ~/.bashrc
+# source ~/.zshrc
 ```
 
 2.3 Install libraries

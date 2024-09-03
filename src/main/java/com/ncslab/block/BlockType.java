@@ -47,6 +47,7 @@ public class BlockType{
 		// Sink
 		blockFactory.put("Scope", com.ncslab.block.sink.Scope::new);
 		blockFactory.put("Terminator", com.ncslab.block.sink.Terminator::new);
+		blockFactory.put("Matplotlib", com.ncslab.block.sink.Matplotlib::new);
 
 		// Continuous
 		blockFactory.put("PID Controller (s)", com.ncslab.block.continuous.PIDController::new);

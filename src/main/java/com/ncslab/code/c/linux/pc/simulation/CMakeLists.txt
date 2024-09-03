@@ -9,7 +9,7 @@ project(
 
 if (APPLE)
     # change this to the real path
-    set(CMAKE_TOOLCHAIN_FILE "/Users/square/ncslablink/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "/Users/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
     set(CMAKE_OSX_ARCHITECTURES "arm64")
 elseif(UNIX)
     set(CMAKE_TOOLCHAIN_FILE "/home/square/ncslablink/vcpkg/scripts/buildsystems/vcpkg.cmake")
@@ -17,8 +17,8 @@ endif()
 
 include(${CMAKE_TOOLCHAIN_FILE})
 
-find_package(Eigen3 REQUIRED NO_MODULE)
-find_package(nlohmann_json REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 # you can also manually list source files with "set(SOURCES ...)" command
 # list header files for IDEs (not necessary)
