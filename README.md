@@ -113,7 +113,7 @@ vcpkg install nlohmann-json
 - eigen3
 A C++ template library for linear algebra.
 ```sh
-vcpgk install eigen3
+vcpkg install eigen3
 ```
 
 #### 3. Nginx

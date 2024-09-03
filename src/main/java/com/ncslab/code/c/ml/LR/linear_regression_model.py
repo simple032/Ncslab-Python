@@ -5,9 +5,12 @@ import numpy as np
 import pandas as pd
 
 class LinearRegression(nn.Module):
-    def __init__(self, input_features, output_features):
+    def __init__(self, input_features, output_features, loss_function = 'CE', device='cpu'):
         super(LinearRegression, self).__init__()
         self.linear = nn.Linear(input_features, output_features)
+        self.device = torch.device(device)
+        self.loss_function = self._get_loss_function(loss_function)
+        self.to(self.device)
 
     def forward(self, x):
         return self.linear(x)
@@ -17,10 +20,12 @@ class LinearRegression(nn.Module):
         x = torch.tensor(data.iloc[:, :-1].values, dtype=torch.float32)
         y = torch.tensor(data.iloc[:, -1].values, dtype=torch.float32)
         y = y.view(y.shape[0], 1)
-        self.train(x, y, epochs, lr)
+        self.fit(x, y, epochs, lr)
 
-    def train(self, x, y, epochs, lr):
-        criterion = nn.MSELoss()
+    def fit(self, x, y, epochs, lr):
+        x = x.to(self.device)
+        y = y.to(self.device)
+        criterion = self.loss_function
         optimizer = torch.optim.SGD(self.parameters(), lr=lr)
         for epoch in range(epochs):
             optimizer.zero_grad()
@@ -30,10 +35,18 @@ class LinearRegression(nn.Module):
             optimizer.step()
         
     def predict(self, inputs):
-        input_tensor = torch.tensor([inputs], dtype=torch.float32)
+        input_tensor = torch.tensor([inputs], dtype=torch.float32).to(self.device)
         with torch.no_grad():
             output = self(input_tensor)
         return output.numpy()[0].tolist()
+    
+    def _get_loss_function(self, loss_function):
+        if loss_function == 'CE':
+            return nn.CrossEntropyLoss()
+        elif loss_function == 'MSE':
+            return nn.MSELoss()
+        else:
+            return nn.MSELoss()
 
 
 #################### PREVIOUS CODES #####################
