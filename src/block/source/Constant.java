@@ -1,5 +1,6 @@
 package block.source;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import block.data.DataType;
@@ -10,14 +11,24 @@ import code.m.CodeStructM;
 import code.plc.CodeStructPLC;
 import ncslablink.NCSLabModel;
 
-public class Constant extends block.Block{
+import java.util.Vector;
+
+public class Constant extends block.source.Source{
 	
 	block.io.Parameter value;
+
+	@Getter
+	public static final Vector<String> parameterNames = new Vector<>();
+
+
+	static {
+		parameterNames.add("Value");
+	}
+
 	public Constant(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		
 		//һ�����
-		outputPortList.add(new OutputPort(this,1,false));
 		value=new Parameter(this,1,getBlockName(),paramValues.getString("Value"));
 		parameterList.add(value);
 		outputPortList.get(0).setHeight(value.getHeight());

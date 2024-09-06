@@ -3,15 +3,19 @@ import block.Block;
 
 import block.data.Data;
 import block.data.DataType;
+import lombok.Getter;
 
 public class Parameter {
 	
-	private int id;
+	@Getter
+    private int id;
 	private String name;
-	private String localName;
+	@Getter
+    private String localName;
 	private Block block;
 	
-	private Data data=null;
+	@Getter
+    private Data data=null;
 	
 	public Parameter(Block block,int id,String localName,String dataString) {
 		this.block=block;
@@ -26,12 +30,8 @@ public class Parameter {
 		this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
 		return this.name;
 	}
-	
-	public String getLocalName() {
-		return this.localName;
-	}
-	
-	public DataType getDataType() {
+
+    public DataType getDataType() {
 		return data.getDataType();
 	}
 	
@@ -46,12 +46,8 @@ public class Parameter {
 		
 		return defineString;
 	}
-	
-	public int getId() {
-		return this.id;
-	}
-	
-	public int getWidth() {
+
+    public int getWidth() {
 		return data.getWidth();
 	}
 	
@@ -66,12 +62,8 @@ public class Parameter {
 		
 		return code;
 	}
-	
-	public Data getData() {
-		return this.data;
-	}
-	
-	public String getInitCodeC() {
+
+    public String getInitCodeC() {
 		String code;
 		
 		code=data.getInitCodeC(this.getName());

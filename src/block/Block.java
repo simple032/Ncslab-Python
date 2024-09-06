@@ -47,6 +47,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	@Getter
     protected Vector<State> stateList=new Vector<State>();
 
+	@Getter
 	protected Vector<RWork> rworkList=new Vector<RWork>();
 	
 	protected Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
@@ -64,6 +65,15 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	@Setter
     @Getter
     protected int signalNum=0;
+
+	@Getter
+	public static Vector<String> parameterNames = new Vector<>();
+
+	@Getter
+	public static Vector<String> inputNames = new Vector<>();
+
+	@Getter
+	public static Vector<String> outputNames = new Vector<>();
 	
 	protected Block(JSONObject blockIn,NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
@@ -75,7 +85,7 @@ public class Block implements block.lan.MCodeBlock,block.lan.CCodeBlock{
 	}
 
     public boolean isTerminalBlock() {
-		return (outputPortList.size()==0);
+		return (outputPortList.isEmpty());
 	}
 
     public String getSubSystemName() {

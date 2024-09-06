@@ -1,5 +1,6 @@
 package block.sink;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import block.data.DataType;
@@ -13,10 +14,19 @@ import block.io.OutputSignal;
 
 import block.io.terminal.ScopeStruct;
 
+import java.util.Vector;
+
 public class Scope extends block.Block{
 	
 	ScopeStruct scopeStruct;
-	
+
+	@Getter
+	public static final Vector<String> inputNames = new Vector<>();
+
+	static {
+		inputNames.add("in1");
+	}
+
 	public Scope(JSONObject scopeIn,NCSLabModel model) {
 		super(scopeIn,model);
 		
