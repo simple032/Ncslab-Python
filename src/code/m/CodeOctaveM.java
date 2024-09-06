@@ -1,5 +1,7 @@
 package code.m;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import ncslablink.ModelException;
@@ -7,39 +9,33 @@ import ncslablink.ModelMode;
 
 public class CodeOctaveM {
 	/*
-	 * M2PCode½çÃæÖĞÎŞÂÛÊÇCommandÃüÁîĞĞ»¹ÊÇfileÎÄ¼ş
-	 * ´¦Àí·½Ê½¾ùÎª£ºÔÚoctaveÖĞĞÂ½¨Ò»¸ömÎÄ¼ş
-	 * ½«Ç°¶ËµÄ´úÂëĞ´Èë
-	 * ÔËĞĞºó»ñÈ¡½á¹û²¢±£´æ
-	 * ±£´æĞÂ½¨µÄmÎÄ¼ş
+	 * M2PCodeç•Œé¢ä¸­æ— è®ºæ˜¯Commandå‘½ä»¤è¡Œè¿˜æ˜¯fileæ–‡ä»¶
+	 * å¤„ç†æ–¹å¼å‡ä¸ºï¼šåœ¨octaveä¸­æ–°å»ºä¸€ä¸ªmæ–‡ä»¶
+	 * å°†å‰ç«¯çš„ä»£ç å†™å…¥
+	 * è¿è¡Œåè·å–ç»“æœå¹¶ä¿å­˜
+	 * ä¿å­˜æ–°å»ºçš„mæ–‡ä»¶
 	 */
 	
 	
 	
-	//»ñÈ¡µÄ´úÂë
-	public String mainCode="";
-	//OuputResultÊä³öµÄÃüÁîĞĞ½á¹û
+	//è·å–çš„ä»£ç 
+	@Getter
+	@Setter
+    public String mainCode="";
+	//OuputResultè¾“å‡ºçš„å‘½ä»¤è¡Œç»“æœ
 	public String OutputResult="";
-	//OutputMatÊä³öµÄ¹¤×÷Çø
+	//OutputMatè¾“å‡ºçš„å·¥ä½œåŒº
 	public String OutputMat="";
-	//OutputMatÊä³öµÄ¹¤×÷Çø
+	//OutputMatè¾“å‡ºçš„å·¥ä½œåŒº
 	public String OutputFigFileUrl="";
-	//OutputMatÊä³öµÄ¹¤×÷Çø
+	//OutputMatè¾“å‡ºçš„å·¥ä½œåŒº
 	public String OutputDataFileUrl="";
 	
 	public int OutputFigBeginIndex=0;
 	
 	public int OutputFigEndIndex=0;
 	
-	public String setMainCode(String Code) {
-		return mainCode = Code;
-	}
-	
-	public String getMainCode() {
-		return mainCode;
-	}
-	
-	public String getOutputResult() {
+    public String getOutputResult() {
 		return OutputResult;
 	}
 	

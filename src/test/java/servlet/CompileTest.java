@@ -68,6 +68,20 @@ public class CompileTest{
 
     }
 
+    @Test
+    public void testCompileWithJSONLinuxLoong(){
+        String filePath = "mlsCompile.json"; // 替换为实际文件路径
+        JSONObject jsonIn = ResourceReader.readJsonResource(filePath);
+        CodeModelC modelC = null;
+        try {
+            modelC = CodeModelCFactory.createInstance("loong", jsonIn, ModelMode.Compilation);
+        } catch (ModelException e) {
+            throw new RuntimeException(e);
+        }
+        assertEquals("Fail to make exe.", "make exe success.", compile.compileWithJSON(modelC, jsonIn));
+
+    }
+
     @Ignore
     public void testDoPostSuccess() throws Exception {
         // Setup

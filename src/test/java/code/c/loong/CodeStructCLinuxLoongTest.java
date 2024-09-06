@@ -1,7 +1,7 @@
-package test.java.code.c.windows;
+package test.java.code.c.loong;
 
-import code.c.windows.CodeModelCWindows;
-import code.c.windows.CodeStructCWindows;
+import code.c.linux.loong.CodeModelCLinuxLoong;
+import code.c.linux.loong.CodeStructCLinuxLoong;
 import ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.*;
@@ -9,20 +9,19 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import test.java.ResourceReader;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
-public class CodeStructCWindowsTest {
-    private static CodeStructCWindows codeStructCWindows;
+public class CodeStructCLinuxLoongTest {
+    private static CodeStructCLinuxLoong codeStructCLinuxLoong;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         String filePath = "mlsCompile.json"; // 替换为实际文件路径
         JSONObject jsonIn = ResourceReader.readJsonResource(filePath);
-        CodeModelCWindows codeModelCWindows = CodeModelCWindows.createFromJSON(jsonIn, ModelMode.Compilation);
+        CodeModelCLinuxLoong codeModelCLinuxLoong = CodeModelCLinuxLoong.createFromJSON(jsonIn, ModelMode.Compilation);
 
-        codeStructCWindows = new CodeStructCWindows(codeModelCWindows);
+        codeStructCLinuxLoong = new CodeStructCLinuxLoong(codeModelCLinuxLoong);
     }
 
     @Before
@@ -37,12 +36,12 @@ public class CodeStructCWindowsTest {
 
     @Ignore
     public void testWriteCCodeFiles(){
-        codeStructCWindows.writeCCodeFiles();
+        codeStructCLinuxLoong.writeCCodeFiles();
     }
 
     @Ignore
     public void testMakeExeFile() {
-        assertTrue("", codeStructCWindows.makeExeFile());
+        assertTrue("", codeStructCLinuxLoong.makeExeFile());
     }
 
     @After
