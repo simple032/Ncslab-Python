@@ -1,5 +1,6 @@
 package block.source;
 
+import block.Block;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -13,7 +14,7 @@ import ncslablink.NCSLabModel;
 
 import java.util.Vector;
 
-public class Constant extends block.source.Source{
+public class Constant extends Block {
 	
 	block.io.Parameter value;
 
