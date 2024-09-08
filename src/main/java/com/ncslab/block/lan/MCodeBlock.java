@@ -1,6 +1,6 @@
-package block.lan;
+package com.ncslab.block.lan;
 
-import code.m.CodeStructM;
+import com.ncslab.code.m.CodeStructM;
 
 public interface MCodeBlock {
 	public void generateOutputCodeM(CodeStructM code);

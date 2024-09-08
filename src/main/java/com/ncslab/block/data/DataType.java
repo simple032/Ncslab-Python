@@ -1,4 +1,4 @@
-package block.data;
+package com.ncslab.block.data;
 
 public enum DataType {
 	REAL,

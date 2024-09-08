@@ -1,7 +1,7 @@
-package block.io;
+package com.ncslab.block.io;
 
-import block.data.DataType;
-import block.Block;
+import com.ncslab.block.data.DataType;
+import com.ncslab.block.Block;
 
 public class OutputSignal {
 	private int id;
@@ -99,5 +99,9 @@ public class OutputSignal {
 	
 	public void setDataType(DataType type) {
 		this.type=type;
+	}
+	
+	public Block getBlock() {
+		return this.block;
 	}
 }
