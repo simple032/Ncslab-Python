@@ -1,4 +1,4 @@
-package test.java.code.c.loong;
+package test.java.code.c.linux.loong;
 
 import code.Solver;
 import code.c.linux.loong.CodeModelCLinuxLoong;

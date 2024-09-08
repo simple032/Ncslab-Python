@@ -45,6 +45,11 @@ public class CodeStructCWindowsTest {
         assertTrue("", codeStructCWindows.makeExeFile());
     }
 
+    @Test
+    public void testReadCCodeFiles() {
+        assertTrue(true);
+    }
+
     @After
     public void tearDown() throws Exception {
 

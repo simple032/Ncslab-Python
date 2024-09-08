@@ -37,7 +37,7 @@ public class CodeStructCWindows extends CodeStructC {
 		//锟斤拷锟斤拷锟捷结构
 		writeNCSLabFile("../ncslabccode.h", "ncslabccode.h");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
-		writeNCSLabFile("ncslabmain.c");
+		writeNCSLabFile("ncslabmain.c", "ncslabmain.c");
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
 		writeNCSLabFile("DataApi.c");
 		writeNCSLabFile("DataApi.h");

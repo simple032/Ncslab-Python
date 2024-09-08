@@ -56,15 +56,18 @@ public class CompileTest{
 
     @Test
     public void testCompileWithJSONWindows(){
-        String filePath = "mlsCompile.json"; // 替换为实际文件路径
+//        String filePath = "mlsCompile.json"; // 替换为实际文件路径
+        String filePath = "test_mdl_project.json";
         JSONObject jsonIn = ResourceReader.readJsonResource(filePath);
+
         CodeModelC modelC = null;
         try {
             modelC = CodeModelCFactory.createInstance("windows", jsonIn, ModelMode.Compilation);
         } catch (ModelException e) {
             throw new RuntimeException(e);
         }
-        assertEquals("Fail to make exe.", "make exe success.", compile.compileWithJSON(modelC, jsonIn));
+        String result = compile.compileWithJSON(modelC, jsonIn);
+        assertEquals("Compile test fail to pass.", "make exe success.", result);
 
     }
 
