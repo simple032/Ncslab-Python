@@ -1,4 +1,4 @@
-package ncslablink;
+package com.ncslab.ncslablink;
 
 public class ErrorMessage {
 	public static final int AlgebraicLoop=1;
