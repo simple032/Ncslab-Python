@@ -1,10 +1,10 @@
-package block.testrig;
+package com.ncslab.block.testrig;
 
-import block.Block;
-import block.io.*;
-import code.c.CodeStructC;
-import code.m.CodeStructM;
-import ncslablink.NCSLabModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.*;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.NCSLabModel;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class MagneticLevitationSystem extends Block {
         parameterList.add(Ks);
         Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "");
         parameterList.add(Ka);
-    } 
+    }
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
@@ -89,9 +89,9 @@ public class MagneticLevitationSystem extends Block {
 
     public void generateOutputCodeC(CodeStructC code) {
         String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        
+
         outputCode+="{\n";
-        
+
         String content = "<OUTPUT0> = <STATE0>;\n"
                 + "<OUTPUT1> = <STATE1>;\n";
 

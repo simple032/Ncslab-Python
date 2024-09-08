@@ -1,4 +1,4 @@
-package block.testrig;
+package com.ncslab.block.testrig;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,15 +9,15 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import block.Block;
-import block.io.InputPort;
-import block.io.OutputPort;
-import block.io.Parameter;
-import block.io.RWork;
-import block.io.State;
-import code.c.CodeStructC;
-import code.m.CodeStructM;
-import ncslablink.NCSLabModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.Parameter;
+import com.ncslab.block.io.RWork;
+import com.ncslab.block.io.State;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.NCSLabModel;
 
 public class BallBeamSystem extends Block {
 
@@ -52,8 +52,8 @@ public class BallBeamSystem extends Block {
         parameterList.add(new Parameter(this, 6, "radius_ball", ""));
         parameterList.add(new Parameter(this, 7, "lb_angle", ""));
         parameterList.add(new Parameter(this, 8, "ub_angle", ""));
-        parameterList.add(new Parameter(this, 9, "lb_position", ""));        
-    } 
+        parameterList.add(new Parameter(this, 9, "lb_position", ""));
+    }
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
@@ -101,7 +101,7 @@ public class BallBeamSystem extends Block {
 
         // 创建替换映射
         Map<String, String> replacements = new HashMap<>();
-        
+
         replacements.put("<PORT>", "\"" + port + "\""); // 注意转义双引号
         replacements.put("<BAUDRATE>", Integer.toString(baudrate));
         replacements.put("<TOUCHPADNAME>", "\"" + touchpad_name + "\""); // 注意转义双引号
@@ -128,7 +128,7 @@ public class BallBeamSystem extends Block {
 
     public void generateOutputCodeC(CodeStructC code) {
         String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        
+
         outputCode+="{\n";
 
         // String content = "if (<STATE0> <= lp) \n"
@@ -138,10 +138,10 @@ public class BallBeamSystem extends Block {
         //     + "else"
         //     + "\t<OUTPUT0> = up;"
         //     + "<OUTPUT1>=<STATE1>;"
-        //     + "<OUTPUT2>=<RWORK0>*180/AERO_PI;";            
-        
+        //     + "<OUTPUT2>=<RWORK0>*180/AERO_PI;";
+
         String content = "<OUTPUT0> = 2*<STATE0>;\n";
-            
+
 
         outputCode += M2PCode2C(content) +"}\n";
         code.addOutputCode(outputCode);
@@ -155,7 +155,7 @@ public class BallBeamSystem extends Block {
         // +"else if ((<INPUT0> >= la) && (<INPUT0> <= ua))"
         // +"    u=<INPUT0>;"
         // +"else"
-        // +"    u=ua;"        
+        // +"    u=ua;"
         // +"<STATED0>=x[1];"
         // +"<STATED2>=u-x[2];"
         // +"<STATED1>=-M*g*sin(d*u/L)/(J/(R*R)+M)+M*x[0]*d*d*<STATED2>*<STATED2>/(L*L*(J/(R*R)+M));";
