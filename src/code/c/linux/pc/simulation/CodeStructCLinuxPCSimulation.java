@@ -1,24 +1,24 @@
-package code.c.linux.pc.simulation;
+package com.ncslab.code.c.linux.pc.simulation;
 
 import java.util.Vector;
 import java.io.*;
 
-import code.CodeModel;
-import block.Block;
-import block.io.OutputPort;
-import block.io.OutputSignal;
-import block.io.Parameter;
-import block.io.State;
-import block.io.InputPort;
+import com.ncslab.code.CodeModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+import com.ncslab.block.io.State;
+import com.ncslab.block.io.InputPort;
 
-import code.c.CodeStructC;
-import code.c.CodeModelC;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.c.CodeModelC;
 
 public class CodeStructCLinuxPCSimulation extends CodeStructC{
 	public CodeStructCLinuxPCSimulation(CodeModelC model) {
 		super(model);
 	}
-	
+
 	public void writeCCodeFiles() {
 
 		//锟斤拷锟斤拷目锟斤拷锟侥硷拷锟叫碉拷位锟斤拷codePathBase/锟矫伙拷id/modelId
@@ -47,11 +47,11 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
 		writeNCSLabFile("../../../DataApi.c","DataApi.c");
 		writeNCSLabFile("../../../DataApi.h","DataApi.h");
-		
+
 		writeNCSLabFile("../../../util.c","util.c");
-		
+
 		writeNCSLabFile("../../../ncslabdefines.h","ncslabdefines.h");
-		
+
 		writeNCSLabFile("../../../results.c","results.c");
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
@@ -61,15 +61,15 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../ClientThread.h","ClientThread.h");
 		writeNCSLabFile("../../UploadThread.c","UploadThread.c");
 		writeNCSLabFile("../../UploadThread.h","UploadThread.h");
-		
+
 		writeNCSLabFile("../../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../../ncs_serialport.h","ncs_serialport.h");
 
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();
-		
+
 		wirteDefineFile();
-		
+
 		switch(model.getSolver()) {
 		case ode1:
 			writeNCSLabFile("../../../ode1.c","onestep.c",true);
@@ -87,7 +87,7 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 			writeNCSLabFile("../../../ode23.c","onestep.c",true);
 			break;
 		}
-		
+
 		try {
 			//Runtime.getRuntime().exec("python /home/pi/.config/antostart/GetPiId.py");
 			String command = "sudo chmod -R 777 " + codePathBase;
@@ -97,13 +97,13 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public byte[] readExeFile() {
 		return readFile("ncslab");
 	}
-	
+
 	public boolean makeExeFile() {
 		try {
 			//锟斤拷锟斤拷make锟斤拷锟斤拷锟缴匡拷执锟叫达拷锟斤拷

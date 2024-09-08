@@ -1,10 +1,10 @@
-package test.java.servlet;
+package servlet;
 
 
-import code.c.CodeModelC;
-import code.c.CodeModelCFactory;
-import ncslablink.ModelException;
-import ncslablink.ModelMode;
+import com.ncslab.code.c.CodeModelC;
+import com.ncslab.code.c.CodeModelCFactory;
+import com.ncslab.ncslablink.ModelException;
+import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -16,7 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import servlet.compile;
+import com.ncslab.servlet.compile;
 import test.java.ResourceReader;
 
 import javax.servlet.ReadListener;
@@ -61,27 +61,31 @@ public class CompileTest{
         JSONObject jsonIn = ResourceReader.readJsonResource(filePath);
 
         CodeModelC modelC = null;
+        String result = "";
         try {
             modelC = CodeModelCFactory.createInstance("windows", jsonIn, ModelMode.Compilation);
+            result = compile.compileWithJSON(modelC, jsonIn);
         } catch (ModelException e) {
             throw new RuntimeException(e);
         }
-        String result = compile.compileWithJSON(modelC, jsonIn);
+
         assertEquals("Compile test fail to pass.", "make exe success.", result);
 
     }
 
     @Test
-    public void testCompileWithJSONLinuxLoong(){
+    public void testCompileWithJSONLinuxLoong() {
         String filePath = "mlsCompile.json"; // 替换为实际文件路径
         JSONObject jsonIn = ResourceReader.readJsonResource(filePath);
         CodeModelC modelC = null;
+        String result = "";
         try {
             modelC = CodeModelCFactory.createInstance("loong", jsonIn, ModelMode.Compilation);
+            result = compile.compileWithJSON(modelC, jsonIn);
         } catch (ModelException e) {
             throw new RuntimeException(e);
         }
-        assertEquals("Fail to make exe.", "make exe success.", compile.compileWithJSON(modelC, jsonIn));
+        assertEquals("Fail to make exe.", "make exe success.", result);
 
     }
 

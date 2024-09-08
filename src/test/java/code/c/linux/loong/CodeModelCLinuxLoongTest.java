@@ -1,8 +1,8 @@
-package test.java.code.c.linux.loong;
+package code.c.linux.loong;
 
-import code.Solver;
-import code.c.linux.loong.CodeModelCLinuxLoong;
-import ncslablink.ModelMode;
+import com.ncslab.code.Solver;
+import com.ncslab.code.c.linux.loong.CodeModelCLinuxLoong;
+import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;

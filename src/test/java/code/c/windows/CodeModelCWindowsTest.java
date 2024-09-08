@@ -1,8 +1,8 @@
-package test.java.code.c.windows;
+package code.c.windows;
 
-import code.Solver;
-import code.c.windows.CodeModelCWindows;
-import ncslablink.ModelMode;
+import com.ncslab.code.Solver;
+import com.ncslab.code.c.windows.CodeModelCWindows;
+import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;

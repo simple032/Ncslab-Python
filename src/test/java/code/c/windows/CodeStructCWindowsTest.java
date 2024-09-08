@@ -1,8 +1,8 @@
-package test.java.code.c.windows;
+package code.c.windows;
 
-import code.c.windows.CodeModelCWindows;
-import code.c.windows.CodeStructCWindows;
-import ncslablink.ModelMode;
+import com.ncslab.code.c.windows.CodeModelCWindows;
+import com.ncslab.code.c.windows.CodeStructCWindows;
+import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.*;
 import org.junit.runner.RunWith;

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import com.ncslab.block.io.*;
+import com.ncslab.code.plc.CodeStructPLC;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
@@ -34,7 +35,8 @@ public class Block implements MCodeBlock, CCodeBlock{
 	@Getter
     protected String blockPath;
 	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
-	protected JSONObject paramValues;
+	@Getter
+    protected JSONObject paramValues;
 
 	//输入与输出端口的列表
 	@Getter
@@ -414,5 +416,16 @@ public class Block implements MCodeBlock, CCodeBlock{
         for (Map.Entry<String, String> entry : replacements.entrySet())
             result = result.replace(entry.getKey(), entry.getValue());
         return result;
+    }
+
+    public void generateBlockOutputCodePLC(CodeStructPLC code) {
+    }
+
+    public void generateBlockInitCodePLC(CodeStructPLC code) {
+
+    }
+
+    public void generateBlockUpdateCodePLC(CodeStructPLC code) {
+
     }
 }

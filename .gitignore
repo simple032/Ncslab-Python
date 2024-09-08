@@ -5,3 +5,7 @@
 /target/
 /.idea/*
 /.smarttomcat
+
+**/.DS_Store
+.vscode/*
+/__pycache__
