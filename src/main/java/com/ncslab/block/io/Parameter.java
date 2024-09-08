@@ -39,6 +39,10 @@ public class Parameter {
 		return data.getDataType();
 	}
 
+    public double getDouble() { return data.getInitValue(); }
+
+    public boolean equals(String string) { return string.equals(data.getDataString());}
+
 	public String getDefineString() {
 		String defineString="";
 

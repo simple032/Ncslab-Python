@@ -12,6 +12,8 @@ public class Data {
 	@Getter
     private double initValue = 0;
 	private Matrix initMatrix = null;
+    @Getter
+    private String dataString = "";
 
 	static FelEngine fel = new FelEngineImpl();
 	static {
@@ -39,11 +41,10 @@ public class Data {
 	}
 
 	/* 根据从前端传递来的字符串建立数据 */
-	public Data(String dataString) {
+	public Data(String inString) {
 
 		// setupFel();
-
-		dataString = formatDataString(dataString);
+        dataString = formatDataString(inString);
 
 		try {
 			initValue = Double.parseDouble(dataString);
@@ -67,8 +68,7 @@ public class Data {
 	}
 
 	private static String formatDataString(String dataString) {
-		dataString = dataString.trim();
-		return dataString;
+		return dataString.trim();
 	}
 
 	public static boolean isStringMatrix(String matrixString) {
