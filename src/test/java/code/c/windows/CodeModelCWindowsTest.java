@@ -1,35 +1,40 @@
 package code.c.windows;
 
+import com.ncslab.WindowsTest;
 import com.ncslab.code.Solver;
 import com.ncslab.code.c.windows.CodeModelCWindows;
+import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import test.java.ResourceReader;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-@RunWith(JUnit4.class)
+@Category(WindowsTest.class)
 public class CodeModelCWindowsTest {
-    private CodeModelCWindows codeModelCWindows;
+    private CodeModelCWindows codeModelC;
 
     @Before
     public void setUp() throws Exception {
         String filePath = "mlsCompile.json"; // 替换为实际文件路径
         JSONObject jsonIn = ResourceReader.readJsonResource(filePath);
-        codeModelCWindows = CodeModelCWindows.createFromJSON(jsonIn, ModelMode.Compilation);
+        codeModelC = CodeModelCWindows.createFromJSON(jsonIn, ModelMode.Compilation);
     }
 
     @Test
     public void testCodeModelCWindows() {
-        assertEquals("User id should be 35", codeModelCWindows.getUserId(), 35);
-        assertEquals("Model id should be 8078", codeModelCWindows.getModelId(), 8078);
-        assertEquals("Model name should be s376320", codeModelCWindows.getModelName(), "s376320");
-        assertEquals("Model solver should be ode4", codeModelCWindows.getSolver(), Solver.ode4);
+        assertEquals("User id should be 35", 35,codeModelC.getUserId());
+        assertEquals("Model id should be 8078", 8078, codeModelC.getModelId());
+        assertEquals("Model name should be s376320", "s376320", codeModelC.getModelName());
+        assertEquals("Model solver should be ode5", Solver.ode5, codeModelC.getSolver());
     }
 
     @After

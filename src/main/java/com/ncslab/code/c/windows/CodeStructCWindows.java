@@ -28,12 +28,6 @@ public class CodeStructCWindows extends CodeStructC {
 
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
-		if(file.exists()) {
-           if(!file.delete())
-           {
-               System.out.println("Failed to delete file: "+file.getAbsolutePath());
-           }
-        }
         if(!file.exists()) {
 			file.mkdir();
 		}

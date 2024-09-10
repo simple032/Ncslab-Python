@@ -8,7 +8,7 @@
   "modelRealName": "unnamed696704",
   "templateName": "PowerSim",
   "config": {
-    "FixedStep": 0.04,
+    "FixedStep": "0.04",
     "Solver": "ode5",
     "SystemTargetFile": "PowerSim.tlc",
     "TemplateMakefile": "PowerSim.tmf"
