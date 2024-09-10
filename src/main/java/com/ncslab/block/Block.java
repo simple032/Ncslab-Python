@@ -17,6 +17,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.lan.CCodeBlock;
 import com.ncslab.block.lan.MCodeBlock;
+import com.ncslab.block.io.OutputPort;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
 public class Block implements MCodeBlock, CCodeBlock{
@@ -40,7 +41,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 
 	//输入与输出端口的列表
 	@Getter
-    protected Vector<InputPort> inputPortList = new Vector<InputPort>();
+    protected Vector<InputPort> inputPortList = new Vector<>();
 	@Getter
     protected Vector<OutputPort> outputPortList = new Vector<OutputPort>();
 
@@ -51,7 +52,7 @@ public class Block implements MCodeBlock, CCodeBlock{
     @Getter
     protected Vector<State> dStateList = new Vector<State>();
     @Getter
-    protected Vector<RWork> rworkList = new Vector<RWork>();
+    protected Vector<RWork> rworkList = new Vector<>();
 	@Getter
     protected Vector<GlobalVariable> globalVariableList = new Vector<>(); // global variables
 

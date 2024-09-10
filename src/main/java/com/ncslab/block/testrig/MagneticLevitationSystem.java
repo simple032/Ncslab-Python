@@ -36,15 +36,15 @@ public class MagneticLevitationSystem extends Block {
 
         rworkList.add(new RWork(this, 1, "tem"));
 
-        gravity = new Parameter(this, 1, "gravity", "");
+        gravity = new Parameter(this, 1, "gravity", "9.8");
         parameterList.add(gravity);
-        x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "");
+        x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "0");
         parameterList.add(x0);
-        i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "");
+        i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "0");
         parameterList.add(i0);
-        Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "");
+        Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "0");
         parameterList.add(Ks);
-        Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "");
+        Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "0");
         parameterList.add(Ka);
     }
 

@@ -1,7 +1,9 @@
+#ifdef __WIN32
 #include "winsock2.h"
+#endif // __WIN32
 #include "UploadThread.hpp"
-#include "ncslabccode.h"
-#include "DataApi.h"
+#include "ncslabccode.hpp"
+#include "DataApi.hpp"
 
 #ifndef MSG_WAITALL
 	#define MSG_WAITALL 0x08
@@ -55,7 +57,7 @@ BOOL packagingData(CLIENT_STRUCT *p,uint_T n)
 	uint_T subPos;
 
 	MODEL *mp=p->pExtModeData->mp;
-	
+
 	SIGNAL **signals=dataApiGetSignals(mp);
 	PARAMETER **parameters=dataApiGetParameters(mp);
 
@@ -145,7 +147,7 @@ DWORD WINAPI UploadThreadFunction( LPVOID lpParam )
 		printf("Allocating memory for upload data failed.\n");
 		return 0;
 	}
-	
+
 	while(p->upload.loop)
 	{
 		WaitForSingleObject(p->upload.hEvent,INFINITE);
@@ -165,7 +167,7 @@ DWORD WINAPI UploadThreadFunction( LPVOID lpParam )
 	}
 
     onUploadTermination(p);
-    
+
     return 0;
 }
 

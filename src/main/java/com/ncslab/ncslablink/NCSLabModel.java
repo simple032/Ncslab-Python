@@ -172,10 +172,6 @@ abstract public class NCSLabModel {
 			addCircuitBlocks(circuitParser);
 			// 把电路图中转换生成的都加入LineList
 			addCircuitLines(circuitParser);
-
-
-
-
 		}
 
 		//解析各个Block
@@ -186,7 +182,6 @@ abstract public class NCSLabModel {
 		parseLines();
 		if(j!=0) {
 			// 解开代数环的代码
-
 			try {
 				circuitParser.getCircuitModel().loopProcess();
 			}
@@ -195,8 +190,6 @@ abstract public class NCSLabModel {
 				circuitParser.getCircuitModel().clearElectBlockLoop();
 			}
 		}
-
-
 		setupDimensionList();
 
 		updateDimensions();
@@ -262,10 +255,8 @@ abstract public class NCSLabModel {
 
 			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
 
-			if(line!=null) {
-				lineList.add(line);
-			}
-		}
+            lineList.add(line);
+        }
 	}
 
 

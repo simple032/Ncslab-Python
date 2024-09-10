@@ -2,8 +2,9 @@
 #define UTIL_HPP
 
 #include "ncslabdefines.hpp"
+#include "ncslabccode.hpp"
 
-extern double real_sample_time;
+extern REAL real_sample_time;
 
 double calalpoutput(double inputvalue);
 void storeState(int);

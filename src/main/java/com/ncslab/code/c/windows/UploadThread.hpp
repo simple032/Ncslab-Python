@@ -1,7 +1,7 @@
 #ifndef UPLOADTHREAD
 #define UPLOADTHREAD
 
-#include "clientthread.h"
+#include "clientthread.hpp"
 void createUploadThread(CLIENT_STRUCT *p);
 
 #endif

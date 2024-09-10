@@ -2,7 +2,8 @@
 #define ONESTEP_HPP
 
 #include "Matrix.hpp"
-#include "ncslab.h"
+#include "ncslab.hpp"
+#include "mainccode.hpp"
 
 extern double singleStateReserve[][SINGLE_STATE_NUM];
 extern Matrix matrixStateReserve[][MATRIX_STATE_NUM];

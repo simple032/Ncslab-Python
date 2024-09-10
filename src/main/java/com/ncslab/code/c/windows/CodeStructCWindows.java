@@ -6,7 +6,9 @@ import java.io.InputStreamReader;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
+import com.ncslab.ncslablink.NCSLabModel;
 
 public class CodeStructCWindows extends CodeStructC {
 	public CodeStructCWindows(CodeModelC model) {
@@ -20,15 +22,22 @@ public class CodeStructCWindows extends CodeStructC {
 		String userPath=codePathBase+model.getUserId();
 
 		File file=new File(userPath);
-		if(file.exists()==false) {
+		if(!file.exists()) {
 			file.mkdir();
 		}
 
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
-		if(file.exists()==false) {
+		if(file.exists()) {
+           if(!file.delete())
+           {
+               System.out.println("Failed to delete file: "+file.getAbsolutePath());
+           }
+        }
+        if(!file.exists()) {
 			file.mkdir();
 		}
+
 
 		codePath=modelPath+"/";
 
@@ -36,42 +45,55 @@ public class CodeStructCWindows extends CodeStructC {
 		//makefile
 		writeNCSLabFile("makefile");
 		//锟斤拷锟斤拷锟捷结构
-		writeNCSLabFile("ncslabccode.h");
+		writeNCSLabFile("ncslabccode.hpp");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
-		writeNCSLabFile("ncslabmain.c");
+		writeNCSLabFile("ncslabmain.cpp");
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
-		writeNCSLabFile("DataApi.c");
-		writeNCSLabFile("DataApi.h");
+		writeNCSLabFile("DataApi.cpp");
+		writeNCSLabFile("DataApi.hpp");
 
-		writeNCSLabFile("util.c");
+		writeNCSLabFile("../util.cpp","util.cpp");
+        writeNCSLabFile("../util.hpp", "util.hpp");
 
-		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
-		writeNCSLabFile("ServerThread.c");
-		writeNCSLabFile("ServerThread.h");
-		writeNCSLabFile("ClientThread.c");
-		writeNCSLabFile("ClientThread.h");
-		writeNCSLabFile("UploadThread.c");
-		writeNCSLabFile("UploadThread.h");
+        writeNCSLabFile("../Matrix.cpp","Matrix.cpp");
+        writeNCSLabFile("../Matrix.hpp", "Matrix.hpp");
 
+        //实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
+		writeNCSLabFile("ServerThread.cpp");
+		writeNCSLabFile("ServerThread.hpp");
+		writeNCSLabFile("ClientThread.cpp");
+		writeNCSLabFile("ClientThread.hpp");
+		writeNCSLabFile("UploadThread.cpp");
+		writeNCSLabFile("UploadThread.hpp");
+
+        writeNCSLabFile("ncslabdefines.hpp");
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();
+        writeNCSLabFile("../mainccode.hpp", "mainccode.hpp");
 
 		wirteDefineFile();
 
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("../ode1.c","onestep.c");
+			writeNCSLabFile("../ode1.cpp","onestep.cpp");
 			break;
 		case ode2:
-			writeNCSLabFile("../ode2.c","onestep.c");
+			writeNCSLabFile("../ode2.cpp","onestep.cpp");
 			break;
 		case ode3:
-			writeNCSLabFile("../ode3.c","onestep.c");
+			writeNCSLabFile("../ode3.cpp","onestep.cpp");
 			break;
 		case ode4:
-			writeNCSLabFile("../ode4.c","onestep.c");
+			writeNCSLabFile("../ode4.cpp","onestep.cpp");
 			break;
+        case ode5:
+            writeNCSLabFile("../ode5.cpp","onestep.cpp");
+            break;
+        default:
+            System.err.println("Unsupported solver: "+model.getSolver());
+            break;
 		}
+        writeNCSLabFile("../onestep.hpp","onestep.hpp");
 
 	}
 
@@ -82,7 +104,7 @@ public class CodeStructCWindows extends CodeStructC {
 	public boolean makeExeFile() {
 		try {
 			//锟斤拷锟斤拷make锟斤拷锟斤拷锟缴匡拷执锟叫达拷锟斤拷
-			Process process=Runtime.getRuntime().exec("mingw32-make", null, new File(codePath));
+			Process process=Runtime.getRuntime().exec("mingw32-make -j4", null, new File(codePath));
 			//锟斤拷取OutputStream锟斤拷errStream锟斤拷锟斤拷锟斤拷锟饺★拷锟斤拷锟绞憋拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));

@@ -1,13 +1,16 @@
+#ifdef __WIN32
 #include "winsock2.h"
-#include"ncslabccode.h"
+#endif // __WIN32
+#include"ncslabccode.hpp"
 #include"ServerThread.hpp"
-#include"ncslab.h"
+#include"ncslab.hpp"
+//#include <octave/oct.h>
 
 extern MODEL *mp;
 
 
-extern double singleStateReserve[][SINGLE_STATE_NUM];
-extern Matrix matrixStateReserve[][MATRIX_STATE_NUM];
+extern double singleStateReserve[SINGLE_STATE_NUM];
+extern Matrix matrixStateReserve[MATRIX_STATE_NUM];
 
 extern double singleDerivativeReserve[][SINGLE_STATE_NUM];
 extern Matrix matrixDerivativeReserve[][MATRIX_STATE_NUM];

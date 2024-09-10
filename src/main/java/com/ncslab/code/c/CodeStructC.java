@@ -16,10 +16,7 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.terminal.Terminal;
 import com.ncslab.utils.Property;
-import com.ncslab.code.c.CodeModelC;
-import com.ncslab.block.data.DataType;
 
-import com.ncslab.block.io.terminal.Terminal;
 import lombok.Getter;
 
 abstract public class CodeStructC{
@@ -114,7 +111,8 @@ abstract public class CodeStructC{
     //end
 
 	// Global variables
-	public String globalVariable="";
+	@Getter
+    public String globalVariable="";
 	// public String globalDeclare="";
 	public String globalInit="";
 	// public String globalEnd="";
@@ -155,9 +153,9 @@ abstract public class CodeStructC{
 
 	public String hardwareDefineCode="";
 
+    final static String BLOCK_STRUCTURE_FORMAT = "BLOCK block%d={(char *)\"%s\",(char *)\"%s\",%d,%d,%d,%d,%d};\n";
 
-
-	/*定义所有监控数据实体的代码，包括INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
+    /*定义所有监控数据实体的代码，包括INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
 	/*定义监控数据实体初始化的代码，初始化各个组件结构的名称，path等，让指针指向指定的位置，建立数据结构， */
 	public String dataStructureInitCode="";
@@ -165,7 +163,8 @@ abstract public class CodeStructC{
 	/**
 	 * End code, that will be run after the simulation ends
 	 */
-	public String finalizeCode = "";
+	@Getter
+    public String finalizeCode = "";
 
 	private int parameterIndex=1;
 	private int stateIndex=1;
@@ -182,11 +181,7 @@ abstract public class CodeStructC{
 		this.model=model;
 	}
 
-	public String getGlobalVariable(){
-		return this.globalVariable;
-	}
-
-	public void addGlobalVariable(String code){
+    public void addGlobalVariable(String code){
 		this.globalVariable += code;
 	}
 
@@ -195,10 +190,6 @@ abstract public class CodeStructC{
 	}
 	public void addInitConfigCode(String code) {
 		initConfigCode+=code;
-	}
-	//author:xiazhiqiang
-	public String getArraysCode() {
-		return this.arraysCode;
 	}
 
     //end
@@ -212,11 +203,7 @@ abstract public class CodeStructC{
 		outputCode+=code;
 	}
 
-	public String getFinalizeCode(){
-		return this.finalizeCode;
-	}
-
-	public void addFinalizeCode(String code){
+    public void addFinalizeCode(String code){
 		this.finalizeCode += code;
 	}
 
@@ -246,15 +233,17 @@ abstract public class CodeStructC{
 
 	public void generateIncludeCode() {
 		includeCode+=""
-				+"#include\"ncslabccode.h\"\n"
-				+"#include\"ncslabdefines.h\"\n"
+				+"#include\"ncslabccode.hpp\"\n"
+				+"#include\"ncslabdefines.hpp\"\n"
 				// +"#include\"ncs_serialport.h\"\n"
-				+"#include\"ncslab.h\"\n"
+				+"#include\"ncslab.hpp\"\n"
 				+"#include\"math.h\"\n"
 				//TODO:这些有linux特定的api，需要根据平台类型来定制
 				// +"#include <iostream>\n"
-				// +"#include <octave/oct.h>\n"
-				// +"#include <sys/socket.h>\n"
+//				 +"#include <octave/oct.h>\n"
+				+ "#ifdef __linux\n"
+                +"#include <sys/socket.h>\n"
+                + "#endif \n"
 
 				//xiazhiqiang:Stores the sampling time of discrete modules
 				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
@@ -321,14 +310,8 @@ abstract public class CodeStructC{
 				//add define arrays code
 				+arraysCode+"\n"
 				//end
-
 				+preCode+"\n"
-				//author:xiazhiqiang
-				//add define arrays code
-				+arraysCode+"\n"
-				//end
 
-				+preCode+"\n"
 				+dataStructureCode+"\n"
 
 				+ "union data_union{\n"
@@ -369,6 +352,14 @@ abstract public class CodeStructC{
 				+updateCode+"\n"
 				+"}\n"
 
+                +"void NCSLabDiscreteUpdate(){\n"
+                +"// only for stm32;\n"
+                +"}\n"
+
+                +"void NCSLabSinkOutput(){\n"
+                +"// only for stm32;\n"
+                +"}\n"
+
 				+"void NCSLabTerminate(){\n"
 				+terminateCode+"\n"
 				+"}\n"
@@ -379,7 +370,7 @@ abstract public class CodeStructC{
 
 				+"\n";
 
-		File file = new File(codePath+"mainccode.c");
+		File file = new File(codePath+"mainccode.cpp");
 		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(file);
@@ -592,37 +583,34 @@ abstract public class CodeStructC{
 
 	//写文件的方法，将文件从resource中拷贝出来，写在目标文件夹
 	protected void writeNCSLabFile(String fileName) {
-		System.out.println("Writing file "+fileName+"...");
-		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
-
-		File file=new File(codePath+"/"+fileName);
-		if(file.exists()) {
-			return;
-		}
-        if(file.exists()) {
-            return;
-        }
-		FileOutputStream outputStream;
-		try {
-			outputStream = new FileOutputStream(file);
-			byte[] buffer = new byte[1024];
-			int len;
-			while((len=InputStream.read(buffer))>0) {
-				outputStream.write(buffer,0,len);
-			}
-
-			outputStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        writeNCSLabFile(fileName, fileName, false);
 	}
 
     protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
+        System.out.println("Writing file "+fileName+"...");
+        InputStream InputStream = this.getClass().getResourceAsStream(fileName);
 
+        File file=new File(codePath+"/"+fileNameOut);
+        if(file.exists() && !overwrite) {
+            return;
+        }
+        FileOutputStream outputStream;
+        try {
+            outputStream = new FileOutputStream(file);
+            byte[] buffer = new byte[1024];
+            int len;
+            while((len=InputStream.read(buffer))>0) {
+                outputStream.write(buffer,0,len);
+            }
+
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 	protected void writeNCSLabFile(String fileName, String fileNameOut) {
 		// TODO: writeNCSLabFile(fileName, fileNameOut, false);
-		writeNCSLabFile(fileName, fileNameOut, true);
+		writeNCSLabFile(fileName, fileNameOut, false);
 	}
 
     //f 要复制的文件夹    nf 要复制到的地方
@@ -703,7 +691,7 @@ abstract public class CodeStructC{
 		code+="#define MONITORPORT "+model.getMonitorPort()+"\n";
 
 
-		File file = new File(codePath+"ncslab.h");
+		File file = new File(codePath+"ncslab.hpp");
 		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(file);
@@ -808,22 +796,22 @@ abstract public class CodeStructC{
 
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("ode1.c","onestep.c");
+			writeNCSLabFile("ode1.cpp","onestep.cpp");
 			break;
 		case ode2:
-			writeNCSLabFile("ode2.c","onestep.c");
+			writeNCSLabFile("ode2.cpp","onestep.cpp");
 			break;
 		case ode3:
-			writeNCSLabFile("ode3.c","onestep.c");
+			writeNCSLabFile("ode3.cpp","onestep.cpp");
 			break;
 		case ode4:
-			writeNCSLabFile("ode4.c","onestep.c");
+			writeNCSLabFile("ode4.cpp","onestep.cpp");
 			break;
 		case ode5:
-			writeNCSLabFile("ode5.c","onestep.c");
+			writeNCSLabFile("ode5.cpp","onestep.cpp");
 			break;
 		case ode6:
-			writeNCSLabFile("ode6.c","onestep.c");
+			writeNCSLabFile("ode6.cpp","onestep.cpp");
 			break;
 		default:
 			System.out.println("error");
@@ -996,10 +984,24 @@ abstract public class CodeStructC{
 		model.setSignalNum(signalNum);
 
 		dataStructureCode+="/*Define block structures*/\n";
-		if(model.getBlockList().size()>0) {
+		if(!model.getBlockList().isEmpty()) {
 			for(Block block:model.getBlockList()) {
-				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+","+model.getConfig().getStartTime()+",0};\n";
-			}
+
+                // 定义变量
+                int blockId = block.getBlockId();
+                String blockType = block.getBlockType();
+                String blockName = block.getBlockName();
+                int inputPortSize = block.getInputPortList().size();
+                int outputPortSize = block.getOutputPortList().size();
+                int parameterSize = block.getParameterList().size();
+                int stateSize = block.getStateList().size();
+                int blockSignalNum = block.getSignalNum();
+
+                // 使用String.format来格式化字符串
+                String blockString = String.format(BLOCK_STRUCTURE_FORMAT, blockId, blockType, blockName, inputPortSize, outputPortSize, parameterSize, stateSize, blockSignalNum);
+//				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+","+model.getConfig().getStartTime()+",0};\n";
+			    dataStructureCode+=blockString;
+            }
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
 		}
 		else {

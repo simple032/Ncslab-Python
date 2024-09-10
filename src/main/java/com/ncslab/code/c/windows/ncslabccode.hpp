@@ -4,6 +4,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+enum DATA_TYPE {SINGLE,MATRIX};
 
 #define REAL double
 #define real_T REAL
@@ -31,6 +32,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }PARAMETER;
 
 typedef struct {
@@ -39,6 +41,7 @@ typedef struct {
 	int height;
 	void *vp;
 	void *dvp;
+	DATA_TYPE type;
 }STATE;
 
 typedef struct {
@@ -47,6 +50,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }SIGNAL;
 
 typedef struct {
@@ -57,7 +61,7 @@ typedef struct {
 	int parameterNum;
 	int stateNum;
 	int signalNum;
-	
+
 	INPUT_PORT **inputPorts;
 	OUTPUT_PORT **outputPorts;
 	PARAMETER **parameters;
@@ -74,17 +78,21 @@ typedef struct {
 	REAL stopTime;
 	REAL time;
 	REAL offset;
-	
+	REAL discreteTime;
+	int discreteUpdate;
+
 	int signalNum;
 	int parameterNum;
 	int stateNum;
 	SIGNAL **signals;
 	PARAMETER **parameters;
 	STATE **states;
-	
+
 	BLOCK **blocks;
 	int majorStep;
+#ifndef __WIN32
 	struct timeval tv;
+#endif // __WIN32
 }MODEL;
 
 void NCSLabInit();
@@ -92,6 +100,8 @@ void NCSLabOneStep();
 void NCSLabOutput();
 void NCSLabDerivative();
 void NCSLabUpdate();
+void NCSLabDiscreteUpdate();
+void NCSLabSinkOutput();
 void storeState();
 void restoreState();
 void storeDerivative(int);

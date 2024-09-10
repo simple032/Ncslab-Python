@@ -9,20 +9,20 @@ import com.ncslab.ncslablink.ModelMode;
 
 public class CodeModelCWindows extends CodeModelC {
 	private CodeStructCWindows codeWindows=new CodeStructCWindows(this);
-	
+
 	CodeModelCWindows(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
 	}
-	
+
 	@Override
-	protected CodeStructC getCodeStructC() {
+	protected CodeStructCWindows getCodeStructC() {
 		return codeWindows;
 	}
-	
+
 	public static CodeModelCWindows createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException {
 		CodeModelCWindows model=new CodeModelCWindows(jsonIn,mode);
-		
+
 		return model;
 	}
-	
+
 }

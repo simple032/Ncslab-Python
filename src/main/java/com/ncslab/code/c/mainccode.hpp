@@ -2,6 +2,7 @@
 #define MAINCCODE_HPP
 
 #include "ncslabdefines.hpp"
+#include "ncslabccode.hpp"
 
 extern int sample_i;
 extern double sample_time[];

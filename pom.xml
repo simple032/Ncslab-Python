@@ -73,13 +73,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>toplink.essentials</groupId>
-      <artifactId>toplink-essentials</artifactId>
-      <version>${toplink.essentials.version}</version>
-    </dependency>
-
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
@@ -166,7 +159,7 @@
 
     <resources>
       <resource>
-        <directory>src/main/java</directory>
+        <directory>src/main/resources</directory>
         <excludes>
           <exclude>**/*.java</exclude>
         </excludes>
@@ -244,11 +237,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven-surefire-plugin.version}</version>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.0.0</version>
       </plugin>
 
       <!-- <plugin>

@@ -257,16 +257,29 @@ public class BlockType{
 		// 		blockJSON.put("blockType", "TestPoint");
 		// 		break;
 		// }
-
+        Block block = null;
 		if (constructor == null) {
-			throw(new ModelException("Can not find blocktype in mapped function \""+blockType+"\""));
-		}
-		Block block = constructor.apply(blockJSON, model);
-		if(block==null) {
-			throw(new ModelException("Can not find blocktype in block\""+blockType+"\""));
-		}
-		block.setBlockId(id);
-		block.updateBlock();
+            try {
+                Class<? extends Block> blockClass = blockClassTree.get(blockType);
+                block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
+            }catch(InvocationTargetException e){
+                Throwable realException = e.getCause();
+                realException.printStackTrace();  // 打印实际的异常信息
+                // 根据实际异常类型进行进一步处理
+            }catch(NoSuchMethodException|InstantiationException|IllegalAccessException e){
+                System.err.println(e);
+            }
+            if(block == null)
+                throw(new ModelException("Can not find blocktype in mapped function \""+blockType+"\""));
+		}else {
+            block = constructor.apply(blockJSON, model);
+            if (block == null) {
+                throw (new ModelException("Can not find blocktype in block\"" + blockType + "\""));
+            }
+        }
+        block.setBlockId(id);
+        block.updateBlock();
+
 		return block;
 		// return null;
 	}

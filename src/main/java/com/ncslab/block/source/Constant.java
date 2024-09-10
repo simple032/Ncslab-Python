@@ -21,9 +21,12 @@ public class Constant extends Block {
 	@Getter
 	public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
 
 	static {
 		parameterNames.add("Value");
+        outputNames.add("out1");
 	}
 
 	public Constant(JSONObject blockJSON,NCSLabModel model) {
@@ -32,6 +35,7 @@ public class Constant extends Block {
 		//һ�����
 		value=new Parameter(this,1,getBlockName(),paramValues.getString("Value"));
 		parameterList.add(value);
+        outputPortList.add(new OutputPort(this, 1, true));
 		outputPortList.get(0).setHeight(value.getHeight());
 		outputPortList.get(0).setWidth(value.getWidth());
 	}

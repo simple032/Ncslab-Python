@@ -2,17 +2,18 @@
 #define NCSLABDEFINES_HPP
 
 #include <list>
+#ifndef __WIN32
 #include <sys/time.h>
-
+#endif // __WIN32
 //Input and Output
-#define ssSetNumInputPorts(S, num)  
+#define ssSetNumInputPorts(S, num)
 #define ssGetNumInputPorts(S) (S->parentBlock->inputPortNum)
 #define ssSetInputPortWidth(S, idx, width) blk->inputPorts[idx]=(INPUT_PORT*)malloc(sizeof(INPUT_PORT)*width)
 #define ssSetInputPortRequiredContiguous(S, idx, value) /*direct input signal access*/
 #define ssSetInputPortDirectFeedThrough(S, idx, value) ;
 
 #define ssSetNumOutputPorts(S, num) 0
-#define ssGetNumOutputPorts(S) (S->parentBlock->outputPortNum) 
+#define ssGetNumOutputPorts(S) (S->parentBlock->outputPortNum)
 #define ssSetOutputPortWidth(S, idx, width) ;
 
 #define ssGetInputPortSignal(S, idx) (S->parentBlock->inputPorts[idx]->vp)
@@ -104,10 +105,10 @@ struct BLOCK
 	int parameterNum;
 	int stateNum;
 	int signalNum;
-	
+
 	REAL discreteTime;
 	int discreteUpdated;
-	
+
 	INPUT_PORT **inputPorts;
 	OUTPUT_PORT **outputPorts;
 	PARAMETER **parameters;
@@ -126,7 +127,7 @@ struct SimStruct
 	BLOCK* parentBlock;
 };
 
-struct MODEL 
+struct MODEL
 {
 	char *name;
 	int blockNum;
@@ -136,22 +137,22 @@ struct MODEL
 	REAL time;
 	REAL offset;
 	REAL discreteTime;
-	
+
 	int discreteUpdate;
-	
+
 	int signalNum;
 	int parameterNum;
 	int stateNum;
 	SIGNAL **signals;
 	PARAMETER **parameters;
 	STATE **states;
-	
+
 	BLOCK **blocks;
 	int majorStep;
 	struct timeval tv;
-	
+
 	int terminalNum;
-	
+
 };
 
 enum TERMINALTYPE{Scope};
@@ -171,12 +172,12 @@ struct SCOPE
 	//int cursor;
 	//REAL *buffer;
 	//REAL *timeBuffer;
-	
+
 	std::list<REAL> dataList;
 	std::list<REAL> timeList;
-	
+
 	int isFull;
 };
 
-#endif 
+#endif
 

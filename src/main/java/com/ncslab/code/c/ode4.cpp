@@ -1,13 +1,13 @@
-#include"ncslabccode.h"
-#include"ServerThread.h"
-#include"ncslab.h"
+#include"ncslabccode.hpp"
+#include"ServerThread.hpp"
+#include"ncslab.hpp"
 
 #include <iostream>
 #include <cmath>
 
 #include "ncslabdefines.hpp"
 #include "util.hpp"
-#include "mainccode.hpp"
+//#include "mainccode.hpp"
 #include "onestep.hpp"
 //#include <octave/oct.h>
 
@@ -17,8 +17,8 @@ extern MODEL *mp;
 
 extern double sample_time[];
 
-double singleStateReserve[SINGLE_STATE_NUM];
-Matrix matrixStateReserve[MATRIX_STATE_NUM];
+double singleStateReserve[4][SINGLE_STATE_NUM];
+Matrix matrixStateReserve[4][MATRIX_STATE_NUM];
 
 //double derivativeReserve[4][STATE_NUM];
 

@@ -1,39 +1,43 @@
 
-
 CC=g++
 
 LD=g++
 
-#CCFlag=-mwindows -D_WIN32_WINNT=0x0501 
+#CCFlag=-mwindows -D_WIN32_WINNT=0x0501
+VCPKG_ROOT = D:\Software\vcpkg\installed
+VCPKG_TRIPLET = x64-windows
+VCPKG_PATH = $(VCPKG_ROOT)\$(VCPKG_TRIPLET)
 
-CCFlag=-mwindows -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 -IC:\Octave-6.3.0\mingw64\/include  -IC:\Octave-6.3.0\mingw64\include\octave-6.3.0\octave\.. -IC:\Octave-6.3.0\mingw64\include\octave-6.3.0\octave -IC:\Octave-6.3.0\mingw64\include   -fopenmp -g -O2    
+CCFlag = -mwindows -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
+         -I$(VCPKG_PATH)/include \
+         -fopenmp -g -O2
 
 ncslab.exe: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o
 	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o -lwinmm -lws2_32
-	
-mainccode.o: mainccode.c
-	$(CC) $(CCFlag) -c mainccode.c
 
-ncslabmain.o: ncslabmain.c ncslabccode.h
-	$(CC) $(CCFlag) -c ncslabmain.c
+mainccode.o: mainccode.cpp
+	$(CC) $(CCFlag) -c mainccode.cpp
 
-ServerThread.o: ServerThread.cpp ServerThread.hpp 
+ncslabmain.o: ncslabmain.cpp ncslabccode.hpp
+	$(CC) $(CCFlag) -c ncslabmain.cpp
+
+ServerThread.o: ServerThread.cpp ServerThread.hpp
 	$(CC) $(CCFlag) -c ServerThread.cpp
 
 ClientThread.o: ClientThread.cpp ClientThread.hpp
 	$(CC) $(CCFlag) -c ClientThread.cpp
-	
-DataApi.o: DataApi.c DataApi.h
-	$(CC) $(CCFlag) -c DataApi.c
-	
+
+DataApi.o: DataApi.cpp DataApi.hpp
+	$(CC) $(CCFlag) -c DataApi.cpp
+
 UploadThread.o: UploadThread.cpp UploadThread.hpp
 	$(CC) $(CCFlag) -c UploadThread.cpp
 
-onestep.o: onestep.c
-	$(CC) $(CCFlag) -c onestep.c
+onestep.o: onestep.cpp
+	$(CC) $(CCFlag) -c onestep.cpp
 
 util.o: util.cpp
 	$(CC) $(CCFlag) -c util.cpp
 
 clean:
-	del ncslab.exe mainccode.o ncslabmain.o
+	del ncslab.exe *.o

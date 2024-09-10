@@ -1,9 +1,9 @@
-#include"ncslabccode.h"
-#include"ServerThread.h"
-#include"ncslab.h"
+#include"ncslabccode.hpp"
+#include"ServerThread.hpp"
+#include"ncslab.hpp"
 
 #include <iostream>
-#include <octave/oct.h>
+//#include <octave/oct.h>
 
 extern MODEL *mp;
 

@@ -2,6 +2,8 @@ package com.ncslab.code;
 
 import java.util.Vector;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -27,7 +29,9 @@ abstract public class CodeModel extends NCSLabModel {
 	//输出链，应该先输出哪个，然后再输出哪个
 	protected Vector<Block> outputChain=new Vector<Block>();
 
-	protected Solver solver=Solver.ode4;
+	@Getter
+    @Setter
+    protected Solver solver=Solver.ode4;
 
 	protected CodeModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
@@ -147,17 +151,7 @@ abstract public class CodeModel extends NCSLabModel {
 		scanOutputChain();
 	}
 
-	public void setSolver(Solver solver) {
-		this.solver=solver;
-	}
-
-	public Solver getSolver() {
-		return this.solver;
-	}
-
-
-
-	/**
+    /**
 	 * general paradigm of code generation
 	 * 1. generate init code
 	 * 2. generate output code

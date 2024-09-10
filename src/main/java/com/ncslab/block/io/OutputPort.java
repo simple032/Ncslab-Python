@@ -5,29 +5,46 @@ import java.util.Vector;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.line.Line;
+import lombok.Getter;
+import lombok.Setter;
 
 public class OutputPort {
 
 	private Block block;
 
-	private int width=1;
-	private int height=1;
+    // TODO Auto-generated method stub
+    //outputSignalC.setWidth(width);
+    @Setter
+    @Getter
+    private int width=1;
+    // TODO Auto-generated method stub
+    @Setter
+    @Getter
+    private int height=1;
 
-	private int number;
+	@Getter
+    private int number;
 
-	private Vector<Line> linkedLineList=new Vector<Line>();
+	@Getter
+    private Vector<Line> linkedLineList=new Vector<Line>();
 
 	private boolean isFeedThrough=false;
 
 	private boolean isDimThrough=true;
 
-	private boolean isCodeGenerated=false;
+	@Setter
+    private boolean isCodeGenerated=false;
 
-	private boolean isDimScaned=false;
+	@Setter
+    private boolean isDimScaned=false;
 
-	private OutputSignal outputSignalC=null;
+	@Setter
+    @Getter
+    private OutputSignal outputSignalC=null;
 
-	private String name;
+	@Getter
+    @Setter
+    private String name;
 
 	public OutputPort(Block block,int number){
 		this.block=block;
@@ -52,27 +69,11 @@ public class OutputPort {
 		this.isFeedThrough=isFeedThrough;
 	}
 
-	public OutputSignal getOutputSignalC(){
-		return this.outputSignalC;
-	}
-
-	public void setOutputSignalC(OutputSignal outputSignalC){
-		this.outputSignalC=outputSignalC;
-	}
-
-	public int getNumber() {
-		return number;
-	}
-
-	public void addLinkedLine(Line linkedLine) {
+    public void addLinkedLine(Line linkedLine) {
 		this.linkedLineList.add(linkedLine);
 	}
 
-	public Vector<Line> getLinkedLineList() {
-		return this.linkedLineList;
-	}
-
-	public Block getBLock() {
+    public Block getBLock() {
 		return this.block;
 	}
 
@@ -100,43 +101,7 @@ public class OutputPort {
 		return this.isDimScaned;
 	}
 
-	public void setIsDimScaned(boolean isDimScaned) {
-		this.isDimScaned=isDimScaned;
-	}
-
-	public void setIsCodeGenerated(boolean isCodeGenerated) {
-		this.isCodeGenerated=isCodeGenerated;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name=name;
-	}
-
-	public int getWidth() {
-		return this.width;
-	}
-
-	public void setWidth(int width) {
-		// TODO Auto-generated method stub
-		this.width=width;
-		//outputSignalC.setWidth(width);
-	}
-
-	public int getHeight() {
-		return this.height;
-	}
-
-	public void setHeight(int height) {
-		// TODO Auto-generated method stub
-		this.height=height;
-		//outputSignalC.setHeight(height);
-	}
-
-	public String getDataStructureInitCodeC() {
+    public String getDataStructureInitCodeC() {
 		String code="";
 
 		OutputSignal signal=getOutputSignalC();
@@ -165,4 +130,11 @@ public class OutputPort {
 		return code;
 	}
 
+    public void setIsCodeGenerated(boolean isCodeGenerated) {
+        this.isCodeGenerated=isCodeGenerated;
+    }
+
+    public void setIsDimScaned(boolean isDimScaned) {
+        this.isDimScaned=isDimScaned;
+    }
 }

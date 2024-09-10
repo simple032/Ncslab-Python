@@ -1,7 +1,9 @@
+#ifdef __WIN32
 #include "winsock2.h"
+#endif // __WIN32
 #include "ClientThread.hpp"
-#include "ncslabccode.h"
-#include "DataApi.h"
+#include "ncslabccode.hpp"
+#include "DataApi.hpp"
 #include "UploadThread.hpp"
 
 #ifndef MSG_WAITALL
@@ -39,13 +41,13 @@ void createClientThread(CLIENT_STRUCT *p)
 
 	InitializeCriticalSection(&(p->socketCritical));
 
-	hClientThread = CreateThread( 
+	hClientThread = CreateThread(
             NULL,                   // default security attributes
-            0,                      // use default stack size  
+            0,                      // use default stack size
             ClientThreadFunction,       // thread function name
-            p,          // argument to thread function 
-            0,                      // use default creation flags 
-            &hClientThreadId);   // returns the thread identifier 
+            p,          // argument to thread function
+            0,                      // use default creation flags
+            &hClientThreadId);   // returns the thread identifier
 }
 
 BOOL terminateUploadThread(CLIENT_STRUCT *p)
@@ -86,7 +88,7 @@ DWORD WINAPI ClientThreadFunction( LPVOID lpParam )
 	printf("Number of blocks %d\n",dataApiGetNumBlocks(mp));
 	printf("Number of signals %d\n",dataApiGetNumSignals(mp));
 	printf("Number of parameters %d\n",dataApiGetNumParameters(mp));
-	
+
 
 	while(loop)
 	{
@@ -256,7 +258,7 @@ BOOL uploadSignals(CLIENT_STRUCT *p)
 		}
 
 	}
-	
+
 	return TRUE;
 
 }
@@ -275,7 +277,7 @@ BOOL uploadParameters(CLIENT_STRUCT *p)
 	for(i=0;i<num;i++){
 		PARAMETER *parameter=dataApiGetParameter(parameters,i);
 
-		
+
 		char_T blockPath[PATH_LENGTH];
 		char_T parameterName[NAME_LENGTH];
 
@@ -287,15 +289,15 @@ BOOL uploadParameters(CLIENT_STRUCT *p)
 
 		printf("%s\n",parameter->path);
 		printf("%s\n",parameter->name);
-		
-		
+
+
 		strcpy(blockPath,parameter->path);
 		strcpy(parameterName,parameter->name);
 
 		nRows=parameter->width;
 		nCols=1;
 
-		
+
 		ret=send(socket,parameterName,NAME_LENGTH,0);
 		if(ret==SOCKET_ERROR)
 		{
@@ -604,7 +606,7 @@ BOOL responseEXT_SETPARAM(CLIENT_STRUCT *p)
 
 	printf("Pos=%d\n",pos);
 	printf("Value=%f\n",value);
-	
+
 	return TRUE;
 }
 

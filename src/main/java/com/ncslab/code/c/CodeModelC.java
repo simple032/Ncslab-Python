@@ -218,7 +218,7 @@ abstract public class CodeModelC extends CodeModel {
 	/**
 	 * use make to generate executable file
 	 *
-	 * @param void
+	 * @param
 	 * @return whether the executable file is generated successfully
 	 */
 	public boolean makeExeFile() {

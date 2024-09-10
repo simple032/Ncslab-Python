@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ncslabccode.h"
+#include "ncslabccode.hpp"
 #include "ServerThread.hpp"
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -32,7 +32,7 @@
 #define NAME_LENGTH 80
 #define PATH_LENGTH 80
 
-typedef struct 
+typedef struct
 {
 	uint_T type;
 	uint_T pos;
@@ -48,7 +48,7 @@ typedef struct
 	uint_T currentCommand;
 
 	CRITICAL_SECTION  socketCritical;
-	
+
 
 	SELECT *select;
 	uint_T selectNum;

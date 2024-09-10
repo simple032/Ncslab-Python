@@ -1,14 +1,17 @@
 #include <iostream>
 #include <cmath>
 #include <cstdio>
+#ifndef __WIN32
 #include <sys/time.h>
-
-// #include "ncslabdefines.hpp"
-#include "ncslab.h"
+#else
+#include <windows.h>
+#endif // __WIN32
+#include "ncslabdefines.hpp"
+#include "ncslab.hpp"
 #include "Matrix.hpp"
 #include "onestep.hpp"
 #include "util.hpp"
-
+//#include <octave/oct.h>
 
 extern MODEL* mp;
 
@@ -47,7 +50,7 @@ void discreteInit() {
 	}
 	//end
 	mp->discreteUpdate = 1;
-	if (mp->stepSize > real_sample_time) 
+	if (mp->stepSize > real_sample_time)
 	{
 		mp->stepSize = real_sample_time;
 	}
@@ -96,18 +99,18 @@ double gcd1(double a[]) {
 
 // int hasdiscrete(double a[]) {
 // 	int i;
-// 	for (i = 0; i < mp->blockNum; i++) 
+// 	for (i = 0; i < mp->blockNum; i++)
 // 	{
-// 		if (a[i] == 0) 
+// 		if (a[i] == 0)
 // 		{
 // 			break;
 // 		}
 // 	}
-// 	if (i == 0) 
+// 	if (i == 0)
 // 	{
 // 		return 0;
 // 	}
-// 	else 
+// 	else
 // 	{
 // 		return 1;
 // 	}
@@ -143,6 +146,7 @@ double distance(double t, double s) {
 
 //end
 
+// TODO:变步长和定步长冲突
 void storeState(int num) {
 	/*
 	for(int i=0;i<STATE_NUM;i++){mbiguous
@@ -162,6 +166,7 @@ void storeState(int num) {
 	}
 }
 
+// TODO:变步长和定步长冲突
 void restoreState(int num) {
 	/*
 	for(int i=0;i<STATE_NUM;i++){
@@ -235,33 +240,35 @@ void caculateDerivative(double* weights, int num) {
 	}
 }
 
-REAL calculateStateDif(int seq1, int seq2) {
-	REAL dif = 0;
-	for (int i = 0;i < SINGLE_STATE_NUM;i++) {
-		REAL difn = fabs(singleStateReserve[seq1][i] - singleStateReserve[seq2][i]);
-		if (dif < difn) {
-			dif = difn;
-		}
-	}
-
-	for (int i = 0;i < MATRIX_STATE_NUM;i++) {
-		Matrix* pm1 = &(matrixStateReserve[seq1][i]);
-		Matrix* pm2 = &(matrixStateReserve[seq2][i]);
-		for (int h = 0;h < pm1->rows();h++) {
-			for (int w = 0;w < pm1->cols();w++) {
-				REAL difn = fabs((*pm1)(h, w) - (*pm2)(h, w));
-				if (dif < difn) {
-					dif = difn;
-				}
-			}
-		}
-	}
-
-	return dif;
-}
+// TODO:变步长和定步长冲突了
+//REAL calculateStateDif(int seq1, int seq2) {
+//	REAL dif = 0;
+//	for (int i = 0;i < SINGLE_STATE_NUM;i++) {
+//		REAL difn = fabs(singleStateReserve[seq1][i] - singleStateReserve[seq2][i]);
+//		if (dif < difn) {
+//			dif = difn;
+//		}
+//	}
+//
+//	for (int i = 0;i < MATRIX_STATE_NUM;i++) {
+//		Matrix* pm1 = &(matrixStateReserve[seq1][i]);
+//		Matrix* pm2 = &(matrixStateReserve[seq2][i]);
+//		for (int h = 0;h < pm1->rows();h++) {
+//			for (int w = 0;w < pm1->cols();w++) {
+//				REAL difn = fabs((*pm1)(h, w) - (*pm2)(h, w));
+//				if (dif < difn) {
+//					dif = difn;
+//				}
+//			}
+//		}
+//	}
+//
+//	return dif;
+//}
 
 static long oldSec = 0;
 
+#ifndef __WIN32
 void writeInformation() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -272,4 +279,28 @@ void writeInformation() {
 	}
 
 }
+#else
+void writeInformation() {
+    // 获取当前系统时间
+    FILETIME ft;
+    SYSTEMTIME st;
+    __int64 newSec;
 
+    GetSystemTime(&st);
+    SystemTimeToFileTime(&st, &ft);
+    newSec = (ft.dwHighDateTime << 32) | ft.dwLowDateTime;
+
+    // 将 FILETIME 转换为秒
+    newSec /= 10000000; // 10000000 微秒 = 1 秒
+
+    if (newSec != oldSec) {
+        // 假设 mp->time 是一个可以写入的变量
+        // 这里需要根据实际情况来定义 mp->time 的类型和如何写入
+        // 例如，如果 mp->time 是一个时间戳，可以这样写：
+        printf("%I64d\n", newSec);
+        fflush(stdout);
+        oldSec = newSec;
+    }
+}
+
+#endif

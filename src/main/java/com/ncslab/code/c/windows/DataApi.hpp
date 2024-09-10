@@ -1,7 +1,7 @@
 #ifndef DATA_API
 #define DATA_API
 
-#include "ncslabccode.h"
+#include "ncslabccode.hpp"
 
 #define dataApiGetVersion(mp) "0.1"
 #define dataApiGetNumBlocks(mp) ((mp)->blockNum)

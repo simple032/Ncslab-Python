@@ -1,5 +1,5 @@
 #include "ServerThread.hpp"
-#include "clientThread.h"
+#include "clientThread.hpp"
 
 #define DEFAULT_PORT "27015"
 

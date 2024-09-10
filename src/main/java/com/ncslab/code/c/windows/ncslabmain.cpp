@@ -1,7 +1,9 @@
+#ifdef __WIN32
 #include"winsock2.h"
-#include"ncslabccode.h"
+#endif // __WIN32
+#include"ncslabccode.hpp"
 #include"ServerThread.hpp"
-#include"ncslab.h"
+#include"ncslab.hpp"
 MODEL *mp;
 
 void  CALLBACK TimeEvent(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2){
@@ -29,8 +31,8 @@ int main(int argc, char *argv[]){
 	extModeData.mp=mp;
 
 	startMyServerThread(extModeData);
-	
+
 	timeSetEvent(STEP_SIZE*1000,1,(LPTIMECALLBACK)TimeEvent,0,TIME_PERIODIC);
-	
+
 	WaitForSingleObject(CreateEvent(NULL,FALSE,FALSE,NULL),INFINITE);
 }
