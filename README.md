@@ -184,8 +184,6 @@ $ sudo systemctl start nginx
 - `pom.xml` - Maven项目的配置文件
 - `README.md` - 项目说明文件
 - `src/` - 源代码目录
-    - `block/` - 包含模块代码
-    - `line/` - 包含连线代码
     - `main/` - 包含主程序代码
         - `java/` - 主程序代码
             - `com.ncslab` ncslab所有代码
@@ -199,6 +197,7 @@ $ sudo systemctl start nginx
                 - `CompileTest.java` - 测试网络请求编译
         - `resources/` - 测试资源文件
             - `mlsCompile.json` - 磁悬浮系统的编译资源文件
+    - `others/` - 包含其他代码
 
 ## 构建目录
 - `target/` - 构建输出目录
@@ -248,7 +247,9 @@ export CROSS_COMPILE=loongarch64-linux-
 7. 重启`idea`或其他`ide`即可顺利编译
 
 ## 单元测试[TODO]
-若生成可执行文件`CCode\35\8078\ncslab`，并插入到数据库中，则表示测试通过。
+若成功通过所有测试，则表示版本merge没有问题。
+
+以代码生成为例，若生成可执行文件`CCode\35\8078\ncslab`，并插入到数据库中，则表示测试通过。
 ### Windows
 ```shell
 maven test -Dtest=com.ncslab.WindowsTest
@@ -268,7 +269,9 @@ maven test -Dtest=com.ncslab.PublicTest
 The implementation of this project is inseparable from the contributions of the following contributors.
 
 - Wuhan University: HU Wenshan, XIA Zhiqiang, ZHOU Xingwei, YE Shengwang
-- Southern University of Science and Technology: ZHONG Wuzizheng, DONG Jinda, JU Xinyan
+- Southern University of Science and Technology: ZHONG Wuzizheng, DONG Jinda, JU Xinyan, WANG Xiangxian, WANG Jingxu
 - North China University of Technology: ZHOU keying
 
 and others.
+
+Please refer to our [maintainer guide](https://docs.qq.com/doc/DQXpFS1BwUFFIdmll) and packaging tutorial for more details.
