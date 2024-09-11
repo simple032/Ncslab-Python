@@ -72,7 +72,7 @@ public class BlockType{
 		blockFactory.put("ServoMotorSlider", com.ncslab.block.testrig.ServoMotorSlider::new);
 		blockFactory.put("ALP", com.ncslab.block.testrig.Alp::new);
 		blockFactory.put("Fans", com.ncslab.block.testrig.RaspFan::new);
-		blockFactory.put("S-Function", com.ncslab.block.function.SFunction::new);
+//		blockFactory.put("S-Function", com.ncslab.block.function.SFunction::new);
 		blockFactory.put("S-FunctionBuilder", com.ncslab.block.function.SFunctionBuilder::new);
 		blockFactory.put("UDPSender", com.ncslab.block.comm.UDPSender::new);
 		blockFactory.put("UDPReceiver", com.ncslab.block.comm.UDPReceiver::new);
@@ -164,19 +164,54 @@ public class BlockType{
     private static final HashMap<String, Class<? extends NCSLabModel>> blockParsers = new HashMap<>();
 
     static {
+        // Sink
         blockClassTree.put("Scope", com.ncslab.block.sink.Scope.class);
         blockClassTree.put("Terminator", com.ncslab.block.sink.Terminator.class);
-        blockClassTree.put("PID Controller (s)", com.ncslab.block.continuous.PIDController.class);
-        blockClassTree.put("WaterLevel", com.ncslab.block.testrig.WaterLevel.class);
+        blockClassTree.put("Matplotlib", com.ncslab.block.sink.Matplotlib.class);
+
+        // Source
         blockClassTree.put("Constant", com.ncslab.block.source.Constant.class);
         blockClassTree.put("Clock", com.ncslab.block.source.Clock.class);
+        blockClassTree.put("Step", com.ncslab.block.source.Step.class);
+        blockClassTree.put("Pulse Generator", com.ncslab.block.source.Pulse.class);
+        blockClassTree.put("Repeating Sequence", com.ncslab.block.source.RepeatingSequence.class);
+        blockClassTree.put("Ramp", com.ncslab.block.source.Ramp.class);
+        blockClassTree.put("Sine Wave", com.ncslab.block.source.SineWave.class);
+
         blockClassTree.put("Sum", com.ncslab.block.math.Sum.class);
         blockClassTree.put("Gain", com.ncslab.block.math.Gain.class);
+        blockClassTree.put("Trigonometric Function", com.ncslab.block.math.TrigFunction.class);
+        blockClassTree.put("Add", com.ncslab.block.math.Add.class);
+        blockClassTree.put("Sign", com.ncslab.block.math.Sign.class);
+        blockClassTree.put("Product", com.ncslab.block.math.Product.class);
+        blockClassTree.put("Math Function", com.ncslab.block.math.MathFunction.class);
+        blockClassTree.put("TestPoint", com.ncslab.block.math.TestPoint.class);
+        blockClassTree.put("abc2dq", com.ncslab.block.math.abc2dq0.class);
+        blockClassTree.put("dq02abc", com.ncslab.block.math.dq02abc.class);
+        blockClassTree.put("Abs", com.ncslab.block.math.Abs.class);
+        blockClassTree.put("Bias", com.ncslab.block.math.Bias.class);
+        blockClassTree.put("Sqrt", com.ncslab.block.math.Sqrt.class);
+        blockClassTree.put("ProductOfElements", com.ncslab.block.math.ProductOfElements.class);
+        blockClassTree.put("SumOfElements", com.ncslab.block.math.SumOfElements.class);
+
+        // Continuous
         blockClassTree.put("Derivative", com.ncslab.block.continuous.Derivative.class);
         blockClassTree.put("Integrator", com.ncslab.block.continuous.Integrator.class);
         blockClassTree.put("Transfer Fcn", com.ncslab.block.continuous.TransferFcn.class);
         blockClassTree.put("TransferFcn", com.ncslab.block.continuous.TransferFcn.class);
         blockClassTree.put("VariableTransport Delay", com.ncslab.block.continuous.VariableTransportDelay.class);
+        blockClassTree.put("PID Controller (s)", com.ncslab.block.continuous.PIDController.class);
+        blockClassTree.put("State-Space", com.ncslab.block.continuous.StateSpace.class);
+        blockClassTree.put("Transport Delay", com.ncslab.block.continuous.TransportDelay.class);
+        blockClassTree.put("PID Controller", com.ncslab.block.continuous.OldPIDController.class);
+
+        // Testrig
+        blockClassTree.put("WaterLevel", com.ncslab.block.testrig.WaterLevel.class);
+        blockClassTree.put("newMotor", com.ncslab.block.testrig.NewMotor.class);
+        blockClassTree.put("DCMotorAngle", com.ncslab.block.testrig.DCMotorAngle.class);
+        blockClassTree.put("ServoMotorSlider", com.ncslab.block.testrig.ServoMotorSlider.class);
+        blockClassTree.put("ALP", com.ncslab.block.testrig.Alp.class);
+        blockClassTree.put("Fans", com.ncslab.block.testrig.RaspFan.class);
         blockClassTree.put("NewMotor", com.ncslab.block.testrig.NewMotor.class);
         blockClassTree.put("InvertedPendulum", com.ncslab.block.testrig.InvertedPendulum.class);
         blockClassTree.put("InvertedPendulumSUST", com.ncslab.block.testrig.InvertedPendulumSUST.class);
@@ -187,96 +222,119 @@ public class BlockType{
         blockClassTree.put("BallBeamSystem", com.ncslab.block.testrig.BallBeamSystem.class);
         blockClassTree.put("LoongarchPLC", com.ncslab.block.testrig.LoongarchPLC.class);
         blockClassTree.put("MagneticLevitationSystem", com.ncslab.block.testrig.MagneticLevitationSystem.class);
+        blockClassTree.put("Substitution", com.ncslab.block.testrig.Substitution.class);
+        blockClassTree.put("Superposition", com.ncslab.block.testrig.Superposition.class);
+        blockClassTree.put("Telegenic", com.ncslab.block.testrig.Telegenic.class);
+        blockClassTree.put("Kirchhoff", com.ncslab.block.testrig.Kirchhoff.class);
+
+        // Function
         blockClassTree.put("S-Function", com.ncslab.block.function.SFunction.class);
         blockClassTree.put("S-FunctionBuilder", com.ncslab.block.function.SFunctionBuilder.class);
+
+        // Comm
         blockClassTree.put("UDPSender", com.ncslab.block.comm.UDPSender.class);
-        blockClassTree.put("UDPSend", com.ncslab.block.driver.UDPSend.class);
         blockClassTree.put("UDPReceiver", com.ncslab.block.comm.UDPReceiver.class);
+
+        // Driver
+        blockClassTree.put("UDPSend", com.ncslab.block.driver.UDPSend.class);
         blockClassTree.put("UDPReceive", com.ncslab.block.driver.UDPReceive.class);
+        blockClassTree.put("Ad", com.ncslab.block.driver.Ad.class);
+        blockClassTree.put("PWM", com.ncslab.block.driver.PWM.class);
+        blockClassTree.put("DA_Ouput", com.ncslab.block.driver.Da.class);
+
+        // Discrete
         blockClassTree.put("DiscreteStateSpace", com.ncslab.block.discrete.DiscreteStateSpace.class);
         blockClassTree.put("Zero-Order Hold", com.ncslab.block.discrete.Zero_Order_Hold.class);
         blockClassTree.put("Delay", com.ncslab.block.discrete.Delay.class);
         blockClassTree.put("Unit Delay", com.ncslab.block.discrete.UnitDelay.class);
         blockClassTree.put("Discrete-Time Integrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);
         blockClassTree.put("Discrete Transfer Fcn", com.ncslab.block.discrete.Discrete_Transfer_Fcn.class);
+        blockClassTree.put("Discrete Transfer Fcn (z)", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);
+
+        // Route
         blockClassTree.put("Mux", com.ncslab.block.route.Mux.class);
         blockClassTree.put("Demux", com.ncslab.block.route.Demux.class);
         blockClassTree.put("Switch", com.ncslab.block.route.Switch.class);
         blockClassTree.put("From", com.ncslab.block.route.From.class);
         blockClassTree.put("Goto", com.ncslab.block.route.To.class);
-        blockClassTree.put("State-Space", com.ncslab.block.continuous.StateSpace.class);
+        blockClassTree.put("AD", com.ncslab.block.route.AD.class);
+        blockClassTree.put("DA", com.ncslab.block.route.DA.class);
+        blockClassTree.put("GPIO", com.ncslab.block.route.GPIO.class);
+
+        // Discontinuous
         blockClassTree.put("Saturation", com.ncslab.block.discontinuous.Saturation.class);
         blockClassTree.put("Relay", com.ncslab.block.discontinuous.Relay.class);
         blockClassTree.put("Dead Zone", com.ncslab.block.discontinuous.DeadZone.class);
         blockClassTree.put("Coulomb Viscous Friction", com.ncslab.block.discontinuous.Coulomb.class);
         blockClassTree.put("RateLimiter", com.ncslab.block.discontinuous.RateLimiter.class);
         blockClassTree.put("Backlash", com.ncslab.block.discontinuous.Backlash.class);
-        blockClassTree.put("Trigonometric Function", com.ncslab.block.math.TrigFunction.class);
-        blockClassTree.put("Add", com.ncslab.block.math.Add.class);
-        blockClassTree.put("Sign", com.ncslab.block.math.Sign.class);
-        blockClassTree.put("Product", com.ncslab.block.math.Product.class);
-        blockClassTree.put("Math Function", com.ncslab.block.math.MathFunction.class);
-        blockClassTree.put("TestPoint", com.ncslab.block.math.TestPoint.class);
-        blockClassTree.put("abc2dq", com.ncslab.block.math.abc2dq0.class);
-        blockClassTree.put("dq02abc", com.ncslab.block.math.dq02abc.class);
+
+        // PowerSystem
         blockClassTree.put("SecondOrderFilter", com.ncslab.block.powerSystem.secondOrderFiliter.class);
-        blockClassTree.put("Abs", com.ncslab.block.math.Abs.class);
-        blockClassTree.put("Bias", com.ncslab.block.math.Bias.class);
-        blockClassTree.put("Sqrt", com.ncslab.block.math.Sqrt.class);
+
+        // LogicAndBit
         blockClassTree.put("Compare To Constant", com.ncslab.block.logicAndBit.CompareToConstant.class);
         blockClassTree.put("Relational Operator", com.ncslab.block.logicAndBit.RelationalOperator.class);
-        blockClassTree.put("Step", com.ncslab.block.source.Step.class);
-        blockClassTree.put("Pulse Generator", com.ncslab.block.source.Pulse.class);
-        blockClassTree.put("Repeating Sequence", com.ncslab.block.source.RepeatingSequence.class);
-        blockClassTree.put("Ramp", com.ncslab.block.source.Ramp.class);
-        blockClassTree.put("Sine Wave", com.ncslab.block.source.SineWave.class);
+        blockClassTree.put("Shift Arithmetic", com.ncslab.block.logicAndBit.ShiftArithmetic.class);
+        blockClassTree.put("Logical Operator", com.ncslab.block.logicAndBit.LogicOperator.class);
+        blockClassTree.put("Compare To Zero", com.ncslab.block.logicAndBit.CompareToZero.class);
+        blockClassTree.put("Transpose", com.ncslab.block.matrix.Transpose.class);
+
+        // Subsystem
         blockClassTree.put("In", com.ncslab.block.subsystem.In.class);
         blockClassTree.put("Out", com.ncslab.block.subsystem.Out.class);
         blockClassTree.put("Subsystem", com.ncslab.block.subsystem.Subsystem.class);
-        blockClassTree.put("Ad", com.ncslab.block.driver.Ad.class);
-        blockClassTree.put("PWM", com.ncslab.block.driver.PWM.class);
-        blockClassTree.put("DA_Ouput", com.ncslab.block.driver.Da.class);
+
+        // DriverForSTM32
         blockClassTree.put("PWMForStm32", com.ncslab.block.driverForStm32.PWMForStm32.class);
         blockClassTree.put("AD_Collect_Stm32", com.ncslab.block.driverForStm32.ADCForStm32.class);
         blockClassTree.put("DA_Out_Stm32", com.ncslab.block.driverForStm32.DACForStm32.class);
         blockClassTree.put("UDPReceiverForStm32", com.ncslab.block.driverForStm32.UDPReceiverForStm32.class);
         blockClassTree.put("UDPSenderForStm32", com.ncslab.block.driverForStm32.UDPSenderForStm32.class);
+
+        // Matrix
+        blockClassTree.put("Create Diagonal Matrix", com.ncslab.block.matrix.CreateDiagonalMatrix.class);
+        blockClassTree.put("Cross Product", com.ncslab.block.matrix.CrossProduct.class);
+        blockClassTree.put("Extract Diagonal", com.ncslab.block.matrix.ExtractDiagonal.class);
+        blockClassTree.put("Identity Matrix", com.ncslab.block.matrix.IdentityMatrix.class);
+        blockClassTree.put("IsHermitian", com.ncslab.block.matrix.IsHermitian.class);
+        blockClassTree.put("IsSymmetric", com.ncslab.block.matrix.IsSymmetric.class);
+        blockClassTree.put("IsTriangular", com.ncslab.block.matrix.IsTriangular.class);
+        blockClassTree.put("Matrix Multiply", com.ncslab.block.matrix.MatrixMultiply.class);
+        blockClassTree.put("Matrix Concatenate", com.ncslab.block.matrix.MatrixConcatenate.class);
+        blockClassTree.put("Matrix Square", com.ncslab.block.matrix.MatrixSquare.class);
+        blockClassTree.put("Permute Matrix", com.ncslab.block.matrix.PermuteMatrix.class);
+        blockClassTree.put("Submatrix", com.ncslab.block.matrix.Submatrix.class);
+
+        // Advanced Control
+        blockClassTree.put("LQR Controller", com.ncslab.block.advancedControl.LQRController.class);
+
+        // Machine Learning
+        blockClassTree.put("LinearRegression", com.ncslab.block.machineLearning.LinearRegression.class);
+        blockClassTree.put("LogisticRegression", com.ncslab.block.machineLearning.LogisticRegression.class);
+        blockClassTree.put("MultilayerPerceptron", com.ncslab.block.machineLearning.MultilayerPerceptron.class);
+        blockClassTree.put("CNN1dModel", com.ncslab.block.machineLearning.CNN.class);
+        blockClassTree.put("A2CBlock", com.ncslab.block.machineLearning.A2C.class);
+// Note: New models that extend SoughtedBlock do not need any additional operation here!
     }
 
 	public static Block createBlock(int id, JSONObject blockJSON, NCSLabModel model) throws ModelException {
 		String blockType = blockJSON.getString("blockType");
-		BiFunction<JSONObject, NCSLabModel, Block> constructor = blockFactory.get(blockType);
-		//Operation to suit previous version.
-		//Todo: preprocess this in the original class corresponding to "PS-Simulink Converter" and "Simulink-PS Converter".
-		// switch (blockType) {
-		// 	case "PS-Simulink Converter":
-		// 		blockJSON.put("blockType", "TestPoint");
-		// 		break;
 
-		// 	case "Simulink-PS Converter":
-		// 		blockJSON.put("blockType", "TestPoint");
-		// 		break;
-		// }
         Block block = null;
-		if (constructor == null) {
-            try {
-                Class<? extends Block> blockClass = blockClassTree.get(blockType);
-                block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
-            }catch(InvocationTargetException e){
-                Throwable realException = e.getCause();
-                realException.printStackTrace();  // 打印实际的异常信息
-                // 根据实际异常类型进行进一步处理
-            }catch(NoSuchMethodException|InstantiationException|IllegalAccessException e){
-                System.err.println(e);
-            }
-            if(block == null)
-                throw(new ModelException("Can not find blocktype in mapped function \""+blockType+"\""));
-		}else {
-            block = constructor.apply(blockJSON, model);
-            if (block == null) {
-                throw (new ModelException("Can not find blocktype in block\"" + blockType + "\""));
-            }
+        try {
+            Class<? extends Block> blockClass = blockClassTree.get(blockType);
+            block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
+        }catch(InvocationTargetException e){
+            Throwable realException = e.getCause();
+            realException.printStackTrace();  // 打印实际的异常信息
+            // 根据实际异常类型进行进一步处理
+        }catch(NoSuchMethodException|InstantiationException|IllegalAccessException e){
+            System.err.println(e);
         }
+        if(block == null)
+            throw(new ModelException("Can not find blocktype in mapped function \""+blockType+"\""));
+
         block.setBlockId(id);
         block.updateBlock();
 

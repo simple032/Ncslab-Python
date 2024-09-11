@@ -359,6 +359,10 @@ public class Block implements MCodeBlock, CCodeBlock{
 		return "";
 	}
 
+    public String getFileName(){
+        return "";
+    }
+
 	public void generateBlockStatementCodeC(CodeStructC code) {
 		// TODO Auto-generated method stub
 		generateStatementCodeC(code);

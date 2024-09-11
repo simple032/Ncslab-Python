@@ -10,7 +10,7 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 	public CodeStructCLinuxPCSimulation(CodeModelC model) {
 		super(model);
 	}
-	
+
 	// TODO: this file is similar to its super implementation
 	@Override
 	public void writeCCodeFiles() {
@@ -40,33 +40,33 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 		// write the header file for generated main code
 		writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp", true);
-		
+
 		writeNCSLabFile("../../../util.hpp","util.hpp",true);
 		writeNCSLabFile("../../../util.cpp","util.cpp",true);
-		
+
 		writeNCSLabFile("../../../ncslabdefines.hpp","ncslabdefines.hpp", true);
 		writeNCSLabFile("../../../ncslabsfun.hpp","ncslabsfun.hpp", true);
 		writeNCSLabFile("../../../results.cpp","results.cpp",true);
 		writeNCSLabFile("../../../results.hpp","results.hpp",true);
-		
+
 		writeNCSLabFile("../../../Matrix.cpp","Matrix.cpp", true);
 		writeNCSLabFile("../../../Matrix.hpp","Matrix.hpp", true);
 		writeNCSLabFile("../../../ricatti.cpp","ricatti.cpp", true);
 		writeNCSLabFile("../../../ricatti.hpp","ricatti.hpp", true);
 		writeNCSLabFile("../../../onestep.hpp","onestep.hpp", true);
-		
+
 
 		// Implement the general file of the Netcon protocol
-		// writeNCSLabFile("../../ServerThread.cpp","ServerThread.cpp");
-		// writeNCSLabFile("../../ServerThread.hpp","ServerThread.hpp");
-		// writeNCSLabFile("../../ClientThread.cpp","ClientThread.cpp");
-		// writeNCSLabFile("../../ClientThread.hpp","ClientThread.hpp");
-		// writeNCSLabFile("../../UploadThread.cpp","UploadThread.cpp");
-		// writeNCSLabFile("../../UploadThread.hpp","UploadThread.hpp");
-		
+		 writeNCSLabFile("../../ServerThread.cpp","ServerThread.cpp");
+		 writeNCSLabFile("../../ServerThread.hpp","ServerThread.hpp");
+		 writeNCSLabFile("../../ClientThread.cpp","ClientThread.cpp");
+		 writeNCSLabFile("../../ClientThread.hpp","ClientThread.hpp");
+		 writeNCSLabFile("../../UploadThread.cpp","UploadThread.cpp");
+		 writeNCSLabFile("../../UploadThread.hpp","UploadThread.hpp");
+
 		writeNCSLabFile("../../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		writeNCSLabFile("../../../ncs_serialport.h","ncs_serialport.h");
-		
+
 		for(Block block: model.getBlockList()) {
 			if(block.isSFcnBlock()) {
 				block.generateSourceFile();
@@ -75,9 +75,9 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 
 		// write the main code file ncslabccdoe.c
 		writeMainCodeFile();
-		
+
 		wirteDefineFile();
-		
+
 		switch(model.getSolver()) {
 		case ode1:
 			writeNCSLabFile("../../../ode1.cpp","onestep.cpp",true);
@@ -99,24 +99,24 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 			break;
 		case ode5:
 			writeNCSLabFile("../../../ode5.cpp","onestep.cpp",true);
-			break;	
+			break;
 		case ode6:
 			writeNCSLabFile("../../../ode6.cpp","onestep.cpp",true);
-			break;	
+			break;
 		default:
 			writeNCSLabFile("../../../ode45.cpp","onestep.cpp",true);
 			break;
 		}
-		
+
 		writeNCSWrittenFiles();// write the files in <code>CodeStructC.writtenFileSet</code>.
 	}
-	
+
 	// TODO: similar to its super implementation
 	@Override
 	public byte[] readExeFile() {
 		return readFile("ncslab");
 	}
-	
+
 	@Override
 	public boolean makeExeFile() {
 		try {

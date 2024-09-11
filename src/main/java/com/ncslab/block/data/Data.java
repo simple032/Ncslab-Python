@@ -3,6 +3,7 @@ package com.ncslab.block.data;
 import Jama.Matrix;
 import com.greenpineyu.fel.*;
 import lombok.Getter;
+import lombok.Setter;
 
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
 public class Data {
@@ -10,6 +11,7 @@ public class Data {
 	@Getter
     private DataType dataType = DataType.REAL;
 	@Getter
+    @Setter
     private double initValue = 0;
 	private Matrix initMatrix = null;
     @Getter
