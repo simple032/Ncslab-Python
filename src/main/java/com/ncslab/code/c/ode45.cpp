@@ -35,9 +35,9 @@ extern double real_sample_time;
 void ncslabLoop()
 {
   maxStepSize=stepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
-  
+
   discreteInit();
-  	 	
+
   while (mp->time < mp->stopTime)
   {
         //mp->time += stepSize;
@@ -45,7 +45,7 @@ void ncslabLoop()
     writeInformation();
     NCSLabOneStep();
 	//mp->time += stepSize;
-    
+
   }
 }
 
@@ -55,17 +55,17 @@ void NCSLabOneStep()
   REAL dif;
 
   mp->offset = 0;
-  
+
   mp->majorStep = 1;
   NCSLabOutput();
-  
+
   if(mp->discreteUpdate){
-  	
+
   	NCSLabDiscreteUpdate();
   	mp->discreteUpdate=0;
   }
   NCSLabSinkOutput();
-  
+
   storeState(0);
 
   for (int i = 0; i < 2; i++)
@@ -140,16 +140,19 @@ void NCSLabOneStep()
 
     dif = calculateStateDif(1, 2);
 
-    nextStepSize = sqrt(sqrt((TOL * stepSize) / dif))*0.84*stepSize;
-    
+    if(dif > TOL)
+      nextStepSize = sqrt(sqrt((TOL * stepSize) / dif))*0.84*stepSize;
+    else
+      nextStepSize = stepSize;
+
 
     if (nextStepSize > stepSize || i == 1)
     {
       mp->time += stepSize;
       stepSize = nextStepSize;
-      
+
       if(hasdiscrete(sample_time)){
-      	
+
       	while(mp->discreteTime<=mp->time){
       		mp->discreteTime+=real_sample_time;
       		//mp->offset = 0;
@@ -157,15 +160,15 @@ void NCSLabOneStep()
       		//NCSLabDiscreteUpdate();
       		mp->discreteUpdate=1;
       	}
-      	
+
       	double dist=mp->discreteTime-mp->time;
       	if(stepSize>dist){
       		stepSize=dist;
       	}
-      	
-      	
+
+
       }
-      
+
       break;
     }
 

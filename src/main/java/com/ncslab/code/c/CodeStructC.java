@@ -357,7 +357,8 @@ abstract public class CodeStructC{
                 +"}\n"
 
                 +"void NCSLabSinkOutput(){\n"
-                +"// only for stm32;\n"
+                +sinkOutputCode+"\n"
+                +sinkStatusClearCode+"\n"
                 +"}\n"
 
 				+"void NCSLabTerminate(){\n"
@@ -534,10 +535,11 @@ abstract public class CodeStructC{
 	}
 
 
-	protected String codePathBase="deploy".equals(Property.instance.getProperty("mode").trim())?
+	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
 			:
-			Property.instance.getProperty("CCodePathWin");
+			Property.instance.getProperty("CCodePathWin"))
+        .replace("${M2PLAB_ROOT}",System.getenv("M2PLAB_ROOT"));
 	//目标文件夹的位置codePathBase/用户id/modelId
 	@Getter
     protected String codePath;
@@ -728,13 +730,13 @@ abstract public class CodeStructC{
 		String userPath=codePathBase+model.getUserId();
 
 		File file=new File(userPath);
-		if(file.exists()==false) {
+		if(!file.exists()) {
 			file.mkdir();
 		}
 
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
-		if(file.exists()==false) {
+		if(!file.exists()) {
 			file.mkdir();
 		}
 
@@ -858,6 +860,9 @@ abstract public class CodeStructC{
 		return false;
 	}
 
+    public void removeAllFiles(){
+
+    }
 
 	//建立Model,block,input,output,signal,state,parameter等数据结构，并初始化
 	public void gnenrateDataStructureCode() {
@@ -912,7 +917,7 @@ abstract public class CodeStructC{
 		dataStructureCode+="/*Define parameter structures*/\n";
 		int parameterNum=0;
 		for(Block block:model.getBlockList()) {
-			if(block.getParameterList().size()>0) {
+			if(!block.getParameterList().isEmpty()) {
 				for(Parameter parameter:block.getParameterList()) {
 					dataStructureCode+="PARAMETER parameter"+block.getBlockId()+"_"+parameter.getId()+";\n";
 					parameterNum++;
@@ -931,7 +936,7 @@ abstract public class CodeStructC{
 		int matrixStateNum=0;
 		int stateNum=0;
 		for(Block block:model.getBlockList()) {
-			if(block.getStateList().size()>0) {
+			if(!block.getStateList().isEmpty()) {
 				for(State state:block.getStateList()) {
 					dataStructureCode+="STATE state"+block.getBlockId()+"_"+state.getId()+"={(char *)\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
 					switch(state.getDataType()) {

@@ -7,6 +7,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.ncslab.code.c.windows.CodeModelCWindows;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 
 import com.ncslab.code.Solver;
@@ -16,6 +18,7 @@ import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 
+@Slf4j
 @ServerEndpoint("/websocketcompile")
 
 public class CompileWebSocket {
@@ -56,8 +59,10 @@ public class CompileWebSocket {
 
 				sendMessage(session, "generating");
 
-				CodeModelCLinuxRaspberry modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData,
-						ModelMode.Compilation);
+//				CodeModelCLinuxRaspberry modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData,
+//						ModelMode.Compilation);
+                CodeModelCWindows modelC = CodeModelCWindows.createFromJSON(jsonData, ModelMode.Compilation);
+
 				// CodeModelCLinuxPC
 				// modelC=CodeModelCLinuxPC.createFromJSON(jsonIn,ModelMode.Compilation);
 
@@ -67,7 +72,7 @@ public class CompileWebSocket {
 
 				sendMessage(session, "generated");
 
-				if (modelC.getErrorList().size() > 0) {
+				if (!modelC.getErrorList().isEmpty()) {
 					for (ErrorMessage em : modelC.getErrorList()) {
 						errorMsgs += em.getMessage();
 					}
@@ -76,7 +81,7 @@ public class CompileWebSocket {
 
 				sendMessage(session, "compiling");
 
-				if (modelC.makeExeFile() == false) {
+				if (!modelC.makeExeFile()) {
 					throw new ModelException("Can not make exe file!");
 				}
 
@@ -88,6 +93,7 @@ public class CompileWebSocket {
 
 				sendMessage(session, "database inserted");
 
+                modelC.removeAllFiles();
 				sendMessage(session, "finished");
 
 				/*
@@ -107,28 +113,19 @@ public class CompileWebSocket {
 				 * }
 				 */
 
-			} catch (IOException e) {
-				System.err.println(e.getMessage());
-				System.err.println("Code generatrion terminated unsuccessfully");
-			}
-
-			catch (ModelException e) {
+			} catch (IOException|ModelException e) {
 				try {
 					sendErrorMessage(session, e.getMessage());
 				} catch (IOException ee) {
+                    log.error("e: ", ee);
 				}
 				System.err.println(e.getMessage());
 				System.err.println("Code generatrion terminated unsuccessfully");
-			} catch (Exception e) {
-				try {
-					sendErrorMessage(session, e.getMessage());
-				} catch (IOException ee) {
-				}
 			} finally {
 				try {
 					session.close();
 				} catch (IOException e) {
-
+                    log.error("e: ", e);
 				}
 			}
 

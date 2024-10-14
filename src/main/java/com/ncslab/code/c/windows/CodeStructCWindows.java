@@ -3,17 +3,22 @@ package com.ncslab.code.c.windows;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Map;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.utils.Property;
 
 public class CodeStructCWindows extends CodeStructC {
 	public CodeStructCWindows(CodeModelC model) {
 		super(model);
 	}
+
+    private String codePathBase = Property.instance.getProperty("CCodePathWin")
+        .replace("${M2PLAB_ROOT}",System.getenv("M2PLAB_ROOT"));
 
 	@Override
 	public void writeCCodeFiles() {
@@ -131,4 +136,27 @@ public class CodeStructCWindows extends CodeStructC {
 
 		return false;
 	}
+
+    public void removeAllFiles(){
+        String userPath=codePathBase+model.getUserId();
+
+        String modelPath=userPath+"/"+model.getModelId();
+
+        codePath=modelPath+"/";
+
+        File dir = new File(codePath);
+        if(dir.exists() && dir.isDirectory()){
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    // 递归删除子文件夹
+                    if (file.isFile()) {
+                        // 删除文件
+                        file.delete();
+                    }
+                }
+            }
+        }
+        dir.delete();
+    }
 }

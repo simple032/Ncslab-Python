@@ -2,7 +2,8 @@
 #include "nlohmann/json.hpp"
 
 #include "ncslabdefines.hpp"
-#include "ncslab.h"
+#include "ncslabccode.hpp"
+#include "ncslab.hpp"
 #include "results.hpp"
 
 using json = nlohmann::json;

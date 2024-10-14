@@ -1,7 +1,7 @@
 package com.ncslab.block.data;
 
 import Jama.Matrix;
-import com.greenpineyu.fel.*;
+//import com.greenpineyu.fel.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,14 +17,14 @@ public class Data {
     @Getter
     private String dataString = "";
 
-	static FelEngine fel = new FelEngineImpl();
-	static {
-		setupFel();
-	}
-
-	static private void setupFel() {
-		fel.getContext().set("pi", 3.1415926);
-	}
+//	static FelEngine fel = new FelEngineImpl();
+//	static {
+//		setupFel();
+//	}
+//
+//	static private void setupFel() {
+//		fel.getContext().set("pi", 3.1415926);
+//	}
 
 	public Data() {
 		this(1, 1);
@@ -64,7 +64,8 @@ public class Data {
 			initMatrix = parseMatrix(dataString);
 		} else {
 			// 使用fel进行表达式分析
-			initValue = Double.parseDouble(fel.eval(dataString).toString());
+//			initValue = Double.parseDouble(fel.eval(dataString).toString());
+            initValue = Double.parseDouble(dataString);
 		}
 
 	}
@@ -116,9 +117,9 @@ public class Data {
 			childMat[i] = new double[child.length];
 			for (int j = 0; j < child.length; j++) {
 				String doubleString = child[j].replaceAll("\\s+", "");
-				// childMat[i][j] = Double.parseDouble(doubleString);
+				 childMat[i][j] = Double.parseDouble(doubleString);
 				// 使用fel进行表达式分析
-				childMat[i][j] = Double.parseDouble(fel.eval(doubleString).toString());
+//				childMat[i][j] = Double.parseDouble(fel.eval(doubleString).toString());
 			}
 		}
 
