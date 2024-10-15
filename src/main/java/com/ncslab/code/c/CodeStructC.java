@@ -540,7 +540,10 @@ abstract public class CodeStructC{
 			:
 			Property.instance.getProperty("CCodePathWin"))
         .replace("${M2PLAB_ROOT}",System.getenv("M2PLAB_ROOT"));
-	//目标文件夹的位置codePathBase/用户id/modelId
+
+    protected String maketool = Property.instance.getProperty("MakeTool");
+
+    //目标文件夹的位置codePathBase/用户id/modelId
 	@Getter
     protected String codePath;
 
