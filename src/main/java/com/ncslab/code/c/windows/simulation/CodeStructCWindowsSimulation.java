@@ -127,7 +127,7 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 //			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
 //			makeProcess.waitFor();
 
-			Process process=Runtime.getRuntime().exec("mingw32-make -j8", null, new File(codePath));
+			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
 			// get OutputStream and errStream of the process, in case of blocking
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
