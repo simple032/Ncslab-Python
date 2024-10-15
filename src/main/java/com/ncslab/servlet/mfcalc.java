@@ -66,7 +66,7 @@ public class mfcalc extends HttpServlet {
 			JSONObject jb=new JSONObject();
 			jb.put("code", 2000);
 
-			MfcalcThread thread=MfcalcServer.instance.getVacantOctaveThread();
+			MfcalcThread thread=MfcalcServer.instance.getVacantMfcalcThread();
 			System.out.println(thread);
 
 			if(thread!=null) {

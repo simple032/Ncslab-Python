@@ -5,10 +5,12 @@ import com.ncslab.block.io.*;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
 public class MagneticLevitationSystem extends Block {
 
@@ -22,6 +24,26 @@ public class MagneticLevitationSystem extends Block {
     Parameter i0;
     Parameter Ks;
     Parameter Ka;
+
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    static {
+        inputNames.add("in1"); // 假设输入端口的名称为"in1"，因为构造函数中没有提供输入端口的名称
+        outputNames.add("Position");
+        outputNames.add("Velocity");
+        parameterNames.add("gravity");
+        parameterNames.add("EQUILIBRIUM_POINT_x0");
+        parameterNames.add("EQUILIBRIUM_POINT_i0");
+        parameterNames.add("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT");
+        parameterNames.add("INPUT_RESISTANCE");
+    }
 
     public MagneticLevitationSystem(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON,model);
