@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 
 	NCSLabTerminate();
 	NCSLabSaveResult();
+	NCSLabFinalize();
 
 	fwrite(&end, 1, sizeof(end), stdout);
 }

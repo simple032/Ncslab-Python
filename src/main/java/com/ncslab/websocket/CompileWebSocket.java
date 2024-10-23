@@ -93,7 +93,7 @@ public class CompileWebSocket {
 
 				sendMessage(session, "database inserted");
 
-                modelC.removeAllFiles();
+//                modelC.removeAllFiles();
 				sendMessage(session, "finished");
 
 				/*

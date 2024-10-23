@@ -6,7 +6,10 @@ import com.ncslab.code.c.CodeStructC;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 
 public class CodeStructCWindowsSimulation extends CodeStructC{
 	public CodeStructCWindowsSimulation(CodeModelC model) {
@@ -35,9 +38,9 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 
 		// write resource files
 		// makefile
-		 writeNCSLabFile("makefile");
-		// writeMakefile("makefile");
-//		writeNCSLabFile("CMakeLists.txt","CMakeLists.txt", true);
+//		 writeNCSLabFile("makefile");
+//		 writeMakefile("makefile");
+		writeNCSLabFile("CMakeLists.txt","CMakeLists.txt", true);
 		// main function and timer
 		writeNCSLabFile("../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 		// write the header file for generated main code
@@ -123,11 +126,19 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 			// start make, generate executable file
 			// Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
 			// using cmake instead of make
-//			String cmakeCommand[] = {"cmake","."};
-//			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
-//			makeProcess.waitFor();
+            //cmake -G "MinGW Makefiles"
+            File file = new File(codePath);
 
-			Process process=Runtime.getRuntime().exec("mingw32-make -j8", null, new File(codePath));
+// 获取规范化路径
+            String absPath = file.getCanonicalPath();
+            String cmakeCommand[] = {"cmake", "-G", "\"MinGW Makefiles\"", "."};
+//            String cmakeCommand = "cmake -G \"MinGW Makefiles\" -DCMAKE_C_COMPILER=\"C:/MinGW64/bin/gcc.exe\" -DCMAKE_CXX_COMPILER=\"C:/MinGW64/bin/g++.exe\" -DCMAKE_MAKE_PROGRAM=\"C:/MinGW64/bin/mingw32-make.exe\"";
+            Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(absPath));
+            System.out.printf("Command: [%s %s]\n", absPath, Arrays.toString(cmakeCommand));
+            makeProcess.waitFor();
+
+            Process process=Runtime.getRuntime().exec("mingw32-make -j8", null, new File(absPath));
+            System.out.printf("Command: [%s mingw32-make -j8]\n", absPath);
 			// get OutputStream and errStream of the process, in case of blocking
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -165,4 +176,20 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 	protected void writeNCSWrittenFiles(){
 		super.writeNCSWrittenFiles();
 	}
+
+//    public static void main(String[] args) throws IOException, InterruptedException {
+//        String absPath = "D:\\Sustech\\M2PLab\\prew\\M2PLab\\data\\CCode\\18\\122-self";
+////            String cmakeCommand[] = {"cmake", "-G", "MinGW Makefiles", "."};
+//        String cmakeCommand = "cmake -G \"MinGW Makefiles\" .";
+//        Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(absPath));
+//        System.out.printf("Command: [%s %s]\n", absPath, cmakeCommand);
+//        makeProcess.waitFor();
+//
+//        Process process=Runtime.getRuntime().exec("mingw32-make -j8", null, new File(absPath));
+//        System.out.printf("Command: [%s mingw32-make -j8]\n", absPath);
+//        // get OutputStream and errStream of the process, in case of blocking
+//        process.waitFor();
+//        System.out.println("End");
+//    }
 }
+

@@ -22,19 +22,22 @@ public abstract class MachineLearning extends Block{
     protected OutputPort outputPort;
     protected int _width, _height;
     protected MLVariable modelVariable;
+
+    protected String path, csvName, modelName;
+    protected String savePath, loadPath;
     // protected MLVariable modelVariable;
     // private Parameter layersNumber, lossFunction, learningRate, inputFeatures, activationFunction, dataset;
     public MachineLearning(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
         CodeStructC.addGlobalInitCode(PY_INIT);
         CodeStructC.addGlobalInitCode(PY_INCLUDE);
-        CodeStructC.addGlobalEndCode(PY_FINALIZE);
+//        CodeStructC.addGlobalEndCode(PY_FINALIZE);
 
         //add include code for MLModel.hpp and Python.h
         CodeStructC.addIncludeCode("#include<Python.h>\n");
         CodeStructC.addIncludeCode("#include \"MLModel.hpp\"\n");
         //write file MLModel.hpp
-        CodeStructC.addWrittenFile("../../../ml/MLModel.hpp", "MLModel.hpp");
+        CodeStructC.addWrittenFile("../../ml/MLModel.hpp", "MLModel.hpp");
 
         this.inputPortList.add(new InputPort(this, 1));
 

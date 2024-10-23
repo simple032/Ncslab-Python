@@ -176,7 +176,11 @@
         <includes>
           <include>**/*.cpp</include>
           <include>**/*.hpp</include>
+          <include>**/*.c</include>
+          <include>**/*.h</include>
+          <include>**/*.py</include>
           <include>**/makefile</include>
+          <include>**/CMakeLists.txt</include>
         </includes>
         <filtering>false</filtering>
       </resource>

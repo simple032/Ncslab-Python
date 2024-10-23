@@ -6,7 +6,7 @@ import numpy as np
 from torch.distributions import Normal
 
 class A2CAgent:
-    def __init__(self, obs_space_dims: int, action_space_dims: int, hidden1:int = 128, hidden2:int = 64, lr: float = 1e-3, gamma: float = 0.95, device='cpu'):
+    def __init__(self, obs_space_dims: int, action_space_dims: int, hidden1:int = 64, hidden2:int = 32, lr: float = 1e-3, gamma: float = 0.95, device='cpu'):
         self.device = torch.device(device)
         self.policy_network = PolicyNetwork(obs_space_dims, action_space_dims, hidden1, hidden2).to(self.device)
         self.value_network = ValueNetwork(obs_space_dims, hidden1, hidden2).to(self.device)
@@ -15,6 +15,10 @@ class A2CAgent:
         self.optimizer_policy = optim.Adam(self.policy_network.parameters(), lr=lr)
         self.optimizer_value = optim.Adam(self.value_network.parameters(), lr=lr)
         self.gamma = gamma
+        print('obs_space_dims:', obs_space_dims)
+        print('action_space_dims:', action_space_dims)
+        print('hidden1:', hidden1)
+        print('hidden2:', hidden2)
         # print('init end.')
 
     def sample_action(self, state: list) -> tuple[float, torch.Tensor]:
@@ -25,7 +29,7 @@ class A2CAgent:
         action = dist.sample()
         log_prob = dist.log_prob(action).sum()  # Ensure log_prob is a scalar
         return action.item(), log_prob
-    
+
     def predict(self, state: list) -> tuple[float]:
         state = np.array(state)
         state = torch.FloatTensor(state).to(self.device)
@@ -71,17 +75,24 @@ class A2CAgent:
         print(f'successfully save model to {path}.')
 
     def load_model(self, path):
-        try:
-            checkpoint = torch.load(path)
-            self.policy_network.load_state_dict(checkpoint['policy_network_state_dict'])
-            self.value_network.load_state_dict(checkpoint['value_network_state_dict'])
-            self.optimizer_policy.load_state_dict(checkpoint['optimizer_policy_state_dict'])
-            self.optimizer_value.load_state_dict(checkpoint['optimizer_value_state_dict'])
-            self.policy_network.train()
-            self.value_network.train()
-            print(f"successfully load model from {path}.")
-        except FileNotFoundError:
-            print(f"No saved model found at {path}. Starting from scratch.")
+        print('path:', path)
+        #try:
+        checkpoint = torch.load(path)
+        print(1)
+        self.policy_network.load_state_dict(checkpoint['policy_network_state_dict'])
+        print(2)
+        self.value_network.load_state_dict(checkpoint['value_network_state_dict'])
+        print(3)
+        self.optimizer_policy.load_state_dict(checkpoint['optimizer_policy_state_dict'])
+        print(4)
+        self.optimizer_value.load_state_dict(checkpoint['optimizer_value_state_dict'])
+        print(5)
+        self.policy_network.train()
+        print(6)
+        self.value_network.train()
+        print("successfully load model.")
+        #except FileNotFoundError:
+        #print(f"No saved model found at {path}. Starting from scratch.")
 
 
 class PolicyNetwork(nn.Module):

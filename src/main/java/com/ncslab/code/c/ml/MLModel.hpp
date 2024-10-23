@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include <memory> 
+#include <memory>
 
 #include "Matrix.hpp"
 
@@ -39,14 +39,17 @@ public:
         Py_XDECREF(pInstance);
         Py_XDECREF(pClass);
         Py_XDECREF(pFuncTrainByFile);
-        Py_XDECREF(pFuncPredict);           
+        Py_XDECREF(pFuncPredict);
         Py_DECREF(pModule);
+        Py_XDECREF(pFuncSave);
     }
 
     virtual void trainModel(const std::string& filename, int epochs, double lr) {
+//        std::cout << "Training the model...\n";
         PyObject* pArgs = Py_BuildValue("(sid)", filename.c_str(), epochs, lr);
         PyObject_CallObject(pFuncTrainByFile, pArgs);
         Py_DECREF(pArgs);
+      return;
     }
 
     // virtual std::vector<double> predict(const std::vector<double> inputs){
@@ -146,30 +149,55 @@ public:
                 results(i) = value;
             } else {
                 // Handle the error for non-float items.
-                std::cout << "Error: All items in the result list must be floats." << std::endl;
+                std::cout << "Error: All items in the result list must be floats.\n" << std::endl;
                 Py_DECREF(pResult);
                 throw std::runtime_error("Non-float item encountered in prediction results");
             }
         }
-        
+
         // std::cout << "debug: before return\n";
         Py_DECREF(pResult);
         return results;
     }
 
     virtual Matrix predict(double input){
-        // std::vector<double> inputs_vec(1, 0);
-        // inputs_vec[0] = input;
         Matrix input_mat(1, 1);
         input_mat(0) = input;
-        // std::cout << "debug in double predict\n";
         return predict(input_mat);
     }
 
-    
+     virtual void saveModel(std::string path){
+        // save model in python
+        // whose method should be named with "save_model"
+        // with params to be a string.
+        PyObject* pArgs = Py_BuildValue("(s)", path.c_str());
+        PyObject* pResult = PyObject_CallObject(pFuncSave, pArgs);
+        Py_DECREF(pArgs);
+        Py_DECREF(pResult);
+    }
+
+    virtual void loadModel(std::string path){
+        // PyObject* pFuncLoad =
+        // PyObject* pArgs = Py_BuildValue("(s)", path.c_str());
+        // PyObject* pResult = PyObject_CallObject(pFuncLoad, pArgs);
+        // Py_DECREF(pArgs);
+        // Py_DECREF(pResult);
+        PyObject* pFuncLoad = PyObject_GetAttrString(pInstance, "load_model");
+        PyObject* pArgs = Py_BuildValue("(s)", path.c_str());
+        // std::cout << "loading 1\n";
+        PyObject* pResult = PyObject_CallObject(pFuncLoad, pArgs);
+
+        // std::cout << "loading 2\n";
+        Py_DECREF(pArgs);
+
+        // std::cout << "loading 3\n";
+        Py_DECREF(pResult);
+        Py_XDECREF(pFuncLoad);
+    }
+
 
 protected:
-    PyObject *pModule, *pClass, *pInstance, *pFuncTrainByFile, *pFuncPredict;
+    PyObject *pModule, *pClass, *pInstance, *pFuncTrainByFile, *pFuncPredict, *pFuncSave;
 };
 };
 #endif

@@ -29,8 +29,8 @@ public class MultilayerPerceptron extends MachineLearning {
         super(jsonObject, model);
 
         CodeStructC.addIncludeCode("#include \"MultilayerPerceptron.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/MLP/MultilayerPerceptron.hpp", "MultilayerPerceptron.hpp");
-        CodeStructC.addWrittenFile("../../../ml/MLP/multilayer_perceptron_model.py", "multilayer_perceptron_model.py");
+        CodeStructC.addWrittenFile("../../ml/MLP/MultilayerPerceptron.hpp", "MultilayerPerceptron.hpp");
+        CodeStructC.addWrittenFile("../../ml/MLP/multilayer_perceptron_model.py", "multilayer_perceptron_model.py");
 
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));

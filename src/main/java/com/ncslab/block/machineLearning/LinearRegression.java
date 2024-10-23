@@ -26,8 +26,8 @@ public class LinearRegression extends MachineLearning{
         super(jsonObject, model);
 
         CodeStructC.addIncludeCode("#include \"LinearRegression.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
-        CodeStructC.addWrittenFile("../../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
+        CodeStructC.addWrittenFile("../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
+        CodeStructC.addWrittenFile("../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
 
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
@@ -36,7 +36,10 @@ public class LinearRegression extends MachineLearning{
         this.modelVariable = new MLVariable(this, 1, "linearRegression", "2333");
 
         this.lossString = paramValues.getString("lossFunction").trim().toUpperCase();
-        this.datasetString = paramValues.getString("dataset").trim().toLowerCase();
+        this.datasetString = paramValues.getString("dataset").trim();
+
+        this.loadPath = paramValues.getString("loadPath").trim();
+        this.savePath = paramValues.getString("savePath").trim();
 
         this.parameterList.add(this.inputFeatures);
         this.parameterList.add(this.outputFeatures);
@@ -61,12 +64,22 @@ public class LinearRegression extends MachineLearning{
         initCode += this.epochs.getInitCodeC();
         initCode += this.modelVariable.getInitCodeC();
 
-        initCode += String.format("%s->trainModel(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/%s.csv\", %s, %s);\n",
-                    this.modelVariable.getName(),
-                    this.datasetString,
-                    this.epochs.getName(),
-                    this.learningRate.getName());
-
+        // initCode += String.format("%s->trainModel(\"/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/%s.csv\", %s, %s);\n",
+        //             this.modelVariable.getName(),
+        //             this.datasetString,
+        //             this.epochs.getName(),
+        //             this.learningRate.getName());
+        if (loadPath != null && !loadPath.equals("None")){
+            initCode += String.format("%s->loadModel(\"%s\");",
+                this.modelVariable.getName(),
+                this.loadPath);
+        }
+        if(datasetString != null && !datasetString.equals("None")) {
+            initCode += String.format("%s->trainModel(\"%s\", %s, %s);\n", this.modelVariable.getName(),
+                this.datasetString,
+                this.epochs.getName(),
+                this.learningRate.getName());
+        }
         code.addInitCode(initCode);
     }
 
@@ -95,5 +108,37 @@ public class LinearRegression extends MachineLearning{
                 this.inputFeatures.getName(),
                 this.outputFeatures.getName(),
                 this.lossString);
+    }
+
+
+    @Override
+    public String getEndCode(){
+        // todo: this part should be run at the end of the main code, but before the end code.
+        // this.csvName = this.datasetString;
+        // StringBuilder sb = new StringBuilder();
+        // String line1 = String.format("%s->trainModel(%s, %s, %s);\n",
+        //     this.modelVariable.getName(),
+        //     String.format("\"%s\"",this.path+this.csvName),
+        //     this.epochs.getName(),
+        //     this.learningRate.getName());
+        // sb.append(line1);
+
+        // if(shouldSave == true){
+        //     String line2 = String.format("%s->saveModel(%s);\n",
+        //     this.modelVariable.getName(),
+        //     String.format("\"%s\"", this.path + this.modelName));
+        //     sb.append(line2);
+        // }
+        // return sb.toString();
+        if (savePath != null && !savePath.equals("None")){
+            return String.format("%s->saveModel(\"%s\");",
+                this.modelVariable.getName(),
+                this.savePath);
+        }
+        return "";
+        // sb.append("%s->trainModel()");
+        // sb.append(line1);
+
+
     }
 }

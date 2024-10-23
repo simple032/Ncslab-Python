@@ -365,6 +365,10 @@ abstract public class CodeStructC{
 				+terminateCode+"\n"
 				+"}\n"
 
+                +"void NCSLabFinalize(){\n"
+                +finalizeCode+"\n"
+                +"}\n"
+
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
 				+"}\n"

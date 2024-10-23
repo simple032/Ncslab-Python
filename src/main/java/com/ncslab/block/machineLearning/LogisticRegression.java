@@ -27,8 +27,8 @@ public class LogisticRegression extends MachineLearning {
         super(jsonObject, model);
 
         CodeStructC.addIncludeCode("#include \"LogisticRegression.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/LogisticRegression/LogisticRegression.hpp", "LogisticRegression.hpp");
-        CodeStructC.addWrittenFile("../../../ml/LogisticRegression/logistic_regression_model.py", "logistic_regression_model.py");
+        CodeStructC.addWrittenFile("../../ml/LogisticRegression/LogisticRegression.hpp", "LogisticRegression.hpp");
+        CodeStructC.addWrittenFile("../../ml/LogisticRegression/logistic_regression_model.py", "logistic_regression_model.py");
 
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));

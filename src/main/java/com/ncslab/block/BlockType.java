@@ -146,8 +146,11 @@ public class BlockType{
 		blockFactory.put("Transpose", com.ncslab.block.matrix.Transpose::new);
 		// advanced control
 		blockFactory.put("LQR Controller", com.ncslab.block.advancedControl.LQRController::new);
+        // matplotlib
+        blockFactory.put("Matplotlib", com.ncslab.block.sink.Matplotlib::new);
 
-		// machine learning
+        // machine learning
+        blockFactory.put("DataCollector", com.ncslab.block.machineLearning.DataCollector::new);
 		blockFactory.put("LinearRegression", com.ncslab.block.machineLearning.LinearRegression::new);
 		blockFactory.put("LogisticRegression", com.ncslab.block.machineLearning.LogisticRegression::new);
 		blockFactory.put("MultilayerPerceptron", com.ncslab.block.machineLearning.MultilayerPerceptron::new);
@@ -308,6 +311,12 @@ public class BlockType{
 
         // Advanced Control
         blockClassTree.put("LQR Controller", com.ncslab.block.advancedControl.LQRController.class);
+
+        // matplotlib
+        blockClassTree.put("Matplotlib", com.ncslab.block.sink.Matplotlib.class);
+
+        // machine learning
+        blockClassTree.put("DataCollector", com.ncslab.block.machineLearning.DataCollector.class);
 
         // Machine Learning
         blockClassTree.put("LinearRegression", com.ncslab.block.machineLearning.LinearRegression.class);
