@@ -8,8 +8,8 @@ CC=g++
 LD=g++
 # LD=/opt/homebrew/Cellar/llvm/17.0.5/bin/clang++
 
-srcdir=/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c
-pidir=/home/square/ncslablink/WiringPi-2.61-1/wiringPi
+srcdir=/home/wenshan/NetConTop/ncslablink/src/main/java/com/ncslab/code/c
+pidir=/home/wenshan/ncslablink/WiringPi-2.61-1/wiringPi
 jsondir=/usr/include/jsoncpp
 # CCFlag=-D_SIMU -fpermissive -Wwrite-strings -I /Users/square/vcpkg/packages/jsoncpp_arm64-osx/include -I /Users/square/Documents/Code/lib/pi -I /Users/square/Documents/Code/ncslablink/src/code/c -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -pthread -fopenmp -g -O2 -std=c++11 -fstack-protector-strong -Wformat -Werror=format-security -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 # -fopenmp 

@@ -12,7 +12,7 @@ if (APPLE)
     set(CMAKE_TOOLCHAIN_FILE "/Users/square/vcpkg/scripts/buildsystems/vcpkg.cmake")
     set(CMAKE_OSX_ARCHITECTURES "arm64")
 elseif(UNIX)
-    set(CMAKE_TOOLCHAIN_FILE "/home/square/ncslablink/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "/home/wenshan/vcpkg/scripts/buildsystems/vcpkg.cmake")
 endif()
 
 include(${CMAKE_TOOLCHAIN_FILE})

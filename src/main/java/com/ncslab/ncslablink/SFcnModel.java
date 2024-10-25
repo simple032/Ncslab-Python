@@ -70,12 +70,12 @@ public class SFcnModel {
 		}
 
 		//修改头文件为ncslab的头文件
-		this.functionCode = this.functionCode.replaceFirst("\"simstruc.h\"","\"ncslabccode.h\"\n"
-				+ "#include \"ncslabdefines.h\"\n"
-				+ "#include \"Matrix.h\"\n"
+		this.functionCode = this.functionCode.replaceFirst("\"simstruc.h\"","\"ncslab.hpp\"\n"
+				+ "#include \"ncslabdefines.hpp\"\n"
+				+ "#include \"Matrix.hpp\"\n"
 				+ "#define CONTINUOUS_SAMPLE_TIME 0\n"
 				+ "#define USE_DEFAULT_SIM_STATE 0\n");
-		this.functionCode=this.functionCode.replaceFirst("#include \"cg_sfun.h\"", "#include \"ncslabsfun.h\"");
+		this.functionCode=this.functionCode.replaceFirst("#include \"cg_sfun.h\"", "#include \"ncslabsfun.hpp\"");
 	}
 
 	public String checkDimentions() throws SFcnException {
@@ -84,9 +84,9 @@ public class SFcnModel {
 //		JSONObject jsonData = new JSONObject();
 		try {
 			//字符串内容依次是parameterNum;inputPortNum|input port1 width,input port2 width ...;outputPortNum | output port1 width...;numContStates|numDiscStates;
-			InputStream inputStream= new FileInputStream(codePath+"/sfcncompileresult.txt");
+			InputStream inputStream= new FileInputStream(codePath+"sfcncompileresult.txt");
 
-			msg= String.valueOf(inputStream.read());
+			msg=new String(inputStream.readAllBytes());
 
 			inputStream.close();
 		} catch (IOException e) {

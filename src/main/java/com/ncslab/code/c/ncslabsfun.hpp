@@ -3,8 +3,8 @@
 
 void S_FUNCTION_NAME(SimStruct* S)
 {
-	//S->initializeSize = (MdlInitializeSizeFcn)mdlInitializeSize;
-	S->outputs = (MdlOutputsFcn)mdlOutputs;
+	S->initializeSizes = (MdlInitializeSizesFcn)mdlInitializeSizes;
+	S->initializeSampleTimes = (MdlInitializeSampleTimesFcn)mdlInitializeSampleTimes;
 #if defined(MDL_INITIALIZE_CONDITIONS)
 	S->initializeConditions = (MdlInitializeConditionsFcn)mdlInitializeConditions;
 #endif // MDL_INITIALIZE_CONDITIONS
@@ -15,6 +15,7 @@ void S_FUNCTION_NAME(SimStruct* S)
 #if defined(MDL_DERIVATIVES)
 	S->derivatives = (MdlDerivativesFcn)mdlDerivatives;
 #endif // MDL_DERIVATIVES
+	S->outputs = (MdlOutputsFcn)mdlOutputs;
 	S->terminate = (MdlTerminateFcn)mdlTerminate;
 }
 #endif
