@@ -25,10 +25,6 @@ public class LinearRegression extends MachineLearning{
     public LinearRegression(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"LinearRegression.hpp\"\n");
-        CodeStructC.addWrittenFile("../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
-        CodeStructC.addWrittenFile("../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
-
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
         this.epochs = new Parameter(this, 3, "epochs", paramValues.getString("epochs"));
@@ -55,6 +51,9 @@ public class LinearRegression extends MachineLearning{
     @Override
     public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
+        code.addIncludeCode("#include \"LinearRegression.hpp\"\n");
+        code.addWrittenFile("../../ml/LR/LinearRegression.hpp", "LinearRegression.hpp");
+        code.addWrittenFile("../../ml/LR/linear_regression_model.py", "linear_regression_model.py");
 
 		String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
 

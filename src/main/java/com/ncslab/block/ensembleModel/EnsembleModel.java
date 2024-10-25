@@ -28,9 +28,6 @@ public class EnsembleModel extends Block{
     public EnsembleModel(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"inverted_pendulum.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ensemble/inverted_pendulum.hpp", "inverted_pendulum.hpp");
-
         this.m0 = new Parameter(this, 1, "m0", paramValues.getString("m0"));
         this.m1 = new Parameter(this, 2, "m1", paramValues.getString("m1"));
         this.l = new Parameter(this, 3, "l", paramValues.getString("l"));
@@ -58,6 +55,8 @@ public class EnsembleModel extends Block{
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
+        code.addIncludeCode("#include \"inverted_pendulum.hpp\"\n");
+        code.addWrittenFile("../../ensemble/inverted_pendulum.hpp", "inverted_pendulum.hpp");
 
         String initCode = "/*Code for initialization of block InvertedPendulumTest:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 

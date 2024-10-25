@@ -28,10 +28,6 @@ public class MultilayerPerceptron extends MachineLearning {
     public MultilayerPerceptron(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"MultilayerPerceptron.hpp\"\n");
-        CodeStructC.addWrittenFile("../../ml/MLP/MultilayerPerceptron.hpp", "MultilayerPerceptron.hpp");
-        CodeStructC.addWrittenFile("../../ml/MLP/multilayer_perceptron_model.py", "multilayer_perceptron_model.py");
-
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
         this.hiddenLayers = new Parameter(this, 3, "hiddenLayers", paramValues.getString("hiddenLayers"));  // New parameter for hidden layers
@@ -59,6 +55,9 @@ public class MultilayerPerceptron extends MachineLearning {
     @Override
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+        code.addIncludeCode("#include \"MultilayerPerceptron.hpp\"\n");
+        code.addWrittenFile("../../ml/MLP/MultilayerPerceptron.hpp", "MultilayerPerceptron.hpp");
+        code.addWrittenFile("../../ml/MLP/multilayer_perceptron_model.py", "multilayer_perceptron_model.py");
 
         String initCode = "/*Code for initialization of block MLTest:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 

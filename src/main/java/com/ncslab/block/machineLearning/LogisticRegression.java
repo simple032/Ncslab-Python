@@ -26,10 +26,6 @@ public class LogisticRegression extends MachineLearning {
     public LogisticRegression(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"LogisticRegression.hpp\"\n");
-        CodeStructC.addWrittenFile("../../ml/LogisticRegression/LogisticRegression.hpp", "LogisticRegression.hpp");
-        CodeStructC.addWrittenFile("../../ml/LogisticRegression/logistic_regression_model.py", "logistic_regression_model.py");
-
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
         this.epochs = new Parameter(this, 3, "epochs", paramValues.getString("epochs"));
@@ -56,6 +52,10 @@ public class LogisticRegression extends MachineLearning {
     @Override
         public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+
+        code.addIncludeCode("#include \"LogisticRegression.hpp\"\n");
+        code.addWrittenFile("../../ml/LogisticRegression/LogisticRegression.hpp", "LogisticRegression.hpp");
+        code.addWrittenFile("../../ml/LogisticRegression/logistic_regression_model.py", "logistic_regression_model.py");
 
         String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
 

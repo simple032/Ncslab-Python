@@ -21,11 +21,11 @@ import lombok.Getter;
 
 abstract public class CodeStructC{
 
-	public static Set<String> globalDeclareCodeSet = new LinkedHashSet<>();
-	public static Set<String> globalInitCodeSet = new LinkedHashSet<>();
-	public static Set<String> globalEndCodeSet = new LinkedHashSet<>();
-	public static Set<String> includeCodeSet = new LinkedHashSet<>();
-	public static Set<WrittenFile> writtenFileSet = new HashSet<>();
+	public Set<String> globalDeclareCodeSet = new LinkedHashSet<>();
+	public Set<String> globalInitCodeSet = new LinkedHashSet<>();
+	public Set<String> globalEndCodeSet = new LinkedHashSet<>();
+	public Set<String> includeCodeSet = new LinkedHashSet<>();
+	public Set<WrittenFile> writtenFileSet = new HashSet<>();
 
 	/**
 	 * You can freely add declare code in this function, and it will be added to the
@@ -33,7 +33,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addGlobalDeclareCode(String code) {
+	public void addGlobalDeclareCode(String code) {
 		globalDeclareCodeSet.add(code);
 	}
 
@@ -43,7 +43,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addGlobalInitCode(String code) {
+	public void addGlobalInitCode(String code) {
 		globalInitCodeSet.add(code);
 	}
 
@@ -53,7 +53,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addGlobalEndCode(String code) {
+	public void addGlobalEndCode(String code) {
 		globalEndCodeSet.add(code);
 	}
 
@@ -63,7 +63,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addIncludeCode(String code) {
+	public void addIncludeCode(String code) {
 		includeCodeSet.add(code);
 	}
 
@@ -77,7 +77,7 @@ abstract public class CodeStructC{
 	 * @param targetPath the target path of the file.
 	 * @param overwrite whether to overwrite the file if it exists.
 	 */
-	public static void addWrittenFile(String filePath, String targetPath, boolean overwrite) {
+	public void addWrittenFile(String filePath, String targetPath, boolean overwrite) {
 		writtenFileSet.add(new WrittenFile(filePath, targetPath, overwrite));
 	}
 
@@ -91,7 +91,7 @@ abstract public class CodeStructC{
 	 * @param targetPath the target path of the file.
 	 * @see #addWrittenFile(String filePath, String targetPath, boolean overwrite)
 	 */
-	public static void addWrittenFile(String filePath, String targetPath) {
+	public void addWrittenFile(String filePath, String targetPath) {
 		addWrittenFile(filePath, targetPath, true);
 	}
 
@@ -492,6 +492,9 @@ abstract public class CodeStructC{
 		}
 	}
 
+    /**
+     *
+     */
 	public void generateGlobalVariableDefineCode(){
 		globalVariable+="/*Define variables for global variables*/\n";
 		for(GlobalVariable variable:variableList){

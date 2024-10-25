@@ -26,10 +26,6 @@ public class A2C extends MachineLearning {
     public A2C(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"A2C.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/A2C/A2C.hpp", "A2C.hpp");
-        CodeStructC.addWrittenFile("../../../ml/A2C/A2C.py", "A2C.py");
-
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
         this.learningRate = new Parameter(this, 4, "learningRate", paramValues.getString("learningRate"));
@@ -51,6 +47,10 @@ public class A2C extends MachineLearning {
     @Override
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+
+        code.addIncludeCode("#include \"A2C.hpp\"\n");
+        code.addWrittenFile("../../../ml/A2C/A2C.hpp", "A2C.hpp");
+        code.addWrittenFile("../../../ml/A2C/A2C.py", "A2C.py");
 
         String initCode = "/*Code for initialization of block MLTest:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 

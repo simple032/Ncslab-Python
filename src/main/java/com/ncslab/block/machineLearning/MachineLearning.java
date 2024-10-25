@@ -29,25 +29,24 @@ public abstract class MachineLearning extends Block{
     // private Parameter layersNumber, lossFunction, learningRate, inputFeatures, activationFunction, dataset;
     public MachineLearning(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
-        CodeStructC.addGlobalInitCode(PY_INIT);
-        CodeStructC.addGlobalInitCode(PY_INCLUDE);
-//        CodeStructC.addGlobalEndCode(PY_FINALIZE);
-
-        //add include code for MLModel.hpp and Python.h
-        CodeStructC.addIncludeCode("#include<Python.h>\n");
-        CodeStructC.addIncludeCode("#include \"MLModel.hpp\"\n");
-        //write file MLModel.hpp
-        CodeStructC.addWrittenFile("../../ml/MLModel.hpp", "MLModel.hpp");
 
         this.inputPortList.add(new InputPort(this, 1));
 
-        this.outputPort = new OutputPort(this, 1);
+        this.outputPort = new OutputPort(this, 1, true);
+        this.outputPort.setDimThrough(false);
         this.outputPortList.add(this.outputPort);
     }
 
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
+        code.addGlobalInitCode(PY_INIT);
+        code.addGlobalInitCode(PY_INCLUDE);
+        //add include code for MLModel.hpp and Python.h
+        code.addIncludeCode("#include<Python.h>\n");
+        code.addIncludeCode("#include \"MLModel.hpp\"\n");
+        //write file MLModel.hpp
+        code.addWrittenFile("../../ml/MLModel.hpp", "MLModel.hpp");
         String initCode = "/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
         code.addInitCode(initCode);
     }

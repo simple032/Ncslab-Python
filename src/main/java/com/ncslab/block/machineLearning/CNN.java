@@ -22,10 +22,6 @@ public class CNN extends MachineLearning{
     public CNN(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"CNN.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/CNN/CNN.hpp", "CNN.hpp");
-        CodeStructC.addWrittenFile("../../../ml/CNN/cnn_model.py", "cnn_model.py");
-
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.numClasses = new Parameter(this, 2, "numClasses", paramValues.getString("numClasses"));
         this.activationFunction = new Parameter(this, 3, "activationFunction", paramValues.getString("activationFunction"));
@@ -52,6 +48,10 @@ public class CNN extends MachineLearning{
     @Override
     public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
+
+        code.addIncludeCode("#include \"CNN.hpp\"\n");
+        code.addWrittenFile("../../../ml/CNN/CNN.hpp", "CNN.hpp");
+        code.addWrittenFile("../../../ml/CNN/cnn_model.py", "cnn_model.py");
 
 		String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
 

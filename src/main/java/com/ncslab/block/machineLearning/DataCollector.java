@@ -19,8 +19,6 @@ public class DataCollector extends Block{
 
     public DataCollector(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
-        CodeStructC.addIncludeCode("#include\"DataCollector.hpp\"");
-        CodeStructC.addWrittenFile("../../../ml/DataCollector.hpp", "DataCollector.hpp");
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
         this.path = paramValues.getString("path") + ".csv";
@@ -39,6 +37,8 @@ public class DataCollector extends Block{
     @Override
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+        code.addIncludeCode("#include\"DataCollector.hpp\"");
+        code.addWrittenFile("../../ml/DataCollector.hpp", "DataCollector.hpp");
         String initCode="/*Code for initialization of block DataCollector:("+getBlockId()+")"+getBlockName()+"*/\n";
         initCode += this.inputFeatures.getInitCodeC();
         initCode += this.outputFeatures.getInitCodeC();
