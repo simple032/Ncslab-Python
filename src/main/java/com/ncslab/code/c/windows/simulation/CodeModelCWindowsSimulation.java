@@ -10,7 +10,9 @@ import org.json.JSONObject;
 import javax.websocket.Session;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CodeModelCWindowsSimulation extends CodeModelC{
 
@@ -47,10 +49,44 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
             File exeFile = new File(dir, "ncslab.exe");
             System.out.println("The executing file is on " + exeFile);
 
-			process = Runtime.getRuntime().exec(
-				exeFile.getAbsolutePath() + " " + this.getConfig().getStopTime(),
-				null,dir
-				);
+            String exeFilePath = exeFile.getAbsolutePath();
+
+            // 获取当前环境变量
+//            Map<String, String> currentEnv = System.getenv();
+//
+//            // 创建一个新的环境变量映射
+//            Map<String, String> env = new HashMap<>(currentEnv);
+//
+//            // 添加或修改环境变量
+//            env.put("Path", "%M2PLAB_ROOT%/server/cruntime/bin;" + env.get("Path")); // 例如，添加新的路径
+//
+//            // 将环境变量映射转换为字符串数组
+//            String[] envArray = new String[env.size()];
+//            int i = 0;
+//            for (Map.Entry<String, String> entry : env.entrySet()) {
+//                envArray[i++] = entry.getKey() + "=" + entry.getValue();
+//            }
+            File sourceFolder = new File(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
+            File[] files = sourceFolder.listFiles();
+            if(files != null){
+                for(File file : files){
+                    if(file.isFile() && file.getName().endsWith(".dll")){
+                        try{
+                            Path sourcePath = Paths.get(file.getAbsolutePath());
+                            Path targetPath = Paths.get(dir.getAbsolutePath(), file.getName());
+                            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        }catch(IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            process = Runtime.getRuntime().exec(
+                exeFilePath + " " + this.getConfig().getStopTime(),
+                null, // 将环境变量映射转换为String数组
+                dir
+            );
 
 			// read primitive Java data types from an underlying InputStream in a little-endian format
 			// This input stream is the stdout of the process

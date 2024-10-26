@@ -534,6 +534,8 @@ abstract public class CodeStructC{
 		}
 	}
 
+    @Getter
+    protected String m2plabRoot = System.getenv("M2PLAB_ROOT");
 
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
@@ -864,7 +866,26 @@ abstract public class CodeStructC{
 	}
 
     public void removeAllFiles(){
+        String userPath=codePathBase+model.getUserId();
+        String modelPath=userPath+"/"+model.getModelId();
+        File dir = new File(modelPath);
+        File[] files = dir.listFiles();
+        for(File file : files){
+            if (file.isFile() && isTargetFile(file)) {
+//                    System.out.println("Deleting file: " + file.getAbsolutePath());
+                    if (!file.delete()) {
+                        System.err.println("Failed to delete file: " + file.getAbsolutePath());
+                    }
+            }
+        }
 
+    }
+
+    private static boolean isTargetFile(File file) {
+        String fileName = file.getName().toLowerCase();
+        return fileName.endsWith(".c") || fileName.endsWith(".h") ||
+            fileName.endsWith(".cpp") || fileName.endsWith(".hpp") || fileName.endsWith(".o") ||
+            fileName.equals("makefile");
     }
 
 	//建立Model,block,input,output,signal,state,parameter等数据结构，并初始化
