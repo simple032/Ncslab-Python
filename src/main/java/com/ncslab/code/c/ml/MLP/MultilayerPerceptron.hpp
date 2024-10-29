@@ -54,12 +54,13 @@ private:
         // pFuncSetActivationFunction = PyObject_GetAttrString(pInstance, "set_activation_function");
         pFuncTrainByFile = PyObject_GetAttrString(pInstance, "train_by_file");
         pFuncPredict = PyObject_GetAttrString(pInstance, "predict");
+        pFuncSave = PyObject_GetAttrString(pInstance, "save_model");
         if (!pFuncTrainByFile || !PyCallable_Check(pFuncTrainByFile) ||
             !pFuncPredict || !PyCallable_Check(pFuncPredict)) {
             PyErr_Print();
             Py_XDECREF(pFuncTrainByFile);
             Py_XDECREF(pFuncPredict);
-            Py_XDECREF(pInstance);
+            Py_XDECREF(pFuncSave);
             throw std::runtime_error("Failed to load necessary Python functions");
         }
     }

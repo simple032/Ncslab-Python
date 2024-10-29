@@ -69,12 +69,12 @@ public class LinearRegression extends MachineLearning{
         //             this.epochs.getName(),
         //             this.learningRate.getName());
         if (loadPath != null && !loadPath.equals("None")){
-            initCode += String.format("%s->loadModel(\"%s\");",
+            initCode += String.format("%s->loadModel(\"%s\");\n",
                 this.modelVariable.getName(),
                 this.loadPath);
         }
         if(datasetString != null && !datasetString.equals("None")) {
-            initCode += String.format("%s->trainModel(\"%s\", %s, %s);\n", this.modelVariable.getName(),
+            initCode += String.format("%s->trainModel(\"%s\", int(%s), %s);\n", this.modelVariable.getName(),
                 this.datasetString,
                 this.epochs.getName(),
                 this.learningRate.getName());
@@ -110,34 +110,14 @@ public class LinearRegression extends MachineLearning{
     }
 
 
-    @Override
-    public String getEndCode(){
-        // todo: this part should be run at the end of the main code, but before the end code.
-        // this.csvName = this.datasetString;
-        // StringBuilder sb = new StringBuilder();
-        // String line1 = String.format("%s->trainModel(%s, %s, %s);\n",
-        //     this.modelVariable.getName(),
-        //     String.format("\"%s\"",this.path+this.csvName),
-        //     this.epochs.getName(),
-        //     this.learningRate.getName());
-        // sb.append(line1);
-
-        // if(shouldSave == true){
-        //     String line2 = String.format("%s->saveModel(%s);\n",
-        //     this.modelVariable.getName(),
-        //     String.format("\"%s\"", this.path + this.modelName));
-        //     sb.append(line2);
-        // }
-        // return sb.toString();
-        if (savePath != null && !savePath.equals("None")){
-            return String.format("%s->saveModel(\"%s\");",
-                this.modelVariable.getName(),
-                this.savePath);
-        }
-        return "";
-        // sb.append("%s->trainModel()");
-        // sb.append(line1);
-
-
-    }
+//    @Override
+//    public String getEndCode(){
+//        // todo: this part should be run at the end of the main code, but before the end code.
+//        if (savePath != null && !savePath.equals("None")){
+//            return String.format("%s->saveModel(\"%s\");",
+//                this.modelVariable.getName(),
+//                this.savePath);
+//        }
+//        return "";
+//    }
 }

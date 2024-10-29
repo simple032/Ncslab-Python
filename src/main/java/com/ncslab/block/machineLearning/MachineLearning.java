@@ -96,6 +96,12 @@ public abstract class MachineLearning extends Block{
     public abstract String getVariableParameters();
 
     public String getEndCode(){
+        // todo: this part should be run at the end of the main code, but before the end code.
+        if (savePath != null && !savePath.equals("None")){
+            return String.format("%s->saveModel(\"%s\");\n",
+                this.modelVariable.getName(),
+                this.savePath);
+        }
         return "";
     }
 
