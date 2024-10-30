@@ -1,10 +1,8 @@
 package com.ncslab.server.mfcalcServer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 import java.net.*;
+
+import com.ncslab.utils.Property;
 import org.json.JSONObject;
 
 import com.ncslab.code.m.CodeOctaveM;
@@ -22,6 +20,8 @@ public class MfcalcThread extends Thread {
 	private Object finishObject=new Object();
 
 	private boolean isBusy=true;
+
+	private String codePathBase= Property.instance.getProperty("MfcalcCodePath");
 
 	private CodeOctaveM model=null;
 
@@ -41,7 +41,7 @@ public class MfcalcThread extends Thread {
 	public void startOctave(CodeOctaveM model) {
 		this.model=model;
 
-		System.out.println("startOctave...");
+		System.out.println("startMfcalc...");
 		synchronized(waitObject) {
 			waitObject.notify();
 		}
@@ -111,7 +111,7 @@ public class MfcalcThread extends Thread {
 
 			while(true) {
 
-				System.out.println("Executing octave...");
+				System.out.println("Executing mfcalc...");
 				isBusy=false;
 				synchronized(waitObject) {
 					System.out.println("waiting...");
@@ -121,7 +121,7 @@ public class MfcalcThread extends Thread {
 				isBusy=true;
 
 				String mainCode=model.getMainCode();
-				byte data[]=mainCode.getBytes();
+				byte[] data =mainCode.getBytes();
 				out.writeInt(data.length);
 				out.write(data);
 
@@ -174,9 +174,27 @@ public class MfcalcThread extends Thread {
 				Process proc;
 				String matline = null;
 				String matline2 = "";
+
+
+                String pythonPath = System.getenv("M2PLAB_ROOT") ;
+
+                String osName = System.getProperty("os.name").toLowerCase();
+
+                if (osName.contains("win")) {
+                    pythonPath += "/server/python/python.exe";
+//                    System.out.println("This is a Windows operating system.");
+                } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+//                    System.out.println("This is a Unix or Linux operating system.");
+                    pythonPath = "python";
+                } else if (osName.contains("mac")) {
+//                    System.out.println("This is a macOS operating system.");
+                } else {
+                    System.out.println("Unknown operating system: " + osName);
+                }
+
 		        try {
 		        	//��ݮ���ϲ���ʹ���������
-		            proc = Runtime.getRuntime().exec("python /home/pi/NetConTop/NCSLabLink/mfcalccode/matload.py");// ִ��py�ļ�
+		            proc = Runtime.getRuntime().exec(pythonPath + " " + codePathBase +"/matload.py");// ִ��py�ļ�
 		            //���ص���ʹ���������
 //		        	proc = Runtime.getRuntime().exec("python D:\\Project\\react_antd\\faker\\NetConTop\\ncslablink\\src\\octaveserver\\matload.py");
 		            //���������������ȡ���
@@ -214,7 +232,7 @@ public class MfcalcThread extends Thread {
 			e.printStackTrace();
 		}
 		finally {
-			server.removeOctaveThread(this);
+			server.removeMfcalcThread(this);
 		}
 	}
 

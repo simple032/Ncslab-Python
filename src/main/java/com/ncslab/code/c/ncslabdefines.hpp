@@ -307,7 +307,7 @@ struct SCOPE
 	int maxDataLength;
 	int width;
 	int height;
-	//int cursor;
+	int cursor;
 	//REAL *buffer;
 	//REAL *timeBuffer;
 

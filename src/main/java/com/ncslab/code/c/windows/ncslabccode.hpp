@@ -4,6 +4,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+#include <list>
+
 enum DATA_TYPE {SINGLE,MATRIX};
 
 #define REAL double
@@ -61,6 +63,7 @@ typedef struct {
 	int parameterNum;
 	int stateNum;
 	int signalNum;
+	int discreteUpdated;
 
 	INPUT_PORT **inputPorts;
 	OUTPUT_PORT **outputPorts;
@@ -93,7 +96,33 @@ typedef struct {
 #ifndef __WIN32
 	struct timeval tv;
 #endif // __WIN32
+  int terminalNum;
 }MODEL;
+
+enum TERMINALTYPE{Scope};
+
+struct TERMINAL
+{
+	enum TERMINALTYPE type;
+	void *terminal;
+};
+
+
+struct SCOPE
+{
+	char *name;
+	int maxDataLength;
+	int width;
+	int height;
+	int cursor;
+	//REAL *buffer;
+	//REAL *timeBuffer;
+
+	std::list<REAL> dataList;
+	std::list<REAL> timeList;
+
+	int isFull;
+};
 
 void NCSLabInit();
 void NCSLabOneStep();

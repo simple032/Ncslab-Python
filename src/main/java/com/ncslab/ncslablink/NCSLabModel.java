@@ -234,11 +234,9 @@ abstract public class NCSLabModel {
 
 			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 
-			if(block!=null) {
-				blockList.add(block);
-			}
+            blockList.add(block);
 
-		}
+        }
 	}
 
 	private void parseLines() {

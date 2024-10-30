@@ -4,7 +4,7 @@
 #include "ncslabdefines.hpp"
 #include "onestep.hpp"
 #include "results.hpp"
-#include "ncslab.h"
+#include "ncslab.hpp"
 
 MODEL* mp;
 

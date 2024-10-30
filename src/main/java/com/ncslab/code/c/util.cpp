@@ -146,7 +146,6 @@ double distance(double t, double s) {
 
 //end
 
-// TODO:变步长和定步长冲突
 void storeState(int num) {
 	/*
 	for(int i=0;i<STATE_NUM;i++){mbiguous
@@ -166,7 +165,6 @@ void storeState(int num) {
 	}
 }
 
-// TODO:变步长和定步长冲突
 void restoreState(int num) {
 	/*
 	for(int i=0;i<STATE_NUM;i++){
@@ -240,31 +238,30 @@ void caculateDerivative(double* weights, int num) {
 	}
 }
 
-// TODO:变步长和定步长冲突了
-//REAL calculateStateDif(int seq1, int seq2) {
-//	REAL dif = 0;
-//	for (int i = 0;i < SINGLE_STATE_NUM;i++) {
-//		REAL difn = fabs(singleStateReserve[seq1][i] - singleStateReserve[seq2][i]);
-//		if (dif < difn) {
-//			dif = difn;
-//		}
-//	}
-//
-//	for (int i = 0;i < MATRIX_STATE_NUM;i++) {
-//		Matrix* pm1 = &(matrixStateReserve[seq1][i]);
-//		Matrix* pm2 = &(matrixStateReserve[seq2][i]);
-//		for (int h = 0;h < pm1->rows();h++) {
-//			for (int w = 0;w < pm1->cols();w++) {
-//				REAL difn = fabs((*pm1)(h, w) - (*pm2)(h, w));
-//				if (dif < difn) {
-//					dif = difn;
-//				}
-//			}
-//		}
-//	}
-//
-//	return dif;
-//}
+REAL calculateStateDif(int seq1, int seq2) {
+	REAL dif = 0;
+	for (int i = 0;i < SINGLE_STATE_NUM;i++) {
+		REAL difn = fabs(singleStateReserve[seq1][i] - singleStateReserve[seq2][i]);
+		if (dif < difn) {
+			dif = difn;
+		}
+	}
+
+	for (int i = 0;i < MATRIX_STATE_NUM;i++) {
+		Matrix* pm1 = &(matrixStateReserve[seq1][i]);
+		Matrix* pm2 = &(matrixStateReserve[seq2][i]);
+		for (int h = 0;h < pm1->rows();h++) {
+			for (int w = 0;w < pm1->cols();w++) {
+				REAL difn = fabs((*pm1)(h, w) - (*pm2)(h, w));
+				if (dif < difn) {
+					dif = difn;
+				}
+			}
+		}
+	}
+
+	return dif;
+}
 
 static long oldSec = 0;
 
@@ -288,7 +285,7 @@ void writeInformation() {
 
     GetSystemTime(&st);
     SystemTimeToFileTime(&st, &ft);
-    newSec = (ft.dwHighDateTime << 32) | ft.dwLowDateTime;
+    newSec = (static_cast<uint64_t>(ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
 
     // 将 FILETIME 转换为秒
     newSec /= 10000000; // 10000000 微秒 = 1 秒
@@ -297,7 +294,7 @@ void writeInformation() {
         // 假设 mp->time 是一个可以写入的变量
         // 这里需要根据实际情况来定义 mp->time 的类型和如何写入
         // 例如，如果 mp->time 是一个时间戳，可以这样写：
-        printf("%I64d\n", newSec);
+        fwrite(&(mp->time), 1, sizeof(mp->time), stdout);
         fflush(stdout);
         oldSec = newSec;
     }

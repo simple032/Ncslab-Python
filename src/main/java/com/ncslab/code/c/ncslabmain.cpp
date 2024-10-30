@@ -1,5 +1,5 @@
 #include"ncslabccode.h"
-#include"ServerThread.h"
+#include"ServerThread.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,13 +7,11 @@
 #include <sys/epoll.h>
 #include <stdint.h>  // for uint64_t
 #include <errno.h>
-#include"ncslab.h"
+#include"ncslab.hpp"
 #include <signal.h>
 #include <time.h>
 #include "ServerThread.hpp"
 
-#include "ncs_serialport.h"
-#include "ncslab.h"
 
 MODEL *mp;
 

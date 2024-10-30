@@ -2,26 +2,26 @@ package com.ncslab.server.mfcalcServer;
 
 import java.net.*;
 import java.util.*;
-
+import com.ncslab.utils.Property;
 
 public class MfcalcServer extends Thread {
 
 public static MfcalcServer instance=new MfcalcServer();
 
-	public static int Server_Port=2003;
-	private Vector<MfcalcThread> octaveThreadList=new Vector<MfcalcThread>();
+	public static int Server_Port= 2003;
+	private Vector<MfcalcThread> mfcalcThreadList=new Vector<MfcalcThread>();
 
-	public void removeOctaveThread(MfcalcThread thread) {
-		octaveThreadList.remove(thread);
+	public void removeMfcalcThread(MfcalcThread thread) {
+		mfcalcThreadList.remove(thread);
 	}
 
-	public MfcalcThread getVacantOctaveThread() {
+	public MfcalcThread getVacantMfcalcThread() {
 		MfcalcThread thread=null;
-		synchronized(octaveThreadList) {
-			for(MfcalcThread octaveThread:octaveThreadList) {
-				if(octaveThread.getIsBusy()==false) {
-					thread=octaveThread;
-					octaveThread.setIsBusy(true);
+		synchronized(mfcalcThreadList) {
+			for(MfcalcThread mfcalcThread:mfcalcThreadList) {
+				if(mfcalcThread.getIsBusy()==false) {
+					thread=mfcalcThread;
+					mfcalcThread.setIsBusy(true);
 					break;
 				}
 			}
@@ -45,12 +45,12 @@ public static MfcalcServer instance=new MfcalcServer();
             	socket = serverSocket.accept();
 
             	MfcalcThread thread = new MfcalcThread(socket,this);
-            	octaveThreadList.add(thread);
+            	mfcalcThreadList.add(thread);
             	thread.start();
 
             	InetAddress address=socket.getInetAddress();
-                System.out.println("��ǰOctave�ͻ��˵�IP��"+address.getHostAddress());
-                System.out.println("HelloOctaveServer");
+                System.out.println("��ǰMfcalc�ͻ��˵�IP��"+address.getHostAddress());
+                System.out.println("HelloMfcalcServer");
             }
 		} catch (Exception e) {
 			// TODO: handle exception

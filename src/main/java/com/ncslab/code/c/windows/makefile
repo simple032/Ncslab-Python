@@ -4,16 +4,19 @@ CC=g++
 LD=g++
 
 #CCFlag=-mwindows -D_WIN32_WINNT=0x0501
-VCPKG_ROOT = D:\Software\vcpkg\installed
 VCPKG_TRIPLET = x64-windows
 VCPKG_PATH = $(VCPKG_ROOT)\$(VCPKG_TRIPLET)
 
 CCFlag = -mwindows -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
          -I$(VCPKG_PATH)/include \
+         -I$(M2PLAB_ROOT)/server/cruntime/include \
          -fopenmp -g -O2
 
+LDFlag = -lwinmm -lws2_32 \
+         -L$(M2PLAB_ROOT)/server/cruntime/lib
+
 ncslab.exe: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o
-	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o -lwinmm -lws2_32
+	$(LD) -o ncslab.exe ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o $(LDFlag)
 
 mainccode.o: mainccode.cpp
 	$(CC) $(CCFlag) -c mainccode.cpp

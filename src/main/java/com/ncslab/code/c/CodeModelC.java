@@ -101,6 +101,8 @@ abstract public class CodeModelC extends CodeModel {
 		getCodeStructC().writeCCodeFiles();
 	}
 
+    public void removeAllFiles() { getCodeStructC().removeAllFiles(); }
+
 	@Override
 //	/*将代码变成C语言的一系列文件 */
 //	private void writeCCodeFiles(String Platform) {
