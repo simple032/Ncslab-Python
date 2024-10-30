@@ -9,7 +9,6 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 import com.ncslab.code.c.CodeModelC;
-import com.ncslab.code.c.windows.CodeModelCWindows;
 import com.ncslab.code.c.windows.simulation.CodeModelCWindowsSimulation;
 import org.json.JSONObject;
 
@@ -69,9 +68,9 @@ public class SimulateWebSocket {
 			try {
 				sendMessage(session,"start");
 				//System.out.println("Start");
-                String target = msg.getString("target");
 				JSONObject  mdlData=msg.getJSONObject("mdlData");
-				String jsonDataString=mdlData.getString("jsonData");
+                String target = mdlData.getString("target");
+                String jsonDataString=mdlData.getString("jsonData");
 				JSONObject jsonData=new JSONObject(jsonDataString);
 				//System.out.println(jsonDataString);
 				String errorMsgs="";
