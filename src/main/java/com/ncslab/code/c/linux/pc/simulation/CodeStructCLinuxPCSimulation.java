@@ -34,9 +34,9 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 
 		// write resource files
 		// makefile
-		// writeNCSLabFile("makefile");
-		// writeMakefile("makefile");
-		writeNCSLabFile("CMakeLists.txt","CMakeLists.txt", true);
+		 writeNCSLabFile("makefile");
+//		 writeMakefile("makefile");
+//		writeNCSLabFile("CMakeLists.txt","CMakeLists.txt", true);
 		// main function and timer
 		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 		// write the header file for generated main code
