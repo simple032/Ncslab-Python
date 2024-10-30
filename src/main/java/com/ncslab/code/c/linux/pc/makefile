@@ -1,31 +1,43 @@
-OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncslabmain.o results.o
 
 CC=g++
-//CC=/opt/homebrew/Cellar/llvm/17.0.5/bin/clang++
 
 LD=g++
-//LD=/opt/homebrew/Cellar/llvm/17.0.5/bin/clang++
 
+#CCFlag=-mwindows -D_WIN32_WINNT=0x0501
 
-CCFlag=-fpermissive -Wwrite-strings -I /usr/include -I /opt/pi/include -I /home/pi/NetConTop/tomcat/apache-tomcat-8.5.32/webapps/ncslablink/WEB-INF/classes/code/c -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -I/usr/include/octave-4.4.1/octave/.. -I/usr/include/octave-4.4.1/octave  -pthread -fopenmp -g -O2 -fdebug-prefix-map=/build/octave-QiEri5/octave-4.4.1=. -std=gnu++11 -fstack-protector-strong -Wformat -Werror=format-security
+CCFlag = -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
+         -I$(VCPKG_PATH)/include \
+         -I$(M2PLAB_ROOT)/server/cruntime/include \
+         -fopenmp -g -O2
 
-LDFLAG=-lm -lpthread -lrt -lwiringPi -ljsoncpp -Wdate-time -D_FORTIFY_SOURCE=2 -I/usr/include/octave-4.4.1/octave.. -I/usr/include/octave-4.4.1/octave -I/usr/include/hdf5/serial -I/usr/include/mpi  -pthread -fopenmp -g -O2 -fdebug-prefix-map=/build/octave-QiEri5/octave-4.4.1=. -fstack-protector-strong -Wformat -Werror=format-security -rdynamic  -fPIC -Wl,-Bsymbolic-functions -Wl,-z,relro  -L/usr/lib/arm-linux-gnueabihf/octave/4.4.1 -L/usr/lib/arm-linux-gnueabihf -loctinterp -loctave
+LDFlag = -L$(M2PLAB_ROOT)/server/cruntime/lib
 
-ncslab: $(OBJS)
-	$(LD) -o ncslab $(OBJS) $(LDFLAG)
+ncslab: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o
+	$(LD) -o ncslab ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o $(LDFlag)
 
+mainccode.o: mainccode.cpp
+	$(CC) $(CCFlag) -c mainccode.cpp
 
-mainccode.o: mainccode.c ncslab.h
-	$(CC) $(CCFlag)  -c mainccode.c
-    
-onestep.o: onestep.c ncslab.h
-	$(CC) $(CCFlag)  -c onestep.c
-    
-util.o: util.c ncslab.h
-	$(CC) $(CCFlag)  -c util.c
-      
-%.o : %.c
-	$(CC) $(CCFlag)  -c "$<"
+ncslabmain.o: ncslabmain.cpp ncslabccode.hpp
+	$(CC) $(CCFlag) -c ncslabmain.cpp
+
+ServerThread.o: ServerThread.cpp ServerThread.hpp
+	$(CC) $(CCFlag) -c ServerThread.cpp
+
+ClientThread.o: ClientThread.cpp ClientThread.hpp
+	$(CC) $(CCFlag) -c ClientThread.cpp
+
+DataApi.o: DataApi.cpp DataApi.hpp
+	$(CC) $(CCFlag) -c DataApi.cpp
+
+UploadThread.o: UploadThread.cpp UploadThread.hpp
+	$(CC) $(CCFlag) -c UploadThread.cpp
+
+onestep.o: onestep.cpp
+	$(CC) $(CCFlag) -c onestep.cpp
+
+util.o: util.cpp
+	$(CC) $(CCFlag) -c util.cpp
 
 clean:
-	rm ncslab $(OBJS)
+	del ncslab.exe *.o

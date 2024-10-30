@@ -11,7 +11,7 @@ public class CodeStructCLinuxPC extends CodeStructC{
 	public CodeStructCLinuxPC(CodeModelC model) {
 		super(model);
 	}
-	
+
 	public void writeCCodeFiles() {
 
 		//锟斤拷锟斤拷目锟斤拷锟侥硷拷锟叫碉拷位锟斤拷codePathBase/锟矫伙拷id/modelId
@@ -34,15 +34,15 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		//makefile
 		writeNCSLabFile("makefile");
 		//锟斤拷锟斤拷锟捷结构
-		writeNCSLabFile("../../ncslabccode.h","ncslabccode.h");
+		writeNCSLabFile("../../ncslabccode.hpp","ncslabccode.hpp");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
-		writeNCSLabFile("../../ncslabmain.c","ncslabmain.c");
+		writeNCSLabFile("../../ncslabmain.cpp","ncslabmain.cpp");
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
-		writeNCSLabFile("../../DataApi.c","DataApi.c");
-		writeNCSLabFile("../../DataApi.h","DataApi.h");
-		
+//		writeNCSLabFile("../../DataApi.c","DataApi.c");
+//		writeNCSLabFile("../../DataApi.h","DataApi.h");
+
 		writeNCSLabFile("../../util.cpp","util.cpp");
-		
+
 		writeNCSLabFile("../../ncslabdefines.hpp","ncslabdefines.hpp");
 
 		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
@@ -52,51 +52,51 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		writeNCSLabFile("../ClientThread.hpp","ClientThread.hpp");
 		writeNCSLabFile("../UploadThread.cpp","UploadThread.cpp");
 		writeNCSLabFile("../UploadThread.hpp","UploadThread.hpp");
-		
-		writeNCSLabFile("../../Debug.h","Debug.h");
-		writeNCSLabFile("../../DEV_Config.c","DEV_Config.c");
-		writeNCSLabFile("../../DEV_Config.h","DEV_Config.h");
-		writeNCSLabFile("../../ADS1256.c","ADS1256.c");
-		writeNCSLabFile("../../ADS1256.h","ADS1256.h");
-		writeNCSLabFile("../../DAC8532.c","DAC8532.c");
-		writeNCSLabFile("../../DAC8532.h","DAC8532.h");
-		
-		writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
-		writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");
+
+//		writeNCSLabFile("../../Debug.h","Debug.h");
+//		writeNCSLabFile("../../DEV_Config.c","DEV_Config.c");
+//		writeNCSLabFile("../../DEV_Config.h","DEV_Config.h");
+//		writeNCSLabFile("../../ADS1256.c","ADS1256.c");
+//		writeNCSLabFile("../../ADS1256.h","ADS1256.h");
+//		writeNCSLabFile("../../DAC8532.c","DAC8532.c");
+//		writeNCSLabFile("../../DAC8532.h","DAC8532.h");
+//
+//		writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
+//		writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");
 
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();
-		
+
 		wirteDefineFile();
-		
+
 		switch(model.getSolver()) {
 		case ode1:
-			writeNCSLabFile("../../ode1.c","onestep.c");
+			writeNCSLabFile("../../ode1.cpp","onestep.cpp");
 			break;
 		case ode2:
-			writeNCSLabFile("../../ode2.c","onestep.c");
+			writeNCSLabFile("../../ode2.cpp","onestep.cpp");
 			break;
 		case ode3:
-			writeNCSLabFile("../../ode3.c","onestep.c");
+			writeNCSLabFile("../../ode3.cpp","onestep.cpp");
 			break;
 		case ode4:
-			writeNCSLabFile("../../ode4.c","onestep.c");
+			writeNCSLabFile("../../ode4.cpp","onestep.cpp");
 			break;
 		default:
 			break;
 		}
-		
+
 		writeNCSWrittenFiles(); // write the files in <code>CodeStructC.writtenFileSet</code>.
 	}
-	
+
 	public byte[] readExeFile() {
 		return readFile("ncslab");
 	}
-	
+
 	public boolean makeExeFile() {
 		try {
 			//锟斤拷锟斤拷make锟斤拷锟斤拷锟缴匡拷执锟叫达拷锟斤拷
-			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
 			//锟斤拷取OutputStream锟斤拷errStream锟斤拷锟斤拷锟斤拷锟饺★拷锟斤拷锟绞憋拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
