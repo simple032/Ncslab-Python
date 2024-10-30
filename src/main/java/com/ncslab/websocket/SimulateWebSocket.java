@@ -1,6 +1,7 @@
 package com.ncslab.websocket;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -68,6 +69,7 @@ public class SimulateWebSocket {
 			try {
 				sendMessage(session,"start");
 				//System.out.println("Start");
+                String target = msg.getString("target");
 				JSONObject  mdlData=msg.getJSONObject("mdlData");
 				String jsonDataString=mdlData.getString("jsonData");
 				JSONObject jsonData=new JSONObject(jsonDataString);
@@ -79,7 +81,13 @@ public class SimulateWebSocket {
 
 	        	// instantiate a CodeModelC object
 	        	//CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
-                CodeModelCWindowsSimulation modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+                CodeModelC modelC = null;
+                if(Objects.equals(target, "linux")){
+                    modelC = CodeModelCLinuxPCSimulation.createFromJSON(jsonData, ModelMode.Simulation);
+                }else{
+                    modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+                }
+
 	        	//modelC.setSolver(Solver.ode4);
 
 	        	modelC.generate();
@@ -100,6 +108,9 @@ public class SimulateWebSocket {
 	        	if(!modelC.makeExeFile()) {
 	        		throw new ModelException("Can not make exe file!");
 	        	}
+
+                //
+
 
 	        	sendMessage(session,"compiled");
 

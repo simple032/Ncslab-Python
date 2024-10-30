@@ -1,12 +1,15 @@
 package com.ncslab.websocket;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.ncslab.code.c.CodeModelC;
+import com.ncslab.code.c.linux.pc.CodeModelCLinuxPC;
 import com.ncslab.code.c.windows.CodeModelCWindows;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -51,6 +54,7 @@ public class CompileWebSocket {
 			try {
 				sendMessage(session, "start");
 				// System.out.println("Start");
+                String target = msg.getString("target");
 				JSONObject mdlData = msg.getJSONObject("mdlData");
 				String jsonDataString = mdlData.getString("jsonData");
 				JSONObject jsonData = new JSONObject(jsonDataString);
@@ -59,9 +63,15 @@ public class CompileWebSocket {
 
 				sendMessage(session, "generating");
 
+                CodeModelC modelC = null;
 //				CodeModelCLinuxRaspberry modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData,
 //						ModelMode.Compilation);
-                CodeModelCWindows modelC = CodeModelCWindows.createFromJSON(jsonData, ModelMode.Compilation);
+                if(Objects.equals(target, "linux")){
+                    modelC = CodeModelCLinuxPC.createFromJSON(jsonData, ModelMode.Compilation);
+                }else{
+                    modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData, ModelMode.Compilation);
+                }
+
 
 				// CodeModelCLinuxPC
 				// modelC=CodeModelCLinuxPC.createFromJSON(jsonIn,ModelMode.Compilation);
