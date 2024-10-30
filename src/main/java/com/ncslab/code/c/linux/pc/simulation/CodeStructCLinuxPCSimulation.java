@@ -40,7 +40,8 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		// main function and timer
 		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 		// write the header file for generated main code
-		writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp", true);
+        writeNCSLabFile("../../../ncslabccode.hpp", "ncslabccode.hpp");
+        writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp", true);
 
 		writeNCSLabFile("../../../util.hpp","util.hpp",true);
 		writeNCSLabFile("../../../util.cpp","util.cpp",true);
