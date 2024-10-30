@@ -11,8 +11,6 @@ import javax.websocket.Session;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CodeModelCWindowsSimulation extends CodeModelC{
 
@@ -39,7 +37,7 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		session.getBasicRemote().sendText(jb.toString());
 	}
 
-	public void simulate(Session session) throws ModelException{
+	public void simulate(Session session) throws ModelException {
 		Process process = null;
 		System.out.println("Executing simulation codes...");
 		try {

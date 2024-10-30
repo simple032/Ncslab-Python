@@ -271,7 +271,7 @@ abstract public class CodeModelC extends CodeModel {
 	}
 
 
-    protected void simulate(Session session){
+    public void simulate(Session session) throws ModelException{
 
     }
 }
