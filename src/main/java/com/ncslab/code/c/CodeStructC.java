@@ -540,8 +540,8 @@ abstract public class CodeStructC{
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
 			:
-			Property.instance.getProperty("CCodePathWin"))
-        .replace("${M2PLAB_ROOT}",System.getenv("M2PLAB_ROOT"));
+			Property.instance.getProperty("CCodePathWin"));
+//        .replace("${M2PLAB_ROOT}",System.getenv("M2PLAB_ROOT"));
 
     protected String maketool = Property.instance.getProperty("MakeTool");
 
