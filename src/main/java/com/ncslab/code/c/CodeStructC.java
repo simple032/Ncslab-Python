@@ -535,13 +535,14 @@ abstract public class CodeStructC{
 	}
 
     @Getter
-    protected String m2plabRoot = System.getenv("M2PLAB_ROOT");
+//    protected String m2plabRoot = System.getenv("M2PLAB_ROOT");
+    protected String m2plabRoot = "/data/M2PLab";
 
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
 			:
-			Property.instance.getProperty("CCodePathWin"));
-//        .replace("${M2PLAB_ROOT}",System.getenv("M2PLAB_ROOT"));
+			Property.instance.getProperty("CCodePathWin"))
+        .replace("${M2PLAB_ROOT}", m2plabRoot);
 
     protected String maketool = Property.instance.getProperty("MakeTool");
 
