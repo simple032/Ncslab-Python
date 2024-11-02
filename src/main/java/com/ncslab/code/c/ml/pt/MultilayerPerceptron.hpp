@@ -6,12 +6,12 @@
 #include <stdexcept>
 #include <vector>
 
-using ncsml::MLModel;
+using ncsml::PTModel;
 
-class MultilayerPerceptron : public MLModel {
+class MultilayerPerceptron : public PTModel {
 public:
     MultilayerPerceptron(size_t input_layer, size_t output_layer, double hidden_layers_d, const std::string loss_function, const std::string activation_function)
-    : MLModel("multilayer_perceptron_model", "MLP") {
+    : PTModel("multilayer_perceptron_model", "MLP") {
         std::vector<uint32_t> hidden_layers(1, 0);
         hidden_layers[0] = uint32_t(hidden_layers_d);
 
@@ -25,7 +25,7 @@ public:
     }
 
     MultilayerPerceptron(size_t input_layer, size_t output_layer, Matrix hidden_layers_eigen, const std::string loss_function, const std::string activation_function)
-    : MLModel("multilayer_perceptron_model", "MLP") {
+    : PTModel("multilayer_perceptron_model", "MLP") {
         std::vector<uint32_t> hidden_layers(hidden_layers_eigen.size());
         for (uint32_t i = 0; i < hidden_layers_eigen.size(); ++i){
             hidden_layers[i] = uint32_t(hidden_layers_eigen(i));

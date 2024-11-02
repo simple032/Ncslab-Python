@@ -1,12 +1,11 @@
 #include <iostream>
-#include <fstream>  // 提供文件输入/输出流支持
+#include <fstream>
 #include <vector>
 #include <string>
 #include <stdexcept>
 #include <memory>
+#include <iomanip>  //  control floating-point precision
 #include "Matrix.hpp"
-
-#include <iomanip>  // 用于控制输出精度
 
 class DataCollector{
 public:
@@ -46,16 +45,12 @@ public:
 
      // 将数据保存到 CSV 文件
     void save(const std::string& path) {
-        // std::cout << "save!\n";
-        // return;
-        // 确保输入输出数据数量一致
-
-        // 打开文件进行写入
+        // open file and start to write
         std::ofstream file(path);
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open file: " + path);
         }
-        file << std::fixed << std::setprecision(5);  // 固定小数点格式，设置精度为10位
+        file << std::fixed << std::setprecision(5);  // set decimal places
 
         for (size_t i = 0; i < input_size; ++i){
             file << "X" << i << ",";
@@ -66,25 +61,24 @@ public:
         file << "Y"<<output_size<<"\n";
         size_t length = inputs.size();
         for (size_t i = 0; i < length; ++i) {
-            // 写入 inputs
+            // write inputs
             for (size_t j = 0; j < input_size; ++j) {
                 file << inputs[i][j];
                 if (j < input_size - 1) {
-                    file << ",";  // 在 input 列之间加逗号
+                    file << ",";
                 }
             }
 
-            file << ",";  // 输入和输出之间的分隔符
+            file << ",";
 
-            // 写入 outputs
+            // write outputs
             for (size_t j = 0; j < output_size; ++j) {
                 file << outputs[i][j];
                 if (j < output_size - 1) {
-                    file << ",";  // 在 output 列之间加逗号
+                    file << ",";
                 }
             }
 
-            // 行结束符，使用换行符，不需要使用分号
             file << "\n";
         }
 

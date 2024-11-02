@@ -31,7 +31,8 @@ class MLP(nn.Module):
 
         for hidden_size in hidden_layers:
             layers.append(nn.Linear(in_features, hidden_size))
-            # layers.append(self.hidden_activate)
+            if activation_key != 'linear':
+                layers.append(self.hidden_activate)
             in_features = hidden_size
 
         layers.append(nn.Linear(in_features, output_size))
@@ -125,16 +126,16 @@ class MLP(nn.Module):
         return True
 
     def _get_activation_function(self, activation_function):
-        if (activation_function == 'relu'):
-            return nn.ReLU()
+        if (activation_function == 'elu'):
+            return nn.ELU()
         elif (activation_function == 'sigmoid'):
             return nn.Sigmoid()
         elif (activation_function == 'tanh'):
             return nn.Tanh()
-        elif (activation_function == 'lrelu'):
-            return nn.LeakyReLU()
+        # elif (activation_function == 'lrelu'):
+        #     return nn.LeakyReLU()
         else:
-            return nn.ReLU()
+            return nn.ELU()
 
     def save_model(self, path):
         try:

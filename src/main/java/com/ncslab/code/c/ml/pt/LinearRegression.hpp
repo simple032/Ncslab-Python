@@ -1,13 +1,13 @@
 #ifndef NCS_LINEARREGRESSION
 #define NCS_LINEARREGRESSION 1
-#include "MLModel.hpp"
+#include "PTModel.hpp"
 
-using ncsml::MLModel;
+using ncsml::PTModel;
 
-class LinearRegression : public MLModel {
+class LinearRegression : public PTModel {
 public:
     LinearRegression(size_t inputFeatures, size_t outputFeatures, const std::string loss_function)
-    : MLModel("linear_regression_model", "LinearRegression") {
+    : PTModel("linear_regression_model", "LinearRegression") {
         PyObject* pArgs = Py_BuildValue("(iis)", inputFeatures, outputFeatures, loss_function.c_str());
         this->pInstance = PyObject_CallObject(pClass, pArgs);
         Py_DECREF(pArgs);

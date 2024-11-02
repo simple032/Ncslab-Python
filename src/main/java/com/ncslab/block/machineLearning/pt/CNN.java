@@ -1,19 +1,15 @@
-package com.ncslab.block.machineLearning;
+package com.ncslab.block.machineLearning.pt;
 
-import java.util.Vector;
-
+import com.ncslab.block.machineLearning.MachineLearning;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.block.BlockType;
-import com.ncslab.block.Block;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.data.DataType;
 
-public class CNN extends MachineLearning{
+public class CNN extends MachineLearning {
     public Parameter layersNumber, numClasses, lossFunction,
     learningRate, inputFeatures,
     channelSize, hiddenLayers,
@@ -50,8 +46,8 @@ public class CNN extends MachineLearning{
 		super.generateInitCodeC(code);
 
         code.addIncludeCode("#include \"CNN.hpp\"\n");
-        code.addWrittenFile("../../../ml/CNN/CNN.hpp", "CNN.hpp");
-        code.addWrittenFile("../../../ml/CNN/cnn_model.py", "cnn_model.py");
+        code.addWrittenFile("../../ml/pt/CNN.hpp", "CNN.hpp");
+        code.addWrittenFile("../../ml/pt/cnn_model.py", "cnn_model.py");
 
 		String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
 

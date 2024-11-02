@@ -6,7 +6,14 @@ import numpy as np
 from torch.distributions import Normal
 
 class A2CAgent:
-    def __init__(self, obs_space_dims: int, action_space_dims: int, hidden1:int = 64, hidden2:int = 32, lr: float = 1e-3, gamma: float = 0.95, device='cpu'):
+    def __init__(self,
+                 obs_space_dims: int,
+                 action_space_dims: int,
+                 lr: float = 1e-3,
+                 gamma: float = 0.95,
+                 hidden1:int = 64,
+                 hidden2:int = 32,
+                 device='cpu'):
         self.device = torch.device(device)
         self.policy_network = PolicyNetwork(obs_space_dims, action_space_dims, hidden1, hidden2).to(self.device)
         self.value_network = ValueNetwork(obs_space_dims, hidden1, hidden2).to(self.device)

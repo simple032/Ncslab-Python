@@ -1,12 +1,13 @@
-package com.ncslab.block.machineLearning;
+package com.ncslab.block.machineLearning.pt;
 
+import com.ncslab.block.machineLearning.MachineLearning;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 
-public class MultilayerPerceptron extends MachineLearning {
+public class MultilayerPerceptron extends PTModel {
     private Parameter inputFeatures,
                 outputFeatures,
                 hiddenLayers,
@@ -24,7 +25,7 @@ public class MultilayerPerceptron extends MachineLearning {
         this.learningRate = new Parameter(this, 4, "learningRate", paramValues.getString("learningRate"));
         this.epochs = new Parameter(this, 5, "epoch", paramValues.getString("epoch"));
 
-        this.modelVariable = new MLVariable(this, 1, "multilayerPerceptron", "2333");
+        this.modelVariable = new MachineLearning.MLVariable(this, 1, "multilayerPerceptron", "2333");
 
         this.lossFunctionString = paramValues.getString("lossFunction").trim().toUpperCase();
         this.datasetString = paramValues.getString("dataset").trim();
@@ -49,8 +50,8 @@ public class MultilayerPerceptron extends MachineLearning {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         code.addIncludeCode("#include \"MultilayerPerceptron.hpp\"\n");
-        code.addWrittenFile("../../ml/MLP/MultilayerPerceptron.hpp", "MultilayerPerceptron.hpp");
-        code.addWrittenFile("../../ml/MLP/multilayer_perceptron_model.py", "multilayer_perceptron_model.py");
+        code.addWrittenFile("../../ml/pt/MultilayerPerceptron.hpp", "MultilayerPerceptron.hpp");
+        code.addWrittenFile("../../ml/pt/multilayer_perceptron_model.py", "multilayer_perceptron_model.py");
 
         String initCode = "/*Code for initialization of block MLTest:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 

@@ -1,19 +1,12 @@
-#ifndef NCS_ML_MODEL
-#define NCS_ML_MODEL 1
-#include <iostream>
-#include <vector>
-#include <string>
-#include <stdexcept>
-#include <memory>
+#ifndef NCS_TFMODEL
+#define NCS_TFMODEL 1
+#include "MLModel.hpp"
 
-#include "Matrix.hpp"
+using ncsml::MLModel;
 
 namespace ncsml{
-class MLModel {
+class TFMODEL : public MLModel{
 public:
-    virtual ~MLModel() {
-    }
-
     virtual void trainModel(const std::string& filename, int epochs, double lr) = 0;
 
     virtual Matrix predict(const Matrix& inputs) = 0;
@@ -25,4 +18,5 @@ public:
     virtual void loadModel(std::string path) = 0;
 };
 };
+
 #endif

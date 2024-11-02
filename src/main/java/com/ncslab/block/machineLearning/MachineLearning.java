@@ -15,18 +15,12 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 public abstract class MachineLearning extends Block{
-    protected static String PY_INIT = "Py_Initialize();";
-    protected static String PY_INCLUDE = "\nPyRun_SimpleString(\"import sys\");\nPyRun_SimpleString(\"sys.path.append('./')\");\n";
-    protected static String PY_FINALIZE = "Py_Finalize();\n";
 
     protected OutputPort outputPort;
     protected int _width, _height;
     protected MLVariable modelVariable;
-
-    protected String path, csvName, modelName;
     protected String savePath, loadPath;
-    // protected MLVariable modelVariable;
-    // private Parameter layersNumber, lossFunction, learningRate, inputFeatures, activationFunction, dataset;
+
     public MachineLearning(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
@@ -40,14 +34,9 @@ public abstract class MachineLearning extends Block{
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
-        code.addGlobalInitCode(PY_INIT);
-        code.addGlobalInitCode(PY_INCLUDE);
-        //add include code for MLModel.hpp and Python.h
-        code.addIncludeCode("#include<Python.h>\n");
-        code.addIncludeCode("#include \"MLModel.hpp\"\n");
-        //write file MLModel.hpp
-        code.addWrittenFile("../../ml/MLModel.hpp", "MLModel.hpp");
         String initCode = "/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
+        code.addIncludeCode("#include \"MLModel.hpp\"\n");
+        code.addWrittenFile("../../ml/MLModel.hpp", "MLModel.hpp");
         code.addInitCode(initCode);
     }
 

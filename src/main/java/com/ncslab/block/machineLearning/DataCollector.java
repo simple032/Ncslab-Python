@@ -21,7 +21,7 @@ public class DataCollector extends Block{
         super(jsonObject, model);
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
-        this.path = paramValues.getString("path") + ".csv";
+        this.path = paramValues.getString("savePath");
 
         this._inputs = new InputPort(this, 1);
         this._outputs = new InputPort(this, 2);
