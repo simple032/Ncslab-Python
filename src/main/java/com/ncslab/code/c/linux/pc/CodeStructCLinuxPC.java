@@ -38,10 +38,11 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
 		writeNCSLabFile("../../ncslabmain.cpp","ncslabmain.cpp");
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
-//		writeNCSLabFile("../../DataApi.c","DataApi.c");
-//		writeNCSLabFile("../../DataApi.h","DataApi.h");
+		writeNCSLabFile("../../DataApi.cpp","DataApi.cpp");
+		writeNCSLabFile("../../DataApi.hpp","DataApi.hpp");
 
 		writeNCSLabFile("../../util.cpp","util.cpp");
+        writeNCSLabFile("../../util.hpp", "util.hpp");
 
 		writeNCSLabFile("../../ncslabdefines.hpp","ncslabdefines.hpp");
 
@@ -52,6 +53,9 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		writeNCSLabFile("../ClientThread.hpp","ClientThread.hpp");
 		writeNCSLabFile("../UploadThread.cpp","UploadThread.cpp");
 		writeNCSLabFile("../UploadThread.hpp","UploadThread.hpp");
+
+		writeNCSLabFile("../../Matrix.cpp","Matrix.cpp");
+        writeNCSLabFile("../../Matrix.hpp", "Matrix.hpp");
 
 //		writeNCSLabFile("../../Debug.h","Debug.h");
 //		writeNCSLabFile("../../DEV_Config.c","DEV_Config.c");
@@ -66,6 +70,7 @@ public class CodeStructCLinuxPC extends CodeStructC{
 
 		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
 		writeMainCodeFile();
+		writeNCSLabFile("../../mainccode.hpp", "mainccode.hpp");
 
 		wirteDefineFile();
 
@@ -82,9 +87,17 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		case ode4:
 			writeNCSLabFile("../../ode4.cpp","onestep.cpp");
 			break;
+		case ode5:
+			writeNCSLabFile("../../ode5.cpp","onestep.cpp");
+			break;
+		case ode6:
+			writeNCSLabFile("../../ode6.cpp","onestep.cpp");
+			break;
 		default:
 			break;
 		}
+
+		writeNCSLabFile("../../onestep.hpp","onestep.hpp");
 
 		writeNCSWrittenFiles(); // write the files in <code>CodeStructC.writtenFileSet</code>.
 	}

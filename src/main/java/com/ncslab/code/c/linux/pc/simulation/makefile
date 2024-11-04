@@ -9,7 +9,7 @@ LD=g++
 CCFlag=-D_SIMU -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings \
 		-DPSAPI_VERSION=1 \
 		-I$(M2PLAB_ROOT)/server/cruntime/include \
-		-IE:\M2PLab\server\cruntime\include \
+		-I/data/M2PLab/server/cruntime/include \
 		-fopenmp
 
 LDFLAG=-lm -g -O2 -Wformat -fPIC

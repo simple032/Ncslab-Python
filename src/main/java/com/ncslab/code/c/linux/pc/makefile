@@ -5,12 +5,13 @@ LD=g++
 
 #CCFlag=-mwindows -D_WIN32_WINNT=0x0501
 
-CCFlag = -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
+CCFlag = -DPSAPI_VERSION=1 \
          -I$(VCPKG_PATH)/include \
          -I$(M2PLAB_ROOT)/server/cruntime/include \
+		 -I/data/M2PLab/server/cruntime/include \
          -fopenmp -g -O2
 
-LDFlag = -L$(M2PLAB_ROOT)/server/cruntime/lib
+LDFlag = -L$(M2PLAB_ROOT)/server/cruntime/lib -lpthread -lrt  -pthread
 
 ncslab: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o
 	$(LD) -o ncslab ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o $(LDFlag)

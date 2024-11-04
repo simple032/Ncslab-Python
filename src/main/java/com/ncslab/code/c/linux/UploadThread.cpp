@@ -1,6 +1,6 @@
 #include "UploadThread.hpp"
-#include "DataApi.h"
-
+#include "DataApi.hpp"
+#include "ncslabccode.hpp"
 #include <iostream>
 #include "math.h"
 #include "Matrix.hpp"

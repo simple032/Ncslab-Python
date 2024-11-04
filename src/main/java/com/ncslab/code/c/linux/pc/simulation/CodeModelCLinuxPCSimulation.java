@@ -81,6 +81,18 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 			catch(InterruptedException e) {
 				throw new ModelException("Can not execute the exe file!");
 			}
+
+			process = Runtime.getRuntime().exec(
+				"sudo chown -R cyst:cyst " + codeRaspberry.getCodePath(),
+				null,
+				new File(codeRaspberry.getCodePath()));
+
+			try {
+				process.waitFor();
+			}
+			catch(InterruptedException e) {
+				throw new ModelException("Can not execute the exe file!");
+			}
 		}
 		catch(IOException e) {
 			throw new ModelException("Can not execute the exe file!");

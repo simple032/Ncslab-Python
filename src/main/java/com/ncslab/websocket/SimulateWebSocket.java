@@ -83,9 +83,11 @@ public class SimulateWebSocket {
                 CodeModelC modelC = null;
                 if(Objects.equals(target, "linux")){
                     modelC = CodeModelCLinuxPCSimulation.createFromJSON(jsonData, ModelMode.Simulation);
+                }else if(Objects.equals(target, "linux-rpi")){
+                    modelC= CodeModelCLinuxPCSimulation.createFromJSON(jsonData,ModelMode.Simulation);
                 }else{
-                    modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
-                }
+					modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+				}
 
 	        	//modelC.setSolver(Solver.ode4);
 
@@ -112,6 +114,8 @@ public class SimulateWebSocket {
 
 
 	        	sendMessage(session,"compiled");
+
+				modelC.removeAllFiles();
 
 	        	//sendMessage(session,"simulating");
 	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());

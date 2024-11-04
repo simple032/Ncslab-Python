@@ -1,8 +1,9 @@
 #ifndef SERVERTHREAD_HPP
 #define SERVERTHREAD_HPP
 
-#include “pthread.h”
+#include "pthread.h"
 #include "ncslabdefines.hpp"
+#include "ncslabccode.hpp"
 
 typedef struct
 {

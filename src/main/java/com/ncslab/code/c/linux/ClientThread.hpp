@@ -9,7 +9,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include "ncslabdefines.hpp"
-
+#include "ncslabccode.hpp"
+#include "ServerThread.hpp"
 
 #define UPLOAD_SIG_PARAM 0x01
 #define SELECT_SIG_PARAM 0x02

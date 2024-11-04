@@ -64,13 +64,14 @@ public class CompileWebSocket {
 				sendMessage(session, "generating");
 
                 CodeModelC modelC = null;
-//				CodeModelCLinuxRaspberry modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData,
-//						ModelMode.Compilation);
+
                 if(Objects.equals(target, "linux")){
                     modelC = CodeModelCLinuxPC.createFromJSON(jsonData, ModelMode.Compilation);
-                }else{
+                }else(Objects.equals(target, "linux-rpi")){
                     modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData, ModelMode.Compilation);
-                }
+                }else{
+					modelC = CodeModelCWindows.createFromJSON(jsonData, ModelMode.Compilation);
+				}
 
 
 				// CodeModelCLinuxPC
@@ -97,13 +98,15 @@ public class CompileWebSocket {
 
 				sendMessage(session, "compiled");
 
+				modelC.removeAllFiles();
+
 				sendMessage(session, "database inserting");
 
 				modelC.saveToDatabase();
 
 				sendMessage(session, "database inserted");
 
-                modelC.removeAllFiles();
+                
 				sendMessage(session, "finished");
 
 				/*

@@ -12,9 +12,27 @@ public class Mybatis1Utils {
 	private static SqlSessionFactory sqlSessionFactory=null;
 	static {
 		try {
-			String url = "mybatis-config.xml";
-			InputStream stream = Resources.getResourceAsStream(url);
-			sqlSessionFactory = new SqlSessionFactoryBuilder().build(stream);
+			String osName = System.getProperty("os.name").toLowerCase();
+            String environmentId;
+
+            // 根据操作系统选择 environment id
+            if (osName.contains("win")) {
+                environmentId = "windows";
+            } else if (osName.contains("mac")) {
+                environmentId = "mac";
+            } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+                environmentId = "linux";
+            } else {
+                throw new UnsupportedOperationException("Unsupported OS: " + osName);
+            }
+
+            // 加载配置文件
+            String resource = "mybatis-config.xml";
+            InputStream inputStream = Resources.getResourceAsStream(resource);
+
+            // 使用指定的环境 id 构建 SqlSessionFactory
+            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream, environmentId);
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
