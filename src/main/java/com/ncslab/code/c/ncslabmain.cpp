@@ -1,16 +1,24 @@
-#include"ncslabccode.h"
+#include"ncslabccode.hpp"
 #include"ServerThread.hpp"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <stdint.h>  // for uint64_t
+
+#ifndef __WIN_NT
 #include <unistd.h>
 #include <sys/timerfd.h>
 #include <sys/epoll.h>
-#include <stdint.h>  // for uint64_t
+#endif 
+
 #include <errno.h>
 #include"ncslab.hpp"
 #include <signal.h>
 #include <time.h>
+#include <string.h>
+
 #include "ServerThread.hpp"
+
 
 
 MODEL *mp;
@@ -157,73 +165,73 @@ void start_event_driven_timer(double initial_interval) {
     pthread_join(epoll_thread, NULL);
 }
 
-// void startTimer(real_T stepSize)
-// {
-//     struct sigevent evp;
+void startTimer(real_T stepSize)
+{
+    struct sigevent evp;
 
-//     memset(&evp, 0, sizeof(evp));
+    memset(&evp, 0, sizeof(evp));
 
-//     evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它
+    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它
 
-//     evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数
+    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数
 
-//     evp.sigev_notify_function = timer_in_callback; //这个就是指定回调函数
-
-
-
-//     int ret = 0;
-
-//     ret = timer_create(CLOCK_REALTIME, &evp, &main_timer);
-
-//     if(ret < 0)
-
-//     {
-
-//         printf("timer_create() fail, ret:%d", ret);
-
-//         exit(0);
+    evp.sigev_notify_function = timer_in_callback; //这个就是指定回调函数
 
 
-//     }
 
-//     pthread_mutex_init(&(extModeData.timerCritical),NULL);
+    int ret = 0;
+
+    ret = timer_create(CLOCK_REALTIME, &evp, &main_timer);
+
+    if(ret < 0)
+
+    {
+
+        printf("timer_create() fail, ret:%d", ret);
+
+        exit(0);
 
 
-//      struct itimerspec ts;
+    }
 
-//     ts.it_interval.tv_sec = (int)stepSize;
+    pthread_mutex_init(&(extModeData.timerCritical),NULL);
 
-//     ts.it_interval.tv_nsec = (stepSize-ts.it_interval.tv_sec)*1000000000;
 
-//     ts.it_value.tv_sec = ts.it_interval.tv_sec;
+     struct itimerspec ts;
 
-//     ts.it_value.tv_nsec = ts.it_interval.tv_nsec;
+    ts.it_interval.tv_sec = (int)stepSize;
 
-//     ret = timer_settime(main_timer, TIMER_ABSTIME, &ts, NULL);
+    ts.it_interval.tv_nsec = (stepSize-ts.it_interval.tv_sec)*1000000000;
 
-//     if(ret < 0)
+    ts.it_value.tv_sec = ts.it_interval.tv_sec;
 
-//     {
+    ts.it_value.tv_nsec = ts.it_interval.tv_nsec;
 
-//         printf("main_timer() fail, ret:%d", ret);
+    ret = timer_settime(main_timer, TIMER_ABSTIME, &ts, NULL);
 
-//         timer_delete(main_timer);
+    if(ret < 0)
 
-//         //timer_created = false;
+    {
 
-//         exit(1);
+        printf("main_timer() fail, ret:%d", ret);
 
-//     }
+        timer_delete(main_timer);
 
-// 	//NCSLabOneStep();
-// 	//mp->time+=STEP_SIZE;
+        //timer_created = false;
 
-// }
+        exit(1);
+
+    }
+
+	//NCSLabOneStep();
+	//mp->time+=STEP_SIZE;
+
+}
 
 
 int main(int argc, char *argv[]){
 
-	initHardware();
+	// initHardware();
 	NCSLabInit();
 
 	extModeData.acc=1;
@@ -243,14 +251,14 @@ int main(int argc, char *argv[]){
 
 	startMyServerThread(&extModeData);
 
-	discreteInitFixed();
+	// discreteInitFixed();
 
 	startTimer(mp->stepSize);
 	pthread_join(extModeData.servetThread,NULL);
 
-	NCSLabFinalize();
-    start_event_driven_timer(mp->stepSize);
-    pthread_join(extModeData.servetThread,NULL);
+	// NCSLabFinalize();
+    // start_event_driven_timer(mp->stepSize);
+    // pthread_join(extModeData.servetThread,NULL);/
 	return 0;
 	//WaitForSingleObject(CreateEvent(NULL,FALSE,FALSE,NULL),INFINITE);
 }

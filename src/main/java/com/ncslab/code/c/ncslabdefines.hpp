@@ -6,19 +6,13 @@
 #include <sys/time.h>
 #endif // __WIN32
 
-#define REAL double
-#define real_T REAL
-#define uint_T unsigned int
-#define int_T int
-#define char_T char
-
-enum DATA_TYPE {SINGLE, MATRIX};
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //sfuntmpl_basic constant
 #define USE_DEFAULT_SIM_STATE 0
 #define CONTINUOUS_SAMPLE_TIME 0
-
 //Input and Output
 #define ssSetNumInputPorts(S, num)  ((S->sizes.inputPortNum = num) && (S->sizes.inputPortWidth=(int *)calloc(num,sizeof(int))))
     
@@ -118,204 +112,9 @@ typedef double time_T;
 typedef unsigned char boolean_T;
 typedef char_T byte_T;
 
-
-
-
-
-struct INPUT_PORT
-{
-	char *name;
-	int width;
-	int height;
-	DATA_TYPE type;
-	void *vp;
-};
-
-struct OUTPUT_PORT
-{
-	char *name;
-	int width;
-	int height;
-	DATA_TYPE type;
-	void *vp;
-};
-
-struct PARAMETER
-{
-	char *name;
-	char *path;
-	int width;
-	int height;
-	DATA_TYPE type;
-	void *vp;
-};
-
-struct STATE
-{
-	char *name;
-	int width;
-	int height;
-	DATA_TYPE type;
-	void *vp;
-	void *dvp;
-};
-
-struct SIGNAL
-{
-	char *name;
-	char *path;
-	int width;
-	int height;
-	DATA_TYPE type;
-	void *vp;
-};
-
-
-typedef void(*MdlUpdateFcn)(void*);
-typedef void(*MdlOutputsFcn)(void*,int);
-typedef void(*MdlStartFcn)(void*);
-typedef void(*MdlDerivativesFcn)(void*);
-typedef void(*MdlTerminateFcn)(void*);
-typedef void(*MdlInitializeSizesFcn)(void*);
-typedef void(*MdlInitializeSampleTimesFcn)(void*);
-typedef void(*MdlInitializeConditionsFcn)(void*);
-
-struct BLOCK
-{
-	char *type;
-	char *name;
-	int inputPortNum;
-	int outputPortNum;
-	int parameterNum;
-	int stateNum;
-	int signalNum;
-
-	REAL discreteTime;
-	int discreteUpdated;
-
-	INPUT_PORT **inputPorts;
-	OUTPUT_PORT **outputPorts;
-	PARAMETER **parameters;
-	STATE **states;
-	SIGNAL **signals;
-
-};
-
-typedef struct {
-
-	int inputPortNum;
-	int outputPortNum;
-	int parameterNum;
-	int stateNum;
-	int signalNum;
-
-	int* inputPortWidth;
-	int* outputPortWidth;
-
-	int numContStates;
-	int numDiscStates;
-	int numSampleTimes;
-
-	int numRWork;
-	int numIWork;
-	int numPWork;
-	int numModes;
-}ssSize;
-
-typedef struct {
-	
-	void* contStates;
-	void* discStates;
-
-	void* derivative;
-
-}ssStates;
-
-typedef struct {
-
-	REAL *rWork;
-	int *iWork;
-	void **pWork;
-
-}ssWork;
-
-typedef struct 
-{
-	REAL* sampleTimes;
-	REAL* offsetTimes;
-}ssStInfo;
-
-
-typedef struct SimStruct_tag{
-	ssSize sizes;
-	ssStates states;
-	ssStInfo stInfo;
-	ssWork work;
-
-	MdlInitializeSizesFcn initializeSizes;
-	MdlInitializeSampleTimesFcn initializeSampleTimes;
-	MdlInitializeConditionsFcn initializeConditions;
-	MdlUpdateFcn update;
-	MdlOutputsFcn outputs;
-	MdlStartFcn start;
-	MdlDerivativesFcn derivatives;
-	MdlTerminateFcn terminate;
-	
-
-	BLOCK* parentBlock;
-}SimStruct;
-
-struct MODEL
-{
-	char *name;
-	int blockNum;
-	REAL stepSize;
-	REAL startTime;
-	REAL stopTime;
-	REAL time;
-	REAL offset;
-	REAL discreteTime;
-
-	int discreteUpdate;
-
-	int signalNum;
-	int parameterNum;
-	int stateNum;
-	SIGNAL **signals;
-	PARAMETER **parameters;
-	STATE **states;
-
-	BLOCK **blocks;
-	int majorStep;
-	struct timeval tv;
-
-	int terminalNum;
-
-};
-
-enum TERMINALTYPE{Scope};
-
-struct TERMINAL
-{
-	enum TERMINALTYPE type;
-	void *terminal;
-};
-
-struct SCOPE
-{
-	char *name;
-	int maxDataLength;
-	int width;
-	int height;
-	int cursor;
-	//REAL *buffer;
-	//REAL *timeBuffer;
-
-	std::list<REAL> dataList;
-	std::list<REAL> timeList;
-
-	int isFull;
-};
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

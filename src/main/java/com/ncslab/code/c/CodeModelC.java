@@ -1,15 +1,9 @@
 package com.ncslab.code.c;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.websocket.Session;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -275,4 +269,9 @@ abstract public class CodeModelC extends CodeModel {
         	algorithm.setDescription(getSaveInfo().getString("ipAddress"),getSaveInfo().getString("monitorPort"));
         }
 	}
+
+
+    public void simulate(Session session) throws ModelException{
+
+    }
 }

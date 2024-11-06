@@ -1,5 +1,12 @@
 #include "ServerThread.hpp"
 #include "ClientThread.hpp"
+#include "sys/socket.h"
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <cerrno>
+#include "ncslabccode.hpp"
 
 #define DEFAULT_PORT 27015
 
@@ -108,7 +115,7 @@ void* ServerThreadFunction(void *arg)
     servaddr.sin_port = htons(port);
 
     if( bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1){
-        printf("bind socket error: %s(errno: %d)\n",strerror(errno),errno);
+        printf("bind socket(port:%d) error: %s(errno: %d)\n",port,strerror(errno),errno);
         exit(0);
     }
 

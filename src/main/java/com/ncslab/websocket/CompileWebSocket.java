@@ -1,12 +1,15 @@
 package com.ncslab.websocket;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.ncslab.code.c.CodeModelC;
+import com.ncslab.code.c.linux.pc.CodeModelCLinuxPC;
 import com.ncslab.code.c.windows.CodeModelCWindows;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -52,6 +55,7 @@ public class CompileWebSocket {
 				sendMessage(session, "start");
 				// System.out.println("Start");
 				JSONObject mdlData = msg.getJSONObject("mdlData");
+                String target = mdlData.getString("target");
 				String jsonDataString = mdlData.getString("jsonData");
 				JSONObject jsonData = new JSONObject(jsonDataString);
 				// System.out.println(jsonDataString);
@@ -59,9 +63,16 @@ public class CompileWebSocket {
 
 				sendMessage(session, "generating");
 
-//				CodeModelCLinuxRaspberry modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData,
-//						ModelMode.Compilation);
-                CodeModelCWindows modelC = CodeModelCWindows.createFromJSON(jsonData, ModelMode.Compilation);
+                CodeModelC modelC = null;
+
+                if(Objects.equals(target, "linux")){
+                    modelC = CodeModelCLinuxPC.createFromJSON(jsonData, ModelMode.Compilation);
+                }else if(Objects.equals(target, "linux-rpi")){
+                    modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData, ModelMode.Compilation);
+                }else{
+					modelC = CodeModelCWindows.createFromJSON(jsonData, ModelMode.Compilation);
+				}
+
 
 				// CodeModelCLinuxPC
 				// modelC=CodeModelCLinuxPC.createFromJSON(jsonIn,ModelMode.Compilation);
@@ -87,13 +98,15 @@ public class CompileWebSocket {
 
 				sendMessage(session, "compiled");
 
+				modelC.removeAllFiles();
+
 				sendMessage(session, "database inserting");
 
 				modelC.saveToDatabase();
 
 				sendMessage(session, "database inserted");
 
-                modelC.removeAllFiles();
+                
 				sendMessage(session, "finished");
 
 				/*

@@ -3,9 +3,12 @@
 
 #include "ClientThread.hpp"
 
-#include "DataApi.h"
+#include "DataApi.hpp"
 #include "UploadThread.hpp"
 #include "Matrix.hpp"
+#include <unistd.h>
+#include <string.h>
+#include <arpa/inet.h>
 
 #ifndef MSG_WAITALL
 	#define MSG_WAITALL 0x08

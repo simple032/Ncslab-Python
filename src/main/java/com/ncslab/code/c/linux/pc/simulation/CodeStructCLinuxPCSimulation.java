@@ -5,6 +5,7 @@ import java.io.*;
 import com.ncslab.block.Block;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.c.CodeModelC;
+import com.ncslab.utils.Property;
 
 public class CodeStructCLinuxPCSimulation extends CodeStructC{
 	public CodeStructCLinuxPCSimulation(CodeModelC model) {
@@ -33,13 +34,14 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 
 		// write resource files
 		// makefile
-		// writeNCSLabFile("makefile");
-		// writeMakefile("makefile");
-		writeNCSLabFile("CMakeLists.txt","CMakeLists.txt", true);
+		 writeNCSLabFile("makefile");
+//		 writeMakefile("makefile");
+//		writeNCSLabFile("CMakeLists.txt","CMakeLists.txt", true);
 		// main function and timer
 		writeNCSLabFile("../../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 		// write the header file for generated main code
-		writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp", true);
+        writeNCSLabFile("../../../ncslabccode.hpp", "ncslabccode.hpp");
+        writeNCSLabFile("../../../mainccode.hpp","mainccode.hpp", true);
 
 		writeNCSLabFile("../../../util.hpp","util.hpp",true);
 		writeNCSLabFile("../../../util.cpp","util.cpp",true);
@@ -64,8 +66,8 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		 writeNCSLabFile("../../UploadThread.cpp","UploadThread.cpp");
 		 writeNCSLabFile("../../UploadThread.hpp","UploadThread.hpp");
 
-		writeNCSLabFile("../../../ncs_serialport_pi.c","ncs_serialport_pi.c");
-		writeNCSLabFile("../../../ncs_serialport.h","ncs_serialport.h");
+//		writeNCSLabFile("../../../ncs_serialport_pi.c","ncs_serialport_pi.c");
+//		writeNCSLabFile("../../../ncs_serialport.h","ncs_serialport.h");
 
 		for(Block block: model.getBlockList()) {
 			if(block.isSFcnBlock()) {
@@ -123,11 +125,11 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 			// start make, generate executable file
 			// Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
 			// using cmake instead of make
-			String cmakeCommand[] = {"cmake","."};
-			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
-			makeProcess.waitFor();
+//			String cmakeCommand[] = {"cmake","."};
+//			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
+//			makeProcess.waitFor();
 
-			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
 			// get OutputStream and errStream of the process, in case of blocking
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));

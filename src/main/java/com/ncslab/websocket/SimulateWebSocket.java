@@ -1,6 +1,7 @@
 package com.ncslab.websocket;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -8,7 +9,6 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 import com.ncslab.code.c.CodeModelC;
-import com.ncslab.code.c.windows.CodeModelCWindows;
 import com.ncslab.code.c.windows.simulation.CodeModelCWindowsSimulation;
 import org.json.JSONObject;
 
@@ -69,7 +69,8 @@ public class SimulateWebSocket {
 				sendMessage(session,"start");
 				//System.out.println("Start");
 				JSONObject  mdlData=msg.getJSONObject("mdlData");
-				String jsonDataString=mdlData.getString("jsonData");
+                String target = mdlData.getString("target");
+                String jsonDataString=mdlData.getString("jsonData");
 				JSONObject jsonData=new JSONObject(jsonDataString);
 				//System.out.println(jsonDataString);
 				String errorMsgs="";
@@ -79,7 +80,15 @@ public class SimulateWebSocket {
 
 	        	// instantiate a CodeModelC object
 	        	//CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
-                CodeModelCWindowsSimulation modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+                CodeModelC modelC = null;
+                if(Objects.equals(target, "linux")){
+                    modelC = CodeModelCLinuxPCSimulation.createFromJSON(jsonData, ModelMode.Simulation);
+                }else if(Objects.equals(target, "linux-rpi")){
+                    modelC= CodeModelCLinuxPCSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+                }else{
+					modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+				}
+
 	        	//modelC.setSolver(Solver.ode4);
 
 	        	modelC.generate();
@@ -101,7 +110,12 @@ public class SimulateWebSocket {
 	        		throw new ModelException("Can not make exe file!");
 	        	}
 
+                //
+
+
 	        	sendMessage(session,"compiled");
+
+				modelC.removeAllFiles();
 
 	        	//sendMessage(session,"simulating");
 	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());
