@@ -67,7 +67,7 @@ public class CompileWebSocket {
 
                 if(Objects.equals(target, "linux")){
                     modelC = CodeModelCLinuxPC.createFromJSON(jsonData, ModelMode.Compilation);
-                }else(Objects.equals(target, "linux-rpi")){
+                }else if(Objects.equals(target, "linux-rpi")){
                     modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData, ModelMode.Compilation);
                 }else{
 					modelC = CodeModelCWindows.createFromJSON(jsonData, ModelMode.Compilation);
@@ -106,7 +106,7 @@ public class CompileWebSocket {
 
 				sendMessage(session, "database inserted");
 
-                
+
 				sendMessage(session, "finished");
 
 				/*
