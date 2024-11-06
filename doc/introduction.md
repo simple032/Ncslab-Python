@@ -20,7 +20,7 @@ yarn start
 
 ## M2PSim界面
 
-![interface](img/introduction-interface)
+![interface](img/introduction-interface.png)
 
 **模块库**：包含已开发的所以模块，由模块库拖拽模块到设计区完成实例化。
 
@@ -42,7 +42,7 @@ yarn start
 
 ### 1.Create new model
 
-![model](img/introduction-step1)
+![model](img/introduction-step1.png)
 
 ### 2.Build Agorithm
 
