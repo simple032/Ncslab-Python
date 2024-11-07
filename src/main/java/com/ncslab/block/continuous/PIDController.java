@@ -44,12 +44,13 @@ public class PIDController extends Block {
 		cparaN = new Parameter(this, parameterList.size() + 1, "N", paramValues.getString("N"));
 		parameterList.add(cparaN);
 
-		/*
-		 * stateIntegral=new State(this,1,"integral");
-		 * stateList.add(stateIntegral);
-		 * stateFilter=new State(this,2,"filter");
-		 * stateList.add(stateFilter);
-		 */
+		
+		stateIntegral=new State(this,1,"integral");
+		stateList.add(stateIntegral);
+
+		stateFilter=new State(this,2,"filter");
+		stateList.add(stateFilter);
+		 
         limitOutput = new Parameter(this, parameterList.size() + 1, "LimitOutput", paramValues.getString("LimitOutput"));
         parameterList.add(limitOutput);
 		if (limitOutput.equals("on")) {
@@ -61,10 +62,12 @@ public class PIDController extends Block {
 			parameterList.add(upperSaturationLimit);
 		}
 
-        sampleTime=new Parameter(this,parameterList.size()+1,"sampleTime",paramValues.getString("sampleTime"));
+		// 兼容旧版本，设置成0.01s
+        sampleTime=new Parameter(this,parameterList.size()+1,"sampleTime",paramValues.optString("sampleTime", "0.01"));
         parameterList.add(sampleTime);
 
-        externalReset=new Parameter(this,parameterList.size()+1,"externalReset",paramValues.getString("externalReset"));
+        // 兼容旧版本，设置成off
+		externalReset=new Parameter(this,parameterList.size()+1,"externalReset",paramValues.optString("externalReset", "off"));
         parameterList.add(externalReset);
         if(externalReset.equals("on")) {
             inputPortList.add(new InputPort(this,2));

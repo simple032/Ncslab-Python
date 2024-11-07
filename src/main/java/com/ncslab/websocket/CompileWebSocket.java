@@ -55,7 +55,7 @@ public class CompileWebSocket {
 				sendMessage(session, "start");
 				// System.out.println("Start");
 				JSONObject mdlData = msg.getJSONObject("mdlData");
-                String target = mdlData.getString("target");
+                String target = mdlData.optString("target", "");
 				String jsonDataString = mdlData.getString("jsonData");
 				JSONObject jsonData = new JSONObject(jsonDataString);
 				// System.out.println(jsonDataString);

@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.io.*;
+import java.util.Optional;
 
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.block.Block;
@@ -535,8 +536,7 @@ abstract public class CodeStructC{
 	}
 
     @Getter
-//    protected String m2plabRoot = System.getenv("M2PLAB_ROOT");
-    protected String m2plabRoot = "/data/M2PLab";
+   protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("默认值");
 
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")

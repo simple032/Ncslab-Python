@@ -14,6 +14,8 @@ public class Data {
     @Setter
     private double initValue = 0;
 	private Matrix initMatrix = null;
+	@Getter
+	private String initString = "";
     @Getter
     private String dataString = "";
 
@@ -65,7 +67,14 @@ public class Data {
 		} else {
 			// 使用fel进行表达式分析
 //			initValue = Double.parseDouble(fel.eval(dataString).toString());
-            initValue = Double.parseDouble(dataString);
+            // initValue = Double.parseDouble(dataString);
+			try {
+				initValue = Double.parseDouble(dataString);
+			} catch (NumberFormatException e) {
+				// 如果解析失败，将 initString 设置为 dataString
+				initString = dataString;
+			}
+
 		}
 
 	}

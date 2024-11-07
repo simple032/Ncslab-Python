@@ -173,18 +173,18 @@ public class BlockType{
         blockClassTree.put("Constant", com.ncslab.block.source.Constant.class);
         blockClassTree.put("Clock", com.ncslab.block.source.Clock.class);
         blockClassTree.put("Step", com.ncslab.block.source.Step.class);
-        blockClassTree.put("Pulse Generator", com.ncslab.block.source.Pulse.class);
-        blockClassTree.put("Repeating Sequence", com.ncslab.block.source.RepeatingSequence.class);
+        blockClassTree.put("PulseGenerator", com.ncslab.block.source.Pulse.class);
+        blockClassTree.put("RepeatingSequence", com.ncslab.block.source.RepeatingSequence.class);
         blockClassTree.put("Ramp", com.ncslab.block.source.Ramp.class);
-        blockClassTree.put("Sine Wave", com.ncslab.block.source.SineWave.class);
+        blockClassTree.put("SineWave", com.ncslab.block.source.SineWave.class);
 
         blockClassTree.put("Sum", com.ncslab.block.math.Sum.class);
         blockClassTree.put("Gain", com.ncslab.block.math.Gain.class);
-        blockClassTree.put("Trigonometric Function", com.ncslab.block.math.TrigFunction.class);
+        blockClassTree.put("TrigonometricFunction", com.ncslab.block.math.TrigFunction.class);
         blockClassTree.put("Add", com.ncslab.block.math.Add.class);
         blockClassTree.put("Sign", com.ncslab.block.math.Sign.class);
         blockClassTree.put("Product", com.ncslab.block.math.Product.class);
-        blockClassTree.put("Math Function", com.ncslab.block.math.MathFunction.class);
+        blockClassTree.put("MathFunction", com.ncslab.block.math.MathFunction.class);
         blockClassTree.put("TestPoint", com.ncslab.block.math.TestPoint.class);
         blockClassTree.put("abc2dq", com.ncslab.block.math.abc2dq0.class);
         blockClassTree.put("dq02abc", com.ncslab.block.math.dq02abc.class);
@@ -197,13 +197,12 @@ public class BlockType{
         // Continuous
         blockClassTree.put("Derivative", com.ncslab.block.continuous.Derivative.class);
         blockClassTree.put("Integrator", com.ncslab.block.continuous.Integrator.class);
-        blockClassTree.put("Transfer Fcn", com.ncslab.block.continuous.TransferFcn.class);
         blockClassTree.put("TransferFcn", com.ncslab.block.continuous.TransferFcn.class);
-        blockClassTree.put("VariableTransport Delay", com.ncslab.block.continuous.VariableTransportDelay.class);
-        blockClassTree.put("PID Controller (s)", com.ncslab.block.continuous.PIDController.class);
+        blockClassTree.put("VariableTransportDelay", com.ncslab.block.continuous.VariableTransportDelay.class);
+        blockClassTree.put("PIDController(s)", com.ncslab.block.continuous.PIDController.class);
         blockClassTree.put("State-Space", com.ncslab.block.continuous.StateSpace.class);
         blockClassTree.put("Transport Delay", com.ncslab.block.continuous.TransportDelay.class);
-        blockClassTree.put("PID Controller", com.ncslab.block.continuous.OldPIDController.class);
+        blockClassTree.put("PIDController", com.ncslab.block.continuous.OldPIDController.class);
 
         // Testrig
         blockClassTree.put("WaterLevel", com.ncslab.block.testrig.WaterLevel.class);
@@ -244,12 +243,12 @@ public class BlockType{
 
         // Discrete
         blockClassTree.put("DiscreteStateSpace", com.ncslab.block.discrete.DiscreteStateSpace.class);
-        blockClassTree.put("Zero-Order Hold", com.ncslab.block.discrete.Zero_Order_Hold.class);
+        blockClassTree.put("Zero-OrderHold", com.ncslab.block.discrete.Zero_Order_Hold.class);
         blockClassTree.put("Delay", com.ncslab.block.discrete.Delay.class);
-        blockClassTree.put("Unit Delay", com.ncslab.block.discrete.UnitDelay.class);
-        blockClassTree.put("Discrete-Time Integrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);
-        blockClassTree.put("Discrete Transfer Fcn", com.ncslab.block.discrete.Discrete_Transfer_Fcn.class);
-        blockClassTree.put("Discrete Transfer Fcn (z)", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);
+        blockClassTree.put("UnitDelay", com.ncslab.block.discrete.UnitDelay.class);
+        blockClassTree.put("Discrete-TimeIntegrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);
+        blockClassTree.put("DiscreteTransferFcn", com.ncslab.block.discrete.Discrete_Transfer_Fcn.class);
+        blockClassTree.put("DiscreteTransferFcn(z)", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);
 
         // Route
         blockClassTree.put("Mux", com.ncslab.block.route.Mux.class);
@@ -264,8 +263,8 @@ public class BlockType{
         // Discontinuous
         blockClassTree.put("Saturation", com.ncslab.block.discontinuous.Saturation.class);
         blockClassTree.put("Relay", com.ncslab.block.discontinuous.Relay.class);
-        blockClassTree.put("Dead Zone", com.ncslab.block.discontinuous.DeadZone.class);
-        blockClassTree.put("Coulomb Viscous Friction", com.ncslab.block.discontinuous.Coulomb.class);
+        blockClassTree.put("DeadZone", com.ncslab.block.discontinuous.DeadZone.class);
+        blockClassTree.put("CoulombViscousFriction", com.ncslab.block.discontinuous.Coulomb.class);
         blockClassTree.put("RateLimiter", com.ncslab.block.discontinuous.RateLimiter.class);
         blockClassTree.put("Backlash", com.ncslab.block.discontinuous.Backlash.class);
 
@@ -273,11 +272,11 @@ public class BlockType{
         blockClassTree.put("SecondOrderFilter", com.ncslab.block.powerSystem.secondOrderFiliter.class);
 
         // LogicAndBit
-        blockClassTree.put("Compare To Constant", com.ncslab.block.logicAndBit.CompareToConstant.class);
-        blockClassTree.put("Relational Operator", com.ncslab.block.logicAndBit.RelationalOperator.class);
-        blockClassTree.put("Shift Arithmetic", com.ncslab.block.logicAndBit.ShiftArithmetic.class);
-        blockClassTree.put("Logical Operator", com.ncslab.block.logicAndBit.LogicOperator.class);
-        blockClassTree.put("Compare To Zero", com.ncslab.block.logicAndBit.CompareToZero.class);
+        blockClassTree.put("CompareToConstant", com.ncslab.block.logicAndBit.CompareToConstant.class);
+        blockClassTree.put("RelationalOperator", com.ncslab.block.logicAndBit.RelationalOperator.class);
+        blockClassTree.put("ShiftArithmetic", com.ncslab.block.logicAndBit.ShiftArithmetic.class);
+        blockClassTree.put("LogicalOperator", com.ncslab.block.logicAndBit.LogicOperator.class);
+        blockClassTree.put("CompareToZero", com.ncslab.block.logicAndBit.CompareToZero.class);
         blockClassTree.put("Transpose", com.ncslab.block.matrix.Transpose.class);
 
         // Subsystem
@@ -293,21 +292,21 @@ public class BlockType{
         blockClassTree.put("UDPSenderForStm32", com.ncslab.block.driverForStm32.UDPSenderForStm32.class);
 
         // Matrix
-        blockClassTree.put("Create Diagonal Matrix", com.ncslab.block.matrix.CreateDiagonalMatrix.class);
-        blockClassTree.put("Cross Product", com.ncslab.block.matrix.CrossProduct.class);
-        blockClassTree.put("Extract Diagonal", com.ncslab.block.matrix.ExtractDiagonal.class);
-        blockClassTree.put("Identity Matrix", com.ncslab.block.matrix.IdentityMatrix.class);
+        blockClassTree.put("CreateDiagonalMatrix", com.ncslab.block.matrix.CreateDiagonalMatrix.class);
+        blockClassTree.put("CrossProduct", com.ncslab.block.matrix.CrossProduct.class);
+        blockClassTree.put("ExtractDiagonal", com.ncslab.block.matrix.ExtractDiagonal.class);
+        blockClassTree.put("IdentityMatrix", com.ncslab.block.matrix.IdentityMatrix.class);
         blockClassTree.put("IsHermitian", com.ncslab.block.matrix.IsHermitian.class);
         blockClassTree.put("IsSymmetric", com.ncslab.block.matrix.IsSymmetric.class);
         blockClassTree.put("IsTriangular", com.ncslab.block.matrix.IsTriangular.class);
-        blockClassTree.put("Matrix Multiply", com.ncslab.block.matrix.MatrixMultiply.class);
-        blockClassTree.put("Matrix Concatenate", com.ncslab.block.matrix.MatrixConcatenate.class);
-        blockClassTree.put("Matrix Square", com.ncslab.block.matrix.MatrixSquare.class);
-        blockClassTree.put("Permute Matrix", com.ncslab.block.matrix.PermuteMatrix.class);
+        blockClassTree.put("MatrixMultiply", com.ncslab.block.matrix.MatrixMultiply.class);
+        blockClassTree.put("MatrixConcatenate", com.ncslab.block.matrix.MatrixConcatenate.class);
+        blockClassTree.put("MatrixSquare", com.ncslab.block.matrix.MatrixSquare.class);
+        blockClassTree.put("PermuteMatrix", com.ncslab.block.matrix.PermuteMatrix.class);
         blockClassTree.put("Submatrix", com.ncslab.block.matrix.Submatrix.class);
 
         // Advanced Control
-        blockClassTree.put("LQR Controller", com.ncslab.block.advancedControl.LQRController.class);
+        blockClassTree.put("LQRController", com.ncslab.block.advancedControl.LQRController.class);
 
         // Machine Learning
         blockClassTree.put("LinearRegression", com.ncslab.block.machineLearning.LinearRegression.class);
@@ -319,17 +318,20 @@ public class BlockType{
     }
 
 	public static Block createBlock(int id, JSONObject blockJSON, NCSLabModel model) throws ModelException {
-		String blockType = blockJSON.getString("blockType");
+		String blockType = blockJSON.getString("blockType").replace("Block", "").replace(" ", "");
 
         Block block = null;
         try {
             Class<? extends Block> blockClass = blockClassTree.get(blockType);
-            block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
+            if(blockClass != null)
+                block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
         }catch(InvocationTargetException e){
             Throwable realException = e.getCause();
             realException.printStackTrace();  // 打印实际的异常信息
             // 根据实际异常类型进行进一步处理
         }catch(NoSuchMethodException|InstantiationException|IllegalAccessException e){
+            System.err.println(e);
+        }catch(NullPointerException e){
             System.err.println(e);
         }
         if(block == null)

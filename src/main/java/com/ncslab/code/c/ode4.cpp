@@ -1,5 +1,5 @@
 #include"ncslabccode.hpp"
-#include"ServerThread.hpp"
+// #include"ServerThread.hpp"
 #include"ncslab.hpp"
 
 #include <iostream>
