@@ -1,4 +1,5 @@
 package com.ncslab.block.discontinuous;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -12,10 +13,27 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Coulomb extends Block{
 	Parameter offset;
 	Parameter gain;
-	
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("offset");
+        parameterNames.add("gain");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
+
 	public Coulomb(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		//һ�����룬һ�����
@@ -59,14 +77,14 @@ public class Coulomb extends Block{
 			case REAL:
 				for(int i=1; i<gain.getHeight()+1; i++) {
 					for(int j=1;j<gain.getWidth()+1;j++) {
-						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+"sign("+signal.getName()+")*("+gain.getName()+"("+i+","+j+")*abs("+signal.getName()+")+"+offset.getName()+"("+i+","+j+"));\n";	
+						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+"sign("+signal.getName()+")*("+gain.getName()+"("+i+","+j+")*abs("+signal.getName()+")+"+offset.getName()+"("+i+","+j+"));\n";
 					}
 				}
 				break;
 			case MATRIX:
 				for(int i=1; i<ops.getHeight()+1; i++) {
 					for(int j=1;j<ops.getWidth()+1;j++) {
-						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+"sign("+signal.getName()+"("+i+","+j+"))*("+gain.getName()+"("+i+","+j+")*abs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+"("+i+","+j+"));\n";	
+						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+"sign("+signal.getName()+"("+i+","+j+"))*("+gain.getName()+"("+i+","+j+")*abs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+"("+i+","+j+"));\n";
 					}
 				}
 				break;
@@ -84,7 +102,7 @@ public class Coulomb extends Block{
 		}
 	 public void generateOutputCodeC(CodeStructC code) {
 			String outputCode="/*Code for output of block Coulomb:("+getBlockId()+")"+getBlockName()+"*/\n";
-			
+
 			OutputPort out  = outputPortList.get(0);
 			OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -94,7 +112,7 @@ public class Coulomb extends Block{
 				case REAL:
 					outputCode+="if("+signal.getName()+">0) {\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=1*("+gain.getName()+"*fabs("+signal.getName()+")+"+offset.getName()+");}\n";
-					outputCode+="else if("+ signal.getName()+"<0) {\n";	
+					outputCode+="else if("+ signal.getName()+"<0) {\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=(-1)*("+gain.getName()+"*fabs("+signal.getName()+")+"+offset.getName()+");}\n";
 					outputCode+="else {\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;}\n";
@@ -104,7 +122,7 @@ public class Coulomb extends Block{
 						for(int j=0;j<ops.getWidth();j++) {
 							outputCode+="if("+signal.getName()+"("+i+","+j+")>0) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=1*("+gain.getName()+"*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+");}\n";
-							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<0) {\n";	
+							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<0) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=(-1)*("+gain.getName()+"*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+");}\n";
 							outputCode+="else {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
@@ -120,7 +138,7 @@ public class Coulomb extends Block{
 						for(int j=0;j<offset.getWidth();j++) {
 							outputCode+="if("+signal.getName()+">0) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=1*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+")+"+offset.getName()+"("+i+","+j+"));}\n";
-							outputCode+="else if("+ signal.getName()+"<0) {\n";	
+							outputCode+="else if("+ signal.getName()+"<0) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=(-1)*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+")+"+offset.getName()+"("+i+","+j+"));}\n";
 							outputCode+="else {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
@@ -132,7 +150,7 @@ public class Coulomb extends Block{
 						for(int j=0;j<offset.getWidth();j++) {
 							outputCode+="if("+signal.getName()+"("+i+","+j+")>0) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=1*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+"("+i+","+j+"));}\n";
-							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<0) {\n";	
+							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<0) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=(-1)*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+"("+i+","+j+"));}\n";
 							outputCode+="else {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
@@ -143,28 +161,28 @@ public class Coulomb extends Block{
 				break;
 			}
 			code.addOutputCode(outputCode);
-	  }	
+	  }
 	 public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);
 			InputPort in  = inputPortList.get(0);
 			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			if(offset.getWidth()!=gain.getWidth()||offset.getHeight()!=gain.getHeight()) {
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!All input dimensions should be same!");
-				throw(e);	
+				throw(e);
 			}
 			if(offset.getDataType()==DataType.MATRIX&&signal.getDataType()==DataType.REAL) {
 				out.setHeight(offset.getHeight());
 				out.setWidth(offset.getWidth());
 				out.getOutputSignalC().setHeight(offset.getHeight());
 				out.getOutputSignalC().setWidth(offset.getWidth());
-				out.getOutputSignalC().setDataType(DataType.MATRIX);	
+				out.getOutputSignalC().setDataType(DataType.MATRIX);
 			}
 			else if(offset.getDataType()==DataType.REAL&&signal.getDataType()==DataType.MATRIX) {
 				out.setHeight(signal.getHeight());
 				out.setWidth(signal.getWidth());
 				out.getOutputSignalC().setHeight(signal.getHeight());
 				out.getOutputSignalC().setWidth(signal.getWidth());
-				out.getOutputSignalC().setDataType(signal.getDataType());	
+				out.getOutputSignalC().setDataType(signal.getDataType());
 			}
 			else{
 				if(offset.getWidth()!=signal.getWidth()||offset.getHeight()!=signal.getHeight()) {
@@ -175,9 +193,9 @@ public class Coulomb extends Block{
 				out.setWidth(offset.getWidth());
 				out.getOutputSignalC().setHeight(offset.getHeight());
 				out.getOutputSignalC().setWidth(offset.getWidth());
-				out.getOutputSignalC().setDataType(offset.getDataType());	
+				out.getOutputSignalC().setDataType(offset.getDataType());
 			}
 	  }
 	 public void checkDimension() throws MatDimException{
-		}    
+		}
 }

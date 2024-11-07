@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import Jama.Matrix;
@@ -14,6 +15,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.block.io.OutputSignal;
 
+import java.util.Vector;
+
 public class TransportDelay extends Block {
 
 	private Parameter initialoutput;
@@ -22,6 +25,23 @@ public class TransportDelay extends Block {
 	InputPort input;
 	Matrix test;
 	private double number[] = null;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("InitialOutput");
+        parameterNames.add("DelayTime");
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
 	public TransportDelay(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);

@@ -1,6 +1,7 @@
 package com.ncslab.block.machineLearning.pt;
 
 import com.ncslab.block.machineLearning.MachineLearning;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -9,12 +10,37 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class CNN extends MachineLearning {
     public Parameter layersNumber, numClasses, lossFunction,
     learningRate, inputFeatures,
     channelSize, hiddenLayers,
     activationFunction, dataset;
     private MLVariable modelVariable;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("inputFeatures");
+        parameterNames.add("numClasses");
+        parameterNames.add("activationFunction");
+        parameterNames.add("learningRate");
+        parameterNames.add("lossFunction");
+        parameterNames.add("channelSize");
+        parameterNames.add("hiddenLayers");
+        parameterNames.add("dataset");
+
+    }
     public CNN(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 

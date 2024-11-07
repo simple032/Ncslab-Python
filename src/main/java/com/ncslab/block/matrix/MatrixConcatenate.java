@@ -1,7 +1,9 @@
 package com.ncslab.block.matrix;
 
 import java.util.Arrays;
+import java.util.Vector;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -17,6 +19,22 @@ import com.ncslab.block.io.InputPort;
 public class MatrixConcatenate extends Block {
     private String seq;
     private Parameter ConcatenateDimension;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        //输入的个数不确定
+        parameterNames.add("ConcatenateDimension");
+    }
 
     public MatrixConcatenate(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);

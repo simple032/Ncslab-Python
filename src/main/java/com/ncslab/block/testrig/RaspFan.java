@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -9,8 +10,23 @@ import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class RaspFan extends Block {
 	String hardwareDefineName;
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("FanSpeed");
+        inputNames.add("in1");
+    }
 	public RaspFan(JSONObject blockJSON,NCSLabModel model) {
         super(blockJSON,model);
 		this.isHardware=true;
@@ -61,7 +77,7 @@ public class RaspFan extends Block {
 			outputCode+="char sendData[1024];\n";
             outputCode+="sprintf(sendData,\"$001,%02d#\",speed);\n";
 			outputCode+="sendLength=strlen(sendData);\n";
-			outputCode+="Serialport_Send(hComm,sendData,sendLength);\n";	
+			outputCode+="Serialport_Send(hComm,sendData,sendLength);\n";
 			outputCode+="}\n";
 			break;
 		}
@@ -69,7 +85,7 @@ public class RaspFan extends Block {
 	}
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of RaspFan" + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		
+
 		switch(model.getModelMode()) {
 		case Simulation:
 		     break;

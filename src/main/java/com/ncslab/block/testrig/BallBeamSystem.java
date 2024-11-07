@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -26,6 +28,32 @@ public class BallBeamSystem extends Block {
 
 //	State speedState;
 //	State spState;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("Position");
+        outputNames.add("Angle");
+        outputNames.add("dr");
+        inputNames.add("in1");
+        parameterNames.add("gravity");
+        parameterNames.add("mass_ball");
+        parameterNames.add("moment_of_inertial");
+        parameterNames.add("length_beam");
+        parameterNames.add("length_link");
+        parameterNames.add("radius_ball");
+        parameterNames.add("lb_angle");
+        parameterNames.add("ub_angle");
+        parameterNames.add("lb_position");
+
+    }
 
     public BallBeamSystem(JSONObject blockJSON,NCSLabModel model) {
         super(blockJSON,model);

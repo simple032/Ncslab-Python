@@ -1,5 +1,6 @@
 package com.ncslab.block.matrix;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -10,8 +11,23 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class IdentityMatrix extends Block {
     private Parameter outputDimensions;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+
+        outputNames.add("out1");
+        parameterNames.add("outputDimensions");
+    }
 
     public IdentityMatrix(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);

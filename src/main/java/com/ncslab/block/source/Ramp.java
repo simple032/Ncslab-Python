@@ -1,5 +1,6 @@
 package com.ncslab.block.source;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.OutputPort;
@@ -10,10 +11,28 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
+import java.util.Vector;
+
 public class Ramp extends Block {
 	    Parameter slope;
 	    Parameter start;
 	    Parameter initial_output;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+
+        outputNames.add("out1");
+
+        parameterNames.add("slope");
+        parameterNames.add("start");
+        parameterNames.add("initial_output");
+    }
 	public Ramp(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);
 		//����һ�����
@@ -48,12 +67,12 @@ public class Ramp extends Block {
         break;
 		case MATRIX:
 			for(int i=1;i<slope.getHeight()+1;i++) {
-				for(int j=1;j<slope.getWidth()+1;j++) {	
+				for(int j=1;j<slope.getWidth()+1;j++) {
 					outputCode+="if sign(t-"+start.getName()+"("+i+","+j+")+offset)>=0\n";
 			        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+initial_output.getName()+"("+i+","+j+")+"+slope.getName()+"("+i+","+j+")*(t-"+start.getName()+"("+i+","+j+")+offset);\n";
 			        outputCode+="else\n";
 			        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+initial_output.getName()+"("+i+","+j+");\n";
-			        outputCode+="end\n";	
+			        outputCode+="end\n";
 				}
 			}
 			break;
@@ -78,7 +97,7 @@ public class Ramp extends Block {
 			outputCode+="else{\n";
 			outputCode+=this.getOutputPortVariable(0)+"="+initial_output.getName()+"+"+slope.getName()+"*(currentTime-"+start.getName()+");}\n";
 			break;
-		case MATRIX:	
+		case MATRIX:
 			for(int i=0;i<slope.getHeight();i++) {
 				for(int j=0;j<slope.getWidth();j++) {
 			outputCode+="if(currentTime<"+start.getName()+"("+i+","+j+")){\n";
@@ -92,7 +111,7 @@ public class Ramp extends Block {
 		outputCode+="}\n";
 		code.addOutputCode(outputCode);
 	}
-	
+
 	 public void updateDimension() throws MatDimException{
 	    	if(slope.getWidth()!=initial_output.getWidth()
 	    			||slope.getWidth()!=start.getWidth()

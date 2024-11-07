@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -10,8 +11,10 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Superposition extends Block {
-	
+
 
 	Parameter BCM1;
 	Parameter BCM2;
@@ -19,9 +22,32 @@ public class Superposition extends Block {
 	Parameter AD1;
 	Parameter AD2;
 
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("AD1");
+        outputNames.add("AD2");
+
+        inputNames.add("in1");
+        inputNames.add("in2");
+        inputNames.add("in3");
+        parameterNames.add("BCM1");
+        parameterNames.add("BCM2");
+        parameterNames.add("BCM3");
+        parameterNames.add("AD1");
+        parameterNames.add("AD2");
+    }
+
 	public Superposition(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-		
+
 		//三个输入
 		inputPortList.add(new InputPort(this,1));
 		BCM1=new Parameter(this,1,"BCM1",paramValues.getString("BCM1"));
@@ -39,46 +65,46 @@ public class Superposition extends Block {
 		outputPortList.add(new OutputPort(this,"AD2",2,false));
 		AD2=new Parameter(this,5,"AD2",paramValues.getString("AD2"));
 		parameterList.add(AD2);
-		
+
 	}
-	
+
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
 		String initCode="";
-		
+
 		code.addInitCode(initCode);
 	}
-	
+
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 		String outputCode="";
-		
+
 		code.addOutputCode(outputCode);
 	}
-	
-	
+
+
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		
+
 		String initCode="/*Code for initialization of block Superposition:("+getBlockId()+")"+getBlockName()+"*/\n";
-		initCode+=BCM1.getName()+"="+paramValues.getDouble("BCM1")+";\n"; 
+		initCode+=BCM1.getName()+"="+paramValues.getDouble("BCM1")+";\n";
 		initCode+="wiringPiSetupGpio();\n"
 				+ "pinMode ("+BCM1.getName()+", OUTPUT);\r\n";
-		initCode+=BCM2.getName()+"="+paramValues.getDouble("BCM2")+";\n"; 
+		initCode+=BCM2.getName()+"="+paramValues.getDouble("BCM2")+";\n";
 		initCode+="wiringPiSetupGpio();\n"
 				+ "pinMode ("+BCM2.getName()+", OUTPUT);\r\n";
-		initCode+=BCM3.getName()+"="+paramValues.getDouble("BCM3")+";\n"; 
+		initCode+=BCM3.getName()+"="+paramValues.getDouble("BCM3")+";\n";
 		initCode+="wiringPiSetupGpio();\n"
 				+ "pinMode ("+BCM3.getName()+", OUTPUT);\r\n";
-		
-		initCode+=AD1.getName()+"="+paramValues.getDouble("AD1")+";\n"; 
+
+		initCode+=AD1.getName()+"="+paramValues.getDouble("AD1")+";\n";
 		initCode+="DEV_ModuleInit();\n"
 				+"if(ADS1256_init() == 1){\r\n"
 				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
 				+ "        DEV_ModuleExit();\r\n"
 				+ "        exit(0);\r\n"
 				+ "    }\n";
-		initCode+=AD2.getName()+"="+paramValues.getDouble("AD2")+";\n"; 
+		initCode+=AD2.getName()+"="+paramValues.getDouble("AD2")+";\n";
 		initCode+="DEV_ModuleInit();\n"
 				+"if(ADS1256_init() == 1){\r\n"
 				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
@@ -88,7 +114,7 @@ public class Superposition extends Block {
 
 		code.addInitCode(initCode);
 	}
-	
+
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Superposition:("+getBlockId()+")"+getBlockName()+"*/\n";
 		outputCode+="if("+inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
@@ -103,10 +129,10 @@ public class Superposition extends Block {
 		outputCode+="digitalWrite("+BCM3.getName()+", HIGH);}\n";
 		outputCode+="else{\n";
 		outputCode+="digitalWrite("+BCM3.getName()+", LOW);}\n";
-		
+
 		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD1.getName()+")*16.6666667/0x7fffff;\n";
 		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=ADS1256_GetChannalValue("+AD2.getName()+")*16.6666667/0x7fffff;\n";
-		
+
 		code.addOutputCode(outputCode);
 	}
 	public void  generateDerivativeCodeC(CodeStructC code) {
@@ -114,6 +140,6 @@ public class Superposition extends Block {
 
 		code.addDerivativeCode(derivativeCode);
 	}
-	
+
 }
 

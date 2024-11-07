@@ -1,6 +1,7 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.io.Parameter;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -12,8 +13,26 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class TrigFunction extends Block{
 	Parameter trigFunc;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        //输入待根据循环确定
+        parameterNames.add("trigFunc");
+    }
 
     public TrigFunction(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

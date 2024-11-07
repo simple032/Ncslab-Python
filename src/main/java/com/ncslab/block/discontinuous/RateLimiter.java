@@ -1,5 +1,6 @@
 package com.ncslab.block.discontinuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -13,13 +14,31 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class RateLimiter extends Block{
 	Parameter lowerLimit;
 	Parameter upperLimit;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("lowerLimit");
+        parameterNames.add("upperLimit");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	public RateLimiter(JSONObject blockIn,NCSLabModel model) {
 
 		super(blockIn,model);
-		//һ�����룬һ�����
+		//一个输入，一个输出
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
 		lowerLimit=new Parameter(this,1,"lowerLimit",paramValues.getString("LowerLimit"));

@@ -1,17 +1,33 @@
 package com.ncslab.block.machineLearning.pt;
 
 import com.ncslab.block.machineLearning.MachineLearning;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class A2C extends PTModel {
     private Parameter inputFeatures,
                 outputFeatures,
                 learningRate,
                 discountFactor;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+
+    static {
+
+
+        parameterNames.add("inputFeatures");
+        parameterNames.add("outputFeatures");
+        parameterNames.add("learningRate");
+        parameterNames.add("discountFactor");
+    }
 
     public A2C(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);

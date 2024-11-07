@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import java.util.Vector;
 
@@ -13,26 +14,39 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
 public class Sum extends Block {
-	
-	private String seq; 
-	
+
+	private String seq;
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        //输入待根据循环确定
+    }
+
 	public Sum(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-		
+
 		//因为输入的Dimension必须相互配合，因此设置成DimThrough
-		
+
 		OutputPort output=new OutputPort(this,1,true);
-		
+
 		output.setDimThrough(false);
-		
+
 		outputPortList.add(output);
-		
+
 		paraseParamValues();
 	}
-	
+
 	private void paraseParamValues() {
 		seq=paramValues.getString("Inputs");
-		
+
 		for(int i=0;i<seq.length();i++) {
 			inputPortList.add(new InputPort(this,i+1));
 		}
@@ -76,7 +90,7 @@ public class Sum extends Block {
 		}
 		code.addOutputCode(outputCode);
 	}
-	
+
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Sum:("+getBlockId()+")"+getBlockName()+"*/\n";
 		OutputPort out  = outputPortList.get(0);
@@ -136,7 +150,7 @@ public class Sum extends Block {
 			out.setWidth(signal[0].getWidth());
 			out.getOutputSignalC().setHeight(signal[0].getHeight());
 			out.getOutputSignalC().setWidth(signal[0].getWidth());
-			out.getOutputSignalC().setDataType(signal[0].getDataType());	
+			out.getOutputSignalC().setDataType(signal[0].getDataType());
 		}
 	}
 	public void checkDimension() throws MatDimException{

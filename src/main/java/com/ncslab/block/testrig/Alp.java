@@ -2,6 +2,7 @@ package com.ncslab.block.testrig;
 
 import java.util.Vector;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -16,6 +17,21 @@ public class Alp extends Block {
 	private double num[] = {0.1308,0,0};
 	private double den[]= {1,3.091,1.19,0.2};
 	private Vector<State> xStateList=new Vector<State>();
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("FanSpeed");
+        outputNames.add("Position");
+        inputNames.add("in1");
+
+    }
 	public Alp(JSONObject blockJSON,NCSLabModel model) {
         super(blockJSON,model);
 		this.isHardware=true;
@@ -27,7 +43,7 @@ public class Alp extends Block {
 			for(int i=0;i<3;i++) {
 				State xState=new State(this,i+1,"x"+(i+1));
 				xStateList.add(xState);
-				stateList.add(xState);		
+				stateList.add(xState);
 			}
 			break;
 		case Compilation:
@@ -40,7 +56,7 @@ public class Alp extends Block {
 		hardwareDefineCode+="ALP "+hardwareDefineName+";\n";
 		return hardwareDefineCode;
 	}
-	
+
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		String initCode="/*Code for initialization of block ALP:("+getBlockId()+")"+getBlockName()+"*/\n";
@@ -87,7 +103,7 @@ public class Alp extends Block {
 	}
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of ALP" + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		
+
 		switch(model.getModelMode()) {
 		case Simulation:
 			for(int i=0;i<xStateList.size()-1;i++) {
@@ -106,7 +122,7 @@ public class Alp extends Block {
 		case Compilation:
 			break;
 		}
-		
+
 		code.addDerivativeCode(derivativeCode);
 	}
 }
