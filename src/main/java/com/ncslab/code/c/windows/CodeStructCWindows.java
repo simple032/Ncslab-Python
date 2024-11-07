@@ -136,27 +136,4 @@ public class CodeStructCWindows extends CodeStructC {
 
 		return false;
 	}
-
-    public void removeAllFiles(){
-        String userPath=codePathBase+model.getUserId();
-
-        String modelPath=userPath+"/"+model.getModelId();
-
-        codePath=modelPath+"/";
-
-        File dir = new File(codePath);
-        if(dir.exists() && dir.isDirectory()){
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    // 递归删除子文件夹
-                    if (file.isFile()) {
-                        // 删除文件
-                        file.delete();
-                    }
-                }
-            }
-        }
-        dir.delete();
-    }
 }

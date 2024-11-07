@@ -871,12 +871,14 @@ abstract public class CodeStructC{
         String modelPath=userPath+"/"+model.getModelId();
         File dir = new File(modelPath);
         File[] files = dir.listFiles();
-        for(File file : files){
-            if (file.isFile() && isTargetFile(file)) {
-//                    System.out.println("Deleting file: " + file.getAbsolutePath());
-                    if (!file.delete()) {
-                        System.err.println("Failed to delete file: " + file.getAbsolutePath());
-                    }
+        if (files != null) {
+            for(File file : files){
+                if (file.isFile() && isTargetFile(file)) {
+    //                    System.out.println("Deleting file: " + file.getAbsolutePath());
+                        if (!file.delete()) {
+                            System.err.println("Failed to delete file: " + file.getAbsolutePath());
+                        }
+                }
             }
         }
 

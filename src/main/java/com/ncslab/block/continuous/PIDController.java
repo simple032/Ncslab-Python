@@ -45,11 +45,11 @@ public class PIDController extends Block {
 		parameterList.add(cparaN);
 
 		
-		stateIntegral=new State(this,1,"integral");
-		stateList.add(stateIntegral);
-
-		stateFilter=new State(this,2,"filter");
-		stateList.add(stateFilter);
+//		stateIntegral=new State(this,1,"integral");
+//		stateList.add(stateIntegral);
+//
+//		stateFilter=new State(this,2,"filter");
+//		stateList.add(stateFilter);
 		 
         limitOutput = new Parameter(this, parameterList.size() + 1, "LimitOutput", paramValues.getString("LimitOutput"));
         parameterList.add(limitOutput);
