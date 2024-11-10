@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -11,6 +12,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class DCMotorAngle extends Block {
 
 
@@ -20,6 +23,21 @@ public class DCMotorAngle extends Block {
 
 	private double motorK=106.25;
 	private double motorT=0.07;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("Speed");
+        outputNames.add("Angle");
+        inputNames.add("in1");
+    }
 
 	public DCMotorAngle(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

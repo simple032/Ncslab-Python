@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -13,6 +14,8 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
+import java.util.Vector;
+
 public class OldPIDController extends Block{
 
 		Parameter cparaP;
@@ -21,6 +24,25 @@ public class OldPIDController extends Block{
 		Parameter cparaN;
 		State stateIntegral;
 		State stateFilter;
+
+
+        @Getter
+        public static final Vector<String> parameterNames = new Vector<>();
+
+        @Getter
+        public static final Vector<String> outputNames = new Vector<>();
+        @Getter
+        public static final Vector<String> inputNames = new Vector<>();
+
+        static {
+            parameterNames.add("P");
+            parameterNames.add("I");
+            parameterNames.add("D");
+            parameterNames.add("N");
+            outputNames.add("out1");
+            inputNames.add("in1");
+        }
+
 		public OldPIDController(JSONObject blockIn,NCSLabModel model) {
 			super(blockIn,model);
 

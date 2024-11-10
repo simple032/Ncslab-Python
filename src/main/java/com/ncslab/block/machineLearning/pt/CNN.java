@@ -1,30 +1,48 @@
-package com.ncslab.block.machineLearning;
+package com.ncslab.block.machineLearning.pt;
 
-import java.util.Vector;
-
+import com.ncslab.block.machineLearning.MachineLearning;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.block.BlockType;
-import com.ncslab.block.Block;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.data.DataType;
 
-public class CNN extends MachineLearning{
+import java.util.Vector;
+
+public class CNN extends MachineLearning {
     public Parameter layersNumber, numClasses, lossFunction,
     learningRate, inputFeatures,
     channelSize, hiddenLayers,
     activationFunction, dataset;
     private MLVariable modelVariable;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("inputFeatures");
+        parameterNames.add("numClasses");
+        parameterNames.add("activationFunction");
+        parameterNames.add("learningRate");
+        parameterNames.add("lossFunction");
+        parameterNames.add("channelSize");
+        parameterNames.add("hiddenLayers");
+        parameterNames.add("dataset");
+
+    }
     public CNN(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
-
-        CodeStructC.addIncludeCode("#include \"CNN.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/CNN/CNN.hpp", "CNN.hpp");
-        CodeStructC.addWrittenFile("../../../ml/CNN/cnn_model.py", "cnn_model.py");
 
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.numClasses = new Parameter(this, 2, "numClasses", paramValues.getString("numClasses"));
@@ -52,6 +70,10 @@ public class CNN extends MachineLearning{
     @Override
     public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
+
+        code.addIncludeCode("#include \"CNN.hpp\"\n");
+        code.addWrittenFile("../../ml/pt/CNN.hpp", "CNN.hpp");
+        code.addWrittenFile("../../ml/pt/cnn_model.py", "cnn_model.py");
 
 		String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
 

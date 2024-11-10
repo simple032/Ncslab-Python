@@ -1,5 +1,6 @@
 package com.ncslab.block.driver;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -9,10 +10,25 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class UDPReceive extends com.ncslab.block.Block{
 
 	private String name = "UDPReceive";
 
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+
+        outputNames.add("out1");
+        parameterNames.add("LocalIPPort");
+    }
 	Parameter LocalIPPort;
 	public UDPReceive(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

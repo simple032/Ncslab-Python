@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -13,11 +14,25 @@ import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 
+import java.util.Vector;
+
 public class Derivative extends Block {
 	private State stateIntegral;
 	OutputPort output;
 	InputPort input;
 
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	// G=s/(Ts+1) T->0
 	public Derivative(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);
@@ -122,7 +137,7 @@ public class Derivative extends Block {
 				 outputCode +="Block" + getBlockId() + "yout[0][0]=" + signal.getName() + ";\n";
 				  outputCode+="Block" + getBlockId() + "tout[0][0]=model.time;\n";
 				  outputCode+="}\n";
-				break;	
+				break;
 			case MATRIX:
 				outputCode+="if(mp->majorStep>0) {\n";
 				for (int i = 0; i < signal.getHeight(); i++) {

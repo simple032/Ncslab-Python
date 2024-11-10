@@ -1,5 +1,6 @@
 package com.ncslab.block.driverForStm32;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -8,11 +9,29 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class PWMForStm32 extends com.ncslab.block.Block{
 
 	Parameter channel;
 	Parameter timx;
 	Parameter frequency;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        parameterNames.add("channel");
+        parameterNames.add("timx");
+        parameterNames.add("frequency");
+        inputNames.add("in1");
+    }
 	public PWMForStm32(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 

@@ -1,5 +1,6 @@
 package com.ncslab.block.logicAndBit;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -10,24 +11,39 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class LogicOperator extends Block{
 	private double num;
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+
+    }
 
 	  public LogicOperator(JSONObject blockIn,NCSLabModel model) {
 			super(blockIn,model);
 			OutputPort output=new OutputPort(this,1,true);
 			output.setDimThrough(false);
 			outputPortList.add(output);
-			paraseParamValues();		
+			paraseParamValues();
 	  }
-	  
+
 	  public void paraseParamValues( ) {
 			num = paramValues.getDouble("Inputs");
 			for(int i=0;i<num;i++) {
 				inputPortList.add(new InputPort(this,i+1));
 			}
 		}
-	  
+
 	  public void generateOutputCodeC(CodeStructC code) {
 			String outputCode="/*Code for output of block Logical operator:("+getBlockId()+")"+getBlockName()+"*/\n";
 			OutputPort out  = outputPortList.get(0);
@@ -200,13 +216,13 @@ public class LogicOperator extends Block{
 						}
 					}
 				}
-				
-			
+
+
 				break;
 			}
 			code.addOutputCode(outputCode);
 		}
-	  
+
 	  public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);
 			OutputSignal signal[]=new OutputSignal[(int) num];
@@ -223,14 +239,14 @@ public class LogicOperator extends Block{
 					throw(e);
 				}
 			}
-			
+
 			if(v==1) {
 				out.setHeight(signal[0].getHeight());
 				out.setWidth(signal[0].getWidth());
 				out.getOutputSignalC().setHeight(signal[0].getHeight());
 				out.getOutputSignalC().setWidth(signal[0].getWidth());
-				out.getOutputSignalC().setDataType(signal[0].getDataType());	
-			}	
+				out.getOutputSignalC().setDataType(signal[0].getDataType());
+			}
 		}
 		public void checkDimension() throws MatDimException{
 			if(paramValues.getString("Operator").equals("NOT") && num>1) {

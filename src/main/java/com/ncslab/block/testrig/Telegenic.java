@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -9,6 +10,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+
+import java.util.Vector;
 
 public class Telegenic extends Block {
 
@@ -20,6 +23,34 @@ public class Telegenic extends Block {
 	Parameter AD5;
 	Parameter AD6;
 	Parameter AD7;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("AD1");
+        outputNames.add("AD2");
+        outputNames.add("AD3");
+        outputNames.add("AD4");
+        outputNames.add("AD5");
+        outputNames.add("AD6");
+        outputNames.add("AD7");
+        inputNames.add("in1");
+        parameterNames.add("DA");
+        parameterNames.add("AD1");
+        parameterNames.add("AD2");
+        parameterNames.add("AD3");
+        parameterNames.add("AD4");
+        parameterNames.add("AD5");
+        parameterNames.add("AD6");
+        parameterNames.add("AD7");
+    }
 
 	public Telegenic(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON, model);

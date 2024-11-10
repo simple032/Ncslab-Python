@@ -1,5 +1,6 @@
 package com.ncslab.block.discrete;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.discrete.DiscreteBlock;
@@ -12,10 +13,29 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class UnitDelay extends DiscreteBlock {
 
     Parameter sampleTime;
     Parameter initialCondition;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("sampleTime");
+        parameterNames.add("initialCondition");
+        outputNames.add("out1");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
     public UnitDelay(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));

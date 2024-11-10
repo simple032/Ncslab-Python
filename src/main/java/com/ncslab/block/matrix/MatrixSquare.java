@@ -1,5 +1,6 @@
 package com.ncslab.block.matrix;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -11,11 +12,26 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
+import java.util.Vector;
+
 /**
  * matrix square = A * A^H;
  * for real matrix, A^H = A^T
  */
 public class MatrixSquare extends Block {
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
     public MatrixSquare(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 

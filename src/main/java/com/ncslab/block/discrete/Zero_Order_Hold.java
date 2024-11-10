@@ -1,6 +1,7 @@
 package com.ncslab.block.discrete;
 
 import com.ncslab.block.data.DataType;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -12,10 +13,26 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Zero_Order_Hold extends DiscreteBlock {
 
     Parameter sampleTime;
     State stateOutput;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("sampleTime");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
     public Zero_Order_Hold(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);

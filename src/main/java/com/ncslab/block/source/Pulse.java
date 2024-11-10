@@ -1,5 +1,6 @@
 package com.ncslab.block.source;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.OutputPort;
@@ -10,11 +11,32 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
+import java.util.Vector;
+
 public class Pulse extends Block{
 	    Parameter amplitude;
 	    Parameter period;
 	    Parameter pulseWidth;
 	    Parameter phaseDelay;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+
+        outputNames.add("out1");
+        parameterNames.add("amplitude");
+        parameterNames.add("period");
+        parameterNames.add("pulseWidth");
+        parameterNames.add("phaseDelay");
+
+
+    }
 	public Pulse(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);
 		//����һ�����
@@ -61,7 +83,7 @@ public class Pulse extends Block{
 					    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+amplitude.getName()+"("+i+","+j+");\n";
 					    outputCode+="else\n";
 					    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;\n";
-					    outputCode+="end\n";	
+					    outputCode+="end\n";
 				}
 			}
 			break;
@@ -89,7 +111,7 @@ public class Pulse extends Block{
 			    outputCode+="else{\n";
 			    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;}\n";
 			break;
-		case MATRIX:	
+		case MATRIX:
 			for(int i=0;i<amplitude.getHeight();i++) {
 				for(int j=0;j<amplitude.getWidth();j++) {
 					outputCode+="if(currentTime<"+phaseDelay.getName()+"("+i+","+j+")){\n";

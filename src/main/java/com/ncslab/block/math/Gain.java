@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -13,43 +14,60 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Gain extends Block{
 	protected Parameter gain;
 	//Matrix gain;
 	boolean multiplication = false;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	public Gain(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-		
-		
+
+
 		//this.gain = new Matrix(paramValues.getString("Gain"));
 		this.gain=new Parameter(this,1,getBlockName(),paramValues.getString("Gain"));
 		this.multiplication = "Matrix(*)".equals(paramValues.getString("Multiplication"));
 
 		InputPort in;
 		OutputPort out;
-		
+
 		if(!this.multiplication) {
 			out = new OutputPort(this,1,true);
 			in = new InputPort(this,1);
-		}else {			
+		}else {
 			//out = new OutputPort(this,1,true,gain.row);
 			//in = new InputPort(this,1,gain.column);
-			
+
 			out = new OutputPort(this,1,true);
 			in = new InputPort(this,1);
 		}
 		//一锟斤拷锟斤拷锟�
-		
+
 		outputPortList.add(out);
-		
+
 		//一锟斤拷锟斤拷锟斤拷
 		inputPortList.add(in);
-		
+
 //		gain=new Parameter(this,1,"value");
 //		parameterList.add(gain);
-		
+
 		parameterList.add(gain);
-		
+
 	}
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
@@ -76,7 +94,7 @@ public class Gain extends Block{
 						for(int j=1;j<ops.getWidth()+1;j++) {
 							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
 							outputCode+=gain.getName()+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
-						}	
+						}
 					}
 					break;
 				}
@@ -88,7 +106,7 @@ public class Gain extends Block{
 						for(int j=1;j<gain.getWidth()+1;j++) {
 							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
 							outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+";\n";
-						}	
+						}
 					}
 					break;
 				case MATRIX:
@@ -96,7 +114,7 @@ public class Gain extends Block{
 					for(int j=1;j<ops.getWidth()+1;j++) {
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
 						outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
-					}	
+					}
 				}
 				break;
 			}
@@ -128,27 +146,27 @@ public class Gain extends Block{
 				case MATRIX:
 					outputCode+=out.getOutputSignalC().getName()+"="+ops.getOutputSignalC().getName()+"*"+gain.getName()+";\n";
 					break;
-				}				
+				}
 			}
 		}
 		code.addOutputCode(outputCode);
 	}
-	
-	
+
+
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		
+
 		String initCode="/*Code for initialization of block Gain:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=gain.getInitCodeC();
 		code.addInitCode(initCode);
 	}
-	
+
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Constant:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
+
 		OutputPort out  = outputPortList.get(0);
 		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		
+
 		if(this.multiplication==false) {
 			switch(gain.getDataType()) {
 			case REAL:
@@ -162,7 +180,7 @@ public class Gain extends Block{
 						for(int j=0;j<ops.getWidth();j++) {
 							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
 							outputCode+=gain.getName()+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
-						}	
+						}
 					}
 					break;
 				}
@@ -174,7 +192,7 @@ public class Gain extends Block{
 						for(int j=0;j<gain.getWidth();j++) {
 							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
 							outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+";\n";
-						}	
+						}
 					}
 					break;
 				case MATRIX:
@@ -182,7 +200,7 @@ public class Gain extends Block{
 					for(int j=0;j<ops.getWidth();j++) {
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=";
 						outputCode+=gain.getName()+"("+i+","+j+")"+"*"+ops.getOutputSignalC().getName()+"("+i+","+j+");\n";
-					}	
+					}
 				   }
 				break;
 				}
@@ -214,15 +232,15 @@ public class Gain extends Block{
 				case MATRIX:
 					outputCode+=out.getOutputSignalC().getName()+"="+ops.getOutputSignalC().getName()+"*"+gain.getName()+";\n";
 					break;
-				}				
+				}
 			}
 		}
-		
-		
+
+
 		code.addOutputCode(outputCode);
 	}
-	
-	
+
+
 	public void updateDimension() throws MatDimException{
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);
@@ -265,7 +283,7 @@ public class Gain extends Block{
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimension doesn't match the gain dimension!\n \n");
 				throw(e);
 			}
-			
+
 			out.setHeight(signal.getHeight());
 			out.setWidth(gain.getWidth());
 			out.getOutputSignalC().setHeight(signal.getHeight());
@@ -273,7 +291,7 @@ public class Gain extends Block{
 			out.getOutputSignalC().setDataType(DataType.MATRIX);
 		}
 	}
-	
+
 	public void checkDimension() throws MatDimException{
 	}
 }

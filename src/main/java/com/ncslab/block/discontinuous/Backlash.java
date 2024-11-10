@@ -1,4 +1,5 @@
 package com.ncslab.block.discontinuous;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import Jama.Matrix;
@@ -15,11 +16,30 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Backlash extends Block{
 	Parameter backlashWidth;
 	Parameter initialOutput;
 
 	private State xState;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("backlashWidth");
+        parameterNames.add("initialOutput");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
+
 	public Backlash(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		//һ�����룬һ�����

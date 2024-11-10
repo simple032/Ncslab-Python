@@ -180,6 +180,10 @@ abstract public class NCSLabModel {
 		checkBlocksName();
 		//解析各条连线
 		parseLines();
+		//TODO:检查是否有空端口
+		checkUnlinkedPorts();
+
+
 		if(j!=0) {
 			// 解开代数环的代码
 			try {
@@ -276,6 +280,99 @@ abstract public class NCSLabModel {
 				dimTerminalBlockList.add(block);
 			}
 		}
+	}
+
+	private void checkUnlinkedPorts() throws ModelException{
+		//空的input连接到constant
+        Vector<Block> fullBlockList = (Vector<Block>) blockList.clone();
+		for(Block block:blockList) {
+			for(int i=0; i<block.getInputPortList().size();i++) {
+                InputPort input = block.getInputPortList().get(i);
+				if(input.getLinkedLine()==null) {
+					//如果输入端口没有连接，则连接到constant
+					// {"blockType": "Constant", "blockName": "Constant1", "position": [100, 400, 160, 460], "paramValues": {"Value": "10"}}
+					JSONObject blockJSON = new JSONObject();
+					blockJSON.put("blockType", "Constant");
+					blockJSON.put("blockName", "Auto_Constant"+(blockSeq));
+					JSONObject paramValues = new JSONObject();
+					paramValues.put("Value", "0");
+					blockJSON.put("paramValues", paramValues);
+                    blockJSON.put("blockPath", block.getBlockPath());
+
+                    Block newBlock= null;
+
+                    newBlock = BlockType.createBlock(blockSeq+1,blockJSON,this);
+
+                    blockSeq++;
+
+					System.out.println("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
+
+                    fullBlockList.add(newBlock);
+
+                    JSONObject lineJSON = new JSONObject();
+                    lineJSON.put("fromBlockName", newBlock.getBlockName());
+                    lineJSON.put("fromPortNo", 1);
+
+                    lineJSON.put("toBlockName", block.getBlockName());
+                    lineJSON.put("toPortNo", i+1);
+                    lineJSON.put("linePath", block.getBlockPath());
+
+                    Line line=Line.createLine(lineJSON, fullBlockList);
+                    line.setLineId(lineSeq+1);
+                    lineSeq++;
+
+                    System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+
+                    lineList.add(line);
+				}
+			}
+		}
+		//空的output连接terminal
+        for(Block block:blockList){
+            for(int i=0; i<block.getOutputPortList().size();i++) {
+                OutputPort output = block.getOutputPortList().get(i);
+                if(output.getLinkedLineList().isEmpty()) {
+                    //如果输入端口没有连接，则连接到constant
+                    // {"blockType": "Terminator", "blockName": "Terminator1", "position": [100, 400, 160, 460], "paramValues": {}}
+                    JSONObject blockJSON = new JSONObject();
+                    blockJSON.put("blockType", "Terminator");
+                    blockJSON.put("blockName", "Auto_Terminator" + (blockSeq));
+                    JSONObject paramValues = new JSONObject();
+                    blockJSON.put("paramValues", paramValues);
+                    blockJSON.put("blockPath", block.getBlockPath());
+
+
+                    Block newBlock = null;
+
+                    newBlock = BlockType.createBlock(blockSeq, blockJSON, this);
+
+                    blockSeq++;
+
+                    System.out.println("Parsing block (" + newBlock.getBlockId() + "): '" + newBlock.getBlockName() + "'...");
+
+                    fullBlockList.add(newBlock);
+
+                    JSONObject lineJSON = new JSONObject();
+                    lineJSON.put("fromBlockName", block.getBlockName());
+                    lineJSON.put("fromPortNo", i + 1);
+
+                    lineJSON.put("toBlockName", newBlock.getBlockName());
+                    lineJSON.put("toPortNo", 1);
+                    lineJSON.put("linePath", block.getBlockPath());
+
+                    Line line = Line.createLine(lineJSON, fullBlockList);
+                    line.setLineId(lineSeq + 1);
+                    lineSeq++;
+
+                    System.out.println("Parsing line (" + line.getLineId() + "): '" + line.getLinkedOutputPort().getBLock().getBlockName() + "(" + line.getLinkedOutputPort().getNumber() + ")-->" + line.getLinkedInputPort().getBLock().getBlockName() + "(" + line.getLinkedInputPort().getNumber() + ")");
+
+                    lineList.add(line);
+                }
+
+            }
+        }
+        if(blockList.size() != fullBlockList.size())
+            blockList = fullBlockList;
 	}
 
 	private void scanDimInputPort(InputPort inputPort) {

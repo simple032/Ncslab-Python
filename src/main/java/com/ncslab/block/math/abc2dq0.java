@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -11,8 +12,30 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class abc2dq0 extends Block{
 	String function;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        outputNames.add("out2");
+        outputNames.add("out3");
+        inputNames.add("in1");
+        inputNames.add("in2");
+        inputNames.add("in3");
+        inputNames.add("in4");
+    }
 	public abc2dq0(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		inputPortList.add(new InputPort(this,1));
