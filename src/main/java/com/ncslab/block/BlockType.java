@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.function.BiFunction;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,6 +24,7 @@ import com.ncslab.ncslablink.ModelException;
  * but follow the javadoc mentioned in <code>SearchableBlock</code>
  * @see SearchableBlock
  */
+@Slf4j
 public class BlockType{
 	private static final Map<String, BiFunction<JSONObject, NCSLabModel, Block>> blockFactory = new HashMap<>();
 
@@ -291,6 +293,13 @@ public class BlockType{
         blockClassTree.put("UDPReceiverForStm32", com.ncslab.block.driverForStm32.UDPReceiverForStm32.class);
         blockClassTree.put("UDPSenderForStm32", com.ncslab.block.driverForStm32.UDPSenderForStm32.class);
 
+        // DriverForLoong
+//        blockClassTree.put("PWMForLoong", com.ncslab.block.driverForStm32.PWMForStm32.class);
+        blockClassTree.put("AD_Collect_Loong", com.ncslab.block.driverForLoong.ADCForLoong.class);
+        blockClassTree.put("DA_Out_Loong", com.ncslab.block.driverForLoong.DACForLoong.class);
+//        blockClassTree.put("UDPReceiverForStm32", com.ncslab.block.driverForStm32.UDPReceiverForStm32.class);
+//        blockClassTree.put("UDPSenderForStm32", com.ncslab.block.driverForStm32.UDPSenderForStm32.class);
+
         // Matrix
         blockClassTree.put("CreateDiagonalMatrix", com.ncslab.block.matrix.CreateDiagonalMatrix.class);
         blockClassTree.put("CrossProduct", com.ncslab.block.matrix.CrossProduct.class);
@@ -325,12 +334,8 @@ public class BlockType{
             Class<? extends Block> blockClass = blockClassTree.get(blockType);
             if(blockClass != null)
                 block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
-        }catch(InvocationTargetException e){
-            Throwable realException = e.getCause();
-            realException.printStackTrace();  // 打印实际的异常信息
-            // 根据实际异常类型进行进一步处理
-        }catch(NoSuchMethodException|InstantiationException|IllegalAccessException e){
-            System.err.println(e);
+        }catch(InvocationTargetException|NoSuchMethodException|InstantiationException|IllegalAccessException e){
+            log.error("e:", e);
         }catch(NullPointerException e){
             System.err.println(e);
         }
@@ -358,9 +363,9 @@ public class BlockType{
             Class<? extends Block> blockClass = blockClassTree.get(blockType);
 
             // 调用静态方法
-            Vector<String> parameterNames = (Vector<String>) blockClass.getMethod("getParameterNames").invoke(null); // 注意这里是null，因为是静态方法
-            Vector<String> inputNames = (Vector<String>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法
-            Vector<String> outputNames = (Vector<String>) blockClass.getMethod("getOutputNames").invoke(null); // 注意这里是null，因为是静态方法
+            Vector<?> parameterNames = (Vector<?>) blockClass.getMethod("getParameterNames").invoke(null); // 注意这里是null，因为是静态方法
+            Vector<?> inputNames = (Vector<?>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法
+            Vector<?> outputNames = (Vector<?>) blockClass.getMethod("getOutputNames").invoke(null); // 注意这里是null，因为是静态方法
 
             JSONObject jo = new JSONObject();
             jo.put("type", blockType);
