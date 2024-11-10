@@ -103,6 +103,9 @@ public class CodeStructCWindows extends CodeStructC {
 	public boolean makeExeFile() {
 		try {
 			//锟斤拷锟斤拷make锟斤拷锟斤拷锟缴匡拷执锟叫达拷锟斤拷
+//            String cmakeCommand[] = {"cmake","-G", "\"MinGW Makefiles\"", "."};
+//            Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
+//            makeProcess.waitFor();
 			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
 			//锟斤拷取OutputStream锟斤拷errStream锟斤拷锟斤拷锟斤拷锟饺★拷锟斤拷锟绞憋拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));

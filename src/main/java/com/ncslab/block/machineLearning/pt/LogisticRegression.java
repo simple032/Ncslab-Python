@@ -1,20 +1,13 @@
-package com.ncslab.block.machineLearning;
+package com.ncslab.block.machineLearning.pt;
 
-import java.io.IOException;
-
+import com.ncslab.block.machineLearning.MachineLearning;
 import org.json.JSONObject;
 
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.block.BlockType;
-import com.ncslab.block.Block;
-import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.data.DataType;
 
-public class LogisticRegression extends MachineLearning {
+public class LogisticRegression extends PTModel {
     private Parameter
     inputFeatures,
     outputFeatures,
@@ -26,15 +19,11 @@ public class LogisticRegression extends MachineLearning {
     public LogisticRegression(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
 
-        CodeStructC.addIncludeCode("#include \"LogisticRegression.hpp\"\n");
-        CodeStructC.addWrittenFile("../../../ml/LogisticRegression/LogisticRegression.hpp", "LogisticRegression.hpp");
-        CodeStructC.addWrittenFile("../../../ml/LogisticRegression/logistic_regression_model.py", "logistic_regression_model.py");
-
         this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
         this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
         this.epochs = new Parameter(this, 3, "epochs", paramValues.getString("epochs"));
         this.learningRate = new Parameter(this, 4, "learningRate", paramValues.getString("learningRate"));
-        this.modelVariable = new MLVariable(this, 1, "logisticRegression", "2333");
+        this.modelVariable = new MachineLearning.MLVariable(this, 1, "logisticRegression", "2333");
 
         this.lossString = paramValues.getString("lossFunction").trim().toUpperCase();
         this.datasetString = paramValues.getString("dataset").trim().toLowerCase();
@@ -56,6 +45,10 @@ public class LogisticRegression extends MachineLearning {
     @Override
         public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+
+        code.addIncludeCode("#include \"LogisticRegression.hpp\"\n");
+        code.addWrittenFile("../../ml/pt/LogisticRegression.hpp", "LogisticRegression.hpp");
+        code.addWrittenFile("../../ml/pt/logistic_regression_model.py", "logistic_regression_model.py");
 
         String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
 

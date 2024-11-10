@@ -45,6 +45,15 @@ public abstract class GlobalVariable {
 		data=new Data(dataString);
 	}
 
+    /** Default: regard <code>localname</code> as a scalar.
+     * @param block
+     * @param id
+     * @param localName
+     */
+    public GlobalVariable(Block block, int id, String localName){
+        this(block, id, localName, "233");
+    }
+
 	/**
 	 * Get the name of the variable that will be used in the cpp file.
 	 * @return String for the name of the variable.
