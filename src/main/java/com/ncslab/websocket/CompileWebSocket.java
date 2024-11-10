@@ -79,7 +79,9 @@ public class CompileWebSocket {
 
 				modelC.setSolver(Solver.ode4);
 
-				modelC.generate();
+                modelC.removeAllFiles();
+
+                modelC.generate();
 
 				sendMessage(session, "generated");
 

@@ -329,9 +329,7 @@ public class BlockType{
             Throwable realException = e.getCause();
             realException.printStackTrace();  // 打印实际的异常信息
             // 根据实际异常类型进行进一步处理
-        }catch(NoSuchMethodException|InstantiationException|IllegalAccessException e){
-            System.err.println(e);
-        }catch(NullPointerException e){
+        }catch(NoSuchMethodException | InstantiationException | IllegalAccessException | NullPointerException e){
             System.err.println(e);
         }
         if(block == null)
@@ -358,9 +356,9 @@ public class BlockType{
             Class<? extends Block> blockClass = blockClassTree.get(blockType);
 
             // 调用静态方法
-            Vector<String> parameterNames = (Vector<String>) blockClass.getMethod("getParameterNames").invoke(null); // 注意这里是null，因为是静态方法
-            Vector<String> inputNames = (Vector<String>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法
-            Vector<String> outputNames = (Vector<String>) blockClass.getMethod("getOutputNames").invoke(null); // 注意这里是null，因为是静态方法
+            Vector<?> parameterNames = (Vector<?>) blockClass.getMethod("getParameterNames").invoke(null); // 注意这里是null，因为是静态方法
+            Vector<?> inputNames = (Vector<?>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法
+            Vector<?> outputNames = (Vector<?>) blockClass.getMethod("getOutputNames").invoke(null); // 注意这里是null，因为是静态方法
 
             JSONObject jo = new JSONObject();
             jo.put("type", blockType);
