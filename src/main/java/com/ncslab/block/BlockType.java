@@ -177,8 +177,8 @@ public class BlockType{
 
         // DriverForLoong
 //        blockClassTree.put("PWMForLoong", com.ncslab.block.driverForStm32.PWMForStm32.class);
-        blockClassTree.put("AD_Collect_Loong", com.ncslab.block.driverForLoong.ADCForLoong.class);
-        blockClassTree.put("DA_Out_Loong", com.ncslab.block.driverForLoong.DACForLoong.class);
+        // blockClassTree.put("AD_Collect_Loong", com.ncslab.block.driverForLoong.ADCForLoong.class);
+        // blockClassTree.put("DA_Out_Loong", com.ncslab.block.driverForLoong.DACForLoong.class);
 //        blockClassTree.put("UDPReceiverForStm32", com.ncslab.block.driverForStm32.UDPReceiverForStm32.class);
 //        blockClassTree.put("UDPSenderForStm32", com.ncslab.block.driverForStm32.UDPSenderForStm32.class);
 

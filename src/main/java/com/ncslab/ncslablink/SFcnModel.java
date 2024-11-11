@@ -1,9 +1,12 @@
 package com.ncslab.ncslablink;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -84,9 +87,19 @@ public class SFcnModel {
 //		JSONObject jsonData = new JSONObject();
 		try {
 			//字符串内容依次是parameterNum;inputPortNum|input port1 width,input port2 width ...;outputPortNum | output port1 width...;numContStates|numDiscStates;
-			InputStream inputStream= new FileInputStream(codePath+"sfcncompileresult.txt");
+			InputStream inputStream= Files.newInputStream(Paths.get(codePath + "sfcncompileresult.txt"));
 
-			msg=new String(inputStream.readAllBytes());
+//			msg=new String(inputStream.readAllBytes());
+
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+
+            while ((length = inputStream.read(buffer)) != -1) {
+                bao.write(buffer, 0, length);
+            }
+
+            msg = bao.toString();
 
 			inputStream.close();
 		} catch (IOException e) {
