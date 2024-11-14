@@ -129,6 +129,13 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 //			String cmakeCommand[] = {"cmake","."};
 //			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
 //			makeProcess.waitFor();
+            // 获取规范化路径
+//            String absPath = file.getCanonicalPath();
+//            String cmakeCommand[] = {"cmake", "-G", "\"MinGW Makefiles\"", "."};
+////            String cmakeCommand = "cmake -G \"MinGW Makefiles\" -DCMAKE_C_COMPILER=\"C:/MinGW64/bin/gcc.exe\" -DCMAKE_CXX_COMPILER=\"C:/MinGW64/bin/g++.exe\" -DCMAKE_MAKE_PROGRAM=\"C:/MinGW64/bin/mingw32-make.exe\"";
+//            Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(absPath));
+//            System.out.printf("Command: [%s %s]\n", absPath, Arrays.toString(cmakeCommand));
+//            makeProcess.waitFor();
 
 			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
 			// get OutputStream and errStream of the process, in case of blocking

@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import test.java.ResourceReader;
+import utils.ResourceReader;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
