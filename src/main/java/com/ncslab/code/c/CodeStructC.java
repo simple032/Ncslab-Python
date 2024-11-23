@@ -543,13 +543,14 @@ abstract public class CodeStructC{
 	}
 
     @Getter
-   protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("默认值");
+   protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("/data/M2PLab");
 
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
 			:
 			Property.instance.getProperty("CCodePathWin"))
         .replace("${M2PLAB_ROOT}", m2plabRoot);
+
 
     protected String maketool = Property.instance.getProperty("MakeTool");
 
@@ -877,15 +878,20 @@ abstract public class CodeStructC{
         String userPath=codePathBase+model.getUserId();
         String modelPath=userPath+"/"+model.getModelId();
         File dir = new File(modelPath);
-        File[] files = dir.listFiles();
-        for(File file : files){
-            if (file.isFile() && isTargetFile(file)) {
-//                    System.out.println("Deleting file: " + file.getAbsolutePath());
-                    if (!file.delete()) {
-                        System.err.println("Failed to delete file: " + file.getAbsolutePath());
-                    }
-            }
-        }
+		if(dir != null && dir.exists() && dir.isDirectory()){
+			File[] files = dir.listFiles();
+			if(files != null){
+				for(File file : files){
+					if (file.isFile() && isTargetFile(file)) {
+		//                    System.out.println("Deleting file: " + file.getAbsolutePath());
+							if (!file.delete()) {
+								System.err.println("Failed to delete file: " + file.getAbsolutePath());
+							}
+					}
+				}
+			}
+		}
+       
 
     }
 

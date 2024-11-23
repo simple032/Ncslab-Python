@@ -31,6 +31,7 @@ double weights8[] = {716.0 / 82.0 , -2079.0 / 82.0 , 1002.0 / 82.0 , 834.0 / 82.
 void ncslabLoop(){
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
+        writeInformation();
         NCSLabOneStep();
        mp->time+=mp->stepSize;
         //printf("time:%f\n",mp->time);

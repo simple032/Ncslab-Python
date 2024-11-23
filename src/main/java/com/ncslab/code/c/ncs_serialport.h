@@ -1,7 +1,7 @@
 #ifndef __NCS_SERIALPORT_H
 #define __NCS_SERIALPORT_H
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 #include <Windows.h>
 
@@ -15,7 +15,7 @@ typedef unsigned int DWORD;
 #define INVALID_HANDLE_VALUE (-1)
 #endif
 
-#endif // __WIN32
+#endif // _WIN32
 
 #include <stdint.h>
 

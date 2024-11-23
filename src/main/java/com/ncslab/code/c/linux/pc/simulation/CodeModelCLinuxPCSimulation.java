@@ -83,7 +83,7 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 			}
 
 			process = Runtime.getRuntime().exec(
-				"sudo chown -R cyst:cyst " + codeRaspberry.getCodePath(),
+				"sudo chown -R " + user +  ":" + group + " " + codeRaspberry.getCodePath(),
 				null,
 				new File(codeRaspberry.getCodePath()));
 

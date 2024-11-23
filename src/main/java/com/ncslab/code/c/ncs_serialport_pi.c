@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <termios.h>
 
-#ifndef __WIN32
+#ifndef _WIN32
 #include <wiringPi.h>
 #include <wiringSerial.h>
 #include <unistd.h>
@@ -35,9 +35,9 @@ HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg)
     HANDLE	hComm = serialOpen(port, baudrate);
 	if(hComm == INVALID_HANDLE_VALUE)
     {
-        #ifdef __WIN32
+        #ifdef _WIN32
         err = GetLastError();
-        #endif // __WIN32
+        #endif // _WIN32
         sprintf(msg, "%s Open Error. Error code:%d.\r\n", port, err);
         return INVALID_HANDLE_VALUE;
     }
@@ -55,7 +55,7 @@ HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg)
 void Serialport_Close(HANDLE handle)
 {
 	if(handle!=INVALID_HANDLE_VALUE){
-        #ifdef __WIN32
+        #ifdef _WIN32
 		CloseHandle(handle);
         #else
         serialClose(handle);
@@ -70,7 +70,7 @@ void Serialport_Close(HANDLE handle)
 void Serialport_Flush(HANDLE handle)
 {
 	if(handle!=INVALID_HANDLE_VALUE){
-        #ifdef __WIN32
+        #ifdef _WIN32
         err = GetLastError();
         #else
         serialFlush(handle);

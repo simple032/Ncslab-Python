@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
+import java.util.Optional;
 
 import com.ncslab.utils.AlgorithmsMapper;
 import com.ncslab.utils.Mybatis1Utils;
@@ -20,10 +21,16 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.database.Algorithms;
+import com.ncslab.utils.Property;
+
 
 abstract public class CodeModelC extends CodeModel {
 
 	private static final String REAL = "real_t";
+
+	protected String user = Optional.ofNullable(Property.instance.getProperty("user")).orElse("m2plab");
+	protected String group = Optional.ofNullable(Property.instance.getProperty("group")).orElse("m2plab");
+
 
 	//生成代码的时候统计signal和parameter的个数
 	@Setter

@@ -88,6 +88,7 @@ public class SimulateWebSocket {
                 }else{
 					modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
 				}
+				modelC.removeAllFiles();
 
 	        	//modelC.setSolver(Solver.ode4);
 

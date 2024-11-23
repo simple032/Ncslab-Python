@@ -8,7 +8,7 @@ LD=g++
 # LD=/opt/homebrew/Cellar/llvm/17.0.5/bin/clang++
 
 srcdir=/home/wenshan/NetConTop/ncslablink/src/main/java/com/ncslab/code/c
-pidir=/home/wenshan/ncslablink/WiringPi-2.61-1/wiringPi
+pidir=/data/M2PLab/server/cruntime/include
 jsondir=/usr/include/jsoncpp
 # CCFlag=-D_SIMU -fpermissive -Wwrite-strings -I /Users/square/vcpkg/packages/jsoncpp_arm64-osx/include -I /Users/square/Documents/Code/lib/pi -I /Users/square/Documents/Code/ncslablink/src/code/c -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -pthread -fopenmp -g -O2 -std=c++11 -fstack-protector-strong -Wformat -Werror=format-security -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 # -fopenmp 
@@ -22,7 +22,7 @@ CCFlag=-D_SIMU -I $(srcdir) -I $(jsondir) -I $(pidir) -fPIC -g -O2 -std=gnu++11 
 # -fopenmp -lpthread =pthread
 # -Werror=format-security
 # -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wdate-time 
-LDFLAG=-lm -ljsoncpp -g -O2 -Wformat -rdynamic -fPIC
+LDFLAG=-lm -g -O2 -Wformat -rdynamic -fPIC
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)

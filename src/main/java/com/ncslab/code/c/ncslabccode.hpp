@@ -168,9 +168,9 @@ typedef struct {
 
 	BLOCK **blocks;
 	int majorStep;
-#ifndef __WIN32
+#ifndef _WIN32
 	struct timeval tv;
-#endif // __WIN32
+#endif // _WIN32
   int terminalNum;
 }MODEL;
 

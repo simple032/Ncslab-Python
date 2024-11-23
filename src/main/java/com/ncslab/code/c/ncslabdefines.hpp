@@ -2,9 +2,9 @@
 #define NCSLABDEFINES_HPP
 
 #include <list>
-#ifndef __WIN32
+#ifndef _WIN32
 #include <sys/time.h>
-#endif // __WIN32
+#endif // _WIN32
 
 #ifdef __cplusplus
 extern "C" {
@@ -94,23 +94,23 @@ extern "C" {
  *   uint8_T, uint16_T, uint32_T  - unsigned 8, 16, or 32 bit integers   *
  *   real32_T, real64_T           - 32 and 64 bit floating point numbers *
  *=======================================================================*/
-typedef signed char int8_T;
-typedef unsigned char uint8_T;
-typedef short int16_T;
-typedef unsigned short uint16_T;
-typedef int int32_T;
-typedef unsigned int uint32_T;
-typedef float real32_T;
-typedef double real64_T;
+// typedef signed char int8_T;
+// typedef unsigned char uint8_T;
+// typedef short int16_T;
+// typedef unsigned short uint16_T;
+// typedef int int32_T;
+// typedef unsigned int uint32_T;
+// typedef float real32_T;
+// typedef double real64_T;
 
 /*===========================================================================*
  * Generic type definitions: real_T, time_T, boolean_T, char_T, int_T,       *
  *                           uint_T and byte_T.                              *
  *===========================================================================*/
 
-typedef double time_T;
-typedef unsigned char boolean_T;
-typedef char_T byte_T;
+// typedef double time_T;
+// typedef unsigned char boolean_T;
+// typedef char_T byte_T;
 
 #ifdef __cplusplus
 }
