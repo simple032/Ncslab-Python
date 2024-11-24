@@ -22,6 +22,7 @@ import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.block.subsystem.*;
 
 abstract public class NCSLabModel {
 
@@ -439,16 +440,21 @@ abstract public class NCSLabModel {
         String blockPath=null;
         String toPortNo=lineJSON.getString("toPortNo");
         for(Block block:blockList) {
-            if(block.getBlockName().equals(toBlockName)&&block.getBlockType().equals("Subsystem")) {
+            if(block.getBlockName().equals(toBlockName)&&(block instanceof Subsystem)) {
                 blockPath=block.getBlockPath()+"/"+toBlockName;
                 break;
             }
         }
+		if(blockPath == null){
+			return;
+		}
         for(Block block1:blockList) {
             System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
                 "  getBlockType: "+block1.getBlockType());
 
-            if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("In")&&block1.getParamValues().getString("No").equals(toPortNo)){
+            if(block1.getBlockPath().equals(blockPath)&&(block1 instanceof In)
+			&&block1.getParamValues().getString("No").equals(toPortNo)
+			){
                 lineJSON.put("toBlockName", block1.getBlockName());
                 break;
             }
@@ -477,13 +483,18 @@ abstract public class NCSLabModel {
         String blockPath=null;
         String fromPortNo=lineJSON.getString("fromPortNo");
         for(Block block:blockList) {
-            if(block.getBlockName().equals(fromBlockName)&&block.getBlockType().equals("Subsystem")) {
+            if(block.getBlockName().equals(fromBlockName)&&(block instanceof Subsystem)) {
                 blockPath=block.getBlockPath()+"/"+fromBlockName;
                 break;
             }
         }
+		if(blockPath == null){
+			return;
+		}
         for(Block block1:blockList) {
-            if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("Out")&&block1.getParamValues().getString("No").equals(fromPortNo)){
+            if(block1.getBlockPath().equals(blockPath)&&(block1 instanceof Out)
+			&&block1.getParamValues().getString("No").equals(fromPortNo)
+			){
                 lineJSON.put("fromBlockName", block1.getBlockName());
                 break;
             }
