@@ -2,9 +2,11 @@ package com.ncslab.block.powerSystem;
 
 import com.ncslab.block.Block;
 
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -26,6 +28,26 @@ public class secondOrderFiliter extends Block{
 	Parameter sampleTime;
 	Parameter initState;
 	Parameter DCInitialInput;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("filterType");
+        parameterNames.add("naturalFrequency");
+        parameterNames.add("dampingRatio");
+        parameterNames.add("sampleTime");
+        parameterNames.add("initState");
+        parameterNames.add("DCInitialInput");
+    }
 
 	public secondOrderFiliter(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);

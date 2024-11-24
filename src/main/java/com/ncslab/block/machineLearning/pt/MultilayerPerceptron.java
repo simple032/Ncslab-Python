@@ -1,11 +1,14 @@
 package com.ncslab.block.machineLearning.pt;
 
 import com.ncslab.block.machineLearning.MachineLearning;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
+
+import java.util.Vector;
 
 public class MultilayerPerceptron extends PTModel {
     private Parameter inputFeatures,
@@ -14,6 +17,21 @@ public class MultilayerPerceptron extends PTModel {
                 learningRate,
                 epochs;
     private String lossFunctionString, datasetString, activationString;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+
+
+    static {
+
+
+        parameterNames.add("inputFeatures");
+        parameterNames.add("outputFeatures");
+        parameterNames.add("hiddenLayers");
+        parameterNames.add("learningRate");
+        parameterNames.add("epoch");
+    }
 
 
     public MultilayerPerceptron(JSONObject jsonObject, NCSLabModel model) {

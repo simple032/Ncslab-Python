@@ -2,6 +2,8 @@ package com.ncslab.line;
 
 import java.util.Vector;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -13,10 +15,15 @@ public class Line {
 
 	private int width=1;
 
-	private InputPort linkedInputPort=null;
-	private OutputPort linkedOutputPort=null;
+	@Getter
+    private InputPort linkedInputPort=null;
+	@Setter
+    @Getter
+    private OutputPort linkedOutputPort=null;
 
-	private int lineId=0;
+	@Setter
+    @Getter
+    private int lineId=0;
 
 	Line(JSONObject lineJSON,Vector<Block> blockList){
 		String fromBlockName=lineJSON.getString("fromBlockName");
@@ -97,27 +104,7 @@ public class Line {
 
 	}
 
-	public InputPort getLinkedInputPort() {
-		return this.linkedInputPort;
-	}
-
-	public OutputPort getLinkedOutputPort() {
-		return this.linkedOutputPort;
-	}
-
-	public void setLinkedOutputPort(OutputPort outputPort) {
-		this.linkedOutputPort=outputPort;
-	}
-
-	public void setLineId(int lineId) {
-		this.lineId=lineId;
-	}
-
-	public int getLineId() {
-		return this.lineId;
-	}
-
-	public static Line createLine(JSONObject lineJSON,NCSLabModel model) {
+    public static Line createLine(JSONObject lineJSON,NCSLabModel model) {
 		Vector<Block> blockList=model.getBlockList();
 
 		Line line=new Line(lineJSON,blockList);

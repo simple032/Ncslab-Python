@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -13,6 +14,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
+
+import java.util.Vector;
 
 public class PIDController extends Block {
 
@@ -28,6 +31,23 @@ public class PIDController extends Block {
 
     Parameter externalReset;
     Parameter sampleTime;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("P");
+        parameterNames.add("I");
+        parameterNames.add("D");
+        parameterNames.add("N");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
 	public PIDController(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);
@@ -45,11 +65,11 @@ public class PIDController extends Block {
 		parameterList.add(cparaN);
 
 		
-		// stateIntegral=new State(this,1,"integral");
-		// stateList.add(stateIntegral);
-
-		// stateFilter=new State(this,2,"filter");
-		// stateList.add(stateFilter);
+//		stateIntegral=new State(this,1,"integral");
+//		stateList.add(stateIntegral);
+//
+//		stateFilter=new State(this,2,"filter");
+//		stateList.add(stateFilter);
 		 
         limitOutput = new Parameter(this, parameterList.size() + 1, "LimitOutput", paramValues.getString("LimitOutput"));
         parameterList.add(limitOutput);

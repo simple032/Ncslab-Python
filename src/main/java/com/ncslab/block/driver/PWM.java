@@ -1,5 +1,6 @@
 package com.ncslab.block.driver;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -8,9 +9,25 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class PWM extends com.ncslab.block.Block{
 
 	Parameter port;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        parameterNames.add("port");
+        inputNames.add("in1");
+    }
 	public PWM(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 

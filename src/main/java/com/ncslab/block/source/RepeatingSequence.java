@@ -1,5 +1,6 @@
 package com.ncslab.block.source;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -10,9 +11,26 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
+import java.util.Vector;
+
 public class RepeatingSequence extends Block {
 	Parameter rep_seq_t;
 	Parameter rep_seq_y;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+
+        outputNames.add("out1");
+
+        parameterNames.add("rep_seq_t");
+        parameterNames.add("rep_seq_y");
+    }
 
 	public RepeatingSequence(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);

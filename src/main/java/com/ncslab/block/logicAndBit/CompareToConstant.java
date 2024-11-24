@@ -1,5 +1,6 @@
 package com.ncslab.block.logicAndBit;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -12,9 +13,29 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class CompareToConstant extends Block{
 	Parameter value;
-	
+
+
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("value");
+    }
+
   public CompareToConstant(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
@@ -22,14 +43,14 @@ public class CompareToConstant extends Block{
 		value = new Parameter(this,1,"value",paramValues.getString("const"));
 		parameterList.add(value);
   }
-  
+
   public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		String initCode="/*Code for initialization of block Compare To Constant:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=value.getInitCodeC();
 		code.addInitCode(initCode);
   }
-  
+
   public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Compare To Constant:("+getBlockId()+")"+getBlockName()+"*/\n";
 		OutputPort out  = outputPortList.get(0);
@@ -82,26 +103,26 @@ public class CompareToConstant extends Block{
 			break;
 		}
 		code.addOutputCode(outputCode);
-  }	
-  
+  }
+
   public void updateDimension() throws MatDimException{
 	    OutputPort out  = outputPortList.get(0);
 	    InputPort in  = inputPortList.get(0);
 	    OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-	    
+
 	    if(value.getDataType()==DataType.MATRIX&&signal.getDataType()==DataType.REAL) {
 			out.setHeight(value.getHeight());
 			out.setWidth(value.getWidth());
 			out.getOutputSignalC().setHeight(value.getHeight());
 			out.getOutputSignalC().setWidth(value.getWidth());
-			out.getOutputSignalC().setDataType(DataType.MATRIX);	
+			out.getOutputSignalC().setDataType(DataType.MATRIX);
 		}
 		else if(value.getDataType()==DataType.REAL&&signal.getDataType()==DataType.MATRIX) {
 			out.setHeight(signal.getHeight());
 			out.setWidth(signal.getWidth());
 			out.getOutputSignalC().setHeight(signal.getHeight());
 			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());	
+			out.getOutputSignalC().setDataType(signal.getDataType());
 		}
 		else{
 			if(value.getWidth()!=signal.getWidth()||value.getHeight()!=signal.getHeight()) {
@@ -112,10 +133,10 @@ public class CompareToConstant extends Block{
 			out.setWidth(signal.getWidth());
 			out.getOutputSignalC().setHeight(signal.getHeight());
 			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());	
+			out.getOutputSignalC().setDataType(signal.getDataType());
 		}
    }
-  
-  public void checkDimension() throws MatDimException{   
+
+  public void checkDimension() throws MatDimException{
   }
 }

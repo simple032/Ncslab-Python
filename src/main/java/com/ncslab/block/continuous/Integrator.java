@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 //import java.util.Vector;
 
@@ -15,6 +16,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.block.io.OutputSignal;
 
+import java.util.Vector;
+
 public class Integrator extends Block {
 	private State stateIntegral;
 	private Parameter initialCondition;
@@ -24,6 +27,25 @@ public class Integrator extends Block {
 
     Parameter externalReset;//zhou_20240507 add externalReset
     Parameter conditionSource;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+
+    //这个的inputNames需要再次修改
+    static {
+        parameterNames.add("InitialCondition");
+        parameterNames.add("externalReset");//zhou_20240507 add externalReset
+        parameterNames.add("conditionSource");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
 	public Integrator(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);

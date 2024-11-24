@@ -175,19 +175,4 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 	protected void writeNCSWrittenFiles(){
 		super.writeNCSWrittenFiles();
 	}
-
-//    public static void main(String[] args) throws IOException, InterruptedException {
-//        String absPath = "D:\\Sustech\\M2PLab\\prew\\M2PLab\\data\\CCode\\18\\122-self";
-////            String cmakeCommand[] = {"cmake", "-G", "MinGW Makefiles", "."};
-//        String cmakeCommand = "cmake -G \"MinGW Makefiles\" .";
-//        Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(absPath));
-//        System.out.printf("Command: [%s %s]\n", absPath, cmakeCommand);
-//        makeProcess.waitFor();
-//
-//        Process process=Runtime.getRuntime().exec("mingw32-make -j8", null, new File(absPath));
-//        System.out.printf("Command: [%s mingw32-make -j8]\n", absPath);
-//        // get OutputStream and errStream of the process, in case of blocking
-//        process.waitFor();
-//        System.out.println("End");
-//    }
 }

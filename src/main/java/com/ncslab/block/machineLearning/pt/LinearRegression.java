@@ -1,11 +1,14 @@
 package com.ncslab.block.machineLearning.pt;
 
 import com.ncslab.block.machineLearning.MachineLearning;
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
+
+import java.util.Vector;
 
 public class LinearRegression extends PTModel{
     private Parameter
@@ -15,6 +18,24 @@ public class LinearRegression extends PTModel{
             epochs;
 
     private String lossString, datasetString;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("inputFeatures");
+        parameterNames.add("outputFeatures");
+        parameterNames.add("learningRate");
+        parameterNames.add("epochs");
+    }
 
     public LinearRegression(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);

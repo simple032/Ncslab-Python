@@ -2,9 +2,11 @@ package com.ncslab.block.powerSystem;
 
 import com.ncslab.block.Block;
 
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -26,6 +28,29 @@ public class pll3ph extends Block{
 	Parameter maxFrequency;
 	Parameter filterFrequency;
 	Parameter sampleTime;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        outputNames.add("out2");
+        inputNames.add("in1");
+        inputNames.add("in2");
+        inputNames.add("in3");
+        parameterNames.add("MinimumFreq");
+        parameterNames.add("timeDerivative");
+        parameterNames.add("maxFrequency");
+        parameterNames.add("filterFrequency");
+        parameterNames.add("sampleTime");
+    }
 
 	public pll3ph(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);

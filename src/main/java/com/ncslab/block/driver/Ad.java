@@ -1,5 +1,6 @@
 package com.ncslab.block.driver;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.OutputPort;
@@ -8,8 +9,24 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Ad extends com.ncslab.block.Block{
 
+
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        parameterNames.add("channel");
+    }
 	Parameter channel;
 	public Ad(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

@@ -1,5 +1,6 @@
 package com.ncslab.block.discrete;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -10,10 +11,28 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Delay extends DiscreteBlock {
 	Parameter sampleTime;
 	Parameter initialCondition;
 	Parameter delayLength;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("sampleTime");
+        parameterNames.add("initialCondition");
+        parameterNames.add("delayLength");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	public Delay(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));

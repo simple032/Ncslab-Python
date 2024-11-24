@@ -1,5 +1,6 @@
 package com.ncslab.block.source;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.OutputPort;
@@ -10,11 +11,29 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
+import java.util.Vector;
+
 public class Step extends Block{
     Parameter time0;
     Parameter after;
     Parameter before;
-	
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+
+        outputNames.add("out1");
+
+        parameterNames.add("time");
+        parameterNames.add("after");
+        parameterNames.add("before");
+    }
+
 	public Step(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);
 		//����һ�����
@@ -28,7 +47,7 @@ public class Step extends Block{
 		outputPortList.get(0).setHeight(time0.getHeight());
 		outputPortList.get(0).setWidth(time0.getWidth());
 	}
-	
+
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
 		String initCode="";
@@ -50,13 +69,13 @@ public class Step extends Block{
 		break;
 		case MATRIX:
 			for(int i=1;i<time0.getHeight()+1;i++) {
-				for(int j=1;j<time0.getWidth()+1;j++) {	
+				for(int j=1;j<time0.getWidth()+1;j++) {
 					outputCode+="if sign(t-"+time0.getName()+"("+i+","+j+")+offset)>=0\n";
 			        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+after.getName()+"("+i+","+j+");\n";
 			        outputCode+="else\n";
 			        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+before.getName()+"("+i+","+j+");\n";
-			        outputCode+="end\n";			
-				}	
+			        outputCode+="end\n";
+				}
 			}
 			break;
 		}
@@ -80,7 +99,7 @@ public class Step extends Block{
 			outputCode+="else{\n";
 			outputCode+=this.getOutputPortVariable(0)+"="+after.getName()+";}\n";
 			break;
-		case MATRIX:	
+		case MATRIX:
 			for(int i=0;i<time0.getHeight();i++) {
 				for(int j=0;j<time0.getWidth();j++) {
 			outputCode+="if(currentTime<"+time0.getName()+"("+i+","+j+")){\n";

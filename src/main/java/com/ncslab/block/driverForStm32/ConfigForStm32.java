@@ -1,5 +1,6 @@
 package com.ncslab.block.driverForStm32;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -9,12 +10,30 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class ConfigForStm32 extends com.ncslab.block.Block{
 
 	Parameter ip;
 	Parameter netmask;
 	Parameter gateway;
 	Parameter port;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+        parameterNames.add("ip");
+        parameterNames.add("netmask");
+        parameterNames.add("gateway");
+        parameterNames.add("port");
+        outputNames.add("out1");
+
+    }
 	public ConfigForStm32(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 

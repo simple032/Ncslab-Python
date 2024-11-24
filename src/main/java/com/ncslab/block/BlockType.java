@@ -221,10 +221,8 @@ public class BlockType{
             Class<? extends Block> blockClass = blockClassTree.get(blockType);
             if(blockClass != null)
                 block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
-        }catch(InvocationTargetException|NoSuchMethodException|InstantiationException|IllegalAccessException e){
+        }catch(InvocationTargetException|NoSuchMethodException|InstantiationException|IllegalAccessException|NullPointerException e){
             log.error("e:", e);
-        }catch(NullPointerException e){
-            System.err.println(e);
         }
         if(block == null)
             throw(new ModelException("Can not find blocktype in mapped function \""+blockType+"\""));

@@ -1,5 +1,6 @@
 package com.ncslab.block.machineLearning;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.GlobalVariable;
@@ -10,12 +11,30 @@ import com.ncslab.block.Block;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class DataCollector extends Block{
     // path
     private String path;
     private Parameter inputFeatures, outputFeatures;
     private InputPort _inputs, _outputs;
     private DataCollectorVariable dataCollectorVariable;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("inputFeatures");
+        parameterNames.add("outputFeatures");
+    }
 
     public DataCollector(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);

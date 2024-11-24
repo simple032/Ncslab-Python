@@ -13,18 +13,18 @@ public class Mybatis1Utils {
 	static {
 		try {
 			String osName = System.getProperty("os.name").toLowerCase();
-            String environmentId;
+            String environmentId = "ncslab";
 
             // 根据操作系统选择 environment id
-            if (osName.contains("win")) {
-                environmentId = "windows";
-            } else if (osName.contains("mac")) {
-                environmentId = "mac";
-            } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-                environmentId = "linux";
-            } else {
-                throw new UnsupportedOperationException("Unsupported OS: " + osName);
-            }
+//            if (osName.contains("win")) {
+//                environmentId = "windows";
+//            } else if (osName.contains("mac")) {
+//                environmentId = "mac";
+//            } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+//                environmentId = "linux";
+//            } else {
+//                throw new UnsupportedOperationException("Unsupported OS: " + osName);
+//            }
 
             // 加载配置文件
             String resource = "mybatis-config.xml";

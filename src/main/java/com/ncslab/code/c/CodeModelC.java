@@ -262,7 +262,7 @@ abstract public class CodeModelC extends CodeModel {
         algorithm.setModelId(getSaveInfo().getInt("modelId"));
         algorithm.setLastUpdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
 
-        algorithm.setStepTime(new Float(getSaveInfo().getDouble("stepTime")));
+        algorithm.setStepTime((float) getSaveInfo().getDouble("stepTime"));
         algorithm.setPacketSize(getSaveInfo().getInt("packetSize"));
 
         algorithm.setUuid(getSaveInfo().getLong("uuid"));

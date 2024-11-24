@@ -2,6 +2,7 @@ package com.ncslab.block.machineLearning;
 
 import java.util.Vector;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.GlobalVariable;
@@ -20,6 +21,18 @@ public abstract class MachineLearning extends Block{
     protected int _width, _height;
     protected MLVariable modelVariable;
     protected String savePath, loadPath;
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
     public MachineLearning(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);

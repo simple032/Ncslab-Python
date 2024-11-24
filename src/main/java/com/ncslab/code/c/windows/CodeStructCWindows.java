@@ -106,7 +106,7 @@ public class CodeStructCWindows extends CodeStructC {
 //            String cmakeCommand[] = {"cmake","-G", "\"MinGW Makefiles\"", "."};
 //            Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
 //            makeProcess.waitFor();
-			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
+            Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
 			//锟斤拷取OutputStream锟斤拷errStream锟斤拷锟斤拷锟斤拷锟饺★拷锟斤拷锟绞憋拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -139,27 +139,4 @@ public class CodeStructCWindows extends CodeStructC {
 
 		return false;
 	}
-
-    public void removeAllFiles(){
-        String userPath=codePathBase+model.getUserId();
-
-        String modelPath=userPath+"/"+model.getModelId();
-
-        codePath=modelPath+"/";
-
-        File dir = new File(codePath);
-        if(dir.exists() && dir.isDirectory()){
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    // 递归删除子文件夹
-                    if (file.isFile()) {
-                        // 删除文件
-                        file.delete();
-                    }
-                }
-            }
-        }
-        dir.delete();
-    }
 }

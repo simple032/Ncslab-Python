@@ -2,6 +2,7 @@ package com.ncslab.block.ensembleModel;
 
 import javax.persistence.Embeddable;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.GlobalVariable;
@@ -17,6 +18,8 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.data.DataType;
 
+import java.util.Vector;
+
 public class EnsembleModel extends Block{
     private Parameter m0, m1, l, initState, g;
     private String solverString;
@@ -24,6 +27,24 @@ public class EnsembleModel extends Block{
     protected OutputPort outputPort;
     protected int _width, _height;
     protected ENVariable modelVariable;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("m0");
+        parameterNames.add("m1");
+        parameterNames.add("l");
+        parameterNames.add("initState");
+    }
 
     public EnsembleModel(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);

@@ -1,5 +1,6 @@
 package com.ncslab.block.driverForStm32;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -8,10 +9,26 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class DACForStm32 extends com.ncslab.block.Block{
 
 	Parameter index;
 	Parameter channel;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        parameterNames.add("index");
+        parameterNames.add("channel");
+        inputNames.add("in1");
+    }
 	public DACForStm32(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 

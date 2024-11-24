@@ -1,5 +1,6 @@
 package com.ncslab.block.discontinuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -13,13 +14,30 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Saturation extends Block{
 	Parameter lowerLimit;
 	Parameter upperLimit;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("lowerLimit");
+        parameterNames.add("upperLimit");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	public Saturation(JSONObject blockIn,NCSLabModel model) {
-	
+
 		super(blockIn,model);
-		//һ�����룬һ�����
+		//一个输入，一个输出
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
 		lowerLimit=new Parameter(this,1,"lowerLimit",paramValues.getString("LowerLimit"));
@@ -44,9 +62,9 @@ public class Saturation extends Block{
 		case REAL:
 			switch(ops.getOutputSignalC().getDataType()) {
 			case REAL:
-		outputCode+="if "+ signal.getName()+">"+upperLimit.getName()+"\n";	
+		outputCode+="if "+ signal.getName()+">"+upperLimit.getName()+"\n";
 		outputCode+=out.getOutputSignalC().getName()+"="+upperLimit.getName()+";\n";
-		outputCode+="elseif "+ signal.getName()+"<"+lowerLimit.getName()+"\n";	
+		outputCode+="elseif "+ signal.getName()+"<"+lowerLimit.getName()+"\n";
 		outputCode+=out.getOutputSignalC().getName()+"="+lowerLimit.getName()+";\n";
 		outputCode+="else\n";
 		outputCode+=out.getOutputSignalC().getName()+"="+signal.getName()+";\n";
@@ -55,9 +73,9 @@ public class Saturation extends Block{
 			case MATRIX:
 				for(int i=1; i<ops.getHeight()+1; i++) {
 					for(int j=1;j<ops.getWidth()+1;j++) {
-						outputCode+="if "+ signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+"\n";	
+						outputCode+="if "+ signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+"\n";
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+";\n";
-						outputCode+="elseif "+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+"\n";	
+						outputCode+="elseif "+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+"\n";
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+";\n";
 						outputCode+="else\n";
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");\n";
@@ -72,9 +90,9 @@ public class Saturation extends Block{
 			case REAL:
 				for(int i=1; i<lowerLimit.getHeight()+1; i++) {
 					for(int j=1;j<lowerLimit.getWidth()+1;j++) {
-				outputCode+="if "+ signal.getName()+">"+upperLimit.getName()+"("+i+","+j+")\n";	
+				outputCode+="if "+ signal.getName()+">"+upperLimit.getName()+"("+i+","+j+")\n";
 				outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+"("+i+","+j+");\n";
-				outputCode+="elseif "+ signal.getName()+"<"+lowerLimit.getName()+"("+i+","+j+")\n";	
+				outputCode+="elseif "+ signal.getName()+"<"+lowerLimit.getName()+"("+i+","+j+")\n";
 				outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+"("+i+","+j+");\n";
 				outputCode+="else\n";
 				outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+";\n";
@@ -85,9 +103,9 @@ public class Saturation extends Block{
 			case MATRIX:
 				for(int i=1; i<lowerLimit.getHeight()+1; i++) {
 					for(int j=1;j<lowerLimit.getWidth()+1;j++) {
-						outputCode+="if "+ signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+"("+i+","+j+")\n";	
+						outputCode+="if "+ signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+"("+i+","+j+")\n";
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+"("+i+","+j+");\n";
-						outputCode+="elseif "+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+"("+i+","+j+")\n";	
+						outputCode+="elseif "+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+"("+i+","+j+")\n";
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+"("+i+","+j+");\n";
 						outputCode+="else\n";
 						outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");\n";
@@ -118,7 +136,7 @@ public class Saturation extends Block{
 				case REAL:
 					outputCode+="if("+signal.getName()+">"+upperLimit.getName()+") {\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+upperLimit.getName()+";}\n";
-					outputCode+="else if("+ signal.getName()+"<"+lowerLimit.getName()+") {\n";	
+					outputCode+="else if("+ signal.getName()+"<"+lowerLimit.getName()+") {\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+lowerLimit.getName()+";}\n";
 					outputCode+="else {\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+signal.getName()+";}\n";
@@ -128,7 +146,7 @@ public class Saturation extends Block{
 						for(int j=0;j<ops.getWidth();j++) {
 							outputCode+="if("+signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+") {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+";}\n";
-							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+") {\n";	
+							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+") {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+";}\n";
 							outputCode+="else {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
@@ -144,7 +162,7 @@ public class Saturation extends Block{
 						for(int j=0;j<lowerLimit.getWidth();j++) {
 							outputCode+="if("+signal.getName()+">"+upperLimit.getName()+"("+i+","+j+")) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+"("+i+","+j+");}\n";
-							outputCode+="else if("+ signal.getName()+"<"+lowerLimit.getName()+"("+i+","+j+")) {\n";	
+							outputCode+="else if("+ signal.getName()+"<"+lowerLimit.getName()+"("+i+","+j+")) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+"("+i+","+j+");}\n";
 							outputCode+="else {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+";}\n";
@@ -156,7 +174,7 @@ public class Saturation extends Block{
 						for(int j=0;j<lowerLimit.getWidth();j++) {
 							outputCode+="if("+signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+"("+i+","+j+")) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+"("+i+","+j+");}\n";
-							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+"("+i+","+j+")) {\n";	
+							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+"("+i+","+j+")) {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+"("+i+","+j+");}\n";
 							outputCode+="else {\n";
 							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
@@ -167,28 +185,28 @@ public class Saturation extends Block{
 				break;
 			}
 			code.addOutputCode(outputCode);
-	  }	
+	  }
 	 public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);
 			InputPort in  = inputPortList.get(0);
 			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			if(lowerLimit.getWidth()!=upperLimit.getWidth()||lowerLimit.getHeight()!=upperLimit.getHeight()) {
 				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!All input dimensions should be same!");
-				throw(e);	
+				throw(e);
 			}
 			if(lowerLimit.getDataType()==DataType.MATRIX&&signal.getDataType()==DataType.REAL) {
 				out.setHeight(lowerLimit.getHeight());
 				out.setWidth(lowerLimit.getWidth());
 				out.getOutputSignalC().setHeight(lowerLimit.getHeight());
 				out.getOutputSignalC().setWidth(lowerLimit.getWidth());
-				out.getOutputSignalC().setDataType(DataType.MATRIX);	
+				out.getOutputSignalC().setDataType(DataType.MATRIX);
 			}
 			else if(lowerLimit.getDataType()==DataType.REAL&&signal.getDataType()==DataType.MATRIX) {
 				out.setHeight(signal.getHeight());
 				out.setWidth(signal.getWidth());
 				out.getOutputSignalC().setHeight(signal.getHeight());
 				out.getOutputSignalC().setWidth(signal.getWidth());
-				out.getOutputSignalC().setDataType(signal.getDataType());	
+				out.getOutputSignalC().setDataType(signal.getDataType());
 			}
 			else{
 				if(lowerLimit.getWidth()!=signal.getWidth()||lowerLimit.getHeight()!=signal.getHeight()) {
@@ -199,9 +217,9 @@ public class Saturation extends Block{
 				out.setWidth(lowerLimit.getWidth());
 				out.getOutputSignalC().setHeight(lowerLimit.getHeight());
 				out.getOutputSignalC().setWidth(lowerLimit.getWidth());
-				out.getOutputSignalC().setDataType(lowerLimit.getDataType());	
+				out.getOutputSignalC().setDataType(lowerLimit.getDataType());
 			}
 	  }
 	 public void checkDimension() throws MatDimException{
-		} 
+		}
 }

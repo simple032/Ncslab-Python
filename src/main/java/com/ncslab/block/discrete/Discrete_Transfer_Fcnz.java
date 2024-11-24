@@ -1,5 +1,6 @@
 package com.ncslab.block.discrete;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -10,7 +11,25 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Discrete_Transfer_Fcnz extends DiscreteBlock{
+
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        inputNames.add("in2");
+        inputNames.add("in3");
+    }
 
 	public Discrete_Transfer_Fcnz(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);

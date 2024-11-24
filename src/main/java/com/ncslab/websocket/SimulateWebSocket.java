@@ -91,8 +91,10 @@ public class SimulateWebSocket {
 				modelC.removeAllFiles();
 
 	        	//modelC.setSolver(Solver.ode4);
+                modelC.removeAllFiles();
 
-	        	modelC.generate();
+
+                modelC.generate();
 
 	        	sendMessage(session,"generated");
 

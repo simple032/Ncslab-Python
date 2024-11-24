@@ -1,6 +1,7 @@
 package com.ncslab.block.subsystem;
 import java.util.Vector;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -12,6 +13,20 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
 public class In extends Block{
+
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	public In(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		inputPortList.add(new InputPort(this,1));

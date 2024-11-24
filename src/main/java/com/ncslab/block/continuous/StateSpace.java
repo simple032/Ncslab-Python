@@ -1,4 +1,5 @@
 package com.ncslab.block.continuous;
+import lombok.Getter;
 import org.json.JSONObject;
 //import org.json.JSONArray;
 
@@ -30,6 +31,25 @@ public class StateSpace extends Block{
     OutputPort output;
 
     private Vector<State> xStateList=new Vector<State>();
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("A");
+        parameterNames.add("B");
+        parameterNames.add("C");
+        parameterNames.add("D");
+        parameterNames.add("X0");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
 	public StateSpace(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
