@@ -1,9 +1,12 @@
 package com.ncslab.ncslablink;
 
+import com.greenpineyu.fel.function.operator.Sub;
 import lombok.Getter;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import com.ncslab.block.Block;
@@ -16,6 +19,8 @@ import com.ncslab.block.io.terminal.Terminal;
 
 import com.ncslab.circuit.CircuitParser;
 import com.ncslab.circuit.loop.CircuitLoopException;
+
+import com.ncslab.block.subsystem.*;
 
 import com.ncslab.ncslablink.Config;
 import com.ncslab.ncslablink.ModelMode;
@@ -53,7 +58,7 @@ abstract public class NCSLabModel {
 	@Getter
     private JSONObject saveInfo;
 
-	private ModelMode mode = ModelMode.Simulation;
+	private ModelMode mode;
 
 	// all blocks in the model
 	@Getter
@@ -283,8 +288,11 @@ abstract public class NCSLabModel {
 	}
 
 	private void checkUnlinkedPorts() throws ModelException{
-		//空的input连接到constant
-        Vector<Block> fullBlockList = (Vector<Block>) blockList.clone();
+
+        // 向blockList中添加Block对象
+        List<Block> list = new ArrayList<>(blockList);
+        Vector<Block> fullBlockList = new Vector<>(list);
+
 		for(Block block:blockList) {
 			for(int i=0; i<block.getInputPortList().size();i++) {
                 InputPort input = block.getInputPortList().get(i);
@@ -299,9 +307,7 @@ abstract public class NCSLabModel {
 					blockJSON.put("paramValues", paramValues);
                     blockJSON.put("blockPath", block.getBlockPath());
 
-                    Block newBlock= null;
-
-                    newBlock = BlockType.createBlock(blockSeq+1,blockJSON,this);
+                    Block newBlock = BlockType.createBlock(blockSeq+1,blockJSON,this);
 
                     blockSeq++;
 
@@ -342,9 +348,7 @@ abstract public class NCSLabModel {
                     blockJSON.put("blockPath", block.getBlockPath());
 
 
-                    Block newBlock = null;
-
-                    newBlock = BlockType.createBlock(blockSeq, blockJSON, this);
+                    Block newBlock = BlockType.createBlock(blockSeq+1, blockJSON, this);
 
                     blockSeq++;
 
@@ -399,9 +403,10 @@ abstract public class NCSLabModel {
 		boolean isDimThroughBlock = false;
 		Vector<OutputPort> outputPortList = block.getOutputPortList();
 		for (OutputPort output : outputPortList) {
-			if (output.getDimThrough()== true) {
-				isDimThroughBlock = true;
-			}
+            if (output.getDimThrough()) {
+                isDimThroughBlock = true;
+                break;
+            }
 		}
 
 		//如果有Feedthrough的模块，则要遍历整个模块的InputPort
@@ -506,8 +511,7 @@ abstract public class NCSLabModel {
 				}
 			}
 			if(i>1) {
-				MatDimException e=new MatDimException(block.getBlockName()+" Name is not unique!\n \n");
-				throw(e);
+                throw(new MatDimException(block.getBlockName()+" Name is not unique!\n \n"));
 			}
 		}
 	}
@@ -536,10 +540,13 @@ abstract public class NCSLabModel {
         String blockPath=null;
         String toPortNo=lineJSON.getString("toPortNo");
         for(Block block:blockList) {
-            if(block.getBlockName().equals(toBlockName)&&block.getBlockType().equals("Subsystem")) {
+            if(block.getBlockName().equals(toBlockName)&& block instanceof Subsystem) {
                 blockPath=block.getBlockPath()+"/"+toBlockName;
                 break;
             }
+        }
+        if(blockPath == null){
+            return;
         }
         for(Block block1:blockList) {
             System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
@@ -574,10 +581,13 @@ abstract public class NCSLabModel {
         String blockPath=null;
         String fromPortNo=lineJSON.getString("fromPortNo");
         for(Block block:blockList) {
-            if(block.getBlockName().equals(fromBlockName)&&block.getBlockType().equals("Subsystem")) {
+            if(block.getBlockName().equals(fromBlockName)&& block instanceof Subsystem) {
                 blockPath=block.getBlockPath()+"/"+fromBlockName;
                 break;
             }
+        }
+        if(blockPath == null){
+            return;
         }
         for(Block block1:blockList) {
             if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("Out")&&block1.getParamValues().getString("No").equals(fromPortNo)){
