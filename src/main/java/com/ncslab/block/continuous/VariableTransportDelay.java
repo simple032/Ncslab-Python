@@ -49,7 +49,7 @@ public class VariableTransportDelay extends Block{
 		//2个输入，1个输出
 		inputPortList.add(new InputPort(this,1));
 		inputPortList.add(new InputPort(this,2));
-		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,false));
 
 		DelayType=new Parameter(this,parameterList.size()+1,"DelayType",paramValues.getString("VariableDelayType"));
 		parameterList.add(DelayType);

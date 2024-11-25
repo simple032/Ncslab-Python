@@ -54,7 +54,7 @@ public class TransportDelay extends Block {
 
 		input = new InputPort(this, 1);
 		inputPortList.add(input);
-		output = new OutputPort(this, 1, true);
+		output = new OutputPort(this, 1, false);
 		outputPortList.add(output);
 	}
 
