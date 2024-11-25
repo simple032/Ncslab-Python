@@ -39,8 +39,8 @@ public class UnitDelay extends DiscreteBlock {
     public UnitDelay(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
-		outputPortList.add(new OutputPort(this,1,false));
+//		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,feedthrough));
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
 		parameterList.add(sampleTime);

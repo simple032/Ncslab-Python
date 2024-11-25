@@ -36,7 +36,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 		inputPortList.add(new InputPort(this,1));
 		inputPortList.add(new InputPort(this,2));
 		inputPortList.add(new InputPort(this,3));
-		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,feedthrough));
 	}
 	//define arrays to save data
 	 public void generateArraysCodeC(CodeStructC code) {

@@ -15,6 +15,7 @@ public class DiscreteBlock extends Block {
     @Getter
     @Setter
     private double sampleTime=-1;
+    protected boolean feedthrough = false;
 
     public DiscreteBlock(JSONObject blockIn,NCSLabModel model) {
         super(blockIn,model);
