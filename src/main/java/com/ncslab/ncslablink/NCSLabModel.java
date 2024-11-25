@@ -185,7 +185,7 @@ abstract public class NCSLabModel {
 		checkBlocksName();
 		//解析各条连线
 		parseLines();
-		//TODO:检查是否有空端口
+		//检查是否有空端口
 		checkUnlinkedPorts();
 
 

@@ -105,7 +105,7 @@ typedef struct {
 }ssSize;
 
 typedef struct {
-	
+
 	void* contStates;
 	void* discStates;
 
@@ -121,7 +121,7 @@ typedef struct {
 
 }ssWork;
 
-typedef struct 
+typedef struct
 {
 	REAL* sampleTimes;
 	REAL* offsetTimes;
@@ -142,7 +142,7 @@ typedef struct SimStruct_tag{
 	MdlStartFcn start;
 	MdlDerivativesFcn derivatives;
 	MdlTerminateFcn terminate;
-	
+
 
 	BLOCK* parentBlock;
 }SimStruct;
@@ -168,9 +168,9 @@ typedef struct {
 
 	BLOCK **blocks;
 	int majorStep;
-#ifndef __WIN32
+#ifndef _WIN32
 	struct timeval tv;
-#endif // __WIN32
+#endif // _WIN32
   int terminalNum;
 }MODEL;
 

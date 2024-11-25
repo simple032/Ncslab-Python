@@ -1,11 +1,11 @@
 #include <iostream>
 #include <cmath>
 #include <cstdio>
-#ifndef __WIN32
+#ifndef _WIN32
 #include <sys/time.h>
 #else
 #include <windows.h>
-#endif // __WIN32
+#endif // _WIN32
 #include "ncslabdefines.hpp"
 #include "ncslab.hpp"
 #include "Matrix.hpp"
@@ -265,7 +265,7 @@ REAL calculateStateDif(int seq1, int seq2) {
 
 static long oldSec = 0;
 
-#ifndef __WIN32
+#ifndef _WIN32
 void writeInformation() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);

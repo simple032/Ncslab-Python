@@ -36,7 +36,7 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		//锟斤拷锟斤拷锟捷结构
 		writeNCSLabFile("../../ncslabccode.hpp","ncslabccode.hpp");
 		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
-		writeNCSLabFile("../../ncslabmain.cpp","ncslabmain.cpp");
+		writeNCSLabFile("../ncslabmain.cpp","ncslabmain.cpp");
 		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
 		writeNCSLabFile("../../DataApi.cpp","DataApi.cpp");
 		writeNCSLabFile("../../DataApi.hpp","DataApi.hpp");

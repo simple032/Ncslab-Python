@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <termios.h>
 
-#ifndef __WIN32
+#ifndef _WIN32
 #include <wiringPi.h>
 #include <wiringSerial.h>
 #include <unistd.h>
@@ -24,26 +24,26 @@
 
 /*****************************serialport***************************************/
 
-HANDLE hComm;
+//HANDLE hComm;
 /* Function: Serialport_Open =====================================================
  * Abstract:
  *    Open the serialport
  */
 HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg)
-{  
+{
     DWORD err;
     HANDLE	hComm = serialOpen(port, baudrate);
 	if(hComm == INVALID_HANDLE_VALUE)
     {
-        #ifdef __WIN32
+        #ifdef _WIN32
         err = GetLastError();
-        #endif // __WIN32
+        #endif // _WIN32
         sprintf(msg, "%s Open Error. Error code:%d.\r\n", port, err);
         return INVALID_HANDLE_VALUE;
     }
 
-    
-    
+
+
 	sprintf(msg, "%s Open Success.\n", port);
     return hComm;
 }
@@ -55,7 +55,7 @@ HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg)
 void Serialport_Close(HANDLE handle)
 {
 	if(handle!=INVALID_HANDLE_VALUE){
-        #ifdef __WIN32
+        #ifdef _WIN32
 		CloseHandle(handle);
         #else
         serialClose(handle);
@@ -70,7 +70,7 @@ void Serialport_Close(HANDLE handle)
 void Serialport_Flush(HANDLE handle)
 {
 	if(handle!=INVALID_HANDLE_VALUE){
-        #ifdef __WIN32
+        #ifdef _WIN32
         err = GetLastError();
         #else
         serialFlush(handle);
@@ -96,7 +96,7 @@ BOOL Serialport_Send(HANDLE hComm, uint8_t* sendBuff,DWORD bytesToSend)
 
     //Verify that the data size send equals what we tried to send
 	if (bytesSend != bytesToSend)
-	{			
+	{
         //sprintf(msg, ("WARNING: WriteFile() error.. Bytes Sent: %ld; MessageLength: %zd\n"), bytesSend, strlen((char*)sendBuff));
         return FALSE;
 	}
@@ -117,7 +117,7 @@ BOOL Serialport_Send(HANDLE hComm, uint8_t* sendBuff,DWORD bytesToSend)
 // 	bytesRead = read(hComm, recvBuff, bytesToRead);
 
 //     return bytesRead;
-	
+
 // }
 
 

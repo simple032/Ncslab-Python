@@ -239,12 +239,19 @@ abstract public class CodeStructC{
 				// +"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.hpp\"\n"
 				+"#include\"math.h\"\n"
+                +"#ifdef _ENABLE_PI\n"
+                +"#include \"ncs_serialport.h\"\n"
+                +"#include \"hardware.h\"\n"
+                +"#endif\n"
 				//TODO:这些有linux特定的api，需要根据平台类型来定制
 				// +"#include <iostream>\n"
 //				 +"#include <octave/oct.h>\n"
+                + "#include <cstdint>\n"
+                + "#include <cstring>\n"
 				+ "#ifdef __linux\n"
                 +"#include <sys/socket.h>\n"
                 + "#endif \n"
+                + "unsigned char calcSum(unsigned char bytes[]);\n"
 
 				//xiazhiqiang:Stores the sampling time of discrete modules
 				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
@@ -543,7 +550,7 @@ abstract public class CodeStructC{
 	}
 
     @Getter
-   protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("默认值");
+   protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("/data/M2PLab");
 
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
@@ -598,7 +605,12 @@ abstract public class CodeStructC{
 
 	//写文件的方法，将文件从resource中拷贝出来，写在目标文件夹
 	protected void writeNCSLabFile(String fileName) {
-        writeNCSLabFile(fileName, fileName, false);
+        String fileNameOut = fileName;
+        if(fileName.contains("/")){
+            String [] paths = fileName.split("/");
+            fileNameOut = paths[paths.length-1];
+        }
+        writeNCSLabFile(fileName, fileNameOut, false);
 	}
 
     protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
@@ -747,6 +759,18 @@ abstract public class CodeStructC{
 			file.mkdir();
 		}
 
+//        String osName = System.getProperty("os.name").toLowerCase();
+//
+//        if (osName.contains("win")) {
+//
+//        } else if (osName.contains("mac")) {
+//
+//        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+//
+//        } else {
+//            throw new UnsupportedOperationException("Unsupported OS: " + osName);
+//        }
+
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
 		if(!file.exists()) {
@@ -881,7 +905,7 @@ abstract public class CodeStructC{
         if (files != null) {
             for(File file : files){
                 if (file.isFile() && isTargetFile(file)) {
-    //                    System.out.println("Deleting file: " + file.getAbsolutePath());
+                        System.out.println("Deleting file: " + file.getAbsolutePath());
                         if (!file.delete()) {
                             System.err.println("Failed to delete file: " + file.getAbsolutePath());
                         }
