@@ -37,7 +37,7 @@ public class Zero_Order_Hold extends DiscreteBlock {
     public Zero_Order_Hold(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new com.ncslab.block.io.InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,feedthrough));
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		parameterList.add(sampleTime);
 

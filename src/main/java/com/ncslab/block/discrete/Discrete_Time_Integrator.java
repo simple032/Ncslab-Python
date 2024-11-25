@@ -40,7 +40,7 @@ public class Discrete_Time_Integrator extends Block{
 	public Discrete_Time_Integrator(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,false));
 		gainval=new Parameter(this,1,"gainval",paramValues.getString("gainval"));
 		sampleTime=new Parameter(this,2,"sampleTime",paramValues.getString("SampleTime"));
 		initialCondition=new Parameter(this,3,"initialCondition",paramValues.getString("InitialCondition"));
