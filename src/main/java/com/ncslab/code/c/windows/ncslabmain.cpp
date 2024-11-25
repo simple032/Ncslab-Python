@@ -21,7 +21,7 @@ int main(int argc, char *argv[]){
 	NCSLabInit();
 
 	if(argc==2){
-      extModeData.port=atoi(argv[1]);
+      extModeData.port=argv[1];
     }
     else{
       extModeData.port=NULL;
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
 	mp=NCSLabGetModelP();
 	extModeData.mp=mp;
 
-	startMyServerThread(&extModeData);
+	startMyServerThread(extModeData);
 
 	timeSetEvent(STEP_SIZE*1000,1,(LPTIMECALLBACK)TimeEvent,0,TIME_PERIODIC);
 

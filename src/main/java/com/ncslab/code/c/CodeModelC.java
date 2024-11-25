@@ -53,9 +53,6 @@ abstract public class CodeModelC extends CodeModel {
 	@Getter
 	private int matrixStateNum=0;
 
-    protected String user = Optional.ofNullable(Property.instance.getProperty("user")).orElse("m2plab");
-    protected String group = Optional.ofNullable(Property.instance.getProperty("group")).orElse("m2plab");
-
 	abstract protected CodeStructC getCodeStructC();
 
 	protected CodeModelC(JSONObject jsonIn,ModelMode mode) throws ModelException{

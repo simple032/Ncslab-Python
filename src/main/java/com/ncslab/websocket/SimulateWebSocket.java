@@ -69,7 +69,8 @@ public class SimulateWebSocket {
 				sendMessage(session,"start");
 				//System.out.println("Start");
 				JSONObject  mdlData=msg.getJSONObject("mdlData");
-                String target = mdlData.optString("target");
+                // String target = mdlData.optString("target");
+				String target = mdlData.optString("target", "PC");
                 String jsonDataString=mdlData.getString("jsonData");
 				JSONObject jsonData=new JSONObject(jsonDataString);
 				//System.out.println(jsonDataString);
@@ -88,7 +89,8 @@ public class SimulateWebSocket {
                 }else{
 					modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
 				}
-				modelC.removeAllFiles();
+				
+				// modelC.removeAllFiles();
 
 	        	//modelC.setSolver(Solver.ode4);
                 modelC.removeAllFiles();
