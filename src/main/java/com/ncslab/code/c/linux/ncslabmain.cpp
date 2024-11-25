@@ -1,5 +1,5 @@
-#include"ncslabccode.hpp"
-#include"ServerThread.hpp"
+#include "ncslabccode.hpp"
+#include "ServerThread.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,7 +9,13 @@
 #include <unistd.h>
 #include <sys/timerfd.h>
 #include <sys/epoll.h>
-#endif 
+#endif
+
+#ifdef _WIN32
+#include <sys/timeb.h>
+#else
+#include <sys/time.h>
+#endif
 
 #include <errno.h>
 #include"ncslab.hpp"
@@ -17,7 +23,6 @@
 #include <time.h>
 #include <string.h>
 
-#include "ServerThread.hpp"
 
 
 
@@ -228,10 +233,11 @@ void startTimer(real_T stepSize)
 
 }
 
-
+void initHardware();
 int main(int argc, char *argv[]){
 
-	// initHardware();
+ //TODO:这里需要区分树莓派和其他硬件
+	 initHardware();
 	NCSLabInit();
 
 	extModeData.acc=1;

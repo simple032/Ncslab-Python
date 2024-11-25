@@ -24,13 +24,13 @@
 
 /*****************************serialport***************************************/
 
-HANDLE hComm;
+//HANDLE hComm;
 /* Function: Serialport_Open =====================================================
  * Abstract:
  *    Open the serialport
  */
 HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg)
-{  
+{
     DWORD err;
     HANDLE	hComm = serialOpen(port, baudrate);
 	if(hComm == INVALID_HANDLE_VALUE)
@@ -42,8 +42,8 @@ HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg)
         return INVALID_HANDLE_VALUE;
     }
 
-    
-    
+
+
 	sprintf(msg, "%s Open Success.\n", port);
     return hComm;
 }
@@ -96,7 +96,7 @@ BOOL Serialport_Send(HANDLE hComm, uint8_t* sendBuff,DWORD bytesToSend)
 
     //Verify that the data size send equals what we tried to send
 	if (bytesSend != bytesToSend)
-	{			
+	{
         //sprintf(msg, ("WARNING: WriteFile() error.. Bytes Sent: %ld; MessageLength: %zd\n"), bytesSend, strlen((char*)sendBuff));
         return FALSE;
 	}
@@ -117,7 +117,7 @@ BOOL Serialport_Send(HANDLE hComm, uint8_t* sendBuff,DWORD bytesToSend)
 // 	bytesRead = read(hComm, recvBuff, bytesToRead);
 
 //     return bytesRead;
-	
+
 // }
 
 

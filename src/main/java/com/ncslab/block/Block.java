@@ -87,7 +87,9 @@ public class Block implements MCodeBlock, CCodeBlock{
     protected Block(JSONObject blockIn, NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
-		this.paramValues=blockIn.getJSONObject("paramValues");
+        if (blockIn.get("paramValues") instanceof JSONObject) {
+            this.paramValues=blockIn.getJSONObject("paramValues");
+        }
 		this.model=model;
 		this.blockPath=blockIn.getString("blockPath");
 	}

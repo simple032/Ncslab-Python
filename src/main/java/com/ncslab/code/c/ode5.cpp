@@ -10,8 +10,8 @@ extern MODEL *mp;
 
 //double stateReserve[STATE_NUM];
 
-double singleStateReserve[SINGLE_STATE_NUM];
-Matrix matrixStateReserve[MATRIX_STATE_NUM];
+double singleStateReserve[5][SINGLE_STATE_NUM];
+Matrix matrixStateReserve[5][MATRIX_STATE_NUM];
 
 extern double sample_time[];
 
@@ -33,7 +33,7 @@ extern double real_sample_time;
 void ncslabLoop(){
 
 	discreteInitFixed();
-  	
+
 	while(mp->time<mp->stopTime){
         //mp->time+=mp->stepSize;
         writeInformation();
@@ -48,7 +48,7 @@ void ncslabLoop(){
 void NCSLabOneStep(){
 
   mp->offset=0;
-  
+
   if (hasdiscrete(sample_time)){
 
     while (mp->discreteTime <= mp->time){
@@ -59,12 +59,12 @@ void NCSLabOneStep(){
       mp->discreteUpdate = 1;
     }
   }
-  
+
   mp->majorStep=1;
   NCSLabOutput();
-  
+
   if(mp->discreteUpdate){
-  	
+
   	NCSLabDiscreteUpdate();
   	mp->discreteUpdate=0;
   }

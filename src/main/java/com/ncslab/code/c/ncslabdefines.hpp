@@ -15,15 +15,15 @@ extern "C" {
 #define CONTINUOUS_SAMPLE_TIME 0
 //Input and Output
 #define ssSetNumInputPorts(S, num)  ((S->sizes.inputPortNum = num) && (S->sizes.inputPortWidth=(int *)calloc(num,sizeof(int))))
-    
+
 #define ssGetNumInputPorts(S) (S->parentBlock->inputPortNum)
 #define ssSetInputPortWidth(S, idx, width) (S->sizes.inputPortWidth[idx] = width)
 // blk->inputPorts[idx]=(INPUT_PORT*)malloc(sizeof(INPUT_PORT)*width)
 #define ssSetInputPortRequiredContiguous(S, idx, value) /*direct input signal access*/
 #define ssSetInputPortDirectFeedThrough(S, idx, value) ;
 
-#define ssSetNumOutputPorts(S, num) ((S->sizes.outputPortNum = num) && (S->sizes.outputPortWidth=(int *)calloc(num,sizeof(int)))) 
-#define ssGetNumOutputPorts(S) (S->parentBlock->outputPortNum) 
+#define ssSetNumOutputPorts(S, num) ((S->sizes.outputPortNum = num) && (S->sizes.outputPortWidth=(int *)calloc(num,sizeof(int))))
+#define ssGetNumOutputPorts(S) (S->parentBlock->outputPortNum)
 #define ssSetOutputPortWidth(S, idx, width) (S->sizes.outputPortWidth[idx] = width)
 
 #define ssGetInputPortSignal(S, idx) (S->parentBlock->inputPorts[idx]->type == SINGLE ? S->parentBlock->inputPorts[idx]->vp : ((Matrix*)S->parentBlock->inputPorts[idx]->vp)->data())

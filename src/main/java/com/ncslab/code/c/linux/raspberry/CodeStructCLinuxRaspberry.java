@@ -37,7 +37,7 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 		// main data structure
 		writeNCSLabFile("../../ncslabccode.h", "ncslabccode.h");
 		// main function and timer
-		writeNCSLabFile("../../ncslabmain.c", "ncslabmain.c");
+		writeNCSLabFile("../ncslabmain.c", "ncslabmain.c");
 		// Define the API to access the main data structure
 		writeNCSLabFile("../../DataApi.c", "DataApi.c");
 		writeNCSLabFile("../../DataApi.h", "DataApi.h");

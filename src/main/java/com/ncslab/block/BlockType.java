@@ -166,6 +166,8 @@ public class BlockType{
         // Subsystem
         blockClassTree.put("In", com.ncslab.block.subsystem.In.class);
         blockClassTree.put("Out", com.ncslab.block.subsystem.Out.class);
+        blockClassTree.put("Inport", com.ncslab.block.subsystem.In.class);
+        blockClassTree.put("Outport", com.ncslab.block.subsystem.Out.class);
         blockClassTree.put("Subsystem", com.ncslab.block.subsystem.Subsystem.class);
 
         // DriverForSTM32
@@ -241,11 +243,10 @@ public class BlockType{
     public static JSONArray getBlockProperties(JSONArray blockTypes) throws  NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         JSONArray jsonArray = new JSONArray();
-        for (int i = 0; i < blockTypes.length(); i++) {
-            String blockType=blockTypes.getString(i);
+        for (Object blockType : blockTypes) {
 
             // 获取Block类的Class对象
-            Class<? extends Block> blockClass = blockClassTree.get(blockType);
+            Class<? extends Block> blockClass = blockClassTree.get((String)blockType);
 
             // 调用静态方法
             Vector<?> parameterNames = (Vector<?>) blockClass.getMethod("getParameterNames").invoke(null); // 注意这里是null，因为是静态方法
