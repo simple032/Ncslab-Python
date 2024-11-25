@@ -2,6 +2,7 @@ package com.ncslab.code.c;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import javax.websocket.Session;
 
@@ -20,6 +21,8 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.database.Algorithms;
+
+import com.ncslab.utils.Property;
 
 abstract public class CodeModelC extends CodeModel {
 
@@ -42,6 +45,9 @@ abstract public class CodeModelC extends CodeModel {
 
 	@Getter
 	private int matrixStateNum=0;
+
+    protected String user = Optional.ofNullable(Property.instance.getProperty("user")).orElse("m2plab");
+    protected String group = Optional.ofNullable(Property.instance.getProperty("group")).orElse("m2plab");
 
 	abstract protected CodeStructC getCodeStructC();
 
