@@ -110,7 +110,7 @@ typedef double real64_T;
 
 typedef double time_T;
 typedef unsigned char boolean_T;
-typedef char_T byte_T;
+typedef char byte_T;
 
 #ifdef __cplusplus
 }

@@ -8,14 +8,15 @@ LD=g++
 # LD=/opt/homebrew/Cellar/llvm/17.0.5/bin/clang++
 
 srcdir=/home/wenshan/NetConTop/ncslablink/src/main/java/com/ncslab/code/c
-pidir=/home/wenshan/ncslablink/WiringPi-2.61-1/wiringPi
+pidir=/opt/pi/include
+eigendir=/opt/eigen-3.4.9
 jsondir=/usr/include/jsoncpp
 # CCFlag=-D_SIMU -fpermissive -Wwrite-strings -I /Users/square/vcpkg/packages/jsoncpp_arm64-osx/include -I /Users/square/Documents/Code/lib/pi -I /Users/square/Documents/Code/ncslablink/src/code/c -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -pthread -fopenmp -g -O2 -std=c++11 -fstack-protector-strong -Wformat -Werror=format-security -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 # -fopenmp 
 # -pthread -Werror=format-security
 # -Wdate-time -D_FORTIFY_SOURCE=2 -fstack-protector-strong
 # -fpermissive
-CCFlag=-D_SIMU -I $(srcdir) -I $(jsondir) -I $(pidir) -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings -DPSAPI_VERSION=1 -fopenmp
+CCFlag=-D_SIMU -I $(srcdir) -I $(jsondir) -I $(pidir) -I $(eigendir) -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings -DPSAPI_VERSION=1 -fopenmp
 # -ljsoncpp
 # -Wl,-Bsymbolic-functions -Wl,-z,relro
 # LDFLAG=-lm -lpthread -L /Users/square/vcpkg/packages/jsoncpp_arm64-osx/lib -Wdate-time -D_FORTIFY_SOURCE=2 -pthread -fopenmp -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -rdynamic  -fPIC -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
