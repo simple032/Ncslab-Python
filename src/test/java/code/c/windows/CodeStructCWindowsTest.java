@@ -1,7 +1,7 @@
 package code.c.windows;
 
-import com.ncslab.code.c.windows.CodeModelCWindows;
-import com.ncslab.code.c.windows.CodeStructCWindows;
+import com.ncslab.code.c.windows.pc.CodeModelCWindowsPC;
+import com.ncslab.code.c.windows.pc.CodeStructCWindowsPC;
 import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.*;
@@ -17,15 +17,15 @@ import com.ncslab.WindowsTest;
 
 @Category(WindowsTest.class)
 public class CodeStructCWindowsTest {
-    private static CodeStructCWindows codeStructCWindows;
+    private static CodeStructCWindowsPC codeStructCWindows;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         String filePath = "mlsCompile.json"; // 替换为实际文件路径
         JSONObject jsonIn = ResourceReader.readJsonResource(filePath);
-        CodeModelCWindows codeModelCWindows = CodeModelCWindows.createFromJSON(jsonIn, ModelMode.Compilation);
+        CodeModelCWindowsPC codeModelCWindows = CodeModelCWindowsPC.createFromJSON(jsonIn, ModelMode.Compilation);
 
-        codeStructCWindows = new CodeStructCWindows(codeModelCWindows);
+        codeStructCWindows = new CodeStructCWindowsPC(codeModelCWindows);
     }
 
     @Before
