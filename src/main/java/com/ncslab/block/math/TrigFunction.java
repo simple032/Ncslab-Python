@@ -40,10 +40,10 @@ public class TrigFunction extends Block{
 		outputPortList.add(new OutputPort(this,1,true));
 		//����һ������
 		inputPortList.add(new InputPort(this,1));
-        trigFunc=new Parameter(this,1,"trigFunc",paramValues.getString("TrigonometricFunction"));
+        trigFunc=new Parameter(this,1,"trigFunc",paramValues.optString("TrigonometricFunction", paramValues.getString("Function")));
         parameterList.add(trigFunc);
 
-        if(paramValues.getString("TrigonometricFunction").equals("atan2")) {
+        if(trigFunc.getDataString().equals("atan2")) {
             inputPortList.add(new InputPort(this,2));
         }
 	}
@@ -53,23 +53,23 @@ public class TrigFunction extends Block{
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         switch(signal.getDataType()) {
             case REAL:
-                if(!paramValues.getString("TrigonometricFunction").equals("atan2")) {
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+paramValues.getString("TrigonometricFunction")+"("+signal.getName()+");\n";
+                if(!trigFunc.getDataString().equals("atan2")) {
+                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getDataString()+"("+signal.getName()+");\n";
                 }else {
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+paramValues.getString("TrigonometricFunction")+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+");\n";
+                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getDataString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+");\n";
                 }
                 break;
             case MATRIX:
-                if(!paramValues.getString("TrigonometricFunction").equals("atan2")) {
+                if(!trigFunc.getDataString().equals("atan2")) {
                     for(int i=0;i<signal.getHeight();i++) {
                         for(int j=0;j<signal.getWidth();j++) {
-                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+paramValues.getString("TrigonometricFunction")+"("+signal.getName()+"("+i+","+j+"));\n";
+                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getDataString()+"("+signal.getName()+"("+i+","+j+"));\n";
                         }
                     }
                 }else {
                     for(int i=0;i<signal.getHeight();i++) {
                         for(int j=0;j<signal.getWidth();j++) {
-                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+paramValues.getString("TrigonometricFunction")+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+i+","+j+"));\n";
+                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getDataString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+i+","+j+"));\n";
                         }
                     }
                 }

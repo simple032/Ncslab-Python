@@ -57,8 +57,8 @@ public class Integrator extends Block {
 		outputPortList.add(output);
 
         //zhou_20240514 add externalReset
-        externalReset=new Parameter(this,parameterList.size()+1,"externalReset",paramValues.getString("IntegratorExternalReset"));
-        conditionSource=new Parameter(this,parameterList.size()+1,"conditionSource",paramValues.getString("InitialConditionSource"));
+        externalReset=new Parameter(this,parameterList.size()+1,"externalReset",paramValues.optString("IntegratorExternalReset", "none"));
+        conditionSource=new Parameter(this,parameterList.size()+1,"conditionSource",paramValues.optString("InitialConditionSource", "External"));
         parameterList.add(externalReset);
         parameterList.add(conditionSource);
         if(!externalReset.equals("none")&&conditionSource.equals("External")) {

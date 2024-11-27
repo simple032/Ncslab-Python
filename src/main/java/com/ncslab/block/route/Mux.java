@@ -34,7 +34,7 @@ public class Mux extends Block {
 	public Mux(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 
-		this.num = paramValues.getInt("Inputs");
+		this.num = Integer.parseInt(paramValues.getString("Inputs"));
 
 		//一锟斤拷锟斤拷锟诫，一锟斤拷锟斤拷锟�
 		for(int i=0; i<num; i++) {

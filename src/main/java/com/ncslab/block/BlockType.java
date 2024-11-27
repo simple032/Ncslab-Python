@@ -58,9 +58,11 @@ public class BlockType{
         blockClassTree.put("Clock", com.ncslab.block.source.Clock.class);
         blockClassTree.put("Step", com.ncslab.block.source.Step.class);
         blockClassTree.put("PulseGenerator", com.ncslab.block.source.Pulse.class);
+        blockClassTree.put("DiscretePulseGenerator", com.ncslab.block.source.Pulse.class);
         blockClassTree.put("RepeatingSequence", com.ncslab.block.source.RepeatingSequence.class);
         blockClassTree.put("Ramp", com.ncslab.block.source.Ramp.class);
         blockClassTree.put("SineWave", com.ncslab.block.source.SineWave.class);
+        blockClassTree.put("Band-LimitedWhiteNoise", com.ncslab.block.source.BandLimitedWhiteNoise.class);
 
         blockClassTree.put("Sum", com.ncslab.block.math.Sum.class);
         blockClassTree.put("Gain", com.ncslab.block.math.Gain.class);
@@ -85,7 +87,7 @@ public class BlockType{
         blockClassTree.put("VariableTransportDelay", com.ncslab.block.continuous.VariableTransportDelay.class);
         blockClassTree.put("PIDController(s)", com.ncslab.block.continuous.PIDController.class);
         blockClassTree.put("State-Space", com.ncslab.block.continuous.StateSpace.class);
-        blockClassTree.put("Transport Delay", com.ncslab.block.continuous.TransportDelay.class);
+        blockClassTree.put("TransportDelay", com.ncslab.block.continuous.TransportDelay.class);
         blockClassTree.put("PIDController", com.ncslab.block.continuous.OldPIDController.class);
 
         // Testrig
@@ -109,6 +111,16 @@ public class BlockType{
         blockClassTree.put("Superposition", com.ncslab.block.testrig.Superposition.class);
         blockClassTree.put("Telegenic", com.ncslab.block.testrig.Telegenic.class);
         blockClassTree.put("Kirchhoff", com.ncslab.block.testrig.Kirchhoff.class);
+        blockClassTree.put("DoubleTank", com.ncslab.block.testrig.DoubleTank.class);
+        blockClassTree.put("Fan", com.ncslab.block.testrig.RaspFan.class);
+
+        blockClassTree.put("L1IP", com.ncslab.block.testrig.InvertedPendulum.class);
+        blockClassTree.put("L2IP", com.ncslab.block.testrig.SecondOrderInvertedPendulum.class);
+        blockClassTree.put("R1IP", com.ncslab.block.testrig.RotaryInvertedPendulum.class);
+        blockClassTree.put("R2IP", com.ncslab.block.testrig.SecondOrderRotaryInvertedPendulum.class);
+        blockClassTree.put("BallPlateSystem", com.ncslab.block.testrig.BallPlateSUST.class);
+        blockClassTree.put("FanRasp", com.ncslab.block.testrig.RaspFan.class);
+        blockClassTree.put("NetWaterLevel", com.ncslab.block.testrig.WaterLevel.class);
 
         // Function
         blockClassTree.put("S-Function", com.ncslab.block.function.SFunction.class);
@@ -216,7 +228,10 @@ public class BlockType{
     }
 
 	public static Block createBlock(int id, JSONObject blockJSON, NCSLabModel model) throws ModelException {
-		String blockType = blockJSON.getString("blockType").replace("Block", "").replace(" ", "");
+		String blockType = blockJSON.getString("blockType")
+            .replace("Block", "")
+            .replace(" ", "")
+            .replace("\n","");
 
         Block block = null;
         try {
@@ -227,7 +242,7 @@ public class BlockType{
             log.error("e:", e);
         }
         if(block == null)
-            throw(new ModelException("Can not find blocktype in mapped function \""+blockType+"\""));
+            throw(new ModelException("Can not find blocktype \" "+ blockType+ " \" in mapped function"));
 
         block.setBlockId(id);
         block.updateBlock();

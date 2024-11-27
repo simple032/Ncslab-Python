@@ -1,5 +1,6 @@
 package com.ncslab.block.sink;
 
+import com.ncslab.ncslablink.MatDimException;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -49,4 +50,7 @@ public class Terminator extends SinkBlock{
 		initCode+="ScopeNum=ScopeNum+1;\n";
 		code.addInitCode(initCode);
 	}
+
+    public void checkDimension() throws MatDimException {
+    }
 }

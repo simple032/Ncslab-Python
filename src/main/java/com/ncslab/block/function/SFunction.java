@@ -44,7 +44,7 @@ public class SFunction extends DiscreteBlock {
     public SFunction(JSONObject blockJSON,NCSLabModel model) throws ModelException{
         super(blockJSON,model);
 
-        if(!paramValues.getBoolean("HasCodeCompiled")) {
+        if(!paramValues.optBoolean("HasCodeCompiled",false)) {
             throw new ModelException(blockName+" hasn't been compiled.");
         }
         fcnName = paramValues.getString("FunctionName");
