@@ -70,7 +70,7 @@ public class SFcnModel {
 		}
 
 		//修改头文件为ncslab的头文件
-		this.functionCode = this.functionCode.replaceFirst("\"simstruc.h\"","\"ncslab.hpp\"\n"
+		this.functionCode = this.functionCode.replaceFirst("\"simstruc.h\"","\"ncslabccode.hpp\"\n"
 				+ "#include \"ncslabdefines.hpp\"\n"
 				+ "#include \"Matrix.hpp\"\n"
 				+ "#define CONTINUOUS_SAMPLE_TIME 0\n"

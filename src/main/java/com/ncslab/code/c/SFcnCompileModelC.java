@@ -40,7 +40,7 @@ public class SFcnCompileModelC extends SFcnModel{
 		codePath = modelPath + "/";
 
 		writeNCSLabFile("ncslabdefines.hpp");
-		writeNCSLabFile("ncslab.hpp");
+		writeNCSLabFile("ncslabccode.hpp");
 		writeNCSLabFile("ncslabsfun.hpp");
 		writeNCSLabFile("Matrix.hpp");
 		writeMainCode();
@@ -174,7 +174,7 @@ public class SFcnCompileModelC extends SFcnModel{
 		try {
 			System.out.println("Making execute file...");
 			System.out.println(codePath);
-			String exeString="g++ -D_S_COMPILE -I /opt/eigen -fpermissive -o"+fileName+" "+fileName+".cpp";
+			String exeString="g++ -D_S_COMPILE -I /opt/eigen-3.4.0 -fpermissive -o"+fileName+" "+fileName+".cpp";
 			Process process=Runtime.getRuntime().exec(exeString,null,new File(codePath));
 			
 			//读取OutputStream和errStream。如果读取不及时，会出现阻塞

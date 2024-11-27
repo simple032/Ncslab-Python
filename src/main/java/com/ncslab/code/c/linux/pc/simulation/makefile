@@ -1,6 +1,6 @@
 
 # OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncslabmain.o results.o Matrix.o
-OBJS = mainccode.o onestep.o util.o ncslabmain.o results.o Matrix.o
+OBJS = $(SFCNOBJS) mainccode.o onestep.o util.o ncslabmain.o results.o Matrix.o
 
 CC=g++
 
@@ -9,7 +9,7 @@ LD=g++
 
 srcdir=/home/wenshan/NetConTop/ncslablink/src/main/java/com/ncslab/code/c
 pidir=/opt/pi/include
-eigendir=/opt/eigen-3.4.9
+eigendir=/opt/eigen-3.4.0
 jsondir=/usr/include/jsoncpp
 # CCFlag=-D_SIMU -fpermissive -Wwrite-strings -I /Users/square/vcpkg/packages/jsoncpp_arm64-osx/include -I /Users/square/Documents/Code/lib/pi -I /Users/square/Documents/Code/ncslablink/src/code/c -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -pthread -fopenmp -g -O2 -std=c++11 -fstack-protector-strong -Wformat -Werror=format-security -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 # -fopenmp 

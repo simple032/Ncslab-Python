@@ -19,6 +19,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }INPUT_PORT;
 
 typedef struct {
@@ -26,6 +27,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }OUTPUT_PORT;
 
 typedef struct {
