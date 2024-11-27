@@ -62,6 +62,7 @@ public class BlockType{
         blockClassTree.put("RepeatingSequence", com.ncslab.block.source.RepeatingSequence.class);
         blockClassTree.put("Ramp", com.ncslab.block.source.Ramp.class);
         blockClassTree.put("SineWave", com.ncslab.block.source.SineWave.class);
+        blockClassTree.put("Sin", com.ncslab.block.source.SineWave.class);
         blockClassTree.put("Band-LimitedWhiteNoise", com.ncslab.block.source.BandLimitedWhiteNoise.class);
 
         blockClassTree.put("Sum", com.ncslab.block.math.Sum.class);

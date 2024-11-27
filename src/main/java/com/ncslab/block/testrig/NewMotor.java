@@ -160,7 +160,7 @@ public class NewMotor extends Block {
 			outputCode+="int speed=recvBuff[4]+(recvBuff[5]<<8)+(recvBuff[5]<<16)+(recvBuff[5]<<24);\n";
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=speed;\n";
 
-			outputCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
+			outputCode+="uint8_t cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
 			outputCode+="int pwm = "+this.getInputPortVariable(0) +"*10000;\n";
 //			outputCode+="printf(\"speed is %d,pwm is %d\\n\",speed,pwm);\n";
 			outputCode+="pwm = pwm>=10000?10000:pwm;\n";
@@ -173,7 +173,7 @@ public class NewMotor extends Block {
 			outputCode+="char sendData[1024];\n";
             outputCode+="sprintf(sendData,\"$001,%02d#\",speed);\n";
 			outputCode+="sendLength=strlen(sendData);\n";
-			outputCode+="Serialport_Send(hComm1,sendData,sendLength);\n";
+			outputCode+="Serialport_Send(hComm1,(uint8_t*)sendData,sendLength);\n";
 			outputCode+="}\n";
 			break;
 		}

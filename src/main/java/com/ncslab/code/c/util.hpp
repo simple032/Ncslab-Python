@@ -21,5 +21,5 @@ double distance(double,double);
 void writeInformation();
 double generateGaussianNoise(double mean, double stdDev);
 double lowPassFilter(double input, double alpha);
-
+unsigned char calcSum(unsigned char bytes[]);
 #endif

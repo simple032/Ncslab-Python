@@ -118,7 +118,7 @@ double generateGaussianNoise(double mean, double stdDev) {
 // 一阶RC低通滤波器
 double lowPassFilter(double input, double alpha) {
   static double prevOutput = 0.0;
-    double output = alpha * input + (1.0 - alpha) * (*prevOutput);
+    double output = alpha * input + (1.0 - alpha) * (prevOutput);
     prevOutput = output;
     return output;
 }

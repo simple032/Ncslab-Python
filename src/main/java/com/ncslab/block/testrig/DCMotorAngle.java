@@ -17,7 +17,7 @@ import java.util.Vector;
 public class DCMotorAngle extends Block {
 
 
-	private String name = "NewMotor";
+	private String name = "DCMotorAngle";
 
 	private State speedState;
 
@@ -97,9 +97,11 @@ public class DCMotorAngle extends Block {
 		code.addInitCode(initCode);
 	}
 
+
 	public void generateIncludeCodeC(CodeStructC code) {
-		//String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-//		code.addIncludeCode(includeCode);
+		String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+		includeCode += "#include \"ncs_serialport.h\"\n";
+        code.addIncludeCode(includeCode);
 	}
 
 	public void addLine(String originCode, String newLine) {
