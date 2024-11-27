@@ -248,6 +248,7 @@ abstract public class CodeStructC{
 //				 +"#include <octave/oct.h>\n"
                 + "#include <cstdint>\n"
                 + "#include <cstring>\n"
+                + "include <cstdlib>\n"
 				+ "#ifdef __linux\n"
                 +"#include <sys/socket.h>\n"
                 + "#endif \n"

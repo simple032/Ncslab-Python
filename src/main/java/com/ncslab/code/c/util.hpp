@@ -19,5 +19,7 @@ double gcd1(double *);
 int hasdiscrete(double *);
 double distance(double,double);
 void writeInformation();
+double generateGaussianNoise(double mean, double stdDev);
+double lowPassFilter(double input, double alpha);
 
 #endif
