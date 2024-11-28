@@ -218,6 +218,7 @@ public class Discrete_Time_Integrator extends Block{
  		code.addUpdateCode(updateCode);
  	}
      public void updateDimension() throws MatDimException{
+    	 super.updateDimension();
 	    OutputPort out  = outputPortList.get(0);
 	    InputPort in  = inputPortList.get(0);
 	    OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();

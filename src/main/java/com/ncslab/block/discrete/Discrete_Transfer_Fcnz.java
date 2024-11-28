@@ -131,6 +131,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 			code.addUpdateCode(updateCode);
 	}
 	 public void updateDimension() throws MatDimException{
+		 super.updateDimension();
 			OutputPort out  = outputPortList.get(0);
 			OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();

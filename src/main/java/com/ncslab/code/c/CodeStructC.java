@@ -354,7 +354,7 @@ abstract public class CodeStructC{
 				+"}\n"
 
                 +"void NCSLabDiscreteUpdate(){\n"
-                +"// only for stm32;\n"
+                + discreteUpdateCode + "\n"
                 +"}\n"
 
                 +"void NCSLabSinkOutput(){\n"

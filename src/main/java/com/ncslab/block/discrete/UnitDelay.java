@@ -109,6 +109,7 @@ public class UnitDelay extends DiscreteBlock {
 		  code.addOutputCode(outputCode);
 		  }
 	 public void updateDimension() throws MatDimException{
+		 super.updateDimension();
 			OutputPort out  = outputPortList.get(0);
 			InputPort in  = inputPortList.get(0);
 			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();

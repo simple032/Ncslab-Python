@@ -52,7 +52,7 @@ void NCSLabOneStep(){
 
   if (hasdiscrete(sample_time)){
 
-    while (mp->discreteTime <= mp->time){
+    while (mp->discreteTime - mp->time <= 1E-7){
       mp->discreteTime += real_sample_time;
       // mp->offset = 0;
       // NCSLabOutput();

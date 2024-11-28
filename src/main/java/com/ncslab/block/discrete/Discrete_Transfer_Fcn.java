@@ -117,6 +117,7 @@ public class Discrete_Transfer_Fcn extends Block{
 
 
     public void updateDimension() throws MatDimException{
+    	super.updateDimension();
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
