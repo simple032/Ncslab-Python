@@ -239,6 +239,7 @@ abstract public class CodeStructC{
 				// +"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.hpp\"\n"
 				+"#include\"math.h\"\n"
+				+"#include \"Matrix.hpp\"\n"
                 +"#ifdef _ENABLE_PI\n"
                 +"#include \"ncs_serialport.h\"\n"
                 +"#include \"hardware.h\"\n"
@@ -362,7 +363,7 @@ abstract public class CodeStructC{
 				+"}\n"
 
                 +"void NCSLabDiscreteUpdate(){\n"
-                +"// only for stm32;\n"
+                + discreteUpdateCode + "\n"
                 +"}\n"
 
                 +"void NCSLabSinkOutput(){\n"
@@ -579,12 +580,11 @@ abstract public class CodeStructC{
 			for(Block block : model.getBlockList())
 			{
 				if(block.isSFcnBlock()) {
-					sfcn +=
-					block.getSFcnName()+"_"+block.getBlockId()+".o ";
-					for(String module : block.getSFunctionModuleList())
-					{
-						sfcn += module + ".o ";
-					}
+					sfcn += block.getFileName()+".o ";
+//					for(String module : block.getSFunctionModuleList())
+//					{
+//						sfcn += module + ".o ";
+//					}
 				}
 			}
 			sfcn += "\n";
@@ -1098,8 +1098,10 @@ abstract public class CodeStructC{
 			for(InputPort input:block.getInputPortList()) {
 				if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
 					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=SINGLE;\n";
 				}else {
 					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=MATRIX;\n";
 				}
 			}
 		}
@@ -1108,10 +1110,14 @@ abstract public class CodeStructC{
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize outputs for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(OutputPort output:block.getOutputPortList()) {
-				if(output.getWidth()==1)
+				if(output.getWidth()==1) {
 					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
-				else
+					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".type=SINGLE;\n";
+				}
+				else {
 					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".type=MATRIX;\n";
+				}
 			}
 		}
 

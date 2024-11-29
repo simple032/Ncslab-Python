@@ -46,6 +46,13 @@ public class State {
 
 	public String getDerivativeName() {
 		this.name="Block"+block.getBlockId()+"_State_"+localName;
+		
+		if(this.block.getBlockType().equals("S-Function")) {
+			if(this.name.contains("Disc")) {
+				return this.name.replace("Disc", "Derivative");
+			}
+			return this.name.replace("Cont", "Derivative");
+		}
 
 		return this.name+"_Derivative";
 	}
@@ -69,6 +76,10 @@ public class State {
 	}
 
 	public String getDefineCodeC() {
+		//S-Function's states are defined in its generateArraysCodeC
+		if(this.block.getBlockType().equals("S-Function")) {
+			return "";
+		}
 		String code;
 		if(this.block.getBlockType().equals("Discrete Transfer Fcn")&&this.data.getDataType()==DataType.REAL) {
 			code="Matrix "+name+"(1,1);\n";

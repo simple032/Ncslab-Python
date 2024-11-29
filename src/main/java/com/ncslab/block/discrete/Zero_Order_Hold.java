@@ -93,6 +93,7 @@ public class Zero_Order_Hold extends DiscreteBlock {
 	 }
 
 	 public void updateDimension() throws MatDimException{
+		 super.updateDimension();
 			OutputPort out  = outputPortList.get(0);
 			InputPort in  = inputPortList.get(0);
 			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();

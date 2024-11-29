@@ -120,7 +120,7 @@ public class SimulateWebSocket {
 
 	        	sendMessage(session,"compiled");
 
-				modelC.removeAllFiles();
+				//modelC.removeAllFiles();
 
 	        	//sendMessage(session,"simulating");
 	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());

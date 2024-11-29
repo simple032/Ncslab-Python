@@ -48,6 +48,7 @@ yarn start
 
 操作同Simulink
 双击模块修改模块参数，在端口处点击鼠标拖至另一端口完成连线
+![operation](img/introduction-step2.png)
 
 ### 3.Start Simulation
 
