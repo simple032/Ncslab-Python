@@ -1,0 +1,33 @@
+{
+  "userId": 18,
+  "testRig": 69,
+  "copyNum": -1,
+  "modelId": "114",
+  "modelName": "s473728",
+  "uuid": 86473728,
+  "modelRealName": "sine",
+  "templateName": "PowerSim",
+  "config": {
+    "FixedStep": "0.01",
+    "Solver": "ode45",
+    "StartTime": "0.0",
+    "StopTime": "20.0",
+    "MaxDataPoints": "1000"
+  },
+  "blocks": [],
+  "lines": [],
+  "option": {},
+  "saveInfo": {
+    "uuid": 86473728,
+    "userId": 18,
+    "modelId": "114",
+    "modelRealName": "sine",
+    "stepTime": "0.04",
+    "packetSize": 10,
+    "targetPlatform": 1,
+    "publicFlag": 0,
+    "testRig": 69,
+    "copyNum": -1,
+    "descroption": ""
+  }
+}
