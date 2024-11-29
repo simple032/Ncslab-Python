@@ -55,10 +55,10 @@ public class Delay extends DiscreteBlock {
 		  switch(signal.getDataType()) {
 		  case REAL:
 			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-			  for(int i=0;i<(int)paramValues.getDouble("DelayLength");i++){
+			  for(int i=0;i<(int)paramValues.getDouble("DelayLength")-1;i++){
 				  int k=i+1;
 			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0]["+i+"]="+"Block"+getBlockId()+"_discrete_delay_savedata[0]["+k+"];\n";}
-			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0][(int)"+paramValues.getDouble("DelayLength")+"]="+signal.getName()+";}\n";
+			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0][(int)"+paramValues.getDouble("DelayLength")+"-1]="+signal.getName()+";}\n";
 			  outputCode+="if((currentTime+0.00001)<("+delayLength.getName()+"*"+sampleTime.getName()+")) {\n";
 			  outputCode+=out.getOutputSignalC().getName()+"="+initialCondition.getName()+";}\n";
 			  outputCode+="else {\n";
@@ -69,11 +69,11 @@ public class Delay extends DiscreteBlock {
 			  for(int i=0; i<ops.getHeight(); i++) {
 					for(int j=0;j<ops.getWidth();j++) {
 						outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-                          for(int n=0;n<(int)paramValues.getDouble("DelayLength");n++){
+                          for(int n=0;n<(int)paramValues.getDouble("DelayLength")-1;n++){
                                 int k=n+1;
                                 outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"]["+n+"+"+h+"*"+j+"]="+"Block"+getBlockId()+"_discrete_delay_savedata["+i+"]["+k+"+"+h+"*"+j+"];\n";
                           }
-                          outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][(int)"+paramValues.getDouble("DelayLength")+"+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
+                          outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][(int)"+paramValues.getDouble("DelayLength")+"-1+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
                           outputCode+="if(currentTime+0.00001<"+delayLength.getName()+"*"+sampleTime.getName()+") {\n";
                           outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+initialCondition.getName()+";}\n";
                           outputCode+="else {\n";
