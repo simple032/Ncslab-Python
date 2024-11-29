@@ -1,0 +1,45 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ncslab.utils.MdlBlockMapper">
+
+  <!-- Insert -->
+  <insert id="insert" parameterType="com.ncslab.database.MdlBlock">
+    INSERT INTO mdl_block (library_id, user_id, order, type, data, logic, markup, config, plant_id, public, icon, last_update)
+    VALUES (#{libraryId}, #{userId}, #{order}, #{type}, #{data}, #{logic}, #{markup}, #{config}, #{plantId}, #{publicFlag}, #{icon}, #{lastUpdate})
+  </insert>
+
+  <!-- Select All -->
+  <select id="selectAll" resultType="com.ncslab.database.MdlBlock">
+    SELECT * FROM mdl_block
+  </select>
+
+  <!-- Select by ID -->
+  <select id="selectById" parameterType="int" resultType="com.ncslab.database.MdlBlock">
+    SELECT * FROM mdl_block WHERE id = #{id}
+  </select>
+
+  <!-- Update -->
+  <update id="update" parameterType="com.ncslab.database.MdlBlock">
+    UPDATE mdl_block
+    SET library_id = #{libraryId},
+    user_id = #{userId},
+    order = #{order},
+    type = #{type},
+    data = #{data},
+    logic = #{logic},
+    markup = #{markup},
+    config = #{config},
+    plant_id = #{plantId},
+    public = #{publicFlag},
+    icon = #{icon},
+    last_update = #{lastUpdate}
+    WHERE id = #{id}
+  </update>
+
+  <!-- Delete by ID -->
+  <delete id="deleteById" parameterType="int">
+    DELETE FROM mdl_block WHERE id = #{id}
+  </delete>
+
+</mapper>
