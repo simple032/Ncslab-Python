@@ -72,6 +72,7 @@ public class BlockType{
         blockClassTree.put("Sign", com.ncslab.block.math.Sign.class);
         blockClassTree.put("Product", com.ncslab.block.math.Product.class);
         blockClassTree.put("MathFunction", com.ncslab.block.math.MathFunction.class);
+        blockClassTree.put("Math", com.ncslab.block.math.MathFunction.class);
         blockClassTree.put("TestPoint", com.ncslab.block.math.TestPoint.class);
         blockClassTree.put("abc2dq", com.ncslab.block.math.abc2dq0.class);
         blockClassTree.put("dq02abc", com.ncslab.block.math.dq02abc.class);
@@ -80,6 +81,7 @@ public class BlockType{
         blockClassTree.put("Sqrt", com.ncslab.block.math.Sqrt.class);
         blockClassTree.put("ProductOfElements", com.ncslab.block.math.ProductOfElements.class);
         blockClassTree.put("SumOfElements", com.ncslab.block.math.SumOfElements.class);
+        blockClassTree.put("Rounding", com.ncslab.block.math.Rounding.class);
 
         // Continuous
         blockClassTree.put("Derivative", com.ncslab.block.continuous.Derivative.class);
@@ -159,6 +161,7 @@ public class BlockType{
 
         // Discontinuous
         blockClassTree.put("Saturation", com.ncslab.block.discontinuous.Saturation.class);
+        blockClassTree.put("Saturate", com.ncslab.block.discontinuous.Saturation.class);
         blockClassTree.put("Relay", com.ncslab.block.discontinuous.Relay.class);
         blockClassTree.put("DeadZone", com.ncslab.block.discontinuous.DeadZone.class);
         blockClassTree.put("CoulombViscousFriction", com.ncslab.block.discontinuous.Coulomb.class);
