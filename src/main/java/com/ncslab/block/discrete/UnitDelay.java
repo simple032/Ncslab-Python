@@ -73,7 +73,7 @@ public class UnitDelay extends DiscreteBlock {
 		  OutputPort out  = outputPortList.get(0);
 		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  outputCode+="{real_T currentTime = model.time;\n";
+		  outputCode+="real_T currentTime = model.time;\n";
 		  outputCode+="real_T sampleTimeTmp = "+sampleTime.getName()+"==-1?model.stepSize:"+sampleTime.getName()+";\n";
 		  switch(signal.getDataType()) {
 		  case REAL:

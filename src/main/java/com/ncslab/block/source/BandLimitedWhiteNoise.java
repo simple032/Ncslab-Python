@@ -34,9 +34,12 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
     public BandLimitedWhiteNoise(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
 
-        seed = new Parameter(this, 1, "seed", new String(String.valueOf(paramValues.getInt("Seed"))));
-        cov = new Parameter(this, 1, "cov", new String(String.valueOf(paramValues.getDouble("Cov"))));
-        samplePeriod = new Parameter(this, 1, "samplePeriod", new String(String.valueOf(paramValues.getDouble("Ts"))));
+        seed = new Parameter(this, 1, "seed", String.valueOf(paramValues.getInt("Seed")));
+        parameterList.add(seed);
+        cov = new Parameter(this, 2, "cov", String.valueOf(paramValues.getDouble("Cov")));
+        parameterList.add(cov);
+        samplePeriod = new Parameter(this, 3, "samplePeriod", String.valueOf(paramValues.getDouble("Ts")));
+        parameterList.add(samplePeriod);
 
 		outputPortList.add(new OutputPort(this,1,false));
 

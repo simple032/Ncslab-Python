@@ -13,8 +13,7 @@ import com.ncslab.code.c.CodeStructC;
 public class DiscreteBlock extends Block {
 
     @Getter
-    @Setter
-    private double sampleTime=-1;
+    protected double sampleTime=-1;
     protected boolean feedthrough = false;
 
     public DiscreteBlock(JSONObject blockIn,NCSLabModel model) {
@@ -46,7 +45,7 @@ public class DiscreteBlock extends Block {
         //discreteUpdateCode+="}\n";
 
         //discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time){\n";
-        
+
         discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time||"+"block"+this.getBlockId()+".discreteTime-mp->time<0.0000001){\n";
         code.addDiscreteUpdateCode(discreteUpdateCode);
 
