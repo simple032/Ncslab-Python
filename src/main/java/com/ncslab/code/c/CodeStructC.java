@@ -240,6 +240,7 @@ abstract public class CodeStructC{
 				+"#include\"ncslab.hpp\"\n"
 				+"#include\"math.h\"\n"
 				+"#include \"Matrix.hpp\"\n"
+                +"#include \"util.hpp\"\n"
                 +"#ifdef _ENABLE_PI\n"
                 +"#include \"ncs_serialport.h\"\n"
                 +"#include \"hardware.h\"\n"
@@ -761,17 +762,6 @@ abstract public class CodeStructC{
 			file.mkdir();
 		}
 
-//        String osName = System.getProperty("os.name").toLowerCase();
-//
-//        if (osName.contains("win")) {
-//
-//        } else if (osName.contains("mac")) {
-//
-//        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-//
-//        } else {
-//            throw new UnsupportedOperationException("Unsupported OS: " + osName);
-//        }
 
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
@@ -863,31 +853,24 @@ abstract public class CodeStructC{
 
 	public boolean makeExeFile() {
 		try {
-			//启动make，生成可执行代码
-			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
-			//读取OutputStream和errStream。如果读取不及时，会出现阻塞
-			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line=null,outLine=null;
-			StringBuilder errStr=new StringBuilder();
-			StringBuilder outStr=new StringBuilder();
+            Process process = Runtime.getRuntime().exec(maketool, null, new File(codePath));
 
-			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
-				if(outLine!=null) {
-					outStr.append(outLine);
-					System.out.println(outLine);
-				}
-				if(line!=null) {
-					errStr.append(line);
-					System.err.println(line);
-				}
-			}
+            // 创建线程读取标准输出和错误输出
+            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
+            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
 
+            // 启动线程
+            outputGobbler.start();
+            errorGobbler.start();
 
-			//等待makefile的完成
-			process.waitFor();
+            // 等待进程完成
+            int exitCode = process.waitFor();
 
-			if(process.exitValue()==0) {
+            // 确保所有输出都被读取
+            outputGobbler.join();
+            errorGobbler.join();
+
+			if(exitCode == 0) {
 				return true;
 			}
 
@@ -1322,5 +1305,29 @@ class WrittenFile implements Comparable<WrittenFile>{
     @Override
     public int compareTo(WrittenFile o) {
         return this.targetPath.compareTo(o.targetPath);
+    }
+}
+
+
+// 辅助类：用于处理流
+class StreamGobbler extends Thread {
+    private final InputStream inputStream;
+    private final java.util.function.Consumer<String> consumer;
+
+    public StreamGobbler(InputStream inputStream, java.util.function.Consumer<String> consumer) {
+        this.inputStream = inputStream;
+        this.consumer = consumer;
+    }
+
+    @Override
+    public void run() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                consumer.accept(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -44,7 +44,7 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 		// main function and timer
 		writeNCSLabFile("../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 		// write the header file for generated main code
-        writeNCSLabFile("../ncslabccode.hpp", "ncslabccode.hpp");
+        writeNCSLabFile("../../ncslabccode.hpp", "ncslabccode.hpp");
 		writeNCSLabFile("../../mainccode.hpp","mainccode.hpp", true);
 
 		writeNCSLabFile("../../util.hpp","util.hpp",true);
@@ -120,56 +120,56 @@ public class CodeStructCWindowsSimulation extends CodeStructC{
 		return readFile("ncslab.exe");
 	}
 
-	@Override
-	public boolean makeExeFile() {
-		try {
-			// start make, generate executable file
-			// Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
-			// using cmake instead of make
-//			String cmakeCommand[] = {"cmake","."};
-//			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
-//			makeProcess.waitFor();
-            // 获取规范化路径
-//            String absPath = file.getCanonicalPath();
-//            String cmakeCommand[] = {"cmake", "-G", "\"MinGW Makefiles\"", "."};
-////            String cmakeCommand = "cmake -G \"MinGW Makefiles\" -DCMAKE_C_COMPILER=\"C:/MinGW64/bin/gcc.exe\" -DCMAKE_CXX_COMPILER=\"C:/MinGW64/bin/g++.exe\" -DCMAKE_MAKE_PROGRAM=\"C:/MinGW64/bin/mingw32-make.exe\"";
-//            Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(absPath));
-//            System.out.printf("Command: [%s %s]\n", absPath, Arrays.toString(cmakeCommand));
-//            makeProcess.waitFor();
-
-			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
-			// get OutputStream and errStream of the process, in case of blocking
-			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line=null,outLine=null;
-			StringBuilder errStr=new StringBuilder();
-			StringBuilder outStr=new StringBuilder();
-
-			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
-				if(outLine!=null) {
-					outStr.append(outLine);
-					System.out.println(outLine);
-				}
-				if(line!=null) {
-					errStr.append(line);
-					System.err.println(line);
-				}
-			}
-
-			// wait for the make process to terminate
-			process.waitFor();
-
-			if(process.exitValue()==0) {
-				return true;
-			}
-
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
+//	@Override
+//	public boolean makeExeFile() {
+//		try {
+//			// start make, generate executable file
+//			// Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+//			// using cmake instead of make
+////			String cmakeCommand[] = {"cmake","."};
+////			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
+////			makeProcess.waitFor();
+//            // 获取规范化路径
+////            String absPath = file.getCanonicalPath();
+////            String cmakeCommand[] = {"cmake", "-G", "\"MinGW Makefiles\"", "."};
+//////            String cmakeCommand = "cmake -G \"MinGW Makefiles\" -DCMAKE_C_COMPILER=\"C:/MinGW64/bin/gcc.exe\" -DCMAKE_CXX_COMPILER=\"C:/MinGW64/bin/g++.exe\" -DCMAKE_MAKE_PROGRAM=\"C:/MinGW64/bin/mingw32-make.exe\"";
+////            Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(absPath));
+////            System.out.printf("Command: [%s %s]\n", absPath, Arrays.toString(cmakeCommand));
+////            makeProcess.waitFor();
+//
+//			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
+//			// get OutputStream and errStream of the process, in case of blocking
+//			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
+//			String line=null,outLine=null;
+//			StringBuilder errStr=new StringBuilder();
+//			StringBuilder outStr=new StringBuilder();
+//
+//			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
+//				if(outLine!=null) {
+//					outStr.append(outLine);
+//					System.out.println(outLine);
+//				}
+//				if(line!=null) {
+//					errStr.append(line);
+//					System.err.println(line);
+//				}
+//			}
+//
+//			// wait for the make process to terminate
+//			process.waitFor();
+//
+//			if(process.exitValue()==0) {
+//				return true;
+//			}
+//
+//		}
+//		catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//		return false;
+//	}
 
 	@Override
 	protected void writeNCSWrittenFiles(){
