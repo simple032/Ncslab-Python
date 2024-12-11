@@ -31,21 +31,24 @@ public class SimulateWebSocket {
 	private void sendMessage(Session session,String msgString) throws IOException{
 		JSONObject jb=new JSONObject();
 		jb.put("msg", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+		    session.getBasicRemote().sendText(jb.toString());
 	}
 
 	private void sendResultMessage(Session session, CodeModelC modelC) throws IOException{
 		JSONObject jb=new JSONObject();
 		jb.put("msg", "result");
 		jb.put("resultsFile", "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json");
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+            session.getBasicRemote().sendText(jb.toString());
 	}
 
 	private void sendErrorMessage(Session session,String msgString) throws IOException{
 		JSONObject jb=new JSONObject();
 		jb.put("msg", "error");
 		jb.put("error", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+            session.getBasicRemote().sendText(jb.toString());
 	}
 
 	private void sendSimulatingMessage(Session session,double endTime) throws IOException{
@@ -53,7 +56,8 @@ public class SimulateWebSocket {
 		jb.put("msg", "simulating");
 		jb.put("time", 0);
 		jb.put("timeLength",endTime);
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+		    session.getBasicRemote().sendText(jb.toString());
 	}
 
 	@OnMessage
@@ -89,10 +93,7 @@ public class SimulateWebSocket {
                 }else{
 					modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
 				}
-				
-				// modelC.removeAllFiles();
 
-	        	//modelC.setSolver(Solver.ode4);
                 modelC.removeAllFiles();
 
 
@@ -117,10 +118,9 @@ public class SimulateWebSocket {
 
                 //
 
-
 	        	sendMessage(session,"compiled");
 
-				//modelC.removeAllFiles();
+				modelC.removeAllFiles();
 
 	        	//sendMessage(session,"simulating");
 	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());
@@ -153,7 +153,8 @@ public class SimulateWebSocket {
 			}
 			finally {
 				try {
-					session.close();
+                    if(session != null)
+					    session.close();
 				}
 				catch(IOException e) {
 

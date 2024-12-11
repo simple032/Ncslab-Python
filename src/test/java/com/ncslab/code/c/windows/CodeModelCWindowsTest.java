@@ -1,18 +1,13 @@
-package code.c.windows;
+package com.ncslab.code.c.windows;
 
 import com.ncslab.WindowsTest;
-import com.ncslab.code.Solver;
 import com.ncslab.code.c.windows.pc.CodeModelCWindowsPC;
-import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import utils.ResourceReader;
 
 import static org.junit.Assert.assertEquals;

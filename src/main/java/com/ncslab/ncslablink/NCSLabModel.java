@@ -204,7 +204,7 @@ abstract public class NCSLabModel {
 
 		updateDimensions();
 
-		showBlocks();
+//		showBlocks();
 	}
 
     private void showBlocks() {
@@ -242,7 +242,7 @@ abstract public class NCSLabModel {
 			Block block=BlockType.createBlock(blockSeq+1,blockJSON,this);
 			blockSeq++;
 
-			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
+//			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 
             blockList.add(block);
 
@@ -261,7 +261,7 @@ abstract public class NCSLabModel {
 			line.setLineId(lineSeq+1);
 			lineSeq++;
 
-			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+//			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
 
             lineList.add(line);
         }
@@ -279,10 +279,10 @@ abstract public class NCSLabModel {
 	}
 
 	private void findDimTerminalBlocks() {
-		System.out.println("Looking for terminal blocks");
+//		System.out.println("Looking for terminal blocks");
 		for(Block block:blockList) {
 			if(block.isTerminalBlock()) {
-				System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
+//				System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
 				dimTerminalBlockList.add(block);
 			}
 		}
@@ -312,7 +312,7 @@ abstract public class NCSLabModel {
 
                     blockSeq++;
 
-					System.out.println("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
+//					System.out.println("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
 
                     fullBlockList.add(newBlock);
 
@@ -328,7 +328,7 @@ abstract public class NCSLabModel {
                     line.setLineId(lineSeq+1);
                     lineSeq++;
 
-                    System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+//                    System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
 
                     lineList.add(line);
 				}
@@ -353,7 +353,7 @@ abstract public class NCSLabModel {
 
                     blockSeq++;
 
-                    System.out.println("Parsing block (" + newBlock.getBlockId() + "): '" + newBlock.getBlockName() + "'...");
+//                    System.out.println("Parsing block (" + newBlock.getBlockId() + "): '" + newBlock.getBlockName() + "'...");
 
                     fullBlockList.add(newBlock);
 
@@ -369,7 +369,7 @@ abstract public class NCSLabModel {
                     line.setLineId(lineSeq + 1);
                     lineSeq++;
 
-                    System.out.println("Parsing line (" + line.getLineId() + "): '" + line.getLinkedOutputPort().getBLock().getBlockName() + "(" + line.getLinkedOutputPort().getNumber() + ")-->" + line.getLinkedInputPort().getBLock().getBlockName() + "(" + line.getLinkedInputPort().getNumber() + ")");
+//                    System.out.println("Parsing line (" + line.getLineId() + "): '" + line.getLinkedOutputPort().getBLock().getBlockName() + "(" + line.getLinkedOutputPort().getNumber() + ")-->" + line.getLinkedInputPort().getBLock().getBlockName() + "(" + line.getLinkedInputPort().getNumber() + ")");
 
                     lineList.add(line);
                 }
@@ -455,7 +455,7 @@ abstract public class NCSLabModel {
 
 	/*进行遍历的方法*/
 	private void scanDimChain() {
-		System.out.println("scaning outputChain");
+//		System.out.println("scaning outputChain");
 
 		//遍历所有的终端模块
 		for(Block block:dimTerminalBlockList) {
@@ -489,7 +489,7 @@ abstract public class NCSLabModel {
 	private void showDimBlocks() {
 		int i=1;
 		for(Block block:dimensionList) {
-			System.out.println("("+i+")"+block.getBlockName()+"("+block.getBlockId()+")");
+//			System.out.println("("+i+")"+block.getBlockName()+"("+block.getBlockId()+")");
 			i++;
 		}
 	}

@@ -1,15 +1,10 @@
-package code.c.windows.simulation;
+package com.ncslab.code.c.windows.simulation;
 
 import com.ncslab.WindowsTest;
-import com.ncslab.code.Solver;
 //import com.ncslab.code.c.windows.CodeModelCWindows;
-import com.ncslab.code.c.windows.simulation.CodeModelCWindowsSimulation;
-import com.ncslab.database.Algorithms;
 import com.ncslab.database.MdlBlock;
-import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
-import com.ncslab.utils.AlgorithmsMapper;
 import com.ncslab.utils.MdlBlockMapper;
 import com.ncslab.utils.Mybatis1Utils;
 import org.apache.ibatis.session.SqlSession;
@@ -24,7 +19,6 @@ import utils.ResourceReader;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.Assert.*;
 

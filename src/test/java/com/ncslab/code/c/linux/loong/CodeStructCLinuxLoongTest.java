@@ -1,14 +1,10 @@
-package code.c.linux.loong;
+package com.ncslab.code.c.linux.loong;
 
 import com.ncslab.LinuxLoongarchTest;
-import com.ncslab.code.c.linux.loong.CodeModelCLinuxLoong;
-import com.ncslab.code.c.linux.loong.CodeStructCLinuxLoong;
 import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.junit.*;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import utils.ResourceReader;
 
 import static org.junit.Assert.assertTrue;

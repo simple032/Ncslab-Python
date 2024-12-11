@@ -50,8 +50,11 @@ public class Parameter {
 
 		switch(data.getDataType()) {
 		case REAL:
+            defineString="REAL";
+            break;
 		case MATRIX:
-			defineString="REAL";
+			defineString="Matrix";
+            break;
 		}
 
 		return defineString;

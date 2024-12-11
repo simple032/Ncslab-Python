@@ -86,7 +86,7 @@ public class Line {
 		}
 		else {
 			for(InputPort inputPort:inputPortList) {
-				System.out.println(" inputPort getNumber in Line.java is :"+inputPort.getNumber());
+//				System.out.println(" inputPort getNumber in Line.java is :"+inputPort.getNumber());
 				if(inputPort.getNumber()==toPortNo) {
 					toPort=inputPort;
 				}
