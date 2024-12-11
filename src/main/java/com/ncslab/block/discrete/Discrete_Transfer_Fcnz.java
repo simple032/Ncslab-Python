@@ -1,5 +1,6 @@
 package com.ncslab.block.discrete;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -10,14 +11,32 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Discrete_Transfer_Fcnz extends DiscreteBlock{
+
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        inputNames.add("in2");
+        inputNames.add("in3");
+    }
 
 	public Discrete_Transfer_Fcnz(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
 		inputPortList.add(new InputPort(this,2));
 		inputPortList.add(new InputPort(this,3));
-		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,feedthrough));
 	}
 	//define arrays to save data
 	 public void generateArraysCodeC(CodeStructC code) {
@@ -131,6 +150,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 			code.addUpdateCode(updateCode);
 	}
 	 public void updateDimension() throws MatDimException{
+		 super.updateDimension();
 			OutputPort out  = outputPortList.get(0);
 			OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();

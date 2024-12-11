@@ -1,6 +1,6 @@
-#ifdef __WIN32
+#ifdef _WIN32
 #include"winsock2.h"
-#endif // __WIN32
+#endif // _WIN32
 #include"ncslabccode.hpp"
 #include"ServerThread.hpp"
 #include"ncslab.hpp"

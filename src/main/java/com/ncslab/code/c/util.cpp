@@ -1,11 +1,11 @@
 #include <iostream>
 #include <cmath>
 #include <cstdio>
-#ifndef __WIN32
+#ifndef _WIN32
 #include <sys/time.h>
 #else
 #include <windows.h>
-#endif // __WIN32
+#endif // _WIN32
 #include "ncslabdefines.hpp"
 #include "ncslab.hpp"
 #include "Matrix.hpp"
@@ -95,6 +95,33 @@ double gcd1(double a[]) {
 	return d;
 }
 
+// 函数生成正态分布随机数 (Box-Muller方法)
+double generateGaussianNoise(double mean, double stdDev) {
+    static int hasSpare = 0;
+    static double spare;
+    if (hasSpare) {
+        hasSpare = 0;
+        return mean + stdDev * spare;
+    }
+    hasSpare = 1;
+    double u, v, s;
+    do {
+        u = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
+        v = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
+        s = u * u + v * v;
+    } while (s >= 1.0 || s == 0.0);
+    s = sqrt(-2.0 * log(s) / s);
+    spare = v * s;
+    return mean + stdDev * (u * s);
+}
+
+// 一阶RC低通滤波器
+double lowPassFilter(double input, double alpha) {
+  static double prevOutput = 0.0;
+    double output = alpha * input + (1.0 - alpha) * (prevOutput);
+    prevOutput = output;
+    return output;
+}
 //xiazhiqiang:Check whether there are discrete modules
 
 // int hasdiscrete(double a[]) {
@@ -265,7 +292,7 @@ REAL calculateStateDif(int seq1, int seq2) {
 
 static long oldSec = 0;
 
-#ifndef __WIN32
+#ifndef _WIN32
 void writeInformation() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);

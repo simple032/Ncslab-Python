@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -11,11 +12,34 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class BangbangSwingUpInvertedPendulumSUST extends Block {
 
 
 	private String name = "BangbangSwingUpInvertedPendulumSUST";
 	Parameter v,vel;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("AccOutput");
+        outputNames.add("SpeedOutput");
+        inputNames.add("in1");
+        inputNames.add("in2");
+        inputNames.add("in3");
+        inputNames.add("in4");
+        inputNames.add("in5");
+        parameterNames.add("v");
+        parameterNames.add("vel");
+    }
 
 
 	public BangbangSwingUpInvertedPendulumSUST(JSONObject blockJSON,NCSLabModel model) {

@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -13,15 +14,30 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Sign extends Block{
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	public Sign (JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		//����һ�����
 		outputPortList.add(new OutputPort(this,1,true));
 		//����һ������
-		inputPortList.add(new InputPort(this,1));	
+		inputPortList.add(new InputPort(this,1));
 	}
-	
+
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 		OutputPort ops1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
@@ -38,17 +54,17 @@ public class Sign extends Block{
 		break;
 		case MATRIX:
 			for(int i=1;i<ops1.getHeight()+1;i++) {
-				for(int j=1;j<ops1.getWidth()+1;j++) {	
+				for(int j=1;j<ops1.getWidth()+1;j++) {
 					outputCode+="if "+ inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+i+","+j+")>0\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=1.0;\n";
 					outputCode+="elseif "+ inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+i+","+j+")==0\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;\n";
 					outputCode+="else\n";
 					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=-1.0;\n";
-					outputCode+="end\n";	
+					outputCode+="end\n";
 				}
 			}
-		break;	
+		break;
 		}
 		code.addOutputCode(outputCode);
 	}
@@ -80,7 +96,7 @@ public class Sign extends Block{
 		}
 		code.addOutputCode(outputCode);
 	}
-	
+
 	public void updateDimension() throws MatDimException{
 		if(inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getDataType()==DataType.MATRIX) {
 		OutputPort out  = outputPortList.get(0);
@@ -89,10 +105,10 @@ public class Sign extends Block{
 			out.setWidth(signal.getWidth());
 			out.getOutputSignalC().setHeight(signal.getHeight());
 			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());	
+			out.getOutputSignalC().setDataType(signal.getDataType());
 	   }
 	}
 	public void checkDimension() throws MatDimException{
-		
+
 	}
 }

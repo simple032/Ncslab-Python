@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -10,6 +11,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class BallPlateSUST extends Block {
 
 
@@ -17,6 +20,27 @@ public class BallPlateSUST extends Block {
 
 //	State speedState;
 //	State spState;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("Real_X");
+        outputNames.add("Real_Y");
+        outputNames.add("MotorXPos");
+        outputNames.add("MotorYPos");
+
+        inputNames.add("in1");
+        inputNames.add("in2");
+
+    }
 
 	public BallPlateSUST(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -23,6 +24,21 @@ public class TransferFcn extends Block {
 	private double[] den;
 
 	private Vector<State> xStateList=new Vector<State>();
+
+
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
 	public TransferFcn(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);

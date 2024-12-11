@@ -1,5 +1,6 @@
 package com.ncslab.block.matrix;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -12,11 +13,32 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
+import java.util.Vector;
+
 public class Submatrix extends Block {
     private Parameter startingRow;
     private Parameter endingRow;
     private Parameter startingColumn;
     private Parameter endingColumn;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("StartingRow");
+        parameterNames.add("EndingRow");
+        parameterNames.add("StartingColumn");
+        parameterNames.add("EndingColumn");
+    }
 
     public Submatrix(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);

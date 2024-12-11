@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 //#define _WIN32_WINNT 0x501
-#ifdef __WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#endif // __WIN32
+#endif // _WIN32
 #include "ncslabccode.hpp"
 
 #ifdef __cplusplus

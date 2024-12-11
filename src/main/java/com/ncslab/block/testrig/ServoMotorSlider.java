@@ -2,6 +2,7 @@ package com.ncslab.block.testrig;
 
 import java.util.Vector;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -25,6 +26,18 @@ public class ServoMotorSlider extends Block {
 	//simulation parameter
 	private double num[] = {0,17.41,123.4};
 	private double den[] = {1,2.01,38.86,49.06};
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("Position");
+        inputNames.add("in1");
+    }
 
 	public ServoMotorSlider(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

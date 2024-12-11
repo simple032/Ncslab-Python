@@ -3,7 +3,7 @@ package com.ncslab.code.c;
 
 import com.ncslab.code.c.linux.loong.CodeModelCLinuxLoong;
 import com.ncslab.code.c.linux.raspberry.CodeModelCLinuxRaspberry;
-import com.ncslab.code.c.windows.CodeModelCWindows;
+import com.ncslab.code.c.windows.pc.CodeModelCWindowsPC;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
@@ -22,7 +22,7 @@ public class CodeModelCFactory {
     static {
         registry.put("raspberry", CodeModelCLinuxRaspberry::createFromJSON);
         registry.put("loong", CodeModelCLinuxLoong::createFromJSON);
-        registry.put("windows", CodeModelCWindows::createFromJSON);
+        registry.put("windows", CodeModelCWindowsPC::createFromJSON);
     }
 
     public static CodeModelC createInstance(String type, JSONObject jsonIn, ModelMode mode) throws ModelException {

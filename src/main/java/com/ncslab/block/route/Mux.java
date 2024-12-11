@@ -1,5 +1,6 @@
 package com.ncslab.block.route;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -11,16 +12,30 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Mux extends Block {
 	private int num;
-	
+
 	private boolean feedThrough = true;
-	
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        //输入个数不确定
+    }
+
 	public Mux(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
-		
-		this.num = paramValues.getInt("Inputs");				
-		
+
+		this.num = Integer.parseInt(paramValues.getString("Inputs"));
+
 		//一锟斤拷锟斤拷锟诫，一锟斤拷锟斤拷锟�
 		for(int i=0; i<num; i++) {
 			inputPortList.add(new InputPort(this,i+1));
@@ -32,18 +47,18 @@ public class Mux extends Block {
 		super.generateInitCodeM(code);
 		String initCode=getOutputPortVariable(0)+"=0;\n";
 
-		
+
 		code.addInitCode(initCode);
 	}
-	
-	
-	
+
+
+
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-			
+
 		//String outputCode=getOutputPortVariable(0)+"=0";
-		
-		
+
+
 		//outputCode+=";\n";
 		String outputCode="";
 		int i=0;
@@ -53,41 +68,41 @@ public class Mux extends Block {
 			i++;
 		}
 		outputCode+="];\n";
-		
+
 		code.addOutputCode(outputCode);
 	}
-	
+
 	public void generateDerivativeCodeM(CodeStructM code) {
 		super.generateDerivativeCodeM(code);
-		
+
 		String derivativeCode="";
-		
+
 
 		//derivativeCode+=");\n";
-		
+
 		code.addDerivativeCode(derivativeCode);
 	}
-	
+
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		
+
 		String initCode="/*Code for initialization of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
 
-		
+
 		code.addInitCode(initCode);
 	}
-	
+
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
 		//y(k)=Cx(k)+Du(k)
-		
+
 		/*
 		for(int i=0; i<num; i++) {
 			outputCode+=getOutputPortVariable(0)+"["+i+"]="
 				+getInputPortVariable(i)
 				+";\n";
-		}*/		
-		
+		}*/
+
 		int fetch=0;
 		int i=0;
 		for(InputPort inputPort:inputPortList) {
@@ -96,7 +111,7 @@ public class Mux extends Block {
 				outputCode+=getOutputPortVariable(0)+"("+fetch+",0)="
 						+getInputPortVariable(i)
 						+";\n";
-				
+
 				fetch++;
 				i++;
 			}
@@ -105,7 +120,7 @@ public class Mux extends Block {
 					outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
 							+getInputPortVariable(i)+"(0,"+j+")"
 							+";\n";
-					
+
 					fetch++;
 				}
 				i++;
@@ -115,29 +130,29 @@ public class Mux extends Block {
 					outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
 							+getInputPortVariable(i)+"("+j+",0)"
 							+";\n";
-					
+
 					fetch++;
 				}
 				i++;
 			}
 		}
-		
+
 		code.addOutputCode(outputCode);
 	}
-	
+
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		
+
+
 		code.addDerivativeCode(derivativeCode);
 	}
-	
+
 	public void  generateUpdateCodeC(CodeStructC code) {
 		String updateCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
-		code.addUpdateCode(updateCode);	
+
+		code.addUpdateCode(updateCode);
 	}
-	
+
 	public void updateDimension() throws MatDimException{
 		//super.updateDimension();
 		int size=0;
@@ -150,7 +165,7 @@ public class Mux extends Block {
 				throw(e);
 			}
 		}
-		
+
 		OutputPort output=getOutputPortList().get(0);
 		output.setHeight(size);
 		output.setWidth(1);
@@ -158,8 +173,8 @@ public class Mux extends Block {
 		output.getOutputSignalC().setWidth(1);
 		output.getOutputSignalC().setDataType(DataType.MATRIX);
 	}
-	
+
 	public void checkDimension() throws MatDimException{
-		
+
 	}
 }

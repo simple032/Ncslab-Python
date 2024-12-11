@@ -1,5 +1,6 @@
 package com.ncslab.block.discrete;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.discrete.DiscreteBlock;
@@ -12,15 +13,34 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class UnitDelay extends DiscreteBlock {
 
     Parameter sampleTime;
     Parameter initialCondition;
+
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("sampleTime");
+        parameterNames.add("initialCondition");
+        outputNames.add("out1");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
     public UnitDelay(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
-		outputPortList.add(new OutputPort(this,1,false));
+//		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,feedthrough));
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
 		parameterList.add(sampleTime);
@@ -53,7 +73,7 @@ public class UnitDelay extends DiscreteBlock {
 		  OutputPort out  = outputPortList.get(0);
 		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  outputCode+="{real_T currentTime = model.time;\n";
+		  outputCode+="real_T currentTime = model.time;\n";
 		  outputCode+="real_T sampleTimeTmp = "+sampleTime.getName()+"==-1?model.stepSize:"+sampleTime.getName()+";\n";
 		  switch(signal.getDataType()) {
 		  case REAL:
@@ -109,6 +129,7 @@ public class UnitDelay extends DiscreteBlock {
 		  code.addOutputCode(outputCode);
 		  }
 	 public void updateDimension() throws MatDimException{
+		 super.updateDimension();
 			OutputPort out  = outputPortList.get(0);
 			InputPort in  = inputPortList.get(0);
 			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();

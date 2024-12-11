@@ -34,7 +34,8 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		jb.put("msg", "simulating");
 		jb.put("time", time);
 		jb.put("timeLength", this.getConfig().getStopTime());
-		session.getBasicRemote().sendText(jb.toString());
+        if(session != null)
+		    session.getBasicRemote().sendText(jb.toString());
 	}
 
 	public void simulate(Session session) throws ModelException {

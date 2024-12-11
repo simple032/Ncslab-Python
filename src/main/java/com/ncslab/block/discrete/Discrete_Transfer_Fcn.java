@@ -2,6 +2,7 @@ package com.ncslab.block.discrete;
 
 import java.util.Vector;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -15,7 +16,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.State;
 
-public class Discrete_Transfer_Fcn extends Block{
+public class Discrete_Transfer_Fcn extends DiscreteBlock{
 	Parameter sampleTime;
 	Parameter num;
 	Parameter den;
@@ -23,6 +24,23 @@ public class Discrete_Transfer_Fcn extends Block{
 	private boolean feedThrough=false;
 	private Vector<State> xStateList=new Vector<State>();
 	private State xState;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("sampleTime");
+        parameterNames.add("num");
+        parameterNames.add("den");
+        parameterNames.add("initialStates");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
 
 	public Discrete_Transfer_Fcn(JSONObject blockIn,NCSLabModel model) {
@@ -117,6 +135,7 @@ public class Discrete_Transfer_Fcn extends Block{
 
 
     public void updateDimension() throws MatDimException{
+    	super.updateDimension();
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();

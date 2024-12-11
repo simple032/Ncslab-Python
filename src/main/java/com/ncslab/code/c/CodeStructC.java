@@ -22,11 +22,11 @@ import lombok.Getter;
 
 abstract public class CodeStructC{
 
-	public static Set<String> globalDeclareCodeSet = new LinkedHashSet<>();
-	public static Set<String> globalInitCodeSet = new LinkedHashSet<>();
-	public static Set<String> globalEndCodeSet = new LinkedHashSet<>();
-	public static Set<String> includeCodeSet = new LinkedHashSet<>();
-	public static Set<WrittenFile> writtenFileSet = new HashSet<>();
+	public Set<String> globalDeclareCodeSet = new LinkedHashSet<>();
+	public Set<String> globalInitCodeSet = new LinkedHashSet<>();
+	public Set<String> globalEndCodeSet = new LinkedHashSet<>();
+	public Set<String> includeCodeSet = new LinkedHashSet<>();
+	public Set<WrittenFile> writtenFileSet = new HashSet<>();
 
 	/**
 	 * You can freely add declare code in this function, and it will be added to the
@@ -34,7 +34,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addGlobalDeclareCode(String code) {
+	public void addGlobalDeclareCode(String code) {
 		globalDeclareCodeSet.add(code);
 	}
 
@@ -44,7 +44,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addGlobalInitCode(String code) {
+	public void addGlobalInitCode(String code) {
 		globalInitCodeSet.add(code);
 	}
 
@@ -54,7 +54,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addGlobalEndCode(String code) {
+	public void addGlobalEndCode(String code) {
 		globalEndCodeSet.add(code);
 	}
 
@@ -64,7 +64,7 @@ abstract public class CodeStructC{
 	 * @param code The code you want to add. ples add "\n" at the end for each line.
 	 * @author Ethy9160
 	 */
-	public static void addIncludeCode(String code) {
+	public void addIncludeCode(String code) {
 		includeCodeSet.add(code);
 	}
 
@@ -78,7 +78,7 @@ abstract public class CodeStructC{
 	 * @param targetPath the target path of the file.
 	 * @param overwrite whether to overwrite the file if it exists.
 	 */
-	public static void addWrittenFile(String filePath, String targetPath, boolean overwrite) {
+	public void addWrittenFile(String filePath, String targetPath, boolean overwrite) {
 		writtenFileSet.add(new WrittenFile(filePath, targetPath, overwrite));
 	}
 
@@ -92,7 +92,7 @@ abstract public class CodeStructC{
 	 * @param targetPath the target path of the file.
 	 * @see #addWrittenFile(String filePath, String targetPath, boolean overwrite)
 	 */
-	public static void addWrittenFile(String filePath, String targetPath) {
+	public void addWrittenFile(String filePath, String targetPath) {
 		addWrittenFile(filePath, targetPath, true);
 	}
 
@@ -239,12 +239,22 @@ abstract public class CodeStructC{
 				// +"#include\"ncs_serialport.h\"\n"
 				+"#include\"ncslab.hpp\"\n"
 				+"#include\"math.h\"\n"
+				+"#include \"Matrix.hpp\"\n"
+                +"#include \"util.hpp\"\n"
+                +"#ifdef _ENABLE_PI\n"
+                +"#include \"ncs_serialport.h\"\n"
+                +"#include \"hardware.h\"\n"
+                +"#endif\n"
 				//TODO:这些有linux特定的api，需要根据平台类型来定制
 				// +"#include <iostream>\n"
 //				 +"#include <octave/oct.h>\n"
+                + "#include <cstdint>\n"
+                + "#include <cstring>\n"
+                + "#include <cstdlib>\n"
 				+ "#ifdef __linux\n"
                 +"#include <sys/socket.h>\n"
                 + "#endif \n"
+                + "unsigned char calcSum(unsigned char bytes[]);\n"
 
 				//xiazhiqiang:Stores the sampling time of discrete modules
 				+"double  sample_time["+model.getBlockList().size()+"]={};\n"
@@ -354,7 +364,7 @@ abstract public class CodeStructC{
 				+"}\n"
 
                 +"void NCSLabDiscreteUpdate(){\n"
-                +"// only for stm32;\n"
+                + discreteUpdateCode + "\n"
                 +"}\n"
 
                 +"void NCSLabSinkOutput(){\n"
@@ -365,6 +375,10 @@ abstract public class CodeStructC{
 				+"void NCSLabTerminate(){\n"
 				+terminateCode+"\n"
 				+"}\n"
+
+                +"void NCSLabFinalize(){\n"
+                +finalizeCode+"\n"
+                +"}\n"
 
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
@@ -489,6 +503,9 @@ abstract public class CodeStructC{
 		}
 	}
 
+    /**
+     *
+     */
 	public void generateGlobalVariableDefineCode(){
 		globalVariable+="/*Define variables for global variables*/\n";
 		for(GlobalVariable variable:variableList){
@@ -536,13 +553,14 @@ abstract public class CodeStructC{
 	}
 
     @Getter
-   protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("默认值");
+   protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("/data/M2PLab");
 
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
 			:
 			Property.instance.getProperty("CCodePathWin"))
         .replace("${M2PLAB_ROOT}", m2plabRoot);
+
 
     protected String maketool = Property.instance.getProperty("MakeTool");
 
@@ -563,12 +581,11 @@ abstract public class CodeStructC{
 			for(Block block : model.getBlockList())
 			{
 				if(block.isSFcnBlock()) {
-					sfcn +=
-					block.getSFcnName()+"_"+block.getBlockId()+".o ";
-					for(String module : block.getSFunctionModuleList())
-					{
-						sfcn += module + ".o ";
-					}
+					sfcn += block.getFileName()+".o ";
+//					for(String module : block.getSFunctionModuleList())
+//					{
+//						sfcn += module + ".o ";
+//					}
 				}
 			}
 			sfcn += "\n";
@@ -591,7 +608,12 @@ abstract public class CodeStructC{
 
 	//写文件的方法，将文件从resource中拷贝出来，写在目标文件夹
 	protected void writeNCSLabFile(String fileName) {
-        writeNCSLabFile(fileName, fileName, false);
+        String fileNameOut = fileName;
+        if(fileName.contains("/")){
+            String [] paths = fileName.split("/");
+            fileNameOut = paths[paths.length-1];
+        }
+        writeNCSLabFile(fileName, fileNameOut, false);
 	}
 
     protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
@@ -740,6 +762,7 @@ abstract public class CodeStructC{
 			file.mkdir();
 		}
 
+
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
 		if(!file.exists()) {
@@ -830,31 +853,24 @@ abstract public class CodeStructC{
 
 	public boolean makeExeFile() {
 		try {
-			//启动make，生成可执行代码
-			Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
-			//读取OutputStream和errStream。如果读取不及时，会出现阻塞
-			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line=null,outLine=null;
-			StringBuilder errStr=new StringBuilder();
-			StringBuilder outStr=new StringBuilder();
+            Process process = Runtime.getRuntime().exec(maketool, null, new File(codePath));
 
-			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
-				if(outLine!=null) {
-					outStr.append(outLine);
-					System.out.println(outLine);
-				}
-				if(line!=null) {
-					errStr.append(line);
-					System.err.println(line);
-				}
-			}
+            // 创建线程读取标准输出和错误输出
+            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
+            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
 
+            // 启动线程
+            outputGobbler.start();
+            errorGobbler.start();
 
-			//等待makefile的完成
-			process.waitFor();
+            // 等待进程完成
+            int exitCode = process.waitFor();
 
-			if(process.exitValue()==0) {
+            // 确保所有输出都被读取
+            outputGobbler.join();
+            errorGobbler.join();
+
+			if(exitCode == 0) {
 				return true;
 			}
 
@@ -871,12 +887,14 @@ abstract public class CodeStructC{
         String modelPath=userPath+"/"+model.getModelId();
         File dir = new File(modelPath);
         File[] files = dir.listFiles();
-        for(File file : files){
-            if (file.isFile() && isTargetFile(file)) {
-//                    System.out.println("Deleting file: " + file.getAbsolutePath());
-                    if (!file.delete()) {
-                        System.err.println("Failed to delete file: " + file.getAbsolutePath());
-                    }
+        if (files != null) {
+            for(File file : files){
+                if (file.isFile() && isTargetFile(file)) {
+                        System.out.println("Deleting file: " + file.getAbsolutePath());
+                        if (!file.delete()) {
+                            System.err.println("Failed to delete file: " + file.getAbsolutePath());
+                        }
+                }
             }
         }
 
@@ -1063,8 +1081,10 @@ abstract public class CodeStructC{
 			for(InputPort input:block.getInputPortList()) {
 				if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
 					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=SINGLE;\n";
 				}else {
 					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=MATRIX;\n";
 				}
 			}
 		}
@@ -1073,10 +1093,14 @@ abstract public class CodeStructC{
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize outputs for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(OutputPort output:block.getOutputPortList()) {
-				if(output.getWidth()==1)
+				if(output.getWidth()==1) {
 					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
-				else
+					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".type=SINGLE;\n";
+				}
+				else {
 					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".vp=&"+output.getOutputSignalC().getName()+";\n";
+					dataStructureInitCode+="outputPort"+block.getBlockId()+"_"+output.getNumber()+".type=MATRIX;\n";
+				}
 			}
 		}
 
@@ -1281,5 +1305,29 @@ class WrittenFile implements Comparable<WrittenFile>{
     @Override
     public int compareTo(WrittenFile o) {
         return this.targetPath.compareTo(o.targetPath);
+    }
+}
+
+
+// 辅助类：用于处理流
+class StreamGobbler extends Thread {
+    private final InputStream inputStream;
+    private final java.util.function.Consumer<String> consumer;
+
+    public StreamGobbler(InputStream inputStream, java.util.function.Consumer<String> consumer) {
+        this.inputStream = inputStream;
+        this.consumer = consumer;
+    }
+
+    @Override
+    public void run() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                consumer.accept(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

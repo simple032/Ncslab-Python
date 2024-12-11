@@ -1,5 +1,6 @@
 package com.ncslab.block.source;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.OutputPort;
@@ -10,12 +11,31 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
+import java.util.Vector;
+
 public class SineWave extends Block{
 	Parameter amplitude;
 	Parameter bias;
 	Parameter frequency;
 	Parameter phase;
 	Parameter sampleTime;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+
+    static {
+
+        outputNames.add("out1");
+        parameterNames.add("amplitude");
+        parameterNames.add("bias");
+        parameterNames.add("frequency");
+        parameterNames.add("phase");
+
+    }
 
 	public SineWave(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON, model);

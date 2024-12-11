@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -9,6 +10,8 @@ import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+
+import java.util.Vector;
 
 public class WaterLevel extends Block {
 	private final double pumpK=1;
@@ -21,6 +24,21 @@ public class WaterLevel extends Block {
 	State levelState;
 
 	String hardwareDefineName;
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("Pump_Speed");
+        outputNames.add("Water_Level");
+        inputNames.add("in1");
+
+    }
 
 	public WaterLevel(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

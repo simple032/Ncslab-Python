@@ -13,8 +13,8 @@ import com.ncslab.code.c.CodeStructC;
 public class DiscreteBlock extends Block {
 
     @Getter
-    @Setter
-    private double sampleTime=-1;
+    protected double sampleTime=-1;
+    protected boolean feedthrough = false;
 
     public DiscreteBlock(JSONObject blockIn,NCSLabModel model) {
         super(blockIn,model);
@@ -45,9 +45,7 @@ public class DiscreteBlock extends Block {
         //discreteUpdateCode+="}\n";
 
         //discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time){\n";
-        if(sampleTime == 0) {
-            return ;
-        }
+
         discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time||"+"block"+this.getBlockId()+".discreteTime-mp->time<0.0000001){\n";
         code.addDiscreteUpdateCode(discreteUpdateCode);
 
@@ -76,15 +74,17 @@ public class DiscreteBlock extends Block {
                 if (linkedBlock instanceof DiscreteBlock) {
                     sampleTime = ((DiscreteBlock) linkedBlock).getSampleTime();
                 } else {
-                    sampleTime = 0;
+                    sampleTime = model.getConfig().getFixedStep();
                 }
             }else {
                 throw new MatDimException("Block "+this.blockName+"sample time error.");
             }
-            for(Parameter parameter:parameterList) {
-                if(parameter.getLocalName().equals("sampleTime")) {
-                    parameter.getData().setInitValue(sampleTime);
-                }
+        }else if(sampleTime == 0) {
+        	sampleTime = model.getConfig().getFixedStep();
+        }
+        for(Parameter parameter:parameterList) {
+            if(parameter.getLocalName().equals("sampleTime")) {
+                parameter.getData().setInitValue(sampleTime);
             }
         }
     }

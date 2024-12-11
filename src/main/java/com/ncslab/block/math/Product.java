@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import java.util.Vector;
 
@@ -17,6 +18,20 @@ public class Product extends Block{
 
 	private String seq;
 	boolean multiplication=false;
+
+
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        //输入待根据循环确定
+
+    }
 
 	public Product(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

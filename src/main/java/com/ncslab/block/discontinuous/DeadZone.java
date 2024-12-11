@@ -1,5 +1,6 @@
 package com.ncslab.block.discontinuous;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -13,9 +14,26 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class DeadZone extends Block {
 	Parameter lowervalue;
 	Parameter uppervalue;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("lowervalue");
+        parameterNames.add("uppervalue");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
 	public DeadZone(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);

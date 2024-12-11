@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -11,15 +12,32 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class DCMotorAngle extends Block {
 
 
-	private String name = "NewMotor";
+	private String name = "DCMotorAngle";
 
 	private State speedState;
 
 	private double motorK=106.25;
 	private double motorT=0.07;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("Speed");
+        outputNames.add("Angle");
+        inputNames.add("in1");
+    }
 
 	public DCMotorAngle(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -79,9 +97,11 @@ public class DCMotorAngle extends Block {
 		code.addInitCode(initCode);
 	}
 
+
 	public void generateIncludeCodeC(CodeStructC code) {
-		//String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-//		code.addIncludeCode(includeCode);
+		String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+		includeCode += "#include \"ncs_serialport.h\"\n";
+        code.addIncludeCode(includeCode);
 	}
 
 	public void addLine(String originCode, String newLine) {

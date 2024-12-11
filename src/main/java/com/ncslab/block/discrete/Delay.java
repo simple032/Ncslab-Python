@@ -1,5 +1,6 @@
 package com.ncslab.block.discrete;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -10,14 +11,32 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Delay extends DiscreteBlock {
 	Parameter sampleTime;
 	Parameter initialCondition;
 	Parameter delayLength;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("sampleTime");
+        parameterNames.add("initialCondition");
+        parameterNames.add("delayLength");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 	public Delay(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
+		outputPortList.add(new OutputPort(this,1,false));
 		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
 		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
 		delayLength=new Parameter(this,3,"delayLength",paramValues.getString("DelayLength"));
@@ -55,10 +74,10 @@ public class Delay extends DiscreteBlock {
 		  switch(signal.getDataType()) {
 		  case REAL:
 			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-			  for(int i=0;i<(int)paramValues.getDouble("DelayLength");i++){
+			  for(int i=0;i<(int)paramValues.getDouble("DelayLength")-1;i++){
 				  int k=i+1;
 			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0]["+i+"]="+"Block"+getBlockId()+"_discrete_delay_savedata[0]["+k+"];\n";}
-			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0][(int)"+paramValues.getDouble("DelayLength")+"]="+signal.getName()+";}\n";
+			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0][(int)"+paramValues.getDouble("DelayLength")+"-1]="+signal.getName()+";}\n";
 			  outputCode+="if((currentTime+0.00001)<("+delayLength.getName()+"*"+sampleTime.getName()+")) {\n";
 			  outputCode+=out.getOutputSignalC().getName()+"="+initialCondition.getName()+";}\n";
 			  outputCode+="else {\n";
@@ -69,11 +88,11 @@ public class Delay extends DiscreteBlock {
 			  for(int i=0; i<ops.getHeight(); i++) {
 					for(int j=0;j<ops.getWidth();j++) {
 						outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-                          for(int n=0;n<(int)paramValues.getDouble("DelayLength");n++){
+                          for(int n=0;n<(int)paramValues.getDouble("DelayLength")-1;n++){
                                 int k=n+1;
                                 outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"]["+n+"+"+h+"*"+j+"]="+"Block"+getBlockId()+"_discrete_delay_savedata["+i+"]["+k+"+"+h+"*"+j+"];\n";
                           }
-                          outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][(int)"+paramValues.getDouble("DelayLength")+"+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
+                          outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][(int)"+paramValues.getDouble("DelayLength")+"-1+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
                           outputCode+="if(currentTime+0.00001<"+delayLength.getName()+"*"+sampleTime.getName()+") {\n";
                           outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+initialCondition.getName()+";}\n";
                           outputCode+="else {\n";
@@ -87,6 +106,7 @@ public class Delay extends DiscreteBlock {
 		  code.addOutputCode(outputCode);
 		  }
     public void updateDimension() throws MatDimException{
+    	super.updateDimension();
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);
 		OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();

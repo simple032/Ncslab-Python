@@ -1,5 +1,6 @@
 package com.ncslab.block.advancedControl;
 
+import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -10,6 +11,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+
+import java.util.Vector;
 
 /**
  * only support matrix input
@@ -24,6 +27,23 @@ public class LQRController extends Block {
     private Parameter R;
 
     private LQRVariable LQR_K;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        parameterNames.add("A");
+        parameterNames.add("B");
+        parameterNames.add("Q");
+        parameterNames.add("R");
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
 
     public LQRController(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);

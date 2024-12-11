@@ -21,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.ncslab.servlet.compile;
-import test.java.ResourceReader;
+import utils.ResourceReader;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletException;

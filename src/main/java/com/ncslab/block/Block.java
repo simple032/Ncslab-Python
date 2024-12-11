@@ -87,7 +87,9 @@ public class Block implements MCodeBlock, CCodeBlock{
     protected Block(JSONObject blockIn, NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
 		this.blockName=blockIn.getString("blockName");
-		this.paramValues=blockIn.getJSONObject("paramValues");
+        if (blockIn.get("paramValues") instanceof JSONObject) {
+            this.paramValues=blockIn.getJSONObject("paramValues");
+        }
 		this.model=model;
 		this.blockPath=blockIn.getString("blockPath");
 	}
@@ -265,7 +267,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 	//生成C语言的Output代码，供上一级调用
 	@Override
 	public void generateBlockOutputCodeC(CodeStructC code) {
-		System.out.format("Generating block output code (%d):%s\n", blockId, blockName);
+//		System.out.format("Generating block output code (%d):%s\n", blockId, blockName);
 		generateOutputCodeC(code);
 
 		/*
@@ -281,7 +283,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 	public void generateOutputCodeC(CodeStructC code) {}
 
 	public void generateBlockSinkOutputCodeC(CodeStructC code) {
-		System.out.format("Generating block sink output code (%d):%s\n", blockId, blockName);
+//		System.out.format("Generating block sink output code (%d):%s\n", blockId, blockName);
 		generateOutputSinkCodeC(code);
 	}
 
@@ -327,7 +329,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 	//define arrays to save data for discrete blocks
 	//author:xiazhiqiang
 	public void generateBlockArraysCodeC(CodeStructC code) {
-		System.out.format("Generating block arrays code (%d):%s\n", blockId, blockName);
+//		System.out.format("Generating block arrays code (%d):%s\n", blockId, blockName);
 		generateArraysCodeC(code);
 	}
 	public void generateArraysCodeC(CodeStructC code) {}

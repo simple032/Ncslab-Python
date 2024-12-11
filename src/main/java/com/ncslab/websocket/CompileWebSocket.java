@@ -8,15 +8,13 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.ncslab.code.CodeModelFactory;
 import com.ncslab.code.c.CodeModelC;
-import com.ncslab.code.c.linux.pc.CodeModelCLinuxPC;
-import com.ncslab.code.c.windows.CodeModelCWindows;
+
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 
 import com.ncslab.code.Solver;
-import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
-import com.ncslab.code.c.linux.raspberry.CodeModelCLinuxRaspberry;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
@@ -55,7 +53,30 @@ public class CompileWebSocket {
 				sendMessage(session, "start");
 				// System.out.println("Start");
 				JSONObject mdlData = msg.getJSONObject("mdlData");
-                String target = mdlData.optString("target", "");
+                // host 应为运行Link的操作系统来决定，而不应该由用户来决定
+                String osName = System.getProperty("os.name").toLowerCase();
+//                mdlData.optString("host", "Windows");
+                String host;
+                if (osName.contains("win")) {
+                    host = "Windows";
+                } else if (osName.contains("mac")) {
+                    host = "Mac";
+                } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+                    host = "Linux";
+                } else {
+                    throw new UnsupportedOperationException("Unsupported OS: " + osName);
+                }
+
+                String target = mdlData.optString("target", "PC");
+
+                JSONObject plantInfo = mdlData.getJSONObject("plantInfo");
+                String matlabExt = plantInfo.optString("matlabExt", "");
+                if(!"".equals(matlabExt)){
+                    if(matlabExt.toLowerCase().contains("pi")){
+                        target = "Raspberry";
+                    }
+                }
+
 				String jsonDataString = mdlData.getString("jsonData");
 				JSONObject jsonData = new JSONObject(jsonDataString);
 				// System.out.println(jsonDataString);
@@ -63,23 +84,20 @@ public class CompileWebSocket {
 
 				sendMessage(session, "generating");
 
-                CodeModelC modelC = null;
+                // 使用反射构建
+                CodeModelC modelC = CodeModelFactory.createModel(host, target, jsonData, ModelMode.Compilation);
 
-                if(Objects.equals(target, "linux")){
-                    modelC = CodeModelCLinuxPC.createFromJSON(jsonData, ModelMode.Compilation);
-                }else if(Objects.equals(target, "linux-rpi")){
-                    modelC = CodeModelCLinuxRaspberry.createFromJSON(jsonData, ModelMode.Compilation);
-                }else{
-					modelC = CodeModelCWindows.createFromJSON(jsonData, ModelMode.Compilation);
-				}
-
-
+                if(modelC == null){
+                    throw new ModelException("Can not find the host/target:" + host + target);
+                }
 				// CodeModelCLinuxPC
 				// modelC=CodeModelCLinuxPC.createFromJSON(jsonIn,ModelMode.Compilation);
 
 				modelC.setSolver(Solver.ode4);
 
-				modelC.generate();
+                modelC.removeAllFiles();
+
+                modelC.generate();
 
 				sendMessage(session, "generated");
 

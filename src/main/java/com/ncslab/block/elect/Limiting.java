@@ -1,5 +1,6 @@
 package com.ncslab.block.elect;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -11,47 +12,64 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Vector;
+
 public class Limiting extends Block{
 	protected Parameter rmin;
+
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+
+        outputNames.add("out1");
+        inputNames.add("in1");
+        parameterNames.add("Rmin");
+    }
 	public Limiting(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		InputPort in;
 		OutputPort out;
 		out = new OutputPort(this,1,true);
 		in = new InputPort(this,1);
-		
+
 		outputPortList.add(out);
 		inputPortList.add(in);
 		rmin=new Parameter(this,1,"Rmin",paramValues.getString("Rmin"));
-		
+
 		parameterList.add(rmin);
-		
+
 		System.out.println(paramValues);
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		
+
 		String initCode="/*Code for initialization of block Limiting:("+getBlockId()+")"+getBlockName()+"*/\n";
 		initCode+=rmin.getInitCodeC();
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block Limiting:("+getBlockId()+")"+getBlockName()+"*/\n";
-		
+
 		OutputPort out  = outputPortList.get(0);
 		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		
-		
+
+
 		outputCode+="if("+ops.getOutputSignalC().getName()+">="+rmin.getName()+"){\n";
 		outputCode+=out.getOutputSignalC().getName()+"=";
 		outputCode+=ops.getOutputSignalC().getName()+";\n";
 		outputCode+="}\n";
 		outputCode+="else{\n";
 		outputCode+=out.getOutputSignalC().getName()+"="+rmin.getName()+";\n";
-		outputCode+="}\n";	
+		outputCode+="}\n";
 		code.addOutputCode(outputCode);
 	}
-	
+
 	public void updateDimension() throws MatDimException{
 		OutputPort out  = outputPortList.get(0);
 		InputPort in  = inputPortList.get(0);

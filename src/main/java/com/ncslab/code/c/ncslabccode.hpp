@@ -19,6 +19,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }INPUT_PORT;
 
 typedef struct {
@@ -26,6 +27,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }OUTPUT_PORT;
 
 typedef struct {
@@ -63,6 +65,8 @@ typedef struct {
 	int parameterNum;
 	int stateNum;
 	int signalNum;
+
+	REAL discreteTime;
 	int discreteUpdated;
 
 	INPUT_PORT **inputPorts;
@@ -72,6 +76,81 @@ typedef struct {
 	SIGNAL **signals;
 
 }BLOCK;
+
+
+typedef void(*MdlUpdateFcn)(void*);
+typedef void(*MdlOutputsFcn)(void*,int);
+typedef void(*MdlStartFcn)(void*);
+typedef void(*MdlDerivativesFcn)(void*);
+typedef void(*MdlTerminateFcn)(void*);
+typedef void(*MdlInitializeSizesFcn)(void*);
+typedef void(*MdlInitializeSampleTimesFcn)(void*);
+typedef void(*MdlInitializeConditionsFcn)(void*);
+
+typedef struct {
+
+	int inputPortNum;
+	int outputPortNum;
+	int parameterNum;
+	int stateNum;
+	int signalNum;
+
+	int* inputPortWidth;
+	int* outputPortWidth;
+
+	int numContStates;
+	int numDiscStates;
+	int numSampleTimes;
+
+	int numRWork;
+	int numIWork;
+	int numPWork;
+	int numModes;
+}ssSize;
+
+typedef struct {
+
+	void* contStates;
+	void* discStates;
+
+	void* derivative;
+
+}ssStates;
+
+typedef struct {
+
+	REAL *rWork;
+	int *iWork;
+	void **pWork;
+
+}ssWork;
+
+typedef struct
+{
+	REAL* sampleTimes;
+	REAL* offsetTimes;
+}ssStInfo;
+
+
+typedef struct SimStruct_tag{
+	ssSize sizes;
+	ssStates states;
+	ssStInfo stInfo;
+	ssWork work;
+
+	MdlInitializeSizesFcn initializeSizes;
+	MdlInitializeSampleTimesFcn initializeSampleTimes;
+	MdlInitializeConditionsFcn initializeConditions;
+	MdlUpdateFcn update;
+	MdlOutputsFcn outputs;
+	MdlStartFcn start;
+	MdlDerivativesFcn derivatives;
+	MdlTerminateFcn terminate;
+
+
+	BLOCK* parentBlock;
+}SimStruct;
+
 
 typedef struct {
 	char *name;
@@ -93,9 +172,9 @@ typedef struct {
 
 	BLOCK **blocks;
 	int majorStep;
-#ifndef __WIN32
+#ifndef _WIN32
 	struct timeval tv;
-#endif // __WIN32
+#endif // _WIN32
   int terminalNum;
 }MODEL;
 

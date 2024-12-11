@@ -31,21 +31,24 @@ public class SimulateWebSocket {
 	private void sendMessage(Session session,String msgString) throws IOException{
 		JSONObject jb=new JSONObject();
 		jb.put("msg", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+		    session.getBasicRemote().sendText(jb.toString());
 	}
 
 	private void sendResultMessage(Session session, CodeModelC modelC) throws IOException{
 		JSONObject jb=new JSONObject();
 		jb.put("msg", "result");
 		jb.put("resultsFile", "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json");
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+            session.getBasicRemote().sendText(jb.toString());
 	}
 
 	private void sendErrorMessage(Session session,String msgString) throws IOException{
 		JSONObject jb=new JSONObject();
 		jb.put("msg", "error");
 		jb.put("error", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+            session.getBasicRemote().sendText(jb.toString());
 	}
 
 	private void sendSimulatingMessage(Session session,double endTime) throws IOException{
@@ -53,7 +56,8 @@ public class SimulateWebSocket {
 		jb.put("msg", "simulating");
 		jb.put("time", 0);
 		jb.put("timeLength",endTime);
-		session.getBasicRemote().sendText(jb.toString());
+        if(session!=null)
+		    session.getBasicRemote().sendText(jb.toString());
 	}
 
 	@OnMessage
@@ -69,7 +73,8 @@ public class SimulateWebSocket {
 				sendMessage(session,"start");
 				//System.out.println("Start");
 				JSONObject  mdlData=msg.getJSONObject("mdlData");
-                String target = mdlData.optString("target");
+                // String target = mdlData.optString("target");
+				String target = mdlData.optString("target", "PC");
                 String jsonDataString=mdlData.getString("jsonData");
 				JSONObject jsonData=new JSONObject(jsonDataString);
 				//System.out.println(jsonDataString);
@@ -89,9 +94,10 @@ public class SimulateWebSocket {
 					modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
 				}
 
-	        	//modelC.setSolver(Solver.ode4);
+                modelC.removeAllFiles();
 
-	        	modelC.generate();
+
+                modelC.generate();
 
 	        	sendMessage(session,"generated");
 
@@ -111,7 +117,6 @@ public class SimulateWebSocket {
 	        	}
 
                 //
-
 
 	        	sendMessage(session,"compiled");
 
@@ -148,7 +153,8 @@ public class SimulateWebSocket {
 			}
 			finally {
 				try {
-					session.close();
+                    if(session != null)
+					    session.close();
 				}
 				catch(IOException e) {
 

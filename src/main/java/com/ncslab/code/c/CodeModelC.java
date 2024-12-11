@@ -2,6 +2,7 @@ package com.ncslab.code.c;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import javax.websocket.Session;
 
@@ -9,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
+import java.util.Optional;
 
 import com.ncslab.utils.AlgorithmsMapper;
 import com.ncslab.utils.Mybatis1Utils;
@@ -20,10 +22,18 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.database.Algorithms;
+import com.ncslab.utils.Property;
+
+
+import com.ncslab.utils.Property;
 
 abstract public class CodeModelC extends CodeModel {
 
 	private static final String REAL = "real_t";
+
+	protected String user = Optional.ofNullable(Property.instance.getProperty("user")).orElse("m2plab");
+	protected String group = Optional.ofNullable(Property.instance.getProperty("group")).orElse("m2plab");
+
 
 	//生成代码的时候统计signal和parameter的个数
 	@Setter
@@ -104,9 +114,9 @@ abstract public class CodeModelC extends CodeModel {
 //	}
 
 	protected void generateInitCode(CodeGenerationOption option) {
-		System.out.println("Generating init codes......");
+//		System.out.println("Generating init codes......");
 		for(Block block:blockList) {
-			System.out.println("Generating init codes for ("+block.getBlockId()+")"+block.getBlockName());
+//			System.out.println("Generating init codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			block.generateBlockInitCodeC(getCodeStructC());
 		}
@@ -142,10 +152,10 @@ abstract public class CodeModelC extends CodeModel {
 
 	@Override
 	protected void generateArraysCode(CodeGenerationOption option) {
-		System.out.println("Generating arrays codes......");
+//		System.out.println("Generating arrays codes......");
 
 		for(Block block:blockList) {
-			System.out.println("Generating arrays codes for ("+block.getBlockId()+")"+block.getBlockName());
+//			System.out.println("Generating arrays codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			generateBlockArraysCode(block);
 		}
@@ -158,20 +168,20 @@ abstract public class CodeModelC extends CodeModel {
 
 	@Override
 	protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException {
-		System.out.println("Generating update codes......");
+//		System.out.println("Generating update codes......");
 
 		for(Block block:blockList) {
-			System.out.println("Generating update codes for ("+block.getBlockId()+")"+block.getBlockName());
+//			System.out.println("Generating update codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			generateBlockUpdateCode(block);
 		}
 	}
 
 	protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException {
-		System.out.println("Generating discrete update codes......");
+//		System.out.println("Generating discrete update codes......");
 
 		for(Block block:blockList) {
-			System.out.println("Generating discrete update codes for ("+block.getBlockId()+")"+block.getBlockName());
+//			System.out.println("Generating discrete update codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			generateDiscreteBlockUpdateCode(block);
 		}
@@ -187,7 +197,7 @@ abstract public class CodeModelC extends CodeModel {
 
 	@Override
 	protected void generateTerminateCode(CodeGenerationOption option) {
-		System.out.println("Generating terminate codes......");
+//		System.out.println("Generating terminate codes......");
 
 		for(Block block:blockList) {
 			generateBlockTerminateCode(block);
@@ -200,11 +210,11 @@ abstract public class CodeModelC extends CodeModel {
 
 	@Override
 	protected void generateStatementCode(CodeGenerationOption option) {
-		System.out.println("Generating statement codes......");
+//		System.out.println("Generating statement codes......");
 
 		for(Block block:blockList) {
 
-			System.out.println("Generating statement codes for ("+block.getBlockId()+")"+block.getBlockName());
+//			System.out.println("Generating statement codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			generateBlockStatementCode(block);
 
@@ -231,10 +241,10 @@ abstract public class CodeModelC extends CodeModel {
 
 	@Override
 	protected void generateDerivativeCode(CodeGenerationOption option) {
-		System.out.println("Generating derivative codes......");
+//		System.out.println("Generating derivative codes......");
 
 		for(Block block:blockList) {
-			System.out.println("Generating derivative codes for ("+block.getBlockId()+")"+block.getBlockName());
+//			System.out.println("Generating derivative codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			block.generateBlockDerivativeCodeC(getCodeStructC());
 		}
@@ -255,7 +265,7 @@ abstract public class CodeModelC extends CodeModel {
         algorithm.setModelId(getSaveInfo().getInt("modelId"));
         algorithm.setLastUpdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
 
-        algorithm.setStepTime(new Float(getSaveInfo().getDouble("stepTime")));
+        algorithm.setStepTime((float) getSaveInfo().getDouble("stepTime"));
         algorithm.setPacketSize(getSaveInfo().getInt("packetSize"));
 
         algorithm.setUuid(getSaveInfo().getLong("uuid"));
