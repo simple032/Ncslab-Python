@@ -32,11 +32,6 @@ public class WaterLevel extends Block {
 		outputPortList.add(new OutputPort(this,"Pump_Speed",1,false));
 		outputPortList.add(new OutputPort(this,"Water_Level",2,false));
 
-		pumpState=new State(this,1,"pumpState");
-		stateList.add(pumpState);
-		levelState=new State(this,2,"levelState");
-		stateList.add(levelState);
-
 		switch(model.getModelMode()) {
 		case Simulation:
 			pumpState=new State(this,1,"pumpState");
