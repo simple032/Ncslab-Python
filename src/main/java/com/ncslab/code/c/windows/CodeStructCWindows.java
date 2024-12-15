@@ -5,6 +5,7 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.utils.Property;
 
 import java.io.*;
+import java.util.Optional;
 
 public class CodeStructCWindows extends CodeStructC {
 	protected CodeStructCWindows(CodeModelC model) {
@@ -12,7 +13,7 @@ public class CodeStructCWindows extends CodeStructC {
 	}
 
     protected String codePathBase = Property.instance.getProperty("CCodePathWin")
-        .replace("${M2PLAB_ROOT}",System.getenv("M2PLAB_ROOT"));
+        .replace("${M2PLAB_ROOT}", Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse(""));
 
 
 	public byte[] readExeFile() {
