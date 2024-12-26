@@ -8,7 +8,7 @@ public class MfcalcServer extends Thread {
 
 public static MfcalcServer instance=new MfcalcServer();
 
-	public static int Server_Port= 2003;
+	public static int ServerDefaultPort= 2003;
 	private Vector<MfcalcThread> mfcalcThreadList=new Vector<MfcalcThread>();
 
 	public void removeMfcalcThread(MfcalcThread thread) {
@@ -34,7 +34,11 @@ public static MfcalcServer instance=new MfcalcServer();
 		System.out.println("HelloMfcalc!");
 		try {
 			// ���������socket
-			ServerSocket serverSocket = new ServerSocket(Server_Port);
+            int server_port= Integer.parseInt(
+            Optional.ofNullable( Property.instance.getProperty("MfcalcServerPort") )
+                .orElse(String.valueOf(ServerDefaultPort))
+            );
+			ServerSocket serverSocket = new ServerSocket(server_port);
 
 			// �����ͻ���socket
 			Socket socket = new Socket();

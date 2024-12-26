@@ -1,5 +1,7 @@
 package com.ncslab.server.mfcalcServer;
 
+import com.ncslab.server.pythonServer.PythonServer;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -16,6 +18,11 @@ public class MfcalcServerListener implements ServletContextListener{
      */
     public void contextDestroyed(ServletContextEvent arg0)  {
          // TODO Auto-generated method stub
+        MfcalcServer server = MfcalcServer.instance;
+        if (server != null) {
+            server.stop();
+            System.out.println("MfcalcServer stopped.");
+        }
     }
 
 	/**
@@ -25,7 +32,7 @@ public class MfcalcServerListener implements ServletContextListener{
          // TODO Auto-generated method stub
     	//System.out.println("Hello");
 
-    	MfcalcServer octaveServer=MfcalcServer.instance;
-    	octaveServer.start();
+    	MfcalcServer server=MfcalcServer.instance;
+    	server.start();
     }
 }

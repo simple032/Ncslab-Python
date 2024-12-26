@@ -1,5 +1,7 @@
 package com.ncslab.server.pythonServer;
 
+import com.ncslab.server.octaveserver.OctaveServer;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -16,6 +18,11 @@ public class PythonServerListener implements ServletContextListener{
      */
     public void contextDestroyed(ServletContextEvent arg0)  {
          // TODO Auto-generated method stub
+        PythonServer server = PythonServer.instance;
+        if (server != null) {
+            server.stop();
+            System.out.println("PythonServer stopped.");
+        }
     }
 
 	/**
@@ -25,7 +32,7 @@ public class PythonServerListener implements ServletContextListener{
          // TODO Auto-generated method stub
     	//System.out.println("Hello");
 
-    	PythonServer octaveServer=PythonServer.instance;
-    	octaveServer.start();
+    	PythonServer server=PythonServer.instance;
+        server.start();
     }
 }

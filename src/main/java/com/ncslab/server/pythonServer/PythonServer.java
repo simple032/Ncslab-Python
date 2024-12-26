@@ -1,5 +1,7 @@
 package com.ncslab.server.pythonServer;
 
+import com.ncslab.utils.Property;
+
 import java.net.*;
 import java.util.*;
 
@@ -8,7 +10,7 @@ public class PythonServer extends Thread {
 
 public static PythonServer instance=new PythonServer();
 
-	public static int Server_Port=2004;
+	public static int ServerDefaultPort=2004;
 	private Vector<PythonThread> octaveThreadList=new Vector<PythonThread>();
 
 	public void removeOctaveThread(PythonThread thread) {
@@ -34,7 +36,11 @@ public static PythonServer instance=new PythonServer();
 		System.out.println("HelloPython!");
 		try {
 			// ���������socket
-			ServerSocket serverSocket = new ServerSocket(Server_Port);
+            int server_port= Integer.parseInt(
+                Optional.ofNullable( Property.instance.getProperty("PythonServerPort") )
+                    .orElse(String.valueOf(ServerDefaultPort))
+            );
+			ServerSocket serverSocket = new ServerSocket(server_port);
 
 			// �����ͻ���socket
 			Socket socket = new Socket();

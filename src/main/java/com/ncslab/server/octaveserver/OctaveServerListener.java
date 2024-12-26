@@ -11,21 +11,26 @@ public class OctaveServerListener implements ServletContextListener{
         // TODO Auto-generated constructor stub
     }
 
-	/**
-     * @see ServletContextListener#contextDestroyed(ServletContextEvent)
-     */
-    public void contextDestroyed(ServletContextEvent arg0)  {
-         // TODO Auto-generated method stub
+    @Override
+    public void contextDestroyed(ServletContextEvent event) {
+        // 释放资源
+        OctaveServer server = OctaveServer.instance;
+        if (server != null) {
+            server.stop();
+            System.out.println("OctaveServer stopped.");
+        }
     }
 
-	/**
-     * @see ServletContextListener#contextInitialized(ServletContextEvent)
-     */
-    public void contextInitialized(ServletContextEvent arg0)  {
-         // TODO Auto-generated method stub
-    	//System.out.println("Hello");
-
-    	OctaveServer octaveServer=OctaveServer.instance;
-    	octaveServer.start();
+    @Override
+    public void contextInitialized(ServletContextEvent event) {
+        // 初始化资源
+        try {
+            OctaveServer server = OctaveServer.instance;
+            server.start();
+            System.out.println("OctaveServer started successfully.");
+        } catch (Exception e) {
+            System.err.println("Failed to start OctaveServer: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.ncslab.server.octaveserver;
 
+import com.ncslab.utils.Property;
+
 import java.net.*;
 import java.util.*;
 
@@ -8,7 +10,7 @@ public class OctaveServer extends Thread {
 
 public static OctaveServer instance=new OctaveServer();
 
-	public static int Server_Port=2002;
+	public static int ServerDefaultPort=2002;
 	private Vector<OctaveThread> octaveThreadList=new Vector<OctaveThread>();
 
 	public void removeOctaveThread(OctaveThread thread) {
@@ -34,7 +36,11 @@ public static OctaveServer instance=new OctaveServer();
 		System.out.println("HelloOctave!");
 		try {
 			// ���������socket
-			ServerSocket serverSocket = new ServerSocket(Server_Port);
+            int server_port= Integer.parseInt(
+                Optional.ofNullable( Property.instance.getProperty("OctaveServerPort") )
+                    .orElse(String.valueOf(ServerDefaultPort))
+            );
+			ServerSocket serverSocket = new ServerSocket(server_port);
 
 			// �����ͻ���socket
 			Socket socket = new Socket();
