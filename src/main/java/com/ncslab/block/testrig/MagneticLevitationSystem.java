@@ -25,6 +25,9 @@ public class MagneticLevitationSystem extends Block {
     Parameter Ks;
     Parameter Ka;
 
+    State position;
+    State velocity;
+
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
@@ -53,20 +56,20 @@ public class MagneticLevitationSystem extends Block {
         outputPortList.add(new OutputPort(this,"Position",1,false));
 		outputPortList.add(new OutputPort(this,"Velocity",2,false));
 
-        stateList.add(new State(this, 1, "x0"));
-        stateList.add(new State(this, 2, "x1"));
-
-        rworkList.add(new RWork(this, 1, "tem"));
+        position = new State(this, 1, "x0");
+        stateList.add(position);
+        velocity = new State(this, 2, "x1");
+        stateList.add(velocity);
 
         gravity = new Parameter(this, 1, "gravity", "9.8");
         parameterList.add(gravity);
-        x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "0");
+        x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "0.2");
         parameterList.add(x0);
-        i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "0");
+        i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "6.105");
         parameterList.add(i0);
-        Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "0");
+        Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "-4.5871056 ");
         parameterList.add(Ks);
-        Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "0");
+        Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "5.8929");
         parameterList.add(Ka);
     }
 
@@ -96,6 +99,9 @@ public class MagneticLevitationSystem extends Block {
         super.generateInitCodeC(code);
 
         String initCode = "/* Code for initialization of block " + name + ":( " + getBlockId() +" ) " + getBlockName() + " */\n";
+        for(Parameter parameter : parameterList) {
+            initCode += parameter.getInitCodeC();
+        }
 
         code.addInitCode(initCode);
     }
@@ -105,16 +111,12 @@ public class MagneticLevitationSystem extends Block {
 //		`code.addIncludeCode(includeCode);
     }
 
-    public void addLine(String originCode, String newLine) {
-
-    }
-
     public void generateOutputCodeC(CodeStructC code) {
         String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 
         outputCode+="{\n";
 
-        String content = "<OUTPUT0> = <STATE0>;\n"
+        String content = "<OUTPUT0> = -100/4.587156*<STATE0>;\n"
                 + "<OUTPUT1> = <STATE1>;\n";
 
         outputCode += M2PCode2C(content) +"}\n";
@@ -128,15 +130,10 @@ public class MagneticLevitationSystem extends Block {
 
         StringBuilder contentBuilder = new StringBuilder();
         contentBuilder.append("{\n")
-                .append("real_T g=").append(gravity.getName()).append(";\n")
-                .append("real_T  x_0    = ").append(x0.getName()).append(";\n")
-                .append("real_T  i_0    = ").append(i0.getName()).append(";\n")
-                .append("real_T  Ks    = ").append(Ks.getName()).append(";\n")
-                .append("real_T  Ka    = ").append(Ka.getName()).append(";\n")
-                .append("<STATE0> = 2*<INPUT0>;\n")
-                .append("<DSTATE0>=<STATE1>;\n")
-                .append("<DSTATE1>=2*g*<STATE0>/x_0-2*g*Ks*<INPUT0>/(Ka*i_0);\n")
-                .append("}");
+                .append(position.getDerivativeName()+"="+velocity.getName()+";\n")
+                .append(velocity.getDerivativeName()+"=2*"+gravity.getName()+"*"+position.getName()+"/"+x0.getName()
+                    +"-2*"+gravity.getName()+"*"+Ks.getName()+"*-1*"+this.getInputPortVariable(0)+"/("+Ka.getName()+"*"+i0.getName()+");\n")
+                .append("}\n");
 
         String content = contentBuilder.toString();
 
