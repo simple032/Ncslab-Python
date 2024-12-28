@@ -20,9 +20,13 @@ public class DCMotorAngle extends Block {
 	private String name = "DCMotorAngle";
 
 	private State speedState;
+    private State angleState;
 
 	private double motorK=106.25;
 	private double motorT=0.07;
+
+    private double input_max = 1.0;
+    private double input_min = -1.0;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -52,7 +56,9 @@ public class DCMotorAngle extends Block {
 		case Simulation:
 			speedState=new State(this,1,"speedState");
 			stateList.add(speedState);
-			break;
+            angleState=new State(this,2,"angleState");
+            stateList.add(angleState);
+            break;
 		case Compilation:
 			break;
 		}
@@ -81,6 +87,7 @@ public class DCMotorAngle extends Block {
 		switch(model.getModelMode()) {
 		case Simulation:
 			initCode+=speedState.getName()+"="+0+";\n";
+            initCode+=angleState.getName()+"="+0+";\n";
 			break;
 		case Compilation:
 			//1.Open the serial port
@@ -112,7 +119,8 @@ public class DCMotorAngle extends Block {
 		String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 		switch(model.getModelMode()) {
 		case Simulation:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=10000*"+speedState.getName()+";\n";
+			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+speedState.getName()+";\n";
+            outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+angleState.getName()+";\n";
 			break;
 		case Compilation:
 
@@ -164,15 +172,23 @@ public class DCMotorAngle extends Block {
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-
+        String real_input = getBlockName() + "_real_input";
 		switch(model.getModelMode()) {
 		case Simulation:
-		derivativeCode+=speedState.getDerivativeName()+"=("
-				+this.getInputPortVariable(0)
-				+"*"+motorK+"-"+speedState.getName()+")"
-				+"*"+(1/motorT)
-				+";\n";
-
+            derivativeCode+="double " + real_input + " = 0.0;\n";
+            derivativeCode+="if("+ this.getInputPortVariable(0) +">"+input_max+")\n";
+            derivativeCode+="\t" +real_input+ "="+input_max+";\n";
+            derivativeCode+="else if("+ this.getInputPortVariable(0) +"<"+input_min + ")\n";
+            derivativeCode+="\t" +real_input+ "="+input_min+";\n";
+            derivativeCode+="else\n";
+            derivativeCode+="\t" +real_input+ "="+this.getInputPortVariable(0)+";\n";
+            derivativeCode+=speedState.getDerivativeName()+"=("
+                    +"4*"+real_input
+                    +"*"+motorK+"-"+speedState.getName()+")"
+                    +"*"+(1/motorT)
+                    +";\n";
+            derivativeCode+=angleState.getDerivativeName()+"="
+                    +speedState.getName()+";\n";
 		case Compilation:
 			break;
 		}

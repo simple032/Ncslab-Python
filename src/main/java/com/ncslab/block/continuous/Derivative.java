@@ -1,5 +1,7 @@
 package com.ncslab.block.continuous;
 
+import com.ncslab.block.BlockType;
+import com.ncslab.block.io.*;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -7,10 +9,6 @@ import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 
@@ -20,7 +18,6 @@ public class Derivative extends Block {
 	private State stateIntegral;
 	OutputPort output;
 	InputPort input;
-
 
 
 
@@ -110,7 +107,7 @@ public class Derivative extends Block {
 		if(ss.equals("ode1")||ss.equals("ode2")||ss.equals("ode3")||ss.equals("ode4")||ss.equals("ode5")||ss.equals("ode6")) {
 		switch (signal.getDataType()) {
 		case REAL:
-			  outputCode+="if(mp->majorStep>0) {\n";
+			  outputCode+="if(sfcnIsMajorStep()) {\n";
 			outputCode += this.getOutputPortVariable(0) + "=(" + signal.getName() + "-" + stateIntegral.getName()
 					+ ")/model.stepSize" + ";\n";
 			outputCode += stateIntegral.getName() + "=" + signal.getName() + ";\n";
@@ -131,15 +128,21 @@ public class Derivative extends Block {
 		}else {
 			switch (signal.getDataType()) {
 			case REAL:
-				outputCode+="if(mp->majorStep>0) {\n";
-				 outputCode += this.getOutputPortVariable(0) + "=(" + signal.getName() + "-" + "Block" + getBlockId() + "yout[0][0]"
+				outputCode+="if(sfcnIsMajorStep()) {\n";
+				outputCode+="if(model.time>1e-7){\n";
+                outputCode += this.getOutputPortVariable(0) + "=(" + signal.getName() + "-" + "Block" + getBlockId() + "yout[0][0]"
 						+ ")/(model.time-Block" + getBlockId() + "tout[0][0]);\n";
 				 outputCode +="Block" + getBlockId() + "yout[0][0]=" + signal.getName() + ";\n";
 				  outputCode+="Block" + getBlockId() + "tout[0][0]=model.time;\n";
+                outputCode+="}\n";
+                outputCode+="else{\n";
+                outputCode += this.getOutputPortVariable(0) + "=0;\n";
+                outputCode+="}\n";
 				  outputCode+="}\n";
+
 				break;
 			case MATRIX:
-				outputCode+="if(mp->majorStep>0) {\n";
+				outputCode+="if(sfcnIsMajorStep()) {\n";
 				for (int i = 0; i < signal.getHeight(); i++) {
 					for (int j = 0; j < signal.getWidth(); j++) {
 						outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")" + "=(" + signal.getName()	+ "(" + i + "," + j + ")" + "-" + "Block" + getBlockId() + "yout[" + i+ "][" + j + "])/(model.time-Block" + getBlockId() + "tout[" + i+ "][" + j + "]);\n";
@@ -157,6 +160,7 @@ public class Derivative extends Block {
 	public void generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode = "/*Code for Derivative of block Derivative:(" + getBlockId() + ")" + getBlockName()
 				+ "*/\n";
+
 		code.addDerivativeCode(derivativeCode);
 	}
 

@@ -4,6 +4,7 @@
 #include"ncslabccode.hpp"
 #include"ServerThread.hpp"
 #include"ncslab.hpp"
+#include"util.hpp"
 MODEL *mp;
 
 void  CALLBACK TimeEvent(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2){
@@ -29,6 +30,7 @@ int main(int argc, char *argv[]){
 
 	mp=NCSLabGetModelP();
 	extModeData.mp=mp;
+	discreteInit();
 
 	startMyServerThread(extModeData);
 

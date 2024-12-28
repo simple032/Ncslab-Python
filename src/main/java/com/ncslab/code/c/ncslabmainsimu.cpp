@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
 	mp = NCSLabGetModelP();
 
 	mp->time = mp->startTime;
+	mp->stopTime = endTime;
 
 	ncslabLoop();
 

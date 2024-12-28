@@ -169,26 +169,25 @@ public class StateSpace extends Block{
 	   outputCode+="/*******************************/\n";
 
 	   OutputPort out=this.getOutputPortList().get(0);
-	   if(this.feedThrough) {
-		   switch(out.getOutputSignalC().getDataType()) {
-		   case MATRIX:
-			   outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+"+"+D.getName()+"*"+this.getInputPortVariable(0)+";\n";
-			   break;
-		   case REAL:
-			   outputCode+=this.getOutputPortVariable(0)+"=("+C.getName()+"*"+xState.getName()+"+"+D.getName()+"*"+this.getInputPortVariable(0)+")(0,0);\n";
-			   break;
-		   }
-	   }
-	   else {
-		   switch(out.getOutputSignalC().getDataType()) {
-		   case MATRIX:
-			   outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+";\n";
-			   break;
-		   case REAL:
-			   outputCode+=this.getOutputPortVariable(0)+"=("+C.getName()+"*"+xState.getName()+")(0,0);\n";
-			   break;
-		   }
-	   }
+       String expression = C.getName() + "*" + xState.getName();
+
+       if (this.feedThrough) {
+           expression += "+" + D.getName() + "*" + this.getInputPortVariable(0);
+       }
+
+       switch (out.getOutputSignalC().getDataType()) {
+           case MATRIX:
+               outputCode += this.getOutputPortVariable(0) + "=" + expression + ";\n";
+               break;
+           case REAL:
+               outputCode += this.getOutputPortVariable(0) + "=(" + expression + ")";
+               if(!(A.isScalar() && B.isScalar() && C.isScalar() && D.isScalar()))
+               {
+                   outputCode += "(0,0)";
+               }
+               outputCode += ";\n";
+               break;
+       }
 	   outputCode+="/*******************************/\n";
 
 	   code.addOutputCode(outputCode);
@@ -200,7 +199,12 @@ public class StateSpace extends Block{
 	   String derivativeCode="/*Code for Derivative of block State Space:("+getBlockId()+")"+getBlockName()+"*/\n";
 
 		 for(int i=0;i<A.getHeight();i++) {
-		 derivativeCode+=xState.getDerivativeName()+"("+i+",0)=0;\n";
+		    derivativeCode+=xState.getDerivativeName();
+             if(!(A.isScalar() && B.isScalar() && C.isScalar() && D.isScalar()))
+             {
+                 derivativeCode += "("+i+",0)";
+             }
+             derivativeCode += "=0;\n";
 		 }
 	   derivativeCode+=xState.getDerivativeName()+"="+A.getName()+"*"+xState.getName()+"+"+B.getName()+"*"+this.getInputPortVariable(0)+";\n";
 	   code.addDerivativeCode(derivativeCode);

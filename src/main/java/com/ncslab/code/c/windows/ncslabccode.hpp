@@ -65,6 +65,8 @@ typedef struct {
 	int parameterNum;
 	int stateNum;
 	int signalNum;
+
+	REAL discreteTime;
 	int discreteUpdated;
 
 	INPUT_PORT **inputPorts;

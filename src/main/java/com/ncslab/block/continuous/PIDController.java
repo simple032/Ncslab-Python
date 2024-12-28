@@ -64,13 +64,13 @@ public class PIDController extends Block {
 		cparaN = new Parameter(this, parameterList.size() + 1, "N", paramValues.getString("N"));
 		parameterList.add(cparaN);
 
-		
+
 //		stateIntegral=new State(this,1,"integral");
 //		stateList.add(stateIntegral);
 //
 //		stateFilter=new State(this,2,"filter");
 //		stateList.add(stateFilter);
-		 
+
         limitOutput = new Parameter(this, parameterList.size() + 1, "LimitOutput", paramValues.getString("LimitOutput"));
         parameterList.add(limitOutput);
 		if (limitOutput.equals("on")) {
@@ -148,7 +148,7 @@ public class PIDController extends Block {
 			case REAL:
 				switch (signal.getDataType()) {
 					case REAL:
-						outputCode += "if(mp->majorStep>0) {\n";
+						outputCode += "if(sfcnIsMajorStep()) {\n";
 						outputCode += "Block" + getBlockId() + "save_data[0]=" + cparaP.getName() + "*"
 								+ signal.getName() + ";\n";
 						outputCode += "Block" + getBlockId() + "save_data[1]=" + cparaD.getName() + "*"
@@ -186,7 +186,7 @@ public class PIDController extends Block {
 					case MATRIX:
 						for (int i = 0; i < signal.getHeight(); i++) {
 							for (int j = 0; j < signal.getWidth(); j++) {
-								outputCode += "if(mp->majorStep>0) {\n";
+								outputCode += "if(sfcnIsMajorStep()) {\n";
 								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]="
 										+ cparaP.getName() + "*" + signal.getName() + "(" + i + "," + j + ");\n";
 								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]="
@@ -236,7 +236,7 @@ public class PIDController extends Block {
 					case REAL:
 						for (int i = 0; i < cparaP.getHeight(); i++) {
 							for (int j = 0; j < cparaP.getWidth(); j++) {
-								outputCode += "if(mp->majorStep>0) {\n";
+								outputCode += "if(sfcnIsMajorStep()) {\n";
 								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]="
 										+ cparaP.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";\n";
 								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]="
@@ -265,7 +265,7 @@ public class PIDController extends Block {
 					case MATRIX:
 						for (int i = 0; i < cparaP.getHeight(); i++) {
 							for (int j = 0; j < cparaP.getWidth(); j++) {
-								outputCode += "if(mp->majorStep>0) {\n";
+								outputCode += "if(sfcnIsMajorStep()) {\n";
 								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]="
 										+ cparaP.getName() + "(" + i + "," + j + ")*" + signal.getName() + "(" + i + ","
 										+ j + ");\n";

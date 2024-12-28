@@ -257,7 +257,7 @@ int main(int argc, char *argv[]){
 
 	startMyServerThread(&extModeData);
 
-	// discreteInitFixed();
+	 discreteInitFixed();
 
 	startTimer(mp->stepSize);
 	pthread_join(extModeData.servetThread,NULL);
