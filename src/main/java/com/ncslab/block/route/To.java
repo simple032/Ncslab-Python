@@ -10,16 +10,20 @@ import com.ncslab.ncslablink.NCSLabModel;
 import java.util.Vector;
 
 public class To extends Block {
-	private String tagName;
+	@Getter
+    private String tagName;
 
 
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
 
     static {
 
 
         inputNames.add("in1");
+        parameterNames.add("GotoTag");
     }
 	public To(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
@@ -28,7 +32,4 @@ public class To extends Block {
 		//System.out.println(tagName);
 	}
 
-	public String getTagName() {
-		return this.tagName;
-	}
 }

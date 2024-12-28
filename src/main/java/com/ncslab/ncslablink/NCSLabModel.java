@@ -1,12 +1,14 @@
 package com.ncslab.ncslablink;
 
-import com.greenpineyu.fel.function.operator.Sub;
+import com.ncslab.block.route.From;
+import com.ncslab.block.route.To;
 import lombok.Getter;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import com.ncslab.block.Block;
@@ -20,13 +22,6 @@ import com.ncslab.block.io.terminal.Terminal;
 import com.ncslab.circuit.CircuitParser;
 import com.ncslab.circuit.loop.CircuitLoopException;
 
-import com.ncslab.block.subsystem.*;
-
-import com.ncslab.ncslablink.Config;
-import com.ncslab.ncslablink.ModelMode;
-import com.ncslab.ncslablink.ErrorMessage;
-import com.ncslab.ncslablink.ModelException;
-import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.block.subsystem.*;
 
 abstract public class NCSLabModel {
@@ -64,6 +59,8 @@ abstract public class NCSLabModel {
 	// all blocks in the model
 	@Getter
     protected Vector<Block> blockList=new Vector<Block>();
+    protected Vector<From> fromBlockList=new Vector<From>();
+    protected Vector<To> gotoBlockList=new Vector<To>();
 
 	private Vector<Block> dimensionList=new Vector<Block>();
 	private Vector<Block> scanDimList=new Vector<Block>();
@@ -72,6 +69,8 @@ abstract public class NCSLabModel {
 
 	// all lines
 	protected Vector<Line> lineList=new Vector<Line>();
+    protected Vector<Line> fromLineList=new Vector<>();
+    protected Vector<Line> gotoLineList=new Vector<>();
 
 	// all error info
 	@Getter
@@ -189,6 +188,8 @@ abstract public class NCSLabModel {
 		//检查是否有空端口
 		checkUnlinkedPorts();
 
+        //20241226:判断模块是否为From或Goto
+        replaceLogicLines();
 
 		if(j!=0) {
 			// 解开代数环的代码
@@ -203,6 +204,7 @@ abstract public class NCSLabModel {
 		setupDimensionList();
 
 		updateDimensions();
+
 
 //		showBlocks();
 	}
@@ -246,6 +248,11 @@ abstract public class NCSLabModel {
 
             blockList.add(block);
 
+            if(block instanceof From){
+                fromBlockList.add((From) block);
+            }else if(block instanceof To){
+                gotoBlockList.add((To) block);
+            }
         }
 	}
 
@@ -328,7 +335,7 @@ abstract public class NCSLabModel {
                     line.setLineId(lineSeq+1);
                     lineSeq++;
 
-//                    System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+                    System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
 
                     lineList.add(line);
 				}
@@ -550,13 +557,16 @@ abstract public class NCSLabModel {
             return;
         }
         for(Block block1:blockList) {
-            System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
-                "  getBlockType: "+block1.getBlockType());
-
-            if(block1.getBlockPath().equals(blockPath)&&(block1 instanceof In)
-			&&block1.getParamValues().getString("No").equals(toPortNo)
+            if(! (block1 instanceof In) ){
+                continue;
+            }
+//            System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
+//                "  getBlockType: "+block1.getBlockType());
+            if(block1.getBlockPath().equals(blockPath)
+			&& String.valueOf(block1.getParamValues().getInt("No")).equals(toPortNo)
 			){
                 lineJSON.put("toBlockName", block1.getBlockName());
+                lineJSON.put("toPortNo", 1);
                 break;
             }
         }
@@ -593,12 +603,57 @@ abstract public class NCSLabModel {
             return;
         }
         for(Block block1:blockList) {
-            if(block1.getBlockPath().equals(blockPath)&&(block1 instanceof Out)
-			&&block1.getParamValues().getString("No").equals(fromPortNo)
+            if(! (block1 instanceof Out)){
+                continue;
+            }
+//            System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
+//                "  getBlockType: "+block1.getBlockType());
+            if(block1.getBlockPath().equals(blockPath)
+			&& String.valueOf(block1.getParamValues().getInt("No")).equals(fromPortNo)
 			){
                 lineJSON.put("fromBlockName", block1.getBlockName());
+                lineJSON.put("fromPortNo", 1);
                 break;
             }
         }
     }
+
+    private void replaceLogicLines() throws ModelException {
+
+        Vector<Line> lines = new Vector<>();
+        for(Line line1 : lineList){
+            if(line1.getLinkedOutputPort().getBLock() instanceof From){
+                From from=(From) line1.getLinkedOutputPort().getBLock();
+                boolean not_found = true;
+                for(To to: gotoBlockList) {
+                    if(Objects.equals(to.getTagName(), from.getTagName())){
+                        for(Line line2:lineList) {
+                            if(line2.getLinkedInputPort().getBLock() == to){
+                                JSONObject lineJSON = new JSONObject();
+                                lineJSON.put("toBlockName", line1.getLinkedInputPort().getBLock().getBlockName());
+                                lineJSON.put("toPortNo", line1.getLinkedInputPort().getNumber());
+                                lineJSON.put("fromBlockName", line2.getLinkedOutputPort().getBLock().getBlockName());
+                                lineJSON.put("fromPortNo", line2.getLinkedOutputPort().getNumber());
+                                lineJSON.put("linePath", to.getBlockPath());
+                                Line line = Line.createLine(lineJSON, this);
+                                lines.add(line);
+                                not_found = false;
+                                break;
+                            }
+                        }
+                    }
+                    if(!not_found){
+                        break;
+                    }
+                }
+                if(not_found){
+                    throw new ModelException("Goto for " + from.getTagName() + " not found");
+                }
+            }else{
+                lines.add(line1);
+            }
+        }
+        lineList = lines;
+    }
+
 }

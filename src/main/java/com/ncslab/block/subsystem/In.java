@@ -1,6 +1,7 @@
 package com.ncslab.block.subsystem;
 import java.util.Vector;
 
+import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -14,23 +15,24 @@ import com.ncslab.block.Block;
 
 public class In extends Block{
 
-
+    Parameter no;
 
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final Vector<String> parameterNames = new Vector<>();
 
     static {
 
         outputNames.add("out1");
-        inputNames.add("in1");
+        parameterNames.add("No");
     }
 	public In(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-		inputPortList.add(new InputPort(this,1));
+        inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
+        no = new Parameter(this, 1, "no", String.valueOf(paramValues.getInt("No")));
 	}
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block In:("+getBlockId()+")"+getBlockName()+"*/\n";

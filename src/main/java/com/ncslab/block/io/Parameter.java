@@ -132,4 +132,8 @@ public class Parameter {
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getBlockPath()+"/"+block.getBlockName()+"\";\n";
 		return code;
 	}
+
+    public boolean isScalar(){
+        return data.getHeight()==1 && data.getWidth()==1;
+    }
 }

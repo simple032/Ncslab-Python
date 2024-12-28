@@ -562,7 +562,7 @@ abstract public class CodeStructC{
         .replace("${M2PLAB_ROOT}", m2plabRoot);
 
 
-    protected String maketool = Property.instance.getProperty("MakeTool");
+    final private String maketool = Property.instance.getProperty("MakeTool");
 
     //目标文件夹的位置codePathBase/用户id/modelId
 	@Getter

@@ -6,21 +6,70 @@
 
 /**
  * @brief Extend Eigen::MatrixXd to add some useful functions
- * 
+ *
  * @example
- * row(index): get the index row 
+ * row(index): get the index row
  * col(index): get the index column
  * rows(): get the number of rows
  * maxCoeff(): get the max element of a matrix
- * 
+ *
  * @attention
- * Be careful about aliasing  
+ * Be careful about aliasing
  * e.g. a = a.transpose() is wrong
  * Please us a = a.transposeInPlace() instead
  */
 class Matrix : public Eigen::MatrixXd {
 public:
     using Eigen::MatrixXd::MatrixXd;  // Inherit constructors
+
+// Default constructor
+    Matrix() : Eigen::MatrixXd() {}
+
+    // Constructor that initializes with specific rows and columns
+    Matrix(int rows, int cols) : Eigen::MatrixXd(rows, cols) {}
+
+    // Copy constructor
+    Matrix(const Matrix& other) : Eigen::MatrixXd(other) {
+        // If you have extra data, you can copy it here
+//        std::cout << "Copy constructor called" << std::endl;
+    }
+
+    // Move constructor
+    Matrix(Matrix&& other) noexcept : Eigen::MatrixXd(std::move(other)) {
+        // If you have extra data, you can move it here
+//        std::cout << "Move constructor called" << std::endl;
+    }
+
+    // Copy assignment operator
+    Matrix& operator=(const Matrix& other) {
+        if (this != &other) {
+            // We use Eigen's copy assignment
+            Eigen::MatrixXd::operator=(other);
+
+            // If you have extra data, you would copy it here
+//            std::cout << "Copy assignment operator called" << std::endl;
+        }
+        return *this;
+    }
+
+    // Move Assignment Operator
+    Matrix& operator=(Matrix&& other) noexcept {
+        if (this != &other) {
+            // We call the base class move assignment to efficiently move the data
+            Eigen::MatrixXd::operator=(std::move(other));
+
+            // Optionally, clear any additional members if needed (for example, if you have added extra data members)
+            // Example: this->extraData = std::move(other.extraData);
+        }
+        return *this;
+    }
+
+    // Optionally add scalar assignment operator if needed (for example, initializing all elements to a scalar)
+    Matrix& operator=(double value) {
+        this->setConstant(value);  // Eigen's setConstant sets all elements to the same value
+        return *this;
+    }
+
 
     /**
      * @brief concatenate two eigen matrix

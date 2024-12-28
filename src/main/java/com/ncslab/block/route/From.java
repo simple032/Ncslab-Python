@@ -10,18 +10,21 @@ import com.ncslab.ncslablink.NCSLabModel;
 import java.util.Vector;
 
 public class From extends Block {
-	private String tagName;
+	@Getter
+    private String tagName;
 
 
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
 
 
     static {
 
         outputNames.add("out1");
-
+        parameterNames.add("GotoTag");
     }
 
 
@@ -31,7 +34,4 @@ public class From extends Block {
 		tagName=paramValues.getString("GotoTag");
 	}
 
-	public String getTagName() {
-		return this.tagName;
-	}
 }

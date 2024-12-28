@@ -1,5 +1,6 @@
 package com.ncslab.block;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -216,9 +217,6 @@ public class BlockType{
 
         // Advanced Control
         blockClassTree.put("LQRController", com.ncslab.block.advancedControl.LQRController.class);
-
-        // matplotlib
-        blockClassTree.put("Matplotlib", com.ncslab.block.sink.Matplotlib.class);
 
         // machine learning
         blockClassTree.put("DataCollector", com.ncslab.block.machineLearning.DataCollector.class);

@@ -119,49 +119,49 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		return readFile("ncslab");
 	}
 
-	@Override
-	public boolean makeExeFile() {
-		try {
-			// start make, generate executable file
-			// Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
-			// using cmake instead of make
-//			String cmakeCommand[] = {"cmake","."};
-//			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
-//			makeProcess.waitFor();
-
-			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
-			// get OutputStream and errStream of the process, in case of blocking
-			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line=null,outLine=null;
-			StringBuilder errStr=new StringBuilder();
-			StringBuilder outStr=new StringBuilder();
-
-			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
-				if(outLine!=null) {
-					outStr.append(outLine);
-					System.out.println(outLine);
-				}
-				if(line!=null) {
-					errStr.append(line);
-					System.err.println(line);
-				}
-			}
-
-			// wait for the make process to terminate
-			process.waitFor();
-
-			if(process.exitValue()==0) {
-				return true;
-			}
-
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
+//	@Override
+//	public boolean makeExeFile() {
+//		try {
+//			// start make, generate executable file
+//			// Process process=Runtime.getRuntime().exec("make", null, new File(codePath));
+//			// using cmake instead of make
+////			String cmakeCommand[] = {"cmake","."};
+////			Process makeProcess=Runtime.getRuntime().exec(cmakeCommand, null, new File(codePath));
+////			makeProcess.waitFor();
+//
+//			Process process=Runtime.getRuntime().exec(maketool, null, new File(codePath));
+//			// get OutputStream and errStream of the process, in case of blocking
+//			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
+//			String line=null,outLine=null;
+//			StringBuilder errStr=new StringBuilder();
+//			StringBuilder outStr=new StringBuilder();
+//
+//			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
+//				if(outLine!=null) {
+//					outStr.append(outLine);
+//					System.out.println(outLine);
+//				}
+//				if(line!=null) {
+//					errStr.append(line);
+//					System.err.println(line);
+//				}
+//			}
+//
+//			// wait for the make process to terminate
+//			process.waitFor();
+//
+//			if(process.exitValue()==0) {
+//				return true;
+//			}
+//
+//		}
+//		catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//		return false;
+//	}
 
 	@Override
 	protected void writeNCSWrittenFiles(){

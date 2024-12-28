@@ -5,12 +5,14 @@ import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
+import com.ncslab.utils.Property;
 import org.json.JSONObject;
 
 import javax.websocket.Session;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.Optional;
 
 public class CodeModelCWindowsSimulation extends CodeModelC{
 
@@ -37,6 +39,10 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
         if(session != null)
 		    session.getBasicRemote().sendText(jb.toString());
 	}
+
+    public void copyLibraryFiles(){
+
+    }
 
 	public void simulate(Session session) throws ModelException {
 		Process process = null;
@@ -65,8 +71,10 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 //            for (Map.Entry<String, String> entry : env.entrySet()) {
 //                envArray[i++] = entry.getKey() + "=" + entry.getValue();
 //            }
-            File sourceFolder = new File(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
-            File[] files = sourceFolder.listFiles();
+            String dllFolderName = Optional.ofNullable(Property.instance.getProperty("DllFolder"))
+                .orElse(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
+            File dllFolder = new File(dllFolderName);
+            File[] files = dllFolder.listFiles();
             if(files != null){
                 for(File file : files){
                     if(file.isFile() && file.getName().endsWith(".dll")){
