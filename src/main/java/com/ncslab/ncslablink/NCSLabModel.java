@@ -185,11 +185,15 @@ abstract public class NCSLabModel {
 		checkBlocksName();
 		//解析各条连线
 		parseLines();
+
+        //20241226:判断模块是否为From或Goto，在同样标签的模块间添加虚拟连线
+//        replaceLogicLines();
+        addLogicLines();
+
 		//检查是否有空端口
 		checkUnlinkedPorts();
 
-        //20241226:判断模块是否为From或Goto
-        replaceLogicLines();
+
 
 		if(j!=0) {
 			// 解开代数环的代码
@@ -620,15 +624,17 @@ abstract public class NCSLabModel {
 
     private void replaceLogicLines() throws ModelException {
 
+        // 1. 替代法
         Vector<Line> lines = new Vector<>();
-        for(Line line1 : lineList){
-            if(line1.getLinkedOutputPort().getBLock() instanceof From){
-                From from=(From) line1.getLinkedOutputPort().getBLock();
+
+        for (Line line1 : lineList) {
+            if (line1.getLinkedOutputPort().getBLock() instanceof From) {
+                From from = (From) line1.getLinkedOutputPort().getBLock();
                 boolean not_found = true;
-                for(To to: gotoBlockList) {
-                    if(Objects.equals(to.getTagName(), from.getTagName())){
-                        for(Line line2:lineList) {
-                            if(line2.getLinkedInputPort().getBLock() == to){
+                for (To to : gotoBlockList) {
+                    if (Objects.equals(to.getTagName(), from.getTagName())) {
+                        for (Line line2 : lineList) {
+                            if (line2.getLinkedInputPort().getBLock() == to) {
                                 JSONObject lineJSON = new JSONObject();
                                 lineJSON.put("toBlockName", line1.getLinkedInputPort().getBLock().getBlockName());
                                 lineJSON.put("toPortNo", line1.getLinkedInputPort().getNumber());
@@ -642,18 +648,42 @@ abstract public class NCSLabModel {
                             }
                         }
                     }
-                    if(!not_found){
+                    if (!not_found) {
                         break;
                     }
                 }
-                if(not_found){
+                if (not_found) {
                     throw new ModelException("Goto for " + from.getTagName() + " not found");
                 }
-            }else{
+            } else {
                 lines.add(line1);
             }
         }
         lineList = lines;
+    }
+
+    private void addLogicLines() throws ModelException {
+        // 2.增加虚拟连线法
+        for(From from: fromBlockList) {
+            boolean not_found = true;
+            for(To to: gotoBlockList) {
+                if(Objects.equals(to.getTagName(), from.getTagName())){
+                    JSONObject lineJSON = new JSONObject();
+                    lineJSON.put("toBlockName", from.getBlockName());
+                    lineJSON.put("toPortNo", 1);
+                    lineJSON.put("fromBlockName", to.getBlockName());
+                    lineJSON.put("fromPortNo", 1);
+                    lineJSON.put("linePath", to.getBlockPath());
+                    Line line = Line.createLine(lineJSON, this);
+                    lineList.add(line);
+                    not_found = false;
+                    break;
+                }
+            }
+            if(not_found){
+                throw new ModelException("Goto for " + from.getTagName() + " not found");
+            }
+        }
     }
 
 }

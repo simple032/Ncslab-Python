@@ -1,5 +1,9 @@
 package com.ncslab.block.route;
 
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.MatDimException;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -27,9 +31,28 @@ public class To extends Block {
     }
 	public To(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
-		inputPortList.add(new InputPort(this,1));
+        inputPortList.add(new InputPort(this,1));
+        outputPortList.add(new OutputPort(this,1,true));
 		tagName=paramValues.getString("GotoTag");
 		//System.out.println(tagName);
 	}
 
+    public void generateOutputCodeC(CodeStructC code) {
+        String outputCode="/*Code for output of block In:("+getBlockId()+")"+getBlockName()+"*/\n";
+        outputCode+=this.getOutputPortVariable(0)+"="+this.getInputPortVariable(0)+";\n";
+        code.addOutputCode(outputCode);
+    }
+
+    public void updateDimension() throws MatDimException {
+        OutputPort out  = outputPortList.get(0);
+        InputPort in  = inputPortList.get(0);
+        OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
+    public void checkDimension() throws MatDimException{
+    }
 }
