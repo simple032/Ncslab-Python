@@ -1,5 +1,8 @@
 #include"hardware.h"
-
+#include <pthread.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
 void initHardware(){
 
 	//printf("Init hardware\n");
@@ -33,7 +36,7 @@ static unsigned long readCount(void)
   while(digitalRead(ADDO)){
     usleep(10000);
   };
-  
+
   for (i=0;i<24;i++){
     digitalWrite(ADSK,1);
     Count=Count<<1;
@@ -62,7 +65,7 @@ static unsigned long findMiddle(unsigned long *fifo)
       {
          unsigned long temp=data[j];
          data[j]=data[j+1];
-         data[j+1]=temp; 
+         data[j+1]=temp;
       }
     }
   }
@@ -77,13 +80,13 @@ long readOffset(){
         printf("Can't open file pumpoffest\n");
         exit(1);
     }
-    
-    
+
+
     //rewind(fp);
     int n=fscanf(fp,"%ld",&offset);
-    
+
     printf("Offset=%ld\n",offset);
-    
+
     fclose(fp);
     return offset;
 }
@@ -94,26 +97,26 @@ void* WaterLevelThreadFunction(void *arg)
   double y;
   double prev=0;
   long offset;
-  
+
   offset=readOffset();
-  
+
   printf("Water Level Thread started...Ok\n");
   while(TRUE)
   {
     unsigned long c=readCount();
 
     //printf("%d\n",c);
-    
+
     for(int i=1;i<FIFOLENGTH;i++){
       fifo[i-1]=fifo[i];
     }
     fifo[FIFOLENGTH-1]=c;
-    
+
     deviceGlobal->level_count=findMiddle(fifo);
-   
+
     y=(deviceGlobal->level_count-offset)/62800.0*30;
     //y=(count-offset)/62800.0*30;
-    
+
     if(y>250)
     {
       y=prev;
@@ -125,8 +128,8 @@ void* WaterLevelThreadFunction(void *arg)
     }
 
     //prev=y;
-    
-     
+
+
     if(y-prev>3)
     {
       y=prev=prev+3;
@@ -135,11 +138,11 @@ void* WaterLevelThreadFunction(void *arg)
     if(prev-y>3)
     {
       y=prev=prev-3;
-    }  
+    }
     else{
      prev=y;
     }
-     
+
 
     pthread_mutex_lock(&(deviceGlobal->level_timerCritical));
     deviceGlobal->level_out=y;
@@ -150,7 +153,7 @@ void* WaterLevelThreadFunction(void *arg)
 
 void startWaterLevelThread()
 {
-    
+
     printf("Water Level Thread starting...\n");
 
     pthread_t id;
@@ -168,10 +171,10 @@ void startWaterLevelThread()
 
 static void waterlevel_speed_edgeDetect()
 {
-  
+
   pthread_mutex_lock(&(deviceGlobal->speed_timerCritical));
 
-  deviceGlobal->speed_counter++;	
+  deviceGlobal->speed_counter++;
   pthread_mutex_unlock(&(deviceGlobal->speed_timerCritical));
 }
 
@@ -186,10 +189,10 @@ static void waterlevel_speed_timer_in_callback(union sigval v){
 }
 
 static void startWaterLevelTimer(WATER_LEVEL *device){
-	struct sigevent evp; 
+	struct sigevent evp;
     memset(&evp, 0, sizeof(evp));
-    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它  
-    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数 
+    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它
+    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数
     evp.sigev_notify_function = waterlevel_speed_timer_in_callback; //这个就是指定回调函数
 
     int ret = 0;
@@ -204,27 +207,27 @@ static void startWaterLevelTimer(WATER_LEVEL *device){
     ts.it_interval.tv_sec = 0;
     ts.it_interval.tv_nsec = 100000000;
     ts.it_value.tv_sec = ts.it_interval.tv_sec;
-    ts.it_value.tv_nsec = ts.it_interval.tv_nsec; 
+    ts.it_value.tv_nsec = ts.it_interval.tv_nsec;
     ret = timer_settime(device->speed_main_timer, TIMER_ABSTIME, &ts, NULL);
     if(ret < 0){
-        printf("main_timer() fail, ret:%d", ret); 
+        printf("main_timer() fail, ret:%d", ret);
         timer_delete(device->speed_main_timer);
         exit(1);
-    } 
+    }
 }
 
 void initWaterLevel(WATER_LEVEL *device){
     pinMode(1, PWM_OUTPUT);
-    pwmSetMode (PWM_MODE_MS) ;	
+    pwmSetMode (PWM_MODE_MS) ;
     pwmSetClock(3);
     pwmSetRange(1000);
-    
+
     pinMode(0, INPUT);
     pullUpDnControl (0,PUD_UP);
     deviceGlobal=device;
     wiringPiISR(0, INT_EDGE_FALLING, waterlevel_speed_edgeDetect);
     startWaterLevelTimer(device);
-    
+
     pthread_mutex_init(&(device->level_timerCritical),NULL);
     pinMode(ADDO, INPUT);
     pinMode(ADSK, OUTPUT);
@@ -235,11 +238,11 @@ void initWaterLevel(WATER_LEVEL *device){
 
 void outputWaterLevel(WATER_LEVEL *device){
 	pwmWrite(1,(1-device->pumpPWM)*1000);
-	
+
 	pthread_mutex_lock(&(device->speed_timerCritical));
     device->speed_counter_in=100.0*device->speed_counter_out;
     pthread_mutex_unlock(&(device->speed_timerCritical));
-    
+
     pthread_mutex_lock(&(device->level_timerCritical));
     device->level=device->level_out;
     pthread_mutex_unlock(&(device->level_timerCritical));
@@ -255,10 +258,10 @@ static void alp_fanspeed_timer_in_callback(union sigval v){
 }
 
 static void startAlpTimer(ALP *device){
-	struct sigevent evp; 
+	struct sigevent evp;
     memset(&evp, 0, sizeof(evp));
-    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它  
-    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数 
+    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它
+    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数
     evp.sigev_notify_function = alp_fanspeed_timer_in_callback; //这个就是指定回调函数
 
     int ret = 0;
@@ -273,18 +276,18 @@ static void startAlpTimer(ALP *device){
     ts.it_interval.tv_sec = 0;
     ts.it_interval.tv_nsec = 100000000;
     ts.it_value.tv_sec = ts.it_interval.tv_sec;
-    ts.it_value.tv_nsec = ts.it_interval.tv_nsec; 
+    ts.it_value.tv_nsec = ts.it_interval.tv_nsec;
     ret = timer_settime(device->fanspeed_main_timer, TIMER_ABSTIME, &ts, NULL);
     if(ret < 0){
-        printf("main_timer() fail, ret:%d", ret); 
+        printf("main_timer() fail, ret:%d", ret);
         timer_delete(device->fanspeed_main_timer);
         exit(1);
-    } 
+    }
 }
 static void alp_fanspeed_edgeDetect()
 {
   pthread_mutex_lock(&(deviceGlobalAlp->fanspeed_timerCritical));
-  deviceGlobalAlp->fanspeed_counter++;	
+  deviceGlobalAlp->fanspeed_counter++;
   pthread_mutex_unlock(&(deviceGlobalAlp->fanspeed_timerCritical));
 }
 
@@ -301,7 +304,7 @@ float disMeasure()
     struct timeval tv2;
     long start, stop;
     float dis;
-    int e; 
+    int e;
     delayMicroseconds(100);
 //     printf("------triggering...-------\n");
     digitalWrite(Trig, 0);
@@ -315,7 +318,7 @@ float disMeasure()
     while(!(digitalRead(Echo) == 0));
     gettimeofday(&tv2, NULL);           //获取当前时间  最后接收到返回信号的时候
 //     printf("------echo recieved------\n");
-    
+
     /*
     int gettimeofday(struct timeval *tv, struct timezone *tz);
     The functions gettimeofday() and settimeofday() can get and set the time as well as a timezone.
@@ -323,7 +326,7 @@ float disMeasure()
     */
     start = tv1.tv_sec * 1000000 + tv1.tv_usec;   //微秒级的时间
     stop  = tv2.tv_sec * 1000000 + tv2.tv_usec;
-    dis = (float)(stop - start) / 1000000 * 34000 / 2;  //计算时间差求出距离cm   
+    dis = (float)(stop - start) / 1000000 * 34000 / 2;  //计算时间差求出距离cm
 //     printf("------dis calculated:%f------\n",dis);
     return dis;
 }
@@ -336,7 +339,7 @@ void initAlp(ALP *device){
         exit(1);
     }
     pinMode(13, PWM_OUTPUT);
-    pwmSetMode (PWM_MODE_MS) ;	
+    pwmSetMode (PWM_MODE_MS) ;
     pwmSetClock(3);
     pwmSetRange(1000);
    //FanSpeed
@@ -388,10 +391,10 @@ static void raspFan_fanspeed_timer_in_callback(union sigval v){
 }
 
 static void startRaspFanTimer(RASPFAN *device){
-	struct sigevent evp; 
+	struct sigevent evp;
     memset(&evp, 0, sizeof(evp));
-    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它  
-    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数 
+    evp.sigev_value.sival_ptr = NULL; //这里传一个参数进去，在timer的callback回调函数里面可以获得它
+    evp.sigev_notify = SIGEV_THREAD; //定时器到期后内核创建一个线程执行sigev_notify_function函数
     evp.sigev_notify_function = raspFan_fanspeed_timer_in_callback; //这个就是指定回调函数
 
     int ret = 0;
@@ -406,18 +409,18 @@ static void startRaspFanTimer(RASPFAN *device){
     ts.it_interval.tv_sec = 0;
     ts.it_interval.tv_nsec = 100000000;
     ts.it_value.tv_sec = ts.it_interval.tv_sec;
-    ts.it_value.tv_nsec = ts.it_interval.tv_nsec; 
+    ts.it_value.tv_nsec = ts.it_interval.tv_nsec;
     ret = timer_settime(device->fanspeed_main_timer, TIMER_ABSTIME, &ts, NULL);
     if(ret < 0){
-        printf("main_timer() fail, ret:%d", ret); 
+        printf("main_timer() fail, ret:%d", ret);
         timer_delete(device->fanspeed_main_timer);
         exit(1);
-    } 
+    }
 }
 static void raspFan_fanspeed_edgeDetect()
 {
   pthread_mutex_lock(&(deviceGlobalRaspFan->fanspeed_timerCritical));
-  deviceGlobalRaspFan->fanspeed_counter++;	
+  deviceGlobalRaspFan->fanspeed_counter++;
   pthread_mutex_unlock(&(deviceGlobalRaspFan->fanspeed_timerCritical));
 }
 void initRaspFan(RASPFAN *device){
@@ -428,7 +431,7 @@ void initRaspFan(RASPFAN *device){
         exit(1);
     }
     pinMode(13, PWM_OUTPUT);
-    pwmSetMode (PWM_MODE_MS) ;	
+    pwmSetMode (PWM_MODE_MS) ;
     pwmSetClock(3);
     pwmSetRange(1000);
    //FanSpeed

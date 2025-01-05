@@ -16,14 +16,14 @@ jsondir=/usr/include/jsoncpp
 # -pthread -Werror=format-security
 # -Wdate-time -D_FORTIFY_SOURCE=2 -fstack-protector-strong
 # -fpermissive
-CCFlag=-D_SIMU -I $(srcdir) -I $(jsondir) -I $(pidir) -I $(eigendir) -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings -DPSAPI_VERSION=1 -fopenmp
+CCFlag=-D_SIMU -I $(srcdir) -I $(jsondir) -I $(pidir) -I $(eigendir) -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings -DPSAPI_VERSION=1 -fopenmp -I/usr/include/eigen3
 # -ljsoncpp
 # -Wl,-Bsymbolic-functions -Wl,-z,relro
 # LDFLAG=-lm -lpthread -L /Users/square/vcpkg/packages/jsoncpp_arm64-osx/lib -Wdate-time -D_FORTIFY_SOURCE=2 -pthread -fopenmp -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -rdynamic  -fPIC -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 # -fopenmp -lpthread =pthread
 # -Werror=format-security
 # -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wdate-time
-LDFLAG=-lm -ljsoncpp -g -O2 -Wformat -rdynamic -fPIC
+LDFLAG=-lm  -g -O2 -Wformat -rdynamic -fPIC
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)

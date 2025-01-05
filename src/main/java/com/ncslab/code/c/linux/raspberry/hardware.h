@@ -1,12 +1,16 @@
-#include"ncslabccode.h"
+#include"ncslabccode.hpp"
 #include"ncslabdefines.hpp"
 #include"ncs_serialport.h"
-#include"ncslab.h"
+#include"ncslab.hpp"
 #include <sys/time.h>
 #include <sys/select.h>
 #include <time.h>
 #include <stdio.h>
 #include <wiringPi.h>
+#include <pthread.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
 
 
 typedef struct {
@@ -23,13 +27,13 @@ typedef struct {
 	unsigned int speed_counter=0;
 	unsigned int speed_counter_out=0;
 	unsigned int speed_counter_in;
-	
+
 	unsigned int level_lastEdge = 0;
 	double level_out;
 	double level;
 	unsigned long level_count;
 	pthread_mutex_t  level_timerCritical;
-	
+
 }WATER_LEVEL;
 
 typedef struct {
@@ -47,7 +51,7 @@ typedef struct {
 	unsigned int fanspeed_counter_out=0;
 	unsigned int fanspeed_counter_in;
        unsigned int fanspeed_output;
-	double position;	
+	double position;
 }ALP;
 
 typedef struct {

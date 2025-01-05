@@ -5,8 +5,9 @@ import java.io.*;
 import com.ncslab.block.Block;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.c.CodeModelC;
+import com.ncslab.code.c.linux.CodeStructCLinux;
 
-public class CodeStructCLinuxRaspberry extends CodeStructC {
+public class CodeStructCLinuxRaspberry extends CodeStructCLinux {
 	public CodeStructCLinuxRaspberry(CodeModelC model) {
 		super(model);
 	}
@@ -18,13 +19,13 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 		String userPath = codePathBase + model.getUserId();
 
 		File file = new File(userPath);
-		if (file.exists() == false) {
+		if (!file.exists()) {
 			file.mkdir();
 		}
 
 		String modelPath = userPath + "/" + model.getModelId() + "_RT";
 		file = new File(modelPath);
-		if (file.exists() == false) {
+		if (!file.exists()) {
 			file.mkdir();
 		}
 
@@ -35,14 +36,15 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 		// writeNCSLabFile("makefile");
 		writeMakefile("makefile");
 		// main data structure
-		writeNCSLabFile("../../ncslabccode.h", "ncslabccode.h");
+		writeNCSLabFile("../../ncslabccode.hpp", "ncslabccode.hpp");
 		// main function and timer
-		writeNCSLabFile("../ncslabmain.c", "ncslabmain.c");
+		writeNCSLabFile("../ncslabmain.cpp", "ncslabmain.cpp");
 		// Define the API to access the main data structure
-		writeNCSLabFile("../../DataApi.c", "DataApi.c");
-		writeNCSLabFile("../../DataApi.h", "DataApi.h");
+		writeNCSLabFile("../../DataApi.cpp", "DataApi.cpp");
+		writeNCSLabFile("../../DataApi.hpp", "DataApi.hpp");
 
 		writeNCSLabFile("../../util.cpp", "util.cpp", true);
+        writeNCSLabFile("../../util.hpp", "util.hpp", true);
 
 		writeNCSLabFile("../../ncslabdefines.hpp", "ncslabdefines.hpp");
 		writeNCSLabFile("../../ncslabsfun.hpp", "ncslabsfun.hpp");
@@ -88,31 +90,35 @@ public class CodeStructCLinuxRaspberry extends CodeStructC {
 
 		// write the main code file ncslabccdoe.c
 		writeMainCodeFile();
+        writeNCSLabFile("../../mainccode.hpp", "mainccode.hpp");
 
 		wirteDefineFile();
 
 		switch (model.getSolver()) {
 			case ode1:
-				writeNCSLabFile("../../ode1.c", "onestep.c", true);
+				writeNCSLabFile("../../ode1.cpp", "onestep.cpp", true);
 				break;
 			case ode2:
-				writeNCSLabFile("../../ode2.c", "onestep.c", true);
+				writeNCSLabFile("../../ode2.cpp", "onestep.cpp", true);
 				break;
 			case ode3:
-				writeNCSLabFile("../../ode3.c", "onestep.c", true);
+				writeNCSLabFile("../../ode3.cpp", "onestep.cpp", true);
 				break;
 			case ode4:
-				writeNCSLabFile("../../ode4.c", "onestep.c", true);
+				writeNCSLabFile("../../ode4.cpp", "onestep.cpp", true);
 				break;
+            case ode5:
+                writeNCSLabFile("../../ode5.cpp", "onestep.cpp", true);
+                break;
+            case ode6:
+                writeNCSLabFile("../../ode6.cpp", "onestep.cpp", true);
+                break;
 			default:
 				break;
 		}
 
 	}
 
-	@Override
-	public byte[] readExeFile() {
-		return readFile("ncslab");
-	}
+
 
 }

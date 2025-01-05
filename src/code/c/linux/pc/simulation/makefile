@@ -13,15 +13,15 @@ ncslab: $(OBJS)
 
 
 
-mainccode.o: mainccode.c ncslab.h
-	$(CC) $(CCFlag)  -c mainccode.c
-    
-onestep.o: onestep.c ncslab.h
-	$(CC) $(CCFlag)  -c onestep.c
-    
-util.o: util.c ncslab.h
-	$(CC) $(CCFlag)  -c util.c  
-	
+mainccode.o: mainccode.cpp ncslab.hpp
+	$(CC) $(CCFlag)  -c mainccode.cpp
+
+onestep.o: onestep.cpp ncslab.hpp
+	$(CC) $(CCFlag)  -c onestep.cpp
+
+util.o: util.cpp ncslab.hpp
+	$(CC) $(CCFlag)  -c util.cpp
+
 %.o : %.c
 	$(CC) $(CCFlag)  -c "$<"
 
