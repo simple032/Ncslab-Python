@@ -65,11 +65,11 @@ public class PIDController extends Block {
 		parameterList.add(cparaN);
 
 
-//		stateIntegral=new State(this,1,"integral");
-//		stateList.add(stateIntegral);
-//
-//		stateFilter=new State(this,2,"filter");
-//		stateList.add(stateFilter);
+        stateIntegral = new State(this, 1, "stateIntegral", cparaP.getHeight(), cparaP.getWidth());
+        stateFilter = new State(this, 2, "stateFilter", cparaP.getHeight(), cparaP.getWidth());
+
+        stateList.add(stateIntegral);
+        stateList.add(stateFilter);
 
         limitOutput = new Parameter(this, parameterList.size() + 1, "LimitOutput", paramValues.getString("LimitOutput"));
         parameterList.add(limitOutput);
@@ -371,15 +371,12 @@ public class PIDController extends Block {
 		OutputPort out = outputPortList.get(0);
 		InputPort in = inputPortList.get(0);
 		OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		if (signal.getDataType() == DataType.REAL) {
-			stateIntegral = new State(this, 1, "stateIntegral", cparaP.getHeight(), cparaP.getWidth());
-			stateFilter = new State(this, 2, "stateFilter", cparaP.getHeight(), cparaP.getWidth());
-		} else {
+		if (signal.getDataType() != DataType.REAL) {
 			stateIntegral = new State(this, 1, "stateIntegral", signal.getHeight(), signal.getWidth());
 			stateFilter = new State(this, 2, "stateFilter", signal.getHeight(), signal.getWidth());
 		}
-		stateList.add(stateIntegral);
-		stateList.add(stateFilter);
+		stateList.set(0, stateIntegral);
+		stateList.set(1, stateFilter);
 		if (cparaP.getWidth() != cparaD.getWidth() ||
 				cparaP.getWidth() != cparaI.getWidth() ||
 				cparaP.getWidth() != cparaN.getWidth() ||
