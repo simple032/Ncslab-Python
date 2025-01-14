@@ -172,7 +172,7 @@ public class LoongarchPLC extends Block {
         statementCode +="int hCommBPSUST;\n";
         statementCode +="int BPfd;\n";
         statementCode +="bool BPSUSTbool=true;\n";
-        statementCode +="struct input_event ev;\n";
+        //statementCode +="struct input_event ev;\n";
         statementCode +="int t_x,t_y;\n"
                 + "int BPpos1=0,BPpos2=0;\n";
         statementCode +="fd_set read_bpfds,write_bpfds;\n"

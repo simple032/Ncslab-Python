@@ -2,11 +2,10 @@ package com.ncslab.block;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.function.BiFunction;
 
+import com.ncslab.block.driver.EtherCATAI;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -136,6 +135,12 @@ public class BlockType{
         blockClassTree.put("Ad", com.ncslab.block.driver.Ad.class);
         blockClassTree.put("PWM", com.ncslab.block.driver.PWM.class);
         blockClassTree.put("DA_Ouput", com.ncslab.block.driver.Da.class);
+        blockClassTree.put("EtherCATAI", com.ncslab.block.driver.EtherCATAI.class);
+        blockClassTree.put("EtherCATAO", com.ncslab.block.driver.EtherCATAO.class);
+        blockClassTree.put("EtherCATDI", com.ncslab.block.driver.EtherCATDI.class);
+        blockClassTree.put("EtherCATDO", com.ncslab.block.driver.EtherCATDO.class);
+        blockClassTree.put("EtherCATservo", com.ncslab.block.driver.EtherCATservo.class);
+        blockClassTree.put("Observer", com.ncslab.block.driver.Observer.class);
 
         // Discrete
         blockClassTree.put("DiscreteStateSpace", com.ncslab.block.discrete.DiscreteStateSpace.class);
@@ -228,7 +233,7 @@ public class BlockType{
     }
 
 	public static Block createBlock(int id, JSONObject blockJSON, NCSLabModel model) throws ModelException {
-		String blockType = blockJSON.getString("blockType")
+        String blockType = blockJSON.getString("blockType")
             .replace("Block", "")
             .replace(" ", "")
             .replace("\n","");

@@ -33,28 +33,26 @@ public class CodeStructCLinuxLoong extends CodeStructC{
 
 		codePath=modelPath+"/";
 
-		//写锟斤拷锟杰边碉拷锟斤拷源锟侥硷拷
-		//makefile
-		writeNCSLabFile("makefile");
-		//锟斤拷锟斤拷锟捷结构
-		writeNCSLabFile("../../ncslabccode.h","ncslabccode.h");
-		//main锟斤拷锟斤拷锟皆硷拷锟斤拷时锟斤拷
-		writeNCSLabFile("../../ncslabmain.c","ncslabmain.c");
-		//锟斤拷锟斤拷锟斤拷锟斤拷锟捷结构锟侥接匡拷API锟斤拷锟斤拷
-		writeNCSLabFile("../../DataApi.c","DataApi.c");
-		writeNCSLabFile("../../DataApi.h","DataApi.h");
+        writeNCSLabFile("makefile");
 
-		writeNCSLabFile("../../util.c","util.c");
+        writeNCSLabFile("Matrix.hpp");
+        writeNCSLabFile("util.hpp");
+        writeNCSLabFile("mainccode.hpp");
+        writeNCSLabFile("onestep.hpp");
+        writeNCSLabFile("ncslab.hpp");
+        writeNCSLabFile("ncslabccode.hpp");
+        writeNCSLabFile("ncslabmain.cpp");
+        writeNCSLabFile("DataApi.cpp");
+        writeNCSLabFile("DataApi.hpp");
+        writeNCSLabFile("util.cpp");
+        writeNCSLabFile("ncslabdefines.hpp");
 
-		writeNCSLabFile("../../ncslabdefines.h","ncslabdefines.h");
-
-		//实锟斤拷Netcon协锟斤拷锟酵拷锟斤拷募锟�
-		writeNCSLabFile("../ServerThread.c","ServerThread.c");
-		writeNCSLabFile("../ServerThread.h","ServerThread.h");
-		writeNCSLabFile("../ClientThread.c","ClientThread.c");
-		writeNCSLabFile("../ClientThread.h","ClientThread.h");
-		writeNCSLabFile("../UploadThread.c","UploadThread.c");
-		writeNCSLabFile("../UploadThread.h","UploadThread.h");
+        writeNCSLabFile("ServerThread.cpp");
+        writeNCSLabFile("ServerThread.hpp");
+        writeNCSLabFile("ClientThread.cpp");
+        writeNCSLabFile("ClientThread.hpp");
+        writeNCSLabFile("UploadThread.cpp");
+        writeNCSLabFile("UploadThread.hpp");
 
 		// writeNCSLabFile("../../Debug.h","Debug.h");
 		// writeNCSLabFile("../../DEV_Config.c","DEV_Config.c");
@@ -67,9 +65,44 @@ public class CodeStructCLinuxLoong extends CodeStructC{
 		// writeNCSLabFile("../../ncs_serialport_pi.c","ncs_serialport_pi.c");
 		// writeNCSLabFile("../../ncs_serialport.h","ncs_serialport.h");
 
-		//写锟斤拷锟斤拷锟缴碉拷锟斤拷锟斤拷锟斤拷ncslabccdoe.c
-		writeMainCodeFile();
+        writeNCSLabFile("EtherCAT.hpp");
+        writeNCSLabFile("EtherCAT.cpp");
+        writeNCSLabFile("EtherCATAnalog.hpp");
+        writeNCSLabFile("EtherCATDigital.hpp");
+        writeNCSLabFile("EtherCATSh.hpp");
+        writeNCSLabFile("EtherCATServo.hpp");
 
+
+        writeNCSLabFile("SOEM/soem/ethercatbase.c");
+        writeNCSLabFile("SOEM/soem/ethercatbase.h");
+        writeNCSLabFile("SOEM/soem/ethercatcoe.c");
+        writeNCSLabFile("SOEM/soem/ethercatcoe.h");
+        writeNCSLabFile("SOEM/soem/ethercatconfig.c");
+        writeNCSLabFile("SOEM/soem/ethercatconfig.h");
+        writeNCSLabFile("SOEM/soem/ethercatconfiglist.h");
+        writeNCSLabFile("SOEM/soem/ethercatdc.c");
+        writeNCSLabFile("SOEM/soem/ethercatdc.h");
+        writeNCSLabFile("SOEM/soem/ethercateoe.c");
+        writeNCSLabFile("SOEM/soem/ethercateoe.h");
+        writeNCSLabFile("SOEM/soem/ethercatfoe.c");
+        writeNCSLabFile("SOEM/soem/ethercatfoe.h");
+        writeNCSLabFile("SOEM/soem/ethercat.h");
+        writeNCSLabFile("SOEM/soem/ethercatmain.c");
+        writeNCSLabFile("SOEM/soem/ethercatmain.h");
+        writeNCSLabFile("SOEM/soem/ethercatprint.c");
+        writeNCSLabFile("SOEM/soem/ethercatprint.h");
+        writeNCSLabFile("SOEM/soem/ethercatsoe.c");
+        writeNCSLabFile("SOEM/soem/ethercatsoe.h");
+        writeNCSLabFile("SOEM/soem/ethercattype.h");
+        writeNCSLabFile("SOEM/soem/osal.h");
+        writeNCSLabFile("SOEM/soem/osal.c");
+        writeNCSLabFile("SOEM/soem/osal_defs.h");
+        writeNCSLabFile("SOEM/soem/oshw.h");
+        writeNCSLabFile("SOEM/soem/nicdrv.c");
+        writeNCSLabFile("SOEM/soem/nicdrv.h");
+        writeNCSLabFile("SOEM/soem/oshw.c");
+
+		writeMainCodeFile();
 		wirteDefineFile();
 
 		switch(model.getSolver()) {
@@ -83,7 +116,7 @@ public class CodeStructCLinuxLoong extends CodeStructC{
 			writeNCSLabFile("../../ode3.c","onestep.c",true);
 			break;
 		case ode4:
-			writeNCSLabFile("../../ode4.c","onestep.c",true);
+			writeNCSLabFile("../../ode4.cpp","onestep.cpp",true);
 			break;
 		}
 
