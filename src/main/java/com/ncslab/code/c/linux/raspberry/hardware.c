@@ -3,6 +3,9 @@
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
+#include <time.h>
+#include <stdlib.h>
 void initHardware(){
 
 	//printf("Init hardware\n");
@@ -15,6 +18,11 @@ void initHardware(){
 #define Echo 22
 #define PIN_FAN 6
 #define FIFOLENGTH 10
+#define PWM_PIN 23
+#define BIN1_MG513 25
+#define BIN2_MG513 24
+#define ENCA_MG513 22
+#define ENCB_MG513 21
 
 float height[7]={0,0,0,0,0,0,0};
 float speed[5]={0,0,0,0,0};
@@ -25,6 +33,7 @@ static WATER_LEVEL *deviceGlobal;
 static ALP *deviceGlobalAlp;
 
 static RASPFAN *deviceGlobalRaspFan;
+static DCMOTORANGLEDIRECT *deviceGlobalDCMotorAngleDirect;
 
 static unsigned long readCount(void)
 {
@@ -460,4 +469,61 @@ void outputRaspFan(RASPFAN *device){
         v=v+speed1[i];}
     speed1[6]=v/7;
     device->fanspeed_output=speed1[6];
+}
+
+volatile int pulseCount = 0; // 全局变量用于记录脉冲数量
+
+// 编码器中断处理函数
+void pulseISR() {
+    // 检测 ENCB_MG513 的状态以区分正转和反转
+    if (digitalRead(ENCB_MG513) == HIGH) {
+        pulseCount++;
+    } else {
+        pulseCount--;
+    }
+
+}
+
+// 初始化电机控制引脚
+void setupMotor() {
+    printf("Setup Motor.\n");
+    pinMode(PWM_PIN, PWM_OUTPUT);
+    pwmSetMode (PWM_MODE_MS) ;
+    pwmSetClock(19);
+    pwmSetRange(100);
+    pinMode(BIN1_MG513, OUTPUT);
+    pinMode(BIN2_MG513, OUTPUT);
+}
+
+// 初始化编码器引脚
+void setupEncoder() {
+    printf("Setup Encoder.\n");
+    pinMode(ENCA_MG513, INPUT);
+    pinMode(ENCB_MG513, INPUT);
+    pullUpDnControl(ENCA_MG513, PUD_UP); // 开启上拉
+    pullUpDnControl(ENCB_MG513, PUD_UP); // 开启上拉
+    wiringPiISR(ENCA_MG513, INT_EDGE_BOTH, &pulseISR); // 设置中断
+}
+
+void initDCMotorAngleDirect(DCMOTORANGLEDIRECT *device){
+  //PWMout
+
+    setupMotor();
+    setupEncoder();
+
+    deviceGlobalDCMotorAngleDirect = device;
+}
+
+
+void outputDCMotorAngleDirect(DCMOTORANGLEDIRECT *device){
+    if(device->PWM>0){
+      digitalWrite(BIN1_MG513, HIGH);
+      digitalWrite(BIN2_MG513, LOW);
+    }else{
+      digitalWrite(BIN1_MG513, LOW);
+      digitalWrite(BIN2_MG513, HIGH);
+    }
+    pwmWrite(PWM_PIN,(int)(fabs(device->PWM)*100));
+    device->speedPulse = pulseCount;
+    pulseCount = 0;
 }

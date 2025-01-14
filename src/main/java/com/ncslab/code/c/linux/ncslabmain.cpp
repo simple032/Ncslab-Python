@@ -24,7 +24,9 @@
 #include <string.h>
 
 #include "util.hpp"
-
+#ifdef _ENABLE_PI
+#include "hardware.h"
+#endif
 
 
 MODEL *mp;
@@ -234,11 +236,12 @@ void startTimer(real_T stepSize)
 
 }
 
-void initHardware();
 int main(int argc, char *argv[]){
 
- //TODO:这里需要区分树莓派和其他硬件
+ //这里需要区分树莓派和其他硬件
+ #ifdef _ENABLE_PI
 	 initHardware();
+#endif
 	NCSLabInit();
 
 	extModeData.acc=1;

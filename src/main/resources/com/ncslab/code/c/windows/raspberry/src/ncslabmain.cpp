@@ -23,6 +23,7 @@
 #include <time.h>
 #include <string.h>
 
+#include "util.hpp"
 
 
 
@@ -41,13 +42,6 @@ unsigned char calcSum(unsigned char bytes[])
     }
     return res;
 }
-
-#ifdef _ENABLE_PI
-extern "C"{
-void initHardware();
-}
-#endif
-
 
 /*static*/void timer_in_callback(union sigval v)
 {
@@ -239,12 +233,13 @@ void startTimer(real_T stepSize)
 	//mp->time+=STEP_SIZE;
 
 }
-
-
+extern "C"{
+void initHardware();
+}
 int main(int argc, char *argv[]){
 
- //TODO:这里需要区分树莓派和其他硬件
-#ifdef _ENABLE_PI
+ //这里需要区分树莓派和其他硬件
+ #ifdef _ENABLE_PI
 	 initHardware();
 #endif
 	NCSLabInit();
@@ -266,7 +261,7 @@ int main(int argc, char *argv[]){
 
 	startMyServerThread(&extModeData);
 
-	// discreteInitFixed();
+	 discreteInitFixed();
 
 	startTimer(mp->stepSize);
 	pthread_join(extModeData.servetThread,NULL);

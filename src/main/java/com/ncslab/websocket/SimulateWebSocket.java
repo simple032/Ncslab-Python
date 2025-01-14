@@ -2,6 +2,7 @@ package com.ncslab.websocket;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -10,6 +11,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.windows.simulation.CodeModelCWindowsSimulation;
+import com.ncslab.utils.Property;
 import org.json.JSONObject;
 
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
@@ -73,8 +75,8 @@ public class SimulateWebSocket {
 				sendMessage(session,"start");
 				//System.out.println("Start");
 				JSONObject  mdlData=msg.getJSONObject("mdlData");
-                // String target = mdlData.optString("target");
-				String target = mdlData.optString("target", "PC");
+                //simulation模式下的目标机始终为PC
+//                String target = "PC";
                 String jsonDataString=mdlData.getString("jsonData");
 				JSONObject jsonData=new JSONObject(jsonDataString);
 				//System.out.println(jsonDataString);
@@ -84,15 +86,27 @@ public class SimulateWebSocket {
 
 
 	        	// instantiate a CodeModelC object
-	        	//CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
+
+                // host 应为运行Link的操作系统来决定，而不应该由用户来决定
+                String osName = System.getProperty("os.name").toLowerCase();
+                String host;
+                if (osName.contains("win")) {
+                    host = "Windows";
+                } else if (osName.contains("mac")) {
+                    host = "Mac";
+                } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+                    host = "Linux";
+                } else {
+                    throw new UnsupportedOperationException("Unsupported OS: " + osName);
+                }
+
+                //CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
                 CodeModelC modelC = null;
-                if(Objects.equals(target, "linux")){
-                    modelC = CodeModelCLinuxPCSimulation.createFromJSON(jsonData, ModelMode.Simulation);
-                }else if(Objects.equals(target, "linux-rpi")){
-                    modelC= CodeModelCLinuxPCSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+                if(Objects.equals(host, "Windows")){
+                    modelC = CodeModelCWindowsSimulation.createFromJSON(jsonData, ModelMode.Simulation);
                 }else{
-					modelC= CodeModelCWindowsSimulation.createFromJSON(jsonData,ModelMode.Simulation);
-				}
+                    modelC= CodeModelCLinuxPCSimulation.createFromJSON(jsonData,ModelMode.Simulation);
+                }
 
                 modelC.removeAllFiles();
 
@@ -120,9 +134,13 @@ public class SimulateWebSocket {
 
 	        	sendMessage(session,"compiled");
 
-				modelC.removeAllFiles();
 
-	        	//sendMessage(session,"simulating");
+//				modelC.removeAllFiles();
+                if(!"true".equals(Optional.ofNullable(Property.instance.getProperty("debug")).orElse("false"))){
+//                    modelC.removeAllFiles();
+                }
+
+                //sendMessage(session,"simulating");
 	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());
 
 	        	modelC.simulate(session);

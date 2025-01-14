@@ -23,7 +23,7 @@ public class CodeStructCLinuxRaspberry extends CodeStructCLinux {
 			file.mkdir();
 		}
 
-		String modelPath = userPath + "/" + model.getModelId() + "_RT";
+		String modelPath = userPath + "/" + model.getModelId();
 		file = new File(modelPath);
 		if (!file.exists()) {
 			file.mkdir();

@@ -2,6 +2,7 @@ package com.ncslab.websocket;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -11,6 +12,7 @@ import javax.websocket.server.ServerEndpoint;
 import com.ncslab.code.CodeModelFactory;
 import com.ncslab.code.c.CodeModelC;
 
+import com.ncslab.utils.Property;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 
@@ -45,7 +47,7 @@ public class CompileWebSocket {
 
 	@OnMessage
 	public void onMessage(Session session, String msgString) {
-		// System.out.println(msgString);
+		 System.out.println(msgString);
 		JSONObject msg = new JSONObject(msgString);
 		String com = msg.getString("com");
 		if (com.equals("start")) {
@@ -55,7 +57,6 @@ public class CompileWebSocket {
 				JSONObject mdlData = msg.getJSONObject("mdlData");
                 // host 应为运行Link的操作系统来决定，而不应该由用户来决定
                 String osName = System.getProperty("os.name").toLowerCase();
-//                mdlData.optString("host", "Windows");
                 String host;
                 if (osName.contains("win")) {
                     host = "Windows";
@@ -116,9 +117,12 @@ public class CompileWebSocket {
 
 				sendMessage(session, "compiled");
 
-				modelC.removeAllFiles();
 
-				sendMessage(session, "database inserting");
+                if(!"debug".equals(Optional.ofNullable(Property.instance.getProperty("mode")).orElse("deploy"))){
+                    modelC.removeAllFiles();
+                }
+
+                sendMessage(session, "database inserting");
 
 				modelC.saveToDatabase();
 
@@ -144,13 +148,14 @@ public class CompileWebSocket {
 				 * }
 				 */
 
-			} catch (IOException|ModelException e) {
+			} catch (IOException|ModelException|NullPointerException e) {
 				try {
 					sendErrorMessage(session, e.getMessage());
+
 				} catch (IOException ee) {
                     log.error("e: ", ee);
 				}
-				System.err.println(e.getMessage());
+                log.error("e: ", e);
 				System.err.println("Code generatrion terminated unsuccessfully");
 			} finally {
 				try {

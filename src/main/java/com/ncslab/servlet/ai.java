@@ -7,6 +7,7 @@ import com.ncslab.code.c.CodeModelCFactory;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -24,6 +25,7 @@ import java.security.InvalidParameterException;
 /**
  * Servlet implementation class compile
  */
+@Slf4j
 @WebServlet("/ai/*")
 public class ai extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -72,7 +74,11 @@ public class ai extends HttpServlet {
 			errorMsgs += e.getMessage();
 			code = 400;
 		}
+        catch (Exception e) {
+            log.error("Error:", e);
+        }
 		finally {
+
 			JSONObject jb=new JSONObject();
 			jb.put("code", code);
 			jb.put("properties", properties);

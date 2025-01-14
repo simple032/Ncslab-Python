@@ -1,25 +1,21 @@
-#ifndef __HARDWARE_H
-#define __HARDWARE_H
-
-#include "ncslabdefines.hpp"
-
-#include "ncslabccode.hpp"
-
-#include "ncs_serialport.h"
-#include "ncslab.hpp"
+#include"ncslabccode.hpp"
+#include"ncslabdefines.hpp"
+#include"ncs_serialport.h"
+#include"ncslab.hpp"
 #include <sys/time.h>
 #include <sys/select.h>
 #include <time.h>
 #include <stdio.h>
-#include "wiringPi.h"
-#ifdef __linux
-#include <unistd.h>
-#include <pthread.h>        // 对于 pthread 相关函数和类型
-#endif
-#include <signal.h>         // 对于 union sigval
+#include <wiringPi.h>
+#include <pthread.h>
+#include <signal.h>
 #include <string.h>
+#include <unistd.h>
 
+#ifdef __cplusplus
 extern "C"{
+#endif
+
 typedef struct {
 	REAL pumpPWM;
 	unsigned int speed_lastEdge = 0;
@@ -79,6 +75,10 @@ typedef struct {
 }RASPFAN;
 
 
+typedef struct {
+	REAL PWM;
+	int speedPulse;
+}DCMOTORANGLEDIRECT;
 
 void initWaterLevel(WATER_LEVEL *);
 void outputWaterLevel(WATER_LEVEL *);
@@ -89,5 +89,12 @@ void outputAlp(ALP *);
 
 void initRaspFan(RASPFAN *);
 void outputRaspFan(RASPFAN *);
+
+void initDCMotorAngleDirect(DCMOTORANGLEDIRECT *);
+void outputDCMotorAngleDirect(DCMOTORANGLEDIRECT *);
+void initHardware();
+
+
+#ifdef __cplusplus
 }
-#endif // __HARDWARE_H
+#endif

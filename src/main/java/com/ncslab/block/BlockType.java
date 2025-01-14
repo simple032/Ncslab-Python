@@ -98,6 +98,7 @@ public class BlockType{
         blockClassTree.put("WaterLevel", com.ncslab.block.testrig.WaterLevel.class);
         blockClassTree.put("newMotor", com.ncslab.block.testrig.NewMotor.class);
         blockClassTree.put("DCMotorAngle", com.ncslab.block.testrig.DCMotorAngle.class);
+        blockClassTree.put("DCMotorAngleNew", com.ncslab.block.testrig.DCMotorAngleDirect.class);
         blockClassTree.put("ServoMotorSlider", com.ncslab.block.testrig.ServoMotorSlider.class);
         blockClassTree.put("ALP", com.ncslab.block.testrig.Alp.class);
         blockClassTree.put("Fans", com.ncslab.block.testrig.RaspFan.class);
@@ -263,8 +264,12 @@ public class BlockType{
         for (Object blockType : blockTypes) {
 
             // 获取Block类的Class对象
-            Class<? extends Block> blockClass = blockClassTree.get((String)blockType);
+            Class<? extends Block> blockClass = blockClassTree.get(((String)blockType).replace(" ",""));
 
+            if(blockClass == null){
+                log.warn("Block type not found:{}", blockType);
+                continue;
+            }
             // 调用静态方法
             Vector<?> parameterNames = (Vector<?>) blockClass.getMethod("getParameterNames").invoke(null); // 注意这里是null，因为是静态方法
             Vector<?> inputNames = (Vector<?>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法

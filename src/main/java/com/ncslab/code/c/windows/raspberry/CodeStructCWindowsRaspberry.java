@@ -42,30 +42,37 @@ public class CodeStructCWindowsRaspberry extends CodeStructCWindows {
 		// main function and timer
 		writeNCSLabFile("src/ncslabmain.cpp", "ncslabmain.cpp");
 		// Define the API to access the main data structure
-		writeNCSLabFile("lib/DataApi.o", "DataApi.o");
+//		writeNCSLabFile("lib/DataApi.o", "DataApi.o");
+        writeNCSLabFile("src/DataApi.cpp", "DataApi.cpp");
 		writeNCSLabFile("include/DataApi.hpp", "DataApi.hpp");
 
-		writeNCSLabFile("lib/util.o", "util.o", true);
-        writeNCSLabFile("include/util.hpp", "util.hpp", true);
+//		writeNCSLabFile("lib/util.o", "util.o", true);
+        writeNCSLabFile("src/util.cpp", "util.cpp");
+        writeNCSLabFile("include/util.hpp", "util.hpp");
 
 		writeNCSLabFile("include/ncslabdefines.hpp", "ncslabdefines.hpp");
 		writeNCSLabFile("include/ncslabsfun.hpp", "ncslabsfun.hpp");
 
         // Implement the general file of the Netcon protocol
-		writeNCSLabFile("lib/ServerThread.o", "ServerThread.o");
+//		writeNCSLabFile("lib/ServerThread.o", "ServerThread.o");
+        writeNCSLabFile("src/ServerThread.cpp", "ServerThread.cpp");
 		writeNCSLabFile("include/ServerThread.hpp", "ServerThread.hpp");
-		writeNCSLabFile("lib/ClientThread.o", "ClientThread.o");
+//		writeNCSLabFile("lib/ClientThread.o", "ClientThread.o");
+        writeNCSLabFile("src/ClientThread.cpp", "ClientThread.cpp");
 		writeNCSLabFile("include/ClientThread.hpp", "ClientThread.hpp");
-		writeNCSLabFile("lib/UploadThread.o", "UploadThread.o");
+//		writeNCSLabFile("lib/UploadThread.o", "UploadThread.o");
+        writeNCSLabFile("src/UploadThread.cpp", "UploadThread.cpp");
 		writeNCSLabFile("include/UploadThread.hpp", "UploadThread.hpp");
 
+        writeNCSLabFile("src/hardware.c", "hardware.c");
 		writeNCSLabFile("include/hardware.h", "hardware.h");
-		writeNCSLabFile("lib/hardware.o", "hardware.o");
+//		writeNCSLabFile("lib/hardware.o", "hardware.o");
 
 		writeNCSLabFile("lib/ncs_serialport_pi.o", "ncs_serialport_pi.o");
 		writeNCSLabFile("include/ncs_serialport.h", "ncs_serialport.h");
 
-		writeNCSLabFile("lib/Matrix.o", "Matrix.o");
+//		writeNCSLabFile("lib/Matrix.o", "Matrix.o");
+        writeNCSLabFile("src/Matrix.cpp", "Matrix.cpp");
 		writeNCSLabFile("include/Matrix.hpp", "Matrix.hpp");
 //		writeNCSLabFile("lib/ricatti.o", "ricatti.o");
 //		writeNCSLabFile("../../ricatti.hpp", "ricatti.hpp");
@@ -84,6 +91,7 @@ public class CodeStructCWindowsRaspberry extends CodeStructCWindows {
 //		writeNCSLabFile("src/bcm2835.c", "bcm2835.c");
 		writeNCSLabFile("include/wiringPi.h", "wiringPi.h");
 		writeNCSLabFile("include/wiringPiSPI.h", "wiringPiSPI.h");
+
 
 		for (Block block : model.getBlockList()) {
 			if (block.isSFcnBlock()) {
@@ -108,8 +116,8 @@ public class CodeStructCWindowsRaspberry extends CodeStructCWindows {
 				writeNCSLabFile("../../ode3.cpp", "onestep.cpp", true);
 				break;
 			case ode4:
-//				writeNCSLabFile("../../ode4.cpp", "onestep.cpp", true);
-				writeNCSLabFile("../../ode4.o", "onestep.o");
+				writeNCSLabFile("../../ode4.cpp", "onestep.cpp", true);
+//				writeNCSLabFile("../../ode4.o", "onestep.o");
 				break;
             case ode5:
                 writeNCSLabFile("../../ode5.cpp", "onestep.cpp", true);

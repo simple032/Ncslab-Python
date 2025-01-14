@@ -12,6 +12,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 typedef struct {
 	REAL pumpPWM;
@@ -72,6 +75,10 @@ typedef struct {
 }RASPFAN;
 
 
+typedef struct {
+	REAL PWM;
+	int speedPulse;
+}DCMOTORANGLEDIRECT;
 
 void initWaterLevel(WATER_LEVEL *);
 void outputWaterLevel(WATER_LEVEL *);
@@ -82,3 +89,12 @@ void outputAlp(ALP *);
 
 void initRaspFan(RASPFAN *);
 void outputRaspFan(RASPFAN *);
+
+void initDCMotorAngleDirect(DCMOTORANGLEDIRECT *);
+void outputDCMotorAngleDirect(DCMOTORANGLEDIRECT *);
+void initHardware();
+
+
+#ifdef __cplusplus
+}
+#endif
