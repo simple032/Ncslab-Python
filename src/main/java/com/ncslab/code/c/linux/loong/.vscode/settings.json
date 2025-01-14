@@ -1,0 +1,8 @@
+{
+    "editor.fontSize": 24,
+    "editor.lineHeight": 1.6,
+    "window.zoomLevel": 1.5,
+    "files.associations": {
+        "cerrno": "cpp"
+    }
+}
