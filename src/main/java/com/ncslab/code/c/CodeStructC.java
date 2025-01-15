@@ -618,8 +618,17 @@ abstract public class CodeStructC{
 
     protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
         System.out.println("Writing file "+fileName+"...");
-        InputStream InputStream = this.getClass().getResourceAsStream(fileName);
-
+        InputStream inputStream = null;
+        int count = 3;
+        String srcFileName = fileName;
+        while(inputStream == null && (count--) > 0) {
+            inputStream =this.getClass().getResourceAsStream(srcFileName);
+            srcFileName = "../" + srcFileName;
+        }
+        if(inputStream == null) {
+            System.err.println("No file "+fileName+"...");
+            return;
+        }
         File file=new File(codePath+"/"+fileNameOut);
         if(file.exists() && !overwrite) {
             return;
@@ -629,7 +638,7 @@ abstract public class CodeStructC{
             outputStream = new FileOutputStream(file);
             byte[] buffer = new byte[1024];
             int len;
-            while((len=InputStream.read(buffer))>0) {
+            while((len=inputStream.read(buffer))>0) {
                 outputStream.write(buffer,0,len);
             }
 
@@ -753,7 +762,7 @@ abstract public class CodeStructC{
 
 
 	public void writeCCodeFiles() {
-
+        System.out.println("Write CCode Files in CodeStructC");
 		//生成目标文件夹的位置codePathBase/用户id/modelId
 		String userPath=codePathBase+model.getUserId();
 
@@ -769,52 +778,53 @@ abstract public class CodeStructC{
 			file.mkdir();
 		}
 
-		this.codePath=modelPath+"/";
+		codePath=modelPath+"/";
 
 		//写入周边的资源文件
 		//makefile
-		writeMakefile("makefile");
+//		writeMakefile("makefile");
 		//主数据结构
-		writeNCSLabFile("ncslabccode.h");
-		//main函数以及定时器
-		writeNCSLabFile("ncslabmain.cpp");
-		//访问主数据结构的接口API定义
-		writeNCSLabFile("DataApi.c");
-		writeNCSLabFile("DataApi.h");
+		writeNCSLabFile("ncslabccode.hpp");
 
-		writeNCSLabFile("util.cpp");
+		//访问主数据结构的接口API定义
+		writeNCSLabFile("DataApi.cpp");
+		writeNCSLabFile("DataApi.hpp");
 
 		//实现Netcon协议的通用文件
-		writeNCSLabFile("ServerThread.cpp");
-		writeNCSLabFile("ServerThread.hpp");
-		writeNCSLabFile("ClientThread.cpp");
-		writeNCSLabFile("ClientThread.hpp");
-		writeNCSLabFile("UploadThread.cpp");
-		writeNCSLabFile("UploadThread.hpp");
+//		writeNCSLabFile("ServerThread.cpp");
+//		writeNCSLabFile("ServerThread.hpp");
+//		writeNCSLabFile("ClientThread.cpp");
+//		writeNCSLabFile("ClientThread.hpp");
+//		writeNCSLabFile("UploadThread.cpp");
+//		writeNCSLabFile("UploadThread.hpp");
 		writeNCSLabFile("ncslabdefines.hpp");
-		writeNCSLabFile("ServerThread.c");
-		writeNCSLabFile("ServerThread.h");
-		writeNCSLabFile("ClientThread.c");
-		writeNCSLabFile("ClientThread.h");
-		writeNCSLabFile("UploadThread.c");
-		writeNCSLabFile("UploadThread.h");
-		writeNCSLabFile("ncslabdefines.h");
+//		writeNCSLabFile("ServerThread.c");
+//		writeNCSLabFile("ServerThread.h");
+//		writeNCSLabFile("ClientThread.c");
+//		writeNCSLabFile("ClientThread.h");
+//		writeNCSLabFile("UploadThread.c");
+//		writeNCSLabFile("UploadThread.h");
+        writeNCSLabFile("ncslabsfun.hpp","ncslabsfun.hpp", true);
+        writeNCSLabFile("results.cpp","results.cpp",true);
+        writeNCSLabFile("results.hpp","results.hpp",true);
 
-		//��ݮ��GPIO��AD���ʼ��
-		writeNCSLabFile("Debug.h");
-		writeNCSLabFile("DEV_Config.c");
-		writeNCSLabFile("DEV_Config.h");
-		writeNCSLabFile("ADS1256.c");
-		writeNCSLabFile("ADS1256.h");
-		writeNCSLabFile("DAC8532.c");
-		writeNCSLabFile("DAC8532.h");
+        writeNCSLabFile("Matrix.cpp","Matrix.cpp", true);
+        writeNCSLabFile("Matrix.hpp","Matrix.hpp", true);
+        writeNCSLabFile("ricatti.cpp","ricatti.cpp", true);
+        writeNCSLabFile("ricatti.hpp","ricatti.hpp", true);
+        writeNCSLabFile("onestep.hpp","onestep.hpp", true);
 
-		writeNCSLabFile("ncs_serialport_pi.c");
-		writeNCSLabFile("ncs_serialport.h");
-		writeNCSLabFile("hardware.c");
-		writeNCSLabFile("hardware.h");
+        writeNCSLabFile("util.cpp");
+        writeNCSLabFile("util.hpp");
 
-		//写入生成的主代码ncslabccdoe.c
+        writeNCSLabFile("Matrix.cpp");
+        writeNCSLabFile("Matrix.hpp");
+
+        writeNCSLabFile("mainccode.hpp");
+
+        writeNCSLabFile("ncslabccode.hpp", "ncslabccode.hpp");
+
+        //写入生成的主代码ncslabccdoe.c
 		for(Block block: model.getBlockList()) {
 			if(block.isSFcnBlock()) {
 				block.generateSourceFile();
@@ -825,7 +835,8 @@ abstract public class CodeStructC{
 
 		wirteDefineFile();
 
-		switch(model.getSolver()) {
+
+        switch(model.getSolver()) {
 		case ode1:
 			writeNCSLabFile("ode1.cpp","onestep.cpp");
 			break;
@@ -844,10 +855,17 @@ abstract public class CodeStructC{
 		case ode6:
 			writeNCSLabFile("ode6.cpp","onestep.cpp");
 			break;
+        case ode45:
+            writeNCSLabFile("../../ode45.cpp","onestep.cpp",true);
+            break;
+        case ode23:
+            writeNCSLabFile("../../ode23.cpp","onestep.cpp",true);
+            break;
 		default:
-			System.out.println("error");
-			break;
+            System.err.println("Unsupported solver: "+model.getSolver());
+            break;
 		}
+        writeNCSLabFile("onestep.hpp","onestep.hpp");
 
 	}
 
