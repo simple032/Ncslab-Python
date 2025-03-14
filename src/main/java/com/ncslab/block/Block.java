@@ -36,6 +36,10 @@ public class Block implements MCodeBlock, CCodeBlock{
 	@Getter
     protected String blockPath;
 	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
+
+    @Getter
+    protected String blockUUID = "null"; // 只有BlockCId才具有唯一性
+
 	@Getter
     protected JSONObject paramValues;
 
@@ -92,6 +96,7 @@ public class Block implements MCodeBlock, CCodeBlock{
         }
 		this.model=model;
 		this.blockPath=blockIn.getString("blockPath");
+        this.blockUUID=blockIn.optString("blockUUID", "null");
 	}
 
     public void setFeedThrough(boolean feedThrough) {

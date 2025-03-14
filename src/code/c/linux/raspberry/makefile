@@ -1,10 +1,10 @@
-OBJS=mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncs_serialport_pi.o ncslabmain.o ADS1256.o DAC8532.o DEV_Config.o 
+OBJS=mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncs_serialport_pi.o ncslabmain.o ADS1256.o DAC8532.o DEV_Config.o
 
 CC=g++
 
 LD=g++
 
-//CCFlag= -I /opt/pi/include 
+//CCFlag= -I /opt/pi/include
 
 //LDFLAG=-lm -lpthread -lrt -lwiringPi
 
@@ -14,16 +14,16 @@ LDFLAG=-lm -lpthread -lrt -lwiringPi -ljsoncpp -Wdate-time -D_FORTIFY_SOURCE=2 -
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)
-	
-mainccode.o: mainccode.c ncslab.h
-	$(CC) $(CCFlag)  -c mainccode.c
-    
-onestep.o: onestep.c ncslab.h
-	$(CC) $(CCFlag)  -c onestep.c
-	
-util.o: util.c ncslab.h
-	$(CC) $(CCFlag)  -c util.c  
-   
+
+mainccode.o: mainccode.cpp ncslab.hpp
+	$(CC) $(CCFlag)  -c mainccode.cpp
+
+onestep.o: onestep.cpp ncslab.hpp
+	$(CC) $(CCFlag)  -c onestep.cpp
+
+util.o: util.c ncslab.hpp
+	$(CC) $(CCFlag)  -c util.c
+
 %.o : %.c
 	$(CC) $(CCFlag) -c "$<"
 

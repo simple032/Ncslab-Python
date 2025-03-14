@@ -1,6 +1,7 @@
 package com.ncslab.block.subsystem;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -15,7 +16,10 @@ import java.util.Vector;
 
 public class Out extends Block{
 
+    @Getter
     Parameter no;
+    @Setter
+    Subsystem subsystem;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();

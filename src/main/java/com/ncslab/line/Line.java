@@ -28,17 +28,29 @@ public class Line {
 	Line(JSONObject lineJSON,Vector<Block> blockList){
 		String fromBlockName=lineJSON.getString("fromBlockName");
 		String toBlockName=lineJSON.getString("toBlockName");
+        String fromBlockUUID=lineJSON.optString("fromBlockUUID", "null");
+        String toBlockUUID=lineJSON.optString("toBlockUUID", "null");
 
 		//Ѱ��Line���˵�Block
 		Block fromBlock=null;
 		Block toBlock=null;
 		for(Block block:blockList) {
-			if(block.getBlockName().equals(fromBlockName)) {
-				fromBlock=block;
-			}
-			if(block.getBlockName().equals(toBlockName)) {
-				toBlock=block;
-			}
+            if(fromBlockUUID.equals("null")||toBlockUUID.equals("null")) {
+                if(block.getBlockName().equals(fromBlockName)) {
+                    fromBlock=block;
+                }
+                if(block.getBlockName().equals(toBlockName)) {
+                    toBlock=block;
+                }
+            }else{
+                if(fromBlockUUID.equals(block.getBlockUUID())){
+                    fromBlock=block;
+                }
+                if(block.getBlockUUID().equals(toBlockUUID)){
+                    toBlock=block;
+                }
+            }
+
 		}
 
 		if(fromBlock==null||toBlock==null) {

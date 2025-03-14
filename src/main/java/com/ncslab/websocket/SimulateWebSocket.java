@@ -99,11 +99,12 @@ public class SimulateWebSocket {
                 } else {
                     throw new UnsupportedOperationException("Unsupported OS: " + osName);
                 }
-
+                System.out.println("Running on " + host);
                 //CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
                 CodeModelC modelC = null;
                 if(Objects.equals(host, "Windows")){
                     modelC = CodeModelCWindowsSimulation.createFromJSON(jsonData, ModelMode.Simulation);
+
                 }else{
                     modelC= CodeModelCLinuxPCSimulation.createFromJSON(jsonData,ModelMode.Simulation);
                 }
@@ -167,7 +168,11 @@ public class SimulateWebSocket {
 	        		sendErrorMessage(session,e.getMessage());
 	        	}
 	        	catch(IOException ee) {
+                    ee.printStackTrace();
 	        	}
+                catch (Exception ee) {
+                    ee.printStackTrace();
+                }
 			}
 			finally {
 				try {
@@ -175,8 +180,11 @@ public class SimulateWebSocket {
 					    session.close();
 				}
 				catch(IOException e) {
-
+                    e.printStackTrace();
 				}
+                catch (Exception ee) {
+                    ee.printStackTrace();
+                }
 			}
 		}
 	}

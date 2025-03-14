@@ -43,17 +43,9 @@ public class ai extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
+        System.out.println(request.getRequestURI());
         String pathInfo = request.getPathInfo();
 		//��ȡPost��JSON����
-		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
-        String result = "";
-        int respInt = insr.read();
-        while(respInt!=-1) {
-            result +=(char)respInt;
-            respInt = insr.read();
-        }
-        JSONArray blockTypes = new JSONArray(result);
-
         int code = 2000;
         String errorMsgs="";
         JSONArray properties = null;
@@ -64,6 +56,15 @@ public class ai extends HttpServlet {
 				if(pathParts.length >= 2)
 					platform = pathParts[1];
 			}
+            InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
+            String result = "";
+            int respInt = insr.read();
+            while(respInt!=-1) {
+                result +=(char)respInt;
+                respInt = insr.read();
+            }
+            System.out.println(result);
+            JSONArray blockTypes = new JSONArray(result);
             properties = BlockType.getBlockProperties(blockTypes);
         }
 		catch (NoSuchMethodException|InvocationTargetException|
@@ -83,7 +84,10 @@ public class ai extends HttpServlet {
 			jb.put("code", code);
 			jb.put("properties", properties);
 			jb.put("message", errorMsgs);
-			response.getWriter().write(jb.toString());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().print(jb);
+            System.out.println(jb);
 		}
 
 	}

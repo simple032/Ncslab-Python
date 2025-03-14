@@ -3,6 +3,7 @@ import java.util.Vector;
 
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -15,8 +16,10 @@ import com.ncslab.block.Block;
 
 public class In extends Block{
 
+    @Getter
     Parameter no;
-
+    @Setter
+    Subsystem subsystem;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -51,4 +54,5 @@ public class In extends Block{
 		}
 	public void checkDimension() throws MatDimException{
 	}
+
 }

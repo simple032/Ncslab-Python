@@ -45,6 +45,12 @@ public class PIDController extends Block {
         parameterNames.add("I");
         parameterNames.add("D");
         parameterNames.add("N");
+        parameterNames.add("LimitOutput");
+        parameterNames.add("LowerSaturationLimit");
+        parameterNames.add("UpperSaturationLimit");
+        parameterNames.add("AntiWindupMode");
+        parameterNames.add("Kb");
+        parameterNames.add("ZeroCross");
         outputNames.add("out1");
         inputNames.add("in1");
     }
