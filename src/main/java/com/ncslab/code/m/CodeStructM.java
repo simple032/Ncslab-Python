@@ -7,7 +7,7 @@ import java.util.Vector;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 public class CodeStructM {
 	//init初始化的代码
@@ -84,7 +84,7 @@ public class CodeStructM {
 	public void addDerivativeCode(String code) {
 		derivativeCode+=code;
 	}
-	
+
 	public void addGlobalDefineCode(String code) {
 		globalDefineCode+=code;
 	}
@@ -127,16 +127,16 @@ public class CodeStructM {
 		//writeOutputFunction();
 		//writeDerivativeFunction();
 		//writeUpdateFunction();
-		
+
 		writeNCSLabMainCode();
-		
+
 		//writeNCSLabFile("ncslabmain.m","clear all;\n"
 		//								+globalDefineCode
 		//								);
-		
+
 		//writeNCSLabFile("ode1.m","function ode1\n"+globalDefineCode,"end\n");
 	}
-	
+
 	private String getOde1Code() {
 		String code="";
 		code+="offset=0;\n";
@@ -146,10 +146,10 @@ public class CodeStructM {
 		code+=derivativeCode;
 		code+="stepSize="+model.getConfig().getFixedStep()+";\n";
 		code+=updateCode;
-		
+
 		return code;
 	}
-	
+
 	private String getStateStoreCode(int num) {
 		String code="";
 		for(State state:stateList) {
@@ -157,7 +157,7 @@ public class CodeStructM {
 		}
 		return code;
 	}
-	
+
 	private String getStateRestoreCode(int num) {
 		String code="";
 		for(State state:stateList) {
@@ -165,7 +165,7 @@ public class CodeStructM {
 		}
 		return code;
 	}
-	
+
 	private String getDerivativeStoreCode(int num) {
 		String code="";
 		for(State state:stateList) {
@@ -173,7 +173,7 @@ public class CodeStructM {
 		}
 		return code;
 	}
-	
+
 	private String calculateDerivativeCode(double[] weights) {
 		String code="";
 		for(State state:stateList) {
@@ -187,7 +187,7 @@ public class CodeStructM {
 		}
 		return code;
 	}
-	
+
 	private String calculateStateDifCode(int seq1,int seq2) {
 		String code="";
 		code+="dif=0;\n";
@@ -209,11 +209,11 @@ public class CodeStructM {
 		}
 		return code;
 	}
-	
+
 	/*
 	private String getDerivativeCode(double[] weight) {
 		String code="";
-		
+
 		for(State state:stateList) {
 			code+=state.getDerivativeName()+"=0";
 			for(int i=0;i<weight.length;i++) {
@@ -221,22 +221,22 @@ public class CodeStructM {
 			}
 			code+=";\n";
 		}
-		
+
 		return code;
 	}*/
-	
+
 	private String getOde2Code() {
 		String code="";
 		code+="offset=0;\n";
 		code+="storeEnable=1;\n";
 		code+=outputCode;
 		code+="storeEnable=0;\n";
-		
-		
+
+
 		code+="%Calculate K0\n";
 		code+=derivativeCode;
 		//code+=getDerivativeStoreCode(0);
-		
+
 		code+="%Calculate K1\n";
 		code+=getStateStoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()/2+";\n";
@@ -245,31 +245,31 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		//code+=getDerivativeStoreCode(1);
-		
+
 		code+="%update\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()+";\n";
 		//code+=derivativeCode;
 		code+=updateCode;
-		
+
 		return code;
 	}
 
 
-	
+
 	private String getOde3Code() {
 		String code="";
-		
+
 		code+="offset=0;\n";
 		code+="storeEnable=1;\n";
 		code+=outputCode;
 		code+="storeEnable=0;\n";
-		
-		
+
+
 		code+="%Calculate K0\n";
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(0);
-		
+
 		code+="%Calculate K1\n";
 		code+=getStateStoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()/2+";\n";
@@ -278,7 +278,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(1);
-		
+
 		code+="%Calculate K2\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()+";\n";
@@ -289,30 +289,30 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(2);
-		
+
 		code+="%update\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()+";\n";
 		double[] weights1= {1.0/6,4.0/6,1.0/6};
 		code+=calculateDerivativeCode(weights1);
 		code+=updateCode;
-		
+
 		return code;
 	}
-	
+
 	private String getOde4Code() {
 		String code="";
-		
+
 		code+="offset=0;\n";
 		code+="storeEnable=1;\n";
 		code+=outputCode;
 		code+="storeEnable=0;\n";
-		
-		
+
+
 		code+="%Calculate K0\n";
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(0);
-		
+
 		code+="%Calculate K1\n";
 		code+=getStateStoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()/2+";\n";
@@ -321,7 +321,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(1);
-		
+
 		code+="%Calculate K2\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()/2+";\n";
@@ -330,7 +330,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(2);
-		
+
 		code+="%Calculate K3\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()+";\n";
@@ -339,36 +339,36 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(3);
-		
+
 		code+="%update\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize="+model.getConfig().getFixedStep()+";\n";
 		double[] weights1= {1.0/6,2.0/6,2.0/6,1.0/6};
 		code+=calculateDerivativeCode(weights1);
 		code+=updateCode;
-		
+
 		return code;
 	}
-	
+
 
 	private String getOde23Code() {
 		String code="";
-		
+
 		code+="time=[time t];\n";
-		
+
 		code+="offset=0;\n";
 		code+="storeEnable=1;\n";
 		code+=outputCode;
 		code+="storeEnable=0;\n";
-		
+
 		code+=getStateStoreCode(0);
-		
+
 		code+="for i=1:2\n";
-		
+
 		code+="%Calculate K1\n";
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(0);
-		
+
 		code+="%Calculate K2\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize=h/4;\n";
@@ -377,7 +377,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(1);
-		
+
 		code+="%Calculate K3\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize=h*3.0/8.0;\n";
@@ -388,7 +388,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(2);
-		
+
 		code+="%Calculate K4\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize=h*12.0/13.0;\n";
@@ -399,7 +399,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(3);
-		
+
 		code+="%Calculate K5\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize=h;\n";
@@ -410,7 +410,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(4);
-		
+
 		code+="%Calculate K6\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize=h/2.0;\n";
@@ -421,7 +421,7 @@ public class CodeStructM {
 		code+=outputCode;
 		code+=derivativeCode;
 		code+=getDerivativeStoreCode(5);
-		
+
 		code+="%update\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize=h;\n";
@@ -430,7 +430,7 @@ public class CodeStructM {
 		code+=calculateDerivativeCode(weightss1);
 		code+=updateCode;
 		code+=getStateStoreCode(1);
-		
+
 		code+="%update\n";
 		code+=getStateRestoreCode(0);
 		code+="stepSize=h;\n";
@@ -439,37 +439,37 @@ public class CodeStructM {
 		code+=calculateDerivativeCode(weightss2);
 		code+=updateCode;
 		code+=getStateStoreCode(2);
-		
-		
+
+
 		code+=calculateStateDifCode(1,2);
-		
+
 		code+="nh=((tol*h)/dif)^0.25*0.84*h;\n";
-		
+
 		//code+="if nh<h || i==2 ||t!="+model.getConfig().getStartTime()+" \n";
 		code+="if nh>h || i==2 \n";
 		code+="break;\n";
 		code+="end\n";
-		
+
 		code+="h=nh;\n";
 		code+=getStateRestoreCode(0);
 		code+="offset=0;\n";
 		code+=outputCode;
-		
+
 		code+="end\n";
-		
-		
+
+
 		return code;
 	}
-	
+
 	private void writeNCSLabMainCode() {
 		String fileName="ncslabmain"+model.getModelSeq()+".m";
-		
-		
+
+
 		String code="%clear all\n";
 		code+="ScopeNum=0;\n";
 		code+="ScopeList=[];\n";
 		code+=initCode;
-		
+
 		switch(model.getSolver())
 		{
 		case ode1:
@@ -480,7 +480,7 @@ public class CodeStructM {
 			code+="for t="+model.getConfig().getStartTime()+":"+model.getConfig().getFixedStep()+":"+model.getConfig().getStopTime()+"\n";
 			code+="h="+model.getConfig().getFixedStep()+";\n";
 			break;
-		
+
 		case ode23:
 			code+="time=[];\n";
 			code+="t="+model.getConfig().getStartTime()+";\n";
@@ -491,8 +491,8 @@ public class CodeStructM {
 		default:
 			break;
 		}
-		
-		
+
+
 		switch(model.getSolver()) {
 		case ode1:
 			code+=getOde1Code();
@@ -513,7 +513,7 @@ public class CodeStructM {
 		default:
 			break;
 		}
-		
+
 		switch(model.getSolver())
 		{
 		case ode1:
@@ -529,14 +529,14 @@ public class CodeStructM {
 			break;
 		default:
 			break;
-		}		
-		
+		}
+
 		mainCode=code;
 
-		
+
 		writeFile(fileName,code);
 	}
-	
+
 	private void writeFile(String fileName,String code) {
 		System.out.println("Writing file "+fileName+" ...");
 
@@ -550,7 +550,7 @@ public class CodeStructM {
 			e.printStackTrace();
 		}
 	}
-	
+
 
 	public String getCodePath() {
 		return codePath;

@@ -11,7 +11,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.windows.simulation.CodeModelCWindowsSimulation;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 import org.json.JSONObject;
 
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;

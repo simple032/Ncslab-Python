@@ -168,7 +168,7 @@ abstract public class NCSLabModel {
 		while (i < blockJSONList.length()) {
 			JSONObject blockJSON = blockJSONList.getJSONObject(i);
 			// 如果含电路模块
-			if (blockJSON.getString("srcBlock").startsWith("fl_lib")) {
+			if (blockJSON.has("srcBlock") && blockJSON.getString("srcBlock").startsWith("fl_lib")) {
 				j = j + 1;
 			}
 			i++;

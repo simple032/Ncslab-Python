@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.ncslab.ncslablink.SFcnException;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 /**
  * Servlet implementation class compile
@@ -23,7 +23,7 @@ import com.ncslab.utils.Property;
 @WebServlet("/function")
 public class function extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -37,10 +37,10 @@ public class function extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		
-		
+
+
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
-		
+
 		//��ȡPost��JSON����
 		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
         String result = "";
@@ -48,15 +48,15 @@ public class function extends HttpServlet {
         while(respInt!=-1) {
             result +=(char)respInt;
             respInt = insr.read();
-        }  
+        }
         JSONObject jsonIn = new JSONObject(result);
-        
+
         try {
         	//����C���Ե�������CodeModelC
         	SFunction sfcn= new SFunction(jsonIn);
         	//modelC.setSolver(Solver.ode4);
         	sfcn.generateFile();
-        	
+
         	response.getWriter().write("{\"code\":2000,\"message\":\"SUCCESS\"}");
         }
         catch(SFcnException e) {
@@ -64,22 +64,22 @@ public class function extends HttpServlet {
         	System.err.println("Code generatrion terminated unsuccessfully������");
         	response.getWriter().write("{\"code\":400,\"message\":\""+e.getMessage()+"\"}");
         }
-		
+
 	}
 
 }
 
 
 class SFunction{
-	
+
 	private String codePathBase=Property.instance.getProperty("CCodePath");
-	
+
 	private String name = "";
 	private String body = "";
 	private int userId = 0;
 	private int modelId = 0;
 	private String modelName = "";
-	
+
 	public SFunction(JSONObject jo) {
 		name = jo.getString("functionName");
 		body = jo.getString("functionBody");
@@ -87,10 +87,10 @@ class SFunction{
 		modelId = jo.getInt("modelId");
 		modelName = jo.getString("modelName");
 	}
-	
+
 	public void generateFile() throws SFcnException {
 		String filePath=codePathBase+"/"+userId;
-		
+
 		System.out.println("Writing file "+name+".c ...");
 
 		File file=new File(filePath+"/"+name+".c");

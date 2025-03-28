@@ -2,7 +2,7 @@ package com.ncslab.server.mfcalcServer;
 
 import java.net.*;
 import java.util.*;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 public class MfcalcServer extends Thread {
 

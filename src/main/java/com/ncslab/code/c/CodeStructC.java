@@ -16,7 +16,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.terminal.Terminal;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 import lombok.Getter;
 
@@ -252,6 +252,7 @@ abstract public class CodeStructC{
                 + "#include <cstring>\n"
                 + "#include <cstdlib>\n"
 				+ "#ifdef __linux\n"
+                + "#include <termios.h>\n"
                 +"#include <sys/socket.h>\n"
                 + "#endif \n"
                 + "unsigned char calcSum(unsigned char bytes[]);\n"

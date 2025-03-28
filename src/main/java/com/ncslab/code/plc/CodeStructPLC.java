@@ -3,7 +3,7 @@ package com.ncslab.code.plc;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 import lombok.Getter;
 
 import java.io.File;

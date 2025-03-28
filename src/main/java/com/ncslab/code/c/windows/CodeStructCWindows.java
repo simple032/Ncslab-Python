@@ -2,9 +2,8 @@ package com.ncslab.code.c.windows;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
-import java.io.*;
 import java.util.Optional;
 
 abstract public class CodeStructCWindows extends CodeStructC {

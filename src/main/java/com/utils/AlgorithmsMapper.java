@@ -1,4 +1,4 @@
-package com.ncslab.utils;
+package com.utils;
 
 import com.ncslab.database.Algorithms;
 

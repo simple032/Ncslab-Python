@@ -15,8 +15,7 @@ import java.util.Vector;
 
 public class CompareToZero extends Block{
 
-
-
+    String relop;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -33,6 +32,11 @@ public class CompareToZero extends Block{
 		super(blockIn,model);
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
+
+        relop=paramValues.getString("relop");
+        if(relop.equals("~=")) {
+            relop = "!=";
+        }
     }
 
 	public void generateInitCodeC(CodeStructC code) {
@@ -45,10 +49,8 @@ public class CompareToZero extends Block{
 		String outputCode="/*Code for output of block Compare To Zreo:("+getBlockId()+")"+getBlockName()+"*/\n";
 		OutputPort out  = outputPortList.get(0);
 		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		String relop=paramValues.getString("relop");
-		if(relop.equals("~=")) {
-			relop = "!=";
-		}
+
+
 		switch(signal.getDataType()) {
 		case REAL:
 			outputCode+="if("+signal.getName()+relop+"0) {\n";

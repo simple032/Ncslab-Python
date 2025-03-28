@@ -1,6 +1,9 @@
-package com.ncslab.utils;
+package com.utils;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -40,14 +43,16 @@ public class Property {
                 return "";
             }
 
-            // Load a properties file from the class path
+            // Load a properties file from the class path with ISO-8859-1 encoding
             Properties prop = new Properties();
-            prop.load(input);
+            try (InputStreamReader reader = new InputStreamReader(input, StandardCharsets.ISO_8859_1)) {
+                prop.load(reader);
+            }
 
             // Get the property value and print it
             value = prop.getProperty(key);
 
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
         return value;

@@ -40,7 +40,7 @@ public class TrigFunction extends Block{
 		outputPortList.add(new OutputPort(this,1,true));
 		//����һ������
 		inputPortList.add(new InputPort(this,1));
-        trigFunc=new Parameter(this,1,"trigFunc",paramValues.optString("TrigonometricFunction", paramValues.getString("Function")));
+        trigFunc=new Parameter(this,1,"trigFunc",paramValues.optString("Function", paramValues.getString("TrigonometricFunction")));
         parameterList.add(trigFunc);
 
         if(trigFunc.getDataString().equals("atan2")) {

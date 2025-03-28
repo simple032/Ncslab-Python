@@ -37,7 +37,7 @@ public class MathFunction extends Block{
 		//����һ������
 		inputPortList.add(new InputPort(this,1));
 
-		seq=paramValues.getString("Operator");
+		seq=paramValues.optString("Operator", paramValues.getString("MathFunctionOperator"));
 	}
 
 	public void generateOutputCodeM(CodeStructM code) {

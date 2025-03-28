@@ -97,20 +97,23 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock{
 		  int h=den.getWidth()-num.getWidth()-1;
 
 
-		  if(feedThrough==true) {
-		  outputCode+=this.getOutputPortVariable(0)+"=Block"+getBlockId()+"_discrete_transfer_savedata[0]*"+num.getName()+"(0,0)";
-		  if(num.getWidth()==1) {
-		  }
-		  else {
-			  for(int i=1;i<num.getWidth();i++) {
-				 outputCode+="+"+num.getName()+"(0,"+i+")*"+xStateList.get(i-1).getName();
-			  }
-		  }
-	    }
+		  if(feedThrough) {
+              outputCode+=this.getOutputPortVariable(0)+"=Block"+getBlockId()+"_discrete_transfer_savedata[0]*"+num.getName()+"(0,0)";
+              if(num.getWidth()==1) {
+              }
+              else {
+                  for(int i=1;i<num.getWidth();i++) {
+                     outputCode+="+"+num.getName()+"(0,"+i+")*"+xStateList.get(i-1).getName();
+                  }
+              }
+          }
 		  else {
 			  outputCode+=this.getOutputPortVariable(0)+"=0";
 			  for(int j=0;j<num.getWidth();j++) {
 				  outputCode+="+"+num.getName()+"(0,"+j+")*"+xStateList.get(j+h).getName();
+                  if(xStateList.get(j+h).getWidth()==1 && xStateList.get(j+h).getHeight()==1) {
+                      outputCode+="(0,0)";
+                  }
 			  }
 		  }
 		  outputCode+=";}}\n";
@@ -119,18 +122,21 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock{
 
 
 	public void  generateUpdateCodeC(CodeStructC code) {
-		    OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			String updateCode="/*Code for Update of  Discrete_Transfer_Fcn "+ ":("+getBlockId()+")"+getBlockName()+"*/\n";
-			updateCode+="Block"+getBlockId()+"_discrete_transfer_savedata[0]=("+signal.getName();
-			for(int i=1;i<den.getWidth();i++) {
-			updateCode+="-"+den.getName()+"(0,"+i+")*"+xStateList.get(i-1).getName();
-			}
-			updateCode+=")/"+den.getName()+"(0,0);\n";
-			for(int i=xStateList.size()-1;i>0;i--) {
-			updateCode+=xStateList.get(i).getName()+"="+xStateList.get(i-1).getName()+";\n";
-			}
-			updateCode+=xStateList.get(0).getName()+"=Block"+getBlockId()+"_discrete_transfer_savedata[0];\n";
-			code.addUpdateCode(updateCode);
+        OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        String updateCode="/*Code for Update of  Discrete_Transfer_Fcn "+ ":("+getBlockId()+")"+getBlockName()+"*/\n";
+        updateCode+="Block"+getBlockId()+"_discrete_transfer_savedata[0]=("+signal.getName();
+        for(int i=1;i<den.getWidth();i++) {
+            updateCode+="-"+den.getName()+"(0,"+i+")*"+xStateList.get(i-1).getName();
+            if(xStateList.get(i-1).getWidth()==1 && xStateList.get(i-1).getHeight()==1) {
+                updateCode+="(0,0)";
+            }
+        }
+        updateCode+=")/"+den.getName()+"(0,0);\n";
+        for(int i=xStateList.size()-1;i>0;i--) {
+            updateCode+=xStateList.get(i).getName()+"="+xStateList.get(i-1).getName()+";\n";
+        }
+        updateCode+=xStateList.get(0).getName()+"=Block"+getBlockId()+"_discrete_transfer_savedata[0];\n";
+        code.addUpdateCode(updateCode);
 	}
 
 

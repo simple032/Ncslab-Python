@@ -1,4 +1,4 @@
-package com.ncslab.utils;
+package com.utils;
 
 import com.ncslab.database.MdlBlock;
 import org.apache.ibatis.annotations.Mapper;

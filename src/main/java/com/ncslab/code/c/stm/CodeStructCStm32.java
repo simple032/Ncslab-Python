@@ -1,19 +1,10 @@
 package com.ncslab.code.c.stm;
 
-import java.util.Vector;
 import java.io.*;
-
-import com.ncslab.code.CodeModel;
-import com.ncslab.block.Block;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.io.Parameter;
-import com.ncslab.block.io.State;
-import com.ncslab.block.io.InputPort;
 
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.c.CodeModelC;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 public class CodeStructCStm32 extends CodeStructC{
 	public CodeStructCStm32(CodeModelC model) {

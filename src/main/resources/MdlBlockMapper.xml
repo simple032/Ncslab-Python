@@ -1,7 +1,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ncslab.utils.MdlBlockMapper">
+<mapper namespace="com.utils.MdlBlockMapper">
 
   <!-- Insert -->
   <insert id="insert" parameterType="com.ncslab.database.MdlBlock">

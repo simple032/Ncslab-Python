@@ -5,7 +5,7 @@ import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
-import com.ncslab.utils.Property;
+import com.utils.Property;
 import org.json.JSONObject;
 
 import javax.websocket.Session;

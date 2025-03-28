@@ -5,7 +5,6 @@ import java.io.*;
 import com.ncslab.block.Block;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.c.CodeModelC;
-import com.ncslab.utils.Property;
 
 public class CodeStructCLinuxPCSimulation extends CodeStructC{
 	public CodeStructCLinuxPCSimulation(CodeModelC model) {

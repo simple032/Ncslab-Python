@@ -223,13 +223,16 @@ public class TransferFcn extends Block {
 					+";\n";
 		}
 
-		derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+getInputPortVariable(0);
-		int i=den.length-1;
-		for(State xState:xStateList) {
-			derivativeCode+="-"+xState.getName()+"*"+den[i];
-			i--;
-		}
-		derivativeCode+=");\n";
+        // 分母不含状态时，则不生成导数
+        if(!xStateList.isEmpty()){
+            derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+getInputPortVariable(0);
+            int i=den.length-1;
+            for(State xState:xStateList) {
+                derivativeCode+="-"+xState.getName()+"*"+den[i];
+                i--;
+            }
+            derivativeCode+=");\n";
+        }
 
 		code.addDerivativeCode(derivativeCode);
 	}

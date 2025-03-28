@@ -3,22 +3,20 @@ package com.ncslab.block.function;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Vector;
 import java.util.regex.Pattern;
 
 import java.util.regex.Matcher;
-import org.json.JSONArray;
+
+import com.utils.Property;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.utils.*;
 
 public class SFunctionBuilder extends Block {
 

@@ -1,7 +1,6 @@
 package com.ncslab.websocket;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Optional;
 
 import javax.websocket.OnMessage;
@@ -12,7 +11,7 @@ import javax.websocket.server.ServerEndpoint;
 import com.ncslab.code.CodeModelFactory;
 import com.ncslab.code.c.CodeModelC;
 
-import com.ncslab.utils.Property;
+import com.utils.Property;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 
@@ -71,12 +70,14 @@ public class CompileWebSocket {
                 String target = mdlData.optString("target", "PC");
 
                 JSONObject plantInfo = mdlData.getJSONObject("plantInfo");
-                String matlabExt = plantInfo.optString("matlabExt", "");
+                String matlabExt = plantInfo.getString("matlabExt");
                 if(!"".equals(matlabExt)){
                     if(matlabExt.toLowerCase().contains("pi")){
                         target = "Raspberry";
                     }
                 }
+
+                System.out.println("The target is:" + target);
 
 				String jsonDataString = mdlData.getString("jsonData");
 				JSONObject jsonData = new JSONObject(jsonDataString);

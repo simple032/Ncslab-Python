@@ -18,8 +18,7 @@ import java.util.Vector;
 public class CompareToConstant extends Block{
 	Parameter value;
 
-
-
+    String relop;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -42,6 +41,11 @@ public class CompareToConstant extends Block{
 		outputPortList.add(new OutputPort(this,1,true));
 		value = new Parameter(this,1,"value",paramValues.getString("const"));
 		parameterList.add(value);
+
+        relop=paramValues.getString("relop");
+      if(relop.equals("~=")) {
+          relop = "!=";
+      }
   }
 
   public void generateInitCodeC(CodeStructC code) {
@@ -57,9 +61,7 @@ public class CompareToConstant extends Block{
 		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		String relop=paramValues.getString("relop");
-		if(relop.equals("~=")) {
-			relop = "!=";
-		}
+
 		switch(signal.getDataType()) {
 		case REAL:
 			switch(value.getDataType()) {

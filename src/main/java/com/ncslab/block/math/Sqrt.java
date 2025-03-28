@@ -37,7 +37,10 @@ public class Sqrt extends com.ncslab.block.Block {
 
 		inputPortList.add(new InputPort(this, 1));
 
-		function = paramValues.optString("SqrtFunction", paramValues.getString("Function"));
+        if(paramValues.has("SqrtFunction"))
+		    function = paramValues.getString("SqrtFunction");
+        else
+            function = paramValues.getString("Function");
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {

@@ -96,7 +96,7 @@ public class InvertedPendulumSUST extends Block {
 		String port = "\"/dev/ttyUSB0\"";
 		int baudrate = 115200;
 		initCode+="char IPSUSTmsg[255];\n";
-		initCode+="hCommIPSUST = Serialport_Open("+port+", "+baudrate+",IPSUSTmsg);\n";
+		initCode+="hCommIPSUST = Serialport_Open((char*)"+port+", "+baudrate+",IPSUSTmsg);\n";
 
 
 //		initCode+="char initCmd[50]={0};\n";
@@ -123,7 +123,7 @@ public class InvertedPendulumSUST extends Block {
 		initCode+="tcflush(hCommIPSUST,TCIOFLUSH);\n";
 
 		initCode+=" char cmdInit[] = {\"GZ200ENA\\r\\n\"};\n"
-		+ "Serialport_Send(hCommIPSUST,cmdInit,strlen(cmdInit));\n"
+		+ "Serialport_Send(hCommIPSUST,(unsigned char*)cmdInit,strlen(cmdInit));\n"
 		+ "usleep(3000);\n";
 		//initCode+="ssSetIWorkValue(0,hComm);\n"
 
@@ -155,9 +155,9 @@ public class InvertedPendulumSUST extends Block {
 		outputCode+="if(IPSUSTbool==false){"
 //				+ "Serialport_Send(hCommIPSUST,sendBuffIPSUST,strlen(sendBuffIPSUST));\n"
 //				+ "usleep(2500);\n"
-				+ "Serialport_Send(hCommIPSUST,sendLimitBuffSUST,strlen(sendLimitBuffSUST));\n"
+				+ "Serialport_Send(hCommIPSUST,(unsigned char*)sendLimitBuffSUST,strlen(sendLimitBuffSUST));\n"
 				+ "usleep(2500);\n"
-				+ "}";
+				+ "}\n";
 		//outputCode+="printf(\"to send msg:%s\\n\",sendBuffIPSUST);\n";
 
 		//outputCode+="Serialport_Flush(hCommIPSUST);\n";
@@ -173,16 +173,16 @@ public class InvertedPendulumSUST extends Block {
 
 		outputCode+="sprintf((char*)cmd,\"GZ100A%d\\r\\n\",accInt);";
 
-		outputCode+="if(IPSUSTbool==false){Serialport_Recv(hCommIPSUST,recvBuffIPSUST,74);\n";
+		outputCode+="if(IPSUSTbool==false){Serialport_Recv(hCommIPSUST,(unsigned char*)recvBuffIPSUST,74);\n";
 		outputCode+="printf(\"recvBuff=%s\\n\",recvBuffIPSUST);}\n";
 
 
-		outputCode+="if(IPSUSTbool==true) Serialport_Send(hCommIPSUST,cmd,strlen(cmd));\n";
+		outputCode+="if(IPSUSTbool==true) Serialport_Send(hCommIPSUST,(unsigned char*)cmd,strlen(cmd));\n";
 		outputCode+="if(tmp<0&&(int)"+ENAOrDIS.getName()+"==1) sprintf((char*)cmd2,\"GZ000V-%d\\r\\n\",VspeedVaule);\n";
 		outputCode+="else if(tmp>0&&(int)"+ENAOrDIS.getName()+"==1) sprintf((char*)cmd2,\"GZ000V%d\\r\\n\",VspeedVaule);\n";
 		outputCode+="else sprintf((char*)cmd2,\"GZ000V0\\r\\n\");\n";
 		outputCode+="if(IPSUSTbool==true)usleep(2500);\n";
-		outputCode+="if(IPSUSTbool==true)Serialport_Send(hCommIPSUST,cmd2,strlen(cmd2));\n";
+		outputCode+="if(IPSUSTbool==true)Serialport_Send(hCommIPSUST,(unsigned char*)cmd2,strlen(cmd2));\n";
 
 //		outputCode+="int pwm = "+this.getInputPortVariable(0) +";\n";
 //		outputCode+="pwm = pwm>=30000?30000:pwm;\n";

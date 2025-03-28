@@ -1,6 +1,6 @@
 package com.ncslab.server.pythonServer;
 
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 import java.net.*;
 import java.util.*;

@@ -15,7 +15,7 @@ import java.util.Vector;
 
 public class RelationalOperator extends Block{
 
-
+    String relop;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -35,44 +35,33 @@ public class RelationalOperator extends Block{
 		inputPortList.add(new InputPort(this,2));
 		OutputPort output=new OutputPort(this,1,true);
 		outputPortList.add(output);
-  }
+
+        relop=paramValues.getString("relop");
+        if(relop.equals("~=")) {
+            relop = "!=";
+        }
+    }
 
 	 public void generateOutputCodeC(CodeStructC code) {
 			String outputCode="/*Code for output of block Relational operator:("+getBlockId()+")"+getBlockName()+"*/\n";
 			OutputPort out  = outputPortList.get(0);
 			OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			String operator=paramValues.getString("Operator");
+
 			switch(signal1.getDataType()) {
 			case REAL:
-				if(operator.equals("~=")) {
-				outputCode+="if("+signal1.getName()+"!="+signal2.getName()+") {\n";
-				outputCode+=out.getOutputSignalC().getName()+"=1.0;}else{\n";
-				outputCode+=out.getOutputSignalC().getName()+"=0.0;}\n";
-				}else {
-					outputCode+="if("+signal1.getName()+operator+signal2.getName()+") {\n";
-					outputCode+=out.getOutputSignalC().getName()+"=1.0;}else{\n";
-					outputCode+=out.getOutputSignalC().getName()+"=0.0;}\n";
-				}
+                outputCode+="if("+signal1.getName()+relop+signal2.getName()+") {\n";
+                outputCode+=out.getOutputSignalC().getName()+"=1.0;}else{\n";
+                outputCode+=out.getOutputSignalC().getName()+"=0.0;}\n";
 				break;
 			case MATRIX:
-				if(operator.equals("~=")) {
-					for(int i = 0; i < signal1.getHeight(); i++) {
-						for(int j = 0; j < signal1.getWidth(); j++) {
-							outputCode+="if("+signal1.getName()+"("+i+","+j+")!="+signal2.getName()+"("+i+","+j+")) {\n";
-							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=1.0;}else{\n";
-							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=0.0;}\n";
-						}
-					}
-				}else {
-					for(int i = 0; i < signal1.getHeight(); i++) {
-						for(int j = 0; j < signal1.getWidth(); j++) {
-							outputCode+="if("+signal1.getName()+"("+i+","+j+")"+operator+signal2.getName()+"("+i+","+j+")) {\n";
-							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=1.0;}else{\n";
-							outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=0.0;}\n";
-						}
-					}
-				}
+                for(int i = 0; i < signal1.getHeight(); i++) {
+                    for(int j = 0; j < signal1.getWidth(); j++) {
+                        outputCode+="if("+signal1.getName()+"("+i+","+j+")"+relop+signal2.getName()+"("+i+","+j+")) {\n";
+                        outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=1.0;}else{\n";
+                        outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=0.0;}\n";
+                    }
+                }
 				break;
 			}
 			code.addOutputCode(outputCode);

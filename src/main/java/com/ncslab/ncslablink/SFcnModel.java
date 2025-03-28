@@ -2,7 +2,6 @@ package com.ncslab.ncslablink;
 
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -12,7 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 public class SFcnModel {
 

@@ -2,7 +2,7 @@ package com.ncslab.server.mfcalcServer;
 
 import java.net.*;
 
-import com.ncslab.utils.Property;
+import com.utils.Property;
 import org.json.JSONObject;
 
 import com.ncslab.code.m.CodeOctaveM;

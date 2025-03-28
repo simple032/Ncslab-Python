@@ -10,10 +10,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
-import java.util.Optional;
 
-import com.ncslab.utils.AlgorithmsMapper;
-import com.ncslab.utils.Mybatis1Utils;
+import com.utils.AlgorithmsMapper;
+import com.utils.Mybatis1Utils;
 
 import com.ncslab.block.Block;
 import com.ncslab.code.CodeGenerationOption;
@@ -22,10 +21,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.database.Algorithms;
-import com.ncslab.utils.Property;
-
-
-import com.ncslab.utils.Property;
+import com.utils.Property;
 
 abstract public class CodeModelC extends CodeModel {
 
