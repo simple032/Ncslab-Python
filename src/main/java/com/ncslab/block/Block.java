@@ -299,7 +299,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 	public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
 		StringBuilder updateCode = new StringBuilder(String.format(
 			"/*Code for update of block %s:(%d)%s*/\n",
-			getBlockType(), getBlockId(), getBlockName()));
+			getBlockType(), getBlockId(), getBlockPath()));
 
 		for (State state : stateList) {
 			updateCode.append(String.format("%s = %s + %s * model.stepSize;\n",
@@ -428,6 +428,10 @@ public class Block implements MCodeBlock, CCodeBlock{
         for (Map.Entry<String, String> entry : replacements.entrySet())
             result = result.replace(entry.getKey(), entry.getValue());
         return result;
+    }
+
+    protected String getBufferName(){
+        return "Block"+getBlockId()+"_buffer";
     }
 
     public void generateBlockOutputCodePLC(CodeStructPLC code) {

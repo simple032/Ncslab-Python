@@ -9,7 +9,6 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
-//import com.ncslab.code.plc.CodeStructPLC;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
@@ -32,7 +31,7 @@ public class Constant extends Block {
 	public Constant(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 
-		//һ�����
+		//Initialize parameter
 		value=new Parameter(this,1,getBlockName(),paramValues.getString("Value"));
 		parameterList.add(value);
         outputPortList.add(new OutputPort(this, 1, true));
@@ -71,10 +70,7 @@ public class Constant extends Block {
 		super.generateInitCodeC(code);
 
 		String initCode="/*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*/\n";
-		//initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n";
-
 		initCode+=value.getInitCodeC();
-
 		code.addInitCode(initCode);
 	}
 
@@ -87,28 +83,11 @@ public class Constant extends Block {
 			break;
 		case MATRIX:
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
-			/*
-			for(int i=0;i<value.getHeight();i++) {
-				for(int j=0;j<value.getWidth();j++) {
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+value.getName()+"["+i+"]["+j+"];\n";
-				}
-			}*/
 			break;
 		}
 
 		code.addOutputCode(outputCode);
 	}
-
-//	public void generateInitCodePLC(CodeStructPLC code){
-//		super.generateInitCodePLC(code);
-//
-//		String initCode="(*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*)\n";
-//		//initCode+=value.getName()+"="+paramValues.getDouble("Value")+";\n";
-//
-//		initCode+=value.getInitCodePLC();
-//
-//		code.addInitCode(initCode);
-//	}
 
 	public void generateUpdateCodePLC(CodeStructC code){
 
@@ -123,12 +102,6 @@ public class Constant extends Block {
 			break;
 		case MATRIX:
 			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+":="+value.getName()+";\n";
-			/*
-			for(int i=0;i<value.getHeight();i++) {
-				for(int j=0;j<value.getWidth();j++) {
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+value.getName()+"["+i+"]["+j+"];\n";
-				}
-			}*/
 			break;
 		}
 
