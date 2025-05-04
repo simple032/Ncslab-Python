@@ -54,7 +54,7 @@ public class TransportDelay extends Block {
 		delaytime = new Parameter(this, 2, "DelayTime", paramValues.getString("DelayTime"));
 		parameterList.add(delaytime);
 
-        bufferSize = new Parameter(this, 3, "BufferSize", paramValues.getString("BufferSize"));
+        bufferSize = new Parameter(this, 3, "BufferSize", paramValues.optString("BufferSize","1024"));
         parameterList.add(bufferSize);
 
 		input = new InputPort(this, 1);
