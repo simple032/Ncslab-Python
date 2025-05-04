@@ -2,8 +2,11 @@ package com.ncslab.block.data;
 
 import Jama.Matrix;
 //import com.greenpineyu.fel.*;
+import com.ncslab.expression.ExpressionCalculator;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.regex.Pattern;
 
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
 public class Data {
@@ -13,6 +16,8 @@ public class Data {
 	@Getter
     @Setter
     private double initValue = 0;
+    @Getter
+    private int intValue = 0;
 	private Matrix initMatrix = null;
 	@Getter
 	private String initString = "";
@@ -50,47 +55,42 @@ public class Data {
 		// setupFel();
         dataString = formatDataString(inString);
 
-		try {
-			initValue = Double.parseDouble(dataString);
-			dataType = DataType.REAL;
-
-			return;
-		} catch (NumberFormatException e) {
-
-		}
-
 		if (isStringMatrix(dataString)) {
 			System.out.println("Matrix: " + dataString);
 			dataType = DataType.MATRIX;
 
 			initMatrix = parseMatrix(dataString);
 		} else {
-			// 使用fel进行表达式分析
-//			initValue = Double.parseDouble(fel.eval(dataString).toString());
-            // initValue = Double.parseDouble(dataString);
 			try {
-				initValue = Double.parseDouble(dataString);
-			} catch (NumberFormatException e) {
+                initValue = parseExpression(dataString);
+                intValue = (int) initValue;
+			} catch (NumberFormatException|org.apache.commons.jexl3.JexlException e) {
 				// 如果解析失败，将 initString 设置为 dataString
 				initString = dataString;
 			}
-
 		}
-
 	}
+
+    // 用于检查字符串是否为有效的数字
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("[-+]?\\d+(\\.\\d*)?([eE][-+]?\\d+)?");
+    private static double parseExpression(String inString) throws NumberFormatException {
+        double value;
+        if (NUMBER_PATTERN.matcher(inString).matches()) {
+            value = Double.parseDouble(inString);
+        } else {
+            Object result = ExpressionCalculator.calculateExpression(inString);
+            value = Double.parseDouble(result.toString());
+        }
+        return value;
+    }
 
 	private static String formatDataString(String dataString) {
 		return dataString.trim();
 	}
 
 	public static boolean isStringMatrix(String matrixString) {
-
-		if (matrixString.startsWith("[") && matrixString.endsWith("]")) {
-			return true;
-		}
-
-		return false;
-	}
+        return matrixString.startsWith("[") && matrixString.endsWith("]");
+    }
 
 	public int getWidth() {
 		switch (this.getDataType()) {
@@ -126,7 +126,7 @@ public class Data {
 			childMat[i] = new double[child.length];
 			for (int j = 0; j < child.length; j++) {
 				String doubleString = child[j].replaceAll("\\s+", "");
-				 childMat[i][j] = Double.parseDouble(doubleString);
+				 childMat[i][j] = parseExpression(doubleString);
 				// 使用fel进行表达式分析
 //				childMat[i][j] = Double.parseDouble(fel.eval(doubleString).toString());
 			}

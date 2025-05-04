@@ -10,7 +10,11 @@ public class Parameter {
 
 	@Getter
     private int id;
-	private String name;
+    //this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
+    //区分监控组态中不同模块中的参数,replace方法用于处理部分模块的非连续字符串命名问题
+    //		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
+    @Getter
+    private String name;
 	@Getter
     private String localName;
 	private Block block;
@@ -22,17 +26,11 @@ public class Parameter {
 		this.block=block;
 		this.id=id;
 		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
-		this.localName=localName;
+//		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
+		this.name="_Block"+block.getBlockUUID().replace("-","_")+"_"+localName;
+        this.localName=localName;
 
 		data=new Data(dataString);
-	}
-
-	public String getName() {
-		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
-		//区分监控组态中不同模块中的参数,replace方法用于处理部分模块的非连续字符串命名问题
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
-		return this.name;
 	}
 
     public DataType getDataType() {
@@ -117,16 +115,16 @@ public class Parameter {
 	public String getDataStructureInitCodeC() {
 		String code="";
 		//code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.getLocalName()+"\";\n";
-		code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.name+"\";\n";
+		code+="parameter"+block.getBlockId()+"_"+this.getId()+".name=(char *)\""+this.localName+"\";\n";
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".width="+this.getWidth()+";\n";
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".height="+this.getHeight()+";\n";
 		if(data.getDataType()==DataType.REAL) {
 			code+="parameter"+block.getBlockId()+"_"+this.getId()+".type=SINGLE;\n";
-			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.getName()+";\n";
+			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.name+";\n";
 		}
 		else {
 			code+="parameter"+block.getBlockId()+"_"+this.getId()+".type=MATRIX;\n";
-			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.getName()+";\n";
+			code+="parameter"+block.getBlockId()+"_"+this.getId()+".vp=&"+this.name+";\n";
 		}
 //		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getModel().getModelRealName()+"/"+block.getBlockName()+"\";\n";
 		code+="parameter"+block.getBlockId()+"_"+this.getId()+".path=(char *)\""+block.getBlockPath()+"/"+block.getBlockName()+"\";\n";
