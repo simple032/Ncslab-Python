@@ -9,6 +9,7 @@ import com.utils.Property;
 import org.json.JSONObject;
 
 import javax.websocket.Session;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -102,14 +103,21 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 			long currentTime = new java.util.Date().getTime();
 
 			while(true) {
-				double time = out.readDouble();
+                try {
+                    double time = out.readDouble();
 
-				if (time < 0) {
-					break;
-				}
+                    if (time < 0) {
+                        break;
+                    }
 
-				// send the simulation data to the client
-				sendSimulatingMessage(session, time);
+                    // send the simulation data to the client
+                    sendSimulatingMessage(session, time);
+                }
+                // 会出现这个EOFException，但是不影响程序的运行
+                // 因为EOFException是在读取完所有数据后抛出的异常
+                catch (EOFException e) {
+                	break;
+                }
 
 				//if((new java.util.Date().getTime())-currentTime>1000) {
 				//	currentTime=new java.util.Date().getTime();

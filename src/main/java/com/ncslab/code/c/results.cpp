@@ -21,6 +21,8 @@ void writeScope(int cursor, TERMINAL* terminal, json* pJsonScopes) {
     jsonScope["width"] = scope->width;
     jsonScope["height"] = scope->height;
     jsonScope["name"] = scope->name;
+    jsonScope["path"] = scope->path;
+    jsonScope["uuid"] = scope->uuid;
 
     unsigned int size = scope->timeList.size();
     jsonScope["length"] = size;

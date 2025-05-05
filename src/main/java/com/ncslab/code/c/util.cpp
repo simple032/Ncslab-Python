@@ -328,3 +328,60 @@ void writeInformation() {
 }
 
 #endif
+
+
+// 初始化缓冲区
+void init_buffer(Buffer *buf, int size, double init_value) {
+    buf->times = (double *)calloc(size, sizeof(double));
+    buf->values = (double *)calloc(size, sizeof(double));
+    buf->size = size;
+    buf->head = 0;
+    buf->tail = 0;
+    buf->count = 0;
+	for(int i = 0; i < size; i++){
+		buf->values[i] = init_value;
+	}
+}
+
+// 释放缓冲区内存
+void free_buffer(Buffer *buf) {
+    free(buf->times);
+    free(buf->values);
+}
+
+// 插入新数据到缓冲区
+void insert_to_buffer(Buffer *buf, double time, double value) {
+    if (buf->count == buf->size) {
+        // 队列已满，移除队头元素
+        buf->head = (buf->head + 1) % buf->size;
+        buf->count--;
+    }
+    buf->times[buf->tail] = time;
+    buf->values[buf->tail] = value;
+    buf->tail = (buf->tail + 1) % buf->size;
+    buf->count++;
+}
+
+
+// 线性插值函数
+double linear_interpolation(Buffer *buf, double target_time) {
+    if (target_time < 0) {
+        // 元素数量不足，返回初始值
+        return buf->values[buf->size-1];
+    }
+    int i = buf->head;
+    for (int j = 0; j < buf->count - 1; j++) {
+        int next_i = (i + 1) % buf->size;
+        if (buf->times[i] <= target_time && target_time < buf->times[next_i]) {
+            double t1 = buf->times[i];
+            double y1 = buf->values[i];
+            double t2 = buf->times[next_i];
+            double y2 = buf->values[next_i];
+            return y1 + (target_time - t1) * (y2 - y1) / (t2 - t1);
+        }
+        i = next_i;
+    }
+    // 如果没有找到合适的区间，返回最后一个值
+    return buf->values[buf->size-1];
+}
+

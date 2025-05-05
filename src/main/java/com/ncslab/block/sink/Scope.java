@@ -267,7 +267,7 @@ public class Scope extends SinkBlock{
 
 		OutputSignal signal=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		scopeStruct.setDimension(signal.getWidth(), signal.getHeight());
-		scopeStruct.setMaxDataLength(3000);
+		scopeStruct.setMaxDataLength(100000);
 
 		model.addTerminal(scopeStruct);
 	}

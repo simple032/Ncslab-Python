@@ -154,7 +154,7 @@ abstract public class CodeStructC{
 
 	public String hardwareDefineCode="";
 
-    final static String BLOCK_STRUCTURE_FORMAT = "BLOCK block%d={(char *)\"%s\",(char *)\"%s\",%d,%d,%d,%d,%d};\n";
+    final static String BLOCK_STRUCTURE_FORMAT = "BLOCK block%d={(char *)\"%s\",(char *)\"%s\",(char *)\"%s\",(char *)\"%s\",%d,%d,%d,%d,%d};\n";
 
     /*定义所有监控数据实体的代码，包括INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
@@ -857,10 +857,13 @@ abstract public class CodeStructC{
 			writeNCSLabFile("ode6.cpp","onestep.cpp");
 			break;
         case ode45:
-            writeNCSLabFile("../../ode45.cpp","onestep.cpp",true);
+            writeNCSLabFile("../../onestep.cpp","onestep.cpp",true);
             break;
         case ode23:
             writeNCSLabFile("../../ode23.cpp","onestep.cpp",true);
+            break;
+        case ode15s:
+            writeNCSLabFile("../../ode15s.cpp","onestep.cpp",true);
             break;
 		default:
             System.err.println("Unsupported solver: "+model.getSolver());
@@ -1058,6 +1061,8 @@ abstract public class CodeStructC{
                 int blockId = block.getBlockId();
                 String blockType = block.getBlockType();
                 String blockName = block.getBlockName();
+                String blockPath = block.getBlockPath();
+                String blockUUID = block.getBlockUUID();
                 int inputPortSize = block.getInputPortList().size();
                 int outputPortSize = block.getOutputPortList().size();
                 int parameterSize = block.getParameterList().size();
@@ -1065,7 +1070,9 @@ abstract public class CodeStructC{
                 int blockSignalNum = block.getSignalNum();
 
                 // 使用String.format来格式化字符串
-                String blockString = String.format(BLOCK_STRUCTURE_FORMAT, blockId, blockType, blockName, inputPortSize, outputPortSize, parameterSize, stateSize, blockSignalNum);
+                String blockString = String.format(BLOCK_STRUCTURE_FORMAT,
+                    blockId, blockType, blockName, blockPath, blockUUID,
+                    inputPortSize, outputPortSize, parameterSize, stateSize, blockSignalNum);
 //				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+","+model.getConfig().getStartTime()+",0};\n";
 			    dataStructureCode+=blockString;
             }

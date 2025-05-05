@@ -31,9 +31,4 @@ public class CodeStructCWindowsSimulation extends CodeStructCWindows {
 
 		writeNCSWrittenFiles();// write the files in <code>CodeStructC.writtenFileSet</code>.
 	}
-
-	@Override
-	protected void writeNCSWrittenFiles(){
-		super.writeNCSWrittenFiles();
-	}
 }
