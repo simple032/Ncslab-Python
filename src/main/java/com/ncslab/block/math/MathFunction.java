@@ -12,6 +12,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.Objects;
 import java.util.Vector;
 
 public class MathFunction extends Block{
@@ -38,6 +39,9 @@ public class MathFunction extends Block{
 		inputPortList.add(new InputPort(this,1));
 
 		seq=paramValues.optString("Operator", paramValues.getString("MathFunctionOperator"));
+        if(Objects.equals(seq, "pow")){
+            inputPortList.add(new InputPort(this,2));
+        }
 	}
 
 	public void generateOutputCodeM(CodeStructM code) {
@@ -55,74 +59,96 @@ public class MathFunction extends Block{
 
         //outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+seq+"("+signal.getName()+");\n";
 
-        if(seq.equals("transpose")) {
-            switch(signal.getDataType()) {
-                case REAL:
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+signal.getName()+";\n";
-                    break;
-                case MATRIX:
-                    int width=signal.getWidth();
-                    int height=signal.getHeight();
+        switch (seq) {
+            case "transpose":
+                switch (signal.getDataType()) {
+                    case REAL:
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + signal.getName() + ";\n";
+                        break;
+                    case MATRIX:
+                        int width = signal.getWidth();
+                        int height = signal.getHeight();
 
-                    outputCode+="for(int i=0;i<"+width+";i++){\n";
-                    outputCode+="for(int j=0;j<"+height+";j++){\n";
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(i,j)="+signal.getName()+"(j,i);\n";
-                    outputCode+="}\n";
-                    outputCode+="}\n";
-                    break;
-            }
-        }else if(seq.equals("reciprocal")) {
-            switch(signal.getDataType()) {
-                case REAL:
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=1.0/("+signal.getName()+");\n";
-                    break;
-                case MATRIX:
-                    int width=signal.getWidth();
-                    int height=signal.getHeight();
+                        outputCode += "for(int i=0;i<" + width + ";i++){\n";
+                        outputCode += "for(int j=0;j<" + height + ";j++){\n";
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(i,j)=" + signal.getName() + "(j,i);\n";
+                        outputCode += "}\n";
+                        outputCode += "}\n";
+                        break;
+                }
+                break;
+            case "reciprocal":
+                switch (signal.getDataType()) {
+                    case REAL:
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=1.0/(" + signal.getName() + ");\n";
+                        break;
+                    case MATRIX:
+                        int width = signal.getWidth();
+                        int height = signal.getHeight();
 
-                    outputCode+="for(int i=0;i<"+height+";i++){\n";
-                    outputCode+="for(int j=0;j<"+width+";j++){\n";
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(i,j)=1.0/("+signal.getName()+"(i,j));\n";
-                    outputCode+="}\n";
-                    outputCode+="}\n";
+                        outputCode += "for(int i=0;i<" + height + ";i++){\n";
+                        outputCode += "for(int j=0;j<" + width + ";j++){\n";
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(i,j)=1.0/(" + signal.getName() + "(i,j));\n";
+                        outputCode += "}\n";
+                        outputCode += "}\n";
 
-                    break;
-            }
-        }else if(seq.equals("square")) {
-            switch(signal.getDataType()) {
-                case REAL:
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=("+signal.getName()+")*("+signal.getName()+");\n";
-                    break;
-                case MATRIX:
-                    int width=signal.getWidth();
-                    int height=signal.getHeight();
+                        break;
+                }
+                break;
+            case "square":
+                switch (signal.getDataType()) {
+                    case REAL:
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=(" + signal.getName() + ")*(" + signal.getName() + ");\n";
+                        break;
+                    case MATRIX:
+                        int width = signal.getWidth();
+                        int height = signal.getHeight();
 
-                    outputCode+="for(int i=0;i<"+height+";i++){\n";
-                    outputCode+="for(int j=0;j<"+width+";j++){\n";
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(i,j)=("+signal.getName()+")*("+signal.getName()+"(i,j));\n";
-                    outputCode+="}\n";
-                    outputCode+="}\n";
+                        outputCode += "for(int i=0;i<" + height + ";i++){\n";
+                        outputCode += "for(int j=0;j<" + width + ";j++){\n";
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(i,j)=(" + signal.getName() + ")*(" + signal.getName() + "(i,j));\n";
+                        outputCode += "}\n";
+                        outputCode += "}\n";
 
-                    break;
-            }
-        }
-        else if(seq.equals("exp")||seq.equals("log")||seq.equals("log10")) {
-            switch(signal.getDataType()) {
-                case REAL:
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+seq+"("+signal.getName()+");\n";
-                    break;
-                case MATRIX:
-                    int width=signal.getWidth();
-                    int height=signal.getHeight();
+                        break;
+                }
+                break;
+            case "exp":
+            case "log":
+            case "log10":
+                switch (signal.getDataType()) {
+                    case REAL:
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + seq + "(" + signal.getName() + ");\n";
+                        break;
+                    case MATRIX:
+                        int width = signal.getWidth();
+                        int height = signal.getHeight();
 
-                    outputCode+="for(int i=0;i<"+height+";i++){\n";
-                    outputCode+="for(int j=0;j<"+width+";j++){\n";
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(i,j)="+seq+"("+signal.getName()+"(i,j));\n";
-                    outputCode+="}\n";
-                    outputCode+="}\n";
+                        outputCode += "for(int i=0;i<" + height + ";i++){\n";
+                        outputCode += "for(int j=0;j<" + width + ";j++){\n";
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(i,j)=" + seq + "(" + signal.getName() + "(i,j));\n";
+                        outputCode += "}\n";
+                        outputCode += "}\n";
 
-                    break;
-            }
+                        break;
+                }
+                break;
+            case "pow":
+                switch (signal.getDataType()) {
+                    case REAL:
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=pow(" + signal.getName() + "," + inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + ");\n";
+                        break;
+                    case MATRIX:
+                        int width = signal.getWidth();
+                        int height = signal.getHeight();
+                        outputCode += "for(int i=0;i<" + height + ";i++){\n";
+                        outputCode += "for(int j=0;j<" + width + ";j++){\n";
+                        outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(i,j)=pow(" + signal.getName() + "(i,j)," + inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + ");\n";
+                        outputCode += "}\n";
+                        outputCode += "}\n";
+                        break;
+                }
+                break;
         }
 
         code.addOutputCode(outputCode);
