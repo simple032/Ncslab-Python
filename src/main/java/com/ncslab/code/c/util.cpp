@@ -369,6 +369,7 @@ double linear_interpolation(Buffer *buf, double target_time) {
         // 元素数量不足，返回初始值
         return buf->values[buf->size-1];
     }
+
     int i = buf->head;
     for (int j = 0; j < buf->count - 1; j++) {
         int next_i = (i + 1) % buf->size;
@@ -382,6 +383,219 @@ double linear_interpolation(Buffer *buf, double target_time) {
         i = next_i;
     }
     // 如果没有找到合适的区间，返回最后一个值
-    return buf->values[buf->size-1];
+    return buf->values[i];
 }
 
+
+// 初始化一维插值表
+void init_interpolation_table_1d(InterpolationTable1D *table, int size, int extrapolation_strategy) {
+    table->size = size;
+    table->extrapolation_strategy = extrapolation_strategy;
+
+    // 分配内存
+    table->x = (double *)malloc(size * sizeof(double));
+    table->y = (double *)malloc(size * sizeof(double));
+}
+
+// 释放一维插值表内存
+void free_interpolation_table_1d(InterpolationTable1D *table) {
+    free(table->x);
+    free(table->y);
+}
+
+// 一维线性插值函数，包含外插策略
+double linear_interpolation_1d(InterpolationTable1D *table, double target_x) {
+    int x1, x2;
+    double dx;
+
+    // 检查目标点是否在x范围内
+    if (target_x < table->x[0]) {
+        // 在x范围外
+        if (table->extrapolation_strategy == 0) {
+            return table->y[0]; // 最近边界值
+        } else {
+            x1 = 0;
+            x2 = 1;
+            dx = (target_x - table->x[x1]) / (table->x[x2] - table->x[x1]);
+            return table->y[x1] + dx * (table->y[x2] - table->y[x1]); // 线性外插
+        }
+    } else if (target_x > table->x[table->size - 1]) {
+        // 在x范围外
+        if (table->extrapolation_strategy == 0) {
+            return table->y[table->size - 1]; // 最近边界值
+        } else {
+            x1 = table->size - 2;
+            x2 = table->size - 1;
+            dx = (target_x - table->x[x1]) / (table->x[x2] - table->x[x1]);
+            return table->y[x1] + dx * (table->y[x2] - table->y[x1]); // 线性外插
+        }
+    } else {
+        // 在x范围内
+        for (x1 = 0; x1 < table->size - 1; x1++) {
+            if (table->x[x1] <= target_x && target_x <= table->x[x1 + 1]) {
+                break;
+            }
+        }
+        x2 = x1 + 1;
+        dx = (target_x - table->x[x1]) / (table->x[x2] - table->x[x1]);
+    }
+
+    // 线性插值
+    return table->y[x1] * (1 - dx) + table->y[x2] * dx;
+}
+
+void insert_to_x_table1d(InterpolationTable1D *table, int index, double value)
+{
+    if (index < 0 || index >= table->size) {
+        printf("Error: Index out of bounds.\n");
+        return;
+    }
+    table->x[index] = value;
+}
+void insert_to_y_table1d(InterpolationTable1D *table, int index, double value)
+{
+    if (index < 0 || index >= table->size) {
+        printf("Error: Index out of bounds.\n");
+        return;
+    }
+    table->y[index] = value;
+}
+
+
+// 初始化二维插值表
+void init_interpolation_table(InterpolationTable *table, int width, int height, int extrapolation_strategy) {
+    table->width = width;
+    table->height = height;
+    table->extrapolation_strategy = extrapolation_strategy;
+
+    // 分配内存
+    table->x = (double **)malloc(width * sizeof(double *));
+    table->y = (double **)malloc(height * sizeof(double *));
+    table->z = (double **)malloc(width * sizeof(double *));
+
+    for (int i = 0; i < width; i++) {
+        table->x[i] = (double *)malloc(width * sizeof(double));
+        table->z[i] = (double *)malloc(height * sizeof(double));
+    }
+
+    for (int i = 0; i < height; i++) {
+        table->y[i] = (double *)malloc(height * sizeof(double));
+    }
+}
+
+// 释放二维插值表内存
+void free_interpolation_table(InterpolationTable *table) {
+    for (int i = 0; i < table->width; i++) {
+        free(table->x[i]);
+        free(table->z[i]);
+    }
+
+    for (int i = 0; i < table->height; i++) {
+        free(table->y[i]);
+    }
+
+    free(table->x);
+    free(table->y);
+    free(table->z);
+}
+
+// 双线性插值函数，包含外推策略
+double bilinear_interpolation(InterpolationTable *table, double target_x, double target_y) {
+    int x1, x2, y1, y2;
+    double dx, dy;
+
+    // 检查目标点是否在x范围内
+    if (target_x < table->x[0][0]) {
+        // 在x范围外
+        if (table->extrapolation_strategy == 0) {
+            x1 = x2 = 0;
+            dx = 0.0;
+        } else {
+            x1 = 0;
+            x2 = 1;
+            dx = (target_x - table->x[x1][0]) / (table->x[x2][0] - table->x[x1][0]);
+        }
+    } else if (target_x > table->x[table->width - 1][0]) {
+        // 在x范围外
+        if (table->extrapolation_strategy == 0) {
+            x1 = x2 = table->width - 1;
+            dx = 0.0;
+        } else {
+            x1 = table->width - 2;
+            x2 = table->width - 1;
+            dx = (target_x - table->x[x1][0]) / (table->x[x2][0] - table->x[x1][0]);
+        }
+    } else {
+        // 在x范围内
+        for (x1 = 0; x1 < table->width - 1; x1++) {
+            if (table->x[x1][0] <= target_x && target_x <= table->x[x1 + 1][0]) {
+                break;
+            }
+        }
+        x2 = x1 + 1;
+        dx = (target_x - table->x[x1][0]) / (table->x[x2][0] - table->x[x1][0]);
+    }
+
+    // 检查目标点是否在y范围内
+    if (target_y < table->y[0][0]) {
+        // 在y范围外
+        if (table->extrapolation_strategy == 0) {
+            y1 = y2 = 0;
+            dy = 0.0;
+        } else {
+            y1 = 0;
+            y2 = 1;
+            dy = (target_y - table->y[y1][0]) / (table->y[y2][0] - table->y[y1][0]);
+        }
+    } else if (target_y > table->y[table->height - 1][0]) {
+        // 在y范围外
+        if (table->extrapolation_strategy == 0) {
+            y1 = y2 = table->height - 1;
+            dy = 0.0;
+        } else {
+            y1 = table->height - 2;
+            y2 = table->height - 1;
+            dy = (target_y - table->y[y1][0]) / (table->y[y2][0] - table->y[y1][0]);
+        }
+    } else {
+        // 在y范围内
+        for (y1 = 0; y1 < table->height - 1; y1++) {
+            if (table->y[y1][0] <= target_y && target_y <= table->y[y1 + 1][0]) {
+                break;
+            }
+        }
+        y2 = y1 + 1;
+        dy = (target_y - table->y[y1][0]) / (table->y[y2][0] - table->y[y1][0]);
+    }
+
+    // 双线性插值
+    double z1 = table->z[x1][y1] * (1 - dx) + table->z[x2][y1] * dx;
+    double z2 = table->z[x1][y2] * (1 - dx) + table->z[x2][y2] * dx;
+    double z = z1 * (1 - dy) + z2 * dy;
+
+    return z;
+}
+
+void insert_to_x_table(InterpolationTable *table, int index, double value) {
+    if (index < 0 || index >= table->width) {
+        printf("Error: Index out of bounds.\n");
+        return;
+    }
+    table->x[index][0] = value;
+}
+
+void insert_to_y_table(InterpolationTable *table, int index, double value) {
+    if (index < 0 || index >= table->height) {
+        printf("Error: Index out of bounds.\n");
+        return;
+    }
+    table->y[index][0] = value;
+}
+
+void insert_to_z_table(InterpolationTable *table, int x_index, int y_index, double value) {
+    if (x_index < 0 || x_index >= table->width || y_index < 0 || y_index >= table->height) {
+        printf("Error: Index out of bounds.\n");
+        return;
+    }
+    table->z[x_index][y_index] = value;
+}

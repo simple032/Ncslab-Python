@@ -170,6 +170,9 @@ public class BlockType{
         blockClassTree.put("RateLimiter", com.ncslab.block.discontinuous.RateLimiter.class);
         blockClassTree.put("Backlash", com.ncslab.block.discontinuous.Backlash.class);
 
+        blockClassTree.put("OneDimensionLookupTable", com.ncslab.block.lookupTable.OneDimensionLookupTableBlock.class);
+        blockClassTree.put("TwoDimensionLookupTable", com.ncslab.block.lookupTable.TwoDimensionLookupTableBlock.class);
+
         // PowerSystem
         blockClassTree.put("SecondOrderFilter", com.ncslab.block.powerSystem.secondOrderFiliter.class);
 
