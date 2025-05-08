@@ -74,7 +74,11 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 //            }
             String dllFolderName = Optional.ofNullable(Property.instance.getProperty("DllFolder"))
                 .orElse(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
+
             File dllFolder = new File(dllFolderName);
+            if(!dllFolder.exists()){
+                dllFolder = new File(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
+            }
             File[] files = dllFolder.listFiles();
             if(files != null){
                 for(File file : files){

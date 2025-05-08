@@ -8,5 +8,6 @@ public enum Solver {
 	ode5,
 	ode6,
 	ode23,
-	ode45
+	ode45,
+    ode15s
 }

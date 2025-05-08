@@ -70,7 +70,29 @@ public:
         return *this;
     }
 
+    // 重载括号操作符，使用一维 index 访问，index 对应行列下标从 1 开始
+    double& operator()(int index) {
+        int cols = this->cols();
+        int row = (index - 1) / cols;
+        int col = (index - 1) % cols;
+        return Eigen::MatrixXd::operator()(row, col);
+    }
 
+    const double& operator()(int index) const {
+        int cols = this->cols();
+        int row = (index - 1) / cols;
+        int col = (index - 1) % cols;
+        return Eigen::MatrixXd::operator()(row, col);
+    }
+
+        // 重载括号操作符，实现二维下标从 0 开始访问
+        double& operator()(int row, int col) {
+            return Eigen::MatrixXd::operator()(row, col);
+        }
+
+        const double& operator()(int row, int col) const {
+            return Eigen::MatrixXd::operator()(row, col);
+        }
     /**
      * @brief concatenate two eigen matrix
      *

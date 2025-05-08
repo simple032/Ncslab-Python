@@ -128,6 +128,7 @@ public class BlockType{
         blockClassTree.put("NetWaterLevel", com.ncslab.block.testrig.WaterLevel.class);
 
         // Function
+        blockClassTree.put("Fcn", com.ncslab.block.function.Fcn.class);
         blockClassTree.put("S-Function", com.ncslab.block.function.SFunction.class);
         blockClassTree.put("S-FunctionBuilder", com.ncslab.block.function.SFunctionBuilder.class);
 
