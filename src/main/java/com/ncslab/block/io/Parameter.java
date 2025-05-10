@@ -22,7 +22,7 @@ public class Parameter {
 	@Getter
     private Data data=null;
 
-	public Parameter(Block block,int id,String localName,String dataString) {
+	public Parameter(Block block,int id,String localName,String inString) {
 		this.block=block;
 		this.id=id;
 		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
@@ -30,7 +30,7 @@ public class Parameter {
 		this.name="_Block"+block.getBlockUUID().replace("-","_")+"_"+localName;
         this.localName=localName;
 
-		data=new Data(dataString);
+		data=new Data(inString);
 	}
 
     public DataType getDataType() {
@@ -38,6 +38,8 @@ public class Parameter {
 	}
 
     public double getDouble() { return data.getInitValue(); }
+
+    public String getInitString() { return data.getInitString(); }
 
     public String getDataString() { return data.getDataString(); }
 

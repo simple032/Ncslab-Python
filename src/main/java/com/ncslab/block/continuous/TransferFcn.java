@@ -68,8 +68,8 @@ public class TransferFcn extends Block {
         denParam = new Parameter(this, 2, "Denominator", paramValues.getString("Denominator"));
 		parameterList.add(denParam);
 
-        num=parseMatlabVector(numParam.getData().getDataString());
-        den=parseMatlabVector(denParam.getData().getDataString());
+        num=parseMatlabVector(numParam.getDataString());
+        den=parseMatlabVector(denParam.getDataString());
 
 		//归一化
 		double unit=den[0];
@@ -92,17 +92,13 @@ public class TransferFcn extends Block {
 			}
 
 			double[] numShort=new double[num.length-1];
-			for(int i=0;i<num.length-1;i++) {
-				numShort[i]=num[i+1];
-			}
+            System.arraycopy(num, 1, numShort, 0, num.length - 1);
 
 			num=numShort;
 		}
 
 		double[] denShort=new double[den.length-1];
-		for(int i=0;i<den.length-1;i++) {
-			denShort[i]=den[i+1];
-		}
+        System.arraycopy(den, 1, denShort, 0, den.length - 1);
 		den=denShort;
 
 		double[] numShort=new double[den.length];

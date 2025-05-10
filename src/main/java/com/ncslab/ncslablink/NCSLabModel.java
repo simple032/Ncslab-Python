@@ -638,7 +638,7 @@ abstract public class NCSLabModel {
 //            System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
 //                "  getBlockType: "+block1.getBlockType());
             if(block1.getBlockPath().equals(blockPath)
-			&& block1.getNo().getDataString().equals(toPortNo)
+			&& block1.getNo().getInitString().equals(toPortNo)
 			){
                 lineJSON.put("toBlockName", block1.getBlockName());
                 lineJSON.put("toBlockUUID", block1.getBlockUUID());
@@ -686,7 +686,7 @@ abstract public class NCSLabModel {
 //            System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
 //                "  getBlockType: "+block1.getBlockType());
             if(block1.getBlockPath().equals(blockPath)
-			&& block1.getNo().getDataString().equals(fromPortNo)
+			&& block1.getNo().getInitString().equals(fromPortNo)
 			){
                 lineJSON.put("fromBlockName", block1.getBlockName());
                 lineJSON.put("fromBlockUUID", block1.getBlockUUID());

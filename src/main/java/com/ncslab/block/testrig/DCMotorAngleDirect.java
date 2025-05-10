@@ -94,9 +94,9 @@ public class DCMotorAngleDirect extends Block {
             hardwareDefineName="Block"+this.getBlockId()+"_DCMotorAngleDirect";
             initCode+="initDCMotorAngleDirect(&"+hardwareDefineName+");\n";
 			//1.Open the serial port
-			String port = port_encoder.getDataString();
+			String port = port_encoder.getInitString();
 			initCode+="char msg[255];\n";
-			initCode+="hComm = Serialport_Open((char *)"+port+", "+baudrate_encoder.getDataString()+",(char *)msg);\n";
+			initCode+="hComm = Serialport_Open((char *)"+port+", "+baudrate_encoder.getInitString()+",(char *)msg);\n";
 			break;
 		}
 

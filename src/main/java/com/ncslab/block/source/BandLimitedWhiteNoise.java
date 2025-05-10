@@ -53,7 +53,7 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
         initCode+=seed.getInitCodeC();
         initCode+=cov.getInitCodeC();
         initCode+=samplePeriod.getInitCodeC();
-        initCode+="srand(+"+ seed.getDataString() +");";
+        initCode+="srand(+"+ seed.getInitString() +");";
         code.addInitCode(initCode);
     }
 

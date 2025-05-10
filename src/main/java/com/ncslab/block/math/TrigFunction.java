@@ -43,7 +43,7 @@ public class TrigFunction extends Block{
         trigFunc=new Parameter(this,1,"trigFunc",paramValues.optString("Function", paramValues.getString("TrigonometricFunction")));
         parameterList.add(trigFunc);
 
-        if(trigFunc.getDataString().equals("atan2")) {
+        if(trigFunc.getInitString().equals("atan2")) {
             inputPortList.add(new InputPort(this,2));
         }
 	}
@@ -53,23 +53,23 @@ public class TrigFunction extends Block{
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         switch(signal.getDataType()) {
             case REAL:
-                if(!trigFunc.getDataString().equals("atan2")) {
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getDataString()+"("+signal.getName()+");\n";
+                if(!trigFunc.getInitString().equals("atan2")) {
+                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getInitString()+"("+signal.getName()+");\n";
                 }else {
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getDataString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+");\n";
+                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getInitString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+");\n";
                 }
                 break;
             case MATRIX:
-                if(!trigFunc.getDataString().equals("atan2")) {
+                if(!trigFunc.getInitString().equals("atan2")) {
                     for(int i=0;i<signal.getHeight();i++) {
                         for(int j=0;j<signal.getWidth();j++) {
-                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getDataString()+"("+signal.getName()+"("+i+","+j+"));\n";
+                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getInitString()+"("+signal.getName()+"("+i+","+j+"));\n";
                         }
                     }
                 }else {
                     for(int i=0;i<signal.getHeight();i++) {
                         for(int j=0;j<signal.getWidth();j++) {
-                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getDataString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+i+","+j+"));\n";
+                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getInitString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+i+","+j+"));\n";
                         }
                     }
                 }

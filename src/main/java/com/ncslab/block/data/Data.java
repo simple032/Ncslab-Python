@@ -60,25 +60,23 @@ public class Data {
 	public Data(String inString) {
 
 		// setupFel();
+        initString = inString.trim();
 
-        dataString = inString.trim();
+        dataString = parseExpression(inString);
+        if (isStringMatrix(dataString)) {
+            System.out.println("Matrix: " + dataString);
+            dataType = DataType.MATRIX;
 
-        String tempString = formatDataString(inString);
-
-		if (isStringMatrix(tempString)) {
-			System.out.println("Matrix: " + tempString);
-			dataType = DataType.MATRIX;
-
-			initMatrix = parseMatrix(tempString);
-		} else {
-			try {
-                initValue = Double.parseDouble(tempString);
+            initMatrix = parseMatrix(dataString);
+        } else {
+            try {
+                initValue = Double.parseDouble(dataString);
                 intValue = (int) initValue;
-			} catch (NumberFormatException|org.apache.commons.jexl3.JexlException e) {
-				// 如果解析失败，将 initString 设置为 dataString
-				initString = dataString;
-			}
-		}
+            } catch (NumberFormatException|org.apache.commons.jexl3.JexlException ee) {
+                // 如果解析失败，将 initString 设置为 dataString
+                initString = dataString;
+            }
+        }
 	}
 
     private static String generateRandomVariableName() {
@@ -86,7 +84,7 @@ public class Data {
         return "temp_var_" + Math.round(Math.random()*100000000);
     }
 
-	private static String formatDataString(String dataString) {
+	private static String parseExpression(String dataString) {
 		// 使用M2PCode解析表达式
         MfcalcClient client = MfcalcClient.getInstance(null);
         String result = dataString;
@@ -123,6 +121,8 @@ public class Data {
         }
         return result.trim();
 	}
+
+
 
 	public static boolean isStringMatrix(String matrixString) {
         return matrixString.startsWith("[") && matrixString.endsWith("]");
