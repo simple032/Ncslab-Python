@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -20,14 +21,16 @@ public class TransferFcn extends Block {
 	private double D=0;
 	private boolean feedThrough=false;
 
+    private Parameter numParam;
+    private Parameter denParam;
+
 	private double[] num;
 	private double[] den;
 
 	private Vector<State> xStateList=new Vector<State>();
 
-
-
-
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -35,6 +38,8 @@ public class TransferFcn extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
+        parameterNames.add("Numerator");
+        parameterNames.add("Denominator");
 
         outputNames.add("out1");
         inputNames.add("in1");
@@ -57,28 +62,14 @@ public class TransferFcn extends Block {
 	}
 
 	private void parseVector() {
-		String numStr=paramValues.getString("Numerator");
-		String denStr=paramValues.getString("Denominator");
 
-		//System.out.println(numStr+denStr);
+        numParam = new Parameter(this, 1, "Numerator", paramValues.getString("Numerator"));
+        parameterList.add(numParam);
+        denParam = new Parameter(this, 2, "Denominator", paramValues.getString("Denominator"));
+		parameterList.add(denParam);
 
-		String regEx = "[' ']+"; // 一个或多个空格
-		Pattern p = Pattern.compile(regEx);
-		Matcher m = p.matcher(numStr);
-		JSONArray numArray=new JSONArray(m.replaceAll(",").trim());
-
-		m=p.matcher(denStr);
-		JSONArray denArray=new JSONArray(m.replaceAll(",").trim());
-
-		num=new double[numArray.length()];
-		for(int i=0;i<numArray.length();i++) {
-			num[i]=numArray.getDouble(i);
-		}
-
-		den=new double[denArray.length()];
-		for(int i=0;i<denArray.length();i++) {
-			den[i]=denArray.getDouble(i);
-		}
+        num=parseMatlabVector(numParam.getData().getDataString());
+        den=parseMatlabVector(denParam.getData().getDataString());
 
 		//归一化
 		double unit=den[0];

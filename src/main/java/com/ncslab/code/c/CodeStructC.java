@@ -7,6 +7,10 @@ import java.util.Vector;
 import java.io.*;
 import java.util.Optional;
 
+import com.ncslab.code.util.ResourceUtils;
+import com.ncslab.code.template.TemplateProvider;
+import com.ncslab.code.template.TemplateProviderFactory;
+
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.Parameter;
@@ -21,6 +25,9 @@ import com.utils.Property;
 import lombok.Getter;
 
 abstract public class CodeStructC{
+
+    // Template provider for accessing resource files
+    protected final TemplateProvider templateProvider;
 
 	public Set<String> globalDeclareCodeSet = new LinkedHashSet<>();
 	public Set<String> globalInitCodeSet = new LinkedHashSet<>();
@@ -69,17 +76,16 @@ abstract public class CodeStructC{
 	}
 
 	/**
-	 * Add written file to the set. <br>
-	 * <b>ATTENTION</b><br>
-	 * If you use reletive path ,you <b>should be able to know the source folder!</b>
-	 * i.e. in Ubuntu22.04, the source folder is "src/main/java/com/ncslab/code/c/linux/pc/simulation/".<br>
-	 * Or, you can use the absolute path for the filePath.
-	 * @param filePath the reletive path of the file in the source folder.
-	 * @param targetPath the target path of the file.
-	 * @param overwrite whether to overwrite the file if it exists.
-	 */
+	* Add written file to the set. <br>
+	* <b>ATTENTION</b><br>
+	* If you use relative path, it will be searched in the resources directory structure.
+	* The file will be searched in src/main/resources/com/ncslab/code/ and its subdirectories.
+	* @param filePath the relative path of the file in the source folder.
+	* @param targetPath the target path of the file.
+	* @param overwrite whether to overwrite the file if it exists.
+	*/
 	public void addWrittenFile(String filePath, String targetPath, boolean overwrite) {
-		writtenFileSet.add(new WrittenFile(filePath, targetPath, overwrite));
+	    writtenFileSet.add(new WrittenFile(filePath, targetPath, overwrite));
 	}
 
 	/**
@@ -179,7 +185,9 @@ abstract public class CodeStructC{
 	protected CodeModelC model;
 
 	public CodeStructC(CodeModelC model) {
-		this.model=model;
+		this.model = model;
+        // Initialize the template provider for this class
+        this.templateProvider = TemplateProviderFactory.createForClass(this.getClass());
 	}
 
     public void addGlobalVariable(String code){
@@ -556,11 +564,14 @@ abstract public class CodeStructC{
     @Getter
    protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("/data/M2PLab");
 
+	// Get the code path base using properties, with environment variable substitution
 	protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
 			Property.instance.getProperty("CCodePath")
 			:
 			Property.instance.getProperty("CCodePathWin"))
-        .replace("${M2PLAB_ROOT}", m2plabRoot);
+        .replace("${M2PLAB_ROOT}", m2plabRoot)
+        .replace("${user.home}", System.getProperty("user.home"))
+        .replace("${user.dir}", System.getProperty("user.dir"));
 
 
     final private String maketool = Property.instance.getProperty("MakeTool");
@@ -609,31 +620,49 @@ abstract public class CodeStructC{
 
 	//写文件的方法，将文件从resource中拷贝出来，写在目标文件夹
 	protected void writeNCSLabFile(String fileName) {
-        String fileNameOut = fileName;
-        if(fileName.contains("/")){
-            String [] paths = fileName.split("/");
-            fileNameOut = paths[paths.length-1];
-        }
-        writeNCSLabFile(fileName, fileNameOut, false);
+	String fileNameOut = fileName;
+	if(fileName.contains("/")){
+	String [] paths = fileName.split("/");
+	fileNameOut = paths[paths.length-1];
+	}
+	writeNCSLabFile(fileName, fileNameOut, false);
 	}
 
     protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
         System.out.println("Writing file "+fileName+"...");
-        InputStream inputStream = null;
-        int count = 3;
-        String srcFileName = fileName;
-        while(inputStream == null && (count--) > 0) {
-            inputStream =this.getClass().getResourceAsStream(srcFileName);
-            srcFileName = "../" + srcFileName;
+        
+        // Get the template using our template provider, which handles nested search
+        InputStream inputStream = templateProvider.getTemplate(fileName);
+        
+        // Fallback to the old method if template provider fails
+        if (inputStream == null) {
+            // Get subdirectory from class name to search in resources
+            String subDirectory = getResourceSubdirectory();
+            
+            // Try to get the resource using ResourceUtils with nested search capability
+            inputStream = ResourceUtils.getResourceAsStream(fileName, subDirectory);
+            
+            // Final fallback to the old method
+            if (inputStream == null) {
+                int count = 3;
+                String srcFileName = fileName;
+                while(inputStream == null && (count--) > 0) {
+                    inputStream = this.getClass().getResourceAsStream(srcFileName);
+                    srcFileName = "../" + srcFileName;
+                }
+            }
         }
+        
         if(inputStream == null) {
             System.err.println("No file "+fileName+"...");
             return;
         }
+        
         File file=new File(codePath+"/"+fileNameOut);
         if(file.exists() && !overwrite) {
             return;
         }
+        
         FileOutputStream outputStream;
         try {
             outputStream = new FileOutputStream(file);
@@ -647,6 +676,32 @@ abstract public class CodeStructC{
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Gets the appropriate resource subdirectory based on the class name
+     * Example: com.ncslab.code.c.linux.pc.CodeModelCLinuxPC -> c/linux/pc
+     * @return The resource subdirectory to search in
+     */
+    private String getResourceSubdirectory() {
+        String className = this.getClass().getName();
+        if (className.startsWith("com.ncslab.code.")) {
+            String[] parts = className.split("\\.");
+            
+            // Start building from index 3 (after com.ncslab.code)
+            StringBuilder subDir = new StringBuilder();
+            for (int i = 3; i < parts.length - 1; i++) { // Exclude the class name itself
+                if (subDir.length() > 0) {
+                    subDir.append("/");
+                }
+                subDir.append(parts[i]);
+            }
+            
+            return subDir.toString();
+        }
+        
+        // Default to "c" if we can't determine
+        return "c";
     }
 	protected void writeNCSLabFile(String fileName, String fileNameOut) {
 		// TODO: writeNCSLabFile(fileName, fileNameOut, false);

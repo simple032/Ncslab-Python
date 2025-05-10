@@ -2,10 +2,13 @@ package com.ncslab.block.data;
 
 import Jama.Matrix;
 //import com.greenpineyu.fel.*;
-import com.ncslab.expression.ExpressionCalculator;
+import com.ncslab.code.m.MfcalcClient;
 import lombok.Getter;
 import lombok.Setter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.util.Vector;
 import java.util.regex.Pattern;
 
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
@@ -23,6 +26,10 @@ public class Data {
 	private String initString = "";
     @Getter
     private String dataString = "";
+
+    @Getter
+    @Setter
+    private static Vector<String> temp_variable_names = new Vector<>();
 
 //	static FelEngine fel = new FelEngineImpl();
 //	static {
@@ -53,16 +60,19 @@ public class Data {
 	public Data(String inString) {
 
 		// setupFel();
-        dataString = formatDataString(inString);
 
-		if (isStringMatrix(dataString)) {
-			System.out.println("Matrix: " + dataString);
+        dataString = inString.trim();
+
+        String tempString = formatDataString(inString);
+
+		if (isStringMatrix(tempString)) {
+			System.out.println("Matrix: " + tempString);
 			dataType = DataType.MATRIX;
 
-			initMatrix = parseMatrix(dataString);
+			initMatrix = parseMatrix(tempString);
 		} else {
 			try {
-                initValue = parseExpression(dataString);
+                initValue = Double.parseDouble(tempString);
                 intValue = (int) initValue;
 			} catch (NumberFormatException|org.apache.commons.jexl3.JexlException e) {
 				// 如果解析失败，将 initString 设置为 dataString
@@ -71,21 +81,47 @@ public class Data {
 		}
 	}
 
-    // 用于检查字符串是否为有效的数字
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("[-+]?\\d+(\\.\\d*)?([eE][-+]?\\d+)?");
-    private static double parseExpression(String inString) throws NumberFormatException {
-        double value;
-        if (NUMBER_PATTERN.matcher(inString).matches()) {
-            value = Double.parseDouble(inString);
-        } else {
-            Object result = ExpressionCalculator.calculateExpression(inString);
-            value = Double.parseDouble(result.toString());
-        }
-        return value;
+    private static String generateRandomVariableName() {
+        // 生成一个随机的变量名
+        return "temp_var_" + Math.round(Math.random()*100000000);
     }
 
 	private static String formatDataString(String dataString) {
-		return dataString.trim();
+		// 使用M2PCode解析表达式
+        MfcalcClient client = MfcalcClient.getInstance(null);
+        String result = dataString;
+
+        boolean founded = false;
+        if (client != null) {
+            JSONArray variables = MfcalcClient.getLocalVariables();
+            if (variables != null) {
+                for(int i=0;i<variables.length();i++) {
+                    JSONObject variable = variables.getJSONObject(i);
+                    if(variable.getString("name").equals(dataString)){
+                        founded = true;
+                        result = variable.getString("value");
+                        break;
+                    }
+                }
+            }
+            if(!founded) {
+                String variableName = generateRandomVariableName();
+                JSONObject jo = client.runCommand(variableName + "=" + dataString + ";\n");
+
+                if (jo != null && jo.getString("status").equals("success")) {
+                    JSONObject variable = client.getVariable(variableName).getJSONObject("data");
+                    if (variable.getString("name").equals(variableName)) {
+                        result = variable.getString("value");
+                    }
+                }else{
+                    result = dataString;
+                }
+                client.runCommand("clear " + variableName + "\n");
+                // TODO:将变量名添加到临时变量列表中，以便在程序结束时批量清除，但是M2PCode还无法实现
+//                temp_variable_names.add(variableName);
+            }
+        }
+        return result.trim();
 	}
 
 	public static boolean isStringMatrix(String matrixString) {
@@ -126,7 +162,7 @@ public class Data {
 			childMat[i] = new double[child.length];
 			for (int j = 0; j < child.length; j++) {
 				String doubleString = child[j].replaceAll("\\s+", "");
-				 childMat[i][j] = parseExpression(doubleString);
+				 childMat[i][j] = Double.parseDouble(doubleString);
 				// 使用fel进行表达式分析
 //				childMat[i][j] = Double.parseDouble(fel.eval(doubleString).toString());
 			}

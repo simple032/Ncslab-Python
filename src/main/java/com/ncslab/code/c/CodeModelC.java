@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import javax.websocket.Session;
 
+import com.ncslab.block.data.Data;
+import com.ncslab.code.m.MfcalcClient;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.session.SqlSession;
@@ -279,5 +281,23 @@ abstract public class CodeModelC extends CodeModel {
 
     public void simulate(Session session) throws ModelException{
 
+    }
+
+    public void cleanup(){
+        //1.批量删除临时变量
+        MfcalcClient client = MfcalcClient.getInstance(null);
+        String command = "clear";
+        if(!Data.getTemp_variable_names().isEmpty()) {
+            for(String temp_variable_name:Data.getTemp_variable_names()) {
+                command+=" "+temp_variable_name;
+            }
+            client.runCommand(command+"\n");
+            Data.getTemp_variable_names().clear();
+        }
+
+        //2.删除临时文件
+        if(!"true".equals(Optional.ofNullable(Property.instance.getProperty("debug")).orElse("false"))){
+            removeAllFiles();
+        }
     }
 }

@@ -3,11 +3,14 @@ package com.ncslab.block;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.ncslab.block.io.*;
 import com.ncslab.code.plc.CodeStructPLC;
 import lombok.Getter;
 import lombok.Setter;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -93,6 +96,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 		this.blockName=blockIn.getString("blockName");
         if (blockIn.get("paramValues") instanceof JSONObject) {
             this.paramValues=blockIn.getJSONObject("paramValues");
+//            parseParameterList();
         }
 		this.model=model;
 		this.blockPath=blockIn.getString("blockPath");
@@ -443,5 +447,41 @@ public class Block implements MCodeBlock, CCodeBlock{
 
     public void generateBlockUpdateCodePLC(CodeStructPLC code) {
 
+    }
+
+    protected double[] parseMatlabVector(String vecString){
+        String regEx = "[' ']+"; // 一个或多个空格
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(vecString);
+        JSONArray numArray=new JSONArray(m.replaceAll(",").trim());
+
+        double[] arr = new double[numArray.length()];
+        for(int i=0;i<numArray.length();i++) {
+            arr[i] = numArray.getDouble(i);
+        }
+        return arr;
+    }
+
+    protected double[][] parseMatlabMatrix(String matrixString) {
+        // 去除方括号
+        matrixString = matrixString.replace("[", "").replace("]", "");
+        // 按分号分割每一行
+        String[] rows = matrixString.split(";");
+
+        double[][] matrix = new double[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            String row = "["+rows[i].trim()+"]";
+            // 用逗号分割每一行的元素
+            matrix[i] = parseMatlabVector(row);
+        }
+        return matrix;
+    }
+
+    protected void parseParameterList() {
+        Vector<String> parameterNames = getParameterNames();
+        for(int i=0; i<parameterNames.size(); i++) {
+            parameterList.add(new Parameter(this, i+1, parameterNames.get(i),
+                paramValues.getString(parameterNames.get(i))));
+        }
     }
 }
