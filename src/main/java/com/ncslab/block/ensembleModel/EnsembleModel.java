@@ -58,10 +58,10 @@ public class EnsembleModel extends Block{
 
         this.solverString = paramValues.getString("solver").trim();
 
-        this.parameterList.add(this.m0);
-        this.parameterList.add(this.m1);
-        this.parameterList.add(this.l);
-        this.parameterList.add(this.initState);
+        parameterList.add(this.m0);
+        parameterList.add(this.m1);
+        parameterList.add(this.l);
+        parameterList.add(this.initState);
 
         this.inputPortList.add(new InputPort(this, 1));
         this.outputPort = new OutputPort(this, 1);

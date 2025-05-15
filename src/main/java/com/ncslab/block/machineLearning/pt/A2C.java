@@ -46,10 +46,10 @@ public class A2C extends PTModel {
         this.savePath = paramValues.getString("savePath").trim();
 
         // add the 4 parameters to parameterList
-        this.parameterList.add(this.inputFeatures);
-        this.parameterList.add(this.outputFeatures);
-        this.parameterList.add(this.learningRate);
-        this.parameterList.add(this.discountFactor);
+        parameterList.add(this.inputFeatures);
+        parameterList.add(this.outputFeatures);
+        parameterList.add(this.learningRate);
+        parameterList.add(this.discountFactor);
 
         // add the model to globalVariableList
         this.globalVariableList.add(this.modelVariable);

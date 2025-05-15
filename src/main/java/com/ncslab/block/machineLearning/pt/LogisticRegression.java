@@ -49,10 +49,10 @@ public class LogisticRegression extends PTModel {
         this.lossString = paramValues.getString("lossFunction").trim().toUpperCase();
         this.datasetString = paramValues.getString("dataset").trim().toLowerCase();
 
-        this.parameterList.add(this.inputFeatures);
-        this.parameterList.add(this.outputFeatures);
-        this.parameterList.add(this.learningRate);
-        this.parameterList.add(this.epochs);
+        parameterList.add(this.inputFeatures);
+        parameterList.add(this.outputFeatures);
+        parameterList.add(this.learningRate);
+        parameterList.add(this.epochs);
 
         this.globalVariableList.add(this.modelVariable);
 

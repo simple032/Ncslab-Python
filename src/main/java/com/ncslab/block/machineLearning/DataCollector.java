@@ -48,8 +48,8 @@ public class DataCollector extends Block{
         this.inputPortList.add(this._outputs);
         this.dataCollectorVariable = new DataCollectorVariable(this, 1, "data_collector");
 
-        this.parameterList.add(this.inputFeatures);
-        this.parameterList.add(this.outputFeatures);
+        parameterList.add(this.inputFeatures);
+        parameterList.add(this.outputFeatures);
         this.globalVariableList.add(this.dataCollectorVariable);
     }
 

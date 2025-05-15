@@ -52,11 +52,11 @@ public class MultilayerPerceptron extends PTModel {
         this.loadPath = paramValues.getString("loadPath").trim();
         this.savePath = paramValues.getString("savePath").trim();
 
-        this.parameterList.add(this.inputFeatures);
-        this.parameterList.add(this.outputFeatures);
-        this.parameterList.add(this.hiddenLayers);
-        this.parameterList.add(this.learningRate);
-        this.parameterList.add(this.epochs);
+        parameterList.add(this.inputFeatures);
+        parameterList.add(this.outputFeatures);
+        parameterList.add(this.hiddenLayers);
+        parameterList.add(this.learningRate);
+        parameterList.add(this.epochs);
 
         this.globalVariableList.add(this.modelVariable);
 

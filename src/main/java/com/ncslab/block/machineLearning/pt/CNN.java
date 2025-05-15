@@ -53,14 +53,14 @@ public class CNN extends MachineLearning {
         this.hiddenLayers = new Parameter(this, 7, "hiddenLayers", paramValues.getString("hiddenLayers"));//todo: matrix 2 vector
         this.dataset = new Parameter(this, 8, "dataset", paramValues.getString("dataset"));
         this.modelVariable = new MLVariable(this, 1, "CNN", "2333");
-        this.parameterList.add(this.inputFeatures);
-        this.parameterList.add(this.numClasses);
-        this.parameterList.add(this.activationFunction);
-        this.parameterList.add(this.learningRate);
-        this.parameterList.add(this.lossFunction);
-        this.parameterList.add(this.channelSize);
-        this.parameterList.add(this.hiddenLayers);
-        this.parameterList.add(this.dataset);
+        parameterList.add(this.inputFeatures);
+        parameterList.add(this.numClasses);
+        parameterList.add(this.activationFunction);
+        parameterList.add(this.learningRate);
+        parameterList.add(this.lossFunction);
+        parameterList.add(this.channelSize);
+        parameterList.add(this.hiddenLayers);
+        parameterList.add(this.dataset);
         this.globalVariableList.add(this.modelVariable);
 
         this.inputPortList.add(new InputPort(this, 1));
