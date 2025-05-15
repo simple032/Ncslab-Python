@@ -43,6 +43,10 @@ public class Parameter {
 
     public String getDataString() { return data.getDataString(); }
 
+	public double[]  getDoubleArray() { return data.getDoubleArray(); }
+
+	public double[][] getDoubleMatrix() { return data.getDoubleMatrix(); }
+
     public boolean equals(String string) { return string.equals(data.getDataString());}
 
 	public String getDefineString() {

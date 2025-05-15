@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Vector;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
@@ -163,8 +164,6 @@ public class Data {
 			for (int j = 0; j < child.length; j++) {
 				String doubleString = child[j].replaceAll("\\s+", "");
 				 childMat[i][j] = Double.parseDouble(doubleString);
-				// 使用fel进行表达式分析
-//				childMat[i][j] = Double.parseDouble(fel.eval(doubleString).toString());
 			}
 		}
 
@@ -249,4 +248,16 @@ public class Data {
 
 	}
 
+	public double[] getDoubleArray() {
+		// 获取二维数组
+        double[][] array2D = initMatrix.getArray();
+
+        // 提取第一行作为一维数组
+        double[] array1D = array2D[0];
+		return array1D;
+	}
+
+	public double[][] getDoubleMatrix() {
+		return initMatrix.getArray();
+	}
 }
