@@ -47,7 +47,7 @@ public class Parameter {
 
 	public double[][] getDoubleMatrix() { return data.getDoubleMatrix(); }
 
-    public boolean equals(String string) { return string.equals(data.getDataString());}
+    public boolean equals(String string) { return string.equals(data.getInitString());}
 
 	public String getDefineString() {
 		String defineString="";

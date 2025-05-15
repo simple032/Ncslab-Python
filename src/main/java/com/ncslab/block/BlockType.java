@@ -252,6 +252,8 @@ public class BlockType{
                 block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
         }catch(InvocationTargetException|NoSuchMethodException|InstantiationException|IllegalAccessException|NullPointerException e){
             log.error("e:", e);
+        }catch (Exception ee){
+            log.error("e:", ee);
         }
         if(block == null)
             throw(new ModelException("Can not find blocktype \" "+ blockType+ " \" in mapped function"));

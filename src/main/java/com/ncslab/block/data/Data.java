@@ -60,14 +60,12 @@ public class Data {
 	/* 根据从前端传递来的字符串建立数据 */
 	public Data(String inString) {
 
-		// setupFel();
         initString = inString.trim();
 
         dataString = parseExpression(inString);
         if (isStringMatrix(dataString)) {
             System.out.println("Matrix: " + dataString);
             dataType = DataType.MATRIX;
-
             initMatrix = parseMatrix(dataString);
         } else {
             try {
