@@ -1,0 +1,3 @@
+/* Code for discrete update of block Zero_Order_Hold(Inside):(${block.blockId}) ${block.blockName} */
+${stateOutput.getName()} = ${signal.getName()};
+${outputs.get(0)} = ${stateOutput.getName()};

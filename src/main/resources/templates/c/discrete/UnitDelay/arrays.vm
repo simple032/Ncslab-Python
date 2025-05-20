@@ -1,0 +1,2 @@
+/* Define arrays for block discrete_unit_Delay:(${block.blockId}) ${block.blockName} */
+double Block${block.blockId}_unit_delay_savedata[${signal.height}][${signal.width}*2];

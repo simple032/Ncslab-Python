@@ -1,0 +1,15 @@
+/* Code for initialization of block Discrete_Transfer_Fcn:(${block.blockId}) ${block.blockName} */
+${sampleTime.initCodeC}
+${num.initCodeC}
+${den.initCodeC}
+${initialStates.initCodeC}
+#set($i = 0)
+#if($states.size() > 1)
+  #set($stateSizeIndex = $states.size() - 1)
+  #foreach($i in [0..$stateSizeIndex])
+${states.get($i).getName()} = ${initialStates.getName()}(0, ${i});
+  #set($i = $i + 1)
+  #end
+#else
+  ${states.get(0).getName()} = ${initialStates.getName()};
+#end

@@ -1,0 +1,4 @@
+/* Code for initialization of block Zero_Order_Hold:(${block.blockId}) ${block.blockName} */
+${sampleTime.initCodeC}
+sample_time[sample_i] = ${sampleTime.getName()};
+sample_i = sample_i + 1;

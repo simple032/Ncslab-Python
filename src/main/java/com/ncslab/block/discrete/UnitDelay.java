@@ -9,9 +9,12 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
 import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
@@ -19,7 +22,6 @@ public class UnitDelay extends DiscreteBlock {
 
     Parameter sampleTime;
     Parameter initialCondition;
-
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -30,124 +32,117 @@ public class UnitDelay extends DiscreteBlock {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("sampleTime");
-        parameterNames.add("initialCondition");
-        outputNames.add("out1");
+        parameterNames.add("SampleTime");
+        parameterNames.add("InitialCondition");
         outputNames.add("out1");
         inputNames.add("in1");
     }
-    public UnitDelay(JSONObject blockIn, NCSLabModel model) {
-		super(blockIn,model);
-		inputPortList.add(new InputPort(this,1));
-//		outputPortList.add(new OutputPort(this,1,true));
-		outputPortList.add(new OutputPort(this,1,feedthrough));
-		sampleTime=new Parameter(this,1,"sampleTime",paramValues.getString("SampleTime"));
-		initialCondition=new Parameter(this,2,"initialCondition",paramValues.getString("InitialCondition"));
-		parameterList.add(sampleTime);
 
-		setSampleTime(sampleTime);
-
-		parameterList.add(initialCondition);
-
-    }
-	 //define arrays to save data
-	 public void generateArraysCodeC(CodeStructC code) {
-		 String arraysCode="/*Define arrays for block discrete_unit_Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
-		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		 arraysCode+="double "+"Block"+getBlockId()+"_unit_delay_savedata["+signal.getHeight()+"]["+signal.getWidth()+"*2];\n";
-		 code.addArraysCode(arraysCode);
-	 }
-
-	 public void generateInitCodeC(CodeStructC code) {
-			super.generateInitCodeC(code);
-			String initCode="/*Code for initialization of block Unit Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
-			initCode+=sampleTime.getInitCodeC();
-			initCode+=initialCondition.getInitCodeC();
-			initCode+="sample_time[sample_i]="+sampleTime.getName()+";\n";
-			initCode+="sample_i=sample_i+1;\n";
-			code.addInitCode(initCode);
-			}
-	 public void generateOutputCodeC (CodeStructC code){
-		  String outputCode="/*Code for output of block Unit Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-		  OutputPort out  = outputPortList.get(0);
-		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  outputCode+="real_T currentTime = model.time;\n";
-		  outputCode+="real_T sampleTimeTmp = "+sampleTime.getName()+"==-1?model.stepSize:"+sampleTime.getName()+";\n";
-		  switch(signal.getDataType()) {
-		  case REAL:
-//			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-			  outputCode+="if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
-			  outputCode+="Block"+getBlockId()+"_unit_delay_savedata[0][(int)(currentTime/sampleTimeTmp)%2]="+signal.getName()+";}\n";
-//			  outputCode+="Block"+getBlockId()+"_unit_delay_savedata[0][(int)(currentTime/"+sampleTime.getName()+")%2]="+signal.getName()+";}\n";
-//			  outputCode+="if(currentTime<"+sampleTime.getName()+") {\n";
-			  outputCode+="if(currentTime<sampleTimeTmp) {\n";
-			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-			  for(int i=0;i<1;i++){
-				  int k=i+1;
-			  outputCode+="Block"+getBlockId()+"_unit_delay_savedata[0]["+i+"]="+"Block"+getBlockId()+"_unit_delay_savedata[0]["+k+"];\n";}
-			  outputCode+="Block"+getBlockId()+"_unit_delay_savedata[0][1]="+signal.getName()+";}\n";
-			  outputCode+="if((currentTime+0.00001)<"+sampleTime.getName()+") {\n";
-			  outputCode+=out.getOutputSignalC().getName()+"="+initialCondition.getName()+";}\n";
-			  outputCode+="else {\n";
-			  outputCode+="if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
-			  outputCode+=out.getOutputSignalC().getName()+"=Block"+getBlockId()+"_unit_delay_savedata[0][(int)(currentTime/sampleTimeTmp+1)%2];}}\n";
-//			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-//			  outputCode+=out.getOutputSignalC().getName()+"=Block"+getBlockId()+"_unit_delay_savedata[0][(int)(currentTime/"+sampleTime.getName()+"+1)%2];}}\n";
-			  break;
-		  case MATRIX:
-			  for(int i=0; i<ops.getHeight(); i++) {
-					for(int j=0;j<ops.getWidth();j++) {
-			outputCode+="if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
-//			outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-			outputCode+="Block"+getBlockId()+"_unit_delay_savedata["+i+"][(int)(currentTime/sampleTimeTmp)%2+2*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
-//			outputCode+="Block"+getBlockId()+"_unit_delay_savedata["+i+"][(int)(currentTime/"+sampleTime.getName()+")%2+2*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
-//			outputCode+="if(currentTime<"+sampleTime.getName()+") {\n";
-			outputCode+="if(currentTime<sampleTimeTmp) {\n";
-			outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+initialCondition.getName()+";}\n";
-			outputCode+="else {\n";
-			outputCode+="if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
-//			outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-//			outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_unit_delay_savedata["+i+"][!((int)(currentTime/"+sampleTime.getName()+")%2)+2*"+j+"];}}\n";
-			outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_unit_delay_savedata["+i+"][!((int)(currentTime/sampleTimeTmp)%2)+2*"+j+"];}}\n";
-						outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-						  for(int n=0;n<1;n++){
-							  int k=n+1;
-						  outputCode+="Block"+getBlockId()+"_unit_delay_savedata["+i+"]["+n+"+2"+"*"+j+"]="+"Block"+getBlockId()+"_unit_delay_savedata["+i+"]["+k+"+2"+"*"+j+"];\n";}
-						  outputCode+="Block"+getBlockId()+"_unit_delay_savedata["+i+"]["+1+"+2"+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
-						  outputCode+="if(currentTime+0.00001<"+sampleTime.getName()+") {\n";
-						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+initialCondition.getName()+";}\n";
-						  outputCode+="else {\n";
-						  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-						  outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_unit_delay_savedata["+i+"]["+"2*"+j+"];}}\n";
-				   }
-				}
-			  break;
-			  }
-		  outputCode+="}\n";
-		  code.addOutputCode(outputCode);
-		  }
-	 public void updateDimension() throws MatDimException{
-		 super.updateDimension();
-			OutputPort out  = outputPortList.get(0);
-			InputPort in  = inputPortList.get(0);
-			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		    if(sampleTime.getDataType()!=DataType.REAL||initialCondition.getDataType()!=DataType.REAL) {
-                MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be a real double scalar(period)!\n \n");
-                throw(e);
+    // Add a method to calculate signal indices
+    private int[] calculateSignalIndices(int height, int width) {
+        int[] indices = new int[height * width];
+        int index = 0;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                indices[index++] = i * width + j;
             }
-            if((Double.parseDouble(paramValues.getString("SampleTime").trim())*1000000)%(model.getConfig().getFixedStep()*1000000)>0.000001) {
-                MatDimException e=new MatDimException("Parameter(sampleTime) of Block "+this.blockName+" must be an integer multiple of the fixed-step size!\n \n");
-                throw(e);
-		    }
-			out.setHeight(signal.getHeight());
-			out.setWidth(signal.getWidth());
-			out.getOutputSignalC().setHeight(signal.getHeight());
-			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());
-		}
+        }
+        return indices;
+    }
 
-	public void checkDimension() throws MatDimException{
-	}
+    public UnitDelay(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, feedthrough));
+
+        sampleTime = new Parameter(this, 1, "SampleTime", paramValues.getString("SampleTime"));
+        initialCondition = new Parameter(this, 2, "InitialCondition", paramValues.getString("InitialCondition"));
+
+        parameterList.add(sampleTime);
+        setSampleTime(sampleTime);
+        parameterList.add(initialCondition);
+    }
+
+    // Define arrays to save data
+    public void generateArraysCodeC(CodeStructC code) {
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("signal", signal);
+
+        String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/arrays.vm", context);
+        code.addArraysCode(codeStr);
+    }
+
+    public void generateInitCodeM(CodeStructM code) {
+        super.generateInitCodeM(code);
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("sampleTime", sampleTime);
+        context.put("initialCondition", initialCondition);
+
+        String codeStr = TemplateManager.renderTemplate("m/discrete/UnitDelay/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("sampleTime", sampleTime);
+        context.put("initialCondition", initialCondition);
+
+        String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        OutputPort out = outputPortList.get(0);
+        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("sampleTime", sampleTime);
+        context.put("initialCondition", initialCondition);
+        context.put("signal", signal);
+        context.put("outputs", getOutputPortVariables());
+
+        String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void updateDimension() throws MatDimException {
+        super.updateDimension();
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        if (sampleTime.getDataType() != DataType.REAL || initialCondition.getDataType() != DataType.REAL) {
+            MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be a real double scalar(period)!\n \n");
+            throw(e);
+        }
+
+        if ((Double.parseDouble(paramValues.getString("SampleTime").trim()) * 1000000) % (model.getConfig().getFixedStep() * 1000000) > 0.000001) {
+            MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be an integer multiple of the fixed-step size!\n \n");
+            throw(e);
+        }
+
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
+
+    public void checkDimension() throws MatDimException {
+        // No specific dimension checking needed
+    }
 }

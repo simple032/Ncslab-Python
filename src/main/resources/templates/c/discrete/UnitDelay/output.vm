@@ -1,0 +1,54 @@
+/* Code for output of block Unit Delay:(${block.blockId}) ${block.blockName} */
+real_T currentTime = model.time;
+real_T sampleTimeTmp = (${sampleTime.getName()} != -1) ? ${sampleTime.getName()} : model.stepSize;
+
+#if($signal.dataType == $realDataType)
+if(fabs(floor(currentTime/sampleTimeTmp+0.5) - currentTime/sampleTimeTmp) < 0.000001) {
+    Block${block.blockId}_unit_delay_savedata[0][(int)(currentTime/sampleTimeTmp)%2] = ${signal.getName()};
+}
+
+if(currentTime < sampleTimeTmp) {
+    if(fabs((int)(currentTime/${sampleTime.getName()}+0.5) - currentTime/${sampleTime.getName()}) < 0.000001 && mp->majorStep > 0) {
+        Block${block.blockId}_unit_delay_savedata[0][0] = Block${block.blockId}_unit_delay_savedata[0][1];
+        Block${block.blockId}_unit_delay_savedata[0][1] = ${signal.getName()};
+    }
+
+    if((currentTime + 0.00001) < ${sampleTime.getName()}) {
+        ${outputs.get(0)} = ${initialCondition.getName()};
+    } else {
+        if(fabs(floor(currentTime/sampleTimeTmp+0.5) - currentTime/sampleTimeTmp) < 0.000001) {
+            ${outputs.get(0)} = Block${block.blockId}_unit_delay_savedata[0][(int)(currentTime/sampleTimeTmp+1)%2];
+        }
+    }
+}
+#else
+#set($signalIndices = $block.calculateSignalIndices($signal.height, $signal.width))
+#foreach($index in $signalIndices)
+    #set($i = $index / $signal.width)
+    #set($j = $index % $signal.width)
+    if(fabs(floor(currentTime/sampleTimeTmp+0.5) - currentTime/sampleTimeTmp) < 0.000001) {
+        Block${block.blockId}_unit_delay_savedata[${i}][(int)(currentTime/sampleTimeTmp)%2+2*${j}] = ${signal.getName()}(${i},${j});
+    }
+
+    if(currentTime < sampleTimeTmp) {
+        ${outputs.get(0)}(${i},${j}) = ${initialCondition.getName()};
+    } else {
+        if(fabs(floor(currentTime/sampleTimeTmp+0.5) - currentTime/sampleTimeTmp) < 0.000001) {
+            ${outputs.get(0)}(${i},${j}) = Block${block.blockId}_unit_delay_savedata[${i}][!((int)(currentTime/sampleTimeTmp)%2)+2*${j}];
+        }
+    }
+#end
+
+if(fabs((int)(currentTime/${sampleTime.getName()}+0.5) - currentTime/${sampleTime.getName()}) < 0.000001 && mp->majorStep > 0) {
+    Block${block.blockId}_unit_delay_savedata[${i}][0+2*${j}] = Block${block.blockId}_unit_delay_savedata[${i}][1+2*${j}];
+    Block${block.blockId}_unit_delay_savedata[${i}][1+2*${j}] = ${signal.getName()}(${i},${j});
+}
+
+if(currentTime + 0.00001 < ${sampleTime.getName()}) {
+    ${outputs.get(0)}(${i},${j}) = ${initialCondition.getName()};
+} else {
+    if(fabs((int)(currentTime/${sampleTime.getName()}+0.5) - currentTime/${sampleTime.getName()}) < 0.000001) {
+        ${outputs.get(0)}(${i},${j}) = Block${block.blockId}_unit_delay_savedata[${i}][2*${j}];
+    }
+}
+#end

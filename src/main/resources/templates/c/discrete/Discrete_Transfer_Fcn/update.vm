@@ -1,0 +1,16 @@
+/* Code for Update of Discrete_Transfer_Fcn:(${block.blockId}) ${block.blockName} */
+Block${block.blockId}_discrete_transfer_savedata[0] = (${signal.getName()}
+#set($denWidthIndex = $den.width - 1)
+#set($stateIndices = $block.calculateStateIndices(1, $denWidthIndex))
+#foreach($index in $stateIndices)
+    $set($nextIndex = $index + $1)
+    - ${den.getName()}(0, $nextIndex) * ${states.get($index).getName()}#if($states.get($index).width == 1 && $states.get($index).height == 1)(0, 0)#end
+#end
+) / ${den.getName()}(0, 0);
+
+#set($stateIndices = $block.calculateStateIndices($lastIndex, 1))
+#foreach($index in $stateIndices)
+  $set($lastIndex = $index - 1)
+${states.get($index).getName()} = ${states.get($lastIndex).getName()};
+#end
+${states.get(0).getName()} = Block${block.blockId}_discrete_transfer_savedata[0];

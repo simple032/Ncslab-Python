@@ -1,0 +1,10 @@
+% Initialization code for Discrete Transfer Fcn block:(${block.blockId}) ${block.blockName}
+${sampleTime.initCodeM}
+${num.initCodeM}
+${den.initCodeM}
+${initialStates.initCodeM}
+#set($i = 0)
+#foreach($state in $states)
+${state.getName()} = ${initialStates.getName()}(1, ${i+1});
+#set($i = $i + 1)
+#end
