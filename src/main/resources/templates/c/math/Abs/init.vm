@@ -1,0 +1,3 @@
+## Abs block initialization
+#set($block = $blockInfo)
+/* Absolute value block ${block.getBlockName()} */

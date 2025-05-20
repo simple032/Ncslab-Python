@@ -1,0 +1,7 @@
+#set($input = $inputPortList.get(0))
+#set($output = $outputPortList.get(0))
+#set($inputSignal = $input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($outputSignal = $output.getOutputSignalC().getName())
+
+/* Code for Abs block $blockId */
+$outputSignal = fabs($inputSignal);

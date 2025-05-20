@@ -1,0 +1,25 @@
+#set($input1 = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($input2 = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($input3 = $inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($input4 = $inputPortList.get(3).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($output1 = $outputPortList.get(0).getOutputSignalC().getName())
+#set($output2 = $outputPortList.get(1).getOutputSignalC().getName())
+#set($output3 = $outputPortList.get(2).getOutputSignalC().getName())
+#set($function = $blockName)
+
+/* Code for dq02abc block $blockId */
+if(model.majorStep == 1){
+    #if($function == "Aligned with phase A axis")
+        $output1 = (cos($input4) * $input1 - sin($input4) * $input2 + 1 * $input3);
+        $output2 = (cos($input4 - 2*M_PI/3.0) * $input1 - sin($input4 - 2*M_PI/3.0) * $input2 + 1 * $input3);
+        $output3 = (cos($input4 + 2*M_PI/3.0) * $input1 - sin($input4 + 2*M_PI/3.0) * $input2 + 1 * $input3);
+    #elseif($function == "90 degrees behind phase A axis")
+        $output1 = (sin($input4) * $input1 + cos($input4) * $input2 + 1 * $input3);
+        $output2 = (sin($input4 - 2*M_PI/3.0) * $input1 + cos($input4 - 2*M_PI/3.0) * $input2 + 1 * $input3);
+        $output3 = (sin($input4 + 2*M_PI/3.0) * $input1 + cos($input4 + 2*M_PI/3.0) * $input2 + 1 * $input3);
+    #else
+        $output1 = (cos($input4) * $input1 - sin($input4) * $input2 + 1 * $input3);
+        $output2 = (cos($input4 - 2*M_PI/3.0) * $input1 - sin($input4 - 2*M_PI/3.0) * $input2 + 1 * $input3);
+        $output3 = (cos($input4 + 2*M_PI/3.0) * $input1 - sin($input4 + 2*M_PI/3.0) * $input2 + 1 * $input3);
+    #end
+}

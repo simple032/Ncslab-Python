@@ -1,0 +1,25 @@
+#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
+
+/* Code for Sign block $blockId */
+#if($inputSignal.dataType == "REAL")
+if($inputSignal > 0)
+    $outputSignal = 1.0;
+elseif($inputSignal == 0)
+    $outputSignal = 0;
+else
+    $outputSignal = -1.0;
+#elseif($inputSignal.dataType == "MATRIX")
+    #set($wMax = $inputSignal.getWidth() - 1)
+    #set($hMax = $inputSignal.getHeight() - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if($inputSignal($i, $j) > 0)
+        $outputSignal($i, $j) = 1.0;
+    elseif($inputSignal($i, $j) == 0)
+        $outputSignal($i, $j) = 0;
+    else
+        $outputSignal($i, $j) = -1.0;
+        #end
+    #end
+#end

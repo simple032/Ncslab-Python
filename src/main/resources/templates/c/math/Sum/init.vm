@@ -1,0 +1,3 @@
+## Sum block initialization
+#set($block = $blockInfo)
+/* Sum operation: ${block.paramValues.getString("Inputs")} */

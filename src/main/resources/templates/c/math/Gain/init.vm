@@ -1,0 +1,4 @@
+## Gain block initialization
+#set($block = $blockInfo)
+/* Gain value: ${block.paramValues.getString("Gain")} */
+${block.gain.getInitCodeC()}

@@ -1,0 +1,42 @@
+#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
+#set($operator = $operator.getInitString())
+
+/* Code for Rounding block $blockId */
+#if($inputSignal.dataType == "REAL")
+    #switch($operator)
+        #case("floor")
+            $outputSignal = floor($inputSignal);
+            #break
+        #case("ceil")
+            $outputSignal = ceil($inputSignal);
+            #break
+        #case("round")
+            $outputSignal = round($inputSignal);
+            #break
+        #case("fix")
+            $outputSignal = trunc($inputSignal);
+            #break
+    #endswitch
+#elseif($inputSignal.dataType == "MATRIX")
+    #set($height = $inputSignal.getHeight())
+    #set($width = $inputSignal.getWidth())
+    #foreach($i in [1..$height])
+        #foreach($j in [1..$width])
+            #switch($operator)
+                #case("floor")
+                    $outputSignal($i-1, $j-1) = floor($inputSignal($i-1, $j-1));
+                    #break
+                #case("ceil")
+                    $outputSignal($i-1, $j-1) = ceil($inputSignal($i-1, $j-1));
+                    #break
+                #case("round")
+                    $outputSignal($i-1, $j-1) = round($inputSignal($i-1, $j-1));
+                    #break
+                #case("fix")
+                    $outputSignal($i-1, $j-1) = trunc($inputSignal($i-1, $j-1));
+                    #break
+            #endswitch
+        #end
+    #end
+#end

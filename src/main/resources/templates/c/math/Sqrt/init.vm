@@ -1,0 +1,3 @@
+## Sqrt block initialization
+#set($block = $blockInfo)
+/* Square root function: ${block.paramValues.getString("SqrtFunction")} */

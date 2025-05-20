@@ -1,0 +1,18 @@
+#set($inputPortList = $inputPortList)
+#set($outputPortList = $outputPortList.get(0))
+#set($elements = $matrix.getElements())
+#set($height = $matrix.getHeight())
+#set($width = $matrix.getWidth())
+
+/* Code for Matrix block $blockId */
+#if($elements.size() > 0 && $elements[0].dataType == "REAL")
+    #foreach($element in $elements)
+        $outputPortList.getOutputSignalC().getName() = $element.getName();
+    #end
+#elseif($elements.size() > 0 && $elements[0].dataType == "MATRIX")
+    #foreach($i in [0..$height-1])
+        #foreach($j in [0..$width-1])
+            $outputPortList.getOutputSignalC().getName()($i, $j) = $elements[$i][$j].getName();
+        #end
+    #end
+#end

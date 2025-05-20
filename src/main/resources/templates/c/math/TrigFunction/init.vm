@@ -1,0 +1,3 @@
+## TrigFunction block initialization
+#set($block = $blockInfo)
+/* Trigonometric function: ${block.paramValues.getString("TrigonometricFunction")} */
