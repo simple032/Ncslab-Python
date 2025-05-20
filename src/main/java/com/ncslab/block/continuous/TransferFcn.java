@@ -1,5 +1,6 @@
 package com.ncslab.block.continuous;
 
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -16,6 +17,14 @@ import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import com.ncslab.util.TemplateManager;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class TransferFcn extends Block {
 	private double D=0;
@@ -68,8 +77,8 @@ public class TransferFcn extends Block {
         denParam = new Parameter(this, 2, "Denominator", paramValues.getString("Denominator"));
 		parameterList.add(denParam);
 
-        num=parseMatlabVector(numParam.getDataString());
-        den=parseMatlabVector(denParam.getDataString());
+        num=numParam.getDoubleArray();
+        den=denParam.getDoubleArray();
 
 		//归一化
 		double unit=den[0];
@@ -113,114 +122,86 @@ public class TransferFcn extends Block {
 		num=numShort;
 
 	}
-
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
 
-		String initCode="";
-		for(State xState:xStateList) {
-			initCode+=xState.getName()+
-					"=0;\n";
-		}
-		code.addInitCode(initCode);
-	}
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("states", xStateList);
 
+		String codeStr = TemplateManager.renderTemplate("m/continuous/TransferFcn/init.vm", context);
+		code.addInitCode(codeStr);
+	}
 
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
 
-		String outputCode=getOutputPortVariable(0)+"=0";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("states", xStateList);
+		context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
+		context.put("feedThrough", feedThrough);
+		context.put("D", D);
+		context.put("inputs", getInputPortVariables());
+		context.put("outputs", getOutputPortVariables());
 
-		int i=num.length-1;
-		for(State xState:xStateList) {
-			outputCode+="+"+xState.getName()+"*"+num[i];
-			i--;
-		}
-
-		if(feedThrough) {
-			outputCode+="+"+D+"*"+getInputPortVariable(0);
-		}
-
-		outputCode+=";\n";
-
-		code.addOutputCode(outputCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/TransferFcn/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	public void generateDerivativeCodeM(CodeStructM code) {
 		super.generateDerivativeCodeM(code);
 
-		String derivativeCode="";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("states", xStateList);
+		context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
+		context.put("inputs", getInputPortVariables());
 
-		for(int i=0;i<xStateList.size()-1;i++) {
-			derivativeCode+=xStateList.get(i).getDerivativeName()+"="
-					+xStateList.get(i+1).getName()
-					+";\n";
-		}
-
-		derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+getInputPortVariable(0);
-		int i=den.length-1;
-		for(State xState:xStateList) {
-			derivativeCode+="-"+xState.getName()+"*"+den[i];
-			i--;
-		}
-		derivativeCode+=");\n";
-
-		code.addDerivativeCode(derivativeCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/TransferFcn/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
 	}
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("states", xStateList);
 
-		for(State xState:xStateList) {
-			initCode+=xState.getName()+
-					"=0;\n";
-		}
-
-		code.addInitCode(initCode);
+		String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("states", xStateList);
+		context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
+		context.put("feedThrough", feedThrough);
+		context.put("D", D);
+		context.put("inputs", getInputPortVariables());
+		context.put("outputs", getOutputPortVariables());
 
-		outputCode+=getOutputPortVariable(0)+"=0";
-		int i=num.length-1;
-		for(State xState:xStateList) {
-			outputCode+="+"+xState.getName()+"*"+num[i];
-			i--;
-		}
-
-		if(feedThrough) {
-			outputCode+="+"+D+"*"+getInputPortVariable(0);
-		}
-
-		outputCode+=";\n";
-
-		code.addOutputCode(outputCode);
+		String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("states", xStateList);
+		context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
+		context.put("inputs", getInputPortVariables());
 
-		for(int i=0;i<xStateList.size()-1;i++) {
-			derivativeCode+=xStateList.get(i).getDerivativeName()+"="
-					+xStateList.get(i+1).getName()
-					+";\n";
-		}
-
-        // 分母不含状态时，则不生成导数
-        if(!xStateList.isEmpty()){
-            derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+getInputPortVariable(0);
-            int i=den.length-1;
-            for(State xState:xStateList) {
-                derivativeCode+="-"+xState.getName()+"*"+den[i];
-                i--;
-            }
-            derivativeCode+=");\n";
-        }
-
-		code.addDerivativeCode(derivativeCode);
+		String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
 	}
 }

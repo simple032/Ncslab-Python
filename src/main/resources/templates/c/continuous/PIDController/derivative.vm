@@ -1,0 +1,24 @@
+/*Code for Derivative of PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
+
+#set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+#set($cparaP = $cparaP)
+#set($stateIntegral = $stateIntegral)
+#set($stateFilter = $stateFilter)
+#set($blockId = $block.getBlockId())
+
+#if($signal.dataType == $realDataType && $cparaP.dataType == $realDataType)
+  ${stateIntegral.getDerivativeName()} = Block${blockId}save_data[2];
+  ${stateFilter.getDerivativeName()} = Block${blockId}save_data[3];
+#else
+  #set($height = $stateIntegral.getHeight())
+  #set($width = $stateIntegral.getWidth())
+  #set($hMax = $height - 1)
+  #set($wMax = $width - 1)
+
+  #foreach($i in [0..$hMax])
+    #foreach($j in [0..$wMax])
+      ${stateIntegral.getDerivativeName()}($i, $j) = Block${blockId}save_data[$i][$j*5+2];
+      ${stateFilter.getDerivativeName()}($i, $j) = Block${blockId}save_data[$i][$j*5+3];
+    #end
+  #end
+#end

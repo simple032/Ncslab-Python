@@ -15,14 +15,22 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
 
-public class VariableTransportDelay extends Block{
+public class VariableTransportDelay extends Block {
 
-	Parameter DelayType;
-	Parameter MaxDelayTime;
-	Parameter InitialOutput;
-	Parameter InitialBuffsize;
-	Parameter PadeOrder;
+    // Add a method to calculate buffer indices
+    private int[] calculateBufferIndices(int bufferSize) {
+        int[] indices = new int[bufferSize];
+        for (int i = 0; i < bufferSize; i++) {
+            indices[i] = i;
+        }
+        return indices;
+    }
 
+    Parameter DelayType;
+    Parameter MaxDelayTime;
+    Parameter InitialOutput;
+    Parameter InitialBuffsize;
+    Parameter PadeOrder;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -43,124 +51,109 @@ public class VariableTransportDelay extends Block{
         inputNames.add("in2");
     }
 
-	public VariableTransportDelay(JSONObject blockIn, NCSLabModel model) {
-		super(blockIn, model);
+    public VariableTransportDelay(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
 
-		//2个输入，1个输出
-		inputPortList.add(new InputPort(this,1));
-		inputPortList.add(new InputPort(this,2));
-		outputPortList.add(new OutputPort(this,1,false));
+        // 2个输入，1个输出
+        inputPortList.add(new InputPort(this, 1));
+        inputPortList.add(new InputPort(this, 2));
+        outputPortList.add(new OutputPort(this, 1, false));
 
-		DelayType=new Parameter(this,parameterList.size()+1,"DelayType",paramValues.getString("VariableDelayType"));
-		parameterList.add(DelayType);
-		MaxDelayTime=new Parameter(this,parameterList.size()+1,"MaxDelayTime",paramValues.getString("MaxDelayTime"));
-		parameterList.add(MaxDelayTime);
-		InitialOutput=new Parameter(this,parameterList.size()+1,"InitialOutput",paramValues.getString("InitialOutput"));
-		parameterList.add(InitialOutput);
-		InitialBuffsize=new Parameter(this,parameterList.size()+1,"InitialBuffsize",paramValues.getString("InitialBuffsize"));
-		parameterList.add(InitialBuffsize);
-		PadeOrder=new Parameter(this,parameterList.size()+1,"PadeOrder",paramValues.getString("PadeOrder"));
-		parameterList.add(PadeOrder);
-	}
+        DelayType = new Parameter(this, parameterList.size() + 1, "DelayType", paramValues.getString("VariableDelayType"));
+        parameterList.add(DelayType);
+        MaxDelayTime = new Parameter(this, parameterList.size() + 1, "MaxDelayTime", paramValues.getString("MaxDelayTime"));
+        parameterList.add(MaxDelayTime);
+        InitialOutput = new Parameter(this, parameterList.size() + 1, "InitialOutput", paramValues.getString("InitialOutput"));
+        parameterList.add(InitialOutput);
+        InitialBuffsize = new Parameter(this, parameterList.size() + 1, "InitialBuffsize", paramValues.getString("InitialBuffsize"));
+        parameterList.add(InitialBuffsize);
+        PadeOrder = new Parameter(this, parameterList.size() + 1, "PadeOrder", paramValues.getString("PadeOrder"));
+        parameterList.add(PadeOrder);
+    }
 
+    public void generateArraysCodeC(CodeStructC code) {
+        String arraysCode = "/*Define arrays for block VariableTransportDelay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 
-	public void generateArraysCodeC(CodeStructC code) {
-		 String arraysCode="/*Define arrays for block VariableTransportDelay:("+getBlockId()+")"+getBlockName()+"*/\n";
+        arraysCode += "int VariableTransportDelay" + getBlockId() + "BuffSize=(" + paramValues.getDouble("MaxDelayTime") + "/STEP_SIZE+1>" + paramValues.getString("InitialBuffsize") + ")?" + "((int)(" + paramValues.getDouble("MaxDelayTime") + "/STEP_SIZE+1)):" + paramValues.getString("InitialBuffsize") + ";\n";
+        arraysCode += "double *Block" + getBlockId() + "VariableTransportDelay_saveData;\n";
+        arraysCode += "double *Block" + getBlockId() + "VariableTransport_Ti_saveData;\n";
 
-//		 arraysCode+="int VariableTransportDelay"+getBlockId()+"BuffSize="+paramValues.getInt("InitialBuffsize")+";\n";
-//		 arraysCode+="if("+paramValues.getInt("MaxDelayTime")+"/STEP_SIZE>"+paramValues.getInt("InitialBuffsize")+"){\n"
-//		 		   + "VariableTransportDelay"+getBlockId()+"BuffSize=(int)("+paramValues.getInt("MaxDelayTime")+"/STEP_SIZE);}\n";
-//		 arraysCode+="double "+"Block"+getBlockId()+"VariableTransportDelay_saveData[VariableTransportDelay"+getBlockId()+"BuffSize]={0};\n";
-//		 arraysCode+="for(int i=0;i<VariableTransportDelay"+getBlockId()+"BuffSize;i++){\n"
-//		 		   + "Block"+getBlockId()+"VariableTransportDelay_saveData[i]="+paramValues.getDouble("InitialOutput")+";\n"
-//		 		   + "}\n";
+        code.addArraysCode(arraysCode);
+    }
 
-		 arraysCode+="int VariableTransportDelay"+getBlockId()+"BuffSize=("+paramValues.getDouble("MaxDelayTime")+"/STEP_SIZE+1>"+paramValues.getString("InitialBuffsize")+")?"
-		 		   + "((int)("+paramValues.getDouble("MaxDelayTime")+"/STEP_SIZE+1)):"+paramValues.getString("InitialBuffsize")+";\n";
-//		 arraysCode+="double "+"Block"+getBlockId()+"VariableTransportDelay_saveData["+paramValues.getInt("InitialBuffsize")+"]={0};\n";
-		 arraysCode+="double *Block"+getBlockId()+"VariableTransportDelay_saveData;\n";
-		 arraysCode+="double *Block"+getBlockId()+"VariableTransport_Ti_saveData;\n";
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        String initCode = "/*Code for initialization of block VariableTransportDelay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 
-		 code.addArraysCode(arraysCode);
-	 }
+        initCode += MaxDelayTime.getInitCodeC();
+        initCode += PadeOrder.getInitCodeC();
 
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block VariableTransportDelay:("+getBlockId()+")"+getBlockName()+"*/\n";
+        initCode += "Block" + getBlockId() + "VariableTransportDelay_saveData=(double *)malloc(VariableTransportDelay" + getBlockId() + "BuffSize*sizeof(double));\n";
+        initCode += "Block" + getBlockId() + "VariableTransport_Ti_saveData=(double *)malloc(VariableTransportDelay" + getBlockId() + "BuffSize*sizeof(double));\n";
 
-		initCode+=MaxDelayTime.getInitCodeC();
-		initCode+=PadeOrder.getInitCodeC();
+        initCode += "for(int i=0;i<VariableTransportDelay" + getBlockId() + "BuffSize;i++){\n"
+                + "Block" + getBlockId() + "VariableTransportDelay_saveData[i]=" + paramValues.getDouble("InitialOutput") + ";\n"
+                + "Block" + getBlockId() + "VariableTransport_Ti_saveData[i]=0;\n"
+                + "}\n";
 
-		initCode+="Block"+getBlockId()+"VariableTransportDelay_saveData=(double *)malloc(VariableTransportDelay"+getBlockId()+"BuffSize*sizeof(double));\n";
-		initCode+="Block"+getBlockId()+"VariableTransport_Ti_saveData=(double *)malloc(VariableTransportDelay"+getBlockId()+"BuffSize*sizeof(double));\n";
+        code.addInitCode(initCode);
+    }
 
-		initCode+="for(int i=0;i<VariableTransportDelay"+getBlockId()+"BuffSize;i++){\n"
-		 		   + "Block"+getBlockId()+"VariableTransportDelay_saveData[i]="+paramValues.getDouble("InitialOutput")+";\n"
-		 		   + "Block"+getBlockId()+"VariableTransport_Ti_saveData[i]=0;\n"
-		 		   + "}\n";
+    public void generateOutputCodeC(CodeStructC code) {
+        String outputCode = "/*Code for output of block VariableTransportDelay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 
-		code.addInitCode(initCode);
-	}
+        OutputPort out = outputPortList.get(0);
+        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        outputCode += "if(mp->majorStep>0) {\n";
 
-	 public void generateOutputCodeC (CodeStructC code){
-		  String outputCode="/*Code for output of block VariableTransportDelay:("+getBlockId()+")"+getBlockName()+"*/\n";
+        outputCode += "for(int i=VariableTransportDelay" + getBlockId() + "BuffSize-1;i>0;i--){\n"
+                + "Block" + getBlockId() + "VariableTransportDelay_saveData[i]=Block" + getBlockId() + "VariableTransportDelay_saveData[i-1];\n"
+                + "Block" + getBlockId() + "VariableTransport_Ti_saveData[i]=Block" + getBlockId() + "VariableTransport_Ti_saveData[i-1];\n"
+                + "}\n"
+                + "Block" + getBlockId() + "VariableTransportDelay_saveData[0]=" + signal.getName() + ";\n";
 
-		  OutputPort out  = outputPortList.get(0);
-		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  outputCode+="if(mp->majorStep>0) {\n";
+        outputCode += "{real_T delayTime = " + signal2.getName() + ";\n"
+                + "if(delayTime>=" + MaxDelayTime.getName() + "){delayTime=" + MaxDelayTime.getName() + ";}\n"
+                + "else if(delayTime<=0) {delayTime=STEP_SIZE;}\n";
 
+        outputCode += "Block" + getBlockId() + "VariableTransport_Ti_saveData[0]=1.0/delayTime;\n";
 
-		  outputCode+="for(int i=VariableTransportDelay"+getBlockId()+"BuffSize-1;i>0;i--){\n"
-		 		   + "Block"+getBlockId()+"VariableTransportDelay_saveData[i]=Block"+getBlockId()+"VariableTransportDelay_saveData[i-1];\n"
-		 		   + "Block"+getBlockId()+"VariableTransport_Ti_saveData[i]=Block"+getBlockId()+"VariableTransport_Ti_saveData[i-1];\n"
-		 		   + "}\n"
-		 		   + "Block"+getBlockId()+"VariableTransportDelay_saveData[0]="+signal.getName()+";\n";
+        if (paramValues.getString("VariableDelayType").equals("Variable Time Delay")) {
+            outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=Block" + getBlockId() + "VariableTransportDelay_saveData[(int)floor(delayTime/STEP_SIZE)];\n";
+        } else {
+            outputCode += "int delayTimeIndex = 0;\n"
+                    + "double intergSum=0;\n"
+                    + "for(int i=0;i<VariableTransportDelay" + getBlockId() + "BuffSize;i++){\n"
+                    + "integSum+=STEP_SIZE*Block" + getBlockId() + "VariableTransport_Ti_saveData[i];\n"
+                    + "delayTimeIndex=i;\n"
+                    + "if(integSum>=1) {break;}\n"
+                    + "}\n"
+                    + outputPortList.get(0).getOutputSignalC().getName() + "=Block" + getBlockId() + "VariableTransportDelay_saveData[delayTimeIndex];\n";
+        }
 
-		  outputCode+="{real_T delayTime = "+signal2.getName()+";\n"
-				  	+ "if(delayTime>="+MaxDelayTime.getName()+"){delayTime="+MaxDelayTime.getName()+";}\n"
-				  	+ "else if(delayTime<=0) {delayTime=STEP_SIZE;}\n";
+        outputCode += "}\n";
 
-		  outputCode+= "Block"+getBlockId()+"VariableTransport_Ti_saveData[0]=1.0/delayTime;\n";
+        code.addOutputCode(outputCode);
+    }
 
-		  if(paramValues.getString("VariableDelayType").equals("Variable Time Delay")) {
-			  outputCode+= outputPortList.get(0).getOutputSignalC().getName()+"=Block"+getBlockId()+"VariableTransportDelay_saveData[(int)floor(delayTime/STEP_SIZE)];\n";
-		  }else {
-			  outputCode+="int delayTimeIndex = 0;\n"
-			  			+ "double intergSum=0;\n"
-			  			+ "for(int i=0;i<VariableTransportDelay"+getBlockId()+"BuffSize;i++){\n"
-			  			+ "	intergSum+=STEP_SIZE*Block"+getBlockId()+"VariableTransport_Ti_saveData[i];\n"
-			  			+ "	delayTimeIndex=i;\n"
-			  			+ "	if(intergSum>=1) {break;}\n"
-			  			+ "}\n"
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-			  			+ outputPortList.get(0).getOutputSignalC().getName()+"=Block"+getBlockId()+"VariableTransportDelay_saveData[delayTimeIndex];\n";
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
 
-			  outputCode+="}\n";
-		  }
-
-		  outputCode+="}\n";
-
-		  code.addOutputCode(outputCode);
-
-	 }
-
-	 public void updateDimension() throws MatDimException{
-			OutputPort out  = outputPortList.get(0);
-			InputPort in  = inputPortList.get(0);
-			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-			out.setHeight(signal.getHeight());
-			out.setWidth(signal.getWidth());
-			out.getOutputSignalC().setHeight(signal.getHeight());
-			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());
-		}
-	public void checkDimension() throws MatDimException{
-		 if(MaxDelayTime.getDataType()!=DataType.REAL||InitialOutput.getDataType()!=DataType.REAL||InitialBuffsize.getDataType()!=DataType.REAL||PadeOrder.getDataType()!=DataType.REAL) {
-				MatDimException e=new MatDimException("Parameter of Block "+this.blockName+" can't be Matrix!\n \n");
-				throw(e);
-			}
-	}
+    public void checkDimension() throws MatDimException {
+        if (MaxDelayTime.getDataType() != DataType.REAL || InitialOutput.getDataType() != DataType.REAL || InitialBuffsize.getDataType() != DataType.REAL || PadeOrder.getDataType() != DataType.REAL) {
+            MatDimException e = new MatDimException("Parameter of Block " + this.blockName + " can't be Matrix!\n \n");
+            throw (e);
+        }
+    }
 }

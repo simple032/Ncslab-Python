@@ -47,12 +47,13 @@ public class TransportDelay extends Block {
 
 	public TransportDelay(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);
-		test = parseMatrix(paramValues.getString("DelayTime"));
+
 		initialoutput = new Parameter(this, 1, "InitialOutput", paramValues.getString("InitialOutput"));
 		parameterList.add(initialoutput);
 
 		delaytime = new Parameter(this, 2, "DelayTime", paramValues.getString("DelayTime"));
-		parameterList.add(delaytime);
+		test = delaytime.getMatrix();
+        parameterList.add(delaytime);
 
         bufferSize = new Parameter(this, 3, "BufferSize", paramValues.optString("BufferSize","1024"));
         parameterList.add(bufferSize);
@@ -61,23 +62,6 @@ public class TransportDelay extends Block {
 		inputPortList.add(input);
 		output = new OutputPort(this, 1, false);
 		outputPortList.add(output);
-	}
-
-	private Matrix parseMatrix(String matrixString) {
-		matrixString = matrixString.replaceAll("\\[\\s*", "");
-		matrixString = matrixString.replaceAll("\\s*\\]", "");
-
-		String[] parentMat = matrixString.split("\\s*;\\s*");
-		double[][] childMat = new double[parentMat.length][];
-		for (int i = 0; i < parentMat.length; i++) {
-			String[] child = parentMat[i].split("(\\s*\\,\\s*)|(\\s+)");
-			childMat[i] = new double[child.length];
-			for (int j = 0; j < child.length; j++) {
-				String doubleString = child[j].replaceAll("\\s+", "");
-				childMat[i][j] = Double.parseDouble(doubleString);
-			}
-		}
-		return new Matrix(childMat);
 	}
 
     private boolean isFixedStepSolver(String solver) {
@@ -135,8 +119,8 @@ public class TransportDelay extends Block {
                                 for (int j = 0; j < signal.getWidth(); j++) {
                                     int bufferLen = calculateBufferLength(paramValues.getDouble("DelayTime"));
                                     initCodeBuilder.append("  for(int m=0; m<").append(bufferLen).append("; m++) {\n");
-                                    initCodeBuilder.append("    Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[m] = ").append(initialoutput.getName())
+                                    initCodeBuilder.append("    Block").append(getBlockId()).append("_transport_delay_savedata")
+                                        .append("[m] = ").append(initialoutput.getName())
                                         .append(";\n");
                                     initCodeBuilder.append("  }\n");
                                 }
@@ -171,11 +155,12 @@ public class TransportDelay extends Block {
             }
 
             int totalElements = Math.max(1, rows * cols);
-            initCodeBuilder.append("init_buffer(&").append(getBufferName())
-                .append(", ").append(bufferSize.getData().getIntValue())
-                .append(", ").append(initialoutput.getName())
-                .append(");\n");
+
         }
+        initCodeBuilder.append("init_buffer(&").append(getBufferName())
+            .append(", ").append(bufferSize.getData().getIntValue())
+            .append(", ").append(initialoutput.getName())
+            .append(");\n");
         initCode += initCodeBuilder.toString();
 		code.addInitCode(initCode);
 	}
@@ -243,8 +228,9 @@ public class TransportDelay extends Block {
 //                + bufferSize.getData().getIntValue() + "];\n";
 //            arraysCode += "double " + "Block" + getBlockId() + "yout[" + totalElements + "]["
 //                + bufferSize.getData().getIntValue() + "];\n";
-            arraysCode += "Buffer " + "Block" + getBlockId() + "_buffer;\n";
+
         }
+        arraysCode += "Buffer " + getBufferName() + ";\n";
         code.addArraysCode(arraysCode);
     }
 

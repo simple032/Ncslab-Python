@@ -1,0 +1,28 @@
+/*Code for initialization of block PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
+
+${cparaP.getInitCodeC()}
+${cparaI.getInitCodeC()}
+${cparaD.getInitCodeC()}
+${cparaN.getInitCodeC()}
+
+#if($limitOutput == "on")
+  ${lowerSaturationLimit.getInitCodeC()}
+  ${upperSaturationLimit.getInitCodeC()}
+#end
+
+#if($cparaP.dataType == $realDataType && $stateIntegral.dataType == $realDataType)
+  ${stateIntegral.getName()} = 0;
+  ${stateFilter.getName()} = 0;
+#else
+  #set($height = $stateIntegral.getHeight())
+  #set($width = $stateIntegral.getWidth())
+  #set($hMax = $height - 1)
+  #set($wMax = $width - 1)
+
+  #foreach($i in [0..$hMax])
+    #foreach($j in [0..$wMax])
+      ${stateIntegral.getName()}($i, $j) = 0;
+      ${stateFilter.getName()}($i, $j) = 0;
+    #end
+  #end
+#end

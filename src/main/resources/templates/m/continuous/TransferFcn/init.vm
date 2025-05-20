@@ -1,0 +1,4 @@
+% Initialization code for Transfer Fcn:(${block.blockId}) ${block.blockName}
+#foreach($state in $states)
+${state.getName()} = 0;
+#end

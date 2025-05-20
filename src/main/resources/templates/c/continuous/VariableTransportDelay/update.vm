@@ -1,0 +1,4 @@
+/* 更新可变传输延迟缓冲区：$block.getBlockId() $block.getBlockName() */
+${block.getInputBufferName($block.getCurrentIndexName())} = $inputs.get(0);
+${block.getTimeBufferName($block.getCurrentIndexName())} = $block.getCurrentTimeName();
+${block.getCurrentIndexName()} = (${block.getCurrentIndexName()} + 1) % $bufferSize;

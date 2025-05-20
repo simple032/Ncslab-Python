@@ -15,6 +15,9 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+
 public class StateSpace extends Block{
 	//private double D=0;
 	private boolean feedThrough=false;
@@ -91,41 +94,32 @@ public class StateSpace extends Block{
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-		String initCode="";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("A", A);
+		context.put("B", B);
+		context.put("C", C);
+		context.put("D", D);
+		context.put("X0", X0);
+		context.put("xState", xState);
 
-		initCode+=A.getInitCodeM();
-		initCode+=B.getInitCodeM();
-		initCode+=C.getInitCodeM();
-		initCode+=D.getInitCodeM();
-		initCode+=X0.getInitCodeM();
-
-		/*
-        int i=0;
-		for(State xState:xStateList) {
-			initCode+=xState.getName()+
-					"="+X0.getName()+"("+(i+1)+",1)"+";\n";
-			i++;
-		}*/
-
-		initCode+=xState.getName()+"="+X0.getName()+";\n";
-
-		code.addInitCode(initCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/StateSpace/init.vm", context);
+		code.addInitCode(codeStr);
 	}
    public void generateOutputCodeM(CodeStructM code) {
-
+   
 		super.generateOutputCodeM(code);
-		String outputCode="";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("C", C);
+		context.put("D", D);
+		context.put("xState", xState);
+		context.put("feedThrough", feedThrough);
 
-
-		if(this.getOutputPortList().get(0).getFeedThrough()) {
-			outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+"+"+D.getName()+"*"+this.getInputPortVariable(0)+";\n";
-		}
-		else {
-			outputCode+=this.getOutputPortVariable(0)+"="+C.getName()+"*"+xState.getName()+";\n";
-		}
-
-		code.addOutputCode(outputCode);
-
+		String codeStr = TemplateManager.renderTemplate("m/continuous/StateSpace/output.vm", context);		
+		code.addOutputCode(codeStr);
 	}
    public void generateDerivativeCodeM(CodeStructM code) {
 	    super.generateDerivativeCodeM(code);
@@ -139,75 +133,45 @@ public class StateSpace extends Block{
    public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block State Space:("+getBlockId()+")"+getBlockName()+"*/\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("A", A);
+		context.put("B", B);
+		context.put("C", C);
+		context.put("D", D);
+		context.put("X0", X0);
+		context.put("xState", xState);
 
-		//initCode+="/*******************************/\n";
-		initCode+=A.getInitCodeC();
-		initCode+=B.getInitCodeC();
-		initCode+=C.getInitCodeC();
-		initCode+=D.getInitCodeC();
-		initCode+=X0.getInitCodeC();
-
-		/*
-		for(int i=0;i<xState.getHeight();i++) {
-			initCode+=xState.getName()+
-					"="+X0.getName()+"("+i+",0)"+";\n";
-		}
-		*/
-
-		initCode+=xState.getName()+"="+X0.getName()+";\n";
-		//initCode+="/*******************************/\n";
-
-		code.addInitCode(initCode);
+		String codeStr = TemplateManager.renderTemplate("c/continuous/StateSpace/init.vm", context);
+		code.addInitCode(codeStr);
    }
 
    public void generateOutputCodeC(CodeStructC code) {
-	   super.generateOutputCodeC(code);
+		super.generateOutputCodeC(code);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("C", C);
+		context.put("D", D);
+		context.put("xState", xState);
+		context.put("feedThrough", feedThrough);
 
-	   String outputCode="/*Code for output of block State Space:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-	   outputCode+="/*******************************/\n";
-
-	   OutputPort out=this.getOutputPortList().get(0);
-       String expression = C.getName() + "*" + xState.getName();
-
-       if (this.feedThrough) {
-           expression += "+" + D.getName() + "*" + this.getInputPortVariable(0);
-       }
-
-       switch (out.getOutputSignalC().getDataType()) {
-           case MATRIX:
-               outputCode += this.getOutputPortVariable(0) + "=" + expression + ";\n";
-               break;
-           case REAL:
-               outputCode += this.getOutputPortVariable(0) + "=(" + expression + ")";
-               if(!(A.isScalar() && B.isScalar() && C.isScalar() && D.isScalar()))
-               {
-                   outputCode += "(0,0)";
-               }
-               outputCode += ";\n";
-               break;
-       }
-	   outputCode+="/*******************************/\n";
-
-	   code.addOutputCode(outputCode);
+		String codeStr = TemplateManager.renderTemplate("c/continuous/StateSpace/output.vm", context);
+		code.addOutputCode(codeStr);
    }
 
    public void generateDerivativeCodeC(CodeStructC code) {
-	   super.generateDerivativeCodeC(code);
+   		super.generateDerivativeCodeC(code);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("A", A);
+		context.put("B", B);
+		context.put("xState", xState);
 
-	   String derivativeCode="/*Code for Derivative of block State Space:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-		 for(int i=0;i<A.getHeight();i++) {
-		    derivativeCode+=xState.getDerivativeName();
-             if(!(A.isScalar() && B.isScalar() && C.isScalar() && D.isScalar()))
-             {
-                 derivativeCode += "("+i+",0)";
-             }
-             derivativeCode += "=0;\n";
-		 }
-	   derivativeCode+=xState.getDerivativeName()+"="+A.getName()+"*"+xState.getName()+"+"+B.getName()+"*"+this.getInputPortVariable(0)+";\n";
-	   code.addDerivativeCode(derivativeCode);
+		String codeStr = TemplateManager.renderTemplate("c/continuous/StateSpace/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
    }
 
    public void updateDimension() throws MatDimException{

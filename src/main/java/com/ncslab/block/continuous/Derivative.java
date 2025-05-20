@@ -4,6 +4,8 @@ import com.ncslab.block.BlockType;
 import com.ncslab.block.io.*;
 import lombok.Getter;
 import org.json.JSONObject;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -42,120 +44,75 @@ public class Derivative extends Block {
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
-		String initCode = "";
-
 		super.generateInitCodeM(code);
 
-		initCode += stateIntegral.getName() + "=0;\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("state", stateIntegral);
 
-		code.addInitCode(initCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/Derivative/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 	public void generateArraysCodeC(CodeStructC code) {
 		String arraysCode = "/*Define arrays for block Derivative(" + getBlockId() + ")" + getBlockName()
 				+ "*/\n";
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		arraysCode+= "double " + "Block" + getBlockId() + "tout["+signal.getHeight()+"]["+signal.getWidth()+"];\n";
-		arraysCode+= "double " + "Block" + getBlockId() + "yout["+signal.getHeight()+"]["+signal.getWidth()+"];\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("signal", signal);
 		code.addArraysCode(arraysCode);
 	}
 	public void generateDerivativeCodeM(CodeStructM code) {
-		String derivativeCode = "";
-
 		super.generateDerivativeCodeM(code);
 
-		derivativeCode += stateIntegral.getDerivativeName() + "="
-				+ inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + ";\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("state", stateIntegral);
+		context.put("input", getInputPortVariables()[0]);
 
-		code.addDerivativeCode(derivativeCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/Derivative/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
 	}
 
 	public void generateOutputCodeM(CodeStructM code) {
-
-		String outputCode = "";
-
 		super.generateOutputCodeM(code);
 
-		outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + stateIntegral.getName() + ";\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("output", getOutputPortVariables()[0]);
+		context.put("state", stateIntegral);
 
-		code.addOutputCode(outputCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/Derivative/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		String initCode = "/*Code for initialization of block Derivative:(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		switch (signal.getDataType()) {
-		case REAL:
-			initCode += stateIntegral.getName() + "=0;\n";
-			break;
-		case MATRIX:
-			for (int i = 0; i < signal.getHeight(); i++) {
-				for (int j = 0; j < signal.getWidth(); j++) {
-					initCode += stateIntegral.getName() + "(" + i + "," + j + ")=0;\n";
-				}
-			}
-			break;
-		}
-		code.addInitCode(initCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+        context.put("realDataType", DataType.REAL);
+		context.put("signal", signal);
+		context.put("state", stateIntegral);
+		context.put("output", getOutputPortVariables()[0]);
+
+
+		String codeStr = TemplateManager.renderTemplate("c/continuous/Derivative/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode = "/*Code for output of block Derivative:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		String ss=this.model.getConfig().getSolver();
-		if(ss.equals("ode1")||ss.equals("ode2")||ss.equals("ode3")||ss.equals("ode4")||ss.equals("ode5")||ss.equals("ode6")) {
-		switch (signal.getDataType()) {
-		case REAL:
-			  outputCode+="if(sfcnIsMajorStep()) {\n";
-			outputCode += this.getOutputPortVariable(0) + "=(" + signal.getName() + "-" + stateIntegral.getName()
-					+ ")/model.stepSize" + ";\n";
-			outputCode += stateIntegral.getName() + "=" + signal.getName() + ";\n";
-			outputCode+="}\n";
-			break;
-		case MATRIX:
-			for (int i = 0; i < signal.getHeight(); i++) {
-				for (int j = 0; j < signal.getWidth(); j++) {
-					outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")" + "=(" + signal.getName()
-							+ "(" + i + "," + j + ")" + "-" + stateIntegral.getName() + "(" + i + "," + j + ")"
-							+ ")/model.stepSize" + ";\n";
-					outputCode += stateIntegral.getName() + "(" + i + "," + j + ")" + "=" + signal.getName() + "(" + i
-							+ "," + j + ")" + ";\n";
-				}
-			}
-			break;
-		  }
-		}else {
-			switch (signal.getDataType()) {
-			case REAL:
-				outputCode+="if(sfcnIsMajorStep()) {\n";
-				outputCode+="if(model.time>1e-7){\n";
-                outputCode += this.getOutputPortVariable(0) + "=(" + signal.getName() + "-" + "Block" + getBlockId() + "yout[0][0]"
-						+ ")/(model.time-Block" + getBlockId() + "tout[0][0]);\n";
-				 outputCode +="Block" + getBlockId() + "yout[0][0]=" + signal.getName() + ";\n";
-				  outputCode+="Block" + getBlockId() + "tout[0][0]=model.time;\n";
-                outputCode+="}\n";
-                outputCode+="else{\n";
-                outputCode += this.getOutputPortVariable(0) + "=0;\n";
-                outputCode+="}\n";
-				  outputCode+="}\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+        context.put("realDataType", DataType.REAL);
+		context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+		context.put("state", stateIntegral);
+		context.put("solver", this.model.getConfig().getSolver());
 
-				break;
-			case MATRIX:
-				outputCode+="if(sfcnIsMajorStep()) {\n";
-				for (int i = 0; i < signal.getHeight(); i++) {
-					for (int j = 0; j < signal.getWidth(); j++) {
-						outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")" + "=(" + signal.getName()	+ "(" + i + "," + j + ")" + "-" + "Block" + getBlockId() + "yout[" + i+ "][" + j + "])/(model.time-Block" + getBlockId() + "tout[" + i+ "][" + j + "]);\n";
-						outputCode += "Block" + getBlockId() + "yout[" + i+ "][" + j + "]=" + signal.getName() + "(" + i+ "," + j + ")" + ";\n";
-						 outputCode+="Block" + getBlockId() + "tout[" + i+ "][" + j + "]=model.time;\n";
-					}
-				}
-				 outputCode+="}\n";
-				break;
-		  }
-		}
-		code.addOutputCode(outputCode);
+		String codeStr = TemplateManager.renderTemplate("c/continuous/Derivative/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
+
 
 	public void generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode = "/*Code for Derivative of block Derivative:(" + getBlockId() + ")" + getBlockName()

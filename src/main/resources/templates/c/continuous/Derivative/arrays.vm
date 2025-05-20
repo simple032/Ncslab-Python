@@ -1,0 +1,8 @@
+/*Code for arrays of block Derivative: ${block.getBlockId()} ${block.getBlockName()} */
+
+#set($blockId = $block.getBlockId())
+#set($height = $signal.getHeight())
+#set($width = $signal.getWidth())
+
+double Block${blockId}tout[${height}][${width}];
+double Block${blockId}yout[${height}][${width}];

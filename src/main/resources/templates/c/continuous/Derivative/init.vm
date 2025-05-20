@@ -1,0 +1,14 @@
+/*Code for initialization of block Derivative:(${block.getBlockId()})${block.getBlockName()}*/
+$output = 0.0;
+
+#if($signal.dataType == $realDataType)
+  $state.getName() = 0;
+#else
+    #set($signalHeightIndex = ($signal.height - 1))
+    #set($signalWidthIndex = ($signal.width - 1))
+    #foreach($i in [0..$signalHeightIndex])
+        #foreach($j in [0..$signalWidthIndex])
+          $state.getName()($i, $j) = 0;
+        #end
+    #end
+#end

@@ -1,0 +1,11 @@
+/* 传递函数模块输出: ($block.getBlockId()) $block.getBlockName() */
+$outputs.get(0) = 0;
+#set($i = $num.size() - 1)
+#foreach($state in $states)
+    $outputs.get(0) += $state.getName() * $num.get($i);
+#set($i = $i - 1)
+#end
+
+#if($feedThrough)
+    $outputs.get(0) += ${D} * $inputs.get(0);
+#end

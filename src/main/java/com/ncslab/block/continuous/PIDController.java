@@ -1,6 +1,8 @@
 package com.ncslab.block.continuous;
 
+import com.ncslab.util.TemplateManager;
 import lombok.Getter;
+import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -121,29 +123,23 @@ public class PIDController extends Block {
 	@Override
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode = "/*Code for initialization of block PID Controller:(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		initCode += cparaP.getInitCodeC();
-		initCode += cparaI.getInitCodeC();
-		initCode += cparaD.getInitCodeC();
-		initCode += cparaN.getInitCodeC();
-		if (limitOutput.equals("on")) {
-			initCode += lowerSaturationLimit.getInitCodeC();
-			initCode += upperSaturationLimit.getInitCodeC();
-		}
-		if (cparaP.getDataType() == DataType.REAL && stateIntegral.getDataType() == DataType.REAL) {
-			initCode += stateIntegral.getName() + "=0;\n";
-			initCode += stateFilter.getName() + "=0;\n";
-		} else {
-			for (int i = 0; i < stateIntegral.getHeight(); i++) {
-				for (int j = 0; j < stateIntegral.getWidth(); j++) {
-					initCode += stateIntegral.getName() + "(" + i + "," + j + ")=0;\n";
-					initCode += stateFilter.getName() + "(" + i + "," + j + ")=0;\n";
-				}
-			}
-		}
-		code.addInitCode(initCode);
+        VelocityContext context = new VelocityContext();
+        context.put("block", this); // 当前Block对象（包含blockId和blockName）
+        context.put("cparaP", cparaP); // P参数对象
+        context.put("cparaI", cparaI); // I参数对象
+        context.put("cparaD", cparaD); // D参数对象
+        context.put("cparaN", cparaN); // 噪声参数对象
+        context.put("limitOutput", limitOutput); // 输出限制开关
+        context.put("lowerSaturationLimit", lowerSaturationLimit); // 下限对象
+        context.put("upperSaturationLimit", upperSaturationLimit); // 上限对象
+        context.put("stateIntegral", stateIntegral); // 积分状态对象
+        context.put("stateFilter", stateFilter); // 滤波状态对象
+        context.put("realDataType", DataType.REAL); // 实数类型标识
+
+        String codeStr = TemplateManager.renderTemplate("c/continuous/PIDController/init.vm", context);
+        code.addInitCode(codeStr);
 	}
+
 
 	@Override
 	public void generateOutputCodeC(CodeStructC code) {
@@ -327,48 +323,53 @@ public class PIDController extends Block {
         return outputCode;
     }
 
+    // TODO:待迁移到Velocity
+//    @Override
+//    public void generateOutputCodeC(CodeStructC code) {
+//        VelocityContext context = new VelocityContext();
+//        context.put("block", this); // Block对象（含getBlockId()）
+//        context.put("inputPortList", inputPortList); // 输入端口列表（至少包含2个端口，若启用externalReset）
+//        context.put("cparaP", cparaP); // P参数对象（含getDataType()、getHeight()、getWidth()）
+//        context.put("cparaD", cparaD); // D参数对象
+//        context.put("cparaI", cparaI); // I参数对象
+//        context.put("cparaN", cparaN); // N参数对象
+//        context.put("stateIntegral", stateIntegral); // 积分状态对象（含getName()、getDerivativeName()）
+//        context.put("stateFilter", stateFilter); // 滤波状态对象
+//        context.put("upperSaturationLimit", upperSaturationLimit); // 上限对象
+//        context.put("lowerSaturationLimit", lowerSaturationLimit); // 下限对象
+//        context.put("externalReset", externalReset); // 外部重置开关（"on"/"off"）
+//        context.put("limitOutput", limitOutput); // 限幅开关（"on"/"off"）
+//        context.put("realDataType", DataType.REAL); // 实数类型标识
+//        context.put("matrixDataType", DataType.MATRIX); // 矩阵类型标识
+//        String outputCode = TemplateManager.renderTemplate("c/continuous/PIDController/output.vm", context);
+//        code.addOutputCode(outputCode);
+//    }
+
     @Override
 	public void generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode = "/*Code for Derivative of PID Controller:(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		if (signal.getDataType() == DataType.REAL && cparaP.getDataType() == DataType.REAL) {
-			derivativeCode += stateIntegral.getDerivativeName() + "=" + "Block" + getBlockId() + "save_data[2];\n";
-			derivativeCode += stateFilter.getDerivativeName() + "=" + "Block" + getBlockId() + "save_data[3];\n";
-		} else {
-			for (int i = 0; i < stateIntegral.getHeight(); i++) {
-				for (int j = 0; j < stateIntegral.getWidth(); j++) {
-					derivativeCode += stateIntegral.getDerivativeName() + "(" + i + "," + j + ")=" + "Block"
-							+ getBlockId() + "save_data[" + i + "][" + j + "*5+2];\n";
-					derivativeCode += stateFilter.getDerivativeName() + "(" + i + "," + j + ")=" + "Block"
-							+ getBlockId() + "save_data[" + i + "][" + j + "*5+3];\n";
-				}
-			}
-		}
+        VelocityContext context = new VelocityContext();
+        context.put("block", this); // 当前Block对象（含getBlockId()）
+        context.put("inputPortList", inputPortList); // 输入端口列表
+        context.put("cparaP", cparaP); // P参数对象（含getDataType()）
+        context.put("stateIntegral", stateIntegral); // 积分状态对象（含getName()、getDerivativeName()、getHeight()等）
+        context.put("stateFilter", stateFilter); // 滤波状态对象
+        context.put("realDataType", DataType.REAL); // 实数类型标识
+
+        String derivativeCode = TemplateManager.renderTemplate("c/continuous/PIDController/derivative.vm", context);
 		code.addDerivativeCode(derivativeCode);
 	}
 
 	@Override
 	public void generateUpdateCodeC(CodeStructC code) {
-		String updateCode = "/*Code for Update of " + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		if (signal.getDataType() == DataType.REAL && cparaP.getDataType() == DataType.REAL) {
-			updateCode += stateIntegral.getName() + "=" + stateIntegral.getName() + "+"
-					+ stateIntegral.getDerivativeName() + "*model.stepSize;\n";
-			updateCode += stateFilter.getName() + "=" + stateFilter.getName() + "+" + stateFilter.getDerivativeName()
-					+ "*model.stepSize;\n";
-		} else {
-			for (int i = 0; i < stateFilter.getHeight(); i++) {
-				for (int j = 0; j < stateFilter.getWidth(); j++) {
-					updateCode += stateIntegral.getName() + "(" + i + "," + j + ")=" + stateIntegral.getName() + "(" + i
-							+ "," + j + ")+" + stateIntegral.getDerivativeName() + "(" + i + "," + j
-							+ ")*model.stepSize;\n";
-					updateCode += stateFilter.getName() + "(" + i + "," + j + ")=" + stateFilter.getName() + "(" + i
-							+ "," + j + ")+" + stateFilter.getDerivativeName() + "(" + i + "," + j
-							+ ")*model.stepSize;\n";
-				}
-			}
-		}
+        VelocityContext context = new VelocityContext();
+        context.put("block", this); // 当前Block对象（含getBlockId()）
+        context.put("inputPortList", inputPortList); // 输入端口列表
+        context.put("cparaP", cparaP); // P参数对象（含getDataType()）
+        context.put("stateIntegral", stateIntegral); // 积分状态对象（含getName()、getDerivativeName()、getHeight()等）
+        context.put("stateFilter", stateFilter); // 滤波状态对象
+        context.put("realDataType", DataType.REAL); // 实数类型标识
+
+        String updateCode = TemplateManager.renderTemplate("c/continuous/PIDController/update.vm", context);
 		code.addUpdateCode(updateCode);
 	}
 

@@ -1,0 +1,5 @@
+/* 状态空间模块输出: ($block.getBlockId()) $block.getBlockName() */
+${block.getOutputPortVariable(0)} = ${C.getName()} * ${xState.getName()};
+#if(${feedThrough})
+${block.getOutputPortVariable(0)} += ${D.getName()} * ${block.getInputPortVariable(0)};
+#end

@@ -1,0 +1,2 @@
+/* 传输延迟模块微分计算: ($block.getBlockId()) $block.getBlockName() */
+/* 无状态导数需要计算 */

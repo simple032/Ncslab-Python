@@ -1,0 +1,14 @@
+% Derivative code for Transfer Fcn:(${block.blockId}) ${block.blockName}
+#foreach($i in [0..${states.size()}-2])
+${states.get($i).derivativeName} = ${states.get($i+1).getName()};
+#end
+
+#if(!${states.isEmpty()})
+${states.last().derivativeName} = (${inputs.get(0)} \
+#set($i = $den.size() - 1)
+#foreach($state in $states)
+ - ${state.getName()}*${den.get($i)} \
+#set($i = $i - 1)
+#end
+);
+#end

@@ -1,0 +1,47 @@
+/*Code for output of block Derivative: ${block.getBlockId()} ${block.getBlockName()} */
+
+#set($outputVar = $block.getOutputPortVariable(0))
+#set($blockId = $block.getBlockId())
+#set($stateIntegral = $state.getName())
+
+#if($solver == "ode1" || $solver == "ode2" || $solver == "ode3" || $solver == "ode4" || $solver == "ode5" || $solver == "ode6")
+    #if($signal.dataType == $realDataType)
+        if(sfcnIsMajorStep()) {
+            $outputVar = (${signal.getName()} - $stateIntegral)/model.stepSize;
+            $stateIntegral = ${signal.getName()};
+        }
+    #else
+        #set($signalHeightIndex = ($signal.height - 1))
+        #set($signalWidthIndex = ($signal.width - 1))
+        #foreach($i in [0..$signalHeightIndex])
+            #foreach($j in [0..$signalWidthIndex])
+                $outputVar($i, $j) = (${signal.getName()}($i, $j) - $stateIntegral($i, $j))/model.stepSize;
+                $stateIntegral($i, $j) = ${signal.getName()}($i, $j);
+            #end
+        #end
+    #end
+#else
+    #if($signal.dataType == $realDataType)
+        if(sfcnIsMajorStep()) {
+            if(model.time > 1e-7) {
+                $outputVar = (${signal.getName()} - Block${blockId}yout[0][0])/(model.time - Block${blockId}tout[0][0]);
+                Block${blockId}yout[0][0] = ${signal.getName()};
+                Block${blockId}tout[0][0] = model.time;
+            } else {
+                $outputVar = 0;
+            }
+        }
+    #else
+        if(sfcnIsMajorStep()) {
+            #set($signalHeightIndex = ($signal.height - 1))
+            #set($signalWidthIndex = ($signal.width - 1))
+            #foreach($i in [0..$signalHeightIndex])
+                #foreach($j in [0..$signalWidthIndex])
+                    $outputVar($i, $j) = (${signal.getName()}($i, $j) - Block${blockId}yout[$i][$j])/(model.time - Block${blockId}tout[$i][$j]);
+                    Block${blockId}yout[$i][$j] = ${signal.getName()}($i, $j);
+                    Block${blockId}tout[$i][$j] = model.time;
+                #end
+            #end
+        }
+    #end
+#end

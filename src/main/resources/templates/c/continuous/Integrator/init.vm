@@ -1,0 +1,2 @@
+/* 初始化Integrator模块: ($block.getBlockId()) $block.getBlockName() */
+${states.get(0).getName()} = 0;

@@ -1,0 +1,11 @@
+/* 传输延迟模块输出: ($block.getBlockId()) $block.getBlockName() */
+/* 将新输入写入缓冲区 */
+delay_buf[write_idx] = $inputs.get(0);
+write_idx = (write_idx + 1) % buf_capacity;
+
+/* 根据延迟时间计算读取索引 */
+const int delay_samples = (int)floor($parameters.get("delayTime") / $stepSize);
+read_idx = (write_idx - delay_samples + buf_capacity) % buf_capacity;
+
+/* 设置输出为延迟后的值 */
+$outputs.get(0) = delay_buf[read_idx];

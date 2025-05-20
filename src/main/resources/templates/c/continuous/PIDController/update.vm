@@ -1,0 +1,23 @@
+/*Code for Update of PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
+
+#set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+#set($cparaP = $cparaP)
+#set($stateIntegral = $stateIntegral)
+#set($stateFilter = $stateFilter)
+
+#if($signal.dataType == $realDataType && $cparaP.dataType == $realDataType)
+  ${stateIntegral.getName()} = ${stateIntegral.getName()} + ${stateIntegral.getDerivativeName()} * model.stepSize;
+  ${stateFilter.getName()} = ${stateFilter.getName()} + ${stateFilter.getDerivativeName()} * model.stepSize;
+#else
+  #set($height = $stateFilter.getHeight())
+  #set($width = $stateFilter.getWidth())
+  #set($hMax = $height - 1)
+  #set($wMax = $width - 1)
+
+  #foreach($i in [0..$hMax])
+    #foreach($j in [0..$wMax])
+      ${stateIntegral.getName()}($i, $j) = ${stateIntegral.getName()}($i, $j) + ${stateIntegral.getDerivativeName()}($i, $j) * model.stepSize;
+      ${stateFilter.getName()}($i, $j) = ${stateFilter.getName()}($i, $j) + ${stateFilter.getDerivativeName()}($i, $j) * model.stepSize;
+    #end
+  #end
+#end

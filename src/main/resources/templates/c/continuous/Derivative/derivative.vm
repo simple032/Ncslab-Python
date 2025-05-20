@@ -1,0 +1,2 @@
+/*Code for derivative of block Derivative: ${block.getBlockId()} ${block.getBlockName()} */
+${states.get(0).derivativeName} = (${inputs.get(0)} - ${states.get(0).getName()}) / ${block.getSampleTime()};

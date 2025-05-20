@@ -1,0 +1,5 @@
+/* PIDControllerback($block.getBlockId()) $block.getBlockName() start */
+// Reset controller states on simulation start
+prev_error = 0.0;
+integral = 0.0;
+derivative = 0.0;

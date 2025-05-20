@@ -1,0 +1,20 @@
+/* 初始化PIDControllerback模块: ($block.getBlockId()) $block.getBlockName() */
+#foreach($state in $states)
+${state.getName()} = 0.0;  // 初始化PID状态变量
+#end
+
+// 从块属性中配置PID参数
+Kp = ${block.getParameter('Kp')};
+Ki = ${block.getParameter('Ki')};
+Kd = ${block.getParameter('Kd')};
+
+setpoint = ${block.getParameter('Setpoint')};   // 获取设定值
+prev_error = 0.0;     // 初始化前一个误差
+dt = ${block.getParameter('SampleTime')};      // 获取采样时间
+
+// 初始化输出限制
+output_min = ${block.getParameter('OutputMin')};
+output_max = ${block.getParameter('OutputMax')};
+
+// 初始化滤波系数
+N = ${block.getParameter('FilterCoefficient')};

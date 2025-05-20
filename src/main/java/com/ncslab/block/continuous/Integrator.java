@@ -2,6 +2,8 @@ package com.ncslab.block.continuous;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 //import java.util.Vector;
 
 import com.ncslab.block.Block;
@@ -71,25 +73,29 @@ public class Integrator extends Block {
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
-		String initCode = "";
-
 		super.generateInitCodeM(code);
 
-		initCode += initialCondition.getName() + "=" + paramValues.getDouble("InitialCondition") + ";\n";
-		initCode += stateIntegral.getName() + "=" + initialCondition.getName() + ";\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("realDataType", DataType.REAL);
+		context.put("state", stateIntegral);
+		context.put("initialCondition", initialCondition);
 
-		code.addInitCode(initCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateDerivativeCodeM(CodeStructM code) {
-		String derivativeCode = "";
-
 		super.generateDerivativeCodeM(code);
 
-		derivativeCode += stateIntegral.getDerivativeName() + "="
-				+ inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + ";\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("realDataType", DataType.REAL);
+		context.put("state", stateIntegral);
+		context.put("input", getInputPortVariables()[0]);
 
-		code.addDerivativeCode(derivativeCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
 	}
 
     //define arrays to save data
@@ -106,14 +112,16 @@ public class Integrator extends Block {
     }
 
 	public void generateOutputCodeM(CodeStructM code) {
-
-		String outputCode = "";
-
 		super.generateOutputCodeM(code);
 
-		outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + stateIntegral.getName() + ";\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("realDataType", DataType.REAL);
+		context.put("state", stateIntegral);
+		context.put("output", getOutputPortVariables()[0]);
 
-		code.addOutputCode(outputCode);
+		String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
     // TODO: requires check test

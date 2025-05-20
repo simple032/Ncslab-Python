@@ -1,0 +1,19 @@
+/* PIDControllerback($block.getBlockId()) $block.getBlockName() update */
+// Calculate time differential
+#set($dt = $block.getParameter('SampleTime'))
+
+// Update integral term with anti-windup
+#if($Ki != 0)
+integral += $error * $dt;
+// Apply integral clamping
+integral = (integral > ${block.getParameter('IntegralMax')}) ? ${block.getParameter('IntegralMax')} : 
+          (integral < ${block.getParameter('IntegralMin')}) ? ${block.getParameter('IntegralMin')} : integral;
+#end
+
+// Calculate derivative term with division protection
+#if($dt > 1e-6)  // Minimum time step protection
+derivative = ($error - prev_error) / $dt;
+#else
+derivative = 0.0;
+#end
+prev_error = $error;

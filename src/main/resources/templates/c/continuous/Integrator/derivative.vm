@@ -1,0 +1,2 @@
+/* Integrator模块微分计算: ($block.getBlockId()) $block.getBlockName() */
+${states.get(0).derivativeName} = $inputs.get(0);

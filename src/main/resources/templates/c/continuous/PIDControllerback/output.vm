@@ -1,0 +1,11 @@
+/* PIDControllerback模块输出: ($block.getBlockId()) $block.getBlockName() */
+#set($error = $inputs.get(0) - $setpoint)
+#set($P = $Kp * $error)
+#set($I = $Ki * $integral)
+#set($D = $Kd * $derivative)
+
+/* 计算并限制输出 */
+$outputs.get(0) = $P + $I + $D;
+#if($output_min && $output_max)
+$outputs.set(0, ($outputs.get(0) < $output_min) ? $output_min : (($outputs.get(0) > $output_max) ? $output_max : $outputs.get(0)));
+#end

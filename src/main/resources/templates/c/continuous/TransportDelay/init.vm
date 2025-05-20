@@ -1,0 +1,11 @@
+/* 初始化传输延迟模块: ($block.getBlockId()) $block.getBlockName() */
+/* 循环缓冲区初始化 */
+const int buf_capacity = (int)ceil($parameters.get("delayTime") / $stepSize) + 1;
+static double delay_buf[buf_capacity];
+static int write_idx = 0;
+static int read_idx = 0;
+
+/* 使用初始输入值初始化缓冲区 */
+for(int i=0; i<buf_capacity; i++){
+    delay_buf[i] = $inputs.get(0);
+}

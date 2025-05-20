@@ -1,0 +1,159 @@
+/*Code for output of block PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
+
+#set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+#set($cparaP = $cparaP)
+#set($cparaD = $cparaD)
+#set($cparaI = $cparaI)
+#set($cparaN = $cparaN)
+#set($stateIntegral = $stateIntegral)
+#set($stateFilter = $stateFilter)
+#set($blockId = $block.getBlockId())
+#set($outputVar = $block.getOutputPortVariable(0))
+#set($externalReset = $externalReset)
+#set($limitOutput = $limitOutput)
+#set($upperSat = $upperSaturationLimit)
+#set($lowerSat = $lowerSaturationLimit)
+
+#if($cparaP.dataType == $realDataType)
+  #if($signal.dataType == $realDataType)
+  if(sfcnIsMajorStep()) {
+  Block${blockId}save_data[0] = ${cparaP.getName()} * ${signal.getName()};
+  Block${blockId}save_data[1] = ${cparaD.getName()} * ${signal.getName()};
+  Block${blockId}save_data[2] = ${cparaI.getName()} * ${signal.getName()};
+  Block${blockId}save_data[3] = (Block${blockId}save_data[1] - ${stateFilter.getName()}) * ${cparaN.getName()};
+  Block${blockId}save_data[4] = Block${blockId}save_data[0] + ${stateIntegral.getName()} + Block${blockId}save_data[3];
+
+    #if($externalReset == "on")
+      #set($resetSignal = $inputPortList[1].linkedLine.linkedOutputPort.outputSignalC.getName())
+    if($resetSignal) {
+    memset(Block${blockId}save_data, 0, sizeof(Block${blockId}save_data));
+    }
+    #end
+
+    #if($limitOutput == "on")
+      #if($upperSat.dataType == $realDataType && $lowerSat.dataType == $realDataType)
+      if(Block${blockId}save_data[4] > ${upperSat.getName()}) {
+        $outputVar = ${upperSat.getName()};
+      } else if(Block${blockId}save_data[4] < ${lowerSat.getName()}) {
+        $outputVar = ${lowerSat.getName()};
+      } else {
+        $outputVar = Block${blockId}save_data[4];
+      }
+      #end
+    #else
+      $outputVar = Block${blockId}save_data[4];
+    #end
+  }
+  #else
+    #set($sHeight = $signal.getHeight())
+    #set($sWidth = $signal.getWidth())
+    #set($sHMax = $sHeight - 1)
+    #set($sWMax = $sWidth - 1)
+
+    #foreach($i in [0..$sHMax])
+      #foreach($j in [0..$sWMax])
+      if(sfcnIsMajorStep()) {
+      Block${blockId}save_data[$i][$j*5] = ${cparaP.getName()} * ${signal.getName()}($i, $j);
+      Block${blockId}save_data[$i][$j*5+1] = ${cparaD.getName()} * ${signal.getName()}($i, $j);
+      Block${blockId}save_data[$i][$j*5+2] = ${cparaI.getName()} * ${signal.getName()}($i, $j);
+      }
+      Block${blockId}save_data[$i][$j*5+3] = (Block${blockId}save_data[$i][$j*5+1] - ${stateFilter.getName()}($i, $j)) * ${cparaN.getName()};
+      Block${blockId}save_data[$i][$j*5+4] = Block${blockId}save_data[$i][$j*5] + ${stateIntegral.getName()}($i, $j) + Block${blockId}save_data[$i][$j*5+3];
+
+        #if($externalReset == "on")
+          #set($resetSignal = $inputPortList[1].linkedLine.linkedOutputPort.outputSignalC.getName())
+        if($resetSignal) {
+        memset(Block${blockId}save_data, 0, sizeof(Block${blockId}save_data));
+        }
+        #end
+
+        #if($limitOutput == "on")
+          #if($upperSat.dataType == $realDataType && $lowerSat.dataType == $realDataType)
+          if(Block${blockId}save_data[$i][$j*5+4] > ${upperSat.getName()}) {
+            $outputVar($i, $j) = ${upperSat.getName()};
+          } else if(Block${blockId}save_data[$i][$j*5+4] < ${lowerSat.getName()}) {
+            $outputVar($i, $j) = ${lowerSat.getName()};
+          } else {
+            $outputVar($i, $j) = Block${blockId}save_data[$i][$j*5+4];
+          }
+          #else
+            #set($uHeight = $upperSat.getHeight())
+            #set($uWidth = $upperSat.getWidth())
+            #set($lHeight = $lowerSat.getHeight())
+            #set($lWidth = $lowerSat.getWidth())
+            #if($i < $uHeight && $j < $uWidth && $i < $lHeight && $j < $lWidth)
+            if(Block${blockId}save_data[$i][$j*5+4] > ${upperSat.getName()}($i, $j)) {
+              $outputVar($i, $j) = ${upperSat.getName()}($i, $j);
+            } else if(Block${blockId}save_data[$i][$j*5+4] < ${lowerSat.getName()}($i, $j)) {
+              $outputVar($i, $j) = ${lowerSat.getName()}($i, $j);
+            } else {
+              $outputVar($i, $j) = Block${blockId}save_data[$i][$j*5+4];
+            }
+            #end
+          #end
+        #else
+          $outputVar($i, $j) = Block${blockId}save_data[$i][$j*5+4];
+        #end
+      #end
+    #end
+  #end
+#else
+  #set($pHeight = $cparaP.getHeight())
+  #set($pWidth = $cparaP.getWidth())
+  #set($pHMax = $pHeight - 1)
+  #set($pWMax = $pWidth - 1)
+
+  #foreach($i in [0..$pHMax])
+    #foreach($j in [0..$pWMax])
+    if(sfcnIsMajorStep()) {
+      #if($signal.dataType == $realDataType)
+      Block${blockId}save_data[$i][$j*5] = ${cparaP.getName()}($i, $j) * ${signal.getName()};
+      Block${blockId}save_data[$i][$j*5+1] = ${cparaD.getName()}($i, $j) * ${signal.getName()};
+      Block${blockId}save_data[$i][$j*5+2] = ${cparaI.getName()}($i, $j) * ${signal.getName()};
+      #else
+      Block${blockId}save_data[$i][$j*5] = ${cparaP.getName()}($i, $j) * ${signal.getName()}($i, $j);
+      Block${blockId}save_data[$i][$j*5+1] = ${cparaD.getName()}($i, $j) * ${signal.getName()}($i, $j);
+      Block${blockId}save_data[$i][$j*5+2] = ${cparaI.getName()}($i, $j) * ${signal.getName()}($i, $j);
+      #end
+    Block${blockId}save_data[$i][$j*5+3] = (Block${blockId}save_data[$i][$j*5+1] - ${stateFilter.getName()}($i, $j)) * ${cparaN.getName()}($i, $j);
+    Block${blockId}save_data[$i][$j*5+4] = Block${blockId}save_data[$i][$j*5] + ${stateIntegral.getName()}($i, $j) + Block${blockId}save_data[$i][$j*5+3];
+
+      #if($externalReset == "on")
+        #set($resetSignal = $inputPortList[1].linkedLine.linkedOutputPort.outputSignalC.getName())
+      if($resetSignal) {
+      memset(Block${blockId}save_data, 0, sizeof(Block${blockId}save_data));
+      }
+      #end
+
+      #set($outputCode = generateLimitOutputCode($i, $j))
+      $outputCode
+    }
+    #end
+  #end
+#end
+
+#macro(generateLimitOutputCode $i $j)
+  #if($limitOutput == "on")
+    #if($upperSaturationLimit.dataType == $realDataType && $lowerSaturationLimit.dataType == $realDataType)
+    if(Block${blockId}save_data[$i][$j*5+4] > ${upperSaturationLimit.getName()}) {
+      ${outputVar}($i, $j) = ${upperSaturationLimit.getName()};
+    } else if(Block${blockId}save_data[$i][$j*5+4] < ${lowerSaturationLimit.getName()}) {
+      ${outputVar}($i, $j) = ${lowerSaturationLimit.getName()};
+    } else {
+      ${outputVar}($i, $j) = Block${blockId}save_data[$i][$j*5+4];
+    }
+    #else
+    if(Block${blockId}save_data[$i][$j*5+4] > ${upperSaturationLimit.getName()}($i, $j)) {
+      ${outputVar}($i, $j) = ${upperSaturationLimit.getName()}($i, $j);
+    } else if(Block${blockId}save_data[$i][$j*5+4] < ${lowerSaturationLimit.getName()}($i, $j)) {
+      ${outputVar}($i, $j) = ${lowerSaturationLimit.getName()}($i, $j);
+    } else {
+      ${outputVar}($i, $j) = Block${blockId}save_data[$i][$j*5+4];
+    }
+    #end
+  #else
+    ${outputVar}($i, $j) = Block${blockId}save_data[$i][$j*5+4];
+  #end
+#if($signal.dataType == $matrixDataType)}
+  #end
+  #end

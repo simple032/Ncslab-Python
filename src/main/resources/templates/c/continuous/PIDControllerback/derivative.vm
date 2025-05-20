@@ -1,0 +1,5 @@
+/* PIDControllerback模块微分计算: ($block.getBlockId()) $block.getBlockName() */
+// 带低通滤波的微分计算
+#set($N = ${block.getParameter('FilterCoefficient')})
+#set($alpha = $Kd * $N / (1 + $N * $dt))
+derivative = $alpha * ($error - prev_error) - (1 - $alpha) * derivative;
