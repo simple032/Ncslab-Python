@@ -1,0 +1,27 @@
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+#set($out = $outputs.get(0))
+#set($signal = $inputs.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($lower = $lowLimit)
+#set($upper = $upLimit)
+
+/* Code for output of block Interval Test ($blockId) $blockName */
+#if($signal.dataType == $realDataType)
+if(${signal.getName()} >= $lower && ${signal.getName()} <= $upper) {
+    ${out.getName()} = 1.0;
+} else {
+    ${out.getName()} = 0.0;
+}
+#else
+#set($signalHeightIndex = $signal.getHeight() - 1)
+#foreach($i in [0..$signalHeightIndex])
+#set($signalWidthIndex = $signal.getWidth() - 1)
+    #foreach($j in [0..$signalWidthIndex])
+        if(${signal.getName()}($i,$j) >= $lower && ${signal.getName()}($i,$j) <= $upper) {
+            ${out.getName()}($i,$j) = 1.0;
+        } else {
+            ${out.getName()}($i,$j) = 0.0;
+        }
+    #end
+#end
+#end

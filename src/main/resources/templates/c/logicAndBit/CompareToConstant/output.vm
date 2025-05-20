@@ -1,0 +1,9 @@
+#set($blockName = "CompareToConstantOutput")
+/*
+ * $blockName - Output template for CompareToConstant
+ */
+
+// Generate output here
+
+// Example:
+// return $outputValue;

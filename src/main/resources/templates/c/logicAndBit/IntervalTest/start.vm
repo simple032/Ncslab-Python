@@ -1,0 +1,9 @@
+#set($blockName = "IntervalTestStart")
+/*
+ * $blockName - Start template for IntervalTest
+ */
+
+// Perform start actions here
+
+// Example:
+// initializeSystem();

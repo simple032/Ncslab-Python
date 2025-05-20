@@ -1,0 +1,9 @@
+#set($blockName = "RelationalOperatorTerminate")
+/*
+ * $blockName - Terminate template for RelationalOperator
+ */
+
+// Perform termination actions here
+
+// Example:
+// cleanupResources();

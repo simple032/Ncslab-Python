@@ -1,0 +1,9 @@
+#set($blockName = "DetectIncreaseTerminate")
+/*
+ * $blockName - Terminate template for DetectIncrease
+ */
+
+// Perform termination actions here
+
+// Example:
+// cleanupResources();

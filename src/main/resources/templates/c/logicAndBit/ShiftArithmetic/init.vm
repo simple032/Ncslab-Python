@@ -1,0 +1,9 @@
+#set($blockName = "ShiftArithmeticInit")
+/*
+ * $blockName - Initialization template for ShiftArithmetic
+ */
+
+// Initialize variables here
+
+// Example:
+// $variableName = $inputValue;

@@ -1,0 +1,9 @@
+#set($blockName = "CompareToZeroTerminate")
+/*
+ * $blockName - Terminate template for CompareToZero
+ */
+
+// Perform termination actions here
+
+// Example:
+// cleanupResources();

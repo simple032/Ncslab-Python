@@ -1,0 +1,9 @@
+#set($blockName = "DetectDecreaseStart")
+/*
+ * $blockName - Start template for DetectDecrease
+ */
+
+// Perform start actions here
+
+// Example:
+// initializeSystem();

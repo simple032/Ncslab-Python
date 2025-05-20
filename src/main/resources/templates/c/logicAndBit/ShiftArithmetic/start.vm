@@ -1,0 +1,9 @@
+#set($blockName = "ShiftArithmeticStart")
+/*
+ * $blockName - Start template for ShiftArithmetic
+ */
+
+// Perform start actions here
+
+// Example:
+// initializeSystem();

@@ -1,6 +1,9 @@
 package com.ncslab.block.logicAndBit;
 
+import com.ncslab.block.data.DataType;
+import com.ncslab.util.TemplateManager;
 import lombok.Getter;
+import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -36,35 +39,32 @@ public class RelationalOperator extends Block{
 		OutputPort output=new OutputPort(this,1,true);
 		outputPortList.add(output);
 
-        relop=paramValues.getString("relop");
+        if(blockIn.has("relop")){
+            relop=paramValues.getString("relop");
+        }else{
+            relop=paramValues.getString("Operator");
+        }
         if(relop.equals("~=")) {
             relop = "!=";
         }
     }
 
 	 public void generateOutputCodeC(CodeStructC code) {
-			String outputCode="/*Code for output of block Relational operator:("+getBlockId()+")"+getBlockName()+"*/\n";
-			OutputPort out  = outputPortList.get(0);
-			OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputPort out  = outputPortList.get(0);
+        OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-			switch(signal1.getDataType()) {
-			case REAL:
-                outputCode+="if("+signal1.getName()+relop+signal2.getName()+") {\n";
-                outputCode+=out.getOutputSignalC().getName()+"=1.0;}else{\n";
-                outputCode+=out.getOutputSignalC().getName()+"=0.0;}\n";
-				break;
-			case MATRIX:
-                for(int i = 0; i < signal1.getHeight(); i++) {
-                    for(int j = 0; j < signal1.getWidth(); j++) {
-                        outputCode+="if("+signal1.getName()+"("+i+","+j+")"+relop+signal2.getName()+"("+i+","+j+")) {\n";
-                        outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=1.0;}else{\n";
-                        outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=0.0;}\n";
-                    }
-                }
-				break;
-			}
-			code.addOutputCode(outputCode);
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+        context.put("realDataType", DataType.REAL);
+        context.put("signal1",signal1);
+        context.put("signal2",signal2);
+        context.put("ops",out.getOutputSignalC());
+        context.put("relop",relop);
+
+        String codeStr = TemplateManager.renderTemplate("c/logicAndBit/RelationalOperator/output.vm", context);
+
+        code.addOutputCode(codeStr);
 	 }
 
 	public void updateDimension() throws MatDimException{

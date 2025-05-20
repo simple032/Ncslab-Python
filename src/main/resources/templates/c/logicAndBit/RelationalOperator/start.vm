@@ -1,0 +1,9 @@
+#set($blockName = "RelationalOperatorStart")
+/*
+ * $blockName - Start template for RelationalOperator
+ */
+
+// Perform start actions here
+
+// Example:
+// initializeSystem();

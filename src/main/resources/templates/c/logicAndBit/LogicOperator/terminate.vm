@@ -1,0 +1,9 @@
+#set($blockName = "LogicOperatorTerminate")
+/*
+ * $blockName - Terminate template for LogicOperator
+ */
+
+// Perform termination actions here
+
+// Example:
+// cleanupResources();

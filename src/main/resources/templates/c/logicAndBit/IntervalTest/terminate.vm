@@ -1,0 +1,9 @@
+#set($blockName = "IntervalTestTerminate")
+/*
+ * $blockName - Terminate template for IntervalTest
+ */
+
+// Perform termination actions here
+
+// Example:
+// cleanupResources();

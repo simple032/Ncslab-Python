@@ -1,0 +1,9 @@
+#set($blockName = "LogicOperatorInit")
+/*
+ * $blockName - Initialization template for LogicOperator
+ */
+
+// Initialize variables here
+
+// Example:
+// $variableName = $inputValue;

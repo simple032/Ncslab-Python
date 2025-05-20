@@ -1,5 +1,9 @@
 package com.ncslab.block.logicAndBit;
 
+import com.ncslab.block.data.DataType;
+import org.apache.velocity.VelocityContext;
+import lombok.Getter;
+import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -27,55 +31,49 @@ public class DetectIncrease extends com.ncslab.block.Block{
         inputNames.add("in1");
     }
 
-	public DetectIncrease(JSONObject blockIn,NCSLabModel model) {
-		super(blockIn,model);
-		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
-    }
+
+	VelocityContext context;
+
+	public DetectIncrease(JSONObject blockIn, NCSLabModel model) {
+		super(blockIn, model);
+		inputPortList.add(new InputPort(this, 1));
+		outputPortList.add(new OutputPort(this, 1, true));
+
+		context = new VelocityContext();
+		context.put("block", this);
+		context.put("realDataType", DataType.REAL);
+	}
 
 	public void generateArraysCodeC(CodeStructC code) {
-		String arraysCode = "/*Define variable/arrays for block Derivative(" + getBlockId() + ")" + getBlockName()+ "*/\n";
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch(signal.getDataType()) {
-		case REAL:
-			arraysCode += "double preValue_" + getBlockId() + "= 0;\n";
-			break;
-		case MATRIX:
-			arraysCode += "double preValue_" + getBlockId() + "[" + signal.getHeight() + "][" + signal.getWidth() + "];\n";
-			break;
+		try {
+			OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+			context.put("signal", signal);
+			String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectIncrease/arrays.vm", context);
+			code.addArraysCode(codeStr);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		code.addArraysCode(arraysCode);
 	}
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block Detect Increase:("+getBlockId()+")"+getBlockName()+"*/\n";
-		code.addInitCode(initCode);
+		try {
+			String templatePath = "c/logicAndBit/DetectIncrease/init.vm";
+			String codeStr = TemplateManager.renderTemplate(templatePath, context);
+			code.addInitCode(codeStr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Detect Increase:("+getBlockId()+")"+getBlockName()+"*/\n";
-		OutputPort out  = outputPortList.get(0);
-		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch(signal.getDataType()) {
-		case REAL:
-			outputCode+="if("+signal.getName() + " > preValue_"+getBlockId()+") {\n";
-            outputCode+=out.getOutputSignalC().getName()+"= 1.0;}else{\n";
-            outputCode+=out.getOutputSignalC().getName()+"= 0.0;}\n";
-            outputCode+="preValue_"+getBlockId()+" = "+signal.getName()+";\n";
-			break;
-		case MATRIX:
-			for(int i=0; i < signal.getHeight(); i++) {
-				for(int j=0; j < signal.getWidth(); j++) {
-					outputCode+="if("+signal.getName()+"("+i+","+j+")"+" > preValue_"+getBlockId() +"["+i+"]["+j+"]) {\n";
-		            outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")= 1.0;}else{\n";
-		            outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")= 0.0;}\n";
-		            outputCode+="preValue_"+getBlockId()+"["+i+"]["+j+"] = "+signal.getName()+"("+i+","+j+");\n";
-				   }
-			   }
-			break;
+		try {
+			String templatePath = "c/logicAndBit/DetectIncrease/output.vm";
+			String codeStr = TemplateManager.renderTemplate(templatePath, context);
+			code.addOutputCode(codeStr);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		code.addOutputCode(outputCode);
 	}
 
 	public void updateDimension() throws MatDimException{

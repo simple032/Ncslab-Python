@@ -1,0 +1,9 @@
+#set($blockName = "ShiftArithmeticOutput")
+/*
+ * $blockName - Output template for ShiftArithmetic
+ */
+
+// Generate output here
+
+// Example:
+// return $outputValue;

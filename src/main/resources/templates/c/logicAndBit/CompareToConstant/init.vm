@@ -1,0 +1,9 @@
+#set($blockName = "CompareToConstantInit")
+/*
+ * $blockName - Initialization template for CompareToConstant
+ */
+
+// Initialize variables here
+
+// Example:
+// $variableName = $inputValue;

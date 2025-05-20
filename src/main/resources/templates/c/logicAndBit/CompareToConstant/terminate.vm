@@ -1,0 +1,9 @@
+#set($blockName = "CompareToConstantTerminate")
+/*
+ * $blockName - Terminate template for CompareToConstant
+ */
+
+// Perform termination actions here
+
+// Example:
+// cleanupResources();

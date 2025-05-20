@@ -1,0 +1,9 @@
+#set($blockName = "CompareToConstantStart")
+/*
+ * $blockName - Start template for CompareToConstant
+ */
+
+// Perform start actions here
+
+// Example:
+// initializeSystem();

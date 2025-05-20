@@ -1,0 +1,9 @@
+#set($blockName = "IntervalTestInit")
+/*
+ * $blockName - Initialization template for IntervalTest
+ */
+
+// Initialize variables here
+
+// Example:
+// $variableName = $inputValue;

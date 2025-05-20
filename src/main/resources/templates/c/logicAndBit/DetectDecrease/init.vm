@@ -1,0 +1,9 @@
+#set($blockName = "DetectDecreaseInit")
+/*
+ * $blockName - Initialization template for DetectDecrease
+ */
+
+// Initialize variables here
+
+// Example:
+// $variableName = $inputValue;

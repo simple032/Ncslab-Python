@@ -1,0 +1,9 @@
+#set($blockName = "CompareToZeroInit")
+/*
+ * $blockName - Initialization template for CompareToZero
+ */
+
+// Initialize variables here
+
+// Example:
+// $variableName = $inputValue;

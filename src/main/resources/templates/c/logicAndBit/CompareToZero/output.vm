@@ -1,0 +1,9 @@
+#set($blockName = "CompareToZeroOutput")
+/*
+ * $blockName - Output template for CompareToZero
+ */
+
+// Generate output here
+
+// Example:
+// return $outputValue;

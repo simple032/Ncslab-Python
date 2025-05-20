@@ -1,0 +1,9 @@
+#set($blockName = "RelationalOperatorInit")
+/*
+ * $blockName - Initialization template for RelationalOperator
+ */
+
+// Initialize variables here
+
+// Example:
+// $variableName = $inputValue;

@@ -5,12 +5,15 @@ import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 public class DetectDecrease extends com.ncslab.block.Block{
 
@@ -35,17 +38,14 @@ public class DetectDecrease extends com.ncslab.block.Block{
     }
 
 	public void generateArraysCodeC(CodeStructC code) {
-		String arraysCode = "/*Define variable/arrays for block Detect Decrease(" + getBlockId() + ")" + getBlockName()+ "*/\n";
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("realDataType", DataType.REAL);
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch(signal.getDataType()) {
-		case REAL:
-			arraysCode += "double preValue_" + getBlockId() + "= 0;\n";
-			break;
-		case MATRIX:
-			arraysCode += "double preValue_" + getBlockId() + "[" + signal.getHeight() + "][" + signal.getWidth() + "];\n";
-			break;
-		}
-		code.addArraysCode(arraysCode);
+		context.put("signal", signal);
+		
+		String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectDecrease/arrays.vm", context);
+		code.addArraysCode(codeStr);
 	}
 
 	public void generateInitCodeC(CodeStructC code) {
@@ -55,28 +55,14 @@ public class DetectDecrease extends com.ncslab.block.Block{
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Detect Decrease:("+getBlockId()+")"+getBlockName()+"*/\n";
-		OutputPort out  = outputPortList.get(0);
-		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch(signal.getDataType()) {
-		case REAL:
-			outputCode+="if("+signal.getName() + " < preValue_"+getBlockId()+") {\n";
-            outputCode+=out.getOutputSignalC().getName()+"= 1.0;}else{\n";
-            outputCode+=out.getOutputSignalC().getName()+"= 0.0;}\n";
-            outputCode+="preValue_"+getBlockId()+" = "+signal.getName()+";\n";
-			break;
-		case MATRIX:
-			for(int i=0; i < signal.getHeight(); i++) {
-				for(int j=0; j < signal.getWidth(); j++) {
-					outputCode+="if("+signal.getName()+"("+i+","+j+")"+" < preValue_"+getBlockId() +"["+i+"]["+j+"]) {\n";
-		            outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")= 1.0;}else{\n";
-		            outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")= 0.0;}\n";
-		            outputCode+="preValue_"+getBlockId()+"["+i+"]["+j+"] = "+signal.getName()+"("+i+","+j+");\n";
-				   }
-			   }
-			break;
-		}
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("realDataType", DataType.REAL);
+		context.put("inputs", getInputPortVariables());
+		context.put("outputs", getOutputPortVariables());
+		
+		String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectDecrease/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	public void updateDimension() throws MatDimException{

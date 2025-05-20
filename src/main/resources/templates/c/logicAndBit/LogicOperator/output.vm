@@ -1,0 +1,228 @@
+/*Code for output of block LogicalOperator:(${block.blockId})${block.blockName}*/
+
+#set($inputLength = $inputs.size() - 1)
+#set($signal1 = $inputs.get(0).linkedLine.linkedOutputPort.outputSignalC)
+
+#if($signal1.dataType == $realDataType)
+  #if($operator == "AND")
+  double pro${block.blockId} = 1.0;
+    #foreach($i in [0..$inputLength])
+      #set($inputSignal = $inputs.get($i).linkedLine.linkedOutputPort.outputSignalC)
+    pro${block.blockId} *= ${inputSignal.getName()};
+    #end
+  if(pro${block.blockId} == 0) {
+    $opsName = 0;
+  } else {
+    $opsName = 1.0;
+  }
+  #elseif($operator == "OR")
+  double sum${block.blockId} = 0.0;
+    #foreach($i in [0..$inputLength])
+      #set($inputSignal = $inputs.get($i).linkedLine.linkedOutputPort.outputSignalC)
+    sum${block.blockId} += ${inputSignal.getName()};
+    #end
+  if(sum${block.blockId} == 0) {
+    $opsName = 0;
+  } else {
+    $opsName = 1.0;
+  }
+  #elseif($operator == "NAND")
+  double pro${block.blockId} = 1.0;
+    #foreach($i in [0..$inputLength])
+      #set($inputSignal = $inputs.get($i).linkedLine.linkedOutputPort.outputSignalC)
+    pro${block.blockId} *= ${inputSignal.getName()};
+    #end
+  if(pro${block.blockId} == 0) {
+    $opsName = 1.0;
+  } else {
+    $opsName = 0;
+  }
+  #elseif($operator == "NOR")
+  double sum${block.blockId} = 0.0;
+    #foreach($i in [0..$inputLength])
+      #set($inputSignal = $inputs.get($i).linkedLine.linkedOutputPort.outputSignalC)
+    sum${block.blockId} += ${inputSignal.getName()};
+    #end
+  if(sum${block.blockId} == 0) {
+    $opsName = 1.0;
+  } else {
+    $opsName = 0;
+  }
+  #elseif($operator == "XOR")
+  int sum${block.blockId} = 0;
+    #foreach($i in [0..$inputLength])
+      #set($inputSignal = $inputs.get($i).linkedLine.linkedOutputPort.outputSignalC)
+    if(${inputSignal.getName()}!= 0) {
+    sum${block.blockId} += 1;
+    }
+    #end
+  if(sum${block.blockId} % 2 == 0) {
+    $opsName = 0.0;
+  } else {
+    $opsName = 1.0;
+  }
+  #elseif($operator == "NXOR")
+  int sum${block.blockId} = 0;
+    #foreach($i in [0..$inputLength])
+      #set($inputSignal = $inputs.get($i).linkedLine.linkedOutputPort.outputSignalC)
+    if(${inputSignal.getName()}!= 0) {
+    sum${block.blockId} += 1;
+    }
+    #end
+  if(sum${block.blockId} % 2 == 0) {
+    $opsName = 1.0;
+  } else {
+    $opsName = 0.0;
+  }
+  #elseif($operator == "NOT")
+    #if($inputLength == 0)
+      #set($inputSignal = $inputs.get(0).linkedLine.linkedOutputPort.outputSignalC)
+    if(${inputSignal.getName()} == 0) {
+      $opsName = 1.0;
+    } else {
+      $opsName = 0.0;
+    }
+    #else
+    // NOT操作符只能有一个输入信号
+      $opsName = 0.0;
+    #end
+  #else
+  // 未知操作符处理
+    $opsName = 0.0;
+  #end
+#else
+// 矩阵类型处理（假设所有输入矩阵维度一致）
+  #set($height = $signal1.height)
+  #set($width = $signal1.width)
+  #set($hIndex = $height - 1)
+  #set($wIndex = $width - 1)
+
+#if($operator == "AND")
+double pro${block.blockId}[$height][$width];
+#foreach($i in [0..$hIndex])
+#foreach($j in [0..$wIndex])
+pro${block.blockId}[$i][$j] = 1.0;
+#foreach($input in $inputs)
+  #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
+pro${block.blockId}[$i][$j] *= ${inputSignal.getName()}($i, $j);
+#end
+if(pro${block.blockId}[$i][$j] == 0) {
+  $opsName($i, $j) = 0;
+} else {
+  $opsName($i, $j) = 1.0;
+}
+#end
+#end
+#elseif($operator == "OR")
+double sum${block.blockId}[$height][$width];
+#foreach($i in [0..$hIndex])
+#foreach($j in [0..$wIndex])
+sum${block.blockId}[$i][$j] = 0.0;
+#foreach($input in $inputs)
+  #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
+sum${block.blockId}[$i][$j] += ${inputSignal.getName()}($i, $j);
+#end
+if(sum${block.blockId}[$i][$j] == 0) {
+  $opsName($i, $j) = 0;
+} else {
+  $opsName($i, $j) = 1.0;
+}
+#end
+#end
+#elseif($operator == "NAND")
+double pro${block.blockId}[$height][$width];
+#foreach($i in [0..$hIndex])
+#foreach($j in [0..$wIndex])
+pro${block.blockId}[$i][$j] = 1.0;
+#foreach($input in $inputs)
+  #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
+pro${block.blockId}[$i][$j] *= ${inputSignal.getName()}($i, $j);
+#end
+if(pro${block.blockId}[$i][$j] == 0) {
+  $opsName($i, $j) = 1.0;
+} else {
+  $opsName($i, $j) = 0.0;
+}
+#end
+#end
+#elseif($operator == "NOR")
+double sum${block.blockId}[$height][$width];
+#foreach($i in [0..$hIndex])
+#foreach($j in [0..$wIndex])
+sum${block.blockId}[$i][$j] = 0.0;
+#foreach($input in $inputs)
+  #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
+sum${block.blockId}[$i][$j] += ${inputSignal.getName()}($i, $j);
+#end
+if(sum${block.blockId}[$i][$j] == 0) {
+  $opsName($i, $j) = 1.0;
+} else {
+  $opsName($i, $j) = 0.0;
+}
+#end
+#end
+#elseif($operator == "XOR")
+int sum${block.blockId}[$height][$width];
+#foreach($i in [0..$hIndex])
+#foreach($j in [0..$wIndex])
+sum${block.blockId}[$i][$j] = 0;
+#foreach($input in $inputs)
+  #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
+if(${inputSignal.getName()}($i, $j)!= 0) {
+sum${block.blockId}[$i][$j] += 1;
+}
+#end
+if(sum${block.blockId}[$i][$j] % 2 == 0) {
+  $opsName($i, $j) = 0.0;
+} else {
+  $opsName($i, $j) = 1.0;
+}
+#end
+#end
+#elseif($operator == "NXOR")
+int sum${block.blockId}[$height][$width];
+#foreach($i in [0..$hIndex])
+#foreach($j in [0..$wIndex])
+sum${block.blockId}[$i][$j] = 0;
+#foreach($input in $inputs)
+  #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
+if(${inputSignal.getName()}($i, $j)!= 0) {
+sum${block.blockId}[$i][$j] += 1;
+}
+#end
+if(sum${block.blockId}[$i][$j] % 2 == 0) {
+  $opsName($i, $j) = 1.0;
+} else {
+  $opsName($i, $j) = 0.0;
+}
+#end
+#end
+#elseif($operator == "NOT")
+#if($inputLength == 0)
+#foreach($i in [0..$hIndex])
+#foreach($j in [0..$wIndex])
+  #set($inputSignal = $inputs.get(0).linkedLine.linkedOutputPort.outputSignalC)
+if(${inputSignal.getName()}($i, $j) == 0) {
+  $opsName($i, $j) = 1.0;
+} else {
+  $opsName($i, $j) = 0.0;
+}
+#end
+#end
+#else
+// NOT操作符只能有一个输入信号
+#foreach($i in [0..$hIndex])
+  #foreach($j in [0..$wIndex])
+    $opsName($i, $j) = 0.0;
+  #end
+  #end
+  #end
+#else
+// 未知操作符处理
+  #foreach($i in [0..$hIndex])
+    #foreach($j in [0..$wIndex])
+      $opsName($i, $j) = 0.0;
+    #end
+    #end
+    #end
+  #end

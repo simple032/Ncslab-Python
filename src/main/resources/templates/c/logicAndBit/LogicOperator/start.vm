@@ -1,0 +1,9 @@
+#set($blockName = "LogicOperatorStart")
+/*
+ * $blockName - Start template for LogicOperator
+ */
+
+// Perform start actions here
+
+// Example:
+// initializeSystem();

@@ -1,0 +1,23 @@
+/*Code for output of block RelationalOperator:(${block.blockId})${block.blockName}*/
+
+#if($signal1.dataType == $realDataType)
+if(${signal1.getName()} $relop ${signal2.getName()}) {
+  ${ops.getName()} = 1.0;
+}
+else{
+  ${ops.getName()} = 0;
+}
+#else
+  #set($signal1HeightIndex = $signal1.height - 1)
+  #set($signal1WidthIndex = $signal1.width - 1)
+  #foreach($i in [0..$signal1HeightIndex])
+    #foreach($j in [0..$signal1WidthIndex])
+    if(${signal1.getName()}($i,$j) $relop ${signal2.getName()}($i,$j)) {
+      ${ops.getName()}($i,$j) = 1.0;
+    }
+    else{
+      ${ops.getName()}($i,$j) = 0;
+    }
+    #end
+  #end
+#end

@@ -1,0 +1,9 @@
+#set($blockName = "ShiftArithmeticTerminate")
+/*
+ * $blockName - Terminate template for ShiftArithmetic
+ */
+
+// Perform termination actions here
+
+// Example:
+// cleanupResources();
