@@ -1,0 +1,4 @@
+/*Code for initialization of block Coulomb:(${block.getBlockId()})${block.getBlockName()}*/
+
+${offset.getInitCodeC()}
+${gain.getInitCodeC()}

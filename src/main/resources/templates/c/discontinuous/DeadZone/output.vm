@@ -1,0 +1,54 @@
+/* Code for output of block Dead Zone:(${block.blockId}) ${block.blockName} */
+#if($lowerValue.data.dataType == $realDataType)
+  #if($ops.outputSignalC.dataType == $realDataType)
+  // 双方都是实数类型，直接使用标量比较
+  if(${signal.getName()} > ${upperValue.getName()}) {
+    ${outputs.get(0)} = ${signal.getName()} - ${upperValue.getName()};
+  } else if(${signal.getName()} < ${lowerValue.getName()}) {
+    ${outputs.get(0)} = ${signal.getName()} - ${lowerValue.getName()};
+  } else {
+    ${outputs.get(0)} = 0;
+  }
+  #else
+    #foreach($i in [0..$opsWidthIndex])
+      #foreach($j in [0..$opsHeightIndex])
+      // 输入是实数，输出是矩阵，对矩阵每个元素应用实数阈值
+      if(${signal.getName()} > ${upperValue.getName()}) {
+        ${outputs.get(0)}(${i},${j}) = ${signal.getName()} - ${upperValue.getName()};
+      } else if(${signal.getName()} < ${lowerValue.getName()}) {
+        ${outputs.get(0)}(${i},${j}) = ${signal.getName()} - ${lowerValue.getName()};
+      } else {
+        ${outputs.get(0)}(${i},${j}) = 0;
+      }
+      #end
+    #end
+  #end
+#else
+  #if($ops.outputSignalC.dataType == $realDataType)
+    #set($lowerValueIndices = $block.calculateLowerValueIndices($lowerValue.height, $lowerValue.width))
+    #foreach($index in $lowerValueIndices)
+      #set($i = $index / $lowerValue.width)
+      #set($j = $index % $lowerValue.width)
+    if(${signal.getName()}(${i},${j}) > ${upperValue.getName()}) {
+      ${outputs.get(0)} += ${signal.getName()}(${i},${j}) - ${upperValue.getName()};
+    } else if(${signal.getName()}(${i},${j}) < ${lowerValue.getName()}) {
+      ${outputs.get(0)} += ${signal.getName()}(${i},${j}) - ${lowerValue.getName()};
+    } else {
+      ${outputs.get(0)} += 0; // 可以省略这行
+    }
+    #end
+  #else
+    #foreach($i in [0..$lowerValueHeightIndex])
+      #foreach($j in [0..$lowerValueWidthIndex])
+      // 双方都是矩阵，逐元素比较
+      if(${signal.getName()}(${i},${j}) > ${upperValue.getName()}(${i},${j})) {
+        ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${upperValue.getName()}(${i},${j});
+      } else if(${signal.getName()}(${i},${j}) < ${lowerValue.getName()}(${i},${j})) {
+        ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${lowerValue.getName()}(${i},${j});
+      } else {
+        ${outputs.get(0)}(${i},${j}) = 0;
+      }
+      #end
+    #end
+  #end
+#end

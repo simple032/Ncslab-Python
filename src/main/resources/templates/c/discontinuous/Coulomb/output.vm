@@ -1,0 +1,69 @@
+/*Code for output of block Coulomb:(${block.getBlockId()})${block.getBlockName()}*/
+
+#set($out = $outputPortList[0])
+#set($outputSignal = $outputPortList[0].outputSignalC)
+
+#if($offset.dataType == $realDataType)
+    #if($ops.outputSignalC.dataType == $realDataType)
+        if(${signal.getName()} > 0) {
+            ${outputSignal.getName()} = 1 * (${gain.getName()} * fabs(${signal.getName()}) + ${offset.getName()});
+        } else if(${signal.getName()} < 0) {
+            ${outputSignal.getName()} = (-1) * (${gain.getName()} * fabs(${signal.getName()}) + ${offset.getName()});
+        } else {
+            ${outputSignal.getName()} = 0;
+        }
+    #else
+        #set($height = $ops.getHeight())
+        #set($width = $ops.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                if(${signal.getName()}($i, $j) > 0) {
+                    ${outputSignal.getName()}($i, $j) = 1 * (${gain.getName()} * fabs(${signal.getName()}($i, $j)) + ${offset.getName()});
+                } else if(${signal.getName()}($i, $j) < 0) {
+                    ${outputSignal.getName()}($i, $j) = (-1) * (${gain.getName()} * fabs(${signal.getName()}($i, $j)) + ${offset.getName()});
+                } else {
+                    ${outputSignal.getName()}($i, $j) = 0;
+                }
+            #end
+        #end
+    #end
+#else
+    #if($ops.outputSignalC.dataType == $realDataType)
+        #set($height = $offset.getHeight())
+        #set($width = $offset.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                if(${signal.getName()} > 0) {
+                    ${outputSignal.getName()}($i, $j) = 1 * (${gain.getName()}($i, $j) * fabs(${signal.getName()}) + ${offset.getName()}($i, $j));
+                } else if(${signal.getName()} < 0) {
+                    ${outputSignal.getName()}($i, $j) = (-1) * (${gain.getName()}($i, $j) * fabs(${signal.getName()}) + ${offset.getName()}($i, $j));
+                } else {
+                    ${outputSignal.getName()}($i, $j) = 0;
+                }
+            #end
+        #end
+    #else
+        #set($height = $offset.getHeight())
+        #set($width = $offset.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                if(${signal.getName()}($i, $j) > 0) {
+                    ${outputSignal.getName()}($i, $j) = 1 * (${gain.getName()}($i, $j) * fabs(${signal.getName()}($i, $j)) + ${offset.getName()}($i, $j));
+                } else if(${signal.getName()}($i, $j) < 0) {
+                    ${outputSignal.getName()}($i, $j) = (-1) * (${gain.getName()}($i, $j) * fabs(${signal.getName()}($i, $j)) + ${offset.getName()}($i, $j));
+                } else {
+                    ${outputSignal.getName()}($i, $j) = 0;
+                }
+            #end
+        #end
+    #end
+#end

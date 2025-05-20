@@ -1,6 +1,8 @@
 package com.ncslab.block.discontinuous;
 import lombok.Getter;
 import org.json.JSONObject;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import Jama.Matrix;
 import com.ncslab.block.Block;
@@ -24,6 +26,7 @@ public class Backlash extends Block{
 
 	private State xState;
 
+	VelocityContext context;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -34,8 +37,8 @@ public class Backlash extends Block{
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("backlashWidth");
-        parameterNames.add("initialOutput");
+        parameterNames.add("BacklashWidth");
+        parameterNames.add("InitialOutput");
         outputNames.add("out1");
         inputNames.add("in1");
     }
@@ -45,114 +48,43 @@ public class Backlash extends Block{
 		//һ�����룬һ�����
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
-		backlashWidth=new Parameter(this,1,"backlashWidth",paramValues.getString("BacklashWidth"));
-		initialOutput=new Parameter(this,2,"initialOutput",paramValues.getString("InitialOutput"));
+		backlashWidth=new Parameter(this,1,"BacklashWidth",paramValues.getString("BacklashWidth"));
+		initialOutput=new Parameter(this,2,"InitialOutput",paramValues.getString("InitialOutput"));
 		parameterList.add(backlashWidth);
 		parameterList.add(initialOutput);
+
+
+	}
+
+	private void prepareContext() {
+		context = new VelocityContext();
+		OutputPort out  = outputPortList.get(0);
+		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+		context.put("block", this);
+		context.put("inputPortList", inputPortList);
+		context.put("outputPortList", outputPortList);
+		context.put("backlashWidth", backlashWidth);
+		context.put("initialOutput", initialOutput);
+		context.put("xState", xState);
+		context.put("signal",signal);
+		context.put("ops", ops);
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
 	}
 	 public void generateInitCodeC(CodeStructC code) {
-			super.generateInitCodeC(code);
-			String initCode="/*Code for initialization of block Backlash:("+getBlockId()+")"+getBlockName()+"*/\n";
-			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			initCode+=backlashWidth.getInitCodeC();
-			initCode+=initialOutput.getInitCodeC();
-			if(initialOutput.getDataType()==DataType.REAL&&signal.getDataType()==DataType.REAL) {
-			initCode+=xState.getName()+"="+initialOutput.getName()+";\n";
-			}
-			else if(initialOutput.getDataType()==DataType.REAL&&signal.getDataType()==DataType.MATRIX) {
-				for(int i=0; i<xState.getHeight(); i++) {
-					for(int j=0;j<xState.getWidth();j++) {
-						initCode+=xState.getName()+"("+i+","+j+")="+initialOutput.getName()+";\n";
-					}
-				}
-			}
-			else {
-				for(int i=0; i<xState.getHeight(); i++) {
-					for(int j=0;j<xState.getWidth();j++) {
-						initCode+=xState.getName()+"("+i+","+j+")="+initialOutput.getName()+"("+i+","+j+");\n";
-					}
-				}
-			}
-			code.addInitCode(initCode);
-		}
+		super.generateInitCodeC(code);
+        prepareContext();
+		String initCode = TemplateManager.renderTemplate("c/discontinuous/Backlash/init.vm", context);
+		code.addInitCode(initCode);
+	}
+
+
 	 public void generateOutputCodeC(CodeStructC code) {
-			String outputCode="/*Code for output of block Backlash:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-			OutputPort out  = outputPortList.get(0);
-			OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			switch(backlashWidth.getDataType()) {
-			case REAL:
-				switch(ops.getOutputSignalC().getDataType()) {
-				case REAL:
-					outputCode+="if("+signal.getName()+"<"+xState.getName()+"-0.5*"+backlashWidth.getName()+") {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+signal.getName()+"+0.5*"+backlashWidth.getName()+";}\n";
-					outputCode+="else if("+signal.getName()+"<="+xState.getName()+"+0.5*"+backlashWidth.getName()+") {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+xState.getName()+";}\n";
-					outputCode+="else {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+signal.getName()+"-0.5*"+backlashWidth.getName()+";}\n";
-					outputCode+=xState.getName()+"="+outputPortList.get(0).getOutputSignalC().getName()+";\n";
-					break;
-				case MATRIX:
-					for(int i=0; i<ops.getHeight(); i++) {
-						for(int j=0;j<ops.getWidth();j++) {
-							outputCode+="if("+signal.getName()+"("+i+","+j+")<"+xState.getName()+"("+i+","+j+")-0.5*"+backlashWidth.getName()+") {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+")+0.5*"+backlashWidth.getName()+";}\n";
-							outputCode+="else if("+signal.getName()+"("+i+","+j+")<="+xState.getName()+"("+i+","+j+")+0.5*"+backlashWidth.getName()+") {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");}\n";
-							outputCode+="else {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+")-0.5*"+backlashWidth.getName()+";}\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+");\n";
-						}
-					}
-					break;
-				}
-				break;
-			case MATRIX:
-				switch(ops.getOutputSignalC().getDataType()) {
-				case REAL:
-					for(int i=0; i<backlashWidth.getHeight(); i++) {
-						for(int j=0;j<backlashWidth.getWidth();j++) {
-							outputCode+="if("+signal.getName()+"<"+xState.getName()+"("+i+","+j+")-0.5*"+backlashWidth.getName()+"("+i+","+j+")) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"+0.5*"+backlashWidth.getName()+"("+i+","+j+");}\n";
-							outputCode+="else if("+signal.getName()+"<="+xState.getName()+"("+i+","+j+")+0.5*"+backlashWidth.getName()+"("+i+","+j+")) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");}\n";
-							outputCode+="else {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"-0.5*"+backlashWidth.getName()+"("+i+","+j+");}\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+");\n";
-						}
-					}
-					break;
-				case MATRIX:
-					for(int i=0; i<ops.getHeight(); i++) {
-						for(int j=0;j<ops.getWidth();j++) {
-							outputCode+="if("+signal.getName()+"("+i+","+j+")<"+xState.getName()+"("+i+","+j+")-0.5*"+backlashWidth.getName()+"("+i+","+j+")) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+")+0.5*"+backlashWidth.getName()+"("+i+","+j+");}\n";
-							outputCode+="else if("+signal.getName()+"("+i+","+j+")<="+xState.getName()+"("+i+","+j+")+0.5*"+backlashWidth.getName()+"("+i+","+j+")) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");}\n";
-							outputCode+="else {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+")-0.5*"+backlashWidth.getName()+"("+i+","+j+");}\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+");\n";
-						}
-					}
-
-					break;
-				}
-		      break;
-			}
-            code.addOutputCode(outputCode);
+		String outputCode = TemplateManager.renderTemplate("c/discontinuous/Backlash/output.vm", context);
+		code.addOutputCode(outputCode);
 	 }
-
-
-	 public void generateDerivativeCodeC(CodeStructC code) {
-		   super.generateDerivativeCodeC(code);
-
-		   String derivativeCode="/*Code for Derivative of block Backlash:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-		   derivativeCode+=xState.getDerivativeName()+"=0*"+xState.getName()+";\n";
-
-		   code.addDerivativeCode(derivativeCode);
-	   }
 
 	 public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);

@@ -1,0 +1,56 @@
+/* Code for output of block Relay:(${block.blockId}) ${block.blockName} */
+#if($onSwitchValue.dataType == $realDataType)
+  #if($ops.outputSignalC.dataType == $realDataType)
+if(${signal.getName()} > ${onSwitchValue.getName()}) {
+    ${xState.getName()} = ${onOutputValue.getName()};
+} else {
+    if(${signal.getName()} < ${offSwitchValue.getName()}) {
+        ${xState.getName()} = ${offOutputValue.getName()};
+    }
+}
+${outputs.get(0)} = ${xState.getName()};
+  #else
+    #foreach($i in [0..$optWidthIndex])
+      #foreach($j in [0..$optHeightIndex])
+if(${signal.getName()}(${i},${j}) > ${onSwitchValue.getName()}) {
+    ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()};
+} else {
+    if(${signal.getName()}(${i},${j}) < ${offSwitchValue.getName()}) {
+        ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()};
+    }
+}
+${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
+      #end
+    #end
+  #end
+#else
+  #if($ops.outputSignalC.dataType == $realDataType)
+    #set($stateIndices = $block.calculateStateIndices($onSwitchValue.height, $onSwitchValue.width))
+    #foreach($index in $stateIndices)
+        #set($i = $index / $onSwitchValue.width)
+        #set($j = $index % $onSwitchValue.width)
+        if(${signal.getName()} > ${onSwitchValue.getName()}(${i},${j})) {
+            ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
+        } else {
+            if(${signal.getName()} < ${offSwitchValue.getName()}(${i},${j})) {
+                ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+            }
+        }
+        ${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
+    #end
+  #else
+    #set($stateIndices = $block.calculateStateIndices($optWidthIndex + 1, $optHeightIndex + 1))
+    #foreach($index in $stateIndices)
+        #set($i = $index / ($optHeightIndex + 1))
+        #set($j = $index % ($optHeightIndex + 1))
+        if(${signal.getName()}(${i},${j}) > ${onSwitchValue.getName()}(${i},${j})) {
+            ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
+        } else {
+            if(${signal.getName()}(${i},${j}) < ${offSwitchValue.getName()}(${i},${j})) {
+                ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+            }
+        }
+        ${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
+    #end
+  #end
+#end

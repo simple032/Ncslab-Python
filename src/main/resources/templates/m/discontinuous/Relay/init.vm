@@ -1,0 +1,14 @@
+% Initialization code for Relay block:(${block.blockId}) ${block.blockName}
+${onSwitchValue.initCodeM}
+${offSwitchValue.initCodeM}
+${onOutputValue.initCodeM}
+${offOutputValue.initCodeM}
+#if($onSwitchValue.dataType == $realDataType && $xState.dataType == $realDataType)
+${xState.getName()} = 0;
+#else
+#foreach($i in [1..$xState.height])
+#foreach($j in [1..$xState.width])
+${xState.getName()}(${i},${j}) = 0;
+#end
+#end
+#end

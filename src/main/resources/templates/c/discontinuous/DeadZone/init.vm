@@ -1,0 +1,3 @@
+/* Code for initialization of block Dead Zone:(${block.blockId}) ${block.blockName} */
+${upperValue.initCodeC}
+${lowerValue.initCodeC}

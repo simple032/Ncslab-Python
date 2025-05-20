@@ -1,0 +1,50 @@
+% Output code for Dead Zone block:(${block.blockId}) ${block.blockName}
+#if($upperValue.dataType == $realDataType)
+  #if($ops.outputSignalC.dataType == $realDataType)
+if ${signal.getName()} > ${upperValue.getName()}
+    ${outputs.get(0)} = ${signal.getName()} - ${upperValue.getName()};
+elseif ${signal.getName()} < ${lowerValue.getName()}
+    ${outputs.get(0)} = ${signal.getName()} - ${lowerValue.getName()};
+else
+    ${outputs.get(0)} = 0;
+end
+  #else
+    #foreach($i in [1..$ops.height])
+      #foreach($j in [1..$ops.width])
+if ${signal.getName()}(${i},${j}) > ${upperValue.getName()}
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${upperValue.getName()};
+elseif ${signal.getName()}(${i},${j}) < ${lowerValue.getName()}
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${lowerValue.getName()};
+else
+    ${outputs.get(0)}(${i},${j}) = 0;
+end
+      #end
+    #end
+  #end
+#else
+  #if($ops.outputSignalC.dataType == $realDataType)
+    #foreach($i in [1..$upperValue.height])
+      #foreach($j in [1..$upperValue.width])
+if ${signal.getName()} > ${upperValue.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()} - ${upperValue.getName()}(${i},${j});
+elseif ${signal.getName()} < ${lowerValue.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()} - ${lowerValue.getName()}(${i},${j});
+else
+    ${outputs.get(0)}(${i},${j}) = 0;
+end
+      #end
+    #end
+  #else
+    #foreach($i in [1..$upperValue.height])
+      #foreach($j in [1..$upperValue.width])
+if ${signal.getName()}(${i},${j}) > ${upperValue.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${upperValue.getName()}(${i},${j});
+elseif ${signal.getName()}(${i},${j}) < ${lowerValue.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${lowerValue.getName()}(${i},${j});
+else
+    ${outputs.get(0)}(${i},${j}) = 0;
+end
+      #end
+    #end
+  #end
+#end

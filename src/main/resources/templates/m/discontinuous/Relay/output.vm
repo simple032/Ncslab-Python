@@ -1,0 +1,54 @@
+% Output code for Relay block:(${block.blockId}) ${block.blockName}
+#if($onSwitchValue.dataType == $realDataType)
+  #if($ops.outputSignalC.dataType == $realDataType)
+if ${signal.getName()} > ${onSwitchValue.getName()}
+    ${xState.getName()} = ${onOutputValue.getName()};
+else
+    if ${signal.getName()} < ${offSwitchValue.getName()}
+        ${xState.getName()} = ${offOutputValue.getName()};
+    end
+end
+${outputs.get(0)} = ${xState.getName()};
+  #else
+    #foreach($i in [1..$ops.height])
+      #foreach($j in [1..$ops.width])
+if ${signal.getName()}(${i},${j}) > ${onSwitchValue.getName()}
+    ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()};
+else
+    if ${signal.getName()}(${i},${j}) < ${offSwitchValue.getName()}
+        ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()};
+    end
+end
+${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
+      #end
+    #end
+  #end
+#else
+  #if($ops.outputSignalC.dataType == $realDataType)
+    #foreach($i in [1..$onSwitchValue.height])
+      #foreach($j in [1..$onSwitchValue.width])
+if ${signal.getName()} > ${onSwitchValue.getName()}(${i},${j})
+    ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
+else
+    if ${signal.getName()} < ${offSwitchValue.getName()}(${i},${j})
+        ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+    end
+end
+${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
+      #end
+    #end
+  #else
+    #foreach($i in [1..$ops.height])
+      #foreach($j in [1..$ops.width])
+if ${signal.getName()}(${i},${j}) > ${onSwitchValue.getName()}(${i},${j})
+    ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
+else
+    if ${signal.getName()}(${i},${j}) < ${offSwitchValue.getName()}(${i},${j})
+        ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+    end
+end
+${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
+      #end
+    #end
+  #end
+#end

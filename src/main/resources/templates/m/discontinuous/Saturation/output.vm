@@ -1,0 +1,50 @@
+% Output code for Saturation block:(${block.blockId}) ${block.blockName}
+#if($lowerLimit.dataType == $realDataType)
+  #if($ops.outputSignalC.dataType == $realDataType)
+if ${signal.getName()} > ${upperLimit.getName()}
+    ${outputs.get(0)} = ${upperLimit.getName()};
+elseif ${signal.getName()} < ${lowerLimit.getName()}
+    ${outputs.get(0)} = ${lowerLimit.getName()};
+else
+    ${outputs.get(0)} = ${signal.getName()};
+end
+  #else
+    #foreach($i in [1..$ops.height])
+      #foreach($j in [1..$ops.width])
+if ${signal.getName()}(${i},${j}) > ${upperLimit.getName()}
+    ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()};
+elseif ${signal.getName()}(${i},${j}) < ${lowerLimit.getName()}
+    ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()};
+else
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
+end
+      #end
+    #end
+  #end
+#else
+  #if($ops.outputSignalC.dataType == $realDataType)
+    #foreach($i in [1..$lowerLimit.height])
+      #foreach($j in [1..$lowerLimit.width])
+if ${signal.getName()} > ${upperLimit.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()}(${i},${j});
+elseif ${signal.getName()} < ${lowerLimit.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()}(${i},${j});
+else
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()};
+end
+      #end
+    #end
+  #else
+    #foreach($i in [1..$lowerLimit.height])
+      #foreach($j in [1..$lowerLimit.width])
+if ${signal.getName()}(${i},${j}) > ${upperLimit.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()}(${i},${j});
+elseif ${signal.getName()}(${i},${j}) < ${lowerLimit.getName()}(${i},${j})
+    ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()}(${i},${j});
+else
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
+end
+      #end
+    #end
+  #end
+#end

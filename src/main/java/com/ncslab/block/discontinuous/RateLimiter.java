@@ -13,6 +13,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
@@ -20,7 +22,7 @@ public class RateLimiter extends Block{
 	Parameter lowerLimit;
 	Parameter upperLimit;
 
-
+	VelocityContext context;
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
@@ -45,6 +47,24 @@ public class RateLimiter extends Block{
 		upperLimit=new Parameter(this,2,"upperLimit",paramValues.getString("UpperLimit"));
 		parameterList.add(lowerLimit);
 		parameterList.add(upperLimit);
+	}
+
+	private void prepareContext() {
+		context = new VelocityContext();
+		OutputPort out  = outputPortList.get(0);
+		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+		VelocityContext context = new VelocityContext();
+		context.put("block", this); // 当前Block对象（含getBlockId()）
+		context.put("inputPortList", inputPortList); // 输入端口列表
+		context.put("outputPortList", outputPortList); // 输出端口列表
+		context.put("lowerLimit", lowerLimit);
+		context.put("upperLimit", upperLimit);
+		context.put("signal",signal);
+		context.put("ops", ops);
+		context.put("realDataType", DataType.REAL); // 实数类型标识
+		context.put("matrixDataType", DataType.MATRIX); // 矩阵类型标识
 	}
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
@@ -119,87 +139,28 @@ public class RateLimiter extends Block{
 		}
 		code.addOutputCode(outputCode);
 	}
-	 public void generateInitCodeC(CodeStructC code) {
-			super.generateInitCodeC(code);
-			String initCode="/*Code for initialization of block Saturation:("+getBlockId()+")"+getBlockName()+"*/\n";
-			initCode+=lowerLimit.getInitCodeC();
-			initCode+=upperLimit.getInitCodeC();
-			code.addInitCode(initCode);
-		}
 
-	//define arrays to save data
-	 public void generateArraysCodeC(CodeStructC code) {
-		 String arraysCode="/*Define arrays for block RateLimiter:("+getBlockId()+")"+getBlockName()+"*/\n";
+	public void generateArraysCodeC(CodeStructC code){
+	    super.generateArraysCodeC(code);
 
-		 arraysCode+="double "+"Block"+getBlockId()+"RateLimiter_data=0;\n";
-		 code.addArraysCode(arraysCode);
-	 }
+        prepareContext();
+		String arraysCode = TemplateManager.renderTemplate("c/discontinuous/RateLimiter/arrays.vm", context);
+		code.addInitCode(arraysCode);
+	}
 
-	 public void generateOutputCodeC(CodeStructC code) {
-			String outputCode="/*Code for output of block RateLimiter:("+getBlockId()+")"+getBlockName()+"*/\n";
-			OutputPort out  = outputPortList.get(0);
-			OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			outputCode+="if(mp->majorStep>0) {\n";
-//			switch(lowerLimit.getDataType()) {
-//			case REAL:
-//				switch(ops.getOutputSignalC().getDataType()) {
-//				case REAL:
-					outputCode+="if("+signal.getName()+"-Block"+getBlockId()+"RateLimiter_data>"+upperLimit.getName()+"*STEP_SIZE) {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+upperLimit.getName()+"*STEP_SIZE+Block"+getBlockId()+"RateLimiter_data;}\n";
-					outputCode+="else if("+ signal.getName()+"-Block"+getBlockId()+"RateLimiter_data<"+lowerLimit.getName()+"*STEP_SIZE) {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+lowerLimit.getName()+"*STEP_SIZE+Block"+getBlockId()+"RateLimiter_data;}\n";
-					outputCode+="else {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+signal.getName()+";}\n";
-					outputCode+="Block"+getBlockId()+"RateLimiter_data="+outputPortList.get(0).getOutputSignalC().getName()+";\n";
-//					break;
-//				case MATRIX:
-//					for(int i=0; i<ops.getHeight(); i++) {
-//						for(int j=0;j<ops.getWidth();j++) {
-//							outputCode+="if("+signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+") {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+";}\n";
-//							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+") {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+";}\n";
-//							outputCode+="else {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
-//						}
-//					}
-//					break;
-//				}
-//				break;
-//			case MATRIX:
-//				switch(ops.getOutputSignalC().getDataType()) {
-//				case REAL:
-//					for(int i=0; i<lowerLimit.getHeight(); i++) {
-//						for(int j=0;j<lowerLimit.getWidth();j++) {
-//							outputCode+="if("+signal.getName()+">"+upperLimit.getName()+"("+i+","+j+")) {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+"("+i+","+j+");}\n";
-//							outputCode+="else if("+ signal.getName()+"<"+lowerLimit.getName()+"("+i+","+j+")) {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+"("+i+","+j+");}\n";
-//							outputCode+="else {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+";}\n";
-//						}
-//					}
-//					break;
-//				case MATRIX:
-//					for(int i=0; i<lowerLimit.getHeight(); i++) {
-//						for(int j=0;j<lowerLimit.getWidth();j++) {
-//							outputCode+="if("+signal.getName()+"("+i+","+j+")>"+upperLimit.getName()+"("+i+","+j+")) {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+upperLimit.getName()+"("+i+","+j+");}\n";
-//							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<"+lowerLimit.getName()+"("+i+","+j+")) {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+lowerLimit.getName()+"("+i+","+j+");}\n";
-//							outputCode+="else {\n";
-//							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+signal.getName()+"("+i+","+j+");}\n";
-//						}
-//					}
-//					break;
-//				}
-//				break;
-//			}
-			outputCode+="}\n";
-			code.addOutputCode(outputCode);
-	  }
-	 public void updateDimension() throws MatDimException{
+	public void generateInitCodeC(CodeStructC code){
+	super.generateInitCodeC(code);
+		String initCode = TemplateManager.renderTemplate("c/discontinuous/RateLimiter/init.vm", context);
+		code.addInitCode(initCode);
+	}
+
+	public void generateOutputCodeC(CodeStructC code){
+		super.generateOutputCodeC(code);
+		String outputCode = TemplateManager.renderTemplate("c/discontinuous/RateLimiter/output.vm", context);
+		code.addOutputCode(outputCode);
+	}
+
+	public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);
 			InputPort in  = inputPortList.get(0);
 			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -233,6 +194,6 @@ public class RateLimiter extends Block{
 				out.getOutputSignalC().setDataType(lowerLimit.getDataType());
 			}
 	  }
-	 public void checkDimension() throws MatDimException{
-		}
+	public void checkDimension() throws MatDimException{
+	}
 }

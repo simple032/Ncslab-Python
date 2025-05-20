@@ -1,4 +1,5 @@
 package com.ncslab.block.discontinuous;
+
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -10,17 +11,20 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
-public class Relay extends Block{
-	Parameter onSwitchValue;
-	Parameter offSwitchValue;
-	Parameter onOutputValue;
-	Parameter offOutputValue;
-	private State xState;
+public class Relay extends Block {
+    Parameter onSwitchValue;
+    Parameter offSwitchValue;
+    Parameter onOutputValue;
+    Parameter offOutputValue;
+    private State xState;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -31,170 +35,171 @@ public class Relay extends Block{
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("onSwitchValue");
-        parameterNames.add("offSwitchValue");
-        parameterNames.add("onOutputValue");
-        parameterNames.add("offOutputValue");
+        parameterNames.add("OnSwitchValue");
+        parameterNames.add("OffSwitchValue");
+        parameterNames.add("OnOutputValue");
+        parameterNames.add("OffOutputValue");
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
-	public Relay(JSONObject blockIn,NCSLabModel model) {
+    // Add a method to calculate state indices
+    private int[] calculateStateIndices(int height, int width) {
+        int[] indices = new int[height * width];
+        int index = 0;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                indices[index++] = i * width + j;
+            }
+        }
+        return indices;
+    }
 
-		super(blockIn,model);
-		//一个输入，一个输出
-		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
-		onSwitchValue=new Parameter(this,1,"onSwitchValue",paramValues.getString("OnSwitchValue"));
-		offSwitchValue=new Parameter(this,2,"offSwitchValue",paramValues.getString("OffSwitchValue"));
-		onOutputValue=new Parameter(this,3,"onOutputValue",paramValues.getString("OnOutputValue"));
-		offOutputValue=new Parameter(this,4,"offOutputValue",paramValues.getString("OffOutputValue"));
-		parameterList.add(onSwitchValue);
-		parameterList.add(offSwitchValue);
-		parameterList.add(onOutputValue);
-		parameterList.add(offOutputValue);
-	}
+    public Relay(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
 
-	 public void generateInitCodeC(CodeStructC code) {
-			super.generateInitCodeC(code);
-			String initCode="/*Code for initialization of block Relay:("+getBlockId()+")"+getBlockName()+"*/\n";
-			initCode+=onSwitchValue.getInitCodeC();
-			initCode+=offSwitchValue.getInitCodeC();
-			initCode+=onOutputValue.getInitCodeC();
-			initCode+=offOutputValue.getInitCodeC();
-			if(onSwitchValue.getDataType()==DataType.REAL&&xState.getDataType()==DataType.REAL) {
-		     initCode+=xState.getName()+"=0;\n";
-			}
-			else {
-				for(int i=0; i<xState.getHeight(); i++) {
-					for(int j=0;j<xState.getWidth();j++) {
-						initCode+=xState.getName()+"("+i+","+j+")=0;\n";
-					}
-				}
-			}
-			code.addInitCode(initCode);
-		}
+        // Initialize ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
 
-	 public void generateOutputCodeC(CodeStructC code) {
-			String outputCode="/*Code for output of block Relay:("+getBlockId()+")"+getBlockName()+"*/\n";
+        // Initialize parameters
+        onSwitchValue = new Parameter(this, 1, "OnSwitchValue", paramValues.getString("OnSwitchValue"));
+        offSwitchValue = new Parameter(this, 2, "OffSwitchValue", paramValues.getString("OffSwitchValue"));
+        onOutputValue = new Parameter(this, 3, "OnOutputValue", paramValues.getString("OnOutputValue"));
+        offOutputValue = new Parameter(this, 4, "OffOutputValue", paramValues.getString("OffOutputValue"));
+        parameterList.add(onSwitchValue);
+        parameterList.add(offSwitchValue);
+        parameterList.add(onOutputValue);
+        parameterList.add(offOutputValue);
+    }
 
-			OutputPort out  = outputPortList.get(0);
-			OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			switch(onSwitchValue.getDataType()) {
-			case REAL:
-				switch(ops.getOutputSignalC().getDataType()) {
-				case REAL:
-					outputCode+="if("+signal.getName()+">"+onSwitchValue.getName()+") {\n";
-					outputCode+=xState.getName()+"="+onOutputValue.getName()+";}\n";
-					outputCode+="else {\n";
-					outputCode+="if("+signal.getName()+"<"+offSwitchValue.getName()+") {\n";
-					outputCode+=xState.getName()+"="+offOutputValue.getName()+";}}\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+xState.getName()+";\n";
-					break;
-				case MATRIX:
-					for(int i=0; i<ops.getHeight(); i++) {
-						for(int j=0;j<ops.getWidth();j++) {
-							outputCode+="if("+signal.getName()+"("+i+","+j+")>"+onSwitchValue.getName()+") {\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+onOutputValue.getName()+";}\n";
-							outputCode+="else {\n";
-							outputCode+="if("+signal.getName()+"("+i+","+j+")<"+offSwitchValue.getName()+") {\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+offOutputValue.getName()+";}}\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");\n";
-						}
-					}
-					break;
-				}
-				break;
-			case MATRIX:
-				switch(ops.getOutputSignalC().getDataType()) {
-				case REAL:
-					for(int i=0; i<onSwitchValue.getHeight(); i++) {
-						for(int j=0;j<onSwitchValue.getWidth();j++) {
-							outputCode+="if("+signal.getName()+">"+onSwitchValue.getName()+"("+i+","+j+")) {\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+onOutputValue.getName()+"("+i+","+j+");}\n";
-							outputCode+="else {\n";
-							outputCode+="if("+signal.getName()+"<"+offSwitchValue.getName()+"("+i+","+j+")) {\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+offOutputValue.getName()+"("+i+","+j+");}}\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");\n";
-						}
-					}
-					break;
-				case MATRIX:
-					for(int i=0; i<ops.getHeight(); i++) {
-						for(int j=0;j<ops.getWidth();j++) {
-							outputCode+="if("+signal.getName()+"("+i+","+j+")>"+onSwitchValue.getName()+"("+i+","+j+")) {\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+onOutputValue.getName()+"("+i+","+j+");}\n";
-							outputCode+="else {\n";
-							outputCode+="if("+signal.getName()+"("+i+","+j+")<"+offSwitchValue.getName()+"("+i+","+j+")) {\n";
-							outputCode+=xState.getName()+"("+i+","+j+")="+offOutputValue.getName()+"("+i+","+j+");}}\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+xState.getName()+"("+i+","+j+");\n";
-						}
-					}
+    public void generateInitCodeM(CodeStructM code) {
+        super.generateInitCodeM(code);
 
-					break;
-				}
-		      break;
-			}
-		      code.addOutputCode(outputCode);
-	 }
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("onSwitchValue", onSwitchValue);
+        context.put("offSwitchValue", offSwitchValue);
+        context.put("onOutputValue", onOutputValue);
+        context.put("offOutputValue", offOutputValue);
+        context.put("xState", xState);
 
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Relay/init.vm", context);
+        code.addInitCode(codeStr);
+    }
 
-	public void generateDerivativeCodeC(CodeStructC code) {
-		   super.generateDerivativeCodeC(code);
+    public void generateOutputCodeM(CodeStructM code) {
+        super.generateOutputCodeM(code);
 
-		   String derivativeCode="/*Code for Derivative of block Relay:("+getBlockId()+")"+getBlockName()+"*/\n";
+        OutputPort out = outputPortList.get(0);
+        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-		   derivativeCode+=xState.getDerivativeName()+"=0*"+xState.getName()+";\n";
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("onSwitchValue", onSwitchValue);
+        context.put("offSwitchValue", offSwitchValue);
+        context.put("onOutputValue", onOutputValue);
+        context.put("offOutputValue", offOutputValue);
+        context.put("out", out);
+        context.put("ops", ops);
+        context.put("signal", signal);
+        context.put("xState", xState);
+        context.put("outputs", getOutputPortVariables());
 
-		   code.addDerivativeCode(derivativeCode);
-	   }
-	 public void updateDimension() throws MatDimException{
-			OutputPort out  = outputPortList.get(0);
-			InputPort in  = inputPortList.get(0);
-			OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			if(signal.getDataType()==DataType.REAL) {
-			xState=new State(this,1,"save_data",onSwitchValue.getHeight(),onSwitchValue.getWidth());}
-			else {
-				xState=new State(this,1,"save_data",signal.getHeight(),signal.getWidth());
-			}
-			stateList.add(xState);
-			if(onSwitchValue.getWidth()!=offSwitchValue.getWidth()
-					||onSwitchValue.getWidth()!=onOutputValue.getWidth()
-					||onSwitchValue.getWidth()!=offOutputValue.getWidth()
-					||onSwitchValue.getHeight()!=offSwitchValue.getHeight()
-					||onSwitchValue.getHeight()!=onOutputValue.getHeight()
-					||onSwitchValue.getHeight()!=offOutputValue.getHeight()) {
-				MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!All input dimensions should be same!");
-				throw(e);
-			}
-			if(onSwitchValue.getDataType()==DataType.MATRIX&&signal.getDataType()==DataType.REAL) {
-				out.setHeight(onSwitchValue.getHeight());
-				out.setWidth(onSwitchValue.getWidth());
-				out.getOutputSignalC().setHeight(onSwitchValue.getHeight());
-				out.getOutputSignalC().setWidth(onSwitchValue.getWidth());
-				out.getOutputSignalC().setDataType(DataType.MATRIX);
-			}
-			else if(onSwitchValue.getDataType()==DataType.REAL&&signal.getDataType()==DataType.MATRIX) {
-				out.setHeight(signal.getHeight());
-				out.setWidth(signal.getWidth());
-				out.getOutputSignalC().setHeight(signal.getHeight());
-				out.getOutputSignalC().setWidth(signal.getWidth());
-				out.getOutputSignalC().setDataType(signal.getDataType());
-			}
-			else{
-				if(onSwitchValue.getWidth()!=signal.getWidth()||onSwitchValue.getHeight()!=signal.getHeight()) {
-				MatDimException e=new MatDimException("Block "+this.blockName+" input dimension doesn't match the gain dimension!\n \n");
-				throw(e);
-				}
-				out.setHeight(onSwitchValue.getHeight());
-				out.setWidth(onSwitchValue.getWidth());
-				out.getOutputSignalC().setHeight(onSwitchValue.getHeight());
-				out.getOutputSignalC().setWidth(onSwitchValue.getWidth());
-				out.getOutputSignalC().setDataType(onSwitchValue.getDataType());
-			}
-	  }
-	 public void checkDimension() throws MatDimException{
-	}
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Relay/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("onSwitchValue", onSwitchValue);
+        context.put("offSwitchValue", offSwitchValue);
+        context.put("onOutputValue", onOutputValue);
+        context.put("offOutputValue", offOutputValue);
+        context.put("xState", xState);
+
+        String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        OutputPort out = outputPortList.get(0);
+        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("onSwitchValue", onSwitchValue);
+        context.put("offSwitchValue", offSwitchValue);
+        context.put("onOutputValue", onOutputValue);
+        context.put("offOutputValue", offOutputValue);
+        context.put("out", out);
+        context.put("ops", ops);
+        context.put("signal", signal);
+        context.put("xState", xState);
+        context.put("outputs", getOutputPortVariables());
+
+        String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        if (signal.getDataType() == DataType.REAL) {
+            xState = new State(this, 1, "save_data", onSwitchValue.getHeight(), onSwitchValue.getWidth());
+        } else {
+            xState = new State(this, 1, "save_data", signal.getHeight(), signal.getWidth());
+        }
+        stateList.add(xState);
+
+        if (onSwitchValue.getWidth() != offSwitchValue.getWidth()
+                || onSwitchValue.getWidth() != onOutputValue.getWidth()
+                || onSwitchValue.getWidth() != offOutputValue.getWidth()
+                || onSwitchValue.getHeight() != offSwitchValue.getHeight()
+                || onSwitchValue.getHeight() != onOutputValue.getHeight()
+                || onSwitchValue.getHeight() != offOutputValue.getHeight()) {
+            MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match! All input dimensions should be same!");
+            throw(e);
+        }
+
+        if (onSwitchValue.getDataType() == DataType.MATRIX && signal.getDataType() == DataType.REAL) {
+            out.setHeight(onSwitchValue.getHeight());
+            out.setWidth(onSwitchValue.getWidth());
+            out.getOutputSignalC().setHeight(onSwitchValue.getHeight());
+            out.getOutputSignalC().setWidth(onSwitchValue.getWidth());
+            out.getOutputSignalC().setDataType(DataType.MATRIX);
+        } else if (onSwitchValue.getDataType() == DataType.REAL && signal.getDataType() == DataType.MATRIX) {
+            out.setHeight(signal.getHeight());
+            out.setWidth(signal.getWidth());
+            out.getOutputSignalC().setHeight(signal.getHeight());
+            out.getOutputSignalC().setWidth(signal.getWidth());
+            out.getOutputSignalC().setDataType(signal.getDataType());
+        } else {
+            if (onSwitchValue.getWidth() != signal.getWidth() || onSwitchValue.getHeight() != signal.getHeight()) {
+                MatDimException e = new MatDimException("Block " + this.blockName + " input dimension doesn't match the gain dimension!\n \n");
+                throw(e);
+            }
+
+            out.setHeight(onSwitchValue.getHeight());
+            out.setWidth(onSwitchValue.getWidth());
+            out.getOutputSignalC().setHeight(onSwitchValue.getHeight());
+            out.getOutputSignalC().setWidth(onSwitchValue.getWidth());
+            out.getOutputSignalC().setDataType(onSwitchValue.getDataType());
+        }
+    }
+
+    public void checkDimension() throws MatDimException {
+        // No specific dimension checking needed
+    }
 }
-

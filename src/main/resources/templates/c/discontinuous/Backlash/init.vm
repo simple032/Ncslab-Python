@@ -1,0 +1,34 @@
+/*Code for initialization of block Backlash:(${block.getBlockId()})${block.getBlockName()}*/
+
+#set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+#set($xState = $xState)
+#set($initialOutput = $initialOutput)
+
+${backlashWidth.getInitCodeC()}
+${initialOutput.getInitCodeC()}
+
+#if($initialOutput.dataType == $realDataType && $signal.dataType == $realDataType)
+    ${xState.getName()} = ${initialOutput.getName()};
+#elseif($initialOutput.dataType == $realDataType && $signal.dataType == $matrixDataType)
+    #set($height = $xState.getHeight())
+    #set($width = $xState.getWidth())
+    #set($hMax = $height - 1)
+    #set($wMax = $width - 1)
+    
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+            ${xState.getName()}($i, $j) = ${initialOutput.getName()};
+        #end
+    #end
+#else
+    #set($height = $xState.getHeight())
+    #set($width = $xState.getWidth())
+    #set($hMax = $height - 1)
+    #set($wMax = $width - 1)
+    
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+            ${xState.getName()}($i, $j) = ${initialOutput.getName()}($i, $j);
+        #end
+    #end
+#end

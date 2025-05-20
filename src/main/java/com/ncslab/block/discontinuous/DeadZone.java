@@ -13,12 +13,14 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
 public class DeadZone extends Block {
-	Parameter lowervalue;
-	Parameter uppervalue;
+    Parameter lowerValue;
+    Parameter upperValue;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -28,244 +30,149 @@ public class DeadZone extends Block {
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    // Add a method to calculate lower value indices
+    private int[] calculateLowerValueIndices(int height, int width) {
+        int[] indices = new int[height * width];
+        int index = 0;
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                indices[index++] = i * width + j;
+            }
+        }
+        return indices;
+    }
+
     static {
-        parameterNames.add("lowervalue");
-        parameterNames.add("uppervalue");
+        parameterNames.add("LowerValue");
+        parameterNames.add("UpperValue");
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
-	public DeadZone(JSONObject blockIn, NCSLabModel model) {
-		super(blockIn, model);
-		inputPortList.add(new InputPort(this, 1));
-		outputPortList.add(new OutputPort(this, 1, true));
-		lowervalue = new Parameter(this, 1, "lowervalue", paramValues.getString("LowerValue"));
-		uppervalue = new Parameter(this, 2, "uppervalue", paramValues.getString("UpperValue"));
-		parameterList.add(lowervalue);
-		parameterList.add(uppervalue);
-	}
+    public DeadZone(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
 
-	public void generateInitCodeM(CodeStructM code) {
-		super.generateInitCodeM(code);
-		String initCode = "";
-		initCode += uppervalue.getInitCodeM();
-		initCode += lowervalue.getInitCodeM();
-		code.addInitCode(initCode);
-	}
+        // Initialize ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
 
-	public void generateOutputCodeM(CodeStructM code) {
-		super.generateOutputCodeM(code);
-		OutputPort out = outputPortList.get(0);
-		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		String outputCode = "";
-		switch (uppervalue.getDataType()) {
-			case REAL:
-				switch (ops.getOutputSignalC().getDataType()) {
-					case REAL:
-						outputCode += "if " + signal.getName() + ">" + uppervalue.getName() + "\n";
-						outputCode += out.getOutputSignalC().getName() + "=" + signal.getName() + "-"
-								+ uppervalue.getName() + ";\n";
-						outputCode += "elseif " + signal.getName() + "<" + lowervalue.getName() + "\n";
-						outputCode += out.getOutputSignalC().getName() + "=" + signal.getName() + "-"
-								+ lowervalue.getName() + ";\n";
-						outputCode += "else\n";
-						outputCode += out.getOutputSignalC().getName() + "=0;\n";
-						outputCode += "end\n";
-						break;
-					case MATRIX:
-						for (int i = 1; i < ops.getHeight() + 1; i++) {
-							for (int j = 1; j < ops.getWidth() + 1; j++) {
-								outputCode += "if " + signal.getName() + "(" + i + "," + j + ")>" + uppervalue.getName()
-										+ "\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")="
-										+ signal.getName() + "(" + i + "," + j + ")-" + uppervalue.getName() + ";\n";
-								outputCode += "elseif " + signal.getName() + "(" + i + "," + j + ")<"
-										+ lowervalue.getName() + "\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")="
-										+ signal.getName() + "(" + i + "," + j + ")-" + lowervalue.getName() + ";\n";
-								outputCode += "else\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=0;\n";
-								outputCode += "end\n";
-							}
-						}
-						break;
-				}
-				break;
-			case MATRIX:
-				switch (ops.getOutputSignalC().getDataType()) {
-					case REAL:
-						for (int i = 1; i < uppervalue.getHeight() + 1; i++) {
-							for (int j = 1; j < uppervalue.getWidth() + 1; j++) {
-								outputCode += "if " + signal.getName() + ">" + uppervalue.getName() + "(" + i + "," + j
-										+ ")\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")="
-										+ signal.getName() + "-" + uppervalue.getName() + "(" + i + "," + j + ");\n";
-								outputCode += "elseif " + signal.getName() + "<" + lowervalue.getName() + "(" + i + ","
-										+ j + ")\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")="
-										+ signal.getName() + "-" + lowervalue.getName() + "(" + i + "," + j + ");\n";
-								outputCode += "else\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=0;\n";
-								outputCode += "end\n";
-							}
-						}
-						break;
-					case MATRIX:
-						for (int i = 1; i < uppervalue.getHeight() + 1; i++) {
-							for (int j = 1; j < uppervalue.getWidth() + 1; j++) {
-								outputCode += "if " + signal.getName() + "(" + i + "," + j + ")>" + uppervalue.getName()
-										+ "(" + i + "," + j + ")\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")="
-										+ signal.getName() + "(" + i + "," + j + ")-" + uppervalue.getName() + "(" + i
-										+ "," + j + ");\n";
-								outputCode += "elseif " + signal.getName() + "(" + i + "," + j + ")<"
-										+ lowervalue.getName() + "(" + i + "," + j + ")\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")="
-										+ signal.getName() + "(" + i + "," + j + ")-" + lowervalue.getName() + "(" + i
-										+ "," + j + ");\n";
-								outputCode += "else\n";
-								outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=0;\n";
-								outputCode += "end\n";
-							}
-						}
-						break;
-				}
-				break;
-		}
-		code.addOutputCode(outputCode);
-	}
+        // Initialize parameters
+        lowerValue = new Parameter(this, 1, "LowerValue", paramValues.getString("LowerValue"));
+        upperValue = new Parameter(this, 2, "UpperValue", paramValues.getString("UpperValue"));
+        parameterList.add(lowerValue);
+        parameterList.add(upperValue);
+    }
 
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
+    public void generateInitCodeM(CodeStructM code) {
+        super.generateInitCodeM(code);
 
-		String initCode = "/*Code for initialization of block Dead Zone:(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		initCode += uppervalue.getInitCodeC();
-		initCode += lowervalue.getInitCodeC();
-		code.addInitCode(initCode);
-	}
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("lowerValue", lowerValue);
+        context.put("upperValue", upperValue);
 
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode = "/*Code for output of block Dead Zone:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/DeadZone/init.vm", context);
+        code.addInitCode(codeStr);
+    }
 
-		OutputPort out = outputPortList.get(0);
-		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch (lowervalue.getDataType()) {
-			case REAL:
-				switch (ops.getOutputSignalC().getDataType()) {
-					case REAL:
-						outputCode += "if(" + signal.getName() + ">" + uppervalue.getName() + ") {\n";
-						outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + signal.getName() + "-"
-								+ uppervalue.getName() + ";}\n";
-						outputCode += "else if(" + signal.getName() + "<" + lowervalue.getName() + ") {\n";
-						outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + signal.getName() + "-"
-								+ lowervalue.getName() + ";}\n";
-						outputCode += "else {\n";
-						outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=0;}\n";
-						break;
-					case MATRIX:
-						for (int i = 0; i < ops.getHeight(); i++) {
-							for (int j = 0; j < ops.getWidth(); j++) {
-								outputCode += "if(" + signal.getName() + "(" + i + "," + j + ")>" + uppervalue.getName()
-										+ ") {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=" + signal.getName() + "(" + i + "," + j + ")-" + uppervalue.getName()
-										+ ";}\n";
-								outputCode += "else if(" + signal.getName() + "(" + i + "," + j + ")<"
-										+ lowervalue.getName() + ") {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=" + signal.getName() + "(" + i + "," + j + ")-" + lowervalue.getName()
-										+ ";}\n";
-								outputCode += "else {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=0;}\n";
-							}
-						}
-						break;
-				}
-				break;
-			case MATRIX:
-				switch (ops.getOutputSignalC().getDataType()) {
-					case REAL:
-						for (int i = 0; i < lowervalue.getHeight(); i++) {
-							for (int j = 0; j < lowervalue.getWidth(); j++) {
-								outputCode += "if(" + signal.getName() + ">" + uppervalue.getName() + "(" + i + "," + j
-										+ ")) {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=" + signal.getName() + "-" + uppervalue.getName() + "(" + i + "," + j
-										+ ");}\n";
-								outputCode += "else if(" + signal.getName() + "<" + lowervalue.getName() + "(" + i + ","
-										+ j + ")) {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=" + signal.getName() + "-" + lowervalue.getName() + "(" + i + "," + j
-										+ ");}\n";
-								outputCode += "else {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=0;}\n";
-							}
-						}
-						break;
-					case MATRIX:
-						for (int i = 0; i < lowervalue.getHeight(); i++) {
-							for (int j = 0; j < lowervalue.getWidth(); j++) {
-								outputCode += "if(" + signal.getName() + "(" + i + "," + j + ")>" + uppervalue.getName()
-										+ "(" + i + "," + j + ")) {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=" + signal.getName() + "(" + i + "," + j + ")-" + uppervalue.getName()
-										+ "(" + i + "," + j + ");}\n";
-								outputCode += "else if(" + signal.getName() + "(" + i + "," + j + ")<"
-										+ lowervalue.getName() + "(" + i + "," + j + ")) {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=" + signal.getName() + "(" + i + "," + j + ")-" + lowervalue.getName()
-										+ "(" + i + "," + j + ");}\n";
-								outputCode += "else {\n";
-								outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j
-										+ ")=0;}\n";
-							}
-						}
-						break;
-				}
-		}
-		code.addOutputCode(outputCode);
-	}
+    public void generateOutputCodeM(CodeStructM code) {
+        super.generateOutputCodeM(code);
 
-	public void updateDimension() throws MatDimException {
-		OutputPort out = outputPortList.get(0);
-		InputPort in = inputPortList.get(0);
-		OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		if (lowervalue.getWidth() != uppervalue.getWidth() || lowervalue.getHeight() != uppervalue.getHeight()) {
-			MatDimException e = new MatDimException(
-					"Block " + this.blockName + " input dimensions don't match!All input dimensions should be same!");
-			throw (e);
-		}
-		if (lowervalue.getDataType() == DataType.MATRIX && signal.getDataType() == DataType.REAL) {
-			out.setHeight(lowervalue.getHeight());
-			out.setWidth(lowervalue.getWidth());
-			out.getOutputSignalC().setHeight(lowervalue.getHeight());
-			out.getOutputSignalC().setWidth(lowervalue.getWidth());
-			out.getOutputSignalC().setDataType(DataType.MATRIX);
-		} else if (lowervalue.getDataType() == DataType.REAL && signal.getDataType() == DataType.MATRIX) {
-			out.setHeight(signal.getHeight());
-			out.setWidth(signal.getWidth());
-			out.getOutputSignalC().setHeight(signal.getHeight());
-			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());
-		} else {
-			if (lowervalue.getWidth() != signal.getWidth() || lowervalue.getHeight() != signal.getHeight()) {
-				MatDimException e = new MatDimException(
-						"Block " + this.blockName + " input dimension doesn't match the gain dimension!\n \n");
-				throw (e);
-			}
-			out.setHeight(lowervalue.getHeight());
-			out.setWidth(lowervalue.getWidth());
-			out.getOutputSignalC().setHeight(lowervalue.getHeight());
-			out.getOutputSignalC().setWidth(lowervalue.getWidth());
-			out.getOutputSignalC().setDataType(lowervalue.getDataType());
-		}
-	}
+        OutputPort out = outputPortList.get(0);
+        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-	public void checkDimension() throws MatDimException {
-	}
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("lowerValue", lowerValue);
+        context.put("upperValue", upperValue);
+        context.put("out", out);
+        context.put("ops", ops);
+        context.put("signal", signal);
+        context.put("outputs", getOutputPortVariables());
+
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/DeadZone/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+        context.put("lowerValue", lowerValue);
+        context.put("upperValue", upperValue);
+
+        String codeStr = TemplateManager.renderTemplate("c/discontinuous/DeadZone/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        OutputPort out = outputPortList.get(0);
+        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+context.put("realDataType", DataType.REAL);
+
+        context.put("lowerValue", lowerValue);
+        context.put("upperValue", upperValue);
+        context.put("lowerValueWidthIndex", lowerValue.getWidth()-1);
+        context.put("lowerValueHeightIndex", lowerValue.getHeight()-1);
+        context.put("out", out);
+        context.put("ops", ops);
+        context.put("opsWidthIndex", ops.getWidth()-1);
+        context.put("opsHeightIndex", ops.getHeight()-1);
+        context.put("signal", signal);
+        context.put("outputs", getOutputPortVariables());
+
+        String codeStr = TemplateManager.renderTemplate("c/discontinuous/DeadZone/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        if (lowerValue.getWidth() != upperValue.getWidth() || lowerValue.getHeight() != upperValue.getHeight()) {
+            MatDimException e = new MatDimException(
+                    "Block " + this.blockName + " input dimensions don't match! All input dimensions should be same!");
+            throw (e);
+        }
+
+        if (lowerValue.getDataType() == DataType.MATRIX && signal.getDataType() == DataType.REAL) {
+            out.setHeight(lowerValue.getHeight());
+            out.setWidth(lowerValue.getWidth());
+            out.getOutputSignalC().setHeight(lowerValue.getHeight());
+            out.getOutputSignalC().setWidth(lowerValue.getWidth());
+            out.getOutputSignalC().setDataType(DataType.MATRIX);
+        } else if (lowerValue.getDataType() == DataType.REAL && signal.getDataType() == DataType.MATRIX) {
+            out.setHeight(signal.getHeight());
+            out.setWidth(signal.getWidth());
+            out.getOutputSignalC().setHeight(signal.getHeight());
+            out.getOutputSignalC().setWidth(signal.getWidth());
+            out.getOutputSignalC().setDataType(signal.getDataType());
+        } else {
+            if (lowerValue.getWidth() != signal.getWidth() || lowerValue.getHeight() != signal.getHeight()) {
+                MatDimException e = new MatDimException(
+                        "Block " + this.blockName + " input dimension doesn't match the gain dimension!\n \n");
+                throw (e);
+            }
+
+            out.setHeight(lowerValue.getHeight());
+            out.setWidth(lowerValue.getWidth());
+            out.getOutputSignalC().setHeight(lowerValue.getHeight());
+            out.getOutputSignalC().setWidth(lowerValue.getWidth());
+            out.getOutputSignalC().setDataType(lowerValue.getDataType());
+        }
+    }
+
+    public void checkDimension() throws MatDimException {
+        // No specific dimension checking needed
+    }
 }

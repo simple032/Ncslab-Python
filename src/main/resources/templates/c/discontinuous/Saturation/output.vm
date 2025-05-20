@@ -1,0 +1,51 @@
+/* Code for output of block Saturation:(${block.blockId}) ${block.blockName} */
+#if($lowerLimit.dataType == $realDataType)
+  #if($ops.outputSignalC.dataType == $realDataType)
+if(${signal.getName()} > ${upperLimit.getName()}) {
+    ${outputs.get(0)} = ${upperLimit.getName()};
+} else if(${signal.getName()} < ${lowerLimit.getName()}) {
+    ${outputs.get(0)} = ${lowerLimit.getName()};
+} else {
+    ${outputs.get(0)} = ${signal.getName()};
+}
+  #else
+    #foreach($i in [0..$optWidthIndex])
+      #foreach($j in [0..$optHeightIndex])
+if(${signal.getName()}(${i},${j}) > ${upperLimit.getName()}) {
+    ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()};
+} else if(${signal.getName()}(${i},${j}) < ${lowerLimit.getName()}) {
+    ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()};
+} else {
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
+}
+      #end
+    #end
+  #end
+#else
+  #if($ops.outputSignalC.dataType == $realDataType)
+    #foreach($i in [0..$lowerLimitHeightIndex])
+      #foreach($j in [0..$lowerLimitWidthIndex])
+if(${signal.getName()} > ${upperLimit.getName()}(${i},${j})) {
+    ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()}(${i},${j});
+} else if(${signal.getName()} < ${lowerLimit.getName()}(${i},${j})) {
+    ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()}(${i},${j});
+} else {
+    ${outputs.get(0)}(${i},${j}) = ${signal.getName()};
+}
+      #end
+    #end
+  #else
+    #set($stateIndices = $block.calculateStateIndices($lowerLimitHeightIndex + 1, $lowerLimitWidthIndex + 1))
+    #foreach($index in $stateIndices)
+        #set($i = $index / ($lowerLimitWidthIndex + 1))
+        #set($j = $index % ($lowerLimitWidthIndex + 1))
+        if(${signal.getName()}(${i},${j}) > ${upperLimit.getName()}(${i},${j})) {
+            ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()}(${i},${j});
+        } else if(${signal.getName()}(${i},${j}) < ${lowerLimit.getName()}(${i},${j})) {
+            ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()}(${i},${j});
+        } else {
+            ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
+        }
+    #end
+  #end
+#end

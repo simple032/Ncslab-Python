@@ -1,5 +1,9 @@
 package com.ncslab.block.discontinuous;
 import lombok.Getter;
+
+import org.apache.velocity.VelocityContext;
+import org.checkerframework.checker.units.qual.C;
+import org.checkerframework.checker.units.qual.s;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
@@ -12,12 +16,15 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
 public class Coulomb extends Block{
 	Parameter offset;
 	Parameter gain;
+
+	VelocityContext context;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -43,6 +50,23 @@ public class Coulomb extends Block{
 		gain=new Parameter(this,2,"gain",paramValues.getString("gain"));
 		parameterList.add(offset);
 		parameterList.add(gain);
+	}
+
+	private void prepareContext() {
+		context = new VelocityContext();
+		OutputPort out  = outputPortList.get(0);
+		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+		context.put("block", this); // 当前Block对象（含getBlockId()）
+		context.put("inputPortList", inputPortList); // 输入端口列表
+		context.put("outputPortList", outputPortList); // 输出端口列表
+		context.put("offset", offset); // 偏移量参数对象
+		context.put("gain", gain); // 增益参数对象
+		context.put("signal",signal);
+		context.put("ops", ops);
+		context.put("realDataType", DataType.REAL); // 实数类型标识
+		context.put("matrixDataType", DataType.MATRIX); // 矩阵类型标识
 	}
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
@@ -93,75 +117,20 @@ public class Coulomb extends Block{
 		}
 		code.addOutputCode(outputCode);
 	}
-	 public void generateInitCodeC(CodeStructC code) {
-			super.generateInitCodeC(code);
-			String initCode="/*Code for initialization of block Coulomb:("+getBlockId()+")"+getBlockName()+"*/\n";
-			initCode+=offset.getInitCodeC();
-			initCode+=gain.getInitCodeC();
-			code.addInitCode(initCode);
-		}
-	 public void generateOutputCodeC(CodeStructC code) {
-			String outputCode="/*Code for output of block Coulomb:("+getBlockId()+")"+getBlockName()+"*/\n";
 
-			OutputPort out  = outputPortList.get(0);
-			OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-			OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			switch(offset.getDataType()) {
-			case REAL:
-				switch(ops.getOutputSignalC().getDataType()) {
-				case REAL:
-					outputCode+="if("+signal.getName()+">0) {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=1*("+gain.getName()+"*fabs("+signal.getName()+")+"+offset.getName()+");}\n";
-					outputCode+="else if("+ signal.getName()+"<0) {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=(-1)*("+gain.getName()+"*fabs("+signal.getName()+")+"+offset.getName()+");}\n";
-					outputCode+="else {\n";
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;}\n";
-					break;
-				case MATRIX:
-					for(int i=0; i<ops.getHeight(); i++) {
-						for(int j=0;j<ops.getWidth();j++) {
-							outputCode+="if("+signal.getName()+"("+i+","+j+")>0) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=1*("+gain.getName()+"*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+");}\n";
-							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<0) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=(-1)*("+gain.getName()+"*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+");}\n";
-							outputCode+="else {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
-						}
-					}
-					break;
-				}
-				break;
-			case MATRIX:
-				switch(ops.getOutputSignalC().getDataType()) {
-				case REAL:
-					for(int i=0; i<offset.getHeight(); i++) {
-						for(int j=0;j<offset.getWidth();j++) {
-							outputCode+="if("+signal.getName()+">0) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=1*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+")+"+offset.getName()+"("+i+","+j+"));}\n";
-							outputCode+="else if("+ signal.getName()+"<0) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=(-1)*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+")+"+offset.getName()+"("+i+","+j+"));}\n";
-							outputCode+="else {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
-						}
-					}
-					break;
-				case MATRIX:
-					for(int i=0; i<offset.getHeight(); i++) {
-						for(int j=0;j<offset.getWidth();j++) {
-							outputCode+="if("+signal.getName()+"("+i+","+j+")>0) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=1*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+"("+i+","+j+"));}\n";
-							outputCode+="else if("+ signal.getName()+"("+i+","+j+")<0) {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=(-1)*("+gain.getName()+"("+i+","+j+")*fabs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+"("+i+","+j+"));}\n";
-							outputCode+="else {\n";
-							outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
-						}
-					}
-					break;
-				}
-				break;
-			}
-			code.addOutputCode(outputCode);
-	  }
+	public void generateInitCodeC(CodeStructC code){
+		super.generateInitCodeC(code);
+        prepareContext();
+		String initCode = TemplateManager.renderTemplate("c/discontinuous/Coulomb/init.vm", context);
+		code.addInitCode(initCode);
+	}
+
+	public void generateOutputCodeC(CodeStructC code){
+		super.generateOutputCodeC(code);
+		String outputCode = TemplateManager.renderTemplate("c/discontinuous/Coulomb/output.vm", context);
+		code.addOutputCode(outputCode);
+	}
+
 	 public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);
 			InputPort in  = inputPortList.get(0);
