@@ -1,0 +1,14 @@
+## Fcn 输出计算模板
+#set($output = $block.outputPortList.get(0).getOutputSignalC().getName())
+#set($signal = $block.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#if($signal.dataType == $realDataType)
+{
+    const double u = ${signal.getName()};
+    ${output} = ${expression};
+}
+#else
+{
+    const Matrix& u = ${signal.getName()};
+    ${output} = ${expression};
+}
+#end

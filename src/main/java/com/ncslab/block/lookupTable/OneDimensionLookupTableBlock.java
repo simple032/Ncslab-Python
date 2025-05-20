@@ -48,6 +48,7 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
 
     @Override
     public void generateInitCodeC(CodeStructC code){
+        super.generateInitCodeC(code);
         String initCode="/*Code for init of block 1-D Lookup table:("+getBlockId()+")"+getBlockName()+"*/\n";
         StringBuilder initCodeBuilder = new StringBuilder();
         initCodeBuilder.append("init_interpolation_table_1d(&").append(getTableName())

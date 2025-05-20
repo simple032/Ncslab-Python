@@ -1,0 +1,8 @@
+#set($block = $xTool.blocks.get($blockId))
+// AD模块更新逻辑
+$block.parameters.get("Parameters").each{ param |
+    // 更新参数${param.getName()}
+    rtP->${param.getName()} = ${param.value};
+}
+// 更新中间变量状态
+rtDW->AD_DSTATE = rtU->AD_IN;

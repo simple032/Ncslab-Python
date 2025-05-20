@@ -1,0 +1,27 @@
+/* 中断类型映射宏 */
+#define GPIO_IRQ_MAP(pin) \
+    _Generic((pin), \
+        GPIO_PIN_0  : EXTI0_IRQn, \
+        GPIO_PIN_1  : EXTI1_IRQn, \
+        GPIO_PIN_2  : EXTI2_IRQn, \
+        GPIO_PIN_3  : EXTI3_IRQn, \
+        GPIO_PIN_4  : EXTI4_IRQn, \
+        GPIO_PIN_5  : EXTI9_5_IRQn, \
+        GPIO_PIN_6  : EXTI9_5_IRQn, \
+        GPIO_PIN_7  : EXTI9_5_IRQn, \
+        GPIO_PIN_8  : EXTI9_5_IRQn, \
+        GPIO_PIN_9  : EXTI9_5_IRQn, \
+        GPIO_PIN_10 : EXTI15_10_IRQn, \
+        GPIO_PIN_11 : EXTI15_10_IRQn, \
+        GPIO_PIN_12 : EXTI15_10_IRQn, \
+        GPIO_PIN_13 : EXTI15_10_IRQn, \
+        GPIO_PIN_14 : EXTI15_10_IRQn, \
+        GPIO_PIN_15 : EXTI15_10_IRQn \
+    )
+
+#define ${block.getName()}_ENABLE_INTERRUPT(edge, prio) \
+    do { \
+        GPIO_InitStruct.Mode |= GPIO_MODE_IT_##edge; \
+        HAL_NVIC_SetPriority(GPIO_IRQ_MAP(${pinNumber}), prio, 0); \
+        HAL_NVIC_EnableIRQ(GPIO_IRQ_MAP(${pinNumber})); \
+    } while(0)

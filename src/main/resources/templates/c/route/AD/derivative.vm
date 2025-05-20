@@ -1,0 +1,16 @@
+#set($block = $xTool.blocks.get($blockId))
+
+// 定义微分方程计算函数
+function calculateDerivative($input, $functions) {
+    foreach ($func in $functions) {
+        // 计算${func.getName()}的导数
+        $input = ${func.expression}_deriv($input);
+    }
+    return $input;
+}
+
+// 获取块参数
+$blockParameters = $block.parameters;
+
+// 执行微分方程计算
+rtDW->AD_DSTATE = calculateDerivative(rtU->AD_IN, $blockParameters.get("Function"));

@@ -1,0 +1,10 @@
+/*Code for output of block Demux:(${block.blockId})${block.blockName}*/
+#if($block.inputPortList.get(0).height == 1)
+#foreach($i in [0..$block.outputPortList.size()])
+${outputs.get($i)}=${inputs.get(0)}(0,$i);
+#end
+#else
+#foreach($i in [0..$block.outputPortList.size()])
+${outputs.get($i)}=${inputs.get(0)}($i,0);
+#end
+#end

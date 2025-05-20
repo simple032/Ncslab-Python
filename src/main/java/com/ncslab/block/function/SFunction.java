@@ -1,7 +1,9 @@
 package com.ncslab.block.function;
 
+import com.ncslab.block.data.DataType;
+import com.ncslab.util.TemplateManager;
 import java.util.Vector;
-
+import org.apache.velocity.VelocityContext;
 import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.block.io.*;
 import com.ncslab.ncslablink.MatDimException;
@@ -204,15 +206,12 @@ public class SFunction extends DiscreteBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        if(this.numDiscState>0) {
-            outputCode+="if(block"+this.getBlockId()+".discreteTime<=mp->time||"+"block"+this.getBlockId()+".discreteTime-mp->time<0.0000001){\n";
-            outputCode+="(*"+this.simStructName+"->outputs)("+this.simStructName+",0);\n";
-            outputCode+="}\n";
-        }else {
-            outputCode+="(*"+this.simStructName+"->outputs)("+this.simStructName+",0);\n";
-        }
-        code.addOutputCode(outputCode);
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+        context.put("realDataType", DataType.REAL);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void  generateDerivativeCodeC(CodeStructC code) {

@@ -1,0 +1,6 @@
+/* Code for initialization of block Delay:($blockId)$blockName */
+$sampleTime.getInitCodeC()
+$initialCondition.getInitCodeC()
+$delayLength.getInitCodeC()
+sample_time[sample_i]=$sampleTime.getName();
+sample_i=sample_i+1;

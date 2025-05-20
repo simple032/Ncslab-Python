@@ -1,0 +1,8 @@
+#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($scopeStruct = $scopeStruct.getName())
+
+/* Code for output of block Scope:($blockId)$blockName */
+if (sfcnIsMajorStep()) {
+    ${scopeStruct}.timeList.push_back(sfcnGetT());
+    ${scopeStruct}.dataList.push_back($inputSignal);
+}

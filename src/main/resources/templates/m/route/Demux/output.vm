@@ -1,0 +1,3 @@
+#foreach($i in [0..$block.outputPortList.size()])
+${outputs.get($i)}=${inputs.get(0)}($i+1);
+#end

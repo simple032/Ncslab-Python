@@ -1,0 +1,4 @@
+/* DA Block Initialization: ($block.getBlockId()) $block.getBlockName() */
+#foreach($state in $states)
+${state.getName()} = 0;
+#end

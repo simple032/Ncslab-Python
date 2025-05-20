@@ -1,6 +1,8 @@
 package com.ncslab.block.discrete;
 
 import lombok.Getter;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 import org.json.JSONObject;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -54,57 +56,30 @@ public class Delay extends DiscreteBlock {
 		 code.addArraysCode(arraysCode);
 	 }
 	 public void generateInitCodeC(CodeStructC code) {
-			super.generateInitCodeC(code);
-			String initCode="/*Code for initialization of block Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
-			initCode+=sampleTime.getInitCodeC();
-			initCode+=initialCondition.getInitCodeC();
-			initCode+=delayLength.getInitCodeC();
-			initCode+="sample_time[sample_i]="+sampleTime.getName()+";\n";
-			initCode+="sample_i=sample_i+1;\n";
-			code.addInitCode(initCode);
-			}
-	 public void generateOutputCodeC (CodeStructC code){
-		  String outputCode="/*Code for output of block Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
+	 	super.generateInitCodeC(code);
+        VelocityContext context = new VelocityContext();
+	 	context.put("blockId", getBlockId());
+	 	context.put("blockName", getBlockName());
+	 	context.put("sampleTime", sampleTime);
+	 	context.put("initialCondition", initialCondition);
+	 	context.put("delayLength", delayLength);
 
-		  OutputPort out  = outputPortList.get(0);
-		  OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		  OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		  int h=(int)paramValues.getDouble("DelayLength")+1;
-		  outputCode+="{real_T currentTime = model.time;\n";
-		  switch(signal.getDataType()) {
-		  case REAL:
-			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-			  for(int i=0;i<(int)paramValues.getDouble("DelayLength")-1;i++){
-				  int k=i+1;
-			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0]["+i+"]="+"Block"+getBlockId()+"_discrete_delay_savedata[0]["+k+"];\n";}
-			  outputCode+="Block"+getBlockId()+"_discrete_delay_savedata[0][(int)"+paramValues.getDouble("DelayLength")+"-1]="+signal.getName()+";}\n";
-			  outputCode+="if((currentTime+0.00001)<("+delayLength.getName()+"*"+sampleTime.getName()+")) {\n";
-			  outputCode+=out.getOutputSignalC().getName()+"="+initialCondition.getName()+";}\n";
-			  outputCode+="else {\n";
-			  outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.00001) {\n";
-			  outputCode+=out.getOutputSignalC().getName()+"=Block"+getBlockId()+"_discrete_delay_savedata[0][0];}}\n";
-		      break;
-		  case MATRIX:
-			  for(int i=0; i<ops.getHeight(); i++) {
-					for(int j=0;j<ops.getWidth();j++) {
-						outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001&&mp->majorStep>0) {\n";
-                          for(int n=0;n<(int)paramValues.getDouble("DelayLength")-1;n++){
-                                int k=n+1;
-                                outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"]["+n+"+"+h+"*"+j+"]="+"Block"+getBlockId()+"_discrete_delay_savedata["+i+"]["+k+"+"+h+"*"+j+"];\n";
-                          }
-                          outputCode+="Block"+getBlockId()+"_discrete_delay_savedata["+i+"][(int)"+paramValues.getDouble("DelayLength")+"-1+"+h+"*"+j+"]="+signal.getName()+"("+i+","+j+");}\n";
-                          outputCode+="if(currentTime+0.00001<"+delayLength.getName()+"*"+sampleTime.getName()+") {\n";
-                          outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+initialCondition.getName()+";}\n";
-                          outputCode+="else {\n";
-                          outputCode+="if(fabs((int)(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-                          outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=Block"+getBlockId()+"_discrete_delay_savedata["+i+"]["+h+"*"+j+"];}}\n";
-				   }
-				}
-			  break;
-			  }
-		  outputCode+="}\n";
-		  code.addOutputCode(outputCode);
-		  }
+	 	String initCode = TemplateManager.renderTemplate("c/discrete/Delay/init.vm", context);
+	 	code.addInitCode(initCode);
+	 }
+	 public void generateOutputCodeC(CodeStructC code) {
+	 	VelocityContext context = new VelocityContext();
+	 	context.put("blockId", getBlockId());
+	 	context.put("blockName", getBlockName());
+	 	context.put("inputPortList", getInputPortList());
+	 	context.put("outputPortList", getOutputPortList());
+	 	context.put("sampleTime", sampleTime);
+	 	context.put("initialCondition", initialCondition);
+	 	context.put("delayLength", delayLength.getDouble());
+
+	 	String outputCode = TemplateManager.renderTemplate("c/discrete/Delay/output.vm", context);
+	 	code.addOutputCode(outputCode);
+	 }
     public void updateDimension() throws MatDimException{
     	super.updateDimension();
 		OutputPort out  = outputPortList.get(0);

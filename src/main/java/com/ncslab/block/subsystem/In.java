@@ -36,6 +36,7 @@ public class In extends Block{
         inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
         no = new Parameter(this, 1, "no", String.valueOf(paramValues.getInt("No")));
+        parameterList.add(no);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode="/*Code for output of block In:("+getBlockId()+")"+getBlockName()+"*/\n";

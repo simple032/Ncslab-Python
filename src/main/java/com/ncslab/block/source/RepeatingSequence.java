@@ -3,9 +3,6 @@ package com.ncslab.block.source;
 import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
-import org.apache.velocity.VelocityContext;
-import com.ncslab.util.TemplateManager;
-
 import lombok.Getter;
 import org.json.JSONObject;
 

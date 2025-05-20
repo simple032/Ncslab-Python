@@ -1,0 +1,18 @@
+/*Code for output of block Mux:(${block.blockId})${block.blockName}*/
+#set($fetch = 0)
+#foreach($input in $inputs)
+#if($input.linkedLine.linkedOutputPort.outputSignalC.dataType == $realDataType)
+${outputs.get(0)}(${fetch},0)=${block.getInputPortVariable($fetch)};
+#set($fetch = $fetch + 1)
+#elseif($input.linkedLine.linkedOutputPort.outputSignalC.height == 1)
+#foreach($j in [0..$input.linkedLine.linkedOutputPort.outputSignalC.width])
+${outputs.get(0)}(0,${fetch})=${block.getInputPortVariable($fetch)}(0,${j});
+#set($fetch = $fetch + 1)
+#end
+#elseif($input.linkedLine.linkedOutputPort.outputSignalC.width == 1)
+#foreach($j in [0..$input.linkedLine.linkedOutputPort.outputSignalC.height])
+${outputs.get(0)}(0,${fetch})=${block.getInputPortVariable($fetch)}(${j},0);
+#set($fetch = $fetch + 1)
+#end
+#end
+#end

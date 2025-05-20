@@ -1,5 +1,6 @@
 package com.ncslab.block.route;
 
+import com.ncslab.block.Block;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -12,9 +13,14 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+import com.ncslab.block.data.DataType;
+
 import java.util.Vector;
 
-public class Switch extends com.ncslab.block.Block{
+public class Switch extends Block {
 	Parameter threshold;
 
 
@@ -45,23 +51,23 @@ public class Switch extends com.ncslab.block.Block{
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block Switch:("+getBlockId()+")"+getBlockName()+"*/\n";
-		initCode+=threshold.getInitCodeC();
+        VelocityContext context = new VelocityContext();
+		context.put("blockId", getBlockId());
+		context.put("blockName", getBlockName());
+		context.put("threshold", threshold);
+
+		String initCode = TemplateManager.renderTemplate("c/route/Switch/init.vm", context);
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Switch::("+getBlockId()+")"+getBlockName()+"*/\n";
-		OutputPort out  = outputPortList.get(0);
-		InputPort in1  = inputPortList.get(0);
-		InputPort in2  =  inputPortList.get(1);
-		InputPort in3  =  inputPortList.get(2);
-		OutputSignal signal1=in1.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		OutputSignal signal2=in2.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		OutputSignal signal3=in3.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		outputCode+="if("+signal2.getName()+">"+threshold.getName()+"){\n";
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+signal1.getName()+";}\n";
-		outputCode+="else{\n";
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+signal3.getName()+";}\n";
+		VelocityContext context = new VelocityContext();
+		context.put("blockId", getBlockId());
+		context.put("blockName", getBlockName());
+		context.put("inputPortList", getInputPortList());
+		context.put("outputPortList", getOutputPortList());
+		context.put("threshold", threshold);
+
+		String outputCode = TemplateManager.renderTemplate("c/route/Switch/output.vm", context);
 		code.addOutputCode(outputCode);
 	}
 	  public void updateDimension() throws MatDimException{

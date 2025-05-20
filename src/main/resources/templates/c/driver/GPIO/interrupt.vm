@@ -1,0 +1,16 @@
+/* GPIO中断处理 */
+void ${block.getName()}_EXTI_IRQHandler(void) {
+    if(__HAL_GPIO_EXTI_GET_IT(${pinNumber}) != RESET) {
+        __HAL_GPIO_EXTI_CLEAR_IT(${pinNumber});
+        /* 调用用户回调函数 */
+        if(${callbackFunc} != NULL) {
+            ${callbackFunc}(${block.getName()}_Y[0]);
+        }
+    }
+}
+
+/* 中断回调函数定义 */
+__weak void ${block.getName()}_Callback(uint8_t pin_state) {
+    /* 用户可重写此函数 */
+    UNUSED(pin_state);
+}

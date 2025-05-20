@@ -1,0 +1,2 @@
+/* To模块输出: ($block.getBlockId()) $block.getBlockName() */
+$outputs.get(0) = $inputs.get(0); // 直接传递输入值

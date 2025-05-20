@@ -48,6 +48,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 		 code.addArraysCode(arraysCode);
 	 }
 	 public void generateInitCodeC(CodeStructC code) {
+		super.generateInitCodeC(code);
 		 String initCode="/*Code for initialization of block discrete_Transfer_Fcn(z):("+getBlockId()+")"+getBlockName()+"*/\n";
 		 initCode+="sample_time[sample_i]=0.2;\n";
 			initCode+="sample_i=sample_i+1;\n";

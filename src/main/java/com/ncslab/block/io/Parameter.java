@@ -5,6 +5,7 @@ import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
+import Jama.Matrix;
 
 public class Parameter {
 
@@ -45,7 +46,7 @@ public class Parameter {
 
 	public double[]  getDoubleArray() { return data.getDoubleArray(); }
 
-	public double[][] getDoubleMatrix() { return data.getDoubleMatrix(); }
+	public Matrix getMatrix() { return data.getMatrix(); }
 
     public boolean equals(String string) { return string.equals(data.getInitString());}
 

@@ -1,0 +1,6 @@
+#set($block = $xTool.blocks.get($blockId))
+// AD模块启动初始化
+if (rtmIsFirstInitCond(rtM)) {
+    // 初始状态设置
+    rtDW->AD_DSTATE = 0.0;
+}

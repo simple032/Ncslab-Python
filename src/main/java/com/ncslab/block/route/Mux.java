@@ -11,8 +11,11 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
+import java.util.List;
 
 public class Mux extends Block {
 	private int num;
@@ -26,134 +29,88 @@ public class Mux extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         //输入个数不确定
     }
 
-	public Mux(JSONObject blockIn,NCSLabModel model) {
-		super(blockIn,model);
+	public Mux(JSONObject blockIn, NCSLabModel model) {
+		super(blockIn, model);
 
 		this.num = Integer.parseInt(paramValues.getString("Inputs"));
 
-		//一锟斤拷锟斤拷锟诫，一锟斤拷锟斤拷锟�
+		// Create input ports based on parameter
 		for(int i=0; i<num; i++) {
-			inputPortList.add(new InputPort(this,i+1));
+			inputPortList.add(new InputPort(this, i+1));
 		}
-		outputPortList.add(new OutputPort(this,1,feedThrough));
+		outputPortList.add(new OutputPort(this, 1, feedThrough));
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-		String initCode=getOutputPortVariable(0)+"=0;\n";
-
-
-		code.addInitCode(initCode);
+		
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("outputs", getOutputPortVariables());
+		
+		String codeStr = TemplateManager.renderTemplate("m/route/Mux/init.vm", context);
+		code.addInitCode(codeStr);
 	}
-
-
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-
-		//String outputCode=getOutputPortVariable(0)+"=0";
-
-
-		//outputCode+=";\n";
-		String outputCode="";
-		int i=0;
-		outputCode+=getOutputPortVariable(0)+"=[";
-		for(InputPort inputPort:inputPortList) {
-			outputCode+=getInputPortVariable(i)+" ";
-			i++;
-		}
-		outputCode+="];\n";
-
-		code.addOutputCode(outputCode);
-	}
-
-	public void generateDerivativeCodeM(CodeStructM code) {
-		super.generateDerivativeCodeM(code);
-
-		String derivativeCode="";
-
-
-		//derivativeCode+=");\n";
-
-		code.addDerivativeCode(derivativeCode);
+		
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("inputs", getInputPortVariables());
+		context.put("outputs", getOutputPortVariables());
+		
+		String codeStr = TemplateManager.renderTemplate("m/route/Mux/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-
-		String initCode="/*Code for initialization of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-
-		code.addInitCode(initCode);
+		
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		
+		String codeStr = TemplateManager.renderTemplate("c/route/Mux/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-		//y(k)=Cx(k)+Du(k)
-
-		/*
-		for(int i=0; i<num; i++) {
-			outputCode+=getOutputPortVariable(0)+"["+i+"]="
-				+getInputPortVariable(i)
-				+";\n";
-		}*/
-
-		int fetch=0;
-		int i=0;
-		for(InputPort inputPort:inputPortList) {
-			OutputSignal signal=inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			if(signal.getDataType()==DataType.REAL) {
-				outputCode+=getOutputPortVariable(0)+"("+fetch+",0)="
-						+getInputPortVariable(i)
-						+";\n";
-
-				fetch++;
-				i++;
-			}
-			else if(signal.getHeight()==1){
-				for(int j=0;j<signal.getWidth();j++) {
-					outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
-							+getInputPortVariable(i)+"(0,"+j+")"
-							+";\n";
-
-					fetch++;
-				}
-				i++;
-			}
-			else if(signal.getWidth()==1){
-				for(int j=0;j<signal.getHeight();j++) {
-					outputCode+=getOutputPortVariable(0)+"(0,"+fetch+")="
-							+getInputPortVariable(i)+"("+j+",0)"
-							+";\n";
-
-					fetch++;
-				}
-				i++;
-			}
-		}
-
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("inputs", inputPortList);
+		context.put("outputs", getOutputPortVariables());
+		
+		String codeStr = TemplateManager.renderTemplate("c/route/Mux/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
-	public void  generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-
-		code.addDerivativeCode(derivativeCode);
+	public void generateDerivativeCodeC(CodeStructC code) {
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		
+		String codeStr = TemplateManager.renderTemplate("c/route/Mux/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
+	}
+	
+	public void generateUpdateCodeC(CodeStructC code) {
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		
+		String codeStr = TemplateManager.renderTemplate("c/route/Mux/update.vm", context);
+		code.addUpdateCode(codeStr);
 	}
 
-	public void  generateUpdateCodeC(CodeStructC code) {
-		String updateCode="/*Code for Derivative of Transfer Fcn:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-		code.addUpdateCode(updateCode);
-	}
-
-	public void updateDimension() throws MatDimException{
+	public void updateDimension() throws MatDimException {
 		//super.updateDimension();
 		int size=0;
 		for(InputPort inputPort:inputPortList) {
@@ -174,7 +131,7 @@ public class Mux extends Block {
 		output.getOutputSignalC().setDataType(DataType.MATRIX);
 	}
 
-	public void checkDimension() throws MatDimException{
-
+	public void checkDimension() throws MatDimException {
+		// Implementation can be added if needed
 	}
 }

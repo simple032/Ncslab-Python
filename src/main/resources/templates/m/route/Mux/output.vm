@@ -1,0 +1,1 @@
+${outputs.get(0)}=[#foreach($input in $inputs)${input} #end];

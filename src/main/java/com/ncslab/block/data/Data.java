@@ -258,4 +258,8 @@ public class Data {
 	public double[][] getDoubleMatrix() {
 		return initMatrix.getArray();
 	}
+
+    public Matrix getMatrix() {
+        return initMatrix;
+    }
 }

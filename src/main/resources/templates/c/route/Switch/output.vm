@@ -1,0 +1,5 @@
+/* Code for output of block Switch:(${block.getBlockId()}) ${block.getBlockName()} */
+if(${block.inputPortList.get(1).linkedLine.linkedOutputPort.outputSignalC.getName()}>${block.threshold.getName()}){
+${block.outputPortList.get(0).outputSignalC.getName()}=${block.inputPortList.get(0).linkedLine.linkedOutputPort.outputSignalC.getName()};}
+else{
+${block.outputPortList.get(0).outputSignalC.getName()}=${block.inputPortList.get(2).linkedLine.linkedOutputPort.outputSignalC.getName()};}

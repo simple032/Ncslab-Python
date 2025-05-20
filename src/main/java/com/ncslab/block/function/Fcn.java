@@ -2,6 +2,9 @@ package com.ncslab.block.function;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
+import com.ncslab.util.TemplateManager;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -48,24 +51,13 @@ public class Fcn extends Block{
 	}
 
     public void generateOutputCodeC(CodeStructC code) {
-        String outputCode="/*Code for output of block MathFunction:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        //outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+seq+"("+signal.getName()+");\n";
-
-        if(signal.getDataType()==DataType.REAL){
-            outputCode+="{\n"
-                +"const double u="+signal.getName()+";\n"
-                +outputPortList.get(0).getOutputSignalC().getName()+"="+expression+";\n"
-                +"}\n";
-        }else if(signal.getDataType()==DataType.MATRIX){
-            outputCode+="{\n"
-                +"const Matrix& u = "+signal.getName()+";\n"
-                +outputPortList.get(0).getOutputSignalC().getName()+"="+expression+";\n"
-                +"}\n";
-        }
-        code.addOutputCode(outputCode);
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+        context.put("realDataType", DataType.REAL);
+        context.put("expression", expression);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/Fcn/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
 	public void updateDimension() throws MatDimException{

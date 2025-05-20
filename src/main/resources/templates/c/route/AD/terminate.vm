@@ -1,0 +1,4 @@
+#set($block = $xTool.blocks.get($blockId))
+// AD模块终止清理
+// 释放微分计算资源
+rtDW->AD_DSTATE = 0.0;

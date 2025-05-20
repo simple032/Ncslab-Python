@@ -6,6 +6,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+
+import org.checkerframework.checker.units.qual.s;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -51,6 +53,7 @@ public class TwoDimensionLookupTableBlock extends LookupTableBlock{
 
     @Override
     public void generateInitCodeC(CodeStructC code){
+        super.generateInitCodeC(code);
         String initCode="/*Code for init of block 2-D Lookup table:("+getBlockId()+")"+getBlockName()+"*/\n";
         StringBuilder initCodeBuilder = new StringBuilder();
         initCodeBuilder.append("init_interpolation_table(&").append(getTableName())
