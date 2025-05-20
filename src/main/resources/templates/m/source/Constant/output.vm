@@ -1,0 +1,10 @@
+% Output code for Constant block:(${block.blockId}) ${block.blockName}
+#if($value.dataType == $realDataType)
+${outputs.get(0)} = ${value.getName()};
+#else
+#foreach($i in [1..$value.height])
+#foreach($j in [1..$value.width])
+${outputs.get(0)}(${i},${j}) = ${value.getName()}(${i},${j});
+#end
+#end
+#end

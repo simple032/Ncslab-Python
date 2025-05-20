@@ -10,6 +10,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
@@ -28,11 +30,11 @@ public class Constant extends Block {
         outputNames.add("out1");
 	}
 
-	public Constant(JSONObject blockJSON,NCSLabModel model) {
-		super(blockJSON,model);
+	public Constant(JSONObject blockJSON, NCSLabModel model) {
+		super(blockJSON, model);
 
-		//Initialize parameter
-		value=new Parameter(this,1,getBlockName(),paramValues.getString("Value"));
+		// Initialize parameter
+		value = new Parameter(this, 1, getBlockName(), paramValues.getString("Value"));
 		parameterList.add(value);
         outputPortList.add(new OutputPort(this, 1, true));
 		outputPortList.get(0).setHeight(value.getHeight());
@@ -41,70 +43,64 @@ public class Constant extends Block {
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-
-		String initCode="";
-		initCode+=value.getInitCodeM();
-		code.addInitCode(initCode);
+		
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("value", value);
+		
+		String codeStr = TemplateManager.renderTemplate("m/source/Constant/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		String outputCode="";
-		switch(value.getDataType()) {
-		case REAL:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
-			break;
-		case MATRIX:
-			for(int i=1;i<value.getHeight()+1;i++) {
-				for(int j=1;j<value.getWidth()+1;j++) {
-					outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+value.getName()+"("+i+","+j+");\n";
-				}
-			}
-			break;
-		}
-		code.addOutputCode(outputCode);
+		
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("value", value);
+		context.put("outputs", getOutputPortVariables());
+		
+		String codeStr = TemplateManager.renderTemplate("m/source/Constant/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
-
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-
-		String initCode="/*Code for initialization of block Contant:("+getBlockId()+")"+getBlockName()+"*/\n";
-		initCode+=value.getInitCodeC();
-		code.addInitCode(initCode);
+		
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("value", value);
+		
+		String codeStr = TemplateManager.renderTemplate("c/source/Constant/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Constant:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-		switch(value.getDataType()) {
-		case REAL:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
-			break;
-		case MATRIX:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+value.getName()+";\n";
-			break;
-		}
-
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("value", value);
+		context.put("outputs", getOutputPortVariables());
+		
+		String codeStr = TemplateManager.renderTemplate("c/source/Constant/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
-	public void generateUpdateCodePLC(CodeStructC code){
-
+	public void generateUpdateCodePLC(CodeStructC code) {
+		// No update code needed for Constant
 	}
 
-	public void generateOutputCodePLC(CodeStructC code){
-		String outputCode="(*Code for output of block Constant:("+getBlockId()+")"+getBlockName()+"*)\n";
-
-		switch(value.getDataType()) {
-		case REAL:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+":="+value.getName()+";\n";
-			break;
-		case MATRIX:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+":="+value.getName()+";\n";
-			break;
-		}
-
-		code.addOutputCode(outputCode);
+	public void generateOutputCodePLC(CodeStructC code) {
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+context.put("realDataType", DataType.REAL);
+		context.put("value", value);
+		context.put("outputs", getOutputPortVariables());
+		
+		String codeStr = TemplateManager.renderTemplate("c/source/Constant/output_plc.vm", context);
+		code.addOutputCode(codeStr);
 	}
 }

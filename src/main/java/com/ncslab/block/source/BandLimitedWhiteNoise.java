@@ -63,8 +63,9 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
         switch(cov.getDataType()) {
             case REAL:
                 outputCode +=
-                // 1.生成白噪声 2.带限处理
-                outputPortList.get(0).getOutputSignalC().getName() + "= lowPassFilter(generateGaussianNoise(0.0, 1.0), 2.0 * M_PI *0.01);\n";
+                    // 1.生成白噪声
+                    // 2.带限处理
+                    outputPortList.get(0).getOutputSignalC().getName() + "= lowPassFilter(generateGaussianNoise(0.0, 1.0), 2.0 * M_PI *0.01);\n";
                 break;
             case MATRIX:
                 break;

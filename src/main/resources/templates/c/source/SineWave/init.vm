@@ -1,0 +1,5 @@
+/* Code for initialization of block Sine Wave:(${block.blockId}) ${block.blockName} */
+${amplitude.initCodeC}
+${frequency.initCodeC}
+${phase.initCodeC}
+${bias.initCodeC}

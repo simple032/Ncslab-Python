@@ -20,7 +20,6 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.lan.CCodeBlock;
 import com.ncslab.block.lan.MCodeBlock;
-import com.ncslab.block.io.OutputPort;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
 public class Block implements MCodeBlock, CCodeBlock{
@@ -81,8 +80,9 @@ public class Block implements MCodeBlock, CCodeBlock{
     @Setter
     protected int signalNum = 0;
 
-    @Getter
+	@Getter
     public static Vector<String> parameterNames = new Vector<>();
+	// abstract public Vector<String> getParameterNames();
 
     @Getter
     public static Vector<String> inputNames = new Vector<>();
@@ -96,11 +96,11 @@ public class Block implements MCodeBlock, CCodeBlock{
 		this.blockName=blockIn.getString("blockName");
         if (blockIn.get("paramValues") instanceof JSONObject) {
             this.paramValues=blockIn.getJSONObject("paramValues");
-//            parseParameterList();
         }
 		this.model=model;
 		this.blockPath=blockIn.getString("blockPath");
         this.blockUUID=blockIn.optString("blockUUID", "null");
+//        parseParameterList();
 	}
 
     public void setFeedThrough(boolean feedThrough) {
@@ -289,7 +289,10 @@ public class Block implements MCodeBlock, CCodeBlock{
 
 	//生成C语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
 	@Override
-	public void generateOutputCodeC(CodeStructC code) {}
+	public void generateOutputCodeC(CodeStructC code) {
+//        code.addOutputCode("/*Code for output of block "+ this.blockType + " :("
+//            + getBlockId() + ")" + getBlockPath() + "/" + getBlockName() +"*/\n");
+    }
 
 	public void generateBlockSinkOutputCodeC(CodeStructC code) {
 //		System.out.format("Generating block sink output code (%d):%s\n", blockId, blockName);
@@ -449,39 +452,27 @@ public class Block implements MCodeBlock, CCodeBlock{
 
     }
 
-    protected double[] parseMatlabVector(String vecString){
-        String regEx = "[' ']+"; // 一个或多个空格
-        Pattern p = Pattern.compile(regEx);
-        Matcher m = p.matcher(vecString);
-        JSONArray numArray=new JSONArray(m.replaceAll(",").trim());
-
-        double[] arr = new double[numArray.length()];
-        for(int i=0;i<numArray.length();i++) {
-            arr[i] = numArray.getDouble(i);
-        }
-        return arr;
-    }
-
-    protected double[][] parseMatlabMatrix(String matrixString) {
-        // 去除方括号
-        matrixString = matrixString.replace("[", "").replace("]", "");
-        // 按分号分割每一行
-        String[] rows = matrixString.split(";");
-
-        double[][] matrix = new double[rows.length][];
-        for (int i = 0; i < rows.length; i++) {
-            String row = "["+rows[i].trim()+"]";
-            // 用逗号分割每一行的元素
-            matrix[i] = parseMatlabVector(row);
-        }
-        return matrix;
-    }
-
-    protected void parseParameterList() {
+    private void parseParameterList() {
         Vector<String> parameterNames = getParameterNames();
         for(int i=0; i<parameterNames.size(); i++) {
             parameterList.add(new Parameter(this, i+1, parameterNames.get(i),
                 paramValues.getString(parameterNames.get(i))));
         }
     }
+
+	protected String[] getInputPortVariables(){
+		Vector<String> inputPortVariables = new Vector<>();
+		for(int n=0; n<inputPortList.size();n++){
+			inputPortVariables.add(getInputPortVariable(n));
+		}
+		return inputPortVariables.toArray(new String[0]);
+	}
+
+	protected String[] getOutputPortVariables(){
+		Vector<String> outputPortVariables = new Vector<>();
+		for(int n=0; n<outputPortList.size();n++){
+			outputPortVariables.add(getOutputPortVariable(n));
+		}
+		return outputPortVariables.toArray(new String[0]);
+	}
 }

@@ -1,0 +1,21 @@
+/* Code for output of block Step:(${block.blockId}) ${block.blockName} */
+{real_T currentTime = model.time;
+#if($time.dataType == $realDataType)
+if(currentTime < ${time.getName()}) {
+    ${outputs.get(0)} = ${before.getName()};
+} else {
+    ${outputs.get(0)} = ${after.getName()};
+}
+#else
+#set($timeIndices = $block.calculateTimeIndices($time.height, $time.width))
+#foreach($index in $timeIndices)
+    #set($i = $index / $time.width)
+    #set($j = $index % $time.width)
+    if(currentTime < ${time.getName()}(${i},${j})) {
+        ${outputs.get(0)}(${i},${j}) = ${before.getName()}(${i},${j});
+    } else {
+        ${outputs.get(0)}(${i},${j}) = ${after.getName()}(${i},${j});
+    }
+#end
+#end
+}

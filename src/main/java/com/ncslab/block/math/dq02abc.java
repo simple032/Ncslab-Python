@@ -2,7 +2,6 @@ package com.ncslab.block.math;
 
 import lombok.Getter;
 import org.json.JSONObject;
-
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -13,10 +12,11 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
-public class dq02abc extends Block{
-	String function;
-
+public class dq02abc extends Block {
+    private String function;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -27,7 +27,6 @@ public class dq02abc extends Block{
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         outputNames.add("out2");
         outputNames.add("out3");
@@ -36,62 +35,46 @@ public class dq02abc extends Block{
         inputNames.add("in3");
         inputNames.add("in4");
     }
-	public dq02abc(JSONObject blockJSON,NCSLabModel model) {
-		super(blockJSON,model);
-		inputPortList.add(new InputPort(this,1));
-		inputPortList.add(new InputPort(this,2));
-		inputPortList.add(new InputPort(this,3));
-		inputPortList.add(new InputPort(this,4));
 
-		outputPortList.add(new OutputPort(this,1,true));
-		outputPortList.add(new OutputPort(this,2,true));
-		outputPortList.add(new OutputPort(this,3,true));
+    public dq02abc(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+        inputPortList.add(new InputPort(this, 1));
+        inputPortList.add(new InputPort(this, 2));
+        inputPortList.add(new InputPort(this, 3));
+        inputPortList.add(new InputPort(this, 4));
 
-		function = paramValues.getString("rotatingFrame");
-	}
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block dq02abc:("+getBlockId()+")"+getBlockName()+"*/\n";
-		code.addInitCode(initCode);
-	}
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block dq02abc:("+getBlockId()+")"+getBlockName()+"*/\n";
+        outputPortList.add(new OutputPort(this, 1, true));
+        outputPortList.add(new OutputPort(this, 2, true));
+        outputPortList.add(new OutputPort(this, 3, true));
 
-		outputCode+="if(model.majorStep==1){\n";
+        function = paramValues.getString("rotatingFrame");
+    }
 
-		String Ud = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-		String Uq = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-		String U0 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-		String wt = inputPortList.get(3).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        String initCode = "/*Code for initialization of block dq02abc:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        code.addInitCode(initCode);
+    }
 
-		String Ua = outputPortList.get(0).getOutputSignalC().getName();
-		String Ub = outputPortList.get(1).getOutputSignalC().getName();
-		String Uc = outputPortList.get(2).getOutputSignalC().getName();
+    public void generateOutputCodeC(CodeStructC code) {
+        VelocityContext context = new VelocityContext();
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+        context.put("inputPortList", getInputPortList());
+        context.put("outputPortList", getOutputPortList());
+        context.put("function", getFunction());
 
-		switch (function) {
-			case "Aligned with phase A axis":
-					outputCode+=Ua+"=(cos("+wt+")*"+Ud+"-sin("+wt+")*"+Uq+"+1*"+U0+");\n";
-					outputCode+=Ub+"=(cos("+wt+"-2*M_PI/3.0)*"+Ud+"-sin("+wt+"-2*M_PI/3.0)*"+Uq+"+1*"+U0+");\n";
-					outputCode+=Uc+"=(cos("+wt+"+2*M_PI/3.0)*"+Ud+"-sin("+wt+"+2*M_PI/3.0)*"+Uq+"+1*"+U0+");\n";
-				break;
-			case "90 degrees behind phase A axis":
-					outputCode+=Ua+"=(sin("+wt+")*"+Ud+"+cos("+wt+")*"+Uq+"+1*"+U0+");\n";
-					outputCode+=Ub+"=(sin("+wt+"-2*M_PI/3.0)*"+Ud+"+cos("+wt+"-2*M_PI/3.0)*"+Uq+"+1*"+U0+");\n";
-					outputCode+=Uc+"=(sin("+wt+"+2*M_PI/3.0)*"+Ud+"+cos("+wt+"+2*M_PI/3.0)*"+Uq+"+1*"+U0+");\n";
-				break;
-			default:
-					outputCode+=Ua+"=(cos("+wt+")*"+Ud+"-sin("+wt+")*"+Uq+"+1*"+U0+");\n";
-					outputCode+=Ub+"=(cos("+wt+"-2*M_PI/3.0)*"+Ud+"-sin("+wt+"-2*M_PI/3.0)*"+Uq+"+1*"+U0+");\n";
-					outputCode+=Uc+"=(cos("+wt+"+2*M_PI/3.0)*"+Ud+"-sin("+wt+"+2*M_PI/3.0)*"+Uq+"+1*"+U0+");\n";
-				break;
-		}
+        String codeStr = TemplateManager.renderTemplate("c/math/dq02abc/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
 
-		outputCode+="}\n";
-		code.addOutputCode(outputCode);
-	}
-     public void updateDimension() throws MatDimException{
-	 }
+    private String getFunction() {
+        return function;
+    }
 
-	public void checkDimension() throws MatDimException{
-	}
+    public void updateDimension() throws MatDimException {
+    }
+
+    public void checkDimension() throws MatDimException {
+    }
 }

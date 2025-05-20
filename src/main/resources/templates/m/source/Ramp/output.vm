@@ -1,0 +1,18 @@
+## MATLAB代码生成模板 - Ramp模块
+#if($block.getParameter("slope").dataType == "REAL")
+if sign(t-${start.getName()}+offset) >= 0
+    ${outputs.get(0).getName()} = ${initial_output.getName()} + ${slope.getName()}*(t-${start.getName()}+offset);
+else
+    ${outputs.get(0).getName()} = ${initial_output.getName()};
+end
+#else
+#foreach($i in [1..$slope.height])
+#foreach($j in [1..$slope.width])
+if sign(t-${start.getName()}($i,$j)+offset) >= 0
+    ${outputs.get(0).getName()}($i,$j) = ${initial_output.getName()}($i,$j) + ${slope.getName()}($i,$j)*(t-${start.getName()}($i,$j)+offset);
+else
+    ${outputs.get(0).getName()}($i,$j) = ${initial_output.getName()}($i,$j);
+end
+#end
+#end
+#end

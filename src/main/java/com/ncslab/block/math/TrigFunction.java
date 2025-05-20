@@ -31,7 +31,7 @@ public class TrigFunction extends Block{
 
         outputNames.add("out1");
         //输入待根据循环确定
-        parameterNames.add("trigFunc");
+        parameterNames.add("TrigonometricFunction");
     }
 
     public TrigFunction(JSONObject blockJSON,NCSLabModel model) {
@@ -40,7 +40,13 @@ public class TrigFunction extends Block{
 		outputPortList.add(new OutputPort(this,1,true));
 		//����һ������
 		inputPortList.add(new InputPort(this,1));
-        trigFunc=new Parameter(this,1,"trigFunc",paramValues.optString("Function", paramValues.getString("TrigonometricFunction")));
+        String trigFuncString;
+        if(paramValues.has("Function")) {
+            trigFuncString = paramValues.getString("Function");
+        }else{
+            trigFuncString = paramValues.getString("TrigonometricFunction");
+        }
+        trigFunc=new Parameter(this,1,"TrigonometricFunction",trigFuncString);
         parameterList.add(trigFunc);
 
         if(trigFunc.getInitString().equals("atan2")) {

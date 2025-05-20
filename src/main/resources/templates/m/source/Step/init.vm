@@ -1,0 +1,4 @@
+% Initialization code for Step block:(${block.blockId}) ${block.blockName}
+${time.initCodeM}
+${after.initCodeM}
+${before.initCodeM}

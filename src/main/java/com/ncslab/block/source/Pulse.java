@@ -1,5 +1,8 @@
 package com.ncslab.block.source;
 
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -63,32 +66,16 @@ public class Pulse extends Block{
 	}
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		String outputCode="";
-		switch(amplitude.getDataType()) {
-		case REAL:
-	    outputCode+="if (t+offset)<"+phaseDelay.getName()+"\n";
-	    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;\n";
-	    outputCode+="elseif mod(t+offset-"+phaseDelay.getName()+","+period.getName()+")<"+period.getName()+"*"+pulseWidth.getName()+"/100\n";
-	    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+amplitude.getName()+";\n";
-	    outputCode+="else\n";
-	    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;\n";
-	    outputCode+="end\n";
-	    break;
-		case MATRIX:
-			for(int i=1;i<amplitude.getHeight()+1;i++) {
-				for(int j=1;j<amplitude.getWidth()+1;j++) {
-					  outputCode+="if (t+offset)<"+phaseDelay.getName()+"("+i+","+j+")\n";
-					    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;\n";
-					    outputCode+="elseif mod(t+offset-"+phaseDelay.getName()+"("+i+","+j+"),"+period.getName()+"("+i+","+j+"))<"+period.getName()+"("+i+","+j+")*"+pulseWidth.getName()+"("+i+","+j+")/100\n";
-					    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+amplitude.getName()+"("+i+","+j+");\n";
-					    outputCode+="else\n";
-					    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;\n";
-					    outputCode+="end\n";
-				}
-			}
-			break;
-	    }
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("outputs", getOutputPortVariables());
+		context.put("amplitude", amplitude);
+		context.put("period", period);
+		context.put("pulseWidth", pulseWidth);
+		context.put("phaseDelay", phaseDelay);
+		
+		String codeStr = TemplateManager.renderTemplate("m/source/Pulse/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
@@ -100,32 +87,16 @@ public class Pulse extends Block{
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Pulse:("+getBlockId()+")"+getBlockName()+"*/\n";
-		outputCode+="{real_T currentTime = model.time;\n";
-		switch(amplitude.getDataType()) {
-		case REAL:
-			    outputCode+="if(currentTime<"+phaseDelay.getName()+"){\n";
-			    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;}\n";
-			    outputCode+="else if(((int)((currentTime-"+phaseDelay.getName()+")*100)%(int)("+period.getName()+"*100))<"+period.getName()+"*"+pulseWidth.getName()+"){\n";
-			    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+amplitude.getName()+";}\n";
-			    outputCode+="else{\n";
-			    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0;}\n";
-			break;
-		case MATRIX:
-			for(int i=0;i<amplitude.getHeight();i++) {
-				for(int j=0;j<amplitude.getWidth();j++) {
-					outputCode+="if(currentTime<"+phaseDelay.getName()+"("+i+","+j+")){\n";
-				    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
-				    outputCode+="else if(((int)((currentTime-"+phaseDelay.getName()+"("+i+","+j+"))*100)%(int)("+period.getName()+"("+i+","+j+")*100))<"+period.getName()+"("+i+","+j+")*"+pulseWidth.getName()+"("+i+","+j+")){\n";
-				    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+amplitude.getName()+"("+i+","+j+");}\n";
-				    outputCode+="else{\n";
-				    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")=0;}\n";
-		          }
-			   }
-			break;
-			}
-		outputCode+="}\n";
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("outputs", getOutputPortVariables());
+		context.put("amplitude", amplitude);
+		context.put("period", period);
+		context.put("pulseWidth", pulseWidth);
+		context.put("phaseDelay", phaseDelay);
+		
+		String codeStr = TemplateManager.renderTemplate("c/source/Pulse/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 	 public void updateDimension() throws MatDimException{
 	    	if(amplitude.getWidth()!=period.getWidth()

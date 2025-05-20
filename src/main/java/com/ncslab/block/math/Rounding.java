@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -11,13 +12,13 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 import java.util.Vector;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
 
+public class Rounding extends Block {
 
-public class Rounding extends com.ncslab.block.Block {
-
-	Parameter operator;
-
-
+    Parameter operator;
+    String operatorString;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -25,78 +26,59 @@ public class Rounding extends com.ncslab.block.Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
-	public Rounding(JSONObject blockJSON, NCSLabModel model) {
-		super(blockJSON, model);
-		outputPortList.add(new OutputPort(this, 1, true));
+    public Rounding(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+        outputPortList.add(new OutputPort(this, 1, true));
 
-		inputPortList.add(new InputPort(this, 1));
+        inputPortList.add(new InputPort(this, 1));
 
-		operator = new Parameter(this, 1, "operator", paramValues.optString("Operator", "floor"));
+        operatorString = paramValues.optString("Operator", "floor");
+
+        operator = new Parameter(this, 1, "operator", operatorString);
+
         parameterList.add(operator);
+
+        if (getOperatorString().equals("fix")) {
+            operatorString = "trunc";
+        }
     }
 
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode = "/*Code for output of block Rounding:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-		String outName = outputPortList.get(0).getOutputSignalC().getName();
-		OutputPort ops1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		String inName = ops1.getOutputSignalC().getName();
-		switch (ops1.getOutputSignalC().getDataType()) {
-		case REAL:
-            switch (operator.getDataString()) {
-                case "floor":
-                    outputCode += outName + "=floor(" + inName + ");\n";
-                    break;
-                case "ceil":
-                    outputCode += outName + "=ceil(" + inName + ");\n";
-                    break;
-                case "round":
-                    outputCode += outName + "=round(" + inName + ");\n";
-                    break;
-                case "fix":
-                    outputCode += outName + "=trunc(" + inName + ");\n";
-                    break;
-            }
-			break;
-		case MATRIX:
-			for (int m = 1; m < ops1.getHeight() + 1; m++) {
-				for (int n = 1; n < ops1.getWidth() + 1; n++) {
-                    switch (operator.getDataString()) {
-                        case "floor":
-                            outputCode += outName + "=floor(" + inName + ");\n";
-                            break;
-                        case "ceil":
-                            outputCode += outName + "=ceil(" + inName + ");\n";
-                            break;
-                        case "round":
-                            outputCode += outName + "=round(" + inName + ");\n";
-                            break;
-                        case "fix":
-                            outputCode += outName + "=trunc(" + inName + ");\n";
-                            break;
-                    }
-				}
-			}
-			break;
-		}
-		code.addOutputCode(outputCode);
-	}
+    public void generateOutputCodeC(CodeStructC code) {
+        VelocityContext context = new VelocityContext();
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+        context.put("inputPortList", getInputPortList());
+        context.put("outputPortList", getOutputPortList());
+        context.put("operator", getOperator());
 
-	public void updateDimension() throws MatDimException {
-		OutputPort out = outputPortList.get(0);
-		InputPort in = inputPortList.get(0);
-		OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		out.setHeight(signal.getHeight());
-		out.setWidth(signal.getWidth());
-		out.getOutputSignalC().setHeight(signal.getHeight());
-		out.getOutputSignalC().setWidth(signal.getWidth());
-		out.getOutputSignalC().setDataType(signal.getDataType());
-	}
+        String codeStr = TemplateManager.renderTemplate("c/math/Rounding/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
 
-	public void checkDimension() throws MatDimException {
-	}
+    private Parameter getOperator() {
+        return operator;
+    }
+
+    private String getOperatorString() {
+        return operatorString;
+    }
+
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
+
+    public void checkDimension() throws MatDimException {
+    }
 }

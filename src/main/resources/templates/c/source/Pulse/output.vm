@@ -1,0 +1,29 @@
+/* C代码生成模板 - Pulse模块 */
+real_T currentTime = model.time;
+#if($amplitude.dataType == "REAL")
+if(currentTime < ${phaseDelay.getName()}) {
+    ${outputs.get(0)} = 0;
+}
+else if(((int)((currentTime-${phaseDelay.getName()})*100) % (int)(${period.getName()}*100)) < ${period.getName()}*${pulseWidth.getName()}) {
+    ${outputs.get(0)} = ${amplitude.getName()};
+}
+else {
+    ${outputs.get(0)} = 0;
+}
+#else
+  #set($amplitudeHeightIndex = $amplitude.getHeight() - 1)
+  #set($amplitudeWidthIndex = $amplitude.getWidth() - 1)
+#foreach($i in [0..$amplitudeHeightIndex])
+#foreach($j in [0..$amplitudeWidthIndex])
+if(currentTime < ${phaseDelay.getName()}[$i][$j]) {
+    ${outputs.get(0)}[$i][$j] = 0;
+}
+else if(((int)((currentTime-${phaseDelay.getName()}[$i][$j])*100) % (int)(${period.getName()}[$i][$j]*100)) < ${period.getName()}[$i][$j]*${pulseWidth.getName()}[$i][$j]) {
+    ${outputs.get(0)}[$i][$j] = ${amplitude.getName()}[$i][$j];
+}
+else {
+    ${outputs.get(0)}[$i][$j] = 0;
+}
+#end
+#end
+#end

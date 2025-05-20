@@ -1,5 +1,11 @@
 package com.ncslab.block.source;
 
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -45,38 +51,32 @@ public class RepeatingSequence extends Block {
 	  }
 	//define arrays to save data
 	 public void generateArraysCodeC(CodeStructC code) {
-		 String arraysCode="/*Define arrays for block RepeatingSeque("+getBlockId()+")"+getBlockName()+"*/\n";
-		 arraysCode+="double "+"Block"+getBlockId()+"_savedata["+rep_seq_t.getWidth()+"-1];\n";
-		 arraysCode+="double "+"Block"+getBlockId()+"_savedata1["+rep_seq_t.getWidth()+"-1];\n";
-		 arraysCode+="double "+"Block"+getBlockId()+"_savedata2=0;\n";
-		 code.addArraysCode(arraysCode);
+         VelocityContext context = new VelocityContext();
+         context.put("block", this);
+         context.put("rep_seq_t", rep_seq_t);
+
+         String codeStr = TemplateManager.renderTemplate("c/source/RepeatingSequence/arrays.vm", context);
+         code.addArraysCode(codeStr);
 	 }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block Sine Wave:("+getBlockId()+")"+getBlockName()+"*/\n";
-		initCode+=rep_seq_t.getInitCodeC();
-		initCode+=rep_seq_y.getInitCodeC();
-		for(int i=0;i<rep_seq_t.getWidth()-1;i++) {
-			initCode+="Block"+getBlockId()+"_savedata["+i+"]=("+rep_seq_y.getName()+"(0,"+i+"+1)-"+rep_seq_y.getName()+"(0,"+i+"))/("+rep_seq_t.getName()+"(0,"+i+"+1)-"+rep_seq_t.getName()+"(0,"+i+"));\n";
-			initCode+="Block"+getBlockId()+"_savedata1["+i+"]=("+rep_seq_t.getName()+"(0,"+i+"+1)-"+rep_seq_t.getName()+"(0,"+i+"));\n";
-		}
-		code.addInitCode(initCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("rep_seq_t", rep_seq_t);
+		context.put("rep_seq_y", rep_seq_y);
+
+		String codeStr = TemplateManager.renderTemplate("c/source/RepeatingSequence/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block RepeatingSequence:("+getBlockId()+")"+getBlockName()+"*/\n";
-		outputCode+="{real_T currentTime = model.time;\n";
-		outputCode+="Block"+getBlockId()+"_savedata2="+rep_seq_y.getName()+"(0,0);\n";
-		outputCode+="int ll=0;\n";
-		outputCode+="for(int i="+rep_seq_t.getWidth()+"-1;i>0;i--) {\n";
-	    outputCode+="if((int)(currentTime*100)%(int)(("+rep_seq_t.getName()+"(0,"+(rep_seq_t.getWidth()-1)+")-"+rep_seq_t.getName()+"(0,0))*100)<"+rep_seq_t.getName()+"(0,i)*100&&(int)(currentTime*100)%(int)(("+rep_seq_t.getName()+"(0,"+(rep_seq_t.getWidth()-1)+")-"+rep_seq_t.getName()+"(0,0))*100)>="+rep_seq_t.getName()+"(0,i-1)*100){\n";
-	    outputCode+="ll=i;\n";
-	    outputCode+="break;}}\n";
-		outputCode+="for(int i=0;i<ll-1;i++){\n";
-		outputCode+="Block"+getBlockId()+"_savedata2+=(Block"+getBlockId()+"_savedata[i])*"+"Block"+getBlockId()+"_savedata1[i];}\n";
-		outputCode+="Block"+getBlockId()+"_savedata2+=(Block"+getBlockId()+"_savedata[ll-1])*(currentTime-floor(currentTime/("+rep_seq_t.getName()+"(0,"+(rep_seq_t.getWidth()-1)+")-"+rep_seq_t.getName()+"(0,0)))*("+rep_seq_t.getName()+"(0,"+(rep_seq_t.getWidth()-1)+"))-"+rep_seq_t.getName()+"(0,ll-1));\n";
-		outputCode+=this.getOutputPortVariable(0)+"=Block"+getBlockId()+"_savedata2;\n";
-		outputCode+="}\n";
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("outputs", getOutputPortVariables());
+		context.put("rep_seq_t", rep_seq_t);
+		context.put("rep_seq_y", rep_seq_y);
+
+		String codeStr = TemplateManager.renderTemplate("c/source/RepeatingSequence/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 	 public void updateDimension() throws MatDimException{
 	    	if(rep_seq_t.getWidth()!=rep_seq_y.getWidth()) {

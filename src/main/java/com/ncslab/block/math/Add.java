@@ -10,14 +10,15 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+import com.ncslab.block.data.DataType;
 
 import java.util.Vector;
 
-public class Add extends Block{
+public class Add extends Block {
 
-	private String seq;
-
-
+    private String seq;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -25,143 +26,121 @@ public class Add extends Block{
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
-
     }
 
-	public Add(JSONObject blockJSON, NCSLabModel model) {
-		super(blockJSON,model);
+    public Add(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+        OutputPort output = new OutputPort(this, 1, true);
+        output.setDimThrough(false);
+        outputPortList.add(output);
 
-		// 因为输入的Dimension必须相互配合，因此设置成DimThrough
-		OutputPort output=new OutputPort(this,1,true);
-		output.setDimThrough(false);
-		outputPortList.add(output);
+        paraseParamValues();
+    }
 
-		paraseParamValues();
-	}
+    // get inputport list
+    public void paraseParamValues() {
+        seq = paramValues.getString("Inputs");
 
-	// get inputport list
-	public void paraseParamValues( ) {
-		seq = paramValues.getString("Inputs");
+        for (int i = 0; i < seq.length(); i++) {
+            inputPortList.add(new InputPort(this, i + 1));
+        }
+    }
 
-		for(int i=0;i<seq.length();i++) {
-			inputPortList.add(new InputPort(this,i+1));
-		}
-	}
+    public boolean getSign(int n) {
+        return seq.charAt(n) == '+';
+    }
 
-	public boolean getSign(int n) {
-		if(seq.charAt(n)=='+') {
-			return true;
-		}
-		else {
-			return false;
-		}
+    public void generateOutputCodeM(CodeStructM code) {
+        super.generateOutputCodeM(code);
+        OutputPort out = outputPortList.get(0);
+        OutputPort ops1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        String outputCode = "";
+        switch (ops1.getOutputSignalC().getDataType()) {
+            case REAL:
+                outputCode += out.getOutputSignalC().getName() + "=0";
+                for (int i = 0; i < seq.length(); i++) {
+                    if (seq.charAt(i) == '+') {
+                        outputCode += "+";
+                    }
+                    if (seq.charAt(i) == '-') {
+                        outputCode += "-";
+                    }
+                    outputCode += inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+                }
+                outputCode += ";\n";
+                break;
+            case MATRIX:
+                for (int m = 1; m <= ops1.getHeight(); m++) {
+                    for (int n = 1; n <= ops1.getWidth(); n++) {
+                        outputCode += out.getOutputSignalC().getName() + "(" + m + "," + n + ") = 0";
+                        for (int i = 0; i < seq.length(); i++) {
+                            if (seq.charAt(i) == '+') {
+                                outputCode += "+";
+                            }
+                            if (seq.charAt(i) == '-') {
+                                outputCode += "-";
+                            }
+                            outputCode += inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + "(" + m + "," + n + ")";
+                        }
+                        outputCode += ";\n";
+                    }
+                }
+                break;
+        }
+        code.addOutputCode(outputCode);
+    }
 
-	}
+    public void generateOutputCodeC(CodeStructC code) {
+        VelocityContext context = new VelocityContext();
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+        context.put("inputPortList", getInputPortList());
+        context.put("outputPortList", getOutputPortList());
+        context.put("sequence", getSequence());
 
-	public void generateOutputCodeM(CodeStructM code) {
-		super.generateOutputCodeM(code);
-		OutputPort out  = outputPortList.get(0);
-		OutputPort ops1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		String outputCode="";
-		switch(ops1.getOutputSignalC().getDataType()) {
-		case REAL:
-			outputCode+=out.getOutputSignalC().getName()+"=0";
-		for(int i=0;i<seq.length();i++) {
-			if(seq.charAt(i)=='+') {
-				outputCode+="+";
-			}
-			if(seq.charAt(i)=='-') {
-				outputCode+="-";
-			}
-			outputCode+=inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-		}
-		outputCode+=";\n";
-		break;
-		case MATRIX:
-			for(int m=1; m<ops1.getHeight()+1; m++) {
-				for(int n=1;n<ops1.getWidth()+1;n++) {
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+m+","+n+")=0";
-			for(int i=0;i<seq.length();i++) {
-				if(seq.charAt(i)=='+') {
-					outputCode+="+";
-				}
-				if(seq.charAt(i)=='-') {
-					outputCode+="-";
-				}
-				outputCode+=inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+m+","+n+")";
-			  }
-			outputCode+=";\n";
-			}
-		  }
-			break;
-		}
-		code.addOutputCode(outputCode);
-	}
+        // 预计算矩阵维度
+        if (!getInputPortList().isEmpty()) {
+            OutputSignal firstInput = getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            if (firstInput.getDataType() == DataType.MATRIX) {
+                context.put("inputHeight", firstInput.getHeight());
+                context.put("inputWidth", firstInput.getWidth());
+            }
+        }
 
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Add:("+getBlockId()+")"+getBlockName()+"*/\n";
-		OutputPort out  = outputPortList.get(0);
-		OutputPort ops1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-		switch(ops1.getOutputSignalC().getDataType()) {
-		case REAL:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=0";
-			for(int i=0;i<seq.length();i++) {
-				if(seq.charAt(i)=='+') {
-					outputCode+="+";
-				}
-				if(seq.charAt(i)=='-') {
-					outputCode+="-";
-				}
-				outputCode+=inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-			  }
-			outputCode+=";\n";
-			break;
-		case MATRIX:
-		for(int m=0; m<ops1.getHeight(); m++) {
-			for(int n=0;n<ops1.getWidth();n++) {
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+m+","+n+")=0";
-		for(int i=0;i<seq.length();i++) {
-			if(seq.charAt(i)=='+') {
-				outputCode+="+";
-			}
-			if(seq.charAt(i)=='-') {
-				outputCode+="-";
-			}
-			outputCode+=inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+m+","+n+")";
-		  }
-		outputCode+=";\n";
-		}
-	  }
-		break;
-	}
-		code.addOutputCode(outputCode);
-	}
-	public void updateDimension() throws MatDimException{
-		OutputPort out  = outputPortList.get(0);
-		OutputSignal signal[]=new OutputSignal[seq.length()];
-		for(int i=0;i<seq.length();i++){
-			signal[i]=inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		}
-		int m=signal[0].getHeight();
-		int n=signal[0].getWidth();
-		int v=1;
-		for(OutputSignal x:signal) {
-			if((x.getHeight()!=m)||(x.getWidth()!=n)) {
-				v=0;
-				MatDimException e=new MatDimException("Block "+this.blockName+" "+seq.length()+" input dimensions doesn't match !\n \n");
-				throw(e);
-			}
-		}
-		if(v==1) {
-			out.setHeight(signal[0].getHeight());
-			out.setWidth(signal[0].getWidth());
-			out.getOutputSignalC().setHeight(signal[0].getHeight());
-			out.getOutputSignalC().setWidth(signal[0].getWidth());
-			out.getOutputSignalC().setDataType(signal[0].getDataType());
-		}
-	}
-	public void checkDimension() throws MatDimException{
-	}
+        String codeStr = TemplateManager.renderTemplate("c/math/Add/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    private String getSequence() {
+        return seq;
+    }
+
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        OutputSignal[] signal = new OutputSignal[seq.length()];
+        for (int i = 0; i < seq.length(); i++) {
+            signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        }
+        int m = signal[0].getHeight();
+        int n = signal[0].getWidth();
+        int v = 1;
+        for (OutputSignal x : signal) {
+            if ((x.getHeight() != m) || (x.getWidth() != n)) {
+                v = 0;
+                MatDimException e = new MatDimException("Block " + this.blockName + " " + seq.length() + " input dimensions doesn't match !\n \n");
+                throw(e);
+            }
+        }
+        if (v == 1) {
+            out.setHeight(signal[0].getHeight());
+            out.setWidth(signal[0].getWidth());
+            out.getOutputSignalC().setHeight(signal[0].getHeight());
+            out.getOutputSignalC().setWidth(signal[0].getWidth());
+            out.getOutputSignalC().setDataType(signal[0].getDataType());
+        }
+    }
+
+    public void checkDimension() throws MatDimException {
+    }
 }

@@ -1,0 +1,18 @@
+% Output code for Step block:(${block.blockId}) ${block.blockName}
+#if($time.dataType == $realDataType)
+if sign(t-${time.getName()}+offset)>=0
+    ${outputs.get(0)} = ${after.getName()};
+else
+    ${outputs.get(0)} = ${before.getName()};
+end
+#else
+#foreach($i in [1..$time.height])
+#foreach($j in [1..$time.width])
+if sign(t-${time.getName()}(${i},${j})+offset)>=0
+    ${outputs.get(0)}(${i},${j}) = ${after.getName()}(${i},${j});
+else
+    ${outputs.get(0)}(${i},${j}) = ${before.getName()}(${i},${j});
+end
+#end
+#end
+#end

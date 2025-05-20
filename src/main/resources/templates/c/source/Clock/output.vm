@@ -1,0 +1,3 @@
+/*Code for output of block Clock:(${block.getBlockId()})${block.getBlockName()}*/
+
+$outputVar=model.time;

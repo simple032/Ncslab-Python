@@ -1,0 +1,4 @@
+/* 数组声明模板 - RepeatingSequence */
+double Block${block.blockId}_savedata[${rep_seq_t.width}-1];
+double Block${block.blockId}_savedata1[${rep_seq_t.width}-1];
+double Block${block.blockId}_savedata2 = 0;

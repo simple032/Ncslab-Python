@@ -1,0 +1,6 @@
+/* Code for output of block Constant:(${block.blockId}) ${block.blockName} */
+#if($value.dataType == $realDataType)
+${outputs.get(0)} = ${value.getName()};
+#else
+${outputs.get(0)} = ${value.getName()};
+#end

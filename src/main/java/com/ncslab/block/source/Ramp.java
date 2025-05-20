@@ -1,5 +1,10 @@
 package com.ncslab.block.source;
 
+import com.ncslab.block.data.DataType;
+import com.ncslab.block.io.OutputSignal;
+import org.apache.velocity.VelocityContext;
+import com.ncslab.util.TemplateManager;
+
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -56,28 +61,15 @@ public class Ramp extends Block {
 	}
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		String outputCode="";
-		switch(slope.getDataType()) {
-		case REAL:
-		outputCode+="if sign(t-"+start.getName()+"+offset)>=0\n";
-        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+initial_output.getName()+"+"+slope.getName()+"*(t-"+start.getName()+"+offset);\n";
-        outputCode+="else\n";
-        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+initial_output.getName()+";\n";
-        outputCode+="end\n";
-        break;
-		case MATRIX:
-			for(int i=1;i<slope.getHeight()+1;i++) {
-				for(int j=1;j<slope.getWidth()+1;j++) {
-					outputCode+="if sign(t-"+start.getName()+"("+i+","+j+")+offset)>=0\n";
-			        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+initial_output.getName()+"("+i+","+j+")+"+slope.getName()+"("+i+","+j+")*(t-"+start.getName()+"("+i+","+j+")+offset);\n";
-			        outputCode+="else\n";
-			        outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+initial_output.getName()+"("+i+","+j+");\n";
-			        outputCode+="end\n";
-				}
-			}
-			break;
-		}
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+		context.put("block", this);
+		context.put("outputs", getOutputPortVariables());
+		context.put("slope", slope);
+		context.put("start", start);
+		context.put("initial_output", initial_output);
+
+		String codeStr = TemplateManager.renderTemplate("m/source/Ramp/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
@@ -88,28 +80,21 @@ public class Ramp extends Block {
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Step:("+getBlockId()+")"+getBlockName()+"*/\n";
-		outputCode+="{real_T currentTime = model.time;\n";
-		switch(slope.getDataType()) {
-		case REAL:
-			outputCode+="if(currentTime<"+start.getName()+"){\n";
-			outputCode+=this.getOutputPortVariable(0)+"="+initial_output.getName()+";}\n";
-			outputCode+="else{\n";
-			outputCode+=this.getOutputPortVariable(0)+"="+initial_output.getName()+"+"+slope.getName()+"*(currentTime-"+start.getName()+");}\n";
-			break;
-		case MATRIX:
-			for(int i=0;i<slope.getHeight();i++) {
-				for(int j=0;j<slope.getWidth();j++) {
-			outputCode+="if(currentTime<"+start.getName()+"("+i+","+j+")){\n";
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+initial_output.getName()+"("+i+","+j+");}\n";
-			outputCode+="else{\n";
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+initial_output.getName()+"("+i+","+j+")+"+slope.getName()+"("+i+","+j+")*(currentTime-"+start.getName()+"("+i+","+j+"));}\n";
-		}
-			}
-			break;
-			}
-		outputCode+="}\n";
-		code.addOutputCode(outputCode);
+		VelocityContext context = new VelocityContext();
+        OutputSignal signal = outputPortList.get(0).getOutputSignalC();
+		context.put("block", this);
+        context.put("realDataType", DataType.REAL);
+		context.put("outputs", getOutputPortVariables());
+		context.put("signal", signal);
+		context.put("slope", slope);
+        context.put("slopeValue", slope.getDataString());
+		context.put("start", start.getInitString());
+		context.put("slopeHeightIndex", slope.getHeight() - 1);
+		context.put("slopeWidthIndex", slope.getWidth() - 1);
+		context.put("initial_output", initial_output.getInitString());
+
+		String codeStr = TemplateManager.renderTemplate("c/source/Ramp/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	 public void updateDimension() throws MatDimException{

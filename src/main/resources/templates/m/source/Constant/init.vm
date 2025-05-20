@@ -1,0 +1,2 @@
+% Initialization code for Constant block:(${block.blockId}) ${block.blockName}
+${value.initCodeM}

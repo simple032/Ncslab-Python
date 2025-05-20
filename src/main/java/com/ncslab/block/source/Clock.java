@@ -1,6 +1,7 @@
 package com.ncslab.block.source;
 
 import lombok.Getter;
+import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -12,10 +13,9 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
 
+import com.ncslab.util.TemplateManager;
+
 public class Clock extends com.ncslab.block.Block{
-
-
-
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -31,8 +31,11 @@ public class Clock extends com.ncslab.block.Block{
 		outputPortList.add(new OutputPort(this,1,false));
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Clock::("+getBlockId()+")"+getBlockName()+"*/\n";
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=model.time;\n";
+		super.generateOutputCodeC(code);
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+        context.put("outputVar", outputPortList.get(0).getOutputSignalC().getName());
+        String outputCode=TemplateManager.renderTemplate("c/source/Clock/output.vm", context);
 		code.addOutputCode(outputCode);
 	}
     public void updateDimension() throws MatDimException{

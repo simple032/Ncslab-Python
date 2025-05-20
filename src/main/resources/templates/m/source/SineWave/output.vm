@@ -1,0 +1,10 @@
+% Output code for Sine Wave block:(${block.blockId}) ${block.blockName}
+#if($bias.dataType == $realDataType)
+${outputs.get(0)} = ${bias.getName()} + ${amplitude.getName()} * sin(${frequency.getName()} * (t + offset - ${phase.getName()}));
+#else
+#foreach($i in [1..$bias.height])
+#foreach($j in [1..$bias.width])
+${outputs.get(0)}(${i},${j}) = ${bias.getName()}(${i},${j}) + ${amplitude.getName()}(${i},${j}) * sin(${frequency.getName()}(${i},${j}) * (t + offset - ${phase.getName()}(${i},${j})));
+#end
+#end
+#end

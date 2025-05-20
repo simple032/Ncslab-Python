@@ -1,0 +1,22 @@
+## MATLAB代码生成模板 - Pulse模块
+#if($block.getParameter("amplitude").dataType == "REAL")
+if (t+offset) < ${phaseDelay.getName()}
+    ${outputs.get(0).getName()} = 0;
+elseif mod(t+offset-${phaseDelay.getName()}, ${period.getName()}) < ${period.getName()}*${pulseWidth.getName()}/100
+    ${outputs.get(0).getName()} = ${amplitude.getName()};
+else
+    ${outputs.get(0).getName()} = 0;
+end
+#else
+#foreach($i in [1..$amplitude.height])
+#foreach($j in [1..$amplitude.width])
+if (t+offset) < ${phaseDelay.getName()}($i,$j)
+    ${outputs.get(0).getName()}($i,$j) = 0;
+elseif mod(t+offset-${phaseDelay.getName()}($i,$j), ${period.getName()}($i,$j)) < ${period.getName()}($i,$j)*${pulseWidth.getName()}($i,$j)/100
+    ${outputs.get(0).getName()}($i,$j) = ${amplitude.getName()}($i,$j);
+else
+    ${outputs.get(0).getName()}($i,$j) = 0;
+end
+#end
+#end
+#end
