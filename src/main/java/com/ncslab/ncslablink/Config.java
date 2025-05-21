@@ -1,14 +1,18 @@
 package com.ncslab.ncslablink;
 
+import lombok.Getter;
 import org.json.JSONObject;
 
+@Getter
 public class Config {
 
 	private double fixedStep;
 	private String solver;
 	private double startTime;
 	private double stopTime;
-
+    private double minStep;
+    private double absTol;
+    private double relTol;
 	private int MaxDataPoints=2000;
 
 	Config(JSONObject configIn,ModelMode mode){
@@ -33,31 +37,14 @@ public class Config {
         this.startTime=configIn.optDouble("StartTime", 0);
         this.stopTime=configIn.optDouble("StopTime", 10);
         this.MaxDataPoints=configIn.optInt("MaxDataPoints", 3000);
+        this.minStep=configIn.optDouble("MinStep", 1e-4);
+        this.absTol=configIn.optDouble("AbsTol", 1e-6);
+        this.relTol=configIn.optDouble("RelTol", 1e-6);
 
 	}
 
 	public static Config createFromJSON(JSONObject configIn,ModelMode mode) {
-		Config config=new Config(configIn,mode);
-		return config;
+        return new Config(configIn,mode);
 	}
 
-	public double getFixedStep() {
-		return fixedStep;
-	}
-
-	public int getMaxDataPoints() {
-		return this.MaxDataPoints;
-	}
-
-	public String getSolver() {
-		return solver;
-	}
-
-	public double getStartTime() {
-		return startTime;
-	}
-
-	public double getStopTime() {
-		return stopTime;
-	}
 }

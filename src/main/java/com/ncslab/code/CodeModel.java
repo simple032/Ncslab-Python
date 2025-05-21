@@ -49,7 +49,7 @@ abstract public class CodeModel extends NCSLabModel {
 		String solverString=this.getConfig().getSolver();
 		switch(solverString) {
 		case "VariableStepAuto":
-			solver=Solver.ode45;
+			solver=autoSelectSolver();
 			break;
 		case "ode45":
 			solver=Solver.ode45;
@@ -91,6 +91,11 @@ abstract public class CodeModel extends NCSLabModel {
 			solver=Solver.ode23;
 		}*/
 	}
+
+    private Solver autoSelectSolver() {
+        // TODO: Auto select solver based on the model stiffness
+        return Solver.ode45;
+    }
 
 	private void generateOutputCodeFromChain(CodeGenerationOption option) {
 		for(Block block:outputChain) {
