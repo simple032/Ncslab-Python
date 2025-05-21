@@ -1,6 +1,6 @@
 #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
 #set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
-#set($function = $function)
+
 
 /* Code for Sqrt block $blockId */
 #if($inputSignal.dataType == "REAL")

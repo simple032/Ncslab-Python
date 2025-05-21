@@ -1,8 +1,8 @@
 /*Code for output of block Backlash:(${block.getBlockId()})${block.getBlockName()}*/
 
 #set($out = $outputPortList[0])
-#set($backlashWidth = $backlashWidth)
-#set($xState = $xState)
+
+
 #set($outputSignal = $outputPortList[0].outputSignalC)
 
 #if($backlashWidth.dataType == $realDataType)

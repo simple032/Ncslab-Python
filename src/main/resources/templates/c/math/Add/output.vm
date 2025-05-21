@@ -1,6 +1,6 @@
-#set($inputPortList = $inputPortList)
+
 #set($outputPortList = $outputPortList.get(0))
-#set($sequence = $sequence)
+
 
 /* Code for Add block $blockId */
 #if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "REAL")

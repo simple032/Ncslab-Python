@@ -1,9 +1,9 @@
 /*Code for Derivative of PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
 
 #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
-#set($cparaP = $cparaP)
-#set($stateIntegral = $stateIntegral)
-#set($stateFilter = $stateFilter)
+
+
+
 #set($blockId = $block.getBlockId())
 
 #if($signal.dataType == $realDataType && $cparaP.dataType == $realDataType)

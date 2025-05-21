@@ -1,4 +1,4 @@
-#set($inputPortList = $inputPortList)
+
 #set($outputPortList = $outputPortList.get(0))
 #set($gainValue = $gain.getName())
 

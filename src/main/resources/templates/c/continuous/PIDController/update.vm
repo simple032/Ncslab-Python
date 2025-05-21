@@ -1,9 +1,9 @@
 /*Code for Update of PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
 
 #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
-#set($cparaP = $cparaP)
-#set($stateIntegral = $stateIntegral)
-#set($stateFilter = $stateFilter)
+
+
+
 
 #if($signal.dataType == $realDataType && $cparaP.dataType == $realDataType)
   ${stateIntegral.getName()} = ${stateIntegral.getName()} + ${stateIntegral.getDerivativeName()} * model.stepSize;

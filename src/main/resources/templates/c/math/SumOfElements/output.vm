@@ -1,8 +1,8 @@
-#set($inputPortList = $inputPortList)
+
 #set($outputPortList = $outputPortList.get(0))
-#set($sequence = $sequence)
-#set($allDimensions = $allDimensions)
-#set($dimension = $dimension)
+
+
+
 
 /* Code for SumOfElements block $blockId */
 #if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "REAL")

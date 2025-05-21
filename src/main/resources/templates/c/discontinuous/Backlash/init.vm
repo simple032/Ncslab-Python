@@ -1,8 +1,8 @@
 /*Code for initialization of block Backlash:(${block.getBlockId()})${block.getBlockName()}*/
 
 #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
-#set($xState = $xState)
-#set($initialOutput = $initialOutput)
+
+
 
 ${backlashWidth.getInitCodeC()}
 ${initialOutput.getInitCodeC()}

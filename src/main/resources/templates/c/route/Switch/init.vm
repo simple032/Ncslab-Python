@@ -1,2 +1,2 @@
-/* Code for initialization of block Switch:(${block.getBlockId()}) ${block.getBlockName()} */
-${threshold.initCodeC}
+/* Code for initialization of block Switch:($blockId)$blockName */
+$threshold.getInitCodeC()
