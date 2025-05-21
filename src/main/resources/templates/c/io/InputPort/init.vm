@@ -1,0 +1,12 @@
+
+#set($path = $blockPath + "/" + $blockName + "/" + $name)
+signal${blockId}_In${number}.vp=&$signal.getName();
+signal${blockId}_In${number}.width=$signal.getWidth();
+signal${blockId}_In${number}.height=$signal.getHeight();
+signal${blockId}_In${number}.name=(char *)"$name";
+signal${blockId}_In${number}.path=(char *)"$path";
+#if($signal.dataType == $realDataType)
+signal${blockId}_In${number}.type=SINGLE;
+#else
+signal${blockId}_In${number}.type=MATRIX;
+#end

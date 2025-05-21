@@ -5,8 +5,11 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.line.Line;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.data.Data;
+import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.velocity.VelocityContext;
 
 public class InputPort {
 
@@ -84,30 +87,23 @@ public class InputPort {
 	}
 
 	public String getDataStructureInitCodeC() {
-		String code="";
 
 		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-		switch(signal.getDataType()) {
-		case REAL:
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".vp=&"+signal.getName()+";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".width="+signal.getWidth()+";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".height="+signal.getHeight()+";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".path=(char *)\""+this.getBLock().getBlockPath()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".type=SINGLE;\n";
-			break;
-		case MATRIX:
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".vp=&"+signal.getName()+";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".width="+signal.getWidth()+";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".height="+signal.getHeight()+";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
-//			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".path=(char *)\""+this.getBLock().getBlockPath()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_In"+this.getNumber()+".type=MATRIX;\n";
-			break;
-		}
+        VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("blockId", block.getBlockId());
+        context.put("blockName", block.getBlockName());
+        context.put("blockPath", block.getBlockPath());
+        context.put("signal", signal);
+        context.put("number", getNumber());
+        context.put("name", getName());
 
-		return code;
+        return TemplateManager.renderTemplate("c/io/InputPort/init.vm", context);
 	}
+
+    // 为了解决方法调用链过长的问题，将getValue方法移到InputPort类中
+    public Data getData() {
+        return this.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getData();
+    }
 }

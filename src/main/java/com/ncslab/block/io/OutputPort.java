@@ -3,10 +3,14 @@ package com.ncslab.block.io;
 import java.util.Vector;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.line.Line;
+import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.velocity.VelocityContext;
 
 public class OutputPort {
 
@@ -32,10 +36,8 @@ public class OutputPort {
 
 	private boolean isDimThrough=true;
 
-	@Setter
     private boolean isCodeGenerated=false;
 
-	@Setter
     private boolean isDimScaned=false;
 
 	@Setter
@@ -101,40 +103,27 @@ public class OutputPort {
 		return this.isDimScaned;
 	}
 
-    public String getDataStructureInitCodeC() {
-		String code="";
+    public void setIsCodeGenerated(boolean isCodeGenerated) {      this.isCodeGenerated=isCodeGenerated;}
 
+    public void setIsDimScaned(boolean isDimScaned) {        this.isDimScaned=isDimScaned;    }
+
+    public String getDataStructureInitCodeC() {
 		OutputSignal signal=getOutputSignalC();
 
-		switch(signal.getDataType()) {
-		case REAL:
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".vp=&"+signal.getName()+";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".width="+signal.getWidth()+";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".height="+signal.getHeight()+";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
-			//code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getBlockPath()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".type=SINGLE;\n";
-			break;
-		case MATRIX:
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".vp=&"+signal.getName()+";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".width="+signal.getWidth()+";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".height="+signal.getHeight()+";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".name=(char *)\""+this.getName()+"\";\n";
-			//code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getModel().getModelRealName()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".path=(char *)\""+this.getBLock().getBlockPath()+"/"+block.getBlockName()+"/"+this.getName()+"\";\n";
-			code+="signal"+block.getBlockId()+"_Out"+this.getNumber()+".type=MATRIX;\n";
-			break;
-		}
+        VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("blockId", block.getBlockId());
+        context.put("blockName", block.getBlockName());
+        context.put("blockPath", block.getBlockPath());
+        context.put("signal", signal);
+        context.put("number", getNumber());
+        context.put("name", getName());
 
-		return code;
+        return TemplateManager.renderTemplate("c/io/OutputPort/init.vm", context);
 	}
 
-    public void setIsCodeGenerated(boolean isCodeGenerated) {
-        this.isCodeGenerated=isCodeGenerated;
+    public void setData(Data data){
+        outputSignalC.setData(data);
     }
 
-    public void setIsDimScaned(boolean isDimScaned) {
-        this.isDimScaned=isDimScaned;
-    }
 }
