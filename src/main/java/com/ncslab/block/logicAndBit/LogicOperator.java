@@ -51,9 +51,7 @@ public class LogicOperator extends Block {
         for(int i = 0; i < num; i++) {
             signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         }
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("inputs", inputPortList); // 输入端口列表
         context.put("inputLength", num);
         context.put("outputs", getOutputPortVariables()); // 输出端口变量（假设为List<OutputSignal>）

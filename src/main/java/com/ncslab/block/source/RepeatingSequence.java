@@ -48,7 +48,6 @@ public class RepeatingSequence extends Block {
 	  }
 	//define arrays to save data
 	 public void generateArraysCodeC(CodeStructC code) {
-         VelocityContext context = new VelocityContext();
          context.put("block", this);
          context.put("rep_seq_t", rep_seq_t);
 
@@ -57,7 +56,6 @@ public class RepeatingSequence extends Block {
 	 }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("rep_seq_t", rep_seq_t);
 		context.put("rep_seq_y", rep_seq_y);
@@ -66,7 +64,6 @@ public class RepeatingSequence extends Block {
 		code.addInitCode(codeStr);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("outputs", getOutputPortVariables());
 		context.put("rep_seq_t", rep_seq_t);

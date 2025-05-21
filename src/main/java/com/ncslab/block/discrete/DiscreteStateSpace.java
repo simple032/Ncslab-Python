@@ -83,9 +83,7 @@ public class DiscreteStateSpace extends DiscreteBlock {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("A", A);
         context.put("B", B);
         context.put("C", C);
@@ -99,9 +97,7 @@ public class DiscreteStateSpace extends DiscreteBlock {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("C", C);
         context.put("D", D);
         context.put("xState", xState);

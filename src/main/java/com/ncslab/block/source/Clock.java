@@ -32,7 +32,6 @@ public class Clock extends com.ncslab.block.Block{
 	}
 	public void generateOutputCodeC(CodeStructC code) {
 		super.generateOutputCodeC(code);
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
         context.put("outputVar", outputPortList.get(0).getOutputSignalC().getName());
         String outputCode=TemplateManager.renderTemplate("c/source/Clock/output.vm", context);

@@ -44,14 +44,12 @@ public class Bias extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         String initCode = "/*Code for initialization of block Bias:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        VelocityContext context = new VelocityContext();
         context.put("bias", bias);
         initCode += TemplateManager.renderTemplate("c/math/Bias/init.vm", context);
         code.addInitCode(initCode);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("blockId", getBlockId());
         context.put("blockName", getBlockName());
         context.put("inputPortList", getInputPortList());

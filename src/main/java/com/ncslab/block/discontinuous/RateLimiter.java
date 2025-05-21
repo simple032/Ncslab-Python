@@ -54,8 +54,6 @@ public class RateLimiter extends Block{
 		OutputPort out  = outputPortList.get(0);
 		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this); // 当前Block对象（含getBlockId()）
 		context.put("inputPortList", inputPortList); // 输入端口列表
 		context.put("outputPortList", outputPortList); // 输出端口列表

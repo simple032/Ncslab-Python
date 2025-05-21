@@ -70,7 +70,6 @@ public class Backlash extends Block{
 		context.put("xState", xState);
 		context.put("signal",signal);
 		context.put("ops", ops);
-		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
 	}
 	 public void generateInitCodeC(CodeStructC code) {

@@ -123,7 +123,6 @@ public class PIDController extends Block {
 	@Override
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-        VelocityContext context = new VelocityContext();
         context.put("block", this); // 当前Block对象（包含blockId和blockName）
         context.put("cparaP", cparaP); // P参数对象
         context.put("cparaI", cparaI); // I参数对象
@@ -347,7 +346,6 @@ public class PIDController extends Block {
 
     @Override
 	public void generateDerivativeCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this); // 当前Block对象（含getBlockId()）
         context.put("inputPortList", inputPortList); // 输入端口列表
         context.put("cparaP", cparaP); // P参数对象（含getDataType()）
@@ -361,7 +359,6 @@ public class PIDController extends Block {
 
 	@Override
 	public void generateUpdateCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this); // 当前Block对象（含getBlockId()）
         context.put("inputPortList", inputPortList); // 输入端口列表
         context.put("cparaP", cparaP); // P参数对象（含getDataType()）

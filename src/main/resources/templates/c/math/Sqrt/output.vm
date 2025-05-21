@@ -3,7 +3,7 @@
 
 
 /* Code for Sqrt block $blockId */
-#if($inputSignal.dataType == "REAL")
+#if($inputSignal.dataType == $realDataType)
     #if($function == "sqrt")
         $outputSignal = sqrt($inputSignal);
     #elseif($function == "signedSqrt")
@@ -15,7 +15,7 @@
     #elseif($function == "rSqrt")
         $outputSignal = 1 / sqrt($inputSignal);
     #end
-#elseif($inputSignal.dataType == "MATRIX")
+#elseif($inputSignal.dataType == $matrixDataType)
     #set($height = $inputSignal.getHeight())
     #set($width = $inputSignal.getWidth())
     #foreach($i in [0..$height-1])

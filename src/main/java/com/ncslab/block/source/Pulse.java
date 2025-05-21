@@ -66,7 +66,6 @@ public class Pulse extends Block{
 	}
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("outputs", getOutputPortVariables());
 		context.put("amplitude", amplitude);
@@ -87,7 +86,6 @@ public class Pulse extends Block{
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("outputs", getOutputPortVariables());
 		context.put("amplitude", amplitude);

@@ -1,2 +1,80 @@
-/* 传输延迟模块微分计算: ($block.getBlockId()) $block.getBlockName() */
-/* 无状态导数需要计算 */
+/*Code for Derivative of block Transport Delay:($block.blockId)$block.blockName*/
+#set($signal = $block.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($solverType = $block.model.config.solver)
+#set($bufferSize = $block.bufferSize)
+
+#if($block.isFixedStepSolver($solverType))
+  #if($signal.dataType == $realDataType)
+    #if($block.delaytime.dataType == $realDataType)
+      #set($bufferLength = $block.calculateBufferLength($block.paramValues.getDouble("DelayTime")))
+      for(int i=0; i<$bufferLength-1; i++) {
+        Block$block.blockId_transport_delay_savedata[i] = Block$block.blockId_transport_delay_savedata[i+1];
+      }
+      Block$block.blockId_transport_delay_savedata[$bufferLength-1] = $signal.name;
+    #elseif($block.delaytime.dataType == $matrixDataType)
+      #foreach($i in [0..$block.delaytime.height-1])
+        #foreach($j in [0..$block.delaytime.width-1])
+          #set($bufferLen = $block.calculateBufferLength($block.test.get($i,$j)))
+          for(int m=0; m<$bufferLen-1; m++) {
+            Block$block.blockId_transport_delay_savedata_${i}_${j}_[m] = Block$block.blockId_transport_delay_savedata_${i}_${j}_[m+1];
+          }
+          Block$block.blockId_transport_delay_savedata_${i}_${j}_[${bufferLen-1}] = $signal.name;
+        #end
+      #end
+    #end
+  #elseif($signal.dataType == $matrixDataType)
+    #if($block.delaytime.dataType == $realDataType)
+      #foreach($i in [0..$signal.height-1])
+        #foreach($j in [0..$signal.width-1])
+          #set($bufferLen = $block.calculateBufferLength($block.paramValues.getDouble("DelayTime")))
+          for(int m=0; m<$bufferLen-1; m++) {
+            Block$block.blockId_transport_delay_savedata_${i}_${j}_[m] = Block$block.blockId_transport_delay_savedata_${i}_${j}_[m+1];
+          }
+          Block$block.blockId_transport_delay_savedata_${i}_${j}_[${bufferLen-1}] = $signal.name($i,$j);
+        #end
+      #end
+    #elseif($block.delaytime.dataType == $matrixDataType)
+      #foreach($i in [0..$signal.height-1])
+        #foreach($j in [0..$signal.width-1])
+          #set($bufferLen = $block.calculateBufferLength($block.test.get($i,$j)))
+          for(int m=0; m<$bufferLen-1; m++) {
+            Block$block.blockId_transport_delay_savedata_${i}_${j}_[m] = Block$block.blockId_transport_delay_savedata_${i}_${j}_[m+1];
+          }
+          Block$block.blockId_transport_delay_savedata_${i}_${j}_[${bufferLen-1}] = $signal.name($i,$j);
+        #end
+      #end
+    #end
+  #end
+#else
+  #if($signal.dataType == $realDataType)
+    #if($block.delaytime.dataType == $realDataType)
+      insert_to_buffer(&$block.getBufferName(), model.time, $signal.name);
+    #elseif($block.delaytime.dataType == $matrixDataType)
+      #foreach($i in [0..$block.delaytime.height-1])
+        #foreach($j in [0..$block.delaytime.width-1])
+          #set($index = $i * $block.delaytime.width + $j)
+          for(int m=$bufferSize.data.intValue-2; m>=0; m--) {
+            Block$block.blockIdyout[${index}][m+1] = Block$block.blockIdyout[${index}][m];
+            Block$block.blockIdtout[${index}][m+1] = Block$block.blockIdtout[${index}][m];
+          }
+          Block$block.blockIdyout[${index}][0] = $signal.name;
+          Block$block.blockIdtout[${index}][0] = model.time;
+        #end
+      #end
+    #end
+  #elseif($signal.dataType == $matrixDataType)
+    #if($block.delaytime.dataType == $realDataType || $block.delaytime.dataType == $matrixDataType)
+      #foreach($i in [0..$signal.height-1])
+        #foreach($j in [0..$signal.width-1])
+          #set($index = $i * $signal.width + $j)
+          for(int m=$bufferSize.data.intValue-2; m>=0; m--) {
+            Block$block.blockIdyout[${index}][m+1] = Block$block.blockIdyout[${index}][m];
+            Block$block.blockIdtout[${index}][m+1] = Block$block.blockIdtout[${index}][m];
+          }
+          Block$block.blockIdyout[${index}][0] = $signal.name($i,$j);
+          Block$block.blockIdtout[${index}][0] = model.time;
+        #end
+      #end
+    #end
+  #end
+#endif

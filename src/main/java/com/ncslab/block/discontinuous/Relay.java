@@ -75,10 +75,7 @@ public class Relay extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("onSwitchValue", onSwitchValue);
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);
@@ -95,10 +92,7 @@ context.put("realDataType", DataType.REAL);
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("onSwitchValue", onSwitchValue);
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);
@@ -115,10 +109,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("onSwitchValue", onSwitchValue);
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);
@@ -133,10 +124,7 @@ context.put("realDataType", DataType.REAL);
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("onSwitchValue", onSwitchValue);
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);

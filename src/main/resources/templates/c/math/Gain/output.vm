@@ -4,9 +4,9 @@
 
 /* Code for Gain block $blockId */
 #if($multiplication == false)
-    #if($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "REAL")
+    #if($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
         $outputPortList.getOutputSignalC().getName() = $gainValue * $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-    #elseif($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "MATRIX")
+    #elseif($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
         #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
         #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())
         #set($hMax = $height - 1)
@@ -18,9 +18,9 @@
         #end
     #end
 #else
-    #if($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "REAL")
+    #if($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
         $outputPortList.getOutputSignalC().getName() = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() * $gainValue;
-    #elseif($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "MATRIX")
+    #elseif($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
         $outputPortList.getOutputSignalC().getName() = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() * $gainValue;
     #end
 #end

@@ -206,9 +206,7 @@ public class SFunction extends DiscreteBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/output.vm", context);
         code.addOutputCode(codeStr);

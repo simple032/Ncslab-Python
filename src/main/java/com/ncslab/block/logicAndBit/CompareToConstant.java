@@ -51,10 +51,7 @@ public class CompareToConstant extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("value", value);
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/CompareToConstant/init.vm", context);
@@ -62,9 +59,7 @@ public class CompareToConstant extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("relop", relop);
         context.put("value", value);
         context.put("inputs", getInputPortVariables());

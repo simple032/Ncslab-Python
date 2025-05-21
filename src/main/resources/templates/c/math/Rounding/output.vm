@@ -3,7 +3,7 @@
 #set($operator = $operator.getInitString())
 
 /* Code for Rounding block $blockId */
-#if($inputSignal.dataType == "REAL")
+#if($inputSignal.dataType == $realDataType)
     #switch($operator)
         #case("floor")
             $outputSignal = floor($inputSignal);
@@ -18,7 +18,7 @@
             $outputSignal = trunc($inputSignal);
             #break
     #endswitch
-#elseif($inputSignal.dataType == "MATRIX")
+#elseif($inputSignal.dataType == $matrixDataType)
     #set($height = $inputSignal.getHeight())
     #set($width = $inputSignal.getWidth())
     #foreach($i in [1..$height])

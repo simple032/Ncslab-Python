@@ -5,20 +5,22 @@
 
 
 /* Code for ProductOfElements block $blockId */
-#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "REAL")
+#set($sequenceLength = $sequence.length())
+#set($seqMax = $sequence.length() - 1)
+#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
     #if($sequence.length() == 1)
         $outputPortList.getOutputSignalC().getName() = 0 + $sequence.charAt(0) + $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
     #else
         $outputPortList.getOutputSignalC().getName() = 1;
-        #foreach($i in [0..$sequence.length()-1])
-            #if($sequence.charAt($velocityCount - 1) == '*')
-                $outputPortList.getOutputSignalC().getName() *= $inputPortList.get($velocityCount - 1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-            #elseif($sequence.charAt($velocityCount - 1) == '/')
-                $outputPortList.getOutputSignalC().getName() /= $inputPortList.get($velocityCount - 1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+        #foreach($i in [0..$seqMax])
+            #if($sequence.charAt($i) == '*')
+                $outputPortList.getOutputSignalC().getName() *= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+            #elseif($sequence.charAt($i) == '/')
+                $outputPortList.getOutputSignalC().getName() /= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
             #end
         #end
     #end
-#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "MATRIX")
+#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
     #if($allDimensions)
         #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
         #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())
@@ -26,11 +28,11 @@
         #foreach($m in [0..$height-1])
             #foreach($n in [0..$width-1])
                 $outputPortList.getOutputSignalC().getName()($m, $n) = 1;
-                #foreach($i in [0..$sequence.length()-1])
-                    #if($sequence.charAt($velocityCount - 1) == '*')
-                        $outputPortList.getOutputSignalC().getName()($m, $n) *= $inputPortList.get($velocityCount - 1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
-                    #elseif($sequence.charAt($velocityCount - 1) == '/')
-                        $outputPortList.getOutputSignalC().getName()($m, $n) /= $inputPortList.get($velocityCount - 1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
+                #foreach($i in [0..$seqMax])
+                    #if($sequence.charAt($i) == '*')
+                        $outputPortList.getOutputSignalC().getName()($m, $n) *= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
+                    #elseif($sequence.charAt($i) == '/')
+                        $outputPortList.getOutputSignalC().getName()($m, $n) /= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
                     #end
                 #end
             #end

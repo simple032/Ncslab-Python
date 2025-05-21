@@ -54,9 +54,7 @@ public class IntervalTest extends com.ncslab.block.Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("inputs", getInputPortVariables());
         context.put("outputs", getOutputPortVariables());
         context.put("lowLimit", lowLimit.getDouble());  // 直接传递Parameter对象

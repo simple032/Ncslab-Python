@@ -74,10 +74,7 @@ public class Integrator extends Block {
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-		context.put("realDataType", DataType.REAL);
 		context.put("state", stateIntegral);
 		context.put("initialCondition", initialCondition);
 
@@ -87,10 +84,7 @@ public class Integrator extends Block {
 
 	public void generateDerivativeCodeM(CodeStructM code) {
 		super.generateDerivativeCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-		context.put("realDataType", DataType.REAL);
 		context.put("state", stateIntegral);
 		context.put("input", getInputPortVariables()[0]);
 
@@ -113,10 +107,7 @@ public class Integrator extends Block {
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-		context.put("realDataType", DataType.REAL);
 		context.put("state", stateIntegral);
 		context.put("output", getOutputPortVariables()[0]);
 

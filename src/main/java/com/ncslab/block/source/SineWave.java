@@ -59,10 +59,7 @@ public class SineWave extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("amplitude", amplitude);
         context.put("bias", bias);
         context.put("frequency", frequency);
@@ -74,10 +71,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("amplitude", amplitude);
         context.put("bias", bias);
         context.put("frequency", frequency);
@@ -90,10 +84,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("amplitude", amplitude);
         context.put("bias", bias);
         context.put("frequency", frequency);
@@ -104,9 +95,7 @@ context.put("realDataType", DataType.REAL);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("amplitude", amplitude);
         context.put("bias", bias);
         context.put("frequency", frequency);

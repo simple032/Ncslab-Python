@@ -51,9 +51,7 @@ public class Fcn extends Block{
 	}
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("expression", expression);
         
         String codeStr = TemplateManager.renderTemplate("c/function/Fcn/output.vm", context);

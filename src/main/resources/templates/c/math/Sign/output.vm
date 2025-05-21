@@ -2,14 +2,14 @@
 #set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
 
 /* Code for Sign block $blockId */
-#if($inputSignal.dataType == "REAL")
+#if($inputSignal.dataType == $realDataType)
 if($inputSignal > 0)
     $outputSignal = 1.0;
 elseif($inputSignal == 0)
     $outputSignal = 0;
 else
     $outputSignal = -1.0;
-#elseif($inputSignal.dataType == "MATRIX")
+#elseif($inputSignal.dataType == $matrixDataType)
     #set($wMax = $inputSignal.getWidth() - 1)
     #set($hMax = $inputSignal.getHeight() - 1)
     #foreach($i in [0..$hMax])

@@ -44,10 +44,7 @@ public class Demux extends Block {
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("outputs", getOutputPortVariables());
 
 		String codeStr = TemplateManager.renderTemplate("m/route/Demux/init.vm", context);
@@ -56,10 +53,7 @@ context.put("realDataType", DataType.REAL);
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("inputs", getInputPortVariables());
 		context.put("outputs", getOutputPortVariables());
 
@@ -69,10 +63,7 @@ context.put("realDataType", DataType.REAL);
 
 	public void generateDerivativeCodeM(CodeStructM code) {
 		super.generateDerivativeCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 
 		String codeStr = TemplateManager.renderTemplate("m/route/Demux/derivative.vm", context);
 		code.addDerivativeCode(codeStr);
@@ -80,19 +71,14 @@ context.put("realDataType", DataType.REAL);
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/init.vm", context);
 		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("inputs", getInputPortVariables());
 		context.put("outputs", getOutputPortVariables());
 
@@ -101,18 +87,14 @@ context.put("realDataType", DataType.REAL);
 	}
 
 	public void generateDerivativeCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/derivative.vm", context);
 		code.addDerivativeCode(codeStr);
 	}
 
 	public void generateUpdateCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/update.vm", context);
 		code.addUpdateCode(codeStr);

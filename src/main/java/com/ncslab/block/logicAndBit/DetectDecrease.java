@@ -38,9 +38,7 @@ public class DetectDecrease extends com.ncslab.block.Block{
     }
 
 	public void generateArraysCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-		context.put("realDataType", DataType.REAL);
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		context.put("signal", signal);
 		
@@ -55,9 +53,7 @@ public class DetectDecrease extends com.ncslab.block.Block{
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-		context.put("realDataType", DataType.REAL);
 		context.put("inputs", getInputPortVariables());
 		context.put("outputs", getOutputPortVariables());
 		

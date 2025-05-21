@@ -1,14 +1,7 @@
-/* 传递函数模块微分计算: ($block.getBlockId()) $block.getBlockName() */
-
-## 如果至少有两个状态，只处理状态导数
-#set($statesSize = $states.size())
-#if($statesSize > 1)
-    #set($lastIndex = $statesSize - 2)
-    #foreach($i in [0..$lastIndex])
-        #set($nextIndex = $i + 1)
-        ${states.get($i).derivativeName} = ${states.get($nextIndex).getName()};
-    #end
-#end
+/*传递函数模块微分计算: ($block.blockId) $block.blockName*/
+#set($states = $block.xStateList)
+#set($den = $block.den)
+#set($inputs = $block.inputPortVariables)
 
 ## 处理最后一个状态的导数表达式
 #if($statesSize > 0)

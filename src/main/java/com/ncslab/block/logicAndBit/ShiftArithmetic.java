@@ -45,8 +45,6 @@ public class ShiftArithmetic extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
         context.put("value", value);
 
@@ -55,7 +53,6 @@ public class ShiftArithmetic extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
         context.put("value", value);
         context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());

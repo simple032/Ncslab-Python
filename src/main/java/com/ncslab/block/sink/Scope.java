@@ -66,7 +66,6 @@ public class Scope extends SinkBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         if (model.getModelMode() == ModelMode.Simulation) {
-            VelocityContext context = new VelocityContext();
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("scopeStruct", scopeStruct);
@@ -78,7 +77,6 @@ public class Scope extends SinkBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         if (model.getModelMode() == ModelMode.Simulation) {
-            VelocityContext context = new VelocityContext();
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("inputPortList", getInputPortList());
@@ -94,7 +92,6 @@ public class Scope extends SinkBlock {
 
     public void generateOutputSinkCodeC(CodeStructC code) {
         if (model.getModelMode() == ModelMode.Simulation) {
-            VelocityContext context = new VelocityContext();
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("inputPortList", getInputPortList());

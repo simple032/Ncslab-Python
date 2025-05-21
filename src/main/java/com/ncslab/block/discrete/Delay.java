@@ -57,7 +57,6 @@ public class Delay extends DiscreteBlock {
 	 }
 	 public void generateInitCodeC(CodeStructC code) {
 	 	super.generateInitCodeC(code);
-        VelocityContext context = new VelocityContext();
 	 	context.put("blockId", getBlockId());
 	 	context.put("blockName", getBlockName());
 	 	context.put("sampleTime", sampleTime);
@@ -68,7 +67,6 @@ public class Delay extends DiscreteBlock {
 	 	code.addInitCode(initCode);
 	 }
 	 public void generateOutputCodeC(CodeStructC code) {
-	 	VelocityContext context = new VelocityContext();
 	 	context.put("blockId", getBlockId());
 	 	context.put("blockName", getBlockName());
 	 	context.put("inputPortList", getInputPortList());

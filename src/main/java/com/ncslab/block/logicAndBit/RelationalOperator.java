@@ -53,10 +53,7 @@ public class RelationalOperator extends Block{
         OutputPort out  = outputPortList.get(0);
         OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-        context.put("realDataType", DataType.REAL);
         context.put("signal1",signal1);
         context.put("signal2",signal2);
         context.put("ops",out.getOutputSignalC());

@@ -65,7 +65,6 @@ public class Matrix extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("blockId", getBlockId());
         context.put("blockName", getBlockName());
         context.put("inputPortList", getInputPortList());

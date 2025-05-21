@@ -124,10 +124,7 @@ public class TransferFcn extends Block {
 	}
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("states", xStateList);
 
 		String codeStr = TemplateManager.renderTemplate("m/continuous/TransferFcn/init.vm", context);
@@ -137,10 +134,7 @@ context.put("realDataType", DataType.REAL);
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("states", xStateList);
 		context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
 		context.put("feedThrough", feedThrough);
@@ -154,10 +148,7 @@ context.put("realDataType", DataType.REAL);
 
 	public void generateDerivativeCodeM(CodeStructM code) {
 		super.generateDerivativeCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("states", xStateList);
 		context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
 		context.put("inputs", getInputPortVariables());
@@ -168,10 +159,7 @@ context.put("realDataType", DataType.REAL);
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("states", xStateList);
 
 		String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/init.vm", context);
@@ -179,9 +167,7 @@ context.put("realDataType", DataType.REAL);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("states", xStateList);
 		context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
 		context.put("feedThrough", feedThrough);
@@ -194,9 +180,7 @@ context.put("realDataType", DataType.REAL);
 	}
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("states", xStateList);
 		context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
 		context.put("inputs", getInputPortVariables());

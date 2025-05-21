@@ -43,7 +43,6 @@ public class Abs extends Block{
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-	    VelocityContext context = new VelocityContext();
 	    context.put("blockId", getBlockId());
 	    context.put("blockName", getBlockName());
 	    context.put("inputPortList", getInputPortList());

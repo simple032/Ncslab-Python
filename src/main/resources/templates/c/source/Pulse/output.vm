@@ -1,6 +1,6 @@
 /* C代码生成模板 - Pulse模块 */
 real_T currentTime = model.time;
-#if($amplitude.dataType == "REAL")
+#if($amplitude.dataType == $realDataType)
 if(currentTime < ${phaseDelay.getName()}) {
     ${outputs.get(0)} = 0;
 }

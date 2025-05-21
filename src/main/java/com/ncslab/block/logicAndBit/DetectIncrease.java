@@ -41,7 +41,6 @@ public class DetectIncrease extends com.ncslab.block.Block{
 
 		context = new VelocityContext();
 		context.put("block", this);
-		context.put("realDataType", DataType.REAL);
 	}
 
 	public void generateArraysCodeC(CodeStructC code) {

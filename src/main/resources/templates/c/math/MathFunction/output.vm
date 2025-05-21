@@ -2,7 +2,7 @@
 #set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
 
 /* Code for MathFunction block $blockId */
-#if($inputSignal.dataType == "REAL")
+#if($inputSignal.dataType == $realDataType)
     #if($function == "transpose")
         $outputSignal = $inputSignal;
     #elseif($function == "reciprocal")
@@ -14,7 +14,7 @@
     #elseif($function == "pow")
         $outputSignal = pow($inputSignal, $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
     #end
-#elseif($inputSignal.dataType == "MATRIX")
+#elseif($inputSignal.dataType == $matrixDataType)
     #set($wMax = $inputSignal.getWidth() - 1)
     #set($hMax = $inputSignal.getHeight() - 1)
     #if($function == "transpose")

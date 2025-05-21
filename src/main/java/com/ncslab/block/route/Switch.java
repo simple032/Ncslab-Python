@@ -51,7 +51,6 @@ public class Switch extends Block {
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-        VelocityContext context = new VelocityContext();
 		context.put("blockId", getBlockId());
 		context.put("blockName", getBlockName());
 		context.put("threshold", threshold);
@@ -60,7 +59,6 @@ public class Switch extends Block {
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("blockId", getBlockId());
 		context.put("blockName", getBlockName());
 		context.put("inputPortList", getInputPortList());

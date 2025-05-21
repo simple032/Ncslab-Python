@@ -54,10 +54,7 @@ public class Zero_Order_Hold extends DiscreteBlock {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
 
         String codeStr = TemplateManager.renderTemplate("m/discrete/Zero_Order_Hold/init.vm", context);
@@ -66,10 +63,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Zero_Order_Hold/init.vm", context);
@@ -80,10 +74,7 @@ context.put("realDataType", DataType.REAL);
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("realDataType", DataType.REAL); // 直接传递枚举实例
         context.put("sampleTime", sampleTime);
         context.put("signal", signal);
@@ -98,10 +89,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("stateOutput", stateOutput);
         context.put("signal", signal);
         context.put("outputs", getOutputPortVariables());

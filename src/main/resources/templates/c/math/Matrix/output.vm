@@ -5,11 +5,11 @@
 #set($width = $matrix.getWidth())
 
 /* Code for Matrix block $blockId */
-#if($elements.size() > 0 && $elements[0].dataType == "REAL")
+#if($elements.size() > 0 && $elements[0].dataType == $realDataType)
     #foreach($element in $elements)
         $outputPortList.getOutputSignalC().getName() = $element.getName();
     #end
-#elseif($elements.size() > 0 && $elements[0].dataType == "MATRIX")
+#elseif($elements.size() > 0 && $elements[0].dataType == $matrixDataType)
     #foreach($i in [0..$height-1])
         #foreach($j in [0..$width-1])
             $outputPortList.getOutputSignalC().getName()($i, $j) = $elements[$i][$j].getName();

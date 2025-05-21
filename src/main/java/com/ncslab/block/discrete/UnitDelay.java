@@ -66,10 +66,7 @@ public class UnitDelay extends DiscreteBlock {
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("signal", signal);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/arrays.vm", context);
@@ -78,10 +75,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
         context.put("initialCondition", initialCondition);
 
@@ -91,10 +85,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
         context.put("initialCondition", initialCondition);
 
@@ -106,10 +97,7 @@ context.put("realDataType", DataType.REAL);
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
         context.put("initialCondition", initialCondition);
         context.put("signal", signal);

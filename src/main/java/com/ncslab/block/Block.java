@@ -10,6 +10,7 @@ import com.ncslab.block.io.*;
 import com.ncslab.code.plc.CodeStructPLC;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.velocity.VelocityContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -89,7 +90,8 @@ public class Block implements MCodeBlock, CCodeBlock{
 
     @Getter
     public static Vector<String> outputNames = new Vector<>();
-
+    
+    protected VelocityContext context = null;
 
     protected Block(JSONObject blockIn, NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");
@@ -101,6 +103,9 @@ public class Block implements MCodeBlock, CCodeBlock{
 		this.blockPath=blockIn.getString("blockPath");
         this.blockUUID=blockIn.optString("blockUUID", "null");
 //        parseParameterList();
+        context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
 	}
 
     public void setFeedThrough(boolean feedThrough) {

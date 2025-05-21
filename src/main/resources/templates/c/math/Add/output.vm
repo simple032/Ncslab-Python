@@ -3,7 +3,7 @@
 
 
 /* Code for Add block $blockId */
-#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "REAL")
+#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
   #set($outputSignalName = $outputPortList.getOutputSignalC().getName())
   $outputSignalName = 0;
   #set($sMax = $sequence.length() - 1)
@@ -14,7 +14,7 @@
       $outputSignalName -= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
     #end
   #end
-#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "MATRIX")
+#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
   #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
   #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())
   #set($outputSignalName = $outputPortList.getOutputSignalC().getName())

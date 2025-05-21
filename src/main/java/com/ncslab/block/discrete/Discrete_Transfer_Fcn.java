@@ -82,9 +82,7 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
 
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcn/arrays.vm", context);
         code.addArraysCode(codeStr);
@@ -92,10 +90,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
         context.put("num", num);
         context.put("den", den);
@@ -108,10 +103,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
         context.put("num", num);
         context.put("den", den);
@@ -124,10 +116,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateOutputCodeC(CodeStructC code) {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("sampleTime", sampleTime);
         context.put("num", num);
         context.put("den", den);
@@ -142,10 +131,7 @@ context.put("realDataType", DataType.REAL);
 
     public void generateUpdateCodeC(CodeStructC code) {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        VelocityContext context = new VelocityContext();
         context.put("block", this);
-context.put("realDataType", DataType.REAL);
         context.put("signal", signal);
         context.put("den", den);
         context.put("states", xStateList);

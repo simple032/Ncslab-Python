@@ -5,7 +5,7 @@
 
 
 /* Code for SumOfElements block $blockId */
-#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "REAL")
+#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
     #if($sequence.length() == 1)
         $outputPortList.getOutputSignalC().getName() = 0 + $sequence.charAt(0) + $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
     #else
@@ -18,7 +18,7 @@
             #end
         #end
     #end
-#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == "MATRIX")
+#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
     #if($allDimensions)
         #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
         #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())

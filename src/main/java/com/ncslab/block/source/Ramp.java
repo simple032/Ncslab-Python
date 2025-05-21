@@ -61,7 +61,6 @@ public class Ramp extends Block {
 	}
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("outputs", getOutputPortVariables());
 		context.put("slope", slope);
@@ -80,10 +79,8 @@ public class Ramp extends Block {
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
         OutputSignal signal = outputPortList.get(0).getOutputSignalC();
 		context.put("block", this);
-        context.put("realDataType", DataType.REAL);
 		context.put("outputs", getOutputPortVariables());
 		context.put("signal", signal);
 		context.put("slope", slope);

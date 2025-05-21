@@ -46,7 +46,6 @@ public class Derivative extends Block {
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
 
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("state", stateIntegral);
 
@@ -56,16 +55,12 @@ public class Derivative extends Block {
 	public void generateArraysCodeC(CodeStructC code) {
 		String arraysCode = "/*Define arrays for block Derivative(" + getBlockId() + ")" + getBlockName()
 				+ "*/\n";
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		VelocityContext context = new VelocityContext();
-		context.put("block", this);
+		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();		context.put("block", this);
 		context.put("signal", signal);
 		code.addArraysCode(arraysCode);
 	}
 	public void generateDerivativeCodeM(CodeStructM code) {
 		super.generateDerivativeCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("state", stateIntegral);
 		context.put("input", getInputPortVariables()[0]);
@@ -76,8 +71,6 @@ public class Derivative extends Block {
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
 		context.put("output", getOutputPortVariables()[0]);
 		context.put("state", stateIntegral);
@@ -89,9 +82,7 @@ public class Derivative extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-        context.put("realDataType", DataType.REAL);
 		context.put("signal", signal);
 		context.put("state", stateIntegral);
 		context.put("output", getOutputPortVariables()[0]);
@@ -102,9 +93,7 @@ public class Derivative extends Block {
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-        context.put("realDataType", DataType.REAL);
 		context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
 		context.put("state", stateIntegral);
 		context.put("solver", this.model.getConfig().getSolver());
