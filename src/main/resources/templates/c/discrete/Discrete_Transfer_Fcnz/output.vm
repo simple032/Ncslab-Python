@@ -1,0 +1,78 @@
+/* Code for output of discrete_transfer_funz:(${block.blockId}) ${block.blockName} */
+#set($outVar = $block.getOutputPortVariable(0))
+#set($blockId = $block.getBlockId())
+#set($s2Width = $signal2.getWidth())
+#set($s3Width = $signal3.getWidth())
+#set($stateDim = $s3Width - 1)
+{real_T currentTime = model.time;
+if(fabs(floor(currentTime/0.2+0.5)-currentTime/0.2)<0.000001&&mp->majorStep>0) {
+#set($h = $s3Width - $s2Width - 1)
+#set($s2WidthMax = $s2Width - 1)
+#set($s3WidthMax = $s3Width - 1)
+#if($signal1.getDataType() == $realDataType)
+Block${blockId}_discrete_transferz_savedata[0][0] = ${signal1.getName()};
+  #if($s3Width > 1)
+  for(int i=1; i<${s3Width}; i++){
+    Block${blockId}_discrete_transferz_savedata[0][0] -= ${signal3.getName()}(0, i) * Block${blockId}_state[0][i-1];
+  }
+  #else
+  Block${blockId}_discrete_transferz_savedata[0][0] -= ${signal3.getName()} * Block${blockId}_state[0][0];
+  #end
+
+  #if($s2Width == $s3Width)
+    #if($s2Width > 1)
+      ${outVar} = Block${blockId}_discrete_transferz_savedata[0][0] * ${signal2.getName()}(0,0);
+      for(int i=1; i<${s2Width}; i++)
+        ${outVar} += ${signal2.getName()}(0, i) * Block${blockId}_state[0][i-1];
+    #else
+      ${outVar} = Block${blockId}_discrete_transferz_savedata[0][0] * ${signal2.getName()};
+      ${outVar} += ${signal2.getName()} * Block${blockId}_state[0][0];
+    #end
+  #else
+    ${outVar} = 0;
+    for(int j=0; j<${s2Width}; j++)
+      ${outVar} += ${signal2.getName()}(0, j) * Block${blockId}_state[0][j];
+  #end
+#if($s3Width>1)
+for(int i=${s3Width}-1; i>=1; i--){
+  Block${blockId}_state[0][i] = Block${blockId}_state[0][i-1];
+}
+#end
+Block${blockId}_state[0][0] = Block${blockId}_discrete_transferz_savedata[0][0];
+#else
+  #set($s1HeightMax = $signal1.getHeight() - 1)
+  #set($s1WidthMax = $signal1.getWidth() - 1)
+  #foreach($m in [0..$s1HeightMax])
+    #foreach($n in [0..$s1WidthMax])
+    Block${blockId}_discrete_transferz_savedata[$m][$n] = (${signal1.getName()}($m, $n);
+    for(int i=1; i<$s3Width; i++]){
+      Block${blockId}_discrete_transferz_savedata[$m][$n] -= ${signal3.getName()}(0, i) * Block${blockId}_state[$m][$n*${stateDim} + i-1]
+    };
+
+      #if($s2Width == $s3Width)
+        ${outVar}($m, $n) = Block${blockId}_discrete_transferz_savedata[$m][$n] * ${signal2.getName()}(0,0);
+        #if($s2Width > 1)
+          for(int i=1; i<=${s2Width}-1; i++)
+            ${outVar}($m, $n) += ${signal2.getName()}(0, i) * Block${blockId}_state[$m][$n*${stateDim} + i-1];
+          }
+        #end
+      #else
+        ${outVar}($m, $n) = 0
+        for(int j=0; j<${s2Width}; j++){
+          ${outVar}($m, $n)+=${signal2.getName()}(0, j) * Block${blockId}_state[$m][$n*${stateDim}+j];
+        }
+      #end
+    #end
+  #end
+
+for(int m=0; m<$s1Height; m++){
+  for(int n=0; n<$s1Width; n++){
+    for(int i=${s3Width}-1; i>=1; i--]){
+      Block${blockId}_state[$m][$n*${stateDim} + i] = Block${blockId}_state[$m][$n*${stateDim} + i-1];
+    }
+  }
+  Block${blockId}_state[m][n*${stateDim}] = Block${blockId}_discrete_transferz_savedata[m][n];
+}
+
+#end
+}}

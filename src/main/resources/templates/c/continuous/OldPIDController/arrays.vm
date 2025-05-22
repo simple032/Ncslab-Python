@@ -1,0 +1,9 @@
+/*Define arrays for block discrete_Delay:($block.blockId)$block.blockName*/
+#set($signal = $block.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#if($signal.dataType == $matrixDataType)
+double Block$block.blockIdsave_data[$signal.height][$signal.width*5];
+#elseif($signal.dataType == $realDataType && $block.cparaP.dataType == $realDataType)
+double Block$block.blockIdsave_data[5];
+#else
+double Block$block.blockIdsave_data[$block.cparaP.height][$block.cparaP.width*5];
+#end
