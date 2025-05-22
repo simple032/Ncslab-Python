@@ -15,7 +15,9 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.Block;
+import com.ncslab.util.TemplateManager;
+
+import org.json.JSONObject;
 
 import java.util.Vector;
 
@@ -139,167 +141,31 @@ public class PIDController extends Block {
         code.addInitCode(codeStr);
 	}
 
+    public void generateOutputCodeC(CodeStructC code) {
+        String outputCode = "/*Code for output of block PID Controller:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-	@Override
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode = "/*Code for output of block PID Controller:(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch (cparaP.getDataType()) {
-			case REAL:
-				switch (signal.getDataType()) {
-					case REAL:
-						outputCode += "if(sfcnIsMajorStep()) {\n";
-						outputCode += "Block" + getBlockId() + "save_data[0]=" + cparaP.getName() + "*"
-								+ signal.getName() + ";\n";
-						outputCode += "Block" + getBlockId() + "save_data[1]=" + cparaD.getName() + "*"
-								+ signal.getName() + ";\n";
-						outputCode += "Block" + getBlockId() + "save_data[2]=" + cparaI.getName() + "*"
-								+ signal.getName() + ";\n";
-						outputCode += "Block" + getBlockId() + "save_data[3]=(Block" + getBlockId() + "save_data[1]-"
-								+ stateFilter.getName() + ")*" + cparaN.getName() + ";\n";
-						outputCode += "Block" + getBlockId() + "save_data[4]=" + "Block" + getBlockId() + "save_data[0]"
-								+ "+" + stateIntegral.getName() + "+Block" + getBlockId() + "save_data[3]" + ";\n";
-
-                        //zhou_20240507 add externalReset
-                        if(externalReset.equals("on")) {
-                            outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-                            outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-                            outputCode+="}\n";
-                        }
-
-                        if (limitOutput.equals("on")) {
-							outputCode += "if(Block" + getBlockId() + "save_data[4]>" + upperSaturationLimit.getName()
-									+ "){\n";
-							outputCode += this.getOutputPortVariable(0) + "=" + upperSaturationLimit.getName() + ";}\n";
-							outputCode += "else if(Block" + getBlockId() + "save_data[4]<"
-									+ lowerSaturationLimit.getName() + "){\n";
-							outputCode += this.getOutputPortVariable(0) + "=" + lowerSaturationLimit.getName() + ";}\n";
-							outputCode += "else{\n";
-							outputCode += this.getOutputPortVariable(0) + "=" + "Block" + getBlockId()
-									+ "save_data[4];}\n";
-						} else {
-							outputCode += this.getOutputPortVariable(0) + "=" + "Block" + getBlockId()
-									+ "save_data[4];\n";
-						}
-						outputCode += "}\n";
-						break;
-					case MATRIX:
-						for (int i = 0; i < signal.getHeight(); i++) {
-							for (int j = 0; j < signal.getWidth(); j++) {
-								outputCode += "if(sfcnIsMajorStep()) {\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]="
-										+ cparaP.getName() + "*" + signal.getName() + "(" + i + "," + j + ");\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]="
-										+ cparaD.getName() + "*" + signal.getName() + "(" + i + "," + j + ");\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+2]="
-										+ cparaI.getName() + "*" + signal.getName() + "(" + i + "," + j + ");\n";
-								outputCode += "}\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3]=(Block"
-										+ getBlockId() + "save_data[" + i + "][" + j + "*5+1]-" + stateFilter.getName()
-										+ "(" + i + "," + j + "))*" + cparaN.getName() + ";\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4]=" + "Block"
-										+ getBlockId() + "save_data[" + i + "][" + j + "*5]" + "+"
-										+ stateIntegral.getName() + "(" + i + "," + j + ")+Block" + getBlockId()
-										+ "save_data[" + i + "][" + j + "*5+3];\n";
-
-                                //zhou_20240507 add externalReset
-                                if(externalReset.equals("on")) {
-                                    outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-                                    outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-                                    outputCode+="}\n";
-                                }
-
-                                if (limitOutput.equals("on")) {
-									outputCode += "if(Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4]>"
-											+ upperSaturationLimit.getName() + "){\n";
-									outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")="
-											+ upperSaturationLimit.getName() + ";}\n";
-									outputCode += "else if(Block" + getBlockId() + "save_data[" + i + "][" + j
-											+ "*5+4]<" + lowerSaturationLimit.getName() + "){\n";
-									outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")="
-											+ lowerSaturationLimit.getName() + ";}\n";
-									outputCode += "else{\n";
-									outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + "Block"
-											+ getBlockId() + "save_data[" + i + "][" + j + "*5+4];}\n";
-								} else {
-									outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + "Block"
-											+ getBlockId() + "save_data[" + i + "][" + j + "*5+4];\n";
-								}
-								outputCode += "}\n";
-							}
-						}
-						break;
-				}
-				break;
-			case MATRIX:
-				switch (signal.getDataType()) {
-					case REAL:
-						for (int i = 0; i < cparaP.getHeight(); i++) {
-							for (int j = 0; j < cparaP.getWidth(); j++) {
-								outputCode += "if(sfcnIsMajorStep()) {\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]="
-										+ cparaP.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]="
-										+ cparaD.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+2]="
-										+ cparaI.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3]=(Block"
-										+ getBlockId() + "save_data[" + i + "][" + j + "*5+1]-" + stateFilter.getName()
-										+ "(" + i + "," + j + "))*" + cparaN.getName() + "(" + i + "," + j + ");\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4]=" + "Block"
-										+ getBlockId() + "save_data[" + i + "][" + j + "*5]" + "+"
-										+ stateIntegral.getName() + "(" + i + "," + j + ")+Block" + getBlockId()
-										+ "save_data[" + i + "][" + j + "*5+3];\n";
-
-                                //zhou_20240507 add externalReset
-                                if(externalReset.equals("on")) {
-                                    outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-                                    outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-                                    outputCode+="}\n";
-                                }
-
-                                outputCode = generateLimitOutputCode(outputCode, i, j);
-                            }
-						}
-						break;
-					case MATRIX:
-						for (int i = 0; i < cparaP.getHeight(); i++) {
-							for (int j = 0; j < cparaP.getWidth(); j++) {
-								outputCode += "if(sfcnIsMajorStep()) {\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]="
-										+ cparaP.getName() + "(" + i + "," + j + ")*" + signal.getName() + "(" + i + ","
-										+ j + ");\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]="
-										+ cparaD.getName() + "(" + i + "," + j + ")*" + signal.getName() + "(" + i + ","
-										+ j + ");\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+2]="
-										+ cparaI.getName() + "(" + i + "," + j + ")*" + signal.getName() + "(" + i + ","
-										+ j + ");\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3]=(Block"
-										+ getBlockId() + "save_data[" + i + "][" + j + "*5+1]-" + stateFilter.getName()
-										+ "(" + i + "," + j + "))*" + cparaN.getName() + "(" + i + "," + j + ");\n";
-								outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4]=" + "Block"
-										+ getBlockId() + "save_data[" + i + "][" + j + "*5]" + "+"
-										+ stateIntegral.getName() + "(" + i + "," + j + ")+Block" + getBlockId()
-										+ "save_data[" + i + "][" + j + "*5+3];\n";
-
-                                //zhou_20240507 add externalReset
-                                if(externalReset.equals("on")) {
-                                    outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-                                    outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-                                    outputCode+="}\n";
-                                }
-
-                                outputCode = generateLimitOutputCode(outputCode, i, j);
-                            }
-						}
-						break;
-				}
-				break;
-		}
-		code.addOutputCode(outputCode);
-	}
+        context.put("block", this); // 当前Block对象
+        context.put("inputPortList", inputPortList); // 输入端口列表
+        context.put("cparaP", cparaP); // 比例参数
+        context.put("cparaD", cparaD); // 微分参数
+        context.put("cparaI", cparaI); // 积分参数
+        context.put("stateFilter", stateFilter); // 滤波状态
+        context.put("stateIntegral", stateIntegral); // 积分状态
+        context.put("externalReset", externalReset); // 外部复位标志
+        context.put("limitOutput", limitOutput); // 输出限幅标志
+        context.put("upperSaturationLimit", upperSaturationLimit); // 饱和上限
+        context.put("lowerSaturationLimit", lowerSaturationLimit); // 饱和下限
+        context.put("realDataType", DataType.REAL); // 实数类型标识
+        context.put("matrixDataType", DataType.MATRIX); // 矩阵类型标识
+        context.put("signal", signal);
+        context.put("resetSig",
+            inputPortList.size()>1?
+            inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName():0
+        );
+        outputCode += TemplateManager.renderTemplate("c/continuous/PIDController/output.vm", context);
+        code.addOutputCode(outputCode);
+    }
 
     private String generateLimitOutputCode(String outputCode, int i, int j) {
         if (limitOutput.equals("on")) {

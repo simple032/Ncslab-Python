@@ -79,8 +79,8 @@ public class Demux extends Block {
 
 	public void generateOutputCodeC(CodeStructC code) {
 		context.put("block", this);
-		context.put("inputs", getInputPortVariables());
-		context.put("outputs", getOutputPortVariables());
+		context.put("input", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+		context.put("outputNames", getOutputPortVariables());
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/output.vm", context);
 		code.addOutputCode(codeStr);

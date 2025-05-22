@@ -1,8 +1,5 @@
 /*传递函数模块微分计算: ($block.blockId) $block.blockName*/
-#set($states = $block.xStateList)
-#set($den = $block.den)
-#set($inputs = $block.inputPortVariables)
-
+#set($statesSize = $states.size())
 ## 处理最后一个状态的导数表达式
 #if($statesSize > 0)
     #set($lastStateIndex = $statesSize - 1)
