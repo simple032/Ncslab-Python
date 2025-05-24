@@ -16,6 +16,9 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
+import com.ncslab.util.TemplateManager;
+
+
 public class MatrixConcatenate extends Block {
     private String seq;
     private Parameter ConcatenateDimension;
@@ -69,24 +72,13 @@ public class MatrixConcatenate extends Block {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(String.format("/*Code for output of block Matrix Concatenate: (%d)%s*/\n", getBlockId(),
-                getBlockName()));
-        OutputPort out = outputPortList.get(0);
-        OutputSignal signal[] = new OutputSignal[seq.length()];
-        for (int i = 0; i < seq.length(); i++) {
-            signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        }
+        context.put("block", this);
+        context.put("inputSignals", getInputPortVariables());
+        context.put("output", getOutputPortVariables()[0]);
+        context.put("concatDimension", ConcatenateDimension.getData().getInitValue());
 
-        String sOut = out.getOutputSignalC().getName();
-
-        outputCode.append(String.format("%s = %s;\n", sOut, signal[0].getName()));
-        for (int i = 1; i < seq.length(); i++) {
-            outputCode.append(String.format("%s.concatenate(%s,%s);\n", sOut, signal[i].getName(),
-                    ConcatenateDimension.getName()));
-        }
-
-        code.addOutputCode(outputCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/MatrixConcatenate/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override

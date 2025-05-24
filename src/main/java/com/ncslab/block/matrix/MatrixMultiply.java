@@ -13,6 +13,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
 import java.util.Vector;
+import com.ncslab.util.TemplateManager;
 
 public class MatrixMultiply extends Block {
 
@@ -53,22 +54,12 @@ public class MatrixMultiply extends Block {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(
-                String.format("/*Code for output of matrix multiply: (%d)%s*/\n", getBlockId(), getBlockName()));
-        OutputPort out = outputPortList.get(0);
-        OutputSignal signal[] = new OutputSignal[seq.length()];
-        for (int i = 0; i < seq.length(); i++) {
-            signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        }
+        context.put("block", this);
+        context.put("inputSignals", getInputPortVariables());
+        context.put("output", getOutputPortVariables()[0]);
 
-        outputCode.append(out.getOutputSignalC().getName() + "=" + signal[0].getName());
-        for (int i = 1; i < seq.length(); i++) {
-            outputCode.append("*" + signal[i].getName());
-        }
-        outputCode.append(";\n");
-
-        code.addOutputCode(outputCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/MatrixMultiply/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override

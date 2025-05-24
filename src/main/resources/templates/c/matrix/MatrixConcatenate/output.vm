@@ -1,0 +1,9 @@
+#set($output = $outputPortList.get(0).getOutputSignalC())
+#set($concatDimension = $block.getParameter("ConcatenateDimension").getData().getInitValue())
+
+/* Code for output of MatrixConcatenate: ($block.getBlockId())$block.getBlockName() */
+$output.setName($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+
+#foreach($i in [1..$inputPortList.size()-1])
+$output.concatenate($inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(), $concatDimension)
+#end

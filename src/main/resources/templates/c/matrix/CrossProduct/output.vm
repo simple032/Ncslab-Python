@@ -1,0 +1,6 @@
+#set($input1 = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($input2 = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($output = $outputPortList.get(0).getOutputSignalC())
+
+/* Code for output of CrossProduct: ($block.getBlockId())$block.getBlockName() */
+$output.setName($input1.getName().crossProduct($input2.getName()))

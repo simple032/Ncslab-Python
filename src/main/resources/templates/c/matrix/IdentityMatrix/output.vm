@@ -1,0 +1,5 @@
+#set($output = $outputPortList.get(0).getOutputSignalC())
+#set($dimensions = $block.getParameter("outputDimensions").getData().getInitValue())
+
+/* Code for output of IdentityMatrix: ($block.getBlockId())$block.getBlockName() */
+$output.setName(Matrix.identity($dimensions))

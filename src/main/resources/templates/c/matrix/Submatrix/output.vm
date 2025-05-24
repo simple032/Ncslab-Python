@@ -1,0 +1,10 @@
+#set($input = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($output = $outputPortList.get(0).getOutputSignalC())
+
+#set($startingRow = $block.getParameter("StartingRow").getData().getInitValue())
+#set($endingRow = $block.getParameter("EndingRow").getData().getInitValue())
+#set($startingColumn = $block.getParameter("StartingColumn").getData().getInitValue())
+#set($endingColumn = $block.getParameter("EndingColumn").getData().getInitValue())
+
+/* Code for output of Submatrix: ($block.getBlockId())$block.getBlockName() */
+$output.setName($input.getName().submatrix($startingRow, $endingRow, $startingColumn, $endingColumn))

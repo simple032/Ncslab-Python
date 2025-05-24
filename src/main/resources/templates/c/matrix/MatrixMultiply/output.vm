@@ -1,0 +1,8 @@
+#set($output = $outputPortList.get(0).getOutputSignalC())
+
+/* Code for output of MatrixMultiply: ($block.getBlockId())$block.getBlockName() */
+$output.setName($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+
+#foreach($i in [1..$inputPortList.size()-1])
+$output.multiply($inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#end

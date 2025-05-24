@@ -5,6 +5,7 @@ import org.checkerframework.checker.units.qual.min;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
+import com.ncslab.util.TemplateManager;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -38,14 +39,12 @@ public class ExtractDiagonal extends Block {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(String.format("/*Code for output of Extract Diagonal: (%d)%s*/\n", getBlockId(), getBlockName()));
-        OutputPort out = outputPortList.get(0);
+        context.put("block", this);
+        context.put("input", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        context.put("output", getOutputPortVariables()[0]);
 
-        String sOut = out.getOutputSignalC().getName();
-        String sIn = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        outputCode.append(String.format("%s = %s.diag();\n", sOut, sIn));
-        code.addOutputCode(outputCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/ExtractDiagonal/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override

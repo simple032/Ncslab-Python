@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
+import com.ncslab.util.TemplateManager;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -38,14 +39,12 @@ public class IsSymmetric extends Block {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(String.format("/*Code for output of IsSymmetric: (%d)%s*/\n", getBlockId(), getBlockName()));
-        OutputPort out = outputPortList.get(0);
+        context.put("block", this);
+        context.put("input", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        context.put("output", getOutputPortVariables()[0]);
 
-        String sOut = out.getOutputSignalC().getName();
-        String sIn = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        outputCode.append(String.format("%s = (%s == %s.transpose()) ? 1 : 0;\n", sOut, sIn, sIn));
-        code.addOutputCode(outputCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/IsSymmetric/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override

@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
+import com.ncslab.util.TemplateManager;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -53,14 +54,11 @@ public class IdentityMatrix extends Block {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(
-                String.format("/*Code for output of block Submatrix: (%d)%s*/\n", getBlockId(), getBlockName()));
-        OutputPort out = outputPortList.get(0);
-        String sOut = out.getOutputSignalC().getName();
-        outputCode.append(String.format("%s = Matrix.identity(%s);\n", sOut, outputDimensions.getName()));
+        context.put("block", this);
+        context.put("dimensions", outputDimensions.getData().getInitValue());
 
-        code.addOutputCode(outputCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/IdentityMatrix/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override

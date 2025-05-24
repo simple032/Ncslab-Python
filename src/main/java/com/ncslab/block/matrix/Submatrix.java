@@ -14,6 +14,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
 import java.util.Vector;
+import com.ncslab.util.TemplateManager;
 
 public class Submatrix extends Block {
     private Parameter startingRow;
@@ -75,17 +76,16 @@ public class Submatrix extends Block {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(
-                String.format("/*Code for output of block Submatrix: (%d)%s*/\n", getBlockId(), getBlockName()));
-        OutputPort out = outputPortList.get(0);
+        context.put("block", this);
+        context.put("input", getInputPortVariables()[0]);
+        context.put("output", getOutputPortVariables()[0]);
+        context.put("startingRow", startingRow.getData().getInitValue());
+        context.put("endingRow", endingRow.getData().getInitValue());
+        context.put("startingColumn", startingColumn.getData().getInitValue());
+        context.put("endingColumn", endingColumn.getData().getInitValue());
 
-        String sOut = out.getOutputSignalC().getName();
-        String sIn = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        outputCode.append(String.format("%s = %s.submatrix(%s,%s,%s,%s);\n", sOut, sIn, startingRow.getName(),
-                endingRow.getName(), startingColumn.getName(), endingColumn.getName()));
-
-        code.addOutputCode(outputCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/Submatrix/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override

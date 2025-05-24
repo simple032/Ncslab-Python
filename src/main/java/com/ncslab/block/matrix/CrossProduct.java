@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
+import com.ncslab.util.TemplateManager;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -41,17 +42,13 @@ public class CrossProduct extends Block {
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(
-                String.format("/*Code for output of cross product: (%d)%s*/\n", getBlockId(), getBlockName()));
-        OutputPort out = outputPortList.get(0);
-        String sOut = out.getOutputSignalC().getName();
-        String sIn1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        String sIn2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+        context.put("block", this);
+        context.put("input1", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        context.put("input2", inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        context.put("output", getOutputPortVariables()[0]);
 
-        outputCode.append(String.format("%s = %s.crossProduct(%s);\n", sOut, sIn1, sIn2));
-
-        code.addOutputCode(outputCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/CrossProduct/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override
