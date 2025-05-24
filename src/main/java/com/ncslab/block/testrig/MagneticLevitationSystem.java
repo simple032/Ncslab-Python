@@ -116,10 +116,10 @@ public class MagneticLevitationSystem extends Block {
 
         outputCode+="{\n";
 
-        String content = "<OUTPUT0> = -100/4.587156*<STATE0>;\n"
-                + "<OUTPUT1> = <STATE1>;\n";
+        String content = getOutputPortVariable(0) + " = -100/4.587156*"+getStateVariable(0)+";\n"
+                + getOutputPortVariable(1) + " = "+getStateVariable(1) + ";\n";
 
-        outputCode += M2PCode2C(content) +"}\n";
+        outputCode += content +"}\n";
         code.addOutputCode(outputCode);
     }
 
@@ -128,16 +128,13 @@ public class MagneticLevitationSystem extends Block {
         String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 
 
-        StringBuilder contentBuilder = new StringBuilder();
-        contentBuilder.append("{\n")
-                .append(position.getDerivativeName()+"="+velocity.getName()+";\n")
-                .append(velocity.getDerivativeName()+"=2*"+gravity.getName()+"*"+position.getName()+"/"+x0.getName()
-                    +"-2*"+gravity.getName()+"*"+Ks.getName()+"*-1*"+this.getInputPortVariable(0)+"/("+Ka.getName()+"*"+i0.getName()+");\n")
-                .append("}\n");
+        String content = "{\n" +
+            position.getDerivativeName() + "=" + velocity.getName() + ";\n" +
+            velocity.getDerivativeName() + "=2*" + gravity.getName() + "*" + position.getName() + "/" + x0.getName()
+            + "-2*" + gravity.getName() + "*" + Ks.getName() + "*-1*" + this.getInputPortVariable(0) + "/(" + Ka.getName() + "*" + i0.getName() + ");\n" +
+            "}\n";
 
-        String content = contentBuilder.toString();
-
-        derivativeCode += M2PCode2C(content);
+        derivativeCode += content;
 
         code.addDerivativeCode(derivativeCode);
     }

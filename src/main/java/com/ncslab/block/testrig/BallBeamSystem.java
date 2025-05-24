@@ -159,38 +159,35 @@ public class BallBeamSystem extends Block {
 
         outputCode+="{\n";
 
-        // String content = "if (<STATE0> <= lp) \n"
-        //     + "\t<OUTPUT0> = lp;"
-        //     + "else if ((<STATE0> > lp) && (<STATE0> <= up)) "
-        //     + "\t<OUTPUT0> = <STATE0>;"
-        //     + "else"
-        //     + "\t<OUTPUT0> = up;"
-        //     + "<OUTPUT1>=<STATE1>;"
-        //     + "<OUTPUT2>=<RWORK0>*180/AERO_PI;";
+         String content = "if (<STATE0> <= lp) \n"
+             + "\t<OUTPUT0> = lp;"
+             + "else if ((<STATE0> > lp) && (<STATE0> <= up)) "
+             + "\t<OUTPUT0> = <STATE0>;"
+             + "else"
+             + "\t<OUTPUT0> = up;"
+             + "<OUTPUT1>=<STATE1>;"
+             + "<OUTPUT2>=<RWORK0>*180/AERO_PI;";
 
-        String content = "<OUTPUT0> = 2*<STATE0>;\n";
-
-
-        outputCode += M2PCode2C(content) +"}\n";
+        outputCode += content +"}\n";
         code.addOutputCode(outputCode);
     }
 
     public void  generateDerivativeCodeC(CodeStructC code) {
         String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 
-        // String content = "if (<INPUT0>< la)"
-        // +"    u=la;"
-        // +"else if ((<INPUT0> >= la) && (<INPUT0> <= ua))"
-        // +"    u=<INPUT0>;"
-        // +"else"
-        // +"    u=ua;"
-        // +"<STATED0>=x[1];"
-        // +"<STATED2>=u-x[2];"
-        // +"<STATED1>=-M*g*sin(d*u/L)/(J/(R*R)+M)+M*x[0]*d*d*<STATED2>*<STATED2>/(L*L*(J/(R*R)+M));";
+         String content = "if ("+getInputPortVariable(0)+"< la)"
+         +"    u=la;"
+         +"else if (("+getInputPortVariable(0)+" >= la) && ("+getInputPortVariable(0)+" <= ua))"
+         +"    u="+getInputPortVariable(0)+";"
+         +"else"
+         +"    u=ua;"
+         +getDerivativeVariable(0)+"="+getStateVariable(1)+";"
+         +getDerivativeVariable(2)+">=u-"+getStateVariable(2)+";"
+         +getDerivativeVariable(1)+"=-M*g*sin(d*u/L)/(J/(R*R)+M)+M*"+getStateVariable(0)
+             +"*d*d*"+getDerivativeVariable(2)+"*"+getDerivativeVariable(2)
+             +"/(L*L*(J/(R*R)+M));";
 
-        String content = "<STATE0> = 2*<INPUT0>;";
-
-        derivativeCode += M2PCode2C(content);
+        derivativeCode +=  content + ";\n";
 
         code.addDerivativeCode(derivativeCode);
     }

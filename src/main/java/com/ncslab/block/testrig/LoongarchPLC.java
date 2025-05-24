@@ -138,11 +138,6 @@ public class LoongarchPLC extends Block {
         //     + "\t<OUTPUT0> = up;"
         //     + "<OUTPUT1>=<STATE1>;"
         //     + "<OUTPUT2>=<RWORK0>*180/AERO_PI;";
-
-        String content = "<OUTPUT0> = 2*<STATE0>;\n";
-
-
-        outputCode += M2PCode2C(content) +"}\n";
         code.addOutputCode(outputCode);
     }
 
@@ -158,10 +153,6 @@ public class LoongarchPLC extends Block {
         // +"<STATED0>=x[1];"
         // +"<STATED2>=u-x[2];"
         // +"<STATED1>=-M*g*sin(d*u/L)/(J/(R*R)+M)+M*x[0]*d*d*<STATED2>*<STATED2>/(L*L*(J/(R*R)+M));";
-
-        String content = "<STATE0> = 2*<INPUT0>;";
-
-        derivativeCode += M2PCode2C(content);
 
         code.addDerivativeCode(derivativeCode);
     }
