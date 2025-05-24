@@ -37,7 +37,7 @@ public class Config {
         this.startTime=configIn.optDouble("StartTime", 0);
         this.stopTime=configIn.optDouble("StopTime", 10);
         this.MaxDataPoints=configIn.optInt("MaxDataPoints", 3000);
-        this.minStep=configIn.optDouble("MinStep", 1e-4);
+        this.minStep=configIn.optDouble("MinStep", 1e-6);
         this.absTol=configIn.optDouble("AbsTol", 1e-6);
         this.relTol=configIn.optDouble("RelTol", 1e-6);
 

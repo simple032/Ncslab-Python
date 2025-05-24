@@ -1,5 +1,6 @@
 package com.ncslab.ncslablink;
 
+import com.ncslab.block.io.State;
 import com.ncslab.block.route.From;
 import com.ncslab.block.route.To;
 import lombok.Getter;
@@ -88,16 +89,32 @@ abstract public class NCSLabModel {
 	private int blockSeq=0;
 	private int lineSeq=0;
 
+    //context
+    @Getter
+    protected int stateNum=0;
+    @Getter
+    protected int singleStateNum=0;
+    protected int matrixStateNum=0;
+    @Getter
+    protected int signalNum=0;
+    @Getter
+    protected int parameterNum=0;
+    @Getter
+    protected int inputNum=0;
+    @Getter
+    protected int outputNum=0;
+
 	//解析model，变成数据结构
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		this.mode=mode;
 
 		this.jsonIn=jsonIn;
 
-
-
 		//解析model，变成数据结构
 		parseModel();
+
+        //解析模型state,signal,parameter,input,output数量
+		parseContext();
 
 		modelSeq=modelSeqCount;
 
@@ -224,6 +241,36 @@ abstract public class NCSLabModel {
 
 
 	}
+
+    private void parseContext(){
+        int singleStateNum=0;
+        int matrixStateNum=0;
+        int signalNum=0;
+        for(Block block:getBlockList()) {
+            int blockSignalNum = 0;
+            for(State state:block.getStateList()) {
+                switch(state.getDataType()) {
+                    case REAL:
+                        singleStateNum++;
+                        break;
+                    case MATRIX:
+                        matrixStateNum++;
+                        break;
+                }
+            }
+            blockSignalNum = block.getOutputPortList().size() + block.getInputPortList().size();
+            signalNum += blockSignalNum;
+            block.setSignalNum(blockSignalNum);
+        }
+        setStateNum(singleStateNum,matrixStateNum);
+        this.signalNum = signalNum;
+    }
+
+    private void setStateNum(int singleStateNum,int matrixStateNum){
+        this.stateNum=singleStateNum+matrixStateNum;
+        this.singleStateNum=singleStateNum;
+        this.matrixStateNum=matrixStateNum;
+    }
 
     private void showBlocks() {
 		for(Block block:blockList) {

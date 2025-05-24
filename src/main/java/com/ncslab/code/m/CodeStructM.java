@@ -8,14 +8,21 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
 import com.utils.Property;
+import lombok.Getter;
 
 public class CodeStructM {
 	//init初始化的代码
-	public String initCode="";
+	@Getter
+    public String initCode="";
+
+    @Getter
+    public String arraysCode="";
 	//Output的代码
-	public String outputCode="";
+	@Getter
+    public String outputCode="";
 	//update的代码
-	public String updateCode="";
+	@Getter
+    public String updateCode="";
 
 	//derivative的代码
 	public String derivativeCode="";
@@ -57,27 +64,17 @@ public class CodeStructM {
 		return mainCode;
 	}
 
-	public String getInitCode() {
-		return this.initCode;
-	}
-
-	public void addInitCode(String code) {
+    public void addInitCode(String code) {
 		initCode+=code;
 	}
 
-	public String getOutputCode() {
-		return this.outputCode;
-	}
+    public void addArraysCode(String code) { arraysCode+=code; }
 
-	public void addOutputCode(String code) {
+    public void addOutputCode(String code) {
 		outputCode+=code;
 	}
 
-	public String getUpdateCode() {
-		return this.updateCode;
-	}
-
-	public void addUpdateCode(String code) {
+    public void addUpdateCode(String code) {
 		updateCode+=code;
 	}
 

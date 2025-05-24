@@ -41,7 +41,9 @@ public class SFcnModel {
 
 	protected String codePath;
 
-    protected String codePathBase = Property.instance.getProperty("CCodePath");
+    protected String codePathBase = Property.instance.getProperty("CCodePath").replace(
+        "${M2PLAB_ROOT}", System.getenv("M2PLAB_ROOT")
+    );
 
 	public SFcnModel(JSONObject jsonData) throws SFcnException {
 

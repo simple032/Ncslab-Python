@@ -283,13 +283,21 @@ abstract public class CodeModelC extends CodeModel {
 
     }
 
-    public void cleanup(){
+    public void postBuild(){
+        //TODO:
+        //1.发送最终结果，将仿真结果发送给M2PCode
+
+        //2.清除工作
+        cleanup();
+    }
+
+    private void cleanup(){
         //1.批量删除临时变量
         MfcalcClient client = MfcalcClient.getInstance(null);
-        String command = "clear";
-        if(!Data.getTemp_variable_names().isEmpty()) {
+        StringBuilder command = new StringBuilder("clear");
+        if(client!=null && !Data.getTemp_variable_names().isEmpty()) {
             for(String temp_variable_name:Data.getTemp_variable_names()) {
-                command+=" "+temp_variable_name;
+                command.append(" ").append(temp_variable_name);
             }
             client.runCommand(command+"\n");
             Data.getTemp_variable_names().clear();

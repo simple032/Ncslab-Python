@@ -1052,21 +1052,11 @@ abstract public class CodeStructC{
 		model.setParameterNum(parameterNum);
 
 		dataStructureCode+="/*Define state structures*/\n";
-		int singleStateNum=0;
-		int matrixStateNum=0;
-		int stateNum=0;
+
 		for(Block block:model.getBlockList()) {
 			if(!block.getStateList().isEmpty()) {
 				for(State state:block.getStateList()) {
 					dataStructureCode+="STATE state"+block.getBlockId()+"_"+state.getId()+"={(char *)\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
-					switch(state.getDataType()) {
-					case REAL:
-						singleStateNum++;
-						break;
-					case MATRIX:
-						matrixStateNum++;
-						break;
-					}
 				}
 				dataStructureCode+="STATE *states"+block.getBlockId()+"["+block.getStateList().size()+"];\n";
 			}
@@ -1074,26 +1064,21 @@ abstract public class CodeStructC{
 				dataStructureCode+="STATE **states"+block.getBlockId()+"=NULL;\n";
 			}
 		}
-		stateNum=singleStateNum+matrixStateNum;
-		dataStructureCode+="STATE *states["+stateNum+"];\n";
-		model.setStateNum(singleStateNum,matrixStateNum);
+		dataStructureCode+="STATE *states["+model.getStateNum()+"];\n";
 
 		dataStructureCode+="/*Define signal structures*/\n";
-		int signalNum=0;
 		for(Block block:model.getBlockList()) {
 			int i=0;
-			if(inputAsSignal&&block.getInputPortList().size()>0) {
+			if(inputAsSignal&& !block.getInputPortList().isEmpty()) {
 				for(InputPort input:block.getInputPortList()) {
 					dataStructureCode+="SIGNAL signal"+block.getBlockId()+"_In"+input.getNumber()+";\n";
 					i++;
-					signalNum++;
 				}
 			}
-			if(outputAsSignal&&block.getOutputPortList().size()>0) {
+			if(outputAsSignal&& !block.getOutputPortList().isEmpty()) {
 				for(OutputPort output:block.getOutputPortList()) {
 					dataStructureCode+="SIGNAL signal"+block.getBlockId()+"_Out"+output.getNumber()+";\n";
 					i++;
-					signalNum++;
 				}
 			}
 			if(i>0) {
@@ -1102,11 +1087,8 @@ abstract public class CodeStructC{
 			else {
 				dataStructureCode+="SIGNAL **signals"+block.getBlockId()+"=NULL;\n";
 			}
-
-			block.setSignalNum(i);
 		}
-		dataStructureCode+="SIGNAL *signals["+signalNum+"];\n";
-		model.setSignalNum(signalNum);
+		dataStructureCode+="SIGNAL *signals["+model.getSignalNum()+"];\n";
 
 		dataStructureCode+="/*Define block structures*/\n";
 		if(!model.getBlockList().isEmpty()) {
