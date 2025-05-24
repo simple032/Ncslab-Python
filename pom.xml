@@ -104,6 +104,24 @@
       <version>1.12.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity-engine-core</artifactId>
+      <version>2.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.2.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-jexl3</artifactId>
+      <version>3.2.1</version>
+    </dependency>
+
     <!-- Java WebSocket API -->
     <dependency>
       <groupId>javax.websocket</groupId>
@@ -167,7 +185,19 @@
 		<version>1.12.2</version>
 	</dependency>
 
-		<!--		<dependency>-->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>RELEASE</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!--		<dependency>-->
 <!--			<groupId>NCSLabLink</groupId>-->
 <!--			<artifactId>NCSLabLink</artifactId>-->
 <!--			<version>0.0.1-SNAPSHOT</version>-->
@@ -182,6 +212,12 @@
         <excludes>
           <exclude>**/*.java</exclude>
         </excludes>
+        <includes>
+          <include>**/*.xml</include>
+          <include>**/*.properties</include>
+          <include>**/*.vm</include>  <!-- Add this line -->
+        </includes>
+<!--        <targetPath>resources</targetPath>-->
       </resource>
       <resource>
         <directory>src/main/java/</directory>
@@ -285,10 +321,10 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <target>
-                <copy file="${project.build.directory}/ncslablink-1.0-SNAPSHOT.war"
-                      tofile="../server/tomcat/webapps/NCSLabLink.war" overwrite="true"/>
-              </target>
+<!--              <target>-->
+<!--                <copy file="${project.build.directory}/ncslablink-1.0-SNAPSHOT.war"-->
+<!--                      tofile="C:/Users/Sheng/Documents/Projects/M2PLab/server/tomcat/webapps/NCSLabLink.war" overwrite="true"/>-->
+<!--              </target>-->
             </configuration>
           </execution>
         </executions>
