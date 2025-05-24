@@ -102,7 +102,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 		this.model=model;
 		this.blockPath=blockIn.getString("blockPath");
         this.blockUUID=blockIn.optString("blockUUID", "null");
-//        parseParameterList();
+        parseParameterList();
         context = new VelocityContext();
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
@@ -414,7 +414,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 				throw(e);
 			}
 		}
-	}W
+	}
 
     protected String getBufferName(){
         return "Block"+getBlockId()+"_buffer";

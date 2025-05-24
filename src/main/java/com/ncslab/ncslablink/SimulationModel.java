@@ -371,16 +371,6 @@ public class SimulationModel extends NCSLabModel{
         int size = scope.getTimeList().size();
         jsonScope.put("length", size);
 
-        // 限制数据点数量
-        while (scope.getTimeList().size() > scope.getMaxDataLength()) {
-            scope.getTimeList().removeElementAt(0);
-            for (int h = 0; h < scope.getHeight(); h++) {
-                for (int w = 0; w < scope.getWidth(); w++) {
-                    scope.getDataList().removeElementAt(0);
-                }
-            }
-        }
-
         JSONArray time = new JSONArray();
         JSONArray data = new JSONArray();
 

@@ -49,14 +49,27 @@ public class ScopeStruct extends Terminal {
 	}
 
     public void addTimeSeries(double time,Data data) {
-    	this.timeList.add(time);
-        if(height==1 && width==1) {
-        	this.dataList.add(data.getInitValue());
-            return;
+    	while(timeList.size()>=maxDataLength) {
+            this.timeList.remove(0);
+            if(this.height==1 && this.width==1) {
+            	this.dataList.removeElementAt(0);
+            }else{
+                for (int h=0;h<this.height;h++) {
+                    for (int w=0;w<this.width;w++) {
+                        this.dataList.removeElementAt(0);
+                    }
+                }
+            }
         }
-        for (int h=0;h<this.height;h++) {
-            for (int w=0;w<this.width;w++) {
-                this.dataList.add(data.getMatrix().get(h, w));
+
+        this.timeList.add(time);
+        if(this.height==1 && this.width==1) {
+        	this.dataList.add(data.getInitValue());
+        }else{
+            for (int h=0;h<this.height;h++) {
+                for (int w=0;w<this.width;w++) {
+                    this.dataList.add(data.getMatrix().get(h, w));
+                }
             }
         }
 
