@@ -1,18 +1,11 @@
-
-#set($outputPortList = $outputPortList.get(0))
-
-
 /* Code for Sum block $blockId */
+#set($outputPortList = $outputPortList.get(0))
 #if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
     #set($outputSignalName = $outputPortList.getOutputSignalC().getName())
     $outputSignalName = 0;
     #set($sMax = $sequence.length() - 1)
     #foreach($i in [0..$sMax])
-        #if($sequence.charAt($i) == '+')
-            $outputSignalName += $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        #elseif($sequence.charAt($i) == '-')
-            $outputSignalName -= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        #end
+      $outputSignalName $sequence.charAt($i)= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
     #end
 #elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
     #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
@@ -24,11 +17,7 @@
         #foreach($n in [0..$wMax])
             $outputSignalName($m, $n) = 0;
             #foreach($i in [0..$sMax])
-                #if($sequence.charAt($i) == '+')
-                    $outputSignalName($m, $n) += $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
-                #elseif($sequence.charAt($i) == '-')
-                    $outputSignalName($m, $n) -= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
-                #end
+              $outputSignalName($m, $n) $sequence.charAt($i)= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
             #end
         #end
     #end

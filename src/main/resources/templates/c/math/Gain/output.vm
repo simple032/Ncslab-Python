@@ -1,11 +1,9 @@
-
+/* Code for Gain block $blockId */
 #set($outputPortList = $outputPortList.get(0))
 #set($gainValue = $gain.getName())
-
-/* Code for Gain block $blockId */
 #if($multiplication == false)
     #if($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
-        $outputPortList.getOutputSignalC().getName() = $gainValue * $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+    $outputPortList.getOutputSignalC().getName() = $gainValue * $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
     #elseif($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
         #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
         #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())
@@ -13,14 +11,10 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                $outputPortList.getOutputSignalC().getName()($i, $j) = $gainValue * $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($i, $j);
+    $outputPortList.getOutputSignalC().getName()($i, $j) = $gainValue * $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($i, $j);
             #end
         #end
     #end
 #else
-    #if($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
-        $outputPortList.getOutputSignalC().getName() = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() * $gainValue;
-    #elseif($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
-        $outputPortList.getOutputSignalC().getName() = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() * $gainValue;
-    #end
+    $outputPortList.getOutputSignalC().getName() = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() * $gainValue;
 #end

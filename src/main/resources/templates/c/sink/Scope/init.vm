@@ -1,5 +1,4 @@
 #set($scopeStruct = $scopeStruct.getName())
-
 /* Code for initialization of block Scope:($blockId)$blockName */
 ${scopeStruct}.cursor=0;
 ${scopeStruct}.isFull=0;

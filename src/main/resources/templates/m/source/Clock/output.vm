@@ -1,0 +1,5 @@
+#set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
+
+/* Code for output of block Clock:($block.getBlockId())$block.getBlockName() */
+
+$outputSignal = $t;

@@ -1,0 +1,7 @@
+/*Define arrays for block Intergator:($block.blockId)$block.blockName*/
+#if($externalReset != "none")
+double Block${block.blockId}intergate_resetSignal_data=0;
+#end
+#if($conditionSource == "External")
+double Block${block.blockId}intergate_init_flag=0;
+#end

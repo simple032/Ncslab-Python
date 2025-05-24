@@ -1,6 +1,5 @@
 /*Code for initialization of block Derivative:(${block.getBlockId()})${block.getBlockName()}*/
 $output = 0.0;
-
 #if($signal.dataType == $realDataType)
   $state.getName() = 0;
 #else
