@@ -1,5 +1,7 @@
 package com.ncslab.block.discrete;
 
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -13,13 +15,11 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
 public class Zero_Order_Hold extends DiscreteBlock {
-
     Parameter sampleTime;
     State stateOutput;
 
@@ -28,7 +28,6 @@ public class Zero_Order_Hold extends DiscreteBlock {
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
@@ -48,8 +47,29 @@ public class Zero_Order_Hold extends DiscreteBlock {
         parameterList.add(sampleTime);
 
         setSampleTime(sampleTime);
+    }
 
-        stateOutput = new State(this, 1, "output");
+    @Override
+    public void calculateInit() {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        Data data = new Data(in.getData().getMatrix());
+        stateOutput = new State(this, 1, "stateOutput", in.getHeight(), in.getWidth());
+        stateOutput.setData(data);
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data currentState = stateOutput.getData();
+        out.setData(currentState);
+    }
+
+    @Override
+    public void calculateDiscreteUpdate(double t) {
+        InputPort in = inputPortList.get(0);
+        Data inputSignal = in.getData();
+        stateOutput.setData(inputSignal);
     }
 
     public void generateInitCodeM(CodeStructM code) {

@@ -1,6 +1,7 @@
 package com.ncslab.block.source;
 
-import org.apache.velocity.VelocityContext;
+import com.ncslab.block.data.Data;
+
 import com.ncslab.util.TemplateManager;
 
 import lombok.Getter;
@@ -23,10 +24,10 @@ public class Pulse extends Block{
 	    Parameter phaseDelay;
 
 
-    @Getter
+    // Removed @Getter as it might cause issues
     public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
+    // Removed @Getter as it might cause issues
     public static final Vector<String> outputNames = new Vector<>();
 
 
@@ -72,7 +73,7 @@ public class Pulse extends Block{
 		context.put("period", period);
 		context.put("pulseWidth", pulseWidth);
 		context.put("phaseDelay", phaseDelay);
-		
+
 		String codeStr = TemplateManager.renderTemplate("m/source/Pulse/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
@@ -92,7 +93,7 @@ public class Pulse extends Block{
 		context.put("period", period);
 		context.put("pulseWidth", pulseWidth);
 		context.put("phaseDelay", phaseDelay);
-		
+
 		String codeStr = TemplateManager.renderTemplate("c/source/Pulse/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
@@ -107,4 +108,21 @@ public class Pulse extends Block{
 				throw(e);
 	    	}
 	    }
+	@Override
+	public void calculateOutput(double t) {
+		// 实现具体的输出计算逻辑
+		double amplitudeValue = amplitude.getData().getInitValue();
+		double periodValue = period.getData().getInitValue();
+		double pulseWidthValue = pulseWidth.getData().getInitValue();
+
+		double output = amplitudeValue * (t % periodValue < pulseWidthValue ? 1 : 0);
+		outputPortList.get(0).getOutputSignalC().setValue(output);
+	}
+
+	@Override
+	public void calculateInit() {
+		// 初始化逻辑
+		outputPortList.get(0).getOutputSignalC().setValue(0.0);
+	}
 }
+// Removed extra closing brace if present

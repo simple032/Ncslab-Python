@@ -108,12 +108,11 @@ public class OutputPort {
     public void setIsDimScaned(boolean isDimScaned) {        this.isDimScaned=isDimScaned;    }
 
     public String getDataStructureInitCodeC() {
-		OutputSignal signal=getOutputSignalC();
         VelocityContext context = new VelocityContext();
         context.put("blockId", block.getBlockId());
         context.put("blockName", block.getBlockName());
         context.put("blockPath", block.getBlockPath());
-        context.put("signal", signal);
+        context.put("signal", outputSignalC);
         context.put("number", getNumber());
         context.put("name", getName());
 
@@ -121,7 +120,11 @@ public class OutputPort {
 	}
 
     public void setData(Data data){
-        outputSignalC.setData(data);
+        if(data.getDataType()==DataType.MATRIX) {
+            outputSignalC.setValue(data.getMatrix());
+        }else if(data.getDataType()==DataType.REAL) {
+        	outputSignalC.setValue(data.getInitValue());
+        }
     }
 
 }

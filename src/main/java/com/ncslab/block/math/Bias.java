@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -11,7 +12,6 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -41,6 +41,20 @@ public class Bias extends Block {
         parameterList.add(bias);
     }
 
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Bias block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        Data biasData = bias.getData();
+        Data resultData = inputData.plus(biasData);
+        out.setData(resultData);
+    }
+
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         String initCode = "/*Code for initialization of block Bias:(" + getBlockId() + ")" + getBlockName() + "*/\n";
@@ -59,7 +73,6 @@ public class Bias extends Block {
         String codeStr = TemplateManager.renderTemplate("c/math/Bias/output.vm", context);
         code.addOutputCode(codeStr);
     }
-
 
     public void updateDimension() throws MatDimException {
     }

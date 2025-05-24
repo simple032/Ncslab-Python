@@ -1,11 +1,11 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.code.c.CodeStructC;
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.ncslablink.NCSLabModel;
 import org.json.JSONObject;
@@ -62,6 +62,38 @@ public class Matrix extends Block {
                 this.scalar = this.row * this.column == 1;
             }
         }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Matrix block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        String matrixString = arrayToString(this.elements);
+        Data data = new Data(matrixString);
+        out.setData(data);
+    }
+
+    private String arrayToString(double[][] array) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                sb.append(";");
+            }
+            sb.append("[");
+            for (int j = 0; j < array[i].length; j++) {
+                if (j > 0) {
+                    sb.append(",");
+                }
+                sb.append(array[i][j]);
+            }
+            sb.append("]");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     public void generateOutputCodeC(CodeStructC code) {

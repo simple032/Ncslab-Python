@@ -1,8 +1,8 @@
 package com.ncslab.block.source;
 
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import lombok.Getter;
@@ -103,4 +103,21 @@ public class Ramp extends Block {
 				throw(e);
 	    	}
 	    }
+	@Override
+    public void calculateOutput(double t) {
+        // 实现具体的输出计算逻辑
+        double slopeValue = slope.getData().getInitValue();
+        double startValue = start.getData().getInitValue();
+        double initialOutputValue = initial_output.getData().getInitValue();
+
+        double output = slopeValue * (t - startValue) + initialOutputValue;
+        outputPortList.get(0).getOutputSignalC().setData(new Data(output));
+    }
+
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑
+        double initialOutputValue = initial_output.getData().getInitValue();
+        outputPortList.get(0).getOutputSignalC().setData(new Data(initialOutputValue));
+    }
 }

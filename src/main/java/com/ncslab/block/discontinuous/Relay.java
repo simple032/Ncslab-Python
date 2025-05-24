@@ -1,12 +1,14 @@
 package com.ncslab.block.discontinuous;
 
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import Jama.Matrix;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
@@ -14,7 +16,6 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -26,6 +27,7 @@ public class Relay extends Block {
     Parameter offOutputValue;
     private State xState;
 
+    
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
@@ -71,6 +73,66 @@ public class Relay extends Block {
         parameterList.add(offSwitchValue);
         parameterList.add(onOutputValue);
         parameterList.add(offOutputValue);
+    }
+
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+
+        Data resultData;
+        switch (inputData.getDataType()) {
+            case REAL:
+                double currentInput = inputData.getInitValue();
+                double previousState = xState != null ? xState.getData().getInitValue() : 0.0;
+                double onSwitchValueReal = onSwitchValue.getDouble();
+                double offSwitchValueReal = offSwitchValue.getDouble();
+                double onOutputValueReal = onOutputValue.getDouble();
+                double offOutputValueReal = offOutputValue.getDouble();
+
+                if (currentInput >= onSwitchValueReal && previousState < onSwitchValueReal) {
+                    resultData = new Data(onOutputValueReal);
+                } else if (currentInput <= offSwitchValueReal && previousState > offSwitchValueReal) {
+                    resultData = new Data(offOutputValueReal);
+                } else {
+                    resultData = new Data(previousState);
+                }
+                break;
+            case MATRIX:
+                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
+                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                        double currentInputMatrix = inputData.getMatrix().get(i, j);
+                        double previousStateMatrix = xState != null ? xState.getData().getMatrix().get(i, j) : 0.0;
+                        double onSwitchValueMatrix = onSwitchValue.getMatrix().get(i, j);
+                        double offSwitchValueMatrix = offSwitchValue.getMatrix().get(i, j);
+                        double onOutputValueMatrix = onOutputValue.getMatrix().get(i, j);
+                        double offOutputValueMatrix = offOutputValue.getMatrix().get(i, j);
+
+                        if (currentInputMatrix >= onSwitchValueMatrix && previousStateMatrix < onSwitchValueMatrix) {
+                            matrixResult.set(i, j, onOutputValueMatrix);
+                        } else if (currentInputMatrix <= offSwitchValueMatrix && previousStateMatrix > offSwitchValueMatrix) {
+                            matrixResult.set(i, j, offOutputValueMatrix);
+                        } else {
+                            matrixResult.set(i, j, previousStateMatrix);
+                        }
+                    }
+                }
+                resultData = new Data(matrixResult);
+                break;
+            default:
+                resultData = new Data(0);
+        }
+
+        out.setData(resultData);
+        if (xState != null) {
+            xState.setData(resultData);
+        }
     }
 
     public void generateInitCodeM(CodeStructM code) {
@@ -178,7 +240,6 @@ public class Relay extends Block {
                 MatDimException e = new MatDimException("Block " + this.blockName + " input dimension doesn't match the gain dimension!\n \n");
                 throw(e);
             }
-
             out.setHeight(onSwitchValue.getHeight());
             out.setWidth(onSwitchValue.getWidth());
             out.getOutputSignalC().setHeight(onSwitchValue.getHeight());

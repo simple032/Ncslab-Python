@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -11,7 +12,6 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -38,6 +38,18 @@ public class TestPoint extends Block {
 
         outputPortList.add(out);
         inputPortList.add(in);
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for TestPoint block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        out.setData(inputData);
     }
 
     public void generateOutputCodeC(CodeStructC code) {

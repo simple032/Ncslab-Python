@@ -5,9 +5,11 @@ import Jama.Matrix;
 import com.ncslab.code.m.MfcalcClient;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.jexl3.JexlException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +24,7 @@ public class Data {
     private double initValue = 0;
     @Getter
     private int intValue = 0;
+
 	private Matrix initMatrix = null;
 	@Getter
 	private String initString = "";
@@ -71,12 +74,21 @@ public class Data {
             try {
                 initValue = Double.parseDouble(dataString);
                 intValue = (int) initValue;
-            } catch (NumberFormatException|org.apache.commons.jexl3.JexlException ee) {
+            } catch (NumberFormatException | JexlException ee) {
                 // 如果解析失败，将 initString 设置为 dataString
                 initString = dataString;
             }
         }
 	}
+
+    public Data(Matrix initMatrix) {
+        this.initMatrix = initMatrix;
+        this.dataType = DataType.MATRIX;
+    }
+
+    public Data(double initValue) {
+        this.initValue = initValue;
+    }
 
     private static String generateRandomVariableName() {
         // 生成一个随机的变量名
@@ -251,8 +263,7 @@ public class Data {
         double[][] array2D = initMatrix.getArray();
 
         // 提取第一行作为一维数组
-        double[] array1D = array2D[0];
-		return array1D;
+        return array2D[0];
 	}
 
 	public double[][] getDoubleMatrix() {
@@ -261,5 +272,208 @@ public class Data {
 
     public Matrix getMatrix() {
         return initMatrix;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        this.initMatrix = matrix;
+    }
+
+    public Data negative() {
+        Data result = null;
+        switch (this.getDataType()) {
+            case REAL:
+                result = new Data(-initValue);
+                break;
+            case MATRIX:
+                result = new Data(initMatrix.times(-1));
+                break;
+        }
+        return result;
+    }
+
+    public Data times(Data data){
+        Data result;
+        if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
+            result = new Data(initValue * data.getInitValue());
+        }else if(getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL){
+            result = new Data(initMatrix.times(data.getInitValue()));
+        } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
+            result = new Data(data.getMatrix().times(initValue));
+        } else {
+            result = new Data(initMatrix.times(data.getMatrix()));
+        }
+        return result;
+    }
+
+    public Data arrayTimes(Data data){
+        Data result;
+        if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
+            result = new Data(initValue * data.getInitValue());
+        }else if(getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL){
+            result = new Data(initMatrix.times(data.getInitValue()));
+        } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
+            result = new Data(data.getMatrix().times(initValue));
+        } else {
+            result = new Data(initMatrix.arrayTimes(data.getMatrix()));
+        }
+        return result;
+    }
+
+    public Data plus(Data data) {
+        Data result;
+        if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
+            result = new Data(initValue + data.getInitValue());
+        } else if (getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL) {
+            // 修复：手动实现矩阵加标量
+            result = new Data(addScalar(initMatrix, data.getInitValue()));
+        } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
+            // 修复：手动实现标量加矩阵
+            result = new Data(addScalar(data.getMatrix(), initValue));
+        } else {
+            result = new Data(initMatrix.plus(data.getMatrix()));
+        }
+        return result;
+    }
+
+    public Data minus(Data data) {
+        Data result;
+        if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
+            result = new Data(initValue - data.getInitValue());
+        } else if (getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL) {
+            // 修复：手动实现矩阵减标量
+            result = new Data(subtractScalar(initMatrix, data.getInitValue()));
+        } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
+            // 修复：手动实现标量减矩阵
+            result = new Data(subtractMatrixFromScalar(initValue, data.getMatrix()));
+        } else {
+            result = new Data(initMatrix.minus(data.getMatrix()));
+        }
+        return result;
+    }
+
+    // 辅助方法：矩阵加标量
+    private Matrix addScalar(Matrix matrix, double scalar) {
+        Matrix result = matrix.copy();
+        for (int i = 0; i < result.getRowDimension(); i++) {
+            for (int j = 0; j < result.getColumnDimension(); j++) {
+                result.set(i, j, result.get(i, j) + scalar);
+            }
+        }
+        return result;
+    }
+
+    // 辅助方法：矩阵减标量
+    private Matrix subtractScalar(Matrix matrix, double scalar) {
+        Matrix result = matrix.copy();
+        for (int i = 0; i < result.getRowDimension(); i++) {
+            for (int j = 0; j < result.getColumnDimension(); j++) {
+                result.set(i, j, result.get(i, j) - scalar);
+            }
+        }
+        return result;
+    }
+
+    // 辅助方法：标量减矩阵
+    private Matrix subtractMatrixFromScalar(double scalar, Matrix matrix) {
+        Matrix result = matrix.copy();
+        for (int i = 0; i < result.getRowDimension(); i++) {
+            for (int j = 0; j < result.getColumnDimension(); j++) {
+                result.set(i, j, scalar - result.get(i, j));
+            }
+        }
+        return result;
+    }
+
+    public Data divide(Data data) {
+        Data result;
+        if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
+            result = new Data(initValue / data.getInitValue());
+        } else if (getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL) {
+            result = new Data(initMatrix.times(1.0 / data.getInitValue()));
+        } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
+            // 标量除以矩阵：对每个元素进行除法
+            Matrix reciprocal = data.getMatrix().copy();
+            for (int i = 0; i < reciprocal.getRowDimension(); i++) {
+                for (int j = 0; j < reciprocal.getColumnDimension(); j++) {
+                    reciprocal.set(i, j, initValue / reciprocal.get(i, j));
+                }
+            }
+            result = new Data(reciprocal);
+        } else {
+            // 矩阵除以矩阵：逐元素除法
+            result = new Data(initMatrix.arrayRightDivide(data.getMatrix()));
+        }
+        return result;
+    }
+
+    public Data power(double exponent) {
+        Data result;
+        if (getDataType() == DataType.REAL) {
+            result = new Data(Math.pow(initValue, exponent));
+        } else {
+            // 矩阵的幂运算：对每个元素进行幂运算
+            Matrix matrix = initMatrix.copy();
+            for (int i = 0; i < matrix.getRowDimension(); i++) {
+                for (int j = 0; j < matrix.getColumnDimension(); j++) {
+                    matrix.set(i, j, Math.pow(matrix.get(i, j), exponent));
+                }
+            }
+            result = new Data(matrix);
+        }
+        return result;
+    }
+
+    public Data transpose() {
+        if (getDataType() == DataType.REAL) {
+            return this; // 标量的转置是其自身
+        } else {
+            return new Data(initMatrix.transpose());
+        }
+    }
+
+    public Data inverse() {
+        if (getDataType() == DataType.REAL) {
+            return new Data(1.0 / initValue);
+        } else {
+            return new Data(initMatrix.inverse());
+        }
+    }
+
+    public double determinant() {
+        if (getDataType() == DataType.REAL) {
+            return initValue;
+        } else {
+            return initMatrix.det();
+        }
+    }
+
+    public double trace() {
+        if (getDataType() == DataType.REAL) {
+            return initValue;
+        } else {
+            return initMatrix.trace();
+        }
+    }
+
+    public int[] size() {
+        if (getDataType() == DataType.REAL) {
+            return new int[]{1, 1};
+        } else {
+            return new int[]{initMatrix.getRowDimension(), initMatrix.getColumnDimension()};
+        }
+    }
+
+    public Data abs(){
+        if(getDataType() == DataType.REAL){
+            return new Data(Math.abs(initValue));
+        }else{
+            Data result = new Data(initMatrix.copy());
+            for(int i = 0; i < initMatrix.getRowDimension(); i++){
+                for(int j = 0; j < initMatrix.getColumnDimension(); j++){
+                    result.initMatrix.set(i, j, Math.abs(initMatrix.get(i, j)));
+                }
+            }
+            return result;
+        }
     }
 }

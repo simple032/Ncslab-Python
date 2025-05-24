@@ -1,4 +1,6 @@
 package com.ncslab.block.continuous;
+import Jama.Matrix;
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 //import org.json.JSONArray;
@@ -15,7 +17,6 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 public class StateSpace extends Block{
@@ -94,9 +95,7 @@ public class StateSpace extends Block{
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("A", A);
 		context.put("B", B);
 		context.put("C", C);
@@ -108,17 +107,15 @@ context.put("realDataType", DataType.REAL);
 		code.addInitCode(codeStr);
 	}
    public void generateOutputCodeM(CodeStructM code) {
-   
+
 		super.generateOutputCodeM(code);
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("C", C);
 		context.put("D", D);
 		context.put("xState", xState);
 		context.put("feedThrough", feedThrough);
 
-		String codeStr = TemplateManager.renderTemplate("m/continuous/StateSpace/output.vm", context);		
+		String codeStr = TemplateManager.renderTemplate("m/continuous/StateSpace/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
    public void generateDerivativeCodeM(CodeStructM code) {
@@ -132,10 +129,7 @@ context.put("realDataType", DataType.REAL);
 
    public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("A", A);
 		context.put("B", B);
 		context.put("C", C);
@@ -149,9 +143,7 @@ context.put("realDataType", DataType.REAL);
 
    public void generateOutputCodeC(CodeStructC code) {
 		super.generateOutputCodeC(code);
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("C", C);
 		context.put("D", D);
 		context.put("xState", xState);
@@ -163,9 +155,7 @@ context.put("realDataType", DataType.REAL);
 
    public void generateDerivativeCodeC(CodeStructC code) {
    		super.generateDerivativeCodeC(code);
-		VelocityContext context = new VelocityContext();
 		context.put("block", this);
-context.put("realDataType", DataType.REAL);
 		context.put("A", A);
 		context.put("B", B);
 		context.put("xState", xState);
@@ -233,5 +223,35 @@ context.put("realDataType", DataType.REAL);
 		   MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!");
 		   throw(e);
 	   }
+   }
+
+   @Override
+    public void calculateDerivative(double t){
+        Data data = A.getData().times(xState.getData()).plus(B.getData().times(input.getData()));
+        xState.setDerivateData(data);
+   }
+
+    @Override
+    public void calculateOutput(double t){
+        Data data = C.getData().times(xState.getData());
+        if(feedThrough) {
+            data = data.plus(D.getData().times(input.getData()));
+        }
+        output.setData(data);
+    }
+
+   @Override
+    public void calculateInit(){
+        if(xState.getData().getDataType()==DataType.REAL && A.getHeight() > 1 && xState.getData().getInitValue()==0) {
+            xState.setData(new Data(A.getHeight(),1));
+            xState.setDerivateData(new Data(A.getHeight(),1));
+        }else{
+            xState.setData(X0.getData());
+            if(A.getHeight()>1) {
+                xState.setDerivateData(new Data(A.getHeight(),1));
+            }else{
+                xState.setDerivateData(new Data(0));
+            }
+        }
    }
 }

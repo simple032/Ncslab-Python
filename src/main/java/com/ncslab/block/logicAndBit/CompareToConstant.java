@@ -1,11 +1,13 @@
 package com.ncslab.block.logicAndBit;
 
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
 import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
-import com.ncslab.block.data.DataType;
+import Jama.Matrix;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -14,7 +16,6 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 public class CompareToConstant extends Block {
@@ -46,6 +47,57 @@ public class CompareToConstant extends Block {
         relop = paramValues.getString("relop");
         if (relop.equals("~=")) {
             relop = "!=";
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for CompareToConstant block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        double constantValue = value.getDouble();
+
+        Data resultData;
+        switch (inputData.getDataType()) {
+            case REAL:
+                resultData = new Data(compare(inputData.getInitValue(), constantValue, relop));
+                break;
+            case MATRIX:
+                Matrix matrixResult = inputData.getMatrix().copy();
+                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                        matrixResult.set(i, j, compare(inputData.getMatrix().get(i, j), constantValue, relop));
+                    }
+                }
+                resultData = new Data(matrixResult);
+                break;
+            default:
+                resultData = new Data(0);
+        }
+
+        out.setData(resultData);
+    }
+
+    private double compare(double inputValue, double constantValue, String operator) {
+        switch (operator) {
+            case "==":
+                return inputValue == constantValue ? 1.0 : 0.0;
+            case "!=":
+                return inputValue != constantValue ? 1.0 : 0.0;
+            case "<":
+                return inputValue < constantValue ? 1.0 : 0.0;
+            case "<=":
+                return inputValue <= constantValue ? 1.0 : 0.0;
+            case ">":
+                return inputValue > constantValue ? 1.0 : 0.0;
+            case ">=":
+                return inputValue >= constantValue ? 1.0 : 0.0;
+            default:
+                return 0.0;
         }
     }
 

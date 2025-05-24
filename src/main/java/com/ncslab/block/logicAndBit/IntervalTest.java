@@ -1,8 +1,12 @@
 package com.ncslab.block.logicAndBit;
 
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import com.ncslab.block.Block;
+import Jama.Matrix;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -12,11 +16,9 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
-import com.ncslab.block.data.DataType;
 
-public class IntervalTest extends com.ncslab.block.Block {
+public class IntervalTest extends Block {
     Parameter upLimit;
     Parameter lowLimit;
 
@@ -45,6 +47,40 @@ public class IntervalTest extends com.ncslab.block.Block {
         parameterList.add(upLimit);
     }
 
+    @Override
+    public void calculateInit() {
+        // Initialization logic for IntervalTest block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+
+        double lowerBound = lowLimit.getDouble();
+        double upperBound = upLimit.getDouble();
+
+        Data resultData;
+        switch (inputData.getDataType()) {
+            case REAL:
+                resultData = new Data(lowerBound <= inputData.getInitValue() && inputData.getInitValue() < upperBound ? 1.0 : 0.0);
+                break;
+            case MATRIX:
+                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
+                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                        matrixResult.set(i, j, lowerBound <= inputData.getMatrix().get(i, j) && inputData.getMatrix().get(i, j) < upperBound ? 1.0 : 0.0);
+                    }
+                }
+                resultData = new Data(matrixResult);
+                break;
+            default:
+                resultData = new Data(0);
+        }
+
+        out.setData(resultData);
+    }
+
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         String initCode = "/*Code for initialization of block Interval Iest:(${block.blockId}) ${block.blockName}*/\n";
@@ -61,7 +97,7 @@ public class IntervalTest extends com.ncslab.block.Block {
         context.put("upLimit", upLimit.getDouble());    // 由模板处理参数值获取
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("signal", signal);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/IntervalTest/output.vm", context);
         code.addOutputCode(codeStr);
     }

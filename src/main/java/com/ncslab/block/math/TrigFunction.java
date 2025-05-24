@@ -1,9 +1,9 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
-
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -15,9 +15,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
 
-public class TrigFunction extends Block{
-	Parameter trigFunc;
-
+public class TrigFunction extends Block {
+    Parameter trigFunc;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -28,54 +27,93 @@ public class TrigFunction extends Block{
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
-        //输入待根据循环确定
         parameterNames.add("TrigonometricFunction");
     }
 
-    public TrigFunction(JSONObject blockJSON,NCSLabModel model) {
-		super(blockJSON,model);
-		//����һ�����
-		outputPortList.add(new OutputPort(this,1,true));
-		//����һ������
-		inputPortList.add(new InputPort(this,1));
+    public TrigFunction(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+        outputPortList.add(new OutputPort(this, 1, true));
+        inputPortList.add(new InputPort(this, 1));
+
         String trigFuncString;
-        if(paramValues.has("Function")) {
+        if (paramValues.has("Function")) {
             trigFuncString = paramValues.getString("Function");
-        }else{
+        } else {
             trigFuncString = paramValues.getString("TrigonometricFunction");
         }
-        trigFunc=new Parameter(this,1,"TrigonometricFunction",trigFuncString);
+        trigFunc = new Parameter(this, 1, "TrigonometricFunction", trigFuncString);
         parameterList.add(trigFunc);
 
-        if(trigFunc.getInitString().equals("atan2")) {
-            inputPortList.add(new InputPort(this,2));
+        if (trigFunc.getInitString().equals("atan2")) {
+            inputPortList.add(new InputPort(this, 2));
         }
-	}
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for TrigFunction block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        double trigValue;
+
+        if (!trigFunc.getInitString().equals("atan2")) {
+            trigValue = applyTrigonometricFunction(inputData.getInitValue(), trigFunc.getInitString());
+        } else {
+            Data secondInputData = inputPortList.get(1).getData();
+            trigValue = Math.atan2(inputData.getInitValue(), secondInputData.getInitValue());
+        }
+
+        Data resultData = new Data(trigValue);
+        out.setData(resultData);
+    }
+
+    private double applyTrigonometricFunction(double value, String function) {
+        switch (function) {
+            case "sin":
+                return Math.sin(value);
+            case "cos":
+                return Math.cos(value);
+            case "tan":
+                return Math.tan(value);
+            case "asin":
+                return Math.asin(value);
+            case "acos":
+                return Math.acos(value);
+            case "atan":
+                return Math.atan(value);
+            default:
+                return value;
+        }
+    }
+
     public void generateOutputCodeC(CodeStructC code) {
-        String outputCode="/*Code for output of block Tr:("+getBlockId()+")"+getBlockName()+"*/\n";
-        OutputPort out  = outputPortList.get(0);
+        String outputCode = "/*Code for output of block Tr:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        OutputPort out = outputPortList.get(0);
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        switch(signal.getDataType()) {
+        switch (signal.getDataType()) {
             case REAL:
-                if(!trigFunc.getInitString().equals("atan2")) {
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getInitString()+"("+signal.getName()+");\n";
-                }else {
-                    outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+trigFunc.getInitString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+");\n";
+                if (!trigFunc.getInitString().equals("atan2")) {
+                    outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + trigFunc.getInitString() + "(" + signal.getName() + ");\n";
+                } else {
+                    outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=" + trigFunc.getInitString() + "(" + signal.getName() + "," + inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + ");\n";
                 }
                 break;
             case MATRIX:
-                if(!trigFunc.getInitString().equals("atan2")) {
-                    for(int i=0;i<signal.getHeight();i++) {
-                        for(int j=0;j<signal.getWidth();j++) {
-                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getInitString()+"("+signal.getName()+"("+i+","+j+"));\n";
+                if (!trigFunc.getInitString().equals("atan2")) {
+                    for (int i = 0; i < signal.getHeight(); i++) {
+                        for (int j = 0; j < signal.getWidth(); j++) {
+                            outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j + ")=" + trigFunc.getInitString() + "(" + signal.getName() + "(" + i + "," + j + "));\n";
                         }
                     }
-                }else {
-                    for(int i=0;i<signal.getHeight();i++) {
-                        for(int j=0;j<signal.getWidth();j++) {
-                            outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"("+i+","+j+")="+trigFunc.getInitString()+"("+signal.getName()+","+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"("+i+","+j+"));\n";
+                } else {
+                    for (int i = 0; i < signal.getHeight(); i++) {
+                        for (int j = 0; j < signal.getWidth(); j++) {
+                            outputCode += outputPortList.get(0).getOutputSignalC().getName() + "(" + i + "," + j + ")=" + trigFunc.getInitString() + "(" + signal.getName() + "," + inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + "(" + i + "," + j + "));\n";
                         }
                     }
                 }
@@ -83,20 +121,20 @@ public class TrigFunction extends Block{
         }
         code.addOutputCode(outputCode);
     }
-	public void updateDimension() throws MatDimException{
-		if(inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getDataType()==DataType.MATRIX) {
-		OutputPort out  = outputPortList.get(0);
-		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			out.setHeight(signal.getHeight());
-			out.setWidth(signal.getWidth());
-			out.getOutputSignalC().setHeight(signal.getHeight());
-			out.getOutputSignalC().setWidth(signal.getWidth());
-			out.getOutputSignalC().setDataType(signal.getDataType());
-	   }
-	}
-    public void checkDimension() throws MatDimException{
 
-	}
+    public void updateDimension() throws MatDimException {
+        if (inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getDataType() == DataType.MATRIX) {
+            OutputPort out = outputPortList.get(0);
+            OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
+            out.setHeight(signal.getHeight());
+            out.setWidth(signal.getWidth());
+            out.getOutputSignalC().setHeight(signal.getHeight());
+            out.getOutputSignalC().setWidth(signal.getWidth());
+            out.getOutputSignalC().setDataType(signal.getDataType());
+        }
+    }
+
+    public void checkDimension() throws MatDimException {
+    }
 }
-

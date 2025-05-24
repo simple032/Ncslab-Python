@@ -1,19 +1,20 @@
 package com.ncslab.block.discontinuous;
 
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import Jama.Matrix;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -22,12 +23,12 @@ public class Saturation extends Block {
     Parameter lowerLimit;
     Parameter upperLimit;
 
+    
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
@@ -52,6 +53,55 @@ public class Saturation extends Block {
         parameterList.add(upperLimit);
     }
 
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+
+        Data resultData;
+        switch (inputData.getDataType()) {
+            case REAL:
+                double inputValue = inputData.getInitValue();
+                double lowerLimitValue = lowerLimit.getDouble();
+                double upperLimitValue = upperLimit.getDouble();
+                if (inputValue >= upperLimitValue) {
+                    resultData = new Data(upperLimitValue);
+                } else if (inputValue <= lowerLimitValue) {
+                    resultData = new Data(lowerLimitValue);
+                } else {
+                    resultData = new Data(inputValue);
+                }
+                break;
+            case MATRIX:
+                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
+                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                        double inputValueMatrix = inputData.getMatrix().get(i, j);
+                        double lowerLimitMatrix = lowerLimit.getMatrix().get(i, j);
+                        double upperLimitMatrix = upperLimit.getMatrix().get(i, j);
+                        if (inputValueMatrix >= upperLimitMatrix) {
+                            matrixResult.set(i, j, upperLimitMatrix);
+                        } else if (inputValueMatrix <= lowerLimitMatrix) {
+                            matrixResult.set(i, j, lowerLimitMatrix);
+                        } else {
+                            matrixResult.set(i, j, inputValueMatrix);
+                        }
+                    }
+                }
+                resultData = new Data(matrixResult);
+                break;
+            default:
+                resultData = new Data(0);
+        }
+
+        out.setData(resultData);
+    }
+
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
         context.put("block", this);
@@ -71,7 +121,7 @@ public class Saturation extends Block {
         context.put("block", this);
         context.put("lowerLimit", lowerLimit);
         context.put("lowerLimitHeightIndex", lowerLimit.getHeight()-1);
-        context.put("lowerLimitWidthIndex", lowerLimit.getHeight()-1);
+        context.put("lowerLimitWidthIndex", lowerLimit.getWidth()-1);
         context.put("upperLimit", upperLimit);
         context.put("out", out);
         context.put("ops", ops);

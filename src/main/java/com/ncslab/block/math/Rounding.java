@@ -1,6 +1,7 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -12,7 +13,6 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 public class Rounding extends Block {
@@ -44,6 +44,35 @@ public class Rounding extends Block {
 
         if (getOperatorString().equals("fix")) {
             operatorString = "trunc";
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Rounding block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        double roundedValue = applyRounding(inputData.getInitValue(), operatorString);
+        Data resultData = new Data(roundedValue);
+        out.setData(resultData);
+    }
+
+    private double applyRounding(double value, String operator) {
+        switch (operator) {
+            case "floor":
+                return Math.floor(value);
+            case "ceil":
+                return Math.ceil(value);
+            case "round":
+                return Math.round(value);
+            case "trunc":
+                return value > 0 ? Math.floor(value) : Math.ceil(value);
+            default:
+                return value;
         }
     }
 

@@ -1,20 +1,21 @@
 package com.ncslab.block.logicAndBit;
 
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
-import com.ncslab.util.TemplateManager;
 import lombok.Getter;
-import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import Jama.Matrix;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
+import com.ncslab.util.TemplateManager;
 
 public class LogicOperator extends Block {
     private double num;
@@ -41,6 +42,73 @@ public class LogicOperator extends Block {
         for (int i = 0; i < num; i++) {
             inputPortList.add(new InputPort(this, i + 1));
         }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for LogicOperator block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data resultData = null;
+
+        switch (out.getOutputSignalC().getDataType()) {
+            case REAL:
+                double firstValue = inputPortList.get(0).getData().getInitValue();
+                for (int i = 1; i < num; i++) {
+                    Data inputData = inputPortList.get(i).getData();
+                    if (inputData.getDataType() != DataType.REAL) {
+                        break;
+                    }
+                    firstValue = applyOperator(firstValue, inputData.getInitValue(), paramValues.getString("Operator"));
+                }
+                resultData = new Data(firstValue);
+                break;
+            case MATRIX:
+                Matrix firstMatrix = inputPortList.get(0).getData().getMatrix();
+                for (int i = 1; i < num; i++) {
+                    Data inputData = inputPortList.get(i).getData();
+                    if (inputData.getDataType() != DataType.MATRIX) {
+                        break;
+                    }
+                    firstMatrix = applyMatrixOperator(firstMatrix, inputData.getMatrix(), paramValues.getString("Operator"));
+                }
+                resultData = new Data(firstMatrix);
+                break;
+        }
+
+        out.setData(resultData);
+    }
+
+    private double applyOperator(double a, double b, String operator) {
+        switch (operator) {
+            case "AND":
+                return a != 0 && b != 0 ? 1.0 : 0.0;
+            case "OR":
+                return a != 0 || b != 0 ? 1.0 : 0.0;
+            case "NAND":
+                return !(a != 0 && b != 0) ? 1.0 : 0.0;
+            case "NOR":
+                return !(a != 0 || b != 0) ? 1.0 : 0.0;
+            case "XOR":
+                return (a != 0 || b != 0) && !(a != 0 && b != 0) ? 1.0 : 0.0;
+            case "NOT":
+                return a == 0 ? 1.0 : 0.0;
+            default:
+                return 0.0;
+        }
+    }
+
+    private Matrix applyMatrixOperator(Matrix a, Matrix b, String operator) {
+        Matrix result = new Matrix(a.getRowDimension(), a.getColumnDimension());
+        for (int i = 0; i < a.getRowDimension(); i++) {
+            for (int j = 0; j < a.getColumnDimension(); j++) {
+                result.set(i, j, applyOperator(a.get(i, j), b.get(i, j), operator));
+            }
+        }
+        return result;
     }
 
     public void generateOutputCodeC(CodeStructC code) {

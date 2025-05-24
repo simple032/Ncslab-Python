@@ -1,6 +1,9 @@
 package com.ncslab.block.continuous;
 
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.FifoBufferExtended;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import Jama.Matrix;
@@ -15,6 +18,9 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.block.io.OutputSignal;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Queue;
 import java.util.Vector;
 
 public class TransportDelay extends Block {
@@ -781,4 +787,29 @@ public class TransportDelay extends Block {
 		}
 
 	}
+
+    FifoBufferExtended<Data> buffer;
+
+    @Override
+    public void calculateInit() {
+        OutputPort out = outputPortList.get(0);
+        buffer = new FifoBufferExtended<>(bufferSize.getData().getIntValue());
+        buffer.setInterpolationStrategy(new FifoBufferExtended.LinearDataInterpolationStrategy());
+        out.setData(new Data(out.getHeight(), out.getWidth()));
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data linearResult = buffer.getValueByDelay(t, delaytime.getDouble());
+        if (linearResult != null) {
+            out.setData(linearResult);
+        }
+    }
+
+    @Override
+    public void calculateDerivative(double t) {
+        InputPort in = inputPortList.get(0);
+        buffer.add(t, in.getData());
+    }
 }

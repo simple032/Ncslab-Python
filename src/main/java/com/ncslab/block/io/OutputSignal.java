@@ -1,5 +1,7 @@
 package com.ncslab.block.io;
 
+import Jama.Matrix;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.Block;
 import lombok.Getter;
@@ -20,6 +22,9 @@ public class OutputSignal {
     private Block block;
 	private int outputPortId;
 
+    @Getter
+    private Data data = new Data(0);
+
 	public OutputSignal(Block block,int id,int outputPortId,String localName){
 		this.block=block;
 		this.id=id;
@@ -39,6 +44,7 @@ public class OutputSignal {
 
 		if(width>1||height>1) {
 			this.dataType =DataType.MATRIX;
+            this.data = new Data(height, width);
 		}
 	}
 
@@ -79,6 +85,9 @@ public class OutputSignal {
 		this.width = width;
 		if(width>1) {
 			this.dataType =DataType.MATRIX;
+            if(width!=this.data.getWidth()) {
+                this.data = new Data(height, width);
+            }
 		}
 	}
 
@@ -87,7 +96,25 @@ public class OutputSignal {
 		this.height = height;
 		if(height>1) {
 			this.dataType =DataType.MATRIX;
+            if(height!=this.data.getHeight()) {
+                this.data = new Data(height, width);
+            }
 		}
 	}
 
+    public void setValue(double value){
+        this.data.setInitValue(value);
+    }
+
+    public void setValue(Matrix matrix){
+        this.data.setMatrix(matrix);
+    }
+
+    public void setData(Data data){
+    	if(data.getDataType()==DataType.MATRIX) {
+            this.data.setMatrix(data.getMatrix());
+        }else {
+            this.data.setInitValue(data.getInitValue());
+        }
+    }
 }

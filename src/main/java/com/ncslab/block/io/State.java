@@ -4,6 +4,7 @@ import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
+import lombok.Setter;
 
 public class State {
 	@Getter
@@ -15,8 +16,10 @@ public class State {
 
 	private Block block;
 
+    @Getter
 	private Data data=null;
 
+    @Getter
 	private Data derivateData=null;
 
 	public State(Block block,int id,String localName){
@@ -46,7 +49,7 @@ public class State {
 
 	public String getDerivativeName() {
 		this.name="Block"+block.getBlockId()+"_State_"+localName;
-		
+
 		if(this.block.getBlockType().equals("S-Function")) {
 			if(this.name.contains("Disc")) {
 				return this.name.replace("Disc", "Derivative");
@@ -106,4 +109,20 @@ public class State {
 	public int getHeight() {
 		return data.getHeight();
 	}
+
+    public void setData(Data data) {
+        if(data.getDataType()==DataType.REAL) {
+            this.data.setInitValue(data.getInitValue());
+        }else {
+            this.data.setMatrix(data.getMatrix());
+        }
+    }
+
+    public void setDerivateData(Data data) {
+        if(data.getDataType()==DataType.REAL) {
+            this.derivateData.setInitValue(data.getInitValue());
+        }else {
+            this.derivateData.setMatrix(data.getMatrix());
+        }
+    }
 }

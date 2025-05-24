@@ -1,7 +1,7 @@
 package com.ncslab.block.source;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
-import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
 
 import com.ncslab.block.io.InputPort;
@@ -43,4 +43,14 @@ public class Clock extends com.ncslab.block.Block{
 	public void checkDimension() throws MatDimException{
 
 	}
+
+    @Override
+    public void calculateOutput(double t){
+        outputPortList.get(0).getOutputSignalC().setData(new Data(t));
+    }
+
+    @Override
+    public void calculateInit(){
+        outputPortList.get(0).getOutputSignalC().setData(new Data(0));
+    }
 }

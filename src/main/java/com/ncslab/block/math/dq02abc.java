@@ -12,7 +12,6 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 public class dq02abc extends Block {

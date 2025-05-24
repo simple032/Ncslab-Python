@@ -1,19 +1,20 @@
 package com.ncslab.block.discontinuous;
 
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import Jama.Matrix;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -22,6 +23,7 @@ public class DeadZone extends Block {
     Parameter lowerValue;
     Parameter upperValue;
 
+    
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
@@ -61,6 +63,55 @@ public class DeadZone extends Block {
         upperValue = new Parameter(this, 2, "UpperValue", paramValues.getString("UpperValue"));
         parameterList.add(lowerValue);
         parameterList.add(upperValue);
+    }
+
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+
+        Data resultData;
+        switch (inputData.getDataType()) {
+            case REAL:
+                double inputValue = inputData.getInitValue();
+                double lowerLimit = lowerValue.getDouble();
+                double upperLimit = upperValue.getDouble();
+                if (inputValue >= upperLimit) {
+                    resultData = new Data(inputValue - upperLimit);
+                } else if (inputValue <= lowerLimit) {
+                    resultData = new Data(inputValue + lowerLimit);
+                } else {
+                    resultData = new Data(0.0);
+                }
+                break;
+            case MATRIX:
+                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
+                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                        double inputValueMatrix = inputData.getMatrix().get(i, j);
+                        double lowerLimitMatrix = lowerValue.getMatrix().get(i, j);
+                        double upperLimitMatrix = upperValue.getMatrix().get(i, j);
+                        if (inputValueMatrix >= upperLimitMatrix) {
+                            matrixResult.set(i, j, inputValueMatrix - upperLimitMatrix);
+                        } else if (inputValueMatrix <= lowerLimitMatrix) {
+                            matrixResult.set(i, j, inputValueMatrix + lowerLimitMatrix);
+                        } else {
+                            matrixResult.set(i, j, 0.0);
+                        }
+                    }
+                }
+                resultData = new Data(matrixResult);
+                break;
+            default:
+                resultData = new Data(0);
+        }
+
+        out.setData(resultData);
     }
 
     public void generateInitCodeM(CodeStructM code) {
@@ -122,36 +173,33 @@ public class DeadZone extends Block {
         code.addOutputCode(codeStr);
     }
 
-    public void updateDimension() throws MatDimException {
-        OutputPort out = outputPortList.get(0);
-        InputPort in = inputPortList.get(0);
-        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        if (lowerValue.getWidth() != upperValue.getWidth() || lowerValue.getHeight() != upperValue.getHeight()) {
-            MatDimException e = new MatDimException(
-                    "Block " + this.blockName + " input dimensions don't match! All input dimensions should be same!");
-            throw (e);
+    public void updateDimension() throws MatDimException{
+        OutputPort out  = outputPortList.get(0);
+        InputPort in  = inputPortList.get(0);
+        OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if(lowerValue.getWidth()!=upperValue.getWidth()||lowerValue.getHeight()!=upperValue.getHeight()) {
+            MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!All input dimensions should be same!");
+            throw(e);
         }
-
-        if (lowerValue.getDataType() == DataType.MATRIX && signal.getDataType() == DataType.REAL) {
+        if(lowerValue.getDataType()==DataType.MATRIX&&signal.getDataType()==DataType.REAL) {
             out.setHeight(lowerValue.getHeight());
             out.setWidth(lowerValue.getWidth());
             out.getOutputSignalC().setHeight(lowerValue.getHeight());
             out.getOutputSignalC().setWidth(lowerValue.getWidth());
             out.getOutputSignalC().setDataType(DataType.MATRIX);
-        } else if (lowerValue.getDataType() == DataType.REAL && signal.getDataType() == DataType.MATRIX) {
+        }
+        else if(lowerValue.getDataType()==DataType.REAL&&signal.getDataType()==DataType.MATRIX) {
             out.setHeight(signal.getHeight());
             out.setWidth(signal.getWidth());
             out.getOutputSignalC().setHeight(signal.getHeight());
             out.getOutputSignalC().setWidth(signal.getWidth());
             out.getOutputSignalC().setDataType(signal.getDataType());
-        } else {
-            if (lowerValue.getWidth() != signal.getWidth() || lowerValue.getHeight() != signal.getHeight()) {
-                MatDimException e = new MatDimException(
-                        "Block " + this.blockName + " input dimension doesn't match the gain dimension!\n \n");
-                throw (e);
+        }
+        else{
+            if(lowerValue.getWidth()!=signal.getWidth()||lowerValue.getHeight()!=signal.getHeight()) {
+            MatDimException e=new MatDimException("Block "+this.blockName+" input dimension doesn't match the gain dimension!\n \n");
+            throw(e);
             }
-
             out.setHeight(lowerValue.getHeight());
             out.setWidth(lowerValue.getWidth());
             out.getOutputSignalC().setHeight(lowerValue.getHeight());
@@ -159,8 +207,6 @@ public class DeadZone extends Block {
             out.getOutputSignalC().setDataType(lowerValue.getDataType());
         }
     }
-
-    public void checkDimension() throws MatDimException {
-        // No specific dimension checking needed
+    public void checkDimension() throws MatDimException{
     }
 }

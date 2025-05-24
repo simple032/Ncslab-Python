@@ -14,7 +14,6 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.block.data.DataType;
 
@@ -22,8 +21,7 @@ import java.util.Vector;
 
 public class Switch extends Block {
 	Parameter threshold;
-
-
+    Parameter relop;
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
@@ -48,6 +46,8 @@ public class Switch extends Block {
 		outputPortList.add(new OutputPort(this,1,true));
 	    threshold=new Parameter(this,1,"threshold",paramValues.getString("Threshold"));
 		parameterList.add(threshold);
+        relop=new Parameter(this,1,"relop",paramValues.optString("Relop", ">="));
+        parameterList.add(relop);
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
@@ -86,4 +86,25 @@ public class Switch extends Block {
 			}
 	   public void checkDimension() throws MatDimException{
 	  }
+
+    @Override
+    public void calculateOutput(double t) {
+        InputPort in1 = inputPortList.get(0);
+        InputPort inctrl = inputPortList.get(1);
+        InputPort in2 = inputPortList.get(2);
+        OutputPort out = outputPortList.get(0);
+        boolean satisfied = false;
+        if(relop.getInitString()=="~=") {
+            satisfied = inctrl.getData().getInitValue()!=threshold.getData().getInitValue();
+        }else if(relop.getInitString()==">=") {
+            satisfied = inctrl.getData().getInitValue()>=threshold.getData().getInitValue();
+        }else if(relop.getInitString()==">") {
+            satisfied = inctrl.getData().getInitValue()>threshold.getData().getInitValue();
+        }
+        if(satisfied){
+            out.setData(in1.getData());
+        }else {
+            out.setData(in2.getData());
+        }
+    }
 }

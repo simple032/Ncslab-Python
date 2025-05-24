@@ -1,12 +1,14 @@
 package com.ncslab.block.logicAndBit;
 
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import Jama.Matrix;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -14,7 +16,6 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 public class ShiftArithmetic extends Block {
@@ -41,6 +42,42 @@ public class ShiftArithmetic extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
         value = new Parameter(this, 1, "value", paramValues.getString("BitShiftNumber"));
         parameterList.add(value);
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for ShiftArithmetic block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        int shiftValue = (int) value.getDouble();
+
+        Data resultData;
+        switch (inputData.getDataType()) {
+            case REAL:
+                resultData = new Data(shift(inputData.getInitValue(), shiftValue));
+                break;
+            case MATRIX:
+                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
+                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                        matrixResult.set(i, j, shift(inputData.getMatrix().get(i, j), shiftValue));
+                    }
+                }
+                resultData = new Data(matrixResult);
+                break;
+            default:
+                resultData = new Data(0);
+        }
+
+        out.setData(resultData);
+    }
+
+    private double shift(double inputValue, int shiftAmount) {
+        return inputValue * Math.pow(2, shiftAmount);
     }
 
     public void generateInitCodeC(CodeStructC code) {

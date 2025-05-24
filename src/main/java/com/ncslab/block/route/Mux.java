@@ -1,5 +1,7 @@
 package com.ncslab.block.route;
 
+import Jama.Matrix;
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -11,9 +13,9 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
+import java.util.Map;
 import java.util.Vector;
 import java.util.List;
 
@@ -49,7 +51,7 @@ public class Mux extends Block {
 		super.generateInitCodeM(code);
 		context.put("block", this);
 		context.put("outputs", getOutputPortVariables());
-		
+
 		String codeStr = TemplateManager.renderTemplate("m/route/Mux/init.vm", context);
 		code.addInitCode(codeStr);
 	}
@@ -59,7 +61,7 @@ public class Mux extends Block {
 		context.put("block", this);
 		context.put("inputs", getInputPortVariables());
 		context.put("outputs", getOutputPortVariables());
-		
+
 		String codeStr = TemplateManager.renderTemplate("m/route/Mux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
@@ -67,7 +69,7 @@ public class Mux extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		context.put("block", this);
-		
+
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/init.vm", context);
 		code.addInitCode(codeStr);
 	}
@@ -76,21 +78,21 @@ public class Mux extends Block {
 		context.put("block", this);
 		context.put("inputs", inputPortList);
 		context.put("outputs", getOutputPortVariables());
-		
+
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
 
 	public void generateDerivativeCodeC(CodeStructC code) {
 		context.put("block", this);
-		
+
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/derivative.vm", context);
 		code.addDerivativeCode(codeStr);
 	}
-	
+
 	public void generateUpdateCodeC(CodeStructC code) {
 		context.put("block", this);
-		
+
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/update.vm", context);
 		code.addUpdateCode(codeStr);
 	}
@@ -119,4 +121,26 @@ public class Mux extends Block {
 	public void checkDimension() throws MatDimException {
 		// Implementation can be added if needed
 	}
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Matrix matrixResult = new Matrix(out.getHeight(), out.getWidth());
+        int index = 0;
+        for(int i=0; i<num; i++) {
+            InputPort in = inputPortList.get(i);
+            if(in.getHeight() > 1){
+                for(int j=0; j<in.getVectorSize(); j++) {
+                    matrixResult.set(index++, 0, in.getData().getMatrix().get(j, 0));
+                }
+            }else if(in.getWidth() > 1){
+                for(int j=0; j<in.getVectorSize(); j++) {
+                    matrixResult.set(index++, 0, in.getData().getMatrix().get(0, j));
+                }
+            }else {
+                matrixResult.set(index++, 0, in.getData().getInitValue());
+            }
+        }
+        out.setData(new Data(matrixResult));
+    }
 }

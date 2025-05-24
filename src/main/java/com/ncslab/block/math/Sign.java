@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -14,7 +15,6 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 public class Sign extends Block {
@@ -33,6 +33,21 @@ public class Sign extends Block {
         super(blockJSON, model);
         outputPortList.add(new OutputPort(this, 1, true));
         inputPortList.add(new InputPort(this, 1));
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Sign block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        double value = inputData.getInitValue();
+        double signValue = Math.signum(value);
+        Data resultData = new Data(signValue);
+        out.setData(resultData);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
@@ -80,14 +95,14 @@ public class Sign extends Block {
 
     public void updateDimension() throws MatDimException {
         if (getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getDataType() == DataType.MATRIX) {
-            OutputPort out = outputPortList.get(0);
-            OutputSignal signal = getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputPort out = outputPortList.get(0);
+        OutputSignal signal = getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-            out.setHeight(signal.getHeight());
-            out.setWidth(signal.getWidth());
-            out.getOutputSignalC().setHeight(signal.getHeight());
-            out.getOutputSignalC().setWidth(signal.getWidth());
-            out.getOutputSignalC().setDataType(signal.getDataType());
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
         }
     }
 

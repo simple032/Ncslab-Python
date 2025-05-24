@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -10,14 +11,16 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.block.data.DataType;
+
+import Jama.Matrix;
 
 import java.util.Vector;
 
 public class Add extends Block {
 
+    @Getter
     private String seq;
 
     @Getter
@@ -96,7 +99,7 @@ public class Add extends Block {
         context.put("blockName", getBlockName());
         context.put("inputPortList", getInputPortList());
         context.put("outputPortList", getOutputPortList());
-        context.put("sequence", getSequence());
+        context.put("sequence", getSeq());
 
         // 预计算矩阵维度
         if (!getInputPortList().isEmpty()) {
@@ -111,9 +114,6 @@ public class Add extends Block {
         code.addOutputCode(codeStr);
     }
 
-    private String getSequence() {
-        return seq;
-    }
 
     public void updateDimension() throws MatDimException {
         OutputPort out = outputPortList.get(0);
@@ -141,5 +141,20 @@ public class Add extends Block {
     }
 
     public void checkDimension() throws MatDimException {
+    }
+
+    @Override
+    public void calculateOutput(double t){
+
+        OutputPort out = outputPortList.get(0);
+        Data data = new Data(out.getHeight(),out.getWidth());
+        for (int i = 0; i < seq.length(); i++) {
+            if(seq.charAt(i) == '+'){
+                data = data.plus(inputPortList.get(i).getData());
+            }else if(seq.charAt(i) == '-'){
+                data = data.minus(inputPortList.get(i).getData());
+            }
+        }
+        out.setData(data);
     }
 }

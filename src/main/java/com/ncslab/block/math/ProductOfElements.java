@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -11,7 +12,6 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -55,6 +55,71 @@ public class ProductOfElements extends Block {
         dimension = paramValues.getInt("ElementsDimension");
     }
 
+    @Override
+    public void calculateInit() {
+        // Initialization logic for ProductOfElements block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data resultData = new Data(out.getHeight(), out.getWidth());
+
+        if (!isAllDimensions()) {
+            if (getDimension() == 1) {
+                for (int i = 0; i < seq.length(); i++) {
+                    if (seq.charAt(i) == '*') {
+                        resultData = resultData.times(extractRow(inputPortList.get(i).getData()));
+                    } else if (seq.charAt(i) == '/') {
+                        resultData = resultData.divide(extractRow(inputPortList.get(i).getData()));
+                    }
+                }
+            } else if (getDimension() == 2) {
+                for (int i = 0; i < seq.length(); i++) {
+                    if (seq.charAt(i) == '*') {
+                        resultData = resultData.times(extractColumn(inputPortList.get(i).getData()));
+                    } else if (seq.charAt(i) == '/') {
+                        resultData = resultData.divide(extractColumn(inputPortList.get(i).getData()));
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < seq.length(); i++) {
+                if (seq.charAt(i) == '*') {
+                    resultData = resultData.times(inputPortList.get(i).getData());
+                } else if (seq.charAt(i) == '/') {
+                    resultData = resultData.divide(inputPortList.get(i).getData());
+                }
+            }
+        }
+
+        out.setData(resultData);
+    }
+
+    private Data extractRow(Data data) {
+        double[] row = data.getMatrix().getRowPackedCopy();
+        String rowString = arrayToString(row);
+        return new Data(rowString);
+    }
+
+    private Data extractColumn(Data data) {
+        double[] column = data.getMatrix().getColumnPackedCopy();
+        String columnString = arrayToString(column);
+        return new Data(columnString);
+    }
+
+    private String arrayToString(double[] array) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(array[i]);
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     public void generateOutputCodeC(CodeStructC code) {
         context.put("blockId", getBlockId());
         context.put("blockName", getBlockName());
@@ -91,8 +156,8 @@ public class ProductOfElements extends Block {
             m[i] = signal[i].getHeight();
             n[i] = signal[i].getWidth();
         }
-
         int v = 1;
+
         if (!isMultiplication()) {
             for (OutputSignal x : signal) {
                 if ((x.getHeight() != m[0]) || (x.getWidth() != n[0])) {

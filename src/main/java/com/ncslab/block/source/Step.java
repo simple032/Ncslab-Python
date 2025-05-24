@@ -1,5 +1,6 @@
 package com.ncslab.block.source;
 
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -11,7 +12,6 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -107,5 +107,19 @@ public class Step extends Block {
             MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match! All input dimensions should be same!");
             throw(e);
         }
+    }
+    @Override
+    public void calculateOutput(double t) {
+        // 实现具体的输出计算逻辑
+        double timeValue = time.getData().getInitValue();
+
+        Data output = t >= timeValue ? after.getData() : before.getData();
+        outputPortList.get(0).getOutputSignalC().setData(output);
+    }
+
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑        
+        outputPortList.get(0).getOutputSignalC().setData(before.getData());
     }
 }

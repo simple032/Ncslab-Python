@@ -1,8 +1,8 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
-import java.util.Vector;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -11,8 +11,9 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
+
+import java.util.Vector;
 
 public class Sum extends Block {
 
@@ -43,6 +44,27 @@ public class Sum extends Block {
         for (int i = 0; i < seq.length(); i++) {
             inputPortList.add(new InputPort(this, i + 1));
         }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Sum block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data resultData = new Data(out.getHeight(), out.getWidth());
+
+        for (int i = 0; i < seq.length(); i++) {
+            if (seq.charAt(i) == '+') {
+                resultData = resultData.plus(inputPortList.get(i).getData());
+            } else if (seq.charAt(i) == '-') {
+                resultData = resultData.minus(inputPortList.get(i).getData());
+            }
+        }
+
+        out.setData(resultData);
     }
 
     public void generateOutputCodeC(CodeStructC code) {

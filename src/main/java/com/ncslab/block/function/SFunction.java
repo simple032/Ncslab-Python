@@ -3,7 +3,6 @@ package com.ncslab.block.function;
 import com.ncslab.block.data.DataType;
 import com.ncslab.util.TemplateManager;
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.block.io.*;
 import com.ncslab.ncslablink.MatDimException;

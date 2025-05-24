@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -11,7 +12,6 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -50,6 +50,47 @@ public class SumOfElements extends Block {
 
         allDimensions = "All dimensions".equals(paramValues.getString("SumOver"));
         dimension = paramValues.getInt("ElementsDimension");
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for SumOfElements block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data resultData = new Data(out.getHeight(), out.getWidth());
+
+        if (isAllDimensions()) {
+            for (int i = 0; i < seq.length(); i++) {
+                if (seq.charAt(i) == '+') {
+                    resultData = resultData.plus(inputPortList.get(i).getData());
+                } else if (seq.charAt(i) == '-') {
+                    resultData = resultData.minus(inputPortList.get(i).getData());
+                }
+            }
+        } else {
+            if (getDimension() == 1) {
+                for (int i = 0; i < seq.length(); i++) {
+                    if (seq.charAt(i) == '+') {
+                        resultData = resultData.plus(extractRow(inputPortList.get(i).getData()));
+                    } else if (seq.charAt(i) == '-') {
+                        resultData = resultData.minus(extractRow(inputPortList.get(i).getData()));
+                    }
+                }
+            } else if (getDimension() == 2) {
+                for (int i = 0; i < seq.length(); i++) {
+                    if (seq.charAt(i) == '+') {
+                        resultData = resultData.plus(extractColumn(inputPortList.get(i).getData()));
+                    } else if (seq.charAt(i) == '-') {
+                        resultData = resultData.minus(extractColumn(inputPortList.get(i).getData()));
+                    }
+                }
+            }
+        }
+
+        out.setData(resultData);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
@@ -137,5 +178,29 @@ public class SumOfElements extends Block {
     }
 
     public void checkDimension() throws MatDimException {
+    }
+
+    private Data extractRow(Data data) {
+        double[] row = data.getMatrix().getRowPackedCopy();
+        String rowString = arrayToString(row);
+        return new Data(rowString);
+    }
+
+    private Data extractColumn(Data data) {
+        double[] column = data.getMatrix().getColumnPackedCopy();
+        String columnString = arrayToString(column);
+        return new Data(columnString);
+    }
+
+    private String arrayToString(double[] array) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(array[i]);
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

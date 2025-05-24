@@ -1,8 +1,8 @@
 package com.ncslab.block.continuous;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 //import java.util.Vector;
 
@@ -380,4 +380,22 @@ public class Integrator extends Block {
 		}
 
 	}
+
+    @Override
+    public void calculateInit(){
+        OutputPort output = outputPortList.get(0);
+        stateIntegral.setData(initialCondition.getData());
+        output.setData(stateIntegral.getData());
+    }
+
+    @Override
+    public void calculateDerivative(double t){
+    	stateIntegral.setDerivateData(inputPortList.get(0).getData());
+    }
+
+    @Override
+    public void calculateOutput(double t){
+        OutputPort output = outputPortList.get(0);
+        output.setData(stateIntegral.getData());
+    }
 }

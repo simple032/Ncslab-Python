@@ -10,7 +10,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 
-public class DiscreteBlock extends Block {
+abstract public class DiscreteBlock extends Block {
 
     @Getter
     protected double sampleTime=-1;
@@ -89,4 +89,5 @@ public class DiscreteBlock extends Block {
         }
     }
 
+//    abstract public void calculateOutput(double t);
 }

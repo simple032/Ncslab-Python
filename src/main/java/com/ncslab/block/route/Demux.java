@@ -1,5 +1,6 @@
 package com.ncslab.block.route;
 
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -10,7 +11,6 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.MatDimException;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -115,4 +115,22 @@ public class Demux extends Block {
 			throw(e);
 		}
 	}
+
+    @Override
+    public void calculateOutput(double t) {
+    	InputPort in = inputPortList.get(0);
+    	Data inputData = in.getData();
+    	for(int i=0; i<num; i++) {
+            OutputPort out = outputPortList.get(i);
+            if(inputData.getWidth()>1){
+                out.setData(new Data(inputData.getMatrix().get(0, i)));
+            }else if(inputData.getHeight()>1){
+                out.setData(new Data(inputData.getMatrix().get(i, 0)));
+            }else {
+                out.setData(new Data(inputData.getInitValue()));
+            }
+        }
+    }
+
+
 }

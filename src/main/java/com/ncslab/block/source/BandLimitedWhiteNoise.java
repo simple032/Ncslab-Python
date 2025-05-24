@@ -1,8 +1,10 @@
 package com.ncslab.block.source;
 
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
-import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
@@ -10,7 +12,7 @@ import org.json.JSONObject;
 
 import java.util.Vector;
 
-public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
+public class BandLimitedWhiteNoise extends com.ncslab.block.Block {
 
     Parameter seed;
     Parameter cov;
@@ -31,8 +33,8 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
         parameterNames.add("samplePeriod");
     }
 
-    public BandLimitedWhiteNoise(JSONObject blockJSON, NCSLabModel model) {
-		super(blockJSON,model);
+    public BandLimitedWhiteNoise(JSONObject blockJSON, NCSLabModel model) throws MatDimException {
+        super(blockJSON, model);
 
         seed = new Parameter(this, 1, "seed", String.valueOf(paramValues.getInt("Seed")));
         parameterList.add(seed);
@@ -41,10 +43,26 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
         samplePeriod = new Parameter(this, 3, "samplePeriod", String.valueOf(paramValues.getDouble("Ts")));
         parameterList.add(samplePeriod);
 
-		outputPortList.add(new OutputPort(this,1,false));
+        outputPortList.add(new OutputPort(this, 1, false));
 
         outputPortList.get(0).setHeight(seed.getHeight());
         outputPortList.get(0).setWidth(seed.getWidth());
+    }
+
+    private double generateGaussianNoise(double mean, double stdDev) {
+        return mean + stdDev * Math.random();
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        // 实现具体的输出计算逻辑
+        outputPortList.get(0).getOutputSignalC().setValue(generateGaussianNoise(0.0, 1.0));
+    }
+
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑
+        outputPortList.get(0).getOutputSignalC().setValue(0.0);
     }
 
     public void generateInitCodeC(CodeStructC code) {
@@ -57,8 +75,8 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
         code.addInitCode(initCode);
     }
 
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Band-Limited White Noise::("+getBlockId()+")"+getBlockName()+"*/\n";
+    public void generateOutputCodeC(CodeStructC code) {
+        String outputCode="/*Code for output of block Band-Limited White Noise::("+getBlockId()+")"+getBlockName()+"*/\n";
 
         switch(cov.getDataType()) {
             case REAL:
@@ -71,7 +89,8 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
                 break;
         }
         code.addOutputCode(outputCode);
-	}
+    }
+
     public void updateDimension() throws MatDimException{
         if(seed.getWidth()!=cov.getWidth()
             ||seed.getHeight()!=cov.getHeight()){
@@ -79,7 +98,7 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block{
             throw(e);
         }
     }
-	public void checkDimension() throws MatDimException{
 
-	}
+    public void checkDimension() throws MatDimException{
+    }
 }

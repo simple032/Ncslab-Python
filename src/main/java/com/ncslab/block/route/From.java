@@ -58,4 +58,18 @@ public class From extends Block {
     }
     public void checkDimension() throws MatDimException{
     }
+
+    @Override
+    public void calculateOutput(double t) {
+        InputPort in = inputPortList.get(0);
+        OutputPort out = outputPortList.get(0);
+        out.setData(in.getData());
+    }
+
+    @Override
+    public void calculateInit() {
+        InputPort in = inputPortList.get(0);
+        OutputPort out = outputPortList.get(0);
+        out.setData(in.getData());
+    }
 }

@@ -1,10 +1,10 @@
 package com.ncslab.block.continuous;
 
 import com.ncslab.block.BlockType;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.*;
 import lombok.Getter;
 import org.json.JSONObject;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import com.ncslab.block.Block;
@@ -21,7 +21,7 @@ public class Derivative extends Block {
 	OutputPort output;
 	InputPort input;
 
-
+    Parameter cParam;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -41,6 +41,7 @@ public class Derivative extends Block {
 		output = new OutputPort(this, 1, true);
 		outputPortList.add(output);
 
+        cParam = new Parameter(this, 1, "c", "100");
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
@@ -154,4 +155,25 @@ public class Derivative extends Block {
 		}
 
 	}
+
+    @Override
+    public void calculateInit(){
+        OutputPort output = outputPortList.get(0);
+        output.setData(stateIntegral.getData());
+    }
+
+    @Override
+    public void calculateDerivative(double t){
+        Data data = stateIntegral.getData().divide(cParam.getData())
+            .plus(inputPortList.get(0).getData().divide(cParam.getData()));
+        stateIntegral.setDerivateData(data);
+    }
+
+    @Override
+    public void calculateOutput(double t){
+        OutputPort output = outputPortList.get(0);
+        Data data = stateIntegral.getData().divide(cParam.getData()).negative()
+            .plus(inputPortList.get(0).getData().divide(cParam.getData()));
+        output.setData(data);
+    }
 }

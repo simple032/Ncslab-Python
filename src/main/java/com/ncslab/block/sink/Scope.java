@@ -1,7 +1,7 @@
 package com.ncslab.block.sink;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 import org.json.JSONObject;
 
@@ -24,7 +24,9 @@ import java.util.Vector;
 
 public class Scope extends SinkBlock {
 
-    ScopeStruct scopeStruct;
+    int inportNum; // TODO：兼容后续多输入
+
+    ScopeStruct[] scopeStructs;
 
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
@@ -36,15 +38,27 @@ public class Scope extends SinkBlock {
     public Scope(JSONObject scopeIn, NCSLabModel model) {
         super(scopeIn, model);
 
+        if(paramValues.has("Inputs")) {
+            inportNum = Integer.parseInt(paramValues.getString("Number"));
+        }else{
+            inportNum = 1;
+        }
+
+        scopeStructs = new ScopeStruct[inportNum];
+
         // Add an input port
-        inputPortList.add(new InputPort(this, 1));
+        for(int i = 0; i < inportNum; i++) {
+            inputPortList.add(new InputPort(this, i+1));
+            scopeStructs[i] = new ScopeStruct(this, i+1, "in"+(i+1));
+        }
+
     }
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         String outputCode = "";
         outputCode += "if storeEnable>0\n";
-        outputCode += getBlockName() + "=[" + getBlockName() 
+        outputCode += getBlockName() + "=[" + getBlockName()
             + " Block" + getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
             + "_Output" + getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
             + "]"
@@ -68,7 +82,7 @@ public class Scope extends SinkBlock {
         if (model.getModelMode() == ModelMode.Simulation) {
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
-            context.put("scopeStruct", scopeStruct);
+            context.put("scopeStruct", scopeStructs[0]);
 
             String initCode = TemplateManager.renderTemplate("c/sink/Scope/init.vm", context);
             code.addInitCode(initCode);
@@ -80,7 +94,7 @@ public class Scope extends SinkBlock {
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("inputPortList", getInputPortList());
-            context.put("scopeStruct", scopeStruct);
+            context.put("scopeStruct", scopeStructs[0]);
 
             String outputCode = TemplateManager.renderTemplate("c/sink/Scope/output.vm", context);
             code.addSinkOutputCode(outputCode);
@@ -95,7 +109,7 @@ public class Scope extends SinkBlock {
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("inputPortList", getInputPortList());
-            context.put("scopeStruct", scopeStruct);
+            context.put("scopeStruct", scopeStructs[0]);
 
             String outputCode = TemplateManager.renderTemplate("c/sink/Scope/output.vm", context);
             code.addSinkOutputCode(outputCode);
@@ -117,12 +131,29 @@ public class Scope extends SinkBlock {
     }
 
     public void checkDimension() throws MatDimException {
-        scopeStruct = new ScopeStruct(this, 1, this.blockName);
 
         OutputSignal signal = this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        scopeStruct.setDimension(signal.getWidth(), signal.getHeight());
-        scopeStruct.setMaxDataLength(100000);
+        for(int i = 0; i < inportNum; i++) {
+            scopeStructs[i] = new ScopeStruct(this, 1, this.blockName);
+            scopeStructs[i].setDimension(signal.getWidth(), signal.getHeight());
+            scopeStructs[i].setMaxDataLength(100000);
 
-        model.addTerminal(scopeStruct);
+            model.addTerminal(scopeStructs[i]);
+        }
     }
+
+    @Override
+    public void calculateDiscreteUpdate(double t){
+        if (model.getModelMode() == ModelMode.Simulation) {
+            for(int i = 0; i < inportNum; i++) {
+                if (scopeStructs[i].getTimeList().isEmpty() || t > scopeStructs[i].getTimeList().lastElement()) {
+                    scopeStructs[i].addTimeSeries(
+                        t,
+                        inputPortList.get(i).getData()
+                    );
+                }
+            }
+        }
+    }
+
 }

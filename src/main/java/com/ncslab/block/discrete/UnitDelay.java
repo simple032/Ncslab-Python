@@ -1,5 +1,7 @@
 package com.ncslab.block.discrete;
 
+import Jama.Matrix;
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -13,7 +15,6 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
@@ -22,6 +23,9 @@ public class UnitDelay extends DiscreteBlock {
 
     Parameter sampleTime;
     Parameter initialCondition;
+
+    // Define arrays to save data
+    Vector<Data> buffer;
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
@@ -132,5 +136,27 @@ public class UnitDelay extends DiscreteBlock {
 
     public void checkDimension() throws MatDimException {
         // No specific dimension checking needed
+    }
+
+    @Override
+    public void calculateInit() {
+        buffer = new Vector<>();
+        OutputPort out = outputPortList.get(0);
+        Data data = new Data(out.getHeight(), out.getWidth());
+        buffer.add(data);
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        // Calculate the index of the current sample
+        out.setData(buffer.elementAt(0));
+    }
+
+    @Override
+    public void calculateDiscreteUpdate(double t) {
+        InputPort input = inputPortList.get(0);
+        buffer.remove(0);
+        buffer.add(input.getData());
     }
 }

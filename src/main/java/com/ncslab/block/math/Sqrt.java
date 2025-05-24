@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -12,7 +13,6 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
 public class Sqrt extends Block {
@@ -39,6 +39,20 @@ public class Sqrt extends Block {
             function = paramValues.getString("SqrtFunction");
         else
             function = paramValues.getString("Function");
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Sqrt block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        double sqrtValue = Math.sqrt(inputData.getInitValue());
+        Data resultData = new Data(sqrtValue);
+        out.setData(resultData);
     }
 
     public void generateOutputCodeC(CodeStructC code) {

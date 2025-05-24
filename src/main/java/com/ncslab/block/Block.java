@@ -90,7 +90,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 
     @Getter
     public static Vector<String> outputNames = new Vector<>();
-    
+
     protected VelocityContext context = null;
 
     protected Block(JSONObject blockIn, NCSLabModel model) {
@@ -480,4 +480,24 @@ public class Block implements MCodeBlock, CCodeBlock{
 		}
 		return outputPortVariables.toArray(new String[0]);
 	}
+
+//    protected String[] SUPPORT_LANGUAGES = {"M", "C"};
+//    boolean containsKey = Arrays.stream(SUPPORT_LANGUAGES).anyMatch(item -> item.equals(language));
+//    if(!containsKey) {
+//        System.error.println("Language not supported");
+//        return;
+//    }
+
+    public void generateInitCode(CodeStructC code, String language) {}
+    public void generateUpdateCode(CodeStructC code, String language){}
+    public void generateDerivativeCode(CodeStructC code, String language){}
+    public void generateOutputCode(CodeStructC code, String language){}
+
+    public void calculateOutput(double t) {
+//        System.err.println("TODO:" + blockType + " to be override(calculateOutput)");
+    }
+    public void calculateDerivative(double t) {}
+    public void calculateDiscreteUpdate(double t) {}
+    public void calculateInit() {}
+    public void calculateTerminate() {}
 }

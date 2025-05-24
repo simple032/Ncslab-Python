@@ -1,6 +1,8 @@
 package com.ncslab.block.source;
 
-import org.apache.velocity.VelocityContext;
+import Jama.Matrix;
+import com.ncslab.block.data.Data;
+
 import com.ncslab.util.TemplateManager;
 
 import lombok.Getter;
@@ -14,16 +16,17 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 
+import java.util.Map;
 import java.util.Vector;
 
 public class RepeatingSequence extends Block {
 	Parameter rep_seq_t;
 	Parameter rep_seq_y;
 
-    @Getter
+    // Removed @Getter as it might cause issues
     public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
+    // Removed @Getter as it might cause issues
     public static final Vector<String> outputNames = new Vector<>();
 
 
@@ -86,4 +89,34 @@ public class RepeatingSequence extends Block {
 					throw(e);
 	    	}
 	    }
+    @Override
+    public void calculateOutput(double t) {
+        // 实现具体的输出计算逻辑
+        double []times = rep_seq_t.getData().getDoubleArray();
+        double []values = rep_seq_y.getData().getDoubleArray();
+
+        double dt = t;
+        while(dt > times[times.length - 1]) {
+            dt -= times[times.length - 1];
+        }
+        int index = 0;
+        double output = 0;
+        for(int i = 0; i < times.length; i++) {
+            if(dt > times[i]) {
+                output = values[i] + dt *
+                    (values[i+1]-values[i])/(times[i+1]-times[i]) ;
+                break;
+            }
+        }
+        outputPortList.get(0).getOutputSignalC().setValue(output);
+    }
+
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑
+        double []values = rep_seq_y.getData().getDoubleArray();
+        double initialOutput = values[0];
+        outputPortList.get(0).getOutputSignalC().setValue(initialOutput);
+    }
 }
+// Removed extra closing brace if present

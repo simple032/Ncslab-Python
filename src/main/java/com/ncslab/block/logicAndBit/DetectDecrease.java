@@ -1,24 +1,23 @@
 package com.ncslab.block.logicAndBit;
 
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import com.ncslab.block.Block;
+import Jama.Matrix;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
-import org.apache.velocity.VelocityContext;
 import com.ncslab.util.TemplateManager;
 
-public class DetectDecrease extends com.ncslab.block.Block{
-
-
-
+public class DetectDecrease extends Block {
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -26,53 +25,93 @@ public class DetectDecrease extends com.ncslab.block.Block{
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
-	public DetectDecrease(JSONObject blockIn,NCSLabModel model) {
-		super(blockIn,model);
-		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,1,true));
+    public DetectDecrease(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
     }
 
-	public void generateArraysCodeC(CodeStructC code) {
-		context.put("block", this);
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		context.put("signal", signal);
-		
-		String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectDecrease/arrays.vm", context);
-		code.addArraysCode(codeStr);
-	}
 
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block Detect Decrease:("+getBlockId()+")"+getBlockName()+"*/\n";
-		code.addInitCode(initCode);
-	}
+    private Data previousData;
 
-	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-		context.put("inputs", getInputPortVariables());
-		context.put("outputs", getOutputPortVariables());
-		
-		String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectDecrease/output.vm", context);
-		code.addOutputCode(codeStr);
-	}
-
-	public void updateDimension() throws MatDimException{
-	    OutputPort out  = outputPortList.get(0);
-	    InputPort in  = inputPortList.get(0);
-	    OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		out.setHeight(signal.getHeight());
-		out.setWidth(signal.getWidth());
-		out.getOutputSignalC().setHeight(signal.getHeight());
-		out.getOutputSignalC().setWidth(signal.getWidth());
-		out.getOutputSignalC().setDataType(signal.getDataType());
+    @Override
+    public void calculateInit() {
+        // Initialization logic for DetectDecrease block
+        previousData = null;
     }
 
-	public void checkDimension() throws MatDimException{
-	}
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
 
+        Data resultData;
+        if (previousData == null || !inputData.equals(previousData)) {
+            switch (inputData.getDataType()) {
+                case REAL:
+                    double previousValue = previousData != null && previousData.getDataType() == DataType.REAL ? previousData.getInitValue() : inputData.getInitValue();
+                    resultData = new Data(inputData.getInitValue() < previousValue ? 1.0 : 0.0);
+                    break;
+                case MATRIX:
+                    Matrix previousMatrix = previousData != null && previousData.getDataType() == DataType.MATRIX ? previousData.getMatrix() : inputData.getMatrix();
+                    Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
+                    for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                        for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                            matrixResult.set(i, j, inputData.getMatrix().get(i, j) < previousMatrix.get(i, j) ? 1.0 : 0.0);
+                        }
+                    }
+                    resultData = new Data(matrixResult);
+                    break;
+                default:
+                    resultData = new Data(0);
+            }
+        } else {
+            resultData = new Data(0);
+        }
+
+        out.setData(resultData);
+        previousData = inputData;
+    }
+
+    public void generateArraysCodeC(CodeStructC code) {
+        context.put("block", this);
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("signal", signal);
+
+        String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectDecrease/arrays.vm", context);
+        code.addArraysCode(codeStr);
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        String initCode="/*Code for initialization of block Detect Decrease:("+getBlockId()+")"+getBlockName()+"*/\n";
+        code.addInitCode(initCode);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        context.put("block", this);
+        context.put("inputs", getInputPortVariables());
+        context.put("outputs", getOutputPortVariables());
+
+        String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectDecrease/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void updateDimension() throws MatDimException{
+        OutputPort out  = outputPortList.get(0);
+        InputPort in  = inputPortList.get(0);
+        OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+   }
+
+    public void checkDimension() throws MatDimException{
+    }
 }
