@@ -1,0 +1,30 @@
+#set($input = $block.getInputPortVariable(0))
+
+#set($gravity = $block.getParameter("gravity").getDoubleValue())
+#set($mass_ball = $block.getParameter("mass_ball").getDoubleValue())
+#set($moment_of_inertial = $block.getParameter("moment_of_inertial").getDoubleValue())
+#set($length_beam = $block.getParameter("length_beam").getDoubleValue())
+#set($length_link = $block.getParameter("length_link").getDoubleValue())
+#set($radius_ball = $block.getParameter("radius_ball").getDoubleValue())
+#set($lb_angle = $block.getParameter("lb_angle").getDoubleValue())
+#set($ub_angle = $block.getParameter("ub_angle").getDoubleValue())
+#set($lb_position = $block.getParameter("lb_position").getDoubleValue())
+
+#set($x0 = $block.getStateList().get(0).getName())
+#set($x1 = $block.getStateList().get(1).getName())
+#set($x2 = $block.getStateList().get(2).getName())
+
+#set($outputPosition = $block.getOutputPortVariables().get(0).getName())
+#set($outputAngle = $block.getOutputPortVariables().get(1).getName())
+#set($outputDr = $block.getOutputPortVariables().get(2).getName())
+
+#if ($x0 <= $lb_position)
+    $outputPosition = $lb_position;
+#elseif ($x0 > $lb_position && $x0 <= $ub_angle)
+    $outputPosition = $x0;
+#else
+    $outputPosition = $ub_angle;
+#end
+
+$outputAngle = $x1;
+$outputDr = $block.getRWorkList().get(0).getName() * 180 / AERO_PI;

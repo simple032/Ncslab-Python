@@ -1,0 +1,17 @@
+/* Velocity Template for initialization of block BallBeamSystem */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Simulation")
+    #foreach($state in $block.getStateList())
+        $state.getName() = 0;
+    #end
+#elseIf ($modelMode == "Compilation")
+    char msg[255];
+    int tmpHCommon1 = -1, tmpHCommon2 = -1;
+
+    while ((tmpHCommon1 = Serialport_Open("/dev/ttyUSB0", 115200, msg)) < 0 && (tmpHCommon2 = Serialport_Open("/dev/ttyUSB1", 115200, msg)) < 0) {}
+    HANDLE hComm = tmpHCommon1 > 0 ? tmpHCommon1 : tmpHCommon2;
+
+    tcflush(hComm, TCIOFLUSH);
+#end

@@ -1,0 +1,15 @@
+/* Velocity Template for initialization of block DCMotorAngleDirect */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Simulation")
+    #foreach($state in $block.getStateList())
+        $state.getName() = 0;
+    #end
+#elseIf ($modelMode == "Compilation")
+    #set($hardwareDefineName = "Block" + $blockId + "_DCMotorAngleDirect")
+    initDCMotorAngleDirect(&$hardwareDefineName);
+
+    char msg[255];
+    HANDLE hComm = Serialport_Open($block.getParameter("port").getStringValue(), $block.getParameter("baudrate").getIntValue(), msg);
+#end

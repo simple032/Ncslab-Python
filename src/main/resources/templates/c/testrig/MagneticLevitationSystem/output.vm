@@ -1,0 +1,16 @@
+#set($input1 = $block.getInputPortVariable(0))
+
+#set($gravity = $block.getParameter("gravity").getDoubleValue())
+#set($x0 = $block.getParameter("EQUILIBRIUM_POINT_x0").getDoubleValue())
+#set($i0 = $block.getParameter("EQUILIBRIUM_POINT_i0").getDoubleValue())
+#set($Ks = $block.getParameter("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT").getDoubleValue())
+#set($Ka = $block.getParameter("INPUT_RESISTANCE").getDoubleValue())
+
+#set($position = $block.getStateList().get(0).getName())
+#set($velocity = $block.getStateList().get(1).getName())
+
+#set($outputPosition = $block.getOutputPortVariables().get(0).getName())
+#set($outputVelocity = $block.getOutputPortVariables().get(1).getName())
+
+$outputPosition = -100 / 4.587156 * $position;
+$outputVelocity = $velocity;

@@ -1,0 +1,46 @@
+#set($inputSignal = $block.getInputPortVariable(0))
+#set($outputRealX = $block.getOutputPortVariables().get(0))
+#set($outputAngle = $block.getOutputPortVariables().get(1))
+#set($VspeedValue = $block.getParameter("Vspeed").getName())
+#set($ENAOrDISValue = $block.getParameter("ENAOrDIS").getName())
+
+if ($modelMode == "Compilation") {
+    #set($hardwareDefineName = "Block" + $block.getBlockId() + "_InvertedPendulumSUST")
+    initInvertedPendulumSUST(&$hardwareDefineName);
+
+    if (mp->majorStep > 0) {
+        char recvBuffIPSUST[255] = {0};
+        Serialport_Send(hCommIPSUST, sendLimitBuffSUST, strlen(sendLimitBuffSUST));
+        usleep(2500);
+
+        int tmp = $inputSignal;
+        float acctmp = tmp / 9.424776;
+        float ipacc = (tmp >= 0) ? acctmp : -acctmp;
+        int accInt = (int)ipacc;
+        int VspeedVaule = ($inputSignal > 0) ? $VspeedValue : -$VspeedValue;
+
+        sprintf((char*)cmd, "GZ100A%d\\r\\n", accInt);
+        Serialport_Send(hCommIPSUST, cmd, strlen(cmd));
+
+        if (tmp < 0 && (int)$ENAOrDISValue == 1) {
+            sprintf((char*)cmd2, "GZ000V-%d\\r\\n", VspeedVaule);
+        } else if (tmp > 0 && (int)$ENAOrDISValue == 1) {
+            sprintf((char*)cmd2, "GZ000V%d\\r\\n", VspeedVaule);
+        } else {
+            sprintf((char*)cmd2, "GZ000V0\\r\\n");
+        }
+
+        usleep(2500);
+        Serialport_Send(hCommIPSUST, cmd2, strlen(cmd2));
+
+        char *keyStartPOS = strstr(recvBuffIPSUST, headStrPOS);
+        if (keyStartPOS != NULL) {
+            keyStartPOS += 3;
+            int pos1 = strtol(keyStartPOS, &keyStartPOS, 10);
+            int pos2 = strtol(keyStartPOS + 1, NULL, 10);
+            $outputRealX = pos2 * 9.424776 / 4000;
+            $outputAngle = (pos1 % 4000) * 360.0 / 4000.0;
+            $outputAngle = (pos1 >= 0) ? ($outputAngle - 180) : ($outputAngle + 180);
+        }
+    }
+}

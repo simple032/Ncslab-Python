@@ -218,7 +218,16 @@ $ sudo systemctl start nginx
 
 ## 注意事项
 ### C语言实时程序编译
+Link统一采用`make`作为编译工具，如果要采用其他的，需覆写方法`makeExeFile`。由于存在交叉编译的需求，区分编译环境（`host`）和运行环境（`target`），
+- Link运行的操作系统定义为`host`，可选值包括`Windows`和`Linux`
+- 目标程序的运行的操作系统定义为`target`，可选值包括`PC`（表示和Link运行环境一致）,`Raspberry`,`Loongarch`
+
+如果需要交叉编译新架构的程序，自行增加符合命名规则的类即可。编译依赖项包括
+- Eigen
+- Nolhman/json
 #### Windows
+目前Windows支持的目标机环境包括`PC`和`Raspberry`。
+##### PC
 1. 需修改文件`src/main/java/utils/config/properties`中属性`CCodePathWin`，且保证文件夹存在
 2. 在网上下载[MinGW](https://github.com/niXman/mingw-builds-binaries/releases)
 3. 下载文件为压缩包，需要解压缩，并将mingw-w64所在路径(mingw64\bin)加入环境变量Path中，
@@ -227,11 +236,20 @@ $ sudo systemctl start nginx
 6. 在文件`src/main/resources/mybatis-config.xml`中配置数据库的账号密码
 7. 重启`idea`或其他`ide`即可顺利编译
 
+##### Raspberry Pi(TODO)
+编译树莓派程序需要使用交叉编译工具链，但工具链最低版本9.2对应的`glibc`版本为2.29，而现有设备支持的`glibc`版本为2.28，因此需进行升级。
+
+1. 下载交叉编译工具链
+2.
+
 #### Ubuntu(TODO)
 
-#### Raspberry Pi(TODO)
+##### PC
 
-#### Loongarch
+
+##### Raspberry Pi(TODO)
+
+##### Loongarch
 1. 需修改文件`src/main/java/utils/config/properties`中属性`CCodePathLoong`，且保证文件夹存在
 2. 在网上下载[loongarch64-clfs-8.0-cross-tools-gcc-full]
 3. 下载文件为压缩包，需要解压缩，并将所在路径(cross-tools\bin)加入环境变量`Path`中，

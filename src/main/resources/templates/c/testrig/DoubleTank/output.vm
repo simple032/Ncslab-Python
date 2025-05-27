@@ -1,0 +1,15 @@
+#set( $blockId = $block.getBlockId() )
+#set( $blockName = $block.getBlockName() )
+
+/* Code for output of block DoubleTank:(${blockId})${blockName} */
+
+if (${stateList.get(0).getName()} <= ${paramValues.getDouble("lb_position")}) {
+    ${outputPortList.get(0).getOutputSignalC().getName()} = ${paramValues.getDouble("lb_position")};
+} else if ((${stateList.get(0).getName()} > ${paramValues.getDouble("lb_position")}) && (${stateList.get(0).getName()} <= ${paramValues.getDouble("ub_angle")})) {
+    ${outputPortList.get(0).getOutputSignalC().getName()} = ${stateList.get(0).getName()};
+} else {
+    ${outputPortList.get(0).getOutputSignalC().getName()} = ${paramValues.getDouble("ub_angle")};
+}
+
+${outputPortList.get(1).getOutputSignalC().getName()} = ${stateList.get(1).getName()};
+${outputPortList.get(2).getOutputSignalC().getName()} = ${rworkList.get(0).getName()} * 180 / AERO_PI;

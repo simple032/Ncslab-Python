@@ -1,0 +1,16 @@
+/* Velocity Template for initialization of block xzInvertedPendulumSUST */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Compilation")
+    #set($hardwareDefineName = "Block" + $blockId + "_xzInvertedPendulumSUST")
+    initXzInvertedPendulumSUST(&$hardwareDefineName);
+
+    char msg[255];
+    HANDLE hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
+
+    tcflush(hComm, TCIOFLUSH);
+    char cmdInit[] = {"GZ999POS*=0\\r\\n"};
+    Serialport_Send(hComm, (unsigned char*)cmdInit, strlen(cmdInit));
+    usleep(3000);
+#end

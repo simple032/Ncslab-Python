@@ -1,0 +1,13 @@
+/* Velocity Template for initialization of block InvertedPendulumSUST */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Compilation")
+    char msg[255];
+    HANDLE hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
+
+    tcflush(hComm, TCIOFLUSH);
+    char cmdInit[] = {"GZ200ENA\\r\\n"};
+    Serialport_Send(hComm, (unsigned char*)cmdInit, strlen(cmdInit));
+    usleep(3000);
+#end

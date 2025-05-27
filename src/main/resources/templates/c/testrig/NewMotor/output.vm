@@ -1,0 +1,36 @@
+#set($inputPort1 = $block.getInputPortVariable(0))
+#set($outputPort1 = $block.getOutputPortVariables().get(0))
+#set($stateSpeed = $block.getStateList().get(0).getName())
+#set($motorK = $block.getParameter("motorK").getInitDouble())
+#set($motorT = $block.getParameter("motorT").getInitDouble())
+
+if ($modelMode == "Compilation") {
+    #set($hardwareDefineName = "Block" + $block.getBlockId() + "_NewMotor")
+    initNewMotor(&$hardwareDefineName);
+
+    if (mp->majorStep > 0) {
+        int bufLen = 255;
+        char recvBuff[bufLen] = {0};
+
+        Serialport_Recv(hComm, (uint8_t*)recvBuff, 7);
+        int speed = recvBuff[4] + (recvBuff[5] << 8) + (recvBuff[5] << 16) + (recvBuff[5] << 24);
+        $outputPort1 = speed;
+
+        uint8_t cmd[] = {0xAA, 0xAA, 0x01, 0x01, 0x00, 0x00, 0x00};
+        int pwm = $inputPort1 * 10000;
+        pwm = pwm >= 10000 ? 10000 : pwm;
+        pwm = pwm <= -10000 ? -10000 : pwm;
+        cmd[4] = (pwm >> 0) & 0xFF;
+        cmd[5] = (pwm >> 8) & 0xFF;
+        cmd[6] = calcSum(cmd);
+
+        Serialport_Send(hComm, cmd, 7);
+
+        char sendData[1024];
+        sprintf(sendData, "$001,%02d#", speed);
+        int sendLength = strlen(sendData);
+        Serialport_Send(hComm1, (uint8_t*)sendData, sendLength);
+    }
+} else if ($modelMode == "Simulation") {
+    $outputPort1 = 10000 * $stateSpeed;
+}

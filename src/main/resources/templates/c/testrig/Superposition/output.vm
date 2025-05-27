@@ -1,0 +1,34 @@
+#set($input1 = $block.getInputPortVariable(0))
+#set($input2 = $block.getInputPortVariable(1))
+#set($input3 = $block.getInputPortVariable(2))
+
+#set($BCM1 = $block.getParameter("BCM1").getDoubleValue())
+#set($BCM2 = $block.getParameter("BCM2").getDoubleValue())
+#set($BCM3 = $block.getParameter("BCM3").getDoubleValue())
+
+#set($AD1 = $block.getParameter("AD1").getDoubleValue())
+#set($AD2 = $block.getParameter("AD2").getDoubleValue())
+
+#set($outputAD1 = $block.getOutputPortVariables().get(0).getName())
+#set($outputAD2 = $block.getOutputPortVariables().get(1).getName())
+
+if ($input1) {
+    digitalWrite($BCM1, HIGH);
+} else {
+    digitalWrite($BCM1, LOW);
+}
+
+if ($input2) {
+    digitalWrite($BCM2, HIGH);
+} else {
+    digitalWrite($BCM2, LOW);
+}
+
+if ($input3) {
+    digitalWrite($BCM3, HIGH);
+} else {
+    digitalWrite($BCM3, LOW);
+}
+
+$outputAD1 = ADS1256_GetChannalValue($AD1) * 16.6666667 / 0x7fffff;
+$outputAD2 = ADS1256_GetChannalValue($AD2) * 16.6666667 / 0x7fffff;

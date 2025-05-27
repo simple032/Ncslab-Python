@@ -1,0 +1,6 @@
+/* Velocity Template for initialization of block SecondOrderRotaryInvertedPendulum */
+char msg[255];
+int tmpHCommon1 = -1, tmpHCommon2 = -1;
+
+while((tmpHCommon1=Serialport_Open("/dev/ttyUSB0", 115200, msg))<0&&(tmpHCommon2=Serialport_Open("/dev/ttyUSB1", 11520, msg))<0){}
+hComm = tmpHCommon1>0?tmpHCommon1:tmpHCommon2;

@@ -1,0 +1,33 @@
+#set($input = $block.getInputPortVariable(0))
+
+#set($BCM = $block.getParameter("BCM").getDoubleValue())
+
+#set($AD1 = $block.getParameter("AD1").getDoubleValue())
+#set($AD2 = $block.getParameter("AD2").getDoubleValue())
+#set($AD3 = $block.getParameter("AD3").getDoubleValue())
+#set($AD4 = $block.getParameter("AD4").getDoubleValue())
+#set($AD5 = $block.getParameter("AD5").getDoubleValue())
+#set($AD6 = $block.getParameter("AD6").getDoubleValue())
+#set($AD7 = $block.getParameter("AD7").getDoubleValue())
+
+#set($outputAD1 = $block.getOutputPortVariables().get(0).getName())
+#set($outputAD2 = $block.getOutputPortVariables().get(1).getName())
+#set($outputAD3 = $block.getOutputPortVariables().get(2).getName())
+#set($outputAD4 = $block.getOutputPortVariables().get(3).getName())
+#set($outputAD5 = $block.getOutputPortVariables().get(4).getName())
+#set($outputAD6 = $block.getOutputPortVariables().get(5).getName())
+#set($outputAD7 = $block.getOutputPortVariables().get(6).getName())
+
+$outputAD1 = ADS1256_GetChannalValue($AD1) * 5.0 / 0x7fffff;
+$outputAD2 = ADS1256_GetChannalValue($AD2) * (-16.6666667) / 0x7fffff;
+$outputAD3 = ADS1256_GetChannalValue($AD3) * 5.0 / 0x7fffff;
+$outputAD4 = ADS1256_GetChannalValue($AD4) * (-16.6666667) / 0x7fffff;
+$outputAD5 = ADS1256_GetChannalValue($AD5) * 5.0 / 0x7fffff;
+$outputAD6 = ADS1256_GetChannalValue($AD6) * 16.6666667 / 0x7fffff;
+$outputAD7 = ADS1256_GetChannalValue($AD7) * 16.6666667 / 0x7fffff;
+
+if ($input) {
+    digitalWrite($BCM, HIGH);
+} else {
+    digitalWrite($BCM, LOW);
+}

@@ -1,0 +1,7 @@
+/* Velocity Template for initialization of block LoongarchPLC */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Compilation")
+    DEV_ModuleInit();
+#end

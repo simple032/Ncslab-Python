@@ -1,0 +1,31 @@
+#set($input1 = $block.getInputPortVariable(0))
+#set($input2 = $block.getInputPortVariable(1))
+#set($input3 = $block.getInputPortVariable(2))
+#set($input4 = $block.getParameter("InnerFactor").getDoubleValue())
+#set($input5 = $block.getParameter("InitSpeed").getDoubleValue())
+
+#set($outputAccOutput = $block.getOutputPortVariables().get(0).getName())
+#set($outputSpeedOutput = $block.getOutputPortVariables().get(1).getName())
+
+#set($angle = $input2)
+#set($difAngle = $input3 * 3.1415926 / 180.0)
+
+#set($energy = 0.5 * 0.0004961 * $difAngle * $difAngle + $input4 * 0.482 * 9.81 * 0.11 * (cos($angle) - 1.0))
+
+#set($flagSign = $energy * $difAngle * cos($angle))
+
+#if ($flagSign < 0)
+    #set($v = $input4 * fabs($energy))
+    #set($vel = $input5)
+#elseIf ($flagSign > 0)
+    #set($v = -1 * $input4 * fabs($energy))
+    #set($vel = -1 * $input5)
+#else
+    #set($v = 0.001)
+    #set($vel = 0 * $input5)
+#end
+
+#set($acc = fabs($v / 0.09424776))
+
+$outputAccOutput = $v * 100;
+$outputSpeedOutput = $vel;

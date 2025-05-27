@@ -1,0 +1,17 @@
+#set($outputPort1 = $block.getOutputPortVariables().get(0))
+#set($outputPort2 = $block.getOutputPortVariables().get(1))
+#set($hardwareDefineName = "Block" + $block.getBlockId() + "_WaterLevel")
+
+#if ($model.getModelMode() == "Simulation")
+    $outputPort1 = $block.getStateList().get(0).getName();
+    $outputPort2 = $block.getStateList().get(1).getName();
+#elseIf ($model.getModelMode() == "Compilation")
+    #if (mp->majorStep > 0)
+        $hardwareDefineName.pumpPWM = 0.0002 * $block.getInputPortVariable(0);
+        $hardwareDefineName.pumpPWM = $hardwareDefineName.pumpPWM > 1.0 ? 1.0 : $hardwareDefineName.pumpPWM;
+        $hardwareDefineName.pumpPWM = $hardwareDefineName.pumpPWM < 0.15 ? 0.15 : $hardwareDefineName.pumpPWM;
+        outputWaterLevel(&$hardwareDefineName);
+        $outputPort1 = $hardwareDefineName.speed_counter_in;
+        $outputPort2 = $hardwareDefineName.level;
+    #end
+#end

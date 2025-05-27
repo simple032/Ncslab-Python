@@ -1,0 +1,51 @@
+#set($inputPort1 = $block.getInputPortVariable(0))
+#set($outputPort1 = $block.getOutputPortVariables().get(0))
+
+if ($modelMode == "Compilation") {
+    #set($hardwareDefineName = "Block" + $block.getBlockId() + "_ServoMotorSlider")
+    initServoMotorSlider(&$hardwareDefineName);
+
+    if (mp->majorStep > 0) {
+        int bufLen = 1024;
+        char recvBuff[bufLen] = {0};
+
+        double da = $inputPort1;
+        da = da > 2.5 ? 2.5 : da;
+        da = da < -2.5 ? -2.5 : da;
+
+        if ((da > 0 && servodata1 > 80) || (da < 0 && servodata1 < -80)) {
+            da = 0;
+        }
+
+        da += 2.5;
+        printf("da=%f", da);
+        DAC8532_Out_Voltage(channel_A, da);
+
+        unsigned char cmd[] = {0x01, 0x04, 0x04, 0x00, 0x00, 0x02, 0x70, 0xFB};
+        Serialport_Send(hComm, cmd, 8);
+        int k = Serialport_Recv(hComm, (uint8_t*)recvBuff, sizeof(recvBuff));
+
+        int16_t Read = (recvBuff[4] + (recvBuff[3] << 8));
+        for (int i = 0; i < k; i++) {
+            printf("%d=%d ", i, recvBuff[i]);
+        }
+        printf("\n");
+
+        if ((Read > 0.5) || (Read < -0.5)) {
+            $outputPort1 = (-0.0039 * Read);
+            printf("out=%f", $outputPort1);
+            servodata = Read;
+            servodata1 = (-0.0039 * Read);
+        } else {
+            $outputPort1 = (-0.0039 * servodata);
+        }
+
+        servodata1 = (-0.0039 * servodata);
+    }
+} else if ($modelMode == "Simulation") {
+    #foreach($i in [0..2])
+    #set($stateX = $block.getStateList().get($i).getName())
+    #set($numValue = $block.getParameter("num").getValue($i))
+    $outputPort1 += $stateX * $numValue;
+    #end
+}

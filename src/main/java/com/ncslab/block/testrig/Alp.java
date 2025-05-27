@@ -1,5 +1,8 @@
 package com.ncslab.block.testrig;
 
+import com.ncslab.util.TemplateManager;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.Vector;
 
 import lombok.Getter;
@@ -56,51 +59,27 @@ public class Alp extends Block {
 		hardwareDefineCode+="ALP "+hardwareDefineName+";\n";
 		return hardwareDefineCode;
 	}
+public void generateInitCodeC(CodeStructC code) {
+    super.generateInitCodeC(code);
 
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block ALP:("+getBlockId()+")"+getBlockName()+"*/\n";
-		switch(model.getModelMode()) {
-		case Simulation:
-			for(State xState:xStateList) {
-				initCode+=xState.getName()+
-						"=0;\n";
-			}
-			break;
-		case Compilation:
-			hardwareDefineName="Block"+this.getBlockId()+"_Alp";
-			initCode+="initAlp(&"+hardwareDefineName+");\n";
-			break;
-		}
-		code.addInitCode(initCode);
-	}
+    context.put("block", this);
+    context.put("states", stateList);
+    context.put("modelMode", model.getModelMode().name());
+
+    String codeStr = TemplateManager.renderTemplate("c/testrig/Alp/init.vm", context);
+    code.addInitCode(codeStr);
+}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block ALP:("+getBlockId()+")"+getBlockName()+"*/\n";
-		switch(model.getModelMode()) {
-		case Simulation:
-			outputCode+=getOutputPortVariable(0)+"=0";
-			int i=num.length-1;
-			for(State xState:xStateList) {
-				outputCode+="+"+xState.getName()+"*"+num[i];
-				i--;
-			}
-			outputCode+=";\n";
-			break;
-		case Compilation:
-			hardwareDefineName="Block"+this.getBlockId()+"_Alp";
-			outputCode+="if(mp->majorStep>0) {\n";
-			outputCode+=hardwareDefineName+".alpPWM=2600*"+this.getInputPortVariable(0)+";\n";
-			outputCode+=hardwareDefineName+".alpPWM="+hardwareDefineName+".alpPWM>2400.0?2400.0:"+hardwareDefineName+".alpPWM;\n";
-			outputCode+=hardwareDefineName+".alpPWM="+hardwareDefineName+".alpPWM<0?0:"+hardwareDefineName+".alpPWM;\n";
-			outputCode+=hardwareDefineName+".alpPWM="+hardwareDefineName+".alpPWM*1.0/2600.0;\n";
-			outputCode+="outputAlp(&"+hardwareDefineName+");\n";
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=2.0*"+hardwareDefineName+".fanspeed_output;\n";
-			outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=calalpoutput(635-19.0114*"+hardwareDefineName+".position);\n";
-			outputCode+="}\n";
-			break;
-		}
-		code.addOutputCode(outputCode);
-	}
+	        context.put("block", this);
+	        context.put("states", xStateList);
+	        context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
+	        context.put("modelMode", model.getModelMode().name());
+	        context.put("inputPortVariable", getInputPortVariable(0));
+	        context.put("outputPortVariables", getOutputPortVariables());
+	
+	        String codeStr = TemplateManager.renderTemplate("c/testrig/Alp/output.vm", context);
+	        code.addOutputCode(codeStr);
+	    }
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of ALP" + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 

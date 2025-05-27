@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -16,157 +17,102 @@ import java.util.Vector;
 
 public class DCMotorAngle extends Block {
 
+    private String name = "DCMotorAngle";
 
-	private String name = "DCMotorAngle";
-
-	private State speedState;
+    private State speedState;
     private State angleState;
 
-	private double motorK=106.25;
-	private double motorT=0.07;
+    private double motorK=106.25;
+    private double motorT=0.07;
 
     private double input_max = 1.0;
     private double input_min = -1.0;
 
     @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
+    private static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
-    public static final Vector<String> outputNames = new Vector<>();
+    private static final Vector<String> outputNames = new Vector<>();
     @Getter
-    public static final Vector<String> inputNames = new Vector<>();
+    private static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("Speed");
         outputNames.add("Angle");
         inputNames.add("in1");
     }
 
-	public DCMotorAngle(JSONObject blockJSON,NCSLabModel model) {
-		super(blockJSON,model);
+    public DCMotorAngle(JSONObject blockJSON,NCSLabModel model) {
+        super(blockJSON,model);
 
+        inputPortList.add(new InputPort(this,1));
+        outputPortList.add(new OutputPort(this,"Speed",1,false));
+        outputPortList.add(new OutputPort(this,"Angle",2,false));
+        this.isHardware=true;
 
-		inputPortList.add(new InputPort(this,1));
-		outputPortList.add(new OutputPort(this,"Speed",1,false));
-		outputPortList.add(new OutputPort(this,"Angle",2,false));
-		this.isHardware=true;
-
-		switch(model.getModelMode()) {
-		case Simulation:
-			speedState=new State(this,1,"speedState");
-			stateList.add(speedState);
+        switch(model.getModelMode()) {
+        case Simulation:
+            speedState=new State(this,1,"speedState");
+            stateList.add(speedState);
             angleState=new State(this,2,"angleState");
             stateList.add(angleState);
             break;
-		case Compilation:
-			break;
-		}
-	}
+        case Compilation:
+            break;
+        }
+    }
 
-	public String getHardwareDefineCodeC() {
-		String hardwareDefineCode="";
-		//hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
-		hardwareDefineCode+="HANDLE hComm;\n";
-		hardwareDefineCode+="HANDLE hComm1;\n";
-		return hardwareDefineCode;
-	}
-	 public void generateArraysCodeC(CodeStructC code) {
-		 String arraysCode="/*Define arrays for block DCMotorAngle:("+getBlockId()+")"+getBlockName()+"*/\n";
-		 arraysCode+="double angledata=0;\n";
-		 arraysCode+="double angledata1=0;\n";
-		 arraysCode+="int angle_N=0;\n";
-		 code.addArraysCode(arraysCode);
-	 }
+    public String getHardwareDefineCodeC() {
+        String hardwareDefineCode="";
+        hardwareDefineCode+="HANDLE hComm;\n";
+        hardwareDefineCode+="HANDLE hComm1;\n";
+        return hardwareDefineCode;
+    }
 
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
+    public void generateArraysCodeC(CodeStructC code) {
+        String arraysCode="/*Define arrays for block DCMotorAngle:("+getBlockId()+")"+getBlockName()+"*/\n";
+        arraysCode+="double angledata=0;\n";
+        arraysCode+="double angledata1=0;\n";
+        arraysCode+="int angle_N=0;\n";
+        code.addArraysCode(arraysCode);
+    }
 
-		String initCode="/*Code for initialization of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
 
-		switch(model.getModelMode()) {
-		case Simulation:
-			initCode+=speedState.getName()+"="+0+";\n";
-            initCode+=angleState.getName()+"="+0+";\n";
-			break;
-		case Compilation:
-			//1.Open the serial port
-			String port = "\"/dev/ttyUSB0\"";
-			String port1="\"/dev/ttyUSB1\"";
-			int baudrate = 115200;
-			initCode+="char msg[255];\n";
-			initCode+="char msg1[255];\n";
-			initCode+="hComm = Serialport_Open((char *)"+port+", "+baudrate+",(char *)msg);\n";
-			initCode+="hComm1 = Serialport_Open((char *)"+port1+", "+baudrate+",(char *)msg1);\n";
-			break;
-		}
+        context.put("block", this);
+        context.put("states", stateList);
+        context.put("modelMode", model.getModelMode().name());
 
-		code.addInitCode(initCode);
-	}
+        String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/init.vm", context);
+        code.addInitCode(codeStr);
+    }
 
-
-	public void generateIncludeCodeC(CodeStructC code) {
-		String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		includeCode += "#include \"ncs_serialport.h\"\n";
+    public void generateIncludeCodeC(CodeStructC code) {
+        String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+        includeCode += "#include \"ncs_serialport.h\"\n";
         code.addIncludeCode(includeCode);
-	}
+    }
 
-	public void addLine(String originCode, String newLine) {
+    public void addLine(String originCode, String newLine) {
+    }
 
-	}
+    public void generateOutputCodeC(CodeStructC code) {
+        context.put("block", this);
+        context.put("states", stateList);
+        context.put("inputPortVariables", getInputPortVariables());
+        context.put("outputPortVariables", getOutputPortVariables());
+        context.put("modelMode", model.getModelMode().name());
 
-	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		switch(model.getModelMode()) {
-		case Simulation:
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+speedState.getName()+";\n";
-            outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+angleState.getName()+";\n";
-			break;
-		case Compilation:
+        String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
 
-			int bufLen = 255;
-			outputCode+="if(mp->majorStep>0){\n";
-			//speed control
-			outputCode+="unsigned char cmd[]={0xAA,0xAA,0x01,0x01,0x00,0x00,0x00};\n";
-			outputCode+="int pwm =(int)("+this.getInputPortVariable(0) +"*5000);\n";
-			outputCode+="pwm = pwm>=5000?5000:pwm;\n";
-			outputCode+="pwm = pwm<=-5000?-5000:pwm;\n";
-			outputCode+="cmd[4] = (pwm&0xFF);\n";
-			outputCode+="cmd[5] = (pwm&0xFF00)>>8;\n";
-			outputCode+="cmd[6] = calcSum(cmd);\n";
-			outputCode+="Serialport_Send(hComm,cmd,7);\n";
-			outputCode+="char recvBuff["+bufLen+"]={0};\n";
-			outputCode+="Serialport_Recv(hComm,(uint8_t*)recvBuff,7);\n";
-			outputCode+="int speed=recvBuff[4]+(recvBuff[5]<<8);\n";
-			outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=5.79582*speed;\n";
-
-			//angle control
-            outputCode+="unsigned char cmdangle[]={0x01,0x04,0x00,0x00,0x00,0x04,0xf1,0xc9};\n";
-            outputCode+="Serialport_Send(hComm1,cmdangle,8);\n";
-            outputCode+="char recvBuff1["+bufLen+"]={0};\n";
-            outputCode+="Serialport_Recv(hComm,(uint8_t*)recvBuff1,13);\n";
-            outputCode+="double Angle=0.01098633*(recvBuff1[6]+(recvBuff1[5]<<8));\n";
-            outputCode+="if(angledata-Angle>=180){\n";
-            outputCode+="angle_N=1+angle_N;\n";
-            outputCode+="}else if(angledata-Angle<=-180){\n";
-            outputCode+="angle_N=-1+angle_N;\n";
-            outputCode+="}\n";
-            outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=angle_N*360+Angle;\n";
-            outputCode+="angledata=Angle;\n";
-			//outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=Angle;\n";
-			//outputCode+="for(int i=0; i<13; i++){printf(\"%d=%d \", i, recvBuff1[i]);} printf(\"\\n\");\n";
-			outputCode+="}\n";
-			break;
-		}
-
-		code.addOutputCode(outputCode);
-	}
-
-	public void  generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+    public void generateDerivativeCodeC(CodeStructC code) {
+        String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
         String real_input = getBlockName() + "_real_input";
-		switch(model.getModelMode()) {
-		case Simulation:
+        switch(model.getModelMode()) {
+        case Simulation:
             derivativeCode+="double " + real_input + " = 0.0;\n";
             derivativeCode+="if("+ this.getInputPortVariable(0) +">"+input_max+")\n";
             derivativeCode+="\t" +real_input+ "="+input_max+";\n";
@@ -181,11 +127,10 @@ public class DCMotorAngle extends Block {
                     +";\n";
             derivativeCode+=angleState.getDerivativeName()+"="
                     +speedState.getName()+";\n";
-		case Compilation:
-			break;
-		}
+        case Compilation:
+            break;
+        }
 
-		code.addDerivativeCode(derivativeCode);
-	}
+        code.addDerivativeCode(derivativeCode);
+    }
 }
-

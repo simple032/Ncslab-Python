@@ -1,0 +1,24 @@
+#set($input1 = $block.getInputPortVariable(1))
+#set($input2 = $block.getInputPortVariable(2))
+#set($input3 = $block.getInputPortVariable(3))
+#set($input4 = $block.getParameter("v").getName())
+#set($input5 = $block.getParameter("vel").getName())
+
+#set($output1 = $block.getOutputPortVariables().get(0).getName())
+#set($output2 = $block.getOutputPortVariables().get(1).getName())
+
+#if ($input1 * $input2 <= 0 && $input2 < 0)
+    #set($v = -$input4)
+#elseif ($input1 * $input2 <= 0 && $input2 > 0)
+    #set($v = $input4)
+#elseif ($input1 * $input2 >= 0 && $input2 > 0)
+    #set($v = 0.001)
+#elseif ($input1 * $input2 >= 0 && $input2 < 0)
+    #set($v = 0.001)
+#end
+
+#set($acc = fabs($v / 0.09424776))
+#set($acc1 = (int)$acc)
+
+$output1 = $v * 100;
+$output2 = $acc1;

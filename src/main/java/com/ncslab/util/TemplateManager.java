@@ -16,15 +16,6 @@ import java.util.Enumeration;
 import java.util.concurrent.Executors;
 
 
-/*
-* ERROR [org.apache.velocity.parser] - templates/c/discrete/Zero_Order_Hold/output.vm: Encountered "-1" at line 10, column 31.
-ERROR [org.apache.velocity.parser] - templates/c/discontinuous/DeadZone/output.vm: Encountered "-1" at line 12, column 35.
-* ERROR [org.apache.velocity.parser] - templates/c/discontinuous/Relay/init.vm: Encountered "-1" at line 9, column 34.
-* ERROR [org.apache.velocity.parser] - templates/c/discontinuous/Saturation/output.vm: Encountered "-1" at line 12, column 35.
-*  ERROR [org.apache.velocity.parser] - templates/c/source/SineWave/output.vm: Encountered "-1" at line 6, column 37.
-* ERROR [org.apache.velocity.parser] - templates/c/source/Step/output.vm: Encountered "-1" at line 10, column 32.
-* ERROR [org.apache.velocity.parser] - templates/c/discrete/UnitDelay/output.vm: Encountered "-1" at line 25, column 34.
-* */
 
 public class TemplateManager {
     private static VelocityEngine ve;

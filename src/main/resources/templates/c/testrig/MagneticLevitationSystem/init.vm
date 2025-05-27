@@ -1,0 +1,11 @@
+/* Velocity Template for initialization of block MagneticLevitationSystem */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Compilation")
+    #foreach($parameter in $block.getParameterList())
+        $parameter.getName() = $parameter.getInitDouble();
+    #end
+
+    DEV_ModuleInit();
+#end

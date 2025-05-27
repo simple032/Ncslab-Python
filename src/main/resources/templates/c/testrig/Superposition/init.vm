@@ -1,0 +1,18 @@
+/* Velocity Template for initialization of block Superposition */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Compilation")
+    #foreach($parameter in $block.getParameterList())
+        $parameter.getName() = $parameter.getInitDouble();
+    #end
+
+    wiringPiSetupGpio();
+
+    DEV_ModuleInit();
+    if (ADS1256_init() == 1) {
+        printf("\\r\\n ADS1256_init   END \\r\\n");
+        DEV_ModuleExit();
+        exit(0);
+    }
+#end

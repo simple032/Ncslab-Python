@@ -1,44 +1,33 @@
 package com.ncslab.block.testrig;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.io.*;
-import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
-import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.State;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.util.TemplateManager;
+
 import java.util.Vector;
 
 public class MagneticLevitationSystem extends Block {
 
-
     private String name = "MagneticLevitationSystem";
-
-//	State speedState;
-//	State spState;
-    Parameter gravity;
-    Parameter x0;
-    Parameter i0;
-    Parameter Ks;
-    Parameter Ka;
-
-    State position;
-    State velocity;
 
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
     static {
-        inputNames.add("in1"); // 假设输入端口的名称为"in1"，因为构造函数中没有提供输入端口的名称
+        inputNames.add("in1");
         outputNames.add("Position");
         outputNames.add("Velocity");
         parameterNames.add("gravity");
@@ -48,13 +37,21 @@ public class MagneticLevitationSystem extends Block {
         parameterNames.add("INPUT_RESISTANCE");
     }
 
-    public MagneticLevitationSystem(JSONObject blockJSON, NCSLabModel model) {
-        super(blockJSON,model);
+    State position;
+    State velocity;
 
-        //一输入，两输出
-        inputPortList.add(new InputPort(this,1));
-        outputPortList.add(new OutputPort(this,"Position",1,false));
-		outputPortList.add(new OutputPort(this,"Velocity",2,false));
+    Parameter gravity;
+    Parameter x0;
+    Parameter i0;
+    Parameter Ks;
+    Parameter Ka;
+
+    public MagneticLevitationSystem(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, "Position", 1, false));
+        outputPortList.add(new OutputPort(this, "Velocity", 2, false));
 
         position = new State(this, 1, "x0");
         stateList.add(position);
@@ -75,73 +72,64 @@ public class MagneticLevitationSystem extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        String initCode="";
+        String initCode = "";
         code.addInitCode(initCode);
     }
 
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
 
-        String derivativeCode="";
+        String derivativeCode = "";
 
         code.addDerivativeCode(derivativeCode);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        String outputCode="";
+        String outputCode = "";
 
         code.addOutputCode(outputCode);
     }
-
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        String initCode = "/* Code for initialization of block " + name + ":( " + getBlockId() +" ) " + getBlockName() + " */\n";
-        for(Parameter parameter : parameterList) {
-            initCode += parameter.getInitCodeC();
-        }
+        context.put("block", this);
+        context.put("states", stateList);
+        context.put("modelMode", model.getModelMode().name());
 
-        code.addInitCode(initCode);
+        String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-//		`code.addIncludeCode(includeCode);
+        String includeCode = "/*Code for include files of block " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        code.addIncludeCode(includeCode);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+        context.put("block", this);
+        context.put("states", stateList);
+        context.put("inputPortVariable", getInputPortVariable(0));
+        context.put("outputPortVariables", getOutputPortVariables());
+        context.put("modelMode", model.getModelMode().name());
 
-        outputCode+="{\n";
-
-        String content = getOutputPortVariable(0) + " = -100/4.587156*"+getStateVariable(0)+";\n"
-                + getOutputPortVariable(1) + " = "+getStateVariable(1) + ";\n";
-
-        outputCode += content +"}\n";
-        code.addOutputCode(outputCode);
+        String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
+    public void generateDerivativeCodeC(CodeStructC code) {
+        context.put("block", this);
+        context.put("states", stateList);
+        context.put("inputPortVariable", getInputPortVariable(0));
+        context.put("modelMode", model.getModelMode().name());
 
-    public void  generateDerivativeCodeC(CodeStructC code) {
-        String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-
-
-        String content = "{\n" +
-            position.getDerivativeName() + "=" + velocity.getName() + ";\n" +
-            velocity.getDerivativeName() + "=2*" + gravity.getName() + "*" + position.getName() + "/" + x0.getName()
-            + "-2*" + gravity.getName() + "*" + Ks.getName() + "*-1*" + this.getInputPortVariable(0) + "/(" + Ka.getName() + "*" + i0.getName() + ");\n" +
-            "}\n";
-
-        derivativeCode += content;
-
-        code.addDerivativeCode(derivativeCode);
+        String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
-        String statementCode = "/*Code for statement of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-
+        String statementCode = "/*Code for statement of " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
         code.addStatementCode(statementCode);
     }
 }

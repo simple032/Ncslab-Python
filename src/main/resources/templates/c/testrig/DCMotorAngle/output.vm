@@ -1,0 +1,40 @@
+/* Velocity template for DCMotorAngle output code */
+#set( $block = $context.get("block") )
+#set( $states = $context.get("states") )
+#set( $inputPortVariables = $context.get("inputPortVariables") )
+#set( $outputPortVariables = $context.get("outputPortVariables") )
+#set( $modelMode = $context.get("modelMode") )
+
+#if( $modelMode == "Simulation" )
+$outputPortVariables[0] = $states[0].getName();
+$outputPortVariables[1] = $states[1].getName();
+#elseif( $modelMode == "Compilation" )
+unsigned char cmd[] = {0xAA, 0xAA, 0x01, 0x01, 0x00, 0x00, 0x00};
+int pwm = (int)($inputPortVariables[0] * 5000);
+pwm = $math.max(-5000, $math.min(5000, pwm));
+cmd[4] = (pwm & 0xFF);
+cmd[5] = ((pwm & 0xFF00) >> 8);
+cmd[6] = calcSum(cmd);
+Serialport_Send($block.hardwareDefineName, cmd, 7);
+
+char recvBuff[255] = {0};
+Serialport_Recv($block.hardwareDefineName, (uint8_t*)recvBuff, 7);
+int speed = recvBuff[4] + (recvBuff[5] << 8);
+$outputPortVariables[0] = 5.79582 * speed;
+
+unsigned char cmdangle[] = {0x01, 0x04, 0x00, 0x00, 0x00, 0x04, 0xf1, 0xc9};
+Serialport_Send($block.hardwareDefineName, cmdangle, 8);
+
+char recvBuff1[255] = {0};
+Serialport_Recv($block.hardwareDefineName, (uint8_t*)recvBuff1, 13);
+double Angle = 0.01098633 * (recvBuff1[6] + (recvBuff1[5] << 8));
+
+if ($block.angledata - Angle >= 180) {
+    $block.angle_N = 1 + $block.angle_N;
+} else if ($block.angledata - Angle <= -180) {
+    $block.angle_N = -1 + $block.angle_N;
+}
+
+$outputPortVariables[1] = $block.angle_N * 360 + Angle;
+$block.angledata = Angle;
+#end

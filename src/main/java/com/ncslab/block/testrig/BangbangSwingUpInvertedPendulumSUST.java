@@ -7,6 +7,7 @@ import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.util.TemplateManager;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
@@ -78,33 +79,25 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
 	public void addLine(String originCode, String newLine) {
 
 	}
-
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+        context.put("block", this);
+	    context.put("states", stateList);
+	    context.put("inputPortVariables", getInputPortVariables());
+	    context.put("outputPortVariables", getOutputPortVariables());
+	    context.put("modelMode", model.getModelMode().name());
 
-		outputCode+="float v=0,acc=0;\n"
-				+ "float Angle = "+this.getInputPortVariable(1)+"*3.1415926/180.0;\n"
-				+ "float Dif_Angle = "+this.getInputPortVariable(2)+"*3.1415926/180.0;\n"
+	    String codeStr = TemplateManager.renderTemplate("c/testrig/BangbangSwingUpInvertedPendulumSUST/output.vm", context);
+	    code.addOutputCode(codeStr);
+	}
 
-				+ "if(Angle==0&&Dif_Angle==0){v=1;velbangbang"+getBlockId()+"=200;}\n"
-				+ "if(Angle*Dif_Angle<=0&&Angle<0){v=-"+this.getInputPortVariable(3)+";velbangbang"+getBlockId()+"=-"+this.getInputPortVariable(4)+";}\n"
-				+ "if(Angle*Dif_Angle<=0&&Angle>0){v="+this.getInputPortVariable(3)+";velbangbang"+getBlockId()+"="+this.getInputPortVariable(4)+";}\n"
-				+ "if(Angle*Dif_Angle>=0&&Angle>0){v=0.01;}\n"
-				+ "if(Angle*Dif_Angle>=0&&Angle<0){v=0.01;}\n"
+	public void generateInitCodeC(CodeStructC code) {
+	    super.generateInitCodeC(code);
+        context.put("block", this);
+	    context.put("states", stateList);
+	    context.put("modelMode", model.getModelMode().name());
 
-
-				+ "acc = fabs(v /0.09424776);\n"
-
-				+ "int acc1=(int)acc;\n"
-				+ "int vel1=(int)velbangbang"+getBlockId()+";\n"
-				;
-
-
-
-		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"=v*100;\n";
-		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"=vel1;\n";
-
-		code.addOutputCode(outputCode);
+	    String codeStr = TemplateManager.renderTemplate("c/testrig/BangbangSwingUpInvertedPendulumSUST/init.vm", context);
+	    code.addInitCode(codeStr);
 	}
 
 	public void  generateDerivativeCodeC(CodeStructC code) {

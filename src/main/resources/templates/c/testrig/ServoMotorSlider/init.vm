@@ -1,0 +1,12 @@
+/* Velocity Template for initialization of block ServoMotorSlider */
+#set($blockId = $block.getBlockId())
+#set($blockName = $block.getBlockName())
+
+#if ($modelMode == "Simulation")
+    #foreach($state in $block.getStateList())
+        $state.getName() = 0;
+    #end
+#elseIf ($modelMode == "Compilation")
+    char msg[255];
+    HANDLE hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
+#end

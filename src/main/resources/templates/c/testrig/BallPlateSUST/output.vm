@@ -1,0 +1,75 @@
+/*Code for output of block BallPlateSUST:(${block.getBlockId()})${block.getBlockName()}*/
+{
+if(mp->majorStep > 0){
+char recvBuffBPSUST[255]={0};
+
+char bpcmd[50]={0},bpcmd2[50]={0};char bpcmd3[50]={0},bpcmd4[50]={0};double accTmp;
+accTmp=fabs(${block.getInputPortVariable(0)})+0.8;
+int bptmp = ${block.getInputPortVariable(0)};
+int bptmp2 = ${block.getInputPortVariable(1)};
+
+if(${block.getInputPortVariable(0)}>0&&((int)accTmp)>0) {sprintf((char*)bpcmd2,"GZ000V200\\r\\n");sprintf((char*)bpcmd,"GZ100A%d\\r\\n",(int)accTmp);}
+else if(${block.getInputPortVariable(0)}<0&&((int)accTmp)>0) {sprintf((char*)bpcmd2,"GZ000V-200\\r\\n");sprintf((char*)bpcmd,"GZ100A%d\\r\\n",(int)accTmp);}
+else {sprintf((char*)bpcmd2,"GZ000V0\\r\\n");sprintf((char*)bpcmd,"GZ100A0\\r\\n");}
+ 
+accTmp=fabs(${block.getInputPortVariable(1)})+0.8;
+if(${block.getInputPortVariable(1)}>0&&((int)accTmp)>0) {sprintf((char*)bpcmd4,"GZ001V200\\r\\n");sprintf((char*)bpcmd3,"GZ101A%d\\r\\n",(int)accTmp);}
+else if(${block.getInputPortVariable(1)}<0&&((int)accTmp)>0) {sprintf((char*)bpcmd4,"GZ001V-200\\r\\n");sprintf((char*)bpcmd3,"GZ101A%d\\r\\n",(int)accTmp);}
+else {sprintf((char*)bpcmd4,"GZ001V0\\r\\n");sprintf((char*)bpcmd3,"GZ101A0\\r\\n");}
+
+BPSUSTbool=!BPSUSTbool;
+
+char headStrBP[]={"POS"};
+
+maxfdBP=hCommBPSUST>BPfd?hCommBPSUST:BPfd;
+
+FD_ZERO(&read_bpfds);
+FD_ZERO(&write_bpfds);
+FD_SET(BPfd, &read_bpfds);
+FD_SET(hCommBPSUST, &read_bpfds);
+FD_SET(hCommBPSUST, &write_bpfds);
+bptimeout.tv_sec = 0;
+bptimeout.tv_usec = 10000;
+int bpselectresult = select(maxfdBP + 1, &read_bpfds, &write_bpfds, NULL, &bptimeout);
+if (bpselectresult == -1) {
+perror("select");
+}
+else if (bpselectresult == 0) {
+//printf("No input within 0.001 seconds.\\n");
+}
+else {
+if(FD_ISSET(hCommBPSUST, &write_bpfds)){
+write(hCommBPSUST,BPposcmd,strlen(BPposcmd));
+usleep(4000);
+write(hCommBPSUST,bpcmd,strlen(bpcmd));
+write(hCommBPSUST,bpcmd3,strlen(bpcmd3));
+usleep(2200);
+write(hCommBPSUST,bpcmd2,strlen(bpcmd2));
+write(hCommBPSUST,bpcmd4,strlen(bpcmd4));
+}
+if(FD_ISSET(hCommBPSUST, &read_bpfds)){
+Serialport_Recv(hCommBPSUST,recvBuffBPSUST,62);
+printf("recvBuffBPSUST=%s\\n",recvBuffBPSUST);
+char *keyStartBP = strstr(recvBuffBPSUST,headStrBP);
+if(keyStartBP!=NULL){
+keyStartBP+=3;
+int BPpostmp = strtol(keyStartBP,&keyStartBP,10);
+BPpos1 = strtol(keyStartBP+1,&keyStartBP,10);
+BPpos2 = strtol(keyStartBP+1,NULL,10);
+}}
+if (FD_ISSET(BPfd, &read_bpfds)) {
+while(read(BPfd, &ev, sizeof(struct input_event)) == sizeof(struct input_event)) {
+if(ev.type==EV_ABS)
+{if(ev.code==ABS_X)
+t_x=ev.value;
+if(ev.code==ABS_Y)
+t_y=ev.value;}
+}}
+}
+
+${block.outputPortList.get(0).getOutputSignalC().getName()} = (-t_x + 16088) / 80.4;
+${block.outputPortList.get(1).getOutputSignalC().getName()} = (t_y - 15968) / 107.47;
+${block.outputPortList.get(2).getOutputSignalC().getName()} = BPpos1;
+${block.outputPortList.get(3).getOutputSignalC().getName()} = BPpos2;
+
+}

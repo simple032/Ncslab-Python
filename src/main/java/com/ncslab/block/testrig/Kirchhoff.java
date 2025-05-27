@@ -6,12 +6,15 @@ import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.State;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
+
+import com.ncslab.util.TemplateManager;
 
 public class Kirchhoff extends Block {
 
@@ -24,13 +27,10 @@ public class Kirchhoff extends Block {
 	Parameter AD6;
 	Parameter AD7;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
+    private static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
-    public static final Vector<String> outputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> inputNames = new Vector<>();
+    private static final Vector<String> outputNames = new Vector<>();
+    private static final Vector<String> inputNames = new Vector<>();
 
     static {
 
@@ -161,35 +161,24 @@ public class Kirchhoff extends Block {
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode = "/*Code for output of block Kirchhoff:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-		outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=ADS1256_GetChannalValue(" + AD1.getName()
-				+ ")*5.0/0x7fffff;\n";
-		outputCode += outputPortList.get(1).getOutputSignalC().getName() + "=ADS1256_GetChannalValue(" + AD2.getName()
-				+ ")*(-16.6666667)/0x7fffff;\n";
-		outputCode += outputPortList.get(2).getOutputSignalC().getName() + "=ADS1256_GetChannalValue(" + AD3.getName()
-				+ ")*5.0/0x7fffff;\n";
-		outputCode += outputPortList.get(3).getOutputSignalC().getName() + "=ADS1256_GetChannalValue(" + AD4.getName()
-				+ ")*(-16.6666667)/0x7fffff;\n";
-		outputCode += outputPortList.get(4).getOutputSignalC().getName() + "=ADS1256_GetChannalValue(" + AD5.getName()
-				+ ")*5.0/0x7fffff;\n";
-		outputCode += outputPortList.get(5).getOutputSignalC().getName() + "=ADS1256_GetChannalValue(" + AD6.getName()
-				+ ")*16.6666667/0x7fffff;\n";
-		outputCode += outputPortList.get(6).getOutputSignalC().getName() + "=ADS1256_GetChannalValue(" + AD7.getName()
-				+ ")*16.6666667/0x7fffff;\n";
+        context.put("block", this);
+	    context.put("states", getStates());
+	    context.put("inputPortVariable", getInputPortVariable(0));
+	    context.put("outputPortVariables", getOutputPortVariables());
+	    context.put("modelMode", model.getModelMode().name());
 
-		outputCode += "if(" + inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
-				+ "){\n";
-		outputCode += "digitalWrite(" + BCM.getName() + ", HIGH);}\n";
-		outputCode += "else{\n";
-		outputCode += "digitalWrite(" + BCM.getName() + ", LOW);}\n";
+	    String codeStr = TemplateManager.renderTemplate("c/testrig/Kirchhoff/output.vm", context);
+	    code.addOutputCode(codeStr);
+	}
 
-		code.addOutputCode(outputCode);
+	private Vector<State> getStates() {
+	    return stateList;
 	}
 
 	public void generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode = "/*Code for Derivative of Kirchhoff:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+	    String derivativeCode = "/*Code for Derivative of Kirchhoff:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 
-		code.addDerivativeCode(derivativeCode);
+	    code.addDerivativeCode(derivativeCode);
 	}
 
 }

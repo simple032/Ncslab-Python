@@ -1,0 +1,42 @@
+#set($inputSignal1 = $block.getInputPortVariable(0))
+#set($inputSignal2 = $block.getInputPortVariable(1))
+#set($outputRealX = $block.getOutputPortVariables().get(0))
+#set($outputAngle = $block.getOutputPortVariables().get(1))
+
+if ($modelMode == "Compilation") {
+    #set($accTmp1 = fabs($inputSignal1) / 9.424776)
+    #set($accInt1 = (int)$accTmp1)
+    #set($VspeedValue = (int)$inputSignal2 > 0 ? (int)$inputSignal2 : -(int)$inputSignal2)
+
+    if ($inputSignal1 > 0 && $accInt1 > 0) {
+        sprintf((char*)xzcmd2, "GZ000V%d\\r\\n", $VspeedValue);
+        sprintf((char*)xzcmd, "GZ100A%d\\r\\n", $accInt1);
+    } else if ($inputSignal1 < 0 && $accInt1 > 0) {
+        sprintf((char*)xzcmd2, "GZ000V-%d\\r\\n", $VspeedValue);
+        sprintf((char*)xzcmd, "GZ100A%d\\r\\n", $accInt1);
+    } else {
+        sprintf((char*)xzcmd2, "GZ000V0\\r\\n");
+        sprintf((char*)xzcmd, "GZ100A0\\r\\n");
+    }
+
+    usleep(3000);
+    Serialport_Send(hCommXzIPSUST, xzcmd, strlen(xzcmd));
+    Serialport_Send(hCommXzIPSUST, xzcmd2, strlen(xzcmd2));
+
+    char xzheadStr[] = {"POS"};
+    int xzpos1 = 0, xzpos2 = 0;
+
+    char *xzkeyStart = strstr(recvBuffXzIPSUST, xzheadStr);
+    if (xzkeyStart != NULL) {
+        xzkeyStart += 3;
+        xzpos1 = strtol(xzkeyStart, &xzkeyStart, 10);
+        xzpos2 = strtol(xzkeyStart + 1, NULL, 10);
+
+        #set($xzxPOS = $xzpos2 * 360.0 / (16 * 2000.0))
+        #set($xzAngle = ($xzpos1 % 4000) * 360.0 / 4000.0)
+        #set($xzAngle = ($xzpos1 >= 0) ? ($xzAngle - 180) : ($xzAngle + 180))
+
+        $outputRealX = $xzxPOS;
+        $outputAngle = $xzAngle;
+    }
+}
