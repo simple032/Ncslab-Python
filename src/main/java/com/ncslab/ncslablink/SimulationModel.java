@@ -48,7 +48,18 @@ public class SimulationModel extends NCSLabModel{
 		super(jsonIn,mode);
 
         // 绑定模型的输出端口
-        states = new double[stateNum];
+        int statesSize = 0;
+        for(Block block: blockList) {
+            for (State state : block.getStateList()) {
+                if (state.getDataType() == DataType.REAL) {
+                    statesSize++;
+                } else {
+                    Matrix matrix = state.getData().getMatrix();
+                    statesSize += matrix.getRowDimension() * matrix.getColumnDimension();
+                }
+            }
+        }
+        states = new double[statesSize];
 	}
 
 	public static SimulationModel createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException {
@@ -139,7 +150,7 @@ public class SimulationModel extends NCSLabModel{
             FixedStepHandler fixedStepHandler = new FixedStepHandler() {
                 @Override
                 public void init(double t0, double[] y0, double t) {
-                    calculateInits();
+//                    calculateInits(t0, states);
                 }
 
                 @Override
@@ -168,7 +179,7 @@ public class SimulationModel extends NCSLabModel{
             StepHandler stepHandler = new StepHandler() {
                 @Override
                 public void init(double t0, double[] y0, double t) {
-                    calculateInits();
+//                    calculateInits(t0, states);
                 }
 
                 @Override
@@ -207,13 +218,13 @@ public class SimulationModel extends NCSLabModel{
             // send the simulation data to the client
             double tStart = getConfig().getStartTime();
             double tEnd = getConfig().getStopTime();
-
+            calculateInits(0, states);
             boolean hasState = systemODE.getDimension() > 0;
             if(hasState) {
                 integrator.integrate(systemODE, tStart, states, tEnd, states);
             }else {
                 double t = tStart;
-                calculateInits();
+
                 while(t <= tEnd){
                     calculateOutputs(t);
                     calculateDiscreteUpdates(t);
@@ -244,8 +255,7 @@ public class SimulationModel extends NCSLabModel{
     private void calculateOutputs(double t) {
         // 计算各个模块的输出
         // 类似Simulink的mdlOutputs
-
-        for(Block block:  blockList) {
+        for(Block block: outputChain) {
             block.calculateOutput(t);
         }
 
@@ -343,11 +353,27 @@ public class SimulationModel extends NCSLabModel{
         }
     }
 
-    private void calculateInits(){
+    private void calculateInits(double t, double[] x){
         // 计算各个模块的初始值
         // 类似Simulink的mdlInitialize
         for(Block block: blockList){
             block.calculateInit();
+        }
+
+        int index = 0;
+        for(Block block: blockList) {
+            for (State state : block.getStateList()) {
+                if (state.getDataType() == DataType.REAL) {
+                    x[index++] = state.getData().getInitValue();
+                } else {
+                    Matrix matrix = state.getData().getMatrix();
+                    for (int i = 0; i < matrix.getRowDimension(); i++) {
+                        for (int j = 0; j < matrix.getColumnDimension(); j++) {
+                            x[index++] = matrix.get(i, j);
+                        }
+                    }
+                }
+            }
         }
     }
 

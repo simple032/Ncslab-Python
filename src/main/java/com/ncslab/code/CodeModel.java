@@ -20,16 +20,8 @@ import com.ncslab.circuit.block.electblock.ElectBlock;
 
 abstract public class CodeModel extends NCSLabModel {
 
-	protected Vector<Block> terminalBlockList=new Vector<Block>();
-	protected boolean isAlgebraicLoop=false;
 
-	protected Vector<Block> scanBlockList=new Vector<Block>();
-	protected Vector<OutputPort> outputPortPathList=new Vector<OutputPort>();
-
-	//输出链，应该先输出哪个，然后再输出哪个
-	protected Vector<Block> outputChain=new Vector<Block>();
-
-	@Getter
+    @Getter
     @Setter
     protected Solver solver=Solver.ode4;
 
@@ -110,51 +102,8 @@ abstract public class CodeModel extends NCSLabModel {
 		}
 	}
 
-	//将电路系统有代数环模块设置好
-	private void setupElectBlocks() {
-		System.out.println("Looking for elect blocks");
-		for(Block block:blockList) {
-			if(block instanceof ElectBlock) {
-				ElectBlock electBlock=(ElectBlock)block;
-				//如果是loopPoint
-				if(electBlock.isLoopPoint()) {
-					System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
-					//将它设置成FeedThrough
-					block.setFeedThrough(false);
 
-					Vector<Block> relatedBlockList=electBlock.getRelatedBlockList();
 
-					for(Block relatedBlock:relatedBlockList) {
-						if(relatedBlock.getIsOutputCodeGenerated()==false) {
-							//将与loop计算相关的模块加入OutputChain
-							outputChain.add(relatedBlock);
-							//terminalBlockList.add(relatedBlock);
-							relatedBlock.setIsOuputCodeGenerated(true);
-							//同时加入二次搜索的列表,二次搜索的时候搜索输入的路径
-							scanBlockList.add(relatedBlock);
-						}
-					}
-
-					//将模块加入OutputChain,进行二次搜索
-					outputChain.add(block);
-					block.setIsOuputCodeGenerated(true);
-					scanBlockList.add(block);
-				}
-			}
-		}
-	}
-
-	/*建立输出链，决定应该先计算是你哪个模块，再计算哪个模块*/
-	private void setupOuputChain() {
-
-		//将电路系统有代数环模块设置好
-		setupElectBlocks();
-
-		//找到终端的Block
-		findTerminalBlocks();
-		//沿着终端模块，建立输出链
-		scanOutputChain();
-	}
 
     /**
 	 * general paradigm of code generation
@@ -165,7 +114,6 @@ abstract public class CodeModel extends NCSLabModel {
 	 * 5. generate statement code
 	 * 6. generate terminate code
 	 *
-	 * @param void
 	 * @throws MatDimException
 	 */
 	public void generate() {
@@ -174,8 +122,6 @@ abstract public class CodeModel extends NCSLabModel {
 
 		System.out.println("generate option is: "+option);
 		System.out.println("Generating codes......");
-
-		setupOuputChain();
 
 		//首先生成初始化代码
 		generateInitCode(option);
@@ -223,129 +169,6 @@ abstract public class CodeModel extends NCSLabModel {
 
 	abstract protected void generateTerminateCode(CodeGenerationOption option);
 	abstract protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException;
-
-	private void scanInputPort(InputPort inputPort) {
-		Line line=inputPort.getLinkedLine();
-		OutputPort outputPort=line.getLinkedOutputPort();
-
-		//如果输出端口已经生成完毕，则不用再生成，结束这一个分支的遍历
-		if(outputPort.getIsCodeGenerated()==true) {
-			return;
-		}
-
-		for(OutputPort output:outputPortPathList) {
-			if(output==outputPort) {
-				isAlgebraicLoop=true;
-			}
-		}
-
-		//如果发现代数环
-		if(isAlgebraicLoop) {
-			String errorString;
-			errorString="Found algorbet loop!!!";
-			boolean isDisp=false;
-			for(OutputPort output:outputPortPathList) {
-
-				if(output==outputPort) {
-					isDisp=true;
-				}
-
-				if(isDisp) {
-					errorString+=output.getBLock().getBlockName()+"->";
-				}
-			}
-
-			errorString+=outputPort.getBLock().getBlockName();
-
-			System.err.println(errorString);
-			ErrorMessage errorMessage=new ErrorMessage(ErrorMessage.AlgebraicLoop,errorString+"\n");
-			addErrorMessage(errorMessage);
-			isAlgebraicLoop=false;
-			return;
-		}
-
-
-		//记录这个OutputPort已经在现有路径回路中，作为记忆
-		outputPortPathList.add(outputPort);
-
-		//如果没有生成，那就遍历block，生成这个block的代码
-		Block block=outputPort.getBLock();
-
-		boolean isFeedThroughBlock=false;
-		Vector<OutputPort> outputPortList=block.getOutputPortList();
-		for(OutputPort output:outputPortList) {
-			if(output.getFeedThrough()==true) {
-				isFeedThroughBlock=true;
-			}
-		}
-
-		//如果有Feedthrough的模块，则要遍历整个模块的InputPort
-		if(isFeedThroughBlock) {
-			Vector<InputPort> InputPortList=block.getInputPortList();
-			for(InputPort input:InputPortList) {
-				//递归调用，实现遍历
-				scanInputPort(input);
-			}
-			//遍历完成，也要生成模块的输出代码
-			//generateBlockOutputCode(block);
-			outputChain.add(block);
-			block.setIsOuputCodeGenerated(true);
-		}
-		//如果没有，就直接生成模块的输出代码
-		else {
-			//生成模块的输出代码
-			//generateBlockOutputCode(block);
-			outputChain.add(block);
-			block.setIsOuputCodeGenerated(true);
-
-			//尽管这个模块的输出计算不取决于当前的输入，但是它的Update还是需要输入量的计算。因此将这个模块加入scanBlockList，进入二次遍历
-			scanBlockList.add(block);
-		}
-
-		//清除记忆的路径回路中的这个模块
-		outputPortPathList.remove(outputPortPathList.size()-1);
-	}
-
-	/*进行遍历的方法*/
-	private void scanOutputChain() {
-		System.out.println("scaning outputChain");
-
-		//遍历所有的终端模块
-		for(Block block:terminalBlockList) {
-			Vector<InputPort> inputPortList=block.getInputPortList();
-			for(InputPort inputPort:inputPortList) {
-				scanInputPort(inputPort);
-			}
-
-			//code+=block.generateBlockOutputCodeM();
-			//generateBlockOutputCode(block);
-			outputChain.add(block);
-			block.setIsOuputCodeGenerated(true);
-		}
-
-		//进行二次遍历，因为二次遍历过程中，scanBlockList中的元素动态变化，所有要用while循环
-		while(scanBlockList.isEmpty()==false) {
-			//取出第一个元素进行遍历
-			Block block=scanBlockList.remove(0);
-			Vector<InputPort> inputPortList=block.getInputPortList();
-			for(InputPort inputPort:inputPortList) {
-				scanInputPort(inputPort);
-			}
-		}
-	}
-
-	/*寻找终端Block的函数，将所有的终端block加入terminalBlockList，为遍历做准备 */
-	// TODO: this method is duplicated with the one in NCSLabModel
-	private void findTerminalBlocks() {
-		System.out.println("Looking for terminal blocks");
-		for(Block block:blockList) {
-			if(block.isTerminalBlock()) {
-				System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
-				terminalBlockList.add(block);
-			}
-		}
-	}
-
 
 
 }

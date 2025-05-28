@@ -42,25 +42,10 @@ abstract public class CodeModelC extends CodeModel {
 	@Getter
     private int parameterNum=0;
 
-	@Getter
-	private int stateNum=0;
-
-	@Getter
-	private int singleStateNum=0;
-
-	@Getter
-	private int matrixStateNum=0;
-
 	abstract protected CodeStructC getCodeStructC();
 
 	protected CodeModelC(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
-	}
-
-	public void setStateNum(int singleStateNum,int matrixStateNum) {
-		this.singleStateNum=singleStateNum;
-		this.matrixStateNum=matrixStateNum;
-		this.stateNum=singleStateNum+matrixStateNum;
 	}
 
 	public String getIpAddress() {
