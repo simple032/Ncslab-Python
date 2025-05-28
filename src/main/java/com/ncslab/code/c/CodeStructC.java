@@ -203,9 +203,7 @@ abstract public class CodeStructC{
 
     //end
 
-    public void addArraysCode(String code) {
-		arraysCode+=code;
-	}
+    public void addArraysCode(String code) { arraysCode+=code; }
     //end
 
     public void addOutputCode(String code) {
@@ -629,19 +627,19 @@ abstract public class CodeStructC{
 	}
 
     protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
-        System.out.println("Writing file "+fileName+"...");
-        
+//        System.out.println("Writing file "+fileName+"...");
+
         // Get the template using our template provider, which handles nested search
         InputStream inputStream = templateProvider.getTemplate(fileName);
-        
+
         // Fallback to the old method if template provider fails
         if (inputStream == null) {
             // Get subdirectory from class name to search in resources
             String subDirectory = getResourceSubdirectory();
-            
+
             // Try to get the resource using ResourceUtils with nested search capability
             inputStream = ResourceUtils.getResourceAsStream(fileName, subDirectory);
-            
+
             // Final fallback to the old method
             if (inputStream == null) {
                 int count = 3;
@@ -652,17 +650,17 @@ abstract public class CodeStructC{
                 }
             }
         }
-        
+
         if(inputStream == null) {
             System.err.println("No file "+fileName+"...");
             return;
         }
-        
+
         File file=new File(codePath+"/"+fileNameOut);
         if(file.exists() && !overwrite) {
             return;
         }
-        
+
         FileOutputStream outputStream;
         try {
             outputStream = new FileOutputStream(file);
@@ -677,7 +675,7 @@ abstract public class CodeStructC{
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Gets the appropriate resource subdirectory based on the class name
      * Example: com.ncslab.code.c.linux.pc.CodeModelCLinuxPC -> c/linux/pc
@@ -687,7 +685,7 @@ abstract public class CodeStructC{
         String className = this.getClass().getName();
         if (className.startsWith("com.ncslab.code.")) {
             String[] parts = className.split("\\.");
-            
+
             // Start building from index 3 (after com.ncslab.code)
             StringBuilder subDir = new StringBuilder();
             for (int i = 3; i < parts.length - 1; i++) { // Exclude the class name itself
@@ -696,10 +694,10 @@ abstract public class CodeStructC{
                 }
                 subDir.append(parts[i]);
             }
-            
+
             return subDir.toString();
         }
-        
+
         // Default to "c" if we can't determine
         return "c";
     }
@@ -912,13 +910,13 @@ abstract public class CodeStructC{
 			writeNCSLabFile("ode6.cpp","onestep.cpp");
 			break;
         case ode45:
-            writeNCSLabFile("../../onestep.cpp","onestep.cpp",true);
+            writeNCSLabFile("ode45.cpp","onestep.cpp",true);
             break;
         case ode23:
-            writeNCSLabFile("../../ode23.cpp","onestep.cpp",true);
+            writeNCSLabFile("ode23.cpp","onestep.cpp",true);
             break;
         case ode15s:
-            writeNCSLabFile("../../ode15s.cpp","onestep.cpp",true);
+            writeNCSLabFile("ode15s.cpp","onestep.cpp",true);
             break;
 		default:
             System.err.println("Unsupported solver: "+model.getSolver());
@@ -967,7 +965,7 @@ abstract public class CodeStructC{
         if (files != null) {
             for(File file : files){
                 if (file.isFile() && isTargetFile(file)) {
-                        System.out.println("Deleting file: " + file.getAbsolutePath());
+//                        System.out.println("Deleting file: " + file.getAbsolutePath());
                         if (!file.delete()) {
                             System.err.println("Failed to delete file: " + file.getAbsolutePath());
                         }
