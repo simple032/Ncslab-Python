@@ -106,7 +106,7 @@ public class Backlash extends Block {
     }
 
     private void prepareContext() {
-        
+
         OutputPort out  = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -169,7 +169,12 @@ public class Backlash extends Block {
         OutputPort out = outputPortList.get(0);
         InputPort in = inputPortList.get(0);
         OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
+        if(signal.getDataType()==DataType.REAL) {
+            xState=new State(this,1,"save_data",backlashWidth.getHeight(),backlashWidth.getWidth());}
+        else {
+            xState=new State(this,1,"save_data",signal.getHeight(),signal.getWidth());
+        }
+        stateList.add(xState);
         if(backlashWidth.getWidth()!=initialOutput.getWidth()||backlashWidth.getHeight()!=initialOutput.getHeight()) {
             MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!All input dimensions should be same!");
             throw(e);

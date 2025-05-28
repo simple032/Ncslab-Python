@@ -18,6 +18,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.Objects;
 import java.util.Vector;
 
 public class Discrete_Time_Integrator extends Block {
@@ -75,61 +76,41 @@ public class Discrete_Time_Integrator extends Block {
     public void calculateDiscreteUpdate(double t) {
         InputPort in = inputPortList.get(0);
         Data inputSignal = in.getData();
-
+        Data updatedX;
         String option = paramValues.getString("IntegratorMethod");
 
         switch (option) {
             case "Integration: Forward Euler":
-                Data updatedX = xState.getData().plus(gainval.getData().times(inputSignal).times(new Data(sampleTime.getDouble())));
-                xState.setData(updatedX);
-                break;
             case "Integration: Backward Euler":
                 updatedX = xState.getData().plus(gainval.getData().times(inputSignal).times(new Data(sampleTime.getDouble())));
-                xState.setData(updatedX);
                 break;
             case "Integration: Trapezoidal":
                 updatedX = xState.getData().plus(gainval.getData().times(inputSignal).times(new Data(sampleTime.getDouble() / 2.0)));
-                xState.setData(updatedX);
                 break;
             case "Accumulation: Forward Euler":
-                updatedX = xState.getData().plus(gainval.getData().times(inputSignal));
-                xState.setData(updatedX);
-                break;
             case "Accumulation: Backward Euler":
                 updatedX = xState.getData().plus(gainval.getData().times(inputSignal));
-                xState.setData(updatedX);
                 break;
             case "Accumulation: Trapezoidal":
                 updatedX = xState.getData().plus(gainval.getData().times(inputSignal).times(new Data(0.5)));
-                xState.setData(updatedX);
                 break;
             default:
                 throw new RuntimeException("Unsupported IntegratorMethod: " + option);
         }
+        xState.setData(updatedX);
     }
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         String initCode = "/*Code for initialization of block discrete_time_integrator:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        initCode += gainval.getInitCodeC();
-        initCode += sampleTime.getInitCodeC();
-        initCode += initialCondition.getInitCodeC();
 
-        if (gainval.getDataType() == DataType.REAL && xState.getDataType() == DataType.REAL) {
-            initCode += xState.getName() + "=" + initialCondition.getName() + ";\n";
-        } else if (gainval.getDataType() == DataType.REAL && xState.getDataType() == DataType.MATRIX) {
-            for (int i = 0; i < xState.getHeight(); i++) {
-                for (int j = 0; j < xState.getWidth(); j++) {
-                    initCode += xState.getName() + "(" + i + "," + j + ")=" + initialCondition.getName() + ";\n";
-                }
-            }
-        } else {
-            for (int i = 0; i < xState.getHeight(); i++) {
-                for (int j = 0; j < xState.getWidth(); j++) {
-                    initCode += xState.getName() + "(" + i + "," + j + ")=" + initialCondition.getName() + "(" + i + "," + j + ");\n";
-                }
-            }
-        }
+        context.put("blockId", blockId);
+        context.put("blockName", blockName);
+        context.put("gainval", gainval);
+        context.put("sampleTime", sampleTime);
+        context.put("initialCondition", initialCondition);
+        context.put("xState", xState);
+        initCode += TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/init.vm", context);
 
         code.addInitCode(initCode);
     }
@@ -140,76 +121,16 @@ public class Discrete_Time_Integrator extends Block {
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        outputCode += "{real_T currentTime = model.time;\n";
-        outputCode += "real_T sampleTimeTmp = " + sampleTime.getName() + "==-1?model.stepSize:" + sampleTime.getName() + ";\n";
-        outputCode += "if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001&&mp->majorStep>0) {\n";
 
-        String option = paramValues.getString("IntegratorMethod");
-        switch (signal.getDataType()) {
-            case REAL:
-                switch (gainval.getDataType()) {
-                    case REAL:
-                        switch (option) {
-                            case "Integration: Forward Euler":
-                                outputCode += out.getOutputSignalC().getName() + "=" + xState.getName() + ";\n";
-                                outputCode += xState.getName() + "=" + xState.getName() + "+" + gainval.getName() + "*" + sampleTime.getName() + "*" + signal.getName() + ";}}}\n";
-                                break;
-                            case "Integration: Backward Euler":
-                                outputCode += out.getOutputSignalC().getName() + "=" + xState.getName() + "+" + gainval.getName() + "*" + signal.getName() + "*" + sampleTime.getName() + ";\n";
-                                outputCode += xState.getName() + "=" + out.getOutputSignalC().getName() + ";}}}\n";
-                                break;
-                            case "Integration: Trapezoidal":
-                                outputCode += out.getOutputSignalC().getName() + "=" + xState.getName() + "+" + sampleTime.getName() + "/2*" + signal.getName() + "*" + gainval.getName() + ";\n";
-                                outputCode += xState.getName() + "=" + out.getOutputSignalC().getName() + "+" + sampleTime.getName() + "/2*" + signal.getName() + "*" + gainval.getName() + ";}}}\n";
-                                break;
-                            case "Accumulation: Forward Euler":
-                                outputCode += out.getOutputSignalC().getName() + "=" + xState.getName() + ";\n";
-                                outputCode += xState.getName() + "=" + xState.getName() + "+" + gainval.getName() + "*" + signal.getName() + ";}}}\n";
-                                break;
-                            case "Accumulation: Backward Euler":
-                                outputCode += out.getOutputSignalC().getName() + "=" + xState.getName() + "+" + gainval.getName() + "*" + signal.getName() + ";}}}\n";
-                                outputCode += xState.getName() + "=" + out.getOutputSignalC().getName() + ";}}}\n";
-                                break;
-                            case "Accumulation: Trapezoidal":
-                                outputCode += out.getOutputSignalC().getName() + "=" + xState.getName() + "+" + signal.getName() + "*" + gainval.getName() + "*0.5;\n";
-                                outputCode += xState.getName() + "=" + out.getOutputSignalC().getName() + "+" + signal.getName() + "*" + gainval.getName() + "*0.5;}}}\n";
-                                break;
-                        }
-                        break;
-                    case MATRIX:
-                        for (int i = 0; i < gainval.getHeight(); i++) {
-                            for (int j = 0; j < gainval.getWidth(); j++) {
-                                switch (option) {
-                                    case "Integration: Forward Euler":
-                                        outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ");\n";
-                                        outputCode += xState.getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ")+" + gainval.getName() + "(" + i + "," + j + ")*" + sampleTime.getName() + "*" + signal.getName() + ";}}}\n";
-                                        break;
-                                    case "Integration: Backward Euler":
-                                        outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ")+" + gainval.getName() + "(" + i + "," + j + ")*" + signal.getName() + "*" + sampleTime.getName() + ";\n";
-                                        outputCode += xState.getName() + "(" + i + "," + j + ")=" + out.getOutputSignalC().getName() + "(" + i + "," + j + ");}}}\n";
-                                        break;
-                                    case "Integration: Trapezoidal":
-                                        outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ")+" + sampleTime.getName() + "/2*" + signal.getName() + "*" + gainval.getName() + "(" + i + "," + j + ");\n";
-                                        outputCode += xState.getName() + "(" + i + "," + j + ")=" + out.getOutputSignalC().getName() + "(" + i + "," + j + ")+" + sampleTime.getName() + "/2*" + signal.getName() + "*" + gainval.getName() + "(" + i + "," + j + ");}}}\n";
-                                        break;
-                                    case "Accumulation: Forward Euler":
-                                        outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ");\n";
-                                        outputCode += xState.getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ")+" + gainval.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";}}}\n";
-                                        break;
-                                    case "Accumulation: Backward Euler":
-                                        outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ")+" + gainval.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";}}}\n";
-                                        outputCode += xState.getName() + "(" + i + "," + j + ")=" + out.getOutputSignalC().getName() + "(" + i + "," + j + ");}}}\n";
-                                        break;
-                                    case "Accumulation: Trapezoidal":
-                                        outputCode += out.getOutputSignalC().getName() + "(" + i + "," + j + ")=" + xState.getName() + "(" + i + "," + j + ")+" + signal.getName() + "*" + gainval.getName() + "(" + i + "," + j + ")*0.5;\n";
-                                        outputCode += xState.getName() + "(" + i + "," + j + ")=" + out.getOutputSignalC().getName() + "(" + i + "," + j + ")+" + signal.getName() + "*" + gainval.getName() + "(" + i + "," + j + ")*0.5;}}}\n";
-                                        break;
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
+        context.put("out", out);
+        context.put("ops", ops);
+        context.put("signal", signal);
+        context.put("xState", xState);
+        context.put("gainval", gainval);
+        context.put("sampleTime", sampleTime);
+        context.put("option", paramValues.getString("IntegratorMethod"));
+
+        outputCode += TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/output.vm", context);
         code.addOutputCode(outputCode);
     }
 

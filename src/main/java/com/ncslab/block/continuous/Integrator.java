@@ -295,12 +295,14 @@ public class Integrator extends Block {
 
     @Override
     public void calculateDerivative(double t){
-    	stateIntegral.setDerivateData(inputPortList.get(0).getData());
+        InputPort inputPort = inputPortList.get(0);
+        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+    	stateIntegral.setDerivateData(signal.getData());
     }
 
     @Override
     public void calculateOutput(double t){
         OutputPort output = outputPortList.get(0);
-        output.setData(initialCondition.getData().plus(stateIntegral.getData()));
+        output.setData(stateIntegral.getData());
     }
 }

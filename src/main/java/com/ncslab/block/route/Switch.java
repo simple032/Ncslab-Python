@@ -46,7 +46,7 @@ public class Switch extends Block {
 		outputPortList.add(new OutputPort(this,1,true));
 	    threshold=new Parameter(this,1,"threshold",paramValues.getString("Threshold"));
 		parameterList.add(threshold);
-        relop=new Parameter(this,1,"relop",paramValues.optString("Relop", ">="));
+        relop=new Parameter(this,2,"relop",paramValues.optString("Relop", ">="));
         parameterList.add(relop);
 	}
 	public void generateInitCodeC(CodeStructC code) {

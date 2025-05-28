@@ -62,7 +62,8 @@ public class Delay extends DiscreteBlock {
     public void generateArraysCodeC(CodeStructC code) {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("block", this);
-
+        context.put("signal", signal);
+        context.put("delayLength", delayLength.getData().getIntValue());
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
@@ -97,8 +98,9 @@ public class Delay extends DiscreteBlock {
         context.put("sampleTime", sampleTime);
         context.put("initialCondition", initialCondition);
         context.put("delayLength", delayLength.getDouble());
-        context.put("signal", signal);
         context.put("outputs", getOutputPortVariables());
+        context.put("inputPortList", inputPortList);
+        context.put("outputPortList", outputPortList);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/output.vm", context);
         code.addOutputCode(codeStr);

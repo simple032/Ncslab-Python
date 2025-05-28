@@ -2,6 +2,7 @@
 #set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
 #set($sampleTime = $sampleTime.getName())
 #set($initialCondition = $initialCondition.getName())
+#set($blockId = $block.getBlockId())
 
 /* Code for output of block Delay:($blockId)$blockName */
 double currentTime = model.time;
