@@ -72,7 +72,7 @@ public class Ramp extends Block {
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block Ramp:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		initCode+=slope.getInitCodeC();
 		initCode+=start.getInitCodeC();
 		initCode+=initial_output.getInitCodeC();

@@ -49,7 +49,7 @@ public class Abs extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode="/*Code for initialization of block Abs:("+getBlockId()+")"+getBlockName()+"*/\n";
+        String initCode="";
         code.addInitCode(initCode);
     }
 

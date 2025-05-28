@@ -49,9 +49,6 @@ public class UDPReceive extends com.ncslab.block.Block{
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-
-		String initCode="/*Code for initialization of block UDPReceive:("+getBlockId()+")"+getBlockName()+"*/\n";
-
 //		initCode+=channel.getName()+"="+paramValues.getDouble("Channel")+";\n";
 //
 //		code.addInitCode(initCode);
@@ -69,7 +66,7 @@ public class UDPReceive extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block UDPReceive:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 
 		//udp receive
 		initCode+="sockfd_netrecv"+getBlockId()+" = socket(AF_INET, SOCK_DGRAM|SOCK_NONBLOCK,0);\n"

@@ -60,7 +60,7 @@ public class Diode extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block Diode:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		initCode+=vf.getInitCodeC();
 		initCode+=ron.getInitCodeC();
 		initCode+=goff.getInitCodeC();

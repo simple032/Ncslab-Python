@@ -70,7 +70,7 @@ public class LinearRegression extends PTModel{
         code.addWrittenFile("../../ml/pt/LinearRegression.hpp", "LinearRegression.hpp");
         code.addWrittenFile("../../ml/pt/linear_regression_model.py", "linear_regression_model.py");
 
-		String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 
         initCode += this.inputFeatures.getInitCodeC();
         initCode += this.outputFeatures.getInitCodeC();;

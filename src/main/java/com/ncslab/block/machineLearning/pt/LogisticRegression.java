@@ -71,7 +71,7 @@ public class LogisticRegression extends PTModel {
         code.addWrittenFile("../../ml/pt/LogisticRegression.hpp", "LogisticRegression.hpp");
         code.addWrittenFile("../../ml/pt/logistic_regression_model.py", "logistic_regression_model.py");
 
-        String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
+        String initCode="";
 
         initCode += this.inputFeatures.getInitCodeC();
         initCode += this.outputFeatures.getInitCodeC();;

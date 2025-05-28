@@ -59,7 +59,7 @@ public class AD extends Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block AD:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		initCode+=channel.getName()+"="+paramValues.getDouble("Channel")+";\n";
 
 		initCode+="DEV_ModuleInit();\n"

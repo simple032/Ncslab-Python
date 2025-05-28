@@ -58,7 +58,7 @@ public class DataCollector extends Block{
         super.generateInitCodeC(code);
         code.addIncludeCode("#include\"DataCollector.hpp\"");
         code.addWrittenFile("../../ml/DataCollector.hpp", "DataCollector.hpp");
-        String initCode="/*Code for initialization of block DataCollector:("+getBlockId()+")"+getBlockName()+"*/\n";
+        String initCode="";
         initCode += this.inputFeatures.getInitCodeC();
         initCode += this.outputFeatures.getInitCodeC();
 

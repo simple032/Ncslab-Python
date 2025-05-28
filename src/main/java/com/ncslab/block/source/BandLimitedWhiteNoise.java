@@ -67,7 +67,7 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode="/*Code for initialization of block Band-Limited White Noise:("+getBlockId()+")"+getBlockName()+"*/\n";
+        String initCode="";
         initCode+=seed.getInitCodeC();
         initCode+=cov.getInitCodeC();
         initCode+=samplePeriod.getInitCodeC();

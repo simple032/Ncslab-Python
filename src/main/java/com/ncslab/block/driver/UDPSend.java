@@ -53,7 +53,7 @@ public class UDPSend extends com.ncslab.block.Block{
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
 
-		String initCode="/*Code for initialization of block UDPSend:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 
 //		initCode+=channel.getName()+"="+paramValues.getDouble("Channel")+";\n";
 //
@@ -72,7 +72,7 @@ public class UDPSend extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block UDPSend:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		//udp send
 		initCode+="sockfd_netsend"+getBlockId()+" = socket(AF_INET, SOCK_DGRAM,0);\n"
 				+ "if(sockfd_netsend"+getBlockId()+"==-1){printf(\"can not create socket\\n\"); close(sockfd_netsend"+getBlockId()+");} \r\n"

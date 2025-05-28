@@ -1,2 +1,27 @@
 /* 初始化Integrator模块: ($block.getBlockId()) $block.getBlockName() */
-${states.get(0).getName()} = 0;
+#if($conditionSource == "External")
+$initialCondition.getName() = $input;
+#else
+$initialCondition.getInitCodeC()
+  #if($signal.getDataType() == $realDataType)
+    #if($initialCondition.getDataType() == $realDataType)
+      $state=$initialCondition.getName();
+    #else
+      for(int i=0; i<$initialCondition.getHeight(); i++){
+        for(int j=0; j<$initialCondition.getWidth(); j++){
+          $state(i,j)=$initialCondition.getName()(i,j);
+        }
+      }
+    #end
+  #else
+    #if($initialCondition.getDataType() == $realDataType)
+      for(int i=0; i<$signal.getHeight(); i++){
+        for(int j=0; j<$signal.getWidth(); j++){
+          $state(i,j)=$initialCondition.getName();
+        }
+      }
+    #else
+      $state=$initialCondition.getName();
+    #end
+  #end
+#end

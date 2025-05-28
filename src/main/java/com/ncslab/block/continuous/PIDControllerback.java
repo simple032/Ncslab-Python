@@ -99,7 +99,7 @@ public class PIDControllerback extends com.ncslab.block.Block{
 	 }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		initCode+=cparaP.getInitCodeC();
 		initCode+=cparaI.getInitCodeC();
 		initCode+=cparaD.getInitCodeC();

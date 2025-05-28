@@ -79,7 +79,7 @@ public class Pulse extends Block{
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block Pulse:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode = "";
 		initCode+=amplitude.getInitCodeC();
 		initCode+=period.getInitCodeC();
 		initCode+=pulseWidth.getInitCodeC();

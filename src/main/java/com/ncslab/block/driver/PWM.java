@@ -60,7 +60,7 @@ public class PWM extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block PWM:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		initCode+=port.getName()+"="+paramValues.getDouble("port")+";\n";
 
 		initCode+="wiringPiSetupGpio();\n"

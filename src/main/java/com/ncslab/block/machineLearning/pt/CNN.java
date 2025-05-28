@@ -75,7 +75,7 @@ public class CNN extends MachineLearning {
         code.addWrittenFile("../../ml/pt/CNN.hpp", "CNN.hpp");
         code.addWrittenFile("../../ml/pt/cnn_model.py", "cnn_model.py");
 
-		String initCode="/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 
         initCode += this.inputFeatures.getInitCodeC();
         initCode += this.activationFunction.getInitCodeC();

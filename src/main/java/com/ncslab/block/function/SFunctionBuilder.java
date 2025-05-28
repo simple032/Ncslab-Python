@@ -215,7 +215,7 @@ public class SFunctionBuilder extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 //		initCode+=pumpState.getName()+"="+0+";\n";
 //		initCode+=levelState.getName()+"="+0+";\n";
 		initCode += fcnName+"_"+getBlockId()+"(&sfcnStruc"+getBlockId()+");\n";

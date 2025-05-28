@@ -83,7 +83,7 @@ public class secondOrderFiliter extends Block{
 	 }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block Second-Order Filter:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 
 		initCode+=naturalFrequency.getInitCodeC();
 		initCode+=dampingRatio.getInitCodeC();

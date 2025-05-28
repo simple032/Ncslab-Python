@@ -172,7 +172,7 @@ public class SFunction extends DiscreteBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode="/*Code for initialization of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+        String initCode="";
 
         for(Parameter parameter:parameterList) {
             initCode+=parameter.getInitCodeC();

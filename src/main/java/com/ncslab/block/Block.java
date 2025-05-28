@@ -266,6 +266,8 @@ public class Block implements MCodeBlock, CCodeBlock{
 	//生成C语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
 	@Override
 	public void generateInitCodeC(CodeStructC code) {
+		String initCode="/*Code for initialization of block Pulse:("+getBlockId()+")"+getBlockName()+"*/\n";
+		code.addInitCode(initCode);
 		for(Parameter parameter : parameterList) {
 			code.addParameter(parameter);
 		}

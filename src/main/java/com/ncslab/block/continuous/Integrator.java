@@ -69,7 +69,7 @@ public class Integrator extends Block {
         }else if(!externalReset.equals("none")&&conditionSource.equals("Internal")
             || externalReset.equals("none")&&conditionSource.equals("External")) {
             inputPortList.add(new InputPort(this,2));
-        }else {}
+        }
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
@@ -94,14 +94,10 @@ public class Integrator extends Block {
 
     //define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
-        String arraysCode="/*Define arrays for block Intergator:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-        if(!externalReset.equals("none")) {
-            arraysCode+="double "+"Block"+getBlockId()+"intergate_resetSignal_data=0;\n";
-        }
-        if(conditionSource.equals("External")) {
-            arraysCode+="double "+"Block"+getBlockId()+"intergate_init_flag=0;\n";
-        }
+        context.put("block", this);
+        context.put("externalReset",externalReset.getData().getInitString());
+        context.put("conditionSource",conditionSource.getData().getInitString());
+        String arraysCode = TemplateManager.renderTemplate("c/continuous/Integrator/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
 
@@ -116,181 +112,82 @@ public class Integrator extends Block {
 	}
 
     // TODO: requires check test
-    private String generateInitCodeCExternal(OutputSignal signal) {
-        String initCode = "";
-        if(externalReset.equals("none")) {
-            initCode+=initialCondition.getName()+"="+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-        }else {
-            initCode+=initialCondition.getName()+"="+inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-        }
-        return initCode;
-    }
 
-    private String generateInitCodeCInternal(OutputSignal signal){
-        String initCode = "";
-        switch (signal.getDataType()) {
-            case REAL:
-                switch (initialCondition.getDataType()) {
-                    case REAL:
-                        initCode += initialCondition.getInitCodeC();
-                        initCode += stateIntegral.getName() + "=" + initialCondition.getName() + ";\n";
-                        break;
-                    case MATRIX:
-                        initCode += initialCondition.getInitCodeC();
-                        for (int i = 0; i < initialCondition.getHeight(); i++) {
-                            for (int j = 0; j < initialCondition.getWidth(); j++) {
-                                initCode += stateIntegral.getName() + "(" + i + "," + j + ")=" + initialCondition.getName()
-                                    + "(" + i + "," + j + ")" + ";\n";
-                            }
-                        }
-                        break;
-                }
-                break;
-            case MATRIX:
-                switch (initialCondition.getDataType()) {
-                    case REAL:
-                        initCode += initialCondition.getInitCodeC();
-                        for (int i = 0; i < signal.getHeight(); i++) {
-                            for (int j = 0; j < signal.getWidth(); j++) {
-                                initCode += stateIntegral.getName() + "(" + i + "," + j + ")=" + initialCondition.getName()
-                                    + ";\n";
-                            }
-                        }
-                        break;
-                    case MATRIX:
-                        initCode += initialCondition.getInitCodeC();
-                        initCode += stateIntegral.getName() + "=" + initialCondition.getName() + ";\n";
-                        break;
-                }
-                break;
-        }
-        return initCode;
-    }
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-
-		String initCode = "/*Code for initialization of block Intergator:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        context.put("block", this);
+        context.put("externalReset",externalReset.getData().getInitString());
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
+        InputPort inputPort;
+        context.put("block", this);
+        context.put("signal", signal);
+        context.put("state", stateIntegral.getName());
+        context.put("initialCondition", initialCondition);
         if(conditionSource.equals("External")){
-            initCode += generateInitCodeCExternal(signal);
-        }else {
-            initCode += generateInitCodeCInternal(signal);
+            if(externalReset.equals("none")) {
+                inputPort = inputPortList.get(1);
+            }else {
+                inputPort = inputPortList.get(2);
+            }
+            context.put("input", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
         }
+        String initCode = TemplateManager.renderTemplate("c/continuous/Integrator/init.vm", context);
 		code.addInitCode(initCode);
 	}
 
-    public String generateOutputCodeCNoReset(OutputSignal signal) {
-        String outputCode = "";
-        switch (signal.getDataType()) {
-            case REAL:
-                switch (initialCondition.getDataType()) {
-                    case REAL:
-                        outputCode += this.getOutputPortVariable(0) + "=" + stateIntegral.getName() + ";\n";
-                        break;
-                    case MATRIX:
-                        for (int i = 0; i < initialCondition.getHeight(); i++) {
-                            for (int j = 0; j < initialCondition.getWidth(); j++) {
-                                outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + stateIntegral.getName()
-                                    + "(" + i + "," + j + ")" + ";\n";
-                            }
-                        }
-                        break;
-                }
-                break;
-            case MATRIX:
-                for (int i = 0; i < signal.getHeight(); i++) {
-                    for (int j = 0; j < signal.getWidth(); j++) {
-                        outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + stateIntegral.getName()
-                            + "(" + i + "," + j + ")" + ";\n";
-                    }
-                }
-//			outputCode += this.getOutputPortVariable(0) + "=" + stateIntegral.getName() + ";\n";
-                break;
-        }
-        outputCode += "\n";
-        return outputCode;
-    }
 
-    // TODO: requires check test
-    public String generateOutputCodeCReset(OutputSignal signal) {
-        String outputCode = "";
-        if(conditionSource.equals("risingEdge")) {
-            outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+">=1&&Block"+getBlockId()+"intergate_resetSignal_data<=0){\n"
-                +stateIntegral.getName()+"="+initialCondition.getName()+";\n"
-                +"}else{\n"
-                +outputPortList.get(0).getOutputSignalC().getName()+"="+stateIntegral.getName()+";\n"
-                +"}\n";
-        }else {
-            outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"<=0&&Block"+getBlockId()+"intergate_resetSignal_data>=1){\n"
-                +stateIntegral.getName()+"="+initialCondition.getName()+";\n"
-                +"}else{\n"
-                +outputPortList.get(0).getOutputSignalC().getName()+"="+stateIntegral.getName()+";\n"
-                +"}\n";
-        }
-        outputCode+="Block"+getBlockId()+"intergate_resetSignal_data="+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-        return outputCode;
-    }
+
 
 	public void generateOutputCodeC(CodeStructC code) {
 		String outputCode = "/*Code for output of block Intergator:(" + getBlockId() + ")" + getBlockName() + "*/\n";
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         if(externalReset.equals("none")) {
-            outputCode += generateOutputCodeCNoReset(signal);
+            switch (signal.getDataType()) {
+                case REAL:
+                    switch (initialCondition.getDataType()) {
+                        case REAL:
+                            outputCode += this.getOutputPortVariable(0) + "=" + stateIntegral.getName() + ";\n";
+                            break;
+                        case MATRIX:
+                            for (int i = 0; i < initialCondition.getHeight(); i++) {
+                                for (int j = 0; j < initialCondition.getWidth(); j++) {
+                                    outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + stateIntegral.getName()
+                                        + "(" + i + "," + j + ")" + ";\n";
+                                }
+                            }
+                            break;
+                    }
+                    break;
+                case MATRIX:
+                    for (int i = 0; i < signal.getHeight(); i++) {
+                        for (int j = 0; j < signal.getWidth(); j++) {
+                            outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + stateIntegral.getName()
+                                + "(" + i + "," + j + ")" + ";\n";
+                        }
+                    }
+//			outputCode += this.getOutputPortVariable(0) + "=" + stateIntegral.getName() + ";\n";
+                    break;
+            }
+            outputCode += "\n";
         }else {
-            outputCode += generateOutputCodeCReset(signal);
+            if(conditionSource.equals("risingEdge")) {
+                outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+">=1&&Block"+getBlockId()+"intergate_resetSignal_data<=0){\n"
+                    +stateIntegral.getName()+"="+initialCondition.getName()+";\n"
+                    +"}else{\n"
+                    +outputPortList.get(0).getOutputSignalC().getName()+"="+stateIntegral.getName()+";\n"
+                    +"}\n";
+            }else {
+                outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"<=0&&Block"+getBlockId()+"intergate_resetSignal_data>=1){\n"
+                    +stateIntegral.getName()+"="+initialCondition.getName()+";\n"
+                    +"}else{\n"
+                    +outputPortList.get(0).getOutputSignalC().getName()+"="+stateIntegral.getName()+";\n"
+                    +"}\n";
+            }
+            outputCode+="Block"+getBlockId()+"intergate_resetSignal_data="+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
         }
 		code.addOutputCode(outputCode);
 	}
-
-    private String generateDerivativeCodeCInternal(OutputSignal signal) {
-        String derivativeCode = "";
-        switch (signal.getDataType()) {
-            case REAL:
-                switch (initialCondition.getDataType()) {
-                    case REAL:
-                        derivativeCode += stateIntegral.getDerivativeName() + "="
-                            + inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
-                            + ";\n";
-                        break;
-                    case MATRIX:
-                        for (int i = 0; i < initialCondition.getHeight(); i++) {
-                            for (int j = 0; j < initialCondition.getWidth(); j++) {
-                                derivativeCode += stateIntegral.getDerivativeName() + "(" + i + "," + j + ")=" + inputPortList
-                                    .get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + ";\n";
-                            }
-                        }
-                        break;
-                }
-                break;
-            case MATRIX:
-                for (int i = 0; i < signal.getHeight(); i++) {
-                    for (int j = 0; j < signal.getWidth(); j++) {
-                        derivativeCode += stateIntegral.getDerivativeName() + "(" + i + "," + j + ")="
-                            + inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()
-                            + "(" + i + "," + j + ")" + ";\n";
-                    }
-                }
-//			derivativeCode += stateIntegral.getDerivativeName() + "="
-//					+ inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() + ";\n";
-                break;
-        }
-        return derivativeCode;
-    }
-
-    // TODO: requires check test
-    private String generateDerivativeCodeCExternal(OutputSignal signal) {
-        String derivativeCode = "";
-        if(externalReset.equals("none")) {
-            derivativeCode+=initialCondition.getName()+"="+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-            derivativeCode+=stateIntegral.getName()+"="+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-        }else {
-            derivativeCode+=initialCondition.getName()+"="+inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-            derivativeCode+=stateIntegral.getName()+"="+inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-        }
-        return derivativeCode;
-    }
 
 	public void generateDerivativeCodeC(CodeStructC code) {
 
@@ -298,12 +195,20 @@ public class Integrator extends Block {
 				+ "*/\n";
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         if(conditionSource.equals("External")) {
-            derivativeCode += generateDerivativeCodeCExternal(signal);
-        }else{
-            derivativeCode += generateDerivativeCodeCInternal(signal);
+            InputPort inputPort;
+            if(externalReset.equals("none")) {
+                inputPort = inputPortList.get(1);
+            }else {
+                inputPort = inputPortList.get(2);
+            }
         }
+        context.put("block", this);
+        context.put("stateDerivative", stateIntegral.getDerivativeName());
+        context.put("inputs", getInputPortVariables());
+        context.put("signal", signal);
+        context.put("conditionSource", conditionSource.getData().getInitString());
+        derivativeCode = TemplateManager.renderTemplate("c/continuous/Integrator/derivative.vm", context);
 		code.addDerivativeCode(derivativeCode);
-
 	}
 
 	public void updateDimension() throws MatDimException {
@@ -396,6 +301,6 @@ public class Integrator extends Block {
     @Override
     public void calculateOutput(double t){
         OutputPort output = outputPortList.get(0);
-        output.setData(stateIntegral.getData());
+        output.setData(initialCondition.getData().plus(stateIntegral.getData()));
     }
 }

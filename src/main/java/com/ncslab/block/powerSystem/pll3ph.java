@@ -77,7 +77,7 @@ public class pll3ph extends Block{
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="/*Code for initialization of block PLL (3ph):("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		code.addInitCode(initCode);
 	}
 

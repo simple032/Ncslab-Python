@@ -70,7 +70,7 @@ public class PWMForStm32 extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block PWMForStm32:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 
 		initCode+=timx.getName()+"="+paramValues.getInt("PWMForStm32TIM")+";\n";
 		initCode+=channel.getName()+"="+paramValues.getInt("PWMForStm32Channel")+";\n";

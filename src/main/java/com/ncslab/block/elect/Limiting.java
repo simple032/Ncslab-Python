@@ -49,7 +49,7 @@ public class Limiting extends Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block Limiting:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		initCode+=rmin.getInitCodeC();
 		code.addInitCode(initCode);
 	}

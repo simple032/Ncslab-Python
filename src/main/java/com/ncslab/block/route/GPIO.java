@@ -56,7 +56,7 @@ public class GPIO extends Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block Bcm:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		initCode+=Bcm.getName()+"="+paramValues.getDouble("Bcm")+";\n";
 
 		initCode+="wiringPiSetupGpio();\n"

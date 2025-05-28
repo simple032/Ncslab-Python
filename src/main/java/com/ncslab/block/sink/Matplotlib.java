@@ -69,7 +69,7 @@ public class Matplotlib extends SinkBlock{
 
 		if(model.getModelMode()==ModelMode.Simulation) {
 
-			String initCode="/*Code for initialization of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
+			String initCode="";
 
 			//initCode+=scopeStruct.getName()+".cursor=0;\n";
 			//initCode+=scopeStruct.getName()+".isFull=0;\n";

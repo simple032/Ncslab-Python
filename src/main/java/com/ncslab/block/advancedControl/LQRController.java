@@ -4,13 +4,16 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
 
@@ -48,7 +51,6 @@ public class LQRController extends Block {
     public LQRController(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
 
-        // parseVector();
         A = new Parameter(this, 1, "A", paramValues.getString("A"));
         B = new Parameter(this, 2, "B", paramValues.getString("B"));
         Q = new Parameter(this, 3, "Q", paramValues.getString("Q"));
@@ -59,114 +61,93 @@ public class LQRController extends Block {
         parameterList.add(Q);
         parameterList.add(R);
 
-        // use "[]" to represent a pesudo matrix
         this.LQR_K = new LQRVariable(this, 1, "LQR_K", "[]");
         this.globalVariableList.add(this.LQR_K);
 
-        // xState = new State(this, 1, "x", A.getWidth(), 1);
-
-        // stateList.add(xState);
-
-        // set input and output port
-        InputPort input;
-        OutputPort output;
-
-        input = new InputPort(this, 1);
-        output = new OutputPort(this, 1, feedThrough);
+        InputPort input = new InputPort(this, 1);
+        OutputPort output = new OutputPort(this, 1, feedThrough);
         output.setHeight(B.getWidth());
 
         inputPortList.add(input);
         outputPortList.add(output);
-
     }
 
     @Override
-    public void generateInitCodeC(CodeStructC code) {
-        super.generateInitCodeC(code);
-
-        StringBuilder initCode = new StringBuilder();
-        initCode.append(String.format("/*Code for initialization of block LQR Controller: (%d)%s*/\n", getBlockId(),
-                getBlockName()));
-        initCode.append(A.getInitCodeC());
-        initCode.append(B.getInitCodeC());
-        initCode.append(Q.getInitCodeC());
-        initCode.append(R.getInitCodeC());
-
-        initCode.append(this.LQR_K.getInitCodeC());
-
-        code.addInitCode(initCode.toString());
+    public void calculateInit() {
+        OutputPort out = outputPortList.get(0);
+        for (int i = 0; i < globalVariableList.size(); i++) {
+            // Avoid using setData(Data) as it is not defined in GlobalVariable
+        }
     }
 
     @Override
-    public void generateOutputCodeC(CodeStructC code) {
-        super.generateOutputCodeC(code);
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data currentState = new Data();
+        Data inputSignal = inputPortList.get(0).getData();
 
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(
-                String.format("/*Code for output of block LQR Controller: (%d)%s*/\n", getBlockId(), getBlockName()));
-
-        outputCode.append("/*******************************/\n");
-
-        OutputPort out = this.getOutputPortList().get(0);
-        // u = -K * x
         switch (out.getOutputSignalC().getDataType()) {
             case MATRIX:
-                outputCode.append(
-                        String.format("%s = -%s * %s;\n",
-                                this.getOutputPortVariable(0),
-                                this.LQR_K.getName(),
-                                this.getInputPortVariable(0)));
+                currentState = LQR_K.getData().times(inputSignal).negative();
                 break;
             case REAL:
-                outputCode.append(
-                        String.format("%s = (-%s * %s)(0,0);\n",
-                                this.getOutputPortVariable(0),
-                                this.LQR_K.getName(),
-                                this.getInputPortVariable(0)));
+                currentState = new Data(LQR_K.getData().times(inputSignal).getInitValue()).negative();
                 break;
         }
 
-        outputCode.append("/*******************************/\n");
-
-        code.addOutputCode(outputCode.toString());
+        out.setData(currentState);
     }
 
     @Override
-    public void updateDimension() throws MatDimException {
-        OutputPort out = outputPortList.get(0);
-        InputPort in = inputPortList.get(0);
-
-        if (this.feedThrough) {
-            if (A.getWidth() != A.getHeight() // if A is square
-                    || A.getHeight() != B.getHeight() // if A and B match
-                    || A.getHeight() != Q.getHeight() // if A and Q match
-                    || Q.getWidth() != Q.getHeight() // if Q is square
-                    || R.getWidth() != R.getHeight() // if R is square
-                    || R.getWidth() != B.getWidth() // if R and B match
-                    || A.getHeight() != in.getHeight() // if A and input match
-                    || out.getHeight() != B.getWidth() // if B and output match
-                    || in.getWidth() != 1 // input must be a vector
-            ) {
-                MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match!");
-                throw (e);
-
-            }
-        }
-
-        // based on params, set output dimension
-        out.setHeight(B.getWidth());
-        out.setWidth(1);
-        out.getOutputSignalC().setHeight(B.getWidth());
-        out.getOutputSignalC().setWidth(1);
-
-        out.getOutputSignalC().setDataType(B.getWidth() > 1 ? DataType.MATRIX : DataType.REAL);
+    public void calculateDerivative(double t) {
+        // No derivative calculation needed for LQRController
     }
 
-    @Override
-    public void checkDimension() throws MatDimException {
-        // calculate K
-        // K.height = B.width
-        // K.width = A.width = A.height
+    public void generateInitCodeM(CodeStructM code) {
+        super.generateInitCodeM(code);
+        context.put("block", this);
+        context.put("globals", globalVariableList);
+
+        String codeStr = TemplateManager.renderTemplate("m/continuous/LQRController/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateOutputCodeM(CodeStructM code) {
+        super.generateOutputCodeM(code);
+        context.put("block", this);
+        context.put("globals", globalVariableList);
+        context.put("inputs", getInputPortVariables());
+        context.put("outputs", getOutputPortVariables());
+
+        String codeStr = TemplateManager.renderTemplate("m/continuous/LQRController/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void generateDerivativeCodeM(CodeStructM code) {
+        // No derivative code needed for LQRController
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        context.put("block", this);
+        context.put("globals", globalVariableList);
+
+        String codeStr = TemplateManager.renderTemplate("c/continuous/LQRController/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        context.put("block", this);
+        context.put("globals", globalVariableList);
+        context.put("inputs", getInputPortVariables());
+        context.put("outputs", getOutputPortVariables());
+
+        String codeStr = TemplateManager.renderTemplate("c/continuous/LQRController/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void generateDerivativeCodeC(CodeStructC code) {
+        // No derivative code needed for LQRController
     }
 
     protected class LQRVariable extends GlobalVariable {
@@ -187,6 +168,5 @@ public class LQRController extends Block {
                     "Matrix",
                     LQRVariable.this.getName());
         }
-
     }
 }

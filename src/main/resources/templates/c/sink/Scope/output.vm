@@ -1,8 +1,17 @@
-#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($scopeStruct = $scopeStruct.getName())
+#set($signal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($inputSignal = $signal.getName())
+#set($scopeName = $scopeStruct.getName())
 
 /* Code for output of block Scope:($blockId)$blockName */
 if (sfcnIsMajorStep()) {
-    ${scopeStruct}.timeList.push_back(sfcnGetT());
-    ${scopeStruct}.dataList.push_back($inputSignal);
+  ${scopeName}.timeList.push_back(sfcnGetT());
+#if($signal.dataType == $realDataType)
+  ${scopeName}.dataList.push_back($inputSignal);
+#else
+  for(int i=0;i<${signal.getHeight()};i++){
+    for(int j=0;j<${signal.getWidth()};j++){
+      ${scopeName}.dataList.push_back($inputSignal(i,j));
+    }
+  }
+#end
 }

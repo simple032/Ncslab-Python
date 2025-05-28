@@ -97,7 +97,7 @@ public class xzInvertedPendulumSUST extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="/*Code for initialization of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="";
 		//1.Open the serial port
 		String port = "\"/dev/ttyUSB0\"";
 		int baudrate = 115200;

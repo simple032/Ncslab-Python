@@ -1,2 +1,22 @@
 /* Integrator模块微分计算: ($block.getBlockId()) $block.getBlockName() */
-${states.get(0).derivativeName} = $inputs.get(0);
+#if($conditionSource == "External")
+  ${stateDerivative} = $inputs.get(0);
+#else
+#if($signal.getDataType() == $realDataType)
+  #if($initialCondition.getDataType() == $realDataType)
+    ${stateDerivative} = $inputs.get(0);
+  #else
+    for(int i=0;i<$initialCondition.getHeight();i++){
+      for(int j=0;j<$initialCondition.getWidth();j++){
+        ${stateDerivative}(i,j) = $inputs.get(0)(i,j);
+      }
+    }
+  #end
+#else
+  for(int i=0;i<$signal.getHeight();i++){
+    for(int j=0;j<$signal.getWidth();j++){
+      ${stateDerivative}(i,j) = $inputs.get(0)(i,j);
+    }
+  }
+#end
+#end
