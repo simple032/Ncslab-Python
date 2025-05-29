@@ -195,18 +195,13 @@ public class PIDController extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this); // Current Block object (including blockId and blockName)
-        context.put("cparaP", cparaP); // P parameter object
-        context.put("cparaI", cparaI); // I parameter object
-        context.put("cparaD", cparaD); // D parameter object
-        context.put("cparaN", cparaN); // Noise parameter object
-        context.put("limitOutput", limitOutput); // Output limit switch
-        context.put("lowerSaturationLimit", lowerSaturationLimit); // Lower limit object
-        context.put("upperSaturationLimit", upperSaturationLimit); // Upper limit object
-        context.put("stateIntegral", stateIntegral); // Integral state object
-        context.put("stateFilter", stateFilter); // Filter state object
-        context.put("realDataType", DataType.REAL); // Real number type identifier
-
+        context.put("block", this);
+        context.put("stateIntegral", stateIntegral);
+        context.put("stateFilter", stateFilter);
+        context.put("cparaP", cparaP); // 比例参数
+        context.put("cparaD", cparaD); // 微分参数
+        context.put("cparaI", cparaI); // 积分参数
+        context.put("cparaN", cparaN);
         String codeStr = TemplateManager.renderTemplate("c/continuous/PIDController/init.vm", context);
         code.addInitCode(codeStr);
     }
@@ -226,8 +221,6 @@ public class PIDController extends Block {
         context.put("limitOutput", limitOutput); // 输出限幅标志
         context.put("upperSaturationLimit", upperSaturationLimit); // 饱和上限
         context.put("lowerSaturationLimit", lowerSaturationLimit); // 饱和下限
-        context.put("realDataType", DataType.REAL); // 实数类型标识
-        context.put("matrixDataType", DataType.MATRIX); // 矩阵类型标识
         context.put("signal", signal);
         context.put("resetSig",
             inputPortList.size()>1?
@@ -244,8 +237,6 @@ public class PIDController extends Block {
         context.put("cparaP", cparaP); // P parameter object
         context.put("stateIntegral", stateIntegral); // Integral state object
         context.put("stateFilter", stateFilter); // Filter state object
-        context.put("realDataType", DataType.REAL); // Real number type identifier
-
         String derivativeCode = TemplateManager.renderTemplate("c/continuous/PIDController/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);
     }
@@ -257,8 +248,6 @@ public class PIDController extends Block {
         context.put("cparaP", cparaP); // P parameter object
         context.put("stateIntegral", stateIntegral); // Integral state object
         context.put("stateFilter", stateFilter); // Filter state object
-        context.put("realDataType", DataType.REAL); // Real number type identifier
-
         String updateCode = TemplateManager.renderTemplate("c/continuous/PIDController/update.vm", context);
         code.addUpdateCode(updateCode);
     }

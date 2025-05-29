@@ -4,7 +4,8 @@
 #set($s2Width = $signal2.getWidth())
 #set($s3Width = $signal3.getWidth())
 #set($stateDim = $s3Width - 1)
-{real_T currentTime = model.time;
+{
+real_T currentTime = model.time;
 if(fabs(floor(currentTime/0.2+0.5)-currentTime/0.2)<0.000001&&mp->majorStep>0) {
 #set($h = $s3Width - $s2Width - 1)
 #set($s2WidthMax = $s2Width - 1)
@@ -45,7 +46,7 @@ Block${blockId}_state[0][0] = Block${blockId}_discrete_transferz_savedata[0][0];
   #foreach($m in [0..$s1HeightMax])
     #foreach($n in [0..$s1WidthMax])
     Block${blockId}_discrete_transferz_savedata[$m][$n] = (${signal1.getName()}($m, $n);
-    for(int i=1; i<$s3Width; i++]){
+    for(int i=1; i<$s3Width; i++) {
       Block${blockId}_discrete_transferz_savedata[$m][$n] -= ${signal3.getName()}(0, i) * Block${blockId}_state[$m][$n*${stateDim} + i-1]
     };
 
@@ -58,21 +59,21 @@ Block${blockId}_state[0][0] = Block${blockId}_discrete_transferz_savedata[0][0];
         #end
       #else
         ${outVar}($m, $n) = 0
-        for(int j=0; j<${s2Width}; j++){
+        for(int j=0; j<${s2Width}; j++) {
           ${outVar}($m, $n)+=${signal2.getName()}(0, j) * Block${blockId}_state[$m][$n*${stateDim}+j];
         }
       #end
     #end
   #end
 
-for(int m=0; m<$s1Height; m++){
-  for(int n=0; n<$s1Width; n++){
-    for(int i=${s3Width}-1; i>=1; i--]){
+for(int m=0; m<$s1Height; m++) {
+  for(int n=0; n<$s1Width; n++) {
+    for(int i=${s3Width}-1; i>=1; i--) {
       Block${blockId}_state[$m][$n*${stateDim} + i] = Block${blockId}_state[$m][$n*${stateDim} + i-1];
     }
   }
   Block${blockId}_state[m][n*${stateDim}] = Block${blockId}_discrete_transferz_savedata[m][n];
 }
-
 #end
-}}
+}
+}

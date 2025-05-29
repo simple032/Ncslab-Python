@@ -44,45 +44,44 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         setSampleTime(sampleTime);
 	}
 	//define arrays to save data
-	 public void generateArraysCodeC(CodeStructC code) {
-		 OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		 OutputSignal signal3=inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		 context.put("block", this); // 当前Block对象
-         context.put("signal1", signal1); // 输入信号1
+    public void generateArraysCodeC(CodeStructC code) {
+        OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("block", this);
+        context.put("signal1", signal1);
+        context.put("signal3", signal3);
 
-         context.put("signal3", signal3); // 输入信号3
-         String arraysCode=TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/arrays.vm", context);
-         code.addArraysCode(arraysCode);
-	 }
-	 public void generateInitCodeC(CodeStructC code) {
-         super.generateInitCodeC(code);
-         context.put("block", this);
-         context.put("sampleTime", sampleTime);
-		 String initCode= TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/init.vm", context);
-		 code.addInitCode(initCode);
-	}
-	 public void generateOutputCodeC(CodeStructC code) {
-        OutputPort out  = outputPortList.get(0);
+        String arraysCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/arrays.vm", context);
+        code.addArraysCode(arraysCode);
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        context.put("block", this);
+        context.put("sampleTime", sampleTime);
+
+        String initCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/init.vm", context);
+        code.addInitCode(initCode);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        OutputSignal signal3=inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("block", this);
+        context.put("inputPortList", inputPortList);
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        context.put("signal1", signal1);
+        context.put("signal2", signal2);
+        context.put("signal3", signal3);
 
-        context.put("block", this); // 当前Block对象
-        context.put("inputPortList", inputPortList); // 输入端口列表
-        context.put("realDataType", DataType.REAL); // 实数类型标识
-        context.put("matrixDataType", DataType.MATRIX); // 矩阵类型标识
-         context.put("signal1", signal1); // 输入信号1
-         context.put("signal2", signal2); // 输入信号2
-         context.put("signal3", signal3); // 输入信号3
-
-        String outputCode=TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/output.vm", context);
+        String outputCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/output.vm", context);
         code.addOutputCode(outputCode);
-	}
-	public void  generateUpdateCodeC(CodeStructC code) {
-         String updateCode= TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/update.vm", context);
-         code.addUpdateCode(updateCode);
-	}
+    }
+
 	 public void updateDimension() throws MatDimException{
 		 super.updateDimension();
 			OutputPort out  = outputPortList.get(0);

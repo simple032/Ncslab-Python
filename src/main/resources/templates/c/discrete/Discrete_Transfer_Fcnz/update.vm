@@ -1,2 +1,12 @@
 /* Code for Update of Discrete_Transfer_Fcnz:(${block.blockId}) ${block.blockName} */
-
+#if($signal1.getDataType() == $realDataType)
+Block${block.getBlockId()}_state[0][0] = Block${block.getBlockId()}_discrete_transferz_savedata[0][0];
+#else
+#set($s1HeightMax = $signal1.getHeight() - 1)
+#set($s1WidthMax = $signal1.getWidth() - 1)
+#foreach($m in [0..$s1HeightMax])
+  #foreach($n in [0..$s1WidthMax])
+    Block${block.getBlockId()}_state[$m][$n*${stateDim}] = Block${block.getBlockId()}_discrete_transferz_savedata[$m][$n];
+  #end
+#end
+#end

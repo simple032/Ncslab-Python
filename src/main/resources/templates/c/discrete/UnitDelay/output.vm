@@ -39,6 +39,7 @@ if(currentTime < sampleTimeTmp) {
     }
 #end
 
+
 if(fabs((int)(currentTime/${sampleTime.getName()}+0.5) - currentTime/${sampleTime.getName()}) < 0.000001 && mp->majorStep > 0) {
     Block${block.blockId}_unit_delay_savedata[${i}][0+2*${j}] = Block${block.blockId}_unit_delay_savedata[${i}][1+2*${j}];
     Block${block.blockId}_unit_delay_savedata[${i}][1+2*${j}] = ${signal.getName()}(${i},${j});

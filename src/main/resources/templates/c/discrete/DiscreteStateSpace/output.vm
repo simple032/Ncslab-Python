@@ -1,0 +1,4 @@
+$output = $C * $x;
+#if(${feedThrough})
+  $output += $D * $input;
+#end

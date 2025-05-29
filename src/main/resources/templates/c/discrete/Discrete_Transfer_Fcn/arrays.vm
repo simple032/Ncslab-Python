@@ -1,2 +1,2 @@
 /* Define arrays for block discrete_Transfer_Fcn:(${block.blockId}) ${block.blockName} */
-double Block${block.blockId}_discrete_transfer_savedata[2];
+double Block${block.blockId}_discrete_transfer_savedata[${states.size()}];

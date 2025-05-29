@@ -74,7 +74,7 @@ public class DiscreteStateSpace extends DiscreteBlock {
     @Override
     public void calculateInit() {
         for (State xState : xStateList) {
-            Data data = new Data(X0.getMatrix());
+            Data data = X0.getData();
             xState.setData(data);
         }
     }
@@ -149,11 +149,10 @@ public class DiscreteStateSpace extends DiscreteBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        String initCode = "/*Code for initialization of block " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
-
-        for (int i = 0; i < xStateList.size(); i++) {
-            initCode += xStateList.elementAt(i).getName() + "=" + X0.getName() + ";\n";
-        }
+        context.put("block", this);
+        context.put("stateList", xStateList);
+        context.put("X0", X0.getName());
+        String initCode = TemplateManager.renderTemplate("c/discrete/DiscreteStateSpace/init.vm", context);
 
         code.addInitCode(initCode);
     }
@@ -162,31 +161,27 @@ public class DiscreteStateSpace extends DiscreteBlock {
         String outputCode = "/*Code for output of block " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
         // y(k) = Cx(k) + Du(k)
 
-        if (feedThrough) {
-            outputCode += "+" + D.getName() + "*" + getInputPortVariable(0);
-        }
+        context.put("block", this);
+        context.put("C", C.getName());
+        context.put("D", D.getName());
+        context.put("x", xStateList.firstElement().getName());
+        context.put("feedThrough", feedThrough);
+        context.put("output", getOutputPortVariable(0));
+        context.put("input", getInputPortVariable(0));
 
-        outputCode += ";\n";
+        outputCode += TemplateManager.renderTemplate("c/discrete/DiscreteStateSpace/output.vm", context);
 
         code.addOutputCode(outputCode);
     }
 
-    public void generateDerivativeCodeC(CodeStructC code) {
-        String derivativeCode = "/*Code for Derivative of " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
-
-        State xState = xStateList.firstElement();
-        derivativeCode += xState.getDerivativeName() + "=" + A.getName() + "*" + xState.getName() + "+" + B.getName() + "*" + this.getInputPortVariable(0) + ";\n";
-
-        code.addDerivativeCode(derivativeCode);
-    }
-
     public void generateUpdateCodeC(CodeStructC code) {
-        String updateCode = "/*Code for Update of " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
-
-        State xState = xStateList.firstElement();
-        updateCode += xState.getName() + "=" + A.getName() + "*" + xState.getName() + "+" + B.getName() + "*" + this.getInputPortVariable(0) + ";\n";
-
-        code.addUpdateCode(updateCode);
+        context.put("block", this);
+        context.put("A", A.getName());
+        context.put("B", B.getName());
+        context.put("xState", xStateList.firstElement());
+        context.put("input", getInputPortVariable(0));
+        String updateCode = TemplateManager.renderTemplate("c/discrete/DiscreteStateSpace/update.vm", context);
+        code.addDerivativeCode(updateCode);
     }
 
     public void updateDimension() throws MatDimException {

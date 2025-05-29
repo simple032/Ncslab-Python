@@ -100,9 +100,17 @@ public class Discrete_Time_Integrator extends Block {
         xState.setData(updatedX);
     }
 
+    public void generateArraysCodeC(CodeStructC code) {
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("block", this);
+        context.put("signal", signal);
+        String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/arrays.vm", context);
+        code.addArraysCode(codeStr);
+    }
+
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode = "/*Code for initialization of block discrete_time_integrator:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        String initCode = "/*Code for initialization of block "+getBlockType()+":(" + getBlockId() + ")" + getBlockName() + "*/\n";
 
         context.put("blockId", blockId);
         context.put("blockName", blockName);
@@ -116,7 +124,7 @@ public class Discrete_Time_Integrator extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        String outputCode = "/*Code for output of block Unit Delay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        String outputCode = "/*Code for output of block "+getBlockType()+":(" + getBlockId() + ")" + getBlockName() + "*/\n";
 
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();

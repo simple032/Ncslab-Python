@@ -1,0 +1,24 @@
+/*Code for initialization of block discrete_time_integrator:($blockId)$blockName*/
+$gainval.initCodeC
+$sampleTime.initCodeC
+$initialCondition.initCodeC
+
+#if( $gainval.dataType == $realDataType && $xState.dataType == $realDataType )
+  $xState.getName()=$initialCondition.getName();
+#elseif( $gainval.dataType == $realDataType && $xState.dataType == $matrixDataType )
+  #set($hMax = $xState.getHeight() - 1)
+  #set($wMax = $xState.getWidth() - 1)
+  #foreach( $i in [0..$hMax] )
+    #foreach( $j in [0..$wMax] )
+      $xState.getName()($i,$j)=$initialCondition.getName();
+    #end
+  #end
+#else
+  #set($hMax = $xState.getHeight() - 1)
+  #set($wMax = $xState.getWidth() - 1)
+  #foreach( $i in [0..$hMax] )
+    #foreach( $j in [0..$wMax] )
+      $xState.getName()($i,$j)=$initialCondition.getName()($i,$j);
+    #end
+  #end
+#end

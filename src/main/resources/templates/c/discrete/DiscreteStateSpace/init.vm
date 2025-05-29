@@ -1,0 +1,3 @@
+#foreach($state in $stateList)
+  $state.getName() = $X0;
+#end

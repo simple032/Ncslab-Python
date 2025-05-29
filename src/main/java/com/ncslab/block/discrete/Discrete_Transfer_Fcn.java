@@ -4,7 +4,6 @@ import java.util.Vector;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -40,18 +39,6 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         parameterNames.add("InitialStates");
         outputNames.add("out1");
         inputNames.add("in1");
-    }
-
-    // Add a method to calculate state indices
-    private int[] calculateStateIndices(int height, int width) {
-        int[] indices = new int[height * width];
-        int index = 0;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                indices[index++] = i * width + j;
-            }
-        }
-        return indices;
     }
 
     public Discrete_Transfer_Fcn(JSONObject blockIn, NCSLabModel model) {

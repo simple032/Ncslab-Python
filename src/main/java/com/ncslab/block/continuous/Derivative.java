@@ -54,10 +54,10 @@ public class Derivative extends Block {
 		code.addInitCode(codeStr);
 	}
 	public void generateArraysCodeC(CodeStructC code) {
-		String arraysCode = "/*Define arrays for block Derivative(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();		context.put("block", this);
+		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("block", this);
 		context.put("signal", signal);
+		String arraysCode = TemplateManager.renderTemplate("c/continuous/Derivative/arrays.vm", context);
 		code.addArraysCode(arraysCode);
 	}
 	public void generateDerivativeCodeM(CodeStructM code) {
@@ -109,12 +109,6 @@ public class Derivative extends Block {
 				+ "*/\n";
 
 		code.addDerivativeCode(derivativeCode);
-	}
-
-	public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
-		String updateCode = "/*Code for update of block " + getBlockType() + ":(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		code.addUpdateCode(updateCode);
 	}
 
 	public void updateDimension() throws MatDimException {

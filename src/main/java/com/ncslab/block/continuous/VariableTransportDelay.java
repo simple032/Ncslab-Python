@@ -14,17 +14,9 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.Vector;
+import com.ncslab.util.TemplateManager;
 
 public class VariableTransportDelay extends Block {
-
-    // Add a method to calculate buffer indices
-    private int[] calculateBufferIndices(int bufferSize) {
-        int[] indices = new int[bufferSize];
-        for (int i = 0; i < bufferSize; i++) {
-            indices[i] = i;
-        }
-        return indices;
-    }
 
     Parameter DelayType;
     Parameter MaxDelayTime;
@@ -71,71 +63,40 @@ public class VariableTransportDelay extends Block {
         parameterList.add(PadeOrder);
     }
 
-    public void generateArraysCodeC(CodeStructC code) {
-        String arraysCode = "/*Define arrays for block VariableTransportDelay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+    public void generateArraysCodeC(CodeStructC code) {        
+        context.put("block", this);
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+        context.put("maxDelayTime", MaxDelayTime.getData().getInitValue());
+        context.put("initialBufferSize", InitialBuffsize.getData().getInitValue());
 
-        arraysCode += "int VariableTransportDelay" + getBlockId() + "BuffSize=(" + paramValues.getDouble("MaxDelayTime") + "/STEP_SIZE+1>" + paramValues.getString("InitialBuffsize") + ")?" + "((int)(" + paramValues.getDouble("MaxDelayTime") + "/STEP_SIZE+1)):" + paramValues.getString("InitialBuffsize") + ";\n";
-        arraysCode += "double *Block" + getBlockId() + "VariableTransportDelay_saveData;\n";
-        arraysCode += "double *Block" + getBlockId() + "VariableTransport_Ti_saveData;\n";
-
+        String arraysCode = TemplateManager.renderTemplate("c/continuous/VariableTransportDelay/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode = "/*Code for initialization of block VariableTransportDelay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        context.put("block", this);
+        context.put("MaxDelayTime", MaxDelayTime);
+        context.put("PadeOrder", PadeOrder);
+        context.put("InitialOutput", InitialOutput);
+        String codeStr = TemplateManager.renderTemplate("c/continuous/VariableTransportDelay/init.vm", context);
+        code.addInitCode(codeStr);
+    }
 
-        initCode += MaxDelayTime.getInitCodeC();
-        initCode += PadeOrder.getInitCodeC();
-
-        initCode += "Block" + getBlockId() + "VariableTransportDelay_saveData=(double *)malloc(VariableTransportDelay" + getBlockId() + "BuffSize*sizeof(double));\n";
-        initCode += "Block" + getBlockId() + "VariableTransport_Ti_saveData=(double *)malloc(VariableTransportDelay" + getBlockId() + "BuffSize*sizeof(double));\n";
-
-        initCode += "for(int i=0;i<VariableTransportDelay" + getBlockId() + "BuffSize;i++){\n"
-                + "Block" + getBlockId() + "VariableTransportDelay_saveData[i]=" + paramValues.getDouble("InitialOutput") + ";\n"
-                + "Block" + getBlockId() + "VariableTransport_Ti_saveData[i]=0;\n"
-                + "}\n";
-
-        code.addInitCode(initCode);
+    public String getCurrentIndexName(){
+        return "currentIndex_VariableTransportDelay" + getBlockId();
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        String outputCode = "/*Code for output of block VariableTransportDelay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        outputCode += "if(mp->majorStep>0) {\n";
-
-        outputCode += "for(int i=VariableTransportDelay" + getBlockId() + "BuffSize-1;i>0;i--){\n"
-                + "Block" + getBlockId() + "VariableTransportDelay_saveData[i]=Block" + getBlockId() + "VariableTransportDelay_saveData[i-1];\n"
-                + "Block" + getBlockId() + "VariableTransport_Ti_saveData[i]=Block" + getBlockId() + "VariableTransport_Ti_saveData[i-1];\n"
-                + "}\n"
-                + "Block" + getBlockId() + "VariableTransportDelay_saveData[0]=" + signal.getName() + ";\n";
-
-        outputCode += "{real_T delayTime = " + signal2.getName() + ";\n"
-                + "if(delayTime>=" + MaxDelayTime.getName() + "){delayTime=" + MaxDelayTime.getName() + ";}\n"
-                + "else if(delayTime<=0) {delayTime=STEP_SIZE;}\n";
-
-        outputCode += "Block" + getBlockId() + "VariableTransport_Ti_saveData[0]=1.0/delayTime;\n";
-
-        if (paramValues.getString("VariableDelayType").equals("Variable Time Delay")) {
-            outputCode += outputPortList.get(0).getOutputSignalC().getName() + "=Block" + getBlockId() + "VariableTransportDelay_saveData[(int)floor(delayTime/STEP_SIZE)];\n";
-        } else {
-            outputCode += "int delayTimeIndex = 0;\n"
-                    + "double intergSum=0;\n"
-                    + "for(int i=0;i<VariableTransportDelay" + getBlockId() + "BuffSize;i++){\n"
-                    + "integSum+=STEP_SIZE*Block" + getBlockId() + "VariableTransport_Ti_saveData[i];\n"
-                    + "delayTimeIndex=i;\n"
-                    + "if(integSum>=1) {break;}\n"
-                    + "}\n"
-                    + outputPortList.get(0).getOutputSignalC().getName() + "=Block" + getBlockId() + "VariableTransportDelay_saveData[delayTimeIndex];\n";
-        }
-
-        outputCode += "}\n";
-
-        code.addOutputCode(outputCode);
+        context.put("block", this);
+        context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+        context.put("signal2", inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+        context.put("MaxDelayTime", MaxDelayTime);
+        context.put("InitialOutput", InitialOutput);
+        context.put("outputs", getOutputPortVariables());
+        String codeStr = TemplateManager.renderTemplate("c/continuous/VariableTransportDelay/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void updateDimension() throws MatDimException {

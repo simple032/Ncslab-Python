@@ -127,105 +127,27 @@ public class OldPIDController extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode = "/*Code for initialization of block PID Controller:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        initCode += cparaP.getInitCodeC();
-        initCode += cparaI.getInitCodeC();
-        initCode += cparaD.getInitCodeC();
-        initCode += cparaN.getInitCodeC();
-
-        if (cparaP.getDataType() == DataType.REAL && stateIntegral.getDataType() == DataType.REAL) {
-            initCode += stateIntegral.getName() + "=0;\n";
-            initCode += stateFilter.getName() + "=0;\n";
-        } else {
-            for (int i = 0; i < stateIntegral.getHeight(); i++) {
-                for (int j = 0; j < stateIntegral.getWidth(); j++) {
-                    initCode += stateIntegral.getName() + "(" + i + "," + j + ")=" + "0;\n";
-                    initCode += stateFilter.getName() + "(" + i + "," + j + ")=" + "0;\n";
-                }
-            }
-        }
-        code.addInitCode(initCode);
+        context.put("block", this);
+        context.put("stateIntegral", stateIntegral);
+        context.put("stateFilter", stateFilter);
+        String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        String outputCode = "/*Code for output of block PID Controller:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        switch (cparaP.getDataType()) {
-            case REAL:
-                switch (signal.getDataType()) {
-                    case REAL:
-                        outputCode += "if(mp->majorStep>0) {\n";
-                        outputCode += "Block" + getBlockId() + "save_data[0]=" + cparaP.getName() + "*" + signal.getName() + ";\n";
-                        outputCode += "Block" + getBlockId() + "save_data[1]=" + cparaD.getName() + "*" + signal.getName() + ";\n";
-                        outputCode += "Block" + getBlockId() + "save_data[2]=" + cparaI.getName() + "*" + signal.getName() + ";\n";
-                        outputCode += "Block" + getBlockId() + "save_data[3]=(Block" + getBlockId() + "save_data[1]-" + stateFilter.getName() + ")*" + cparaN.getName() + ";\n";
-                        outputCode += "Block" + getBlockId() + "save_data[4]=" + "Block" + getBlockId() + "save_data[0]" + "+" + stateIntegral.getName() + "+Block" + getBlockId() + "save_data[3];\n";
-                        outputCode += this.getOutputPortVariable(0) + "=" + "Block" + getBlockId() + "save_data[4];}\n";
-                        break;
-                    case MATRIX:
-                        for (int i = 0; i < signal.getHeight(); i++) {
-                            for (int j = 0; j < signal.getWidth(); j++) {
-                                outputCode += "if(mp->majorStep>0) {\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]=" + cparaP.getName() + "*" + signal.getName() + "(" + i + "," + j + ");\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]=" + cparaD.getName() + "*" + signal.getName() + "(" + i + "," + j + ");\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+2]=" + cparaI.getName() + "*" + signal.getName() + "(" + i + "," + j + ");\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3]=(Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]-" + stateFilter.getName() + "(" + i + "," + j + "))*" + cparaN.getName() + ";\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4]=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]" + "+" + stateIntegral.getName() + "(" + i + "," + j + ")+Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3];\n";
-                                outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4];}\n";
-                            }
-                        }
-                        break;
-                }
-                break;
-            case MATRIX:
-                switch (signal.getDataType()) {
-                    case REAL:
-                        for (int i = 0; i < cparaP.getHeight(); i++) {
-                            for (int j = 0; j < cparaP.getWidth(); j++) {
-                                outputCode += "if(mp->majorStep>0) {\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]=" + cparaP.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]=" + cparaD.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+2]=" + cparaI.getName() + "(" + i + "," + j + ")*" + signal.getName() + ";\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3]=(Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]-" + stateFilter.getName() + "(" + i + "," + j + "))*" + cparaN.getName() + ";\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4]=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]" + "+" + stateIntegral.getName() + "(" + i + "," + j + ")+Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3];\n";
-                                outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4];}\n";
-                            }
-                        }
-                        break;
-                    case MATRIX:
-                        for (int i = 0; i < signal.getHeight(); i++) {
-                            for (int j = 0; j < signal.getWidth(); j++) {
-                                outputCode += "if(mp->majorStep>0) {\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]=" + cparaP.getName() + "(" + i + "," + j + ")*" + signal.getName() + "(" + i + "," + j + ");\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]=" + cparaD.getName() + "(" + i + "," + j + ")*" + signal.getName() + "(" + i + "," + j + ");\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+2]=" + cparaI.getName() + "(" + i + "," + j + ")*" + signal.getName() + "(" + i + "," + j + ");\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3]=(Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+1]-" + stateFilter.getName() + "(" + i + "," + j + "))*" + cparaN.getName() + "(" + i + "," + j + ");\n";
-                                outputCode += "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4]=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5]" + "+" + stateIntegral.getName() + "(" + i + "," + j + ")+Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3];\n";
-                                outputCode += this.getOutputPortVariable(0) + "(" + i + "," + j + ")=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+4];}\n";
-                            }
-                        }
-                        break;
-                }
-                break;
-        }
-        code.addOutputCode(outputCode);
+        context.put("block", this);
+        context.put("stateIntegral", stateIntegral);
+        context.put("stateFilter", stateFilter);
+        String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        String derivativeCode = "/*Code for Derivative of PID Controller:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        if (signal.getDataType() == DataType.REAL && cparaP.getDataType() == DataType.REAL) {
-            derivativeCode += stateIntegral.getDerivativeName() + "=" + "Block" + getBlockId() + "save_data[2];\n";
-            derivativeCode += stateFilter.getDerivativeName() + "=" + "Block" + getBlockId() + "save_data[3];\n";
-        } else {
-            for (int i = 0; i < stateIntegral.getHeight(); i++) {
-                for (int j = 0; j < stateIntegral.getWidth(); j++) {
-                    derivativeCode += stateIntegral.getDerivativeName() + "(" + i + "," + j + ")=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+2];\n";
-                    derivativeCode += stateFilter.getDerivativeName() + "(" + i + "," + j + ")=" + "Block" + getBlockId() + "save_data[" + i + "][" + j + "*5+3];\n";
-                }
-            }
-        }
-        code.addDerivativeCode(derivativeCode);
+        context.put("block", this);
+        context.put("stateIntegral", stateIntegral);
+        context.put("stateFilter", stateFilter);
+        String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 
     public void generateUpdateCodeC(CodeStructC code) {

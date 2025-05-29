@@ -117,7 +117,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 	}
 
     public boolean isTerminalBlock() {
-		return (outputPortList.size() == 0);
+		return (outputPortList.isEmpty());
 	}
 
     public String getSubSystemName() {

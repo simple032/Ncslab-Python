@@ -1,2 +1,2 @@
 /* Integrator模块输出: ($block.getBlockId()) $block.getBlockName() */
-$outputs.get(0) = ${states.get(0).getName()};
+$outputs.get(0) = ${state.getName()};
