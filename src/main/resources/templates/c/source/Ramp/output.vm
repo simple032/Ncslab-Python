@@ -1,21 +1,20 @@
 /* C代码生成模板 - Ramp模块 */
-real_T currentTime = model.time;
 #if($signal.dataType == $realDataType)
-if(currentTime < ${start}) {
+if(model.time < ${start}) {
     ${outputs.get(0)} = ${initial_output};
 }
 else {
-    ${outputs.get(0)} = ${initial_output} + $slopeValue*(currentTime - ${start});
+    ${outputs.get(0)} = ${initial_output} + $slopeValue*(model.time - ${start});
 }
 #else
 
 #foreach($i in [0..$slopeHeightIndex])
 #foreach($j in [0..$slopeWidthIndex])
-if(currentTime < ${start}[$i][$j]) {
+if(model.time < ${start}[$i][$j]) {
     ${outputs.get(0)}[$i][$j] = ${initial_output}[$i][$j];
 }
 else {
-    ${outputs.get(0)}[$i][$j] = ${initial_output}[$i][$j] + ${slope.getName()}[$i][$j]*(currentTime - ${start}[$i][$j]);
+    ${outputs.get(0)}[$i][$j] = ${initial_output}[$i][$j] + ${slope.getName()}[$i][$j]*(model.time - ${start}[$i][$j]);
 }
 #end
 #end

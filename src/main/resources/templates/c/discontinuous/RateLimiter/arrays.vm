@@ -1,3 +1,2 @@
 /*Define arrays for block RateLimiter:(${block.getBlockId()})${block.getBlockName()}*/
-
 double Block${block.getBlockId()}RateLimiter_data = 0;

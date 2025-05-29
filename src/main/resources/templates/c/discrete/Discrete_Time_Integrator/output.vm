@@ -1,8 +1,7 @@
 /*Code for output of block Discrete-Time Integrator:($blockId)$blockName*/
 {
-real_T currentTime = model.time;
 real_T sampleTimeTmp = $sampleTime.getName()==-1?model.stepSize:$sampleTime.getName();
-if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001&&mp->majorStep>0) {
+if(fabs(floor(model.time/sampleTimeTmp+0.5)-model.time/sampleTimeTmp)<0.000001&&mp->majorStep>0) {
 #if( $signal.dataType == $realDataType )
   #if( $gainval.dataType == $realDataType)
     #if( $option == "Integration: Forward Euler" )

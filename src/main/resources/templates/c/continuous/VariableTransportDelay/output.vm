@@ -1,12 +1,11 @@
 /* 可变传输延迟模块输出: ($block.getBlockId()) $block.getBlockName() */
 #set($delayTime = $block.getDelayTimeExpression())
-#set($currentTime = $block.getCurrentTimeName())
 #set($bufferIndex = $block.getCurrentIndexName())
 
 /* 查找最近的时间点 */
 #set($foundIndex = -1)
 #foreach($i in $block.calculateBufferIndices($bufferSize))
-    #set($timeDiff = $currentTime - ${block.getTimeBufferName($i)})
+    #set($timeDiff = $model.time - ${block.getTimeBufferName($i)})
     #if($timeDiff >= $delayTime && $timeDiff >= 0)
         #set($foundIndex = $i)
         #break
@@ -21,7 +20,7 @@
     #set($u1 = ${block.getInputBufferName($foundIndex)})
     #set($u2 = ${block.getInputBufferName($prevIndex)})
     
-    $outputs.get(0) = $u1 + (($delayTime - ($currentTime - $t1)) * ($u2 - $u1)) / ($t2 - $t1);
+    $outputs.get(0) = $u1 + (($delayTime - ($model.time - $t1)) * ($u2 - $u1)) / ($t2 - $t1);
 #else
     $outputs.get(0) = 0; /* 未找到有效数据 */
 #end

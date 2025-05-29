@@ -1,15 +1,14 @@
 /* Code for output of block Zero_Order_Hold:(${block.blockId}) ${block.blockName} */
-{real_T currentTime = model.time;
-real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
+{real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
 
 #if($signal.dataType == $realDataType)
-if(fabs(floor(currentTime/sampleTimeTmp+0.5) - currentTime/sampleTimeTmp) < 0.000001) {
+if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
     ${outputs.get(0)} = ${signal.getName()};
 }
 #else
   #foreach($i in [0..$optHeightIndex])
     #foreach($j in [0..$optWidthIndex])
-if(fabs(floor(currentTime/sampleTimeTmp+0.5) - currentTime/sampleTimeTmp) < 0.000001) {
+if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
     ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
 }
     #end

@@ -1,4 +1,2 @@
-/*Code for initialization of block RateLimiter:(${block.getBlockId()})${block.getBlockName()}*/
-
 ${lowerLimit.getInitCodeC()}
 ${upperLimit.getInitCodeC()}

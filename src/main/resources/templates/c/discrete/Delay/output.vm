@@ -6,20 +6,19 @@
 
 /* Code for output of block Delay:($blockId)$blockName */
 {
-    double currentTime = model.time;
-    int h = (int)($delayLength);
+        int h = (int)($delayLength);
 
-    if (fabs((int)(currentTime / $sampleTime + 0.5) - currentTime / $sampleTime) < 0.000001 && mp->majorStep > 0) {
+    if (fabs((int)(model.time / $sampleTime + 0.5) - model.time / $sampleTime) < 0.000001 && mp->majorStep > 0) {
         for(int i = 0; i < h-1; i++) {
             Block${blockId}_discrete_delay_savedata[0][i] = Block${blockId}_discrete_delay_savedata[0][i+1];
         }
         Block${blockId}_discrete_delay_savedata[0][h-1] = $inputSignal;
     }
 
-    if ((currentTime + 0.00001) < ($delayLength * $sampleTime)) {
+    if ((model.time + 0.00001) < ($delayLength * $sampleTime)) {
         $outputSignal = $initialCondition;
     } else {
-        if (fabs((int)(currentTime / $sampleTime + 0.5) - currentTime / $sampleTime) < 0.000001) {
+        if (fabs((int)(model.time / $sampleTime + 0.5) - model.time / $sampleTime) < 0.000001) {
             $outputSignal = Block${blockId}_discrete_delay_savedata[0][0];
         }
     }

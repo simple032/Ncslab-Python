@@ -1,9 +1,8 @@
 /* Code for output of discrete_transfer_fun:(${block.blockId}) ${block.blockName} */
 {
-  real_T currentTime = model.time;
-  real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
+    real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
 #set($h = $den.width - $num.width - 1)
-  if(fabs(floor(currentTime/sampleTimeTmp+0.5) - currentTime/sampleTimeTmp) < 0.000001) {
+  if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
   #if($feedThrough)
       ${outputs.get(0)} = Block${block.blockId}_discrete_transfer_savedata[0] * ${num.getName()}(0, 0)
       #set($numWidthIndex = $num.width - 1)

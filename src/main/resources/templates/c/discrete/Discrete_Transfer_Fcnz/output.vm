@@ -5,8 +5,7 @@
 #set($s3Width = $signal3.getWidth())
 #set($stateDim = $s3Width - 1)
 {
-real_T currentTime = model.time;
-if(fabs(floor(currentTime/0.2+0.5)-currentTime/0.2)<0.000001&&mp->majorStep>0) {
+if(fabs(floor(model.time/0.2+0.5)-model.time/0.2)<0.000001&&mp->majorStep>0) {
 #set($h = $s3Width - $s2Width - 1)
 #set($s2WidthMax = $s2Width - 1)
 #set($s3WidthMax = $s3Width - 1)

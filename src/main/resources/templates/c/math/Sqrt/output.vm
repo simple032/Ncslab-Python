@@ -1,7 +1,6 @@
 #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
 #set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
 
-
 /* Code for Sqrt block $blockId */
 #if($inputSignal.dataType == $realDataType)
     #if($function == "sqrt")
@@ -16,18 +15,18 @@
         $outputSignal = 1 / sqrt($inputSignal);
     #end
 #elseif($inputSignal.dataType == $matrixDataType)
-    #set($height = $inputSignal.getHeight())
-    #set($width = $inputSignal.getWidth())
-    #foreach($i in [0..$height-1])
-        #foreach($j in [0..$width-1])
+    #set($hMax = $inputSignal.getHeight() - 1)
+    #set($wMax = $inputSignal.getWidth() - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
             #if($function == "sqrt")
                 $outputSignal($i, $j) = sqrt($inputSignal($i, $j));
             #elseif($function == "signedSqrt")
-                #if($inputSignal($i, $j) > 0)
+                if($inputSignal($i, $j) > 0)
                     $outputSignal($i, $j) = sqrt($inputSignal($i, $j));
-                #else
+                else
                     $outputSignal($i, $j) = -sqrt(-$inputSignal($i, $j));
-                #end
+                end
             #elseif($function == "rSqrt")
                 $outputSignal($i, $j) = 1 / sqrt($inputSignal($i, $j));
             #end

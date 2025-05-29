@@ -1,7 +1,5 @@
 /*Code for output of block RateLimiter:(${block.getBlockId()})${block.getBlockName()}*/
 
-#set($out = $outputPortList[0])
-#set($outputSignal = $outputPortList[0].outputSignalC)
 #set($dataVar = "Block${block.getBlockId()}RateLimiter_data")
 
 if(mp->majorStep > 0) {

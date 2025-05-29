@@ -1,13 +1,12 @@
 /* Code for output of block Sine Wave:(${block.blockId}) ${block.blockName} */
-{real_T currentTime = model.time;
-#if($amplitude.dataType == $realDataType)
-${outputs.get(0)} = ${bias.getName()} + ${amplitude.getName()} * sin(${frequency.getName()} * currentTime + ${phase.getName()});
+{#if($amplitude.dataType == $realDataType)
+${outputs.get(0)} = ${bias.getName()} + ${amplitude.getName()} * sin(${frequency.getName()} * model.time + ${phase.getName()});
 #else
 #set($amplitudeIndices = $block.calculateAmplitudeIndices($amplitude.height, $amplitude.width))
 #foreach($index in $amplitudeIndices)
     #set($i = $index / $amplitude.width)
     #set($j = $index % $amplitude.width)
-    ${outputs.get(0)}(${i},${j}) = ${bias.getName()}(${i},${j}) + ${amplitude.getName()}(${i},${j}) * sin(${frequency.getName()}(${i},${j}) * currentTime - ${phase.getName()}(${i},${j});
+    ${outputs.get(0)}(${i},${j}) = ${bias.getName()}(${i},${j}) + ${amplitude.getName()}(${i},${j}) * sin(${frequency.getName()}(${i},${j}) * model.time - ${phase.getName()}(${i},${j});
 #end
 #end
 }
