@@ -1,0 +1,6 @@
+#set($index = $block.getParameter("DACForStm32Index").getIntValue())
+#set($channel = $block.getParameter("DACForStm32Channel").getIntValue())
+
+MX_DAC_Config($index, $channel);
+DAC_Init();
+DAC_Set_Vol($index, $channel, 0);

@@ -1,0 +1,8 @@
+#set($inputSignal = $block.getInputPort(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($channel = $block.getParameter("Channel").getDoubleValue())
+
+if($channel){
+	DAC8532_Out_Voltage(channel_B, $inputSignal);
+}else{
+	DAC8532_Out_Voltage(channel_A, $inputSignal);
+}

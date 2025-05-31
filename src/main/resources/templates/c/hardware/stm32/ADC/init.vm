@@ -1,0 +1,6 @@
+#set($index = $block.getParameter("ADCForStm32Index").getIntValue())
+#set($channel = $block.getParameter("ADCForStm32Channel").getIntValue())
+
+MX_ADC_Config($index, $channel);
+MX_DMA_Init();
+MX_ADC_Init();

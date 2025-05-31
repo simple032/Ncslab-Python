@@ -1,0 +1,5 @@
+if($inputSignal){
+	digitalWrite($Bcm, HIGH);
+}else{
+	digitalWrite($Bcm, LOW);
+}

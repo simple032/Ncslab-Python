@@ -1,0 +1,6 @@
+#set($channel = $block.getParameter("Channel").getDoubleValue())
+
+DEV_ModuleInit();
+printf("\r\n Program start \r\n");
+DAC8532_Out_Voltage(channel_A, 0);
+DAC8532_Out_Voltage(channel_B, 0);

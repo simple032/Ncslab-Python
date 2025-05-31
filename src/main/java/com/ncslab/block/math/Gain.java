@@ -136,8 +136,7 @@ public class Gain extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode = "/*Code for initialization of block Gain:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        initCode += getGain().getInitCodeC();
+        String initCode = getGain().getInitCodeC();
         code.addInitCode(initCode);
     }
 

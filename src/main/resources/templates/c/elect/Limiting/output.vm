@@ -1,0 +1,12 @@
+#set( $block = $context.get("block") )
+#set( $out = $block.getOutputPortList().get(0) )
+#set( $ops = $block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort() )
+#set( $rmin = $block.getParameterList().get(0).getName() )
+
+/* Output code for block Limiting */
+if(${ops.getOutputSignalC().getName()} >= ${rmin}) {
+    ${out.getOutputSignalC().getName()} = ${ops.getOutputSignalC().getName()};
+}
+else {
+    ${out.getOutputSignalC().getName()} = ${rmin};
+}

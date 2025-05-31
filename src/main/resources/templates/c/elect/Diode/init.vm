@@ -1,0 +1,6 @@
+#set( $parameters = $block.getParameterList() )
+
+/* Initialization code for block Diode */
+#foreach( $param in $parameters )
+    ${param.getInitCodeC()}
+#end

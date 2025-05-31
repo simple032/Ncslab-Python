@@ -1,0 +1,3 @@
+if(model.majorStep == 1){
+	$outputSignal = UDP_Receive_double($localPort);
+}

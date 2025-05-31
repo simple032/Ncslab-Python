@@ -1,0 +1,11 @@
+#set($inputSignal = $block.getInputPort(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($channel = $block.getParameter("PWMForStm32Channel").getIntValue())
+#set($timx = $block.getParameter("PWMForStm32TIM").getIntValue())
+#set($frequency = $block.getParameter("PWMForStm32Frequency").getIntValue())
+
+if(model.majorStep == 1){
+	int pwmduty = 0;
+	pwmduty = $inputSignal <= 100 ? $inputSignal : 100;
+	pwmduty = pwmduty >= 0 ? pwmduty : 0;
+	pwm_set($timx, $channel, pwmduty, $frequency);
+}

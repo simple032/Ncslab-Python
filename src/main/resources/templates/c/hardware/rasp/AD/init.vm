@@ -1,0 +1,8 @@
+#set($channel = $block.getParameter("Channel").getDoubleValue())
+
+DEV_ModuleInit();
+if(ADS1256_init() == 1){
+        printf("\r\n ADS1256_init   END \r\n");
+        DEV_ModuleExit();
+        exit(0);
+}

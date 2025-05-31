@@ -79,7 +79,8 @@ public class UDPSender extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         context.put("block", this);
-
+        context.put("addr", addr);
+        context.put("port", port);
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPSender/init.vm", context);
         code.addInitCode(codeStr);
     }

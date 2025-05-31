@@ -1,0 +1,7 @@
+#set($outputSignal = $block.getOutputPort(0).getOutputSignalC().getName())
+#set($index = $block.getParameter("ADCForStm32Index").getIntValue())
+#set($channel = $block.getParameter("ADCForStm32Channel").getIntValue())
+
+if(model.majorStep == 1){
+	$outputSignal = (float)(Get_Adc($index, $channel) * 3.3 / 65535);
+}

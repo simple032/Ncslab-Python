@@ -1,0 +1,9 @@
+if($frequency >= 16 && $frequency <= 1000000){
+	TIM${timx}_PWM_Init(200-1, (int)(1000000.0/$frequency)-1, $channel);
+}else{
+	if(STEP_SIZE <= 0.0032768) TIM${timx}_PWM_Init(2*10000000*STEP_SIZE-1, 10-1, $channel);
+	else if(STEP_SIZE <= 0.032768) TIM${timx}_PWM_Init(2*1000000*STEP_SIZE-1, 100-1, $channel);
+	else if(STEP_SIZE <= 0.32768) TIM${timx}_PWM_Init(2*100000*STEP_SIZE-1, 1000-1, $channel);
+	else if(STEP_SIZE <= 3.2768) TIM${timx}_PWM_Init(2*10000*STEP_SIZE-1, 10000-1, $channel);
+	else TIM${timx}_PWM_Init(2*10000-1, 10000-1, $channel);
+}

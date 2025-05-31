@@ -1,0 +1,14 @@
+#set( $block = $context.get("block") )
+#set( $out = $block.getOutputPortList().get(0) )
+#set( $ops = $block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort() )
+
+/* Output code for block Diode */
+if(${ops.getOutputSignalC().getName()} > ${vf}) {
+    ${out.getOutputSignalC().getName()} = (${ops.getOutputSignalC().getName()} - ${vf}) / ${ron};
+}
+else if(${ops.getOutputSignalC().getName()} > 0) {
+    ${out.getOutputSignalC().getName()} = 0;
+}
+else {
+    ${out.getOutputSignalC().getName()} = ${ops.getOutputSignalC().getName()} * ${goff};
+}

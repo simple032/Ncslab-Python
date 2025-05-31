@@ -1,0 +1,9 @@
+#set($inputSignal = $block.getInputPort(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($port = $block.getParameter("port").getDoubleValue())
+
+if(model.majorStep == 1){
+	int pwmduty = 0;
+	pwmduty = $inputSignal <= 1000 ? $inputSignal : 1000;
+	pwmduty = pwmduty >= 0 ? pwmduty : 0;
+	pwmWrite($port, pwmduty);
+}

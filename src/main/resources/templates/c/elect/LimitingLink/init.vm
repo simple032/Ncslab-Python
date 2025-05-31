@@ -1,0 +1,6 @@
+#set( $parameters = $block.getParameterList() )
+
+/* Initialization code for block LimitingLink */
+#foreach( $param in $parameters )
+    ${param.getInitCodeC()}
+#end

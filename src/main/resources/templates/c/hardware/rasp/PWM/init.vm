@@ -1,0 +1,7 @@
+#set($port = $block.getParameter("port").getDoubleValue())
+
+wiringPiSetupGpio();
+pinMode($port, PWM_OUTPUT);
+pwmSetMode(PWM_MODE_MS);
+pwmSetClock(3);
+pwmSetRange(1000);

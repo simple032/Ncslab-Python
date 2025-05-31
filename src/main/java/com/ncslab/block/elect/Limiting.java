@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
+import com.ncslab.util.TemplateManager;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -54,20 +55,10 @@ public class Limiting extends Block{
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Limiting:("+getBlockId()+")"+getBlockName()+"*/\n";
+	    context.put("block", this);
 
-		OutputPort out  = outputPortList.get(0);
-		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-
-
-		outputCode+="if("+ops.getOutputSignalC().getName()+">="+rmin.getName()+"){\n";
-		outputCode+=out.getOutputSignalC().getName()+"=";
-		outputCode+=ops.getOutputSignalC().getName()+";\n";
-		outputCode+="}\n";
-		outputCode+="else{\n";
-		outputCode+=out.getOutputSignalC().getName()+"="+rmin.getName()+";\n";
-		outputCode+="}\n";
-		code.addOutputCode(outputCode);
+	    String outputCode = TemplateManager.renderTemplate("c/elect/Limiting/output.vm", context);
+	    code.addOutputCode(outputCode);
 	}
 
 	public void updateDimension() throws MatDimException{

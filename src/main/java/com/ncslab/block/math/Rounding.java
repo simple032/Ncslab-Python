@@ -42,7 +42,7 @@ public class Rounding extends Block {
 
         parameterList.add(operator);
 
-        if (getOperatorString().equals("fix")) {
+        if (operator.equals("fix")) {
             operatorString = "trunc";
         }
     }
@@ -81,18 +81,10 @@ public class Rounding extends Block {
         context.put("blockName", getBlockName());
         context.put("inputPortList", getInputPortList());
         context.put("outputPortList", getOutputPortList());
-        context.put("operator", getOperator());
+        context.put("operator", operator);
 
         String codeStr = TemplateManager.renderTemplate("c/math/Rounding/output.vm", context);
         code.addOutputCode(codeStr);
-    }
-
-    private Parameter getOperator() {
-        return operator;
-    }
-
-    private String getOperatorString() {
-        return operatorString;
     }
 
     public void updateDimension() throws MatDimException {

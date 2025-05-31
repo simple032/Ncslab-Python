@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
+import com.ncslab.util.TemplateManager;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -60,34 +61,17 @@ public class Diode extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="";
-		initCode+=vf.getInitCodeC();
-		initCode+=ron.getInitCodeC();
-		initCode+=goff.getInitCodeC();
+		context.put("block", this);
+
+		String initCode = TemplateManager.renderTemplate("c/elect/Diode/init.vm", context);
 		code.addInitCode(initCode);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Diode:("+getBlockId()+")"+getBlockName()+"*/\n";
+	    context.put("block", this);
 
-		OutputPort out  = outputPortList.get(0);
-		OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-
-
-		outputCode+="if("+ops.getOutputSignalC().getName()+">"+vf.getName()+"){\n";
-		outputCode+=out.getOutputSignalC().getName()+"=";
-		outputCode+="("+ops.getOutputSignalC().getName()+"-"+vf.getName()+")/("+ron.getName()+");\n";
-		outputCode+="}\n";
-		outputCode+="else if("+ops.getOutputSignalC().getName()+">0){\n";
-		outputCode+=out.getOutputSignalC().getName()+"=0;\n";
-		outputCode+="}\n";
-		outputCode+="else{\n";
-		outputCode+=out.getOutputSignalC().getName()+"="+ops.getOutputSignalC().getName()+"*"+goff.getName()+";\n";
-		outputCode+="}\n";
-		//outputCode+=out.getOutputSignalC().getName()+"=";
-		//outputCode+=ops.getOutputSignalC().getName()+";\n";
-
-		code.addOutputCode(outputCode);
+	    String outputCode = TemplateManager.renderTemplate("c/elect/Diode/output.vm", context);
+	    code.addOutputCode(outputCode);
 	}
 
 	public void updateDimension() throws MatDimException{
