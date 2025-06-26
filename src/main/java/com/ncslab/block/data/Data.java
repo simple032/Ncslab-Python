@@ -3,6 +3,7 @@ package com.ncslab.block.data;
 import Jama.Matrix;
 //import com.greenpineyu.fel.*;
 import com.ncslab.code.m.MfcalcClient;
+import com.ncslab.code.m.MfcalcClientManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.jexl3.JexlException;
@@ -97,7 +98,7 @@ public class Data {
 
 	private static String parseExpression(String dataString) {
 		// 使用M2PCode解析表达式
-        MfcalcClient client = MfcalcClient.getInstance(null);
+        MfcalcClient client = MfcalcClientManager.getClientForUser("18");
         String result = dataString;
 
         boolean founded = false;

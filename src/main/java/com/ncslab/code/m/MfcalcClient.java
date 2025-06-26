@@ -26,8 +26,7 @@ public class MfcalcClient {
     @Getter
     private static JSONArray localVariables;
 
-    // 私有构造函数，防止外部实例化
-    private MfcalcClient(Socket socket) throws IOException {
+    public MfcalcClient(Socket socket) throws IOException {
         String server_host = Optional.ofNullable(System.getenv("MfcalcServerHost"))
             .orElse(SERVER_HOST);
         int server_port = SERVER_PORT;
@@ -40,18 +39,6 @@ public class MfcalcClient {
     }
 
     // 获取单例实例的静态方法
-    public static synchronized MfcalcClient getInstance(Socket socket) {
-        try {
-            if (instance == null && !initialized) {
-                instance = new MfcalcClient(socket);
-            }
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-        initialized = true;
-        return instance;
-    }
-
     private JSONObject sendRequest(JSONObject request) {
         try {
             outputStream.write((request.toString() + "\n").getBytes());
