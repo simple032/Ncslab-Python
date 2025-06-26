@@ -1,17 +1,13 @@
 package com.ncslab.block;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.ncslab.block.io.*;
-import com.ncslab.code.plc.CodeStructPLC;
+import com.ncslab.code.xml.ld.CodeStructLadderDiagram;
+import com.ncslab.code.xml.st.CodeStructST;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.velocity.VelocityContext;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.ncslab.block.data.DataType;
@@ -422,14 +418,25 @@ public class Block implements MCodeBlock, CCodeBlock{
         return "Block"+getBlockId()+"_buffer";
     }
 
-    public void generateBlockOutputCodePLC(CodeStructPLC code) {
+    public void generateBlockOutputCodeST(CodeStructST code) {
     }
 
-    public void generateBlockInitCodePLC(CodeStructPLC code) {
+    public void generateBlockInitCodeST(CodeStructST code) {
 
     }
 
-    public void generateBlockUpdateCodePLC(CodeStructPLC code) {
+    public void generateBlockUpdateCodeST(CodeStructST code) {
+
+    }
+
+    public void generateBlockOutputCodeLD(CodeStructLadderDiagram code) {
+    }
+
+    public void generateBlockInitCodeLD(CodeStructLadderDiagram code) {
+
+    }
+
+    public void generateBlockUpdateCodeLD(CodeStructLadderDiagram code) {
 
     }
 
@@ -475,5 +482,5 @@ public class Block implements MCodeBlock, CCodeBlock{
     public void calculateDerivative(double t) {}
     public void calculateDiscreteUpdate(double t) {}
     public void calculateInit() {}
-    public void calculateTerminate() {}
+    public void calculateTerminate(double t) {}
 }

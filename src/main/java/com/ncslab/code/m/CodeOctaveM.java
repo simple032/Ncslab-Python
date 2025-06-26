@@ -21,9 +21,16 @@ public class CodeOctaveM {
 	//获取的代码
 	@Getter
 	@Setter
-    public String mainCode="";
+    private String mainCode="";
 	//OuputResult输出的命令行结果
-	public String OutputResult="";
+
+    @Setter
+	@Getter
+    private String outputResult="";
+
+    @Getter
+    @Setter
+    private JSONObject figureResult;
 	//OutputMat输出的工作区
 	public String OutputMat="";
 	//OutputMat输出的工作区
@@ -35,11 +42,7 @@ public class CodeOctaveM {
 
 	public int OutputFigEndIndex=0;
 
-    public String getOutputResult() {
-		return OutputResult;
-	}
-
-	public String getOutputMat() {
+    public String getOutputMat() {
 		return OutputMat;
 	}
 

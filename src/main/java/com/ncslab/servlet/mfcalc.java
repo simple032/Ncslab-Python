@@ -56,9 +56,9 @@ public class mfcalc extends HttpServlet {
 
         CodeOctaveM model = new CodeOctaveM();
 //    	model.mainCode = jsonIn.getJSONObject("data").toString();//result;
-    	model.mainCode = jsonIn.getString("data");
+    	model.setMainCode(jsonIn.getString("data"));
 
-    	System.out.println(model.mainCode);
+    	System.out.println(model.getMainCode());
 //    	System.out.println(jsonIn);
 //    	System.out.println(jsonIn.getString("data"));
 
@@ -74,7 +74,9 @@ public class mfcalc extends HttpServlet {
 				jb.put("message", "SUCCESS");
 				JSONObject data=new JSONObject();
 //				data.put("log", "/home/pi/Prj/octave/mylog.txt");
-				data.put("log", model.OutputResult);
+				data.put("log", model.getOutputResult());
+                if(model.getFigureResult() != null)
+                    data.put("figures", model.getFigureResult());
 				data.put("BeginFigFileIndex", model.OutputFigBeginIndex);//"/home/pi/Prj/octave/"+
 				data.put("EndFigFileIndex", model.OutputFigEndIndex);//"/home/pi/Prj/octave/"+
 				data.put("figFileUrl", "/mfcalccode/figure");//"/home/pi/NetConTop/NCSLabLink/octavecode/"

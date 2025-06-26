@@ -5,6 +5,7 @@ import com.ncslab.block.route.From;
 import com.ncslab.block.route.To;
 import com.ncslab.circuit.block.electblock.ElectBlock;
 import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -109,8 +110,10 @@ abstract public class NCSLabModel {
     @Getter
     protected int matrixStateNum=0;
     @Getter
+    @Setter
     protected int signalNum=0;
     @Getter
+    @Setter
     protected int parameterNum=0;
     @Getter
     protected int inputNum=0;
@@ -262,6 +265,7 @@ abstract public class NCSLabModel {
         int singleStateNum=0;
         int matrixStateNum=0;
         int signalNum=0;
+        int parameterNum=0;
         for(Block block:getBlockList()) {
             int blockSignalNum = 0;
             for(State state:block.getStateList()) {
@@ -276,10 +280,12 @@ abstract public class NCSLabModel {
             }
             blockSignalNum = block.getOutputPortList().size() + block.getInputPortList().size();
             signalNum += blockSignalNum;
+            parameterNum += block.getParameterList().size();
             block.setSignalNum(blockSignalNum);
         }
         setStateNum(singleStateNum,matrixStateNum);
-        this.signalNum = signalNum;
+        setSignalNum(signalNum);
+        setParameterNum(parameterNum);
     }
 
     private void setStateNum(int singleStateNum,int matrixStateNum){

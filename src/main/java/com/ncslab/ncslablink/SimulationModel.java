@@ -28,6 +28,7 @@ import javax.websocket.Session;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
@@ -156,13 +157,15 @@ public class SimulationModel extends NCSLabModel{
                 @Override
                 public void handleStep(double t, double[] y, double[] yDot, boolean isLast) {
                     // 复制当前状态
-                    double[] state = new double[y.length];
+                    double[] state = Arrays.copyOf(y, y.length);
                     // 计算代数输出（可以直接调用系统ODE的计算部分）
-                    systemODE.computeDerivatives(t, y, yDot);
+//                    systemODE.computeDerivatives(t, y, yDot);
                     // 3. 处理离散状态更新
                     calculateDiscreteUpdates(t);
+
+                    double iteration = Math.floor(t/step)/1000;
                     // 4. 发送时间序列消息（无论是否有状态）
-                    if (t - Math.floor(t) < minStep) {
+                    if (iteration - Math.floor((iteration))  < minStep) {
                         try {
                             sendSimulatingMessage(session, t);
                         } catch (IOException e) {
@@ -170,7 +173,7 @@ public class SimulationModel extends NCSLabModel{
                         }
                     }
                     if(isLast){
-                        calculateTerminates();
+                        calculateTerminates(t);
                     }
                 }
             };
@@ -201,27 +204,28 @@ public class SimulationModel extends NCSLabModel{
                         }
                     }
                     if(isLast){
-                        calculateTerminates();
+                        calculateTerminates(currentTime);
                     }
                 }
             };
 
-            // 添加步长处理器，用于捕获中间结果
-            if(getConfig().getSolver().length()>4){
-                integrator.addStepHandler(stepHandler);
-            }else{
-                // 使用StepNormalizer确保输出固定步长
-                StepNormalizer normalizer = new StepNormalizer(maxStep, fixedStepHandler);
-                integrator.addStepHandler(normalizer);
-            }
 
             // send the simulation data to the client
             double tStart = getConfig().getStartTime();
             double tEnd = getConfig().getStopTime();
-            calculateInits(0, states);
+            calculateInits(tStart, states);
             boolean hasState = systemODE.getDimension() > 0;
             if(hasState) {
-                integrator.integrate(systemODE, tStart, states, tEnd, states);
+                if(getConfig().getSolver().length()>4) {
+                    // Continuous
+                    integrator.addStepHandler(stepHandler);
+                    double tEndActual = integrator.integrate(systemODE, tStart, states, tEnd, states);
+                    System.out.printf("Simulation over in time=%f(%f)%n", tEndActual, tEnd);
+                }
+                // Discrete
+                else {
+                    performFixedStepIntegration(session, integrator, systemODE, tStart, tEnd, step, minStep);
+                }
             }else {
                 double t = tStart;
 
@@ -237,10 +241,13 @@ public class SimulationModel extends NCSLabModel{
                         }
                     }
                     t+=step;
+                    if(t > tEnd){
+                        t = tEnd;
+                    }
                 }
-                calculateTerminates();
-            }
 
+            }
+            calculateTerminates(tEnd);
             writeResultFiles();
 		}
 		catch(Exception e) {
@@ -251,6 +258,88 @@ public class SimulationModel extends NCSLabModel{
 		System.out.println("Simulation executed successfully!");
 
 	}
+
+    /**
+     * Performs fixed-step integration with precise output control
+     */
+    private void performFixedStepIntegration(Session session, FirstOrderIntegrator integrator,
+                                             FirstOrderDifferentialEquations systemODE,
+                                             double tStart, double tEnd, double step, double minStep)
+        throws IOException {
+
+        double currentTime = tStart;
+        double[] currentStates = Arrays.copyOf(states, states.length);
+
+        // Calculate the exact number of steps needed
+        int totalSteps = (int) Math.round((tEnd - tStart) / step);
+        double actualStep = (tEnd - tStart) / totalSteps;
+
+        System.out.printf("Fixed-step integration: start=%.6f, end=%.6f, steps=%d, actualStep=%.6f%n",
+            tStart, tEnd, totalSteps, actualStep);
+
+        // Initialize and send initial condition
+        calculateOutputs(currentTime);
+        calculateDiscreteUpdates(currentTime);
+        sendSimulatingMessage(session, currentTime);
+//        System.out.printf("Step 0: t=%.6f (initial)%n", currentTime);
+
+        // Perform step-by-step integration
+        for (int stepIndex = 1; stepIndex <= totalSteps; stepIndex++) {
+            double targetTime = tStart + stepIndex * actualStep;
+
+            // Clamp to exact end time to avoid floating-point overshoot
+            if (stepIndex == totalSteps) {
+                targetTime = tEnd;
+            }
+
+            try {
+                // Integrate from current time to target time
+                double actualEndTime = integrator.integrate(systemODE, currentTime, currentStates, targetTime, currentStates);
+
+                // Update current time
+                currentTime = actualEndTime;
+
+                // Calculate outputs and discrete updates at this precise time point
+                calculateOutputs(currentTime);
+                calculateDiscreteUpdates(currentTime);
+
+                // Send simulation message
+                if(stepIndex % 1000 == 0) {
+                    sendSimulatingMessage(session, currentTime);
+                }
+//                System.out.printf("Step %d: t=%.6f (target=%.6f)%n", stepIndex, currentTime, targetTime);
+
+                // Verify we're making progress and haven't stalled
+                if (Math.abs(currentTime - targetTime) > minStep) {
+                    System.out.printf("Warning: Integration stopped at t=%.6f instead of target t=%.6f%n",
+                        currentTime, targetTime);
+                }
+
+            } catch (Exception e) {
+                System.err.printf("Integration failed at step %d, time=%.6f, target=%.6f%n",
+                    stepIndex, currentTime, targetTime);
+                throw new RuntimeException("Integration step failed", e);
+            }
+        }
+
+        // Final verification and cleanup
+        if (Math.abs(currentTime - tEnd) > minStep) {
+            System.out.printf("Warning: Final time %.6f differs from target %.6f%n", currentTime, tEnd);
+
+            // Force final step if needed
+            try {
+                currentTime = integrator.integrate(systemODE, currentTime, currentStates, tEnd, currentStates);
+                calculateOutputs(currentTime);
+                calculateDiscreteUpdates(currentTime);
+                sendSimulatingMessage(session, currentTime);
+                System.out.printf("Final correction: t=%.6f%n", currentTime);
+            } catch (Exception e) {
+                System.err.printf("Final correction step failed at t=%.6f%n", currentTime);
+            }
+        }
+
+        System.out.printf("Fixed-step integration completed at t=%.6f%n", currentTime);
+    }
 
     private void calculateOutputs(double t) {
         // 计算各个模块的输出
@@ -377,9 +466,9 @@ public class SimulationModel extends NCSLabModel{
         }
     }
 
-    private void calculateTerminates(){
+    private void calculateTerminates(double t){
         for(Block block: blockList){
-            block.calculateTerminate();
+            block.calculateTerminate(t);
         }
     }
 

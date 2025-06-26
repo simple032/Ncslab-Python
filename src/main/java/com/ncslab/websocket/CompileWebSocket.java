@@ -49,6 +49,7 @@ public class CompileWebSocket {
 		 System.out.println(msgString);
 		JSONObject msg = new JSONObject(msgString);
 		String com = msg.getString("com");
+        CodeModelC modelC = null;
 		if (com.equals("start")) {
 			try {
 				sendMessage(session, "start");
@@ -87,7 +88,7 @@ public class CompileWebSocket {
 				sendMessage(session, "generating");
 
                 // 使用反射构建
-                CodeModelC modelC = CodeModelFactory.createModel(host, target, jsonData, ModelMode.Compilation);
+                modelC = CodeModelFactory.createModel(host, target, jsonData, ModelMode.Compilation);
 
                 if(modelC == null){
                     throw new ModelException("Can not find the host/target:" + host + target);
@@ -117,11 +118,6 @@ public class CompileWebSocket {
 				}
 
 				sendMessage(session, "compiled");
-
-
-                if(!"debug".equals(Optional.ofNullable(Property.instance.getProperty("mode")).orElse("deploy"))){
-                    modelC.removeAllFiles();
-                }
 
                 sendMessage(session, "database inserting");
 
@@ -159,6 +155,8 @@ public class CompileWebSocket {
                 log.error("e: ", e);
 				System.err.println("Code generatrion terminated unsuccessfully");
 			} finally {
+                if(modelC != null)
+                    modelC.postBuild();
 				try {
 					session.close();
 				} catch (IOException e) {

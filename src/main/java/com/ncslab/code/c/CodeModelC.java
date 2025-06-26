@@ -8,6 +8,7 @@ import javax.websocket.Session;
 
 import com.ncslab.block.data.Data;
 import com.ncslab.code.m.MfcalcClient;
+import com.ncslab.code.m.MfcalcClientManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.session.SqlSession;
@@ -278,7 +279,7 @@ abstract public class CodeModelC extends CodeModel {
 
     private void cleanup(){
         //1.批量删除临时变量
-        MfcalcClient client = MfcalcClient.getInstance(null);
+        MfcalcClient client = MfcalcClientManager.getClientForUser("18");
         StringBuilder command = new StringBuilder("clear");
         if(client!=null && !Data.getTemp_variable_names().isEmpty()) {
             for(String temp_variable_name:Data.getTemp_variable_names()) {

@@ -68,9 +68,10 @@ public class SimulateWebSocket {
 
 
 
-		JSONObject  msg= new JSONObject(msgString);
+        JSONObject  msg= new JSONObject(msgString);
 		String com=msg.getString("com");
-		if(com.equals("start")) {
+        CodeModelC modelC = null;
+        if(com.equals("start")) {
 			try {
 				sendMessage(session,"start");
 				//System.out.println("Start");
@@ -101,7 +102,6 @@ public class SimulateWebSocket {
                 }
                 System.out.println("Running on " + host);
                 //CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
-                CodeModelC modelC = null;
                 if(Objects.equals(host, "Windows")){
                     modelC = CodeModelCWindowsSimulation.createFromJSON(jsonData, ModelMode.Simulation);
 
@@ -110,7 +110,6 @@ public class SimulateWebSocket {
                 }
 
                 modelC.removeAllFiles();
-
 
                 modelC.generate();
 
@@ -135,12 +134,6 @@ public class SimulateWebSocket {
 
 	        	sendMessage(session,"compiled");
 
-
-//				modelC.removeAllFiles();
-                if(!"true".equals(Optional.ofNullable(Property.instance.getProperty("debug")).orElse("false"))){
-//                    modelC.removeAllFiles();
-                }
-
                 //sendMessage(session,"simulating");
 	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());
 
@@ -163,19 +156,22 @@ public class SimulateWebSocket {
 	        	System.err.println("Code generatrion terminated unsuccessfully");
 	        }
 			catch(Exception e) {
-				e.printStackTrace();
-				try {
-	        		sendErrorMessage(session,e.getMessage());
-	        	}
-	        	catch(IOException ee) {
-                    ee.printStackTrace();
-	        	}
-                catch (Exception ee) {
-                    ee.printStackTrace();
+				if(session!=null) {
+                    try {
+                        sendErrorMessage(session, e.getMessage());
+                    } catch (IOException ee) {
+                        ee.printStackTrace();
+                    } catch (Exception ee) {
+                        ee.printStackTrace();
+                    }
+                }else{
+                    throw e;
                 }
 			}
 			finally {
-				try {
+                if(modelC!=null)
+                    modelC.postBuild();
+                try {
                     if(session != null)
 					    session.close();
 				}
