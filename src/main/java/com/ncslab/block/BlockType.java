@@ -50,6 +50,7 @@ public class BlockType{
         // Sink
         blockClassTree.put("Scope", com.ncslab.block.sink.Scope.class);
         blockClassTree.put("Terminator", com.ncslab.block.sink.Terminator.class);
+        blockClassTree.put("Display", com.ncslab.block.sink.Display.class);
         blockClassTree.put("Matplotlib", com.ncslab.block.sink.Matplotlib.class);
 
         // Source

@@ -156,4 +156,18 @@ public class Scope extends SinkBlock {
         }
     }
 
+
+//    @Override
+//    public void calculateTerminate(double t) {
+//        if (model.getModelMode() == ModelMode.Simulation) {
+//            for(int i = 0; i < inportNum; i++) {
+//                if (scopeStructs[i].getTimeList().isEmpty() || t > scopeStructs[i].getTimeList().lastElement()) {
+//                    scopeStructs[i].addTimeSeries(
+//                        t,
+//                        inputPortList.get(i).getData()
+//                    );
+//                }
+//            }
+//        }
+//    }
 }

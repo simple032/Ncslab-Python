@@ -1,9 +1,12 @@
 /*传递函数模块微分计算: ($block.blockId) $block.blockName*/
-#set($statesSize = $states.size())
+#set($statesSizeMax = $states.size() - 1)
+#foreach($i in [0..$statesSizeMax])
+  #set($nextI = $i + 1)
+  ${xStateList.get($i).getDerivativeName()}=${xStateList.get($nextI).getName()}
+#end
 ## 处理最后一个状态的导数表达式
 #if($statesSize > 0)
-    #set($lastStateIndex = $statesSize - 1)
-    ${states.get($lastStateIndex).derivativeName} = ($inputs.get(0)
+    ${states.lastElement().getDerivativeName()} = ($inputs.get(0)
     #set($i = $den.size() - 1)
     #foreach($state in $states)
     - ${state.getName()} * ${den.get($i)}

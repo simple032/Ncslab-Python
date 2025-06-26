@@ -115,24 +115,29 @@ public class TransferFcn extends Block {
     @Override
     public void calculateInit() {
         OutputPort out = outputPortList.get(0);
-        Data data = new Data(num.length > 0 ? num[0] : 0);
-        for (int i = 0; i < xStateList.size(); i++) {
-            xStateList.get(i).setData(data);
+        // TODO:还需要调试
+//        Data data = new Data(num.length > 0 ? num[0] : 0);
+        Data data = new Data(0);
+        for (State state : xStateList) {
+            state.setData(data);
         }
+        out.setData(data);
     }
 
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
         Data currentState = new Data();
-        Data inputSignal = inputPortList.get(0).getData();
+        Data inputData = inputPortList.get(0).getData();
 
         if (feedThrough) {
-            currentState = new Data(D * inputSignal.getInitValue());
+            currentState = new Data(D).times(inputData);
         }
 
-        for (int i = 0; i < xStateList.size(); i++) {
-            currentState = currentState.plus(xStateList.get(i).getData().times(new Data(num[i])));
+        int i=num.length-1;
+        for (State xState:xStateList) {
+            currentState = currentState.plus(xState.getData().times(new Data(num[i])));
+            i--;
         }
 
         out.setData(currentState);
@@ -140,17 +145,18 @@ public class TransferFcn extends Block {
 
     @Override
     public void calculateDerivative(double t) {
-        Data derivativeData;
-        Data inputSignal = inputPortList.get(0).getData();
 
-        for (int i = xStateList.size() - 1; i >= 0; i--) {
-            if (i == 0) {
-                derivativeData = inputSignal.minus(xStateList.get(i).getData().times(new Data(den[i])));
-            } else {
-                derivativeData = xStateList.get(i - 1).getData().minus(xStateList.get(i).getData().times(new Data(den[i])));
-            }
-            xStateList.get(i).setDerivateData(derivativeData);
+        for(int i = 0; i < xStateList.size() - 1; i++){
+            xStateList.get(i).setDerivateData(xStateList.get(i+1).getData());
         }
+
+        Data derivativeData = inputPortList.get(0).getData();;
+        int i=den.length-1;
+        for(State xState:xStateList) {
+            derivativeData = derivativeData.minus(xState.getData().times(new Data(den[i])));
+            i--;
+        }
+        xStateList.lastElement().setDerivateData(derivativeData);
     }
 
     public void generateInitCodeM(CodeStructM code) {
