@@ -1,11 +1,6 @@
 package com.ncslab.code.c;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 import org.apache.parquet.bytes.LittleEndianDataInputStream;
 //import com.google.common.io.LittleEndianDataInputStream;
@@ -15,7 +10,7 @@ import com.ncslab.ncslablink.SFcnException;
 import com.ncslab.ncslablink.SFcnModel;
 
 public class SFcnCompileModelC extends SFcnModel{
-	
+
 	protected String fileName;
 
 	public SFcnCompileModelC(JSONObject jsonData) throws SFcnException{
@@ -69,7 +64,7 @@ public class SFcnCompileModelC extends SFcnModel{
 		}
 
 	}
-	
+
 	protected void writeMainCode() {
 		System.out.println("Writing file sfcncode...");
 
@@ -84,7 +79,15 @@ public class SFcnCompileModelC extends SFcnModel{
 		+"double end=-1;\n"
 		+"sfunction->parentBlock=&sfcn;\n"
 		+"sfunction->parentBlock->parameterNum="+(getParameterNum()+1)+";\n" //+1是采样时间参数
-		+"mdlInitializeSizes(sfunction);\n"
+        +"PARAMETER* parameter["+(getParameterNum()+1)+"];\n"
+        +"sfunction->parentBlock->parameters=parameter;\n";
+		for(int i = 0;i<getParameterNum();i++){
+		    mainCode+="PARAMETER para"+i+";\n"
+                +"double paravp"+i+"="+getParameterString()[i]+";\n"
+                +"para"+i+".vp=&paravp"+i+";\n"
+                +"parameter["+i+"]=&para"+i+";\n";
+        }
+		mainCode+="mdlInitializeSizes(sfunction);\n"
 		+"ofstream ofs;\n"
 		+"ofs.open(\"sfcncompileresult.txt\");\n"
 		//sizes
@@ -131,32 +134,32 @@ public class SFcnCompileModelC extends SFcnModel{
 		+"ofs<<sfunction->sizes.numContStates<<\"|\"<<sfunction->sizes.numDiscStates<<\";\";\n"
 		//sample times
 		+"mdlInitializeSampleTimes(sfunction);\n"
-		+"for(int i = 0;i<sfunction->sizes.numSampleTimes;i++){;\n"
-		+"if(sfunction->stInfo.sampleTimes[i] < 0 && sfunction->stInfo.sampleTimes[i]!=-1){;\n"
+		+"for(int i = 0;i<sfunction->sizes.numSampleTimes;i++){\n"
+		+"if(sfunction->stInfo.sampleTimes[i] < 0 && sfunction->stInfo.sampleTimes[i]!=-1){\n"
 		+"ofs.close();ofs.open(\"sfcncompileresult.txt\");\n"
 		+"ofs<<\"Error: Invalid number \"<<sfunction->stInfo.sampleTimes[i]<<\" for sample time \"<<(i+1);\n"
 		+"return 0;\n"
-		+"};\n"
+		+"}\n"
 		+"ofs<<(i == 0? \"\":\",\")<<sfunction->stInfo.sampleTimes[i];\n"
-		+"};\n"
+		+"}\n"
 		+"ofs<<\";\";\n"
 		//offset times
-		+"for(int i = 0;i<sfunction->sizes.numSampleTimes;i++){;\n"
+		+"for(int i = 0;i<sfunction->sizes.numSampleTimes;i++){\n"
 		+"if(sfunction->stInfo.offsetTimes[i] < 0 || sfunction->stInfo.sampleTimes[i] > 0 && sfunction->stInfo.offsetTimes[i] > sfunction->stInfo.sampleTimes[i]){;\n"
 		+"ofs.close();ofs.open(\"sfcncompileresult.txt\");\n"
 		+"ofs<<\"Error: Invalid number \"<<sfunction->stInfo.offsetTimes[i]<<\" for offset time \"<<(i+1);\n"
 		+"return 0;\n"
 		+"};\n"
 		+"ofs<<(i == 0? \"\":\",\")<<sfunction->stInfo.offsetTimes[i];\n"
-		+"};\n"
+		+"}\n"
 		+"ofs<<\";\";\n"
-		
+
 		+"ofs.close();\n"
 		+"fwrite(&end,sizeof(end),1,stdout);\n"
 		+"return 0;\n"
 		+"}\n"
 		+"#endif\n";
-		
+
 		functionCode+=mainCode;
 		fileName=this.getFunctionName() + "_" + this.getBlockName().replace("S-Function", "");
 		File file = new File(codePath + fileName + ".cpp");
@@ -169,70 +172,116 @@ public class SFcnCompileModelC extends SFcnModel{
 			e.printStackTrace();
 		}
 	}
-	
+
 	public boolean makeExeFile() {
 		try {
 			System.out.println("Making execute file...");
 			System.out.println(codePath);
-			String exeString="g++ -D_S_COMPILE -I /opt/eigen-3.4.0 -fpermissive -o"+fileName+" "+fileName+".cpp";
+			String exeString="g++ -D_S_COMPILE -IE:/m2pcode/server/cruntime/include -fpermissive -o "+fileName+" "+fileName+".cpp";
+			System.out.println(exeString);
 			Process process=Runtime.getRuntime().exec(exeString,null,new File(codePath));
-			
-			//读取OutputStream和errStream。如果读取不及时，会出现阻塞
-			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line=null,outLine=null;
-			StringBuilder errStr=new StringBuilder();
-			StringBuilder outStr=new StringBuilder();
 
-			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
-				if(outLine!=null) {
-					outStr.append(outLine);
-					System.out.println(outLine);
-				}
-				if(line!=null) {
-					errStr.append(line);
-					System.err.println(line);
-				}
-			}
-			//等待makefile的完成
-			process.waitFor();
+            // 创建线程读取标准输出和错误输出
+            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
+            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
 
-			if(process.exitValue()==0) {
-				return true;
-			}
+            // 启动线程
+            outputGobbler.start();
+            errorGobbler.start();
+
+            // 等待进程完成
+            int exitCode = process.waitFor();
+
+            // 确保所有输出都被读取
+            outputGobbler.join();
+            errorGobbler.join();
+
+            if(exitCode == 0) {
+                return true;
+            }
+//			//读取OutputStream和errStream。如果读取不及时，会出现阻塞
+//			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
+//			String line=null,outLine=null;
+//			StringBuilder errStr=new StringBuilder();
+//			StringBuilder outStr=new StringBuilder();
+//
+//			while((outLine=inOut.readLine())!=null||(line=in.readLine())!=null) {
+//				if(outLine!=null) {
+//					outStr.append(outLine);
+//					System.out.println(outLine);
+//				}
+//				if(line!=null) {
+//					errStr.append(line);
+//					System.err.println(line);
+//				}
+//			}
+//			//等待makefile的完成
+//			process.waitFor();
+//
+//			if(process.exitValue()==0) {
+//				return true;
+//			}
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
 		return false;
 	}
-	
+
 	public void compile() throws SFcnException{
 		Process process = null;
 		System.out.println("Executing compile codes...");
 		try {
-			process = Runtime.getRuntime().exec("./"+fileName,null,new File(codePath));
-			LittleEndianDataInputStream out = new LittleEndianDataInputStream(process.getInputStream());
-			
-			while(true) {
-				double time=out.readDouble();
-				if(time<0){
-					break;
-				}
-			}
-			
-			out.close();
-			try {
-				process.waitFor();
-			} catch (Exception e) {
-				throw new SFcnException("Can not execute the exe file!");
-			}
-		}catch (IOException e) {
+			process = Runtime.getRuntime().exec(codePath+"\\"+fileName+".exe",null,new File(codePath));
+//			LittleEndianDataInputStream out = new LittleEndianDataInputStream(process.getInputStream());
+//
+//			while(true) {
+//				double time=out.readDouble();
+//				if(time<0){
+//					break;
+//				}
+//			}
+//
+//			out.close();
+//			try {
+//				process.waitFor();
+//			} catch (Exception e) {
+//				throw new SFcnException("Can not execute the exe file!");
+//			}
+			com.google.common.io.LittleEndianDataInputStream out = new com.google.common.io.LittleEndianDataInputStream(process.getInputStream());
+
+            while(true) {
+                try {
+                    double time = out.readDouble();
+                    if (time < 0) {
+                        break;
+                    }
+                }
+                // 会出现这个EOFException，但是不影响程序的运行
+                // 因为EOFException是在读取完所有数据后抛出的异常
+                catch (EOFException e) {
+                    break;
+                }
+
+                //if((new java.util.Date().getTime())-currentTime>1000) {
+                //	currentTime=new java.util.Date().getTime();
+                //	sendSimulatingMessage(session,time);
+                //}
+
+                //System.out.println(time);
+            }
+
+            out.close();
+
+            process.waitFor();
+		}catch (InterruptedException|IOException e) {
+            e.printStackTrace();
 			throw new SFcnException("Can not execute the exe file!");
 		}finally {
 			if(process!=null)
 				process.destroy();
 		}
-		
+
 		System.out.println("Compile codes executed successfully!");
 	}
 }

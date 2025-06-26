@@ -34,7 +34,7 @@ extern "C" {
 #define ssGetNumSFcnParams(S) (S->sizes.parameterNum)
 #define ssGetSFcnParamsCount(S) ((S->parentBlock->parameterNum)-1)  //有一个参数是采样时间,需减掉
 
-#define mxGetPr(parameter) (parameter->vp)
+#define mxGetPr(parameter) ((real_T*)parameter->vp)
 #define ssGetSFcnParam(S,idx) (S->parentBlock->parameters[idx])
 
 // states
@@ -43,6 +43,12 @@ extern "C" {
 #define ssGetContStates(S) (S->states.contStates)
 #define ssGetRealDiscStates(S) (S->states.discStates)
 
+//error status
+#define ssSetErrorStatus(S, string)   \
+  {                                   \
+    (S)->error.error_flag=1U;         \
+  }
+#define ssGetErrorStatus(S) ((S)->error.error_flag)
 // mdlDerivatives method
 #define ssGetdX(S) (S->states.derivative)
 

@@ -131,12 +131,18 @@ typedef struct
 	REAL* offsetTimes;
 }ssStInfo;
 
+typedef struct
+{
+	unsigned int* error_flag = NULL;
+	//string error_msg;
+}ssError;
 
 typedef struct SimStruct_tag{
 	ssSize sizes;
 	ssStates states;
 	ssStInfo stInfo;
 	ssWork work;
+  ssError error;
 
 	MdlInitializeSizesFcn initializeSizes;
 	MdlInitializeSampleTimesFcn initializeSampleTimes;

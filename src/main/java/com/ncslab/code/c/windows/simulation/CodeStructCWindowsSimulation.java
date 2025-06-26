@@ -23,7 +23,8 @@ public class CodeStructCWindowsSimulation extends CodeStructCWindows {
         System.out.println("Write CCode Files in CodeStructCWindowsSimulation");
 		// write resource files
 		// makefile
-        writeNCSLabFile("makefile");
+//        writeNCSLabFile("makefile");
+        writeMakefile("makefile");
 
         writeNCSLabFile("../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
 
