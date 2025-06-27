@@ -42,4 +42,8 @@
     DELETE FROM mdl_block WHERE id = #{id}
   </delete>
 
+  <!-- Select by type -->
+  <select id="selectByType" parameterType="string" resultType="com.ncslab.database.MdlBlock">
+    SELECT * FROM mdl_block WHERE type = #{type}
+  </select>
 </mapper>
