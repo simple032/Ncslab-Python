@@ -5,13 +5,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import java.net.*;
+
+import com.ncslab.server.base.BaseServerThread;
+import com.ncslab.server.octaveserver.OctaveServer;
+import com.ncslab.server.octaveserver.OctaveThread;
 import org.json.JSONObject;
 
 import com.ncslab.code.m.CodeOctaveM;
 
 import java.io.*;
 
-public class PythonThread extends Thread {
+public class PythonThread extends BaseServerThread<PythonThread, PythonServer>  {
 	private Socket socket;
 	private PythonServer server;
 
@@ -26,16 +30,9 @@ public class PythonThread extends Thread {
 	private CodeOctaveM model=null;
 
 	public PythonThread(Socket socket,PythonServer server){
-		this.socket=socket;
+        super(socket, server);
+        this.socket=socket;
 		this.server=server;
-	}
-
-	public boolean getIsBusy() {
-		return isBusy;
-	}
-
-	public void setIsBusy(boolean isBusy) {
-		this.isBusy=isBusy;
 	}
 
 	public void startOctave(CodeOctaveM model) {
@@ -73,7 +70,7 @@ public class PythonThread extends Thread {
         int time =3000;//���룬�俴ʵ�����
         while (inStream.available() == 0) {
             if ((System.currentTimeMillis() - start) >time) {//��ʱ�˳�
-            	this.model.OutputResult=inStr;
+            	this.model.setOutputResult(inStr);
                 throw new SocketTimeoutException("��ʱ��ȡ");
             }
         }
@@ -95,7 +92,7 @@ public class PythonThread extends Thread {
         if (checkExist) {
                 readStreamWithRecursion(inStr,inStream);
         }else {
-        	this.model.OutputResult=inStr;
+        	this.model.setOutputResult(inStr);
         }
     }
     protected int readWait() {
@@ -160,7 +157,7 @@ public class PythonThread extends Thread {
 
 				System.out.println(inStr);
 
-				this.model.OutputResult = inStr.split("ZhouXWSplitBetweenResultAndFigNum")[0];
+				this.model.setOutputResult(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[0]);
 
 				this.model.OutputFigBeginIndex = Integer.valueOf(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[1].split("ZhouXWSplitBetweenFigBeginAndFigEnd")[0]).intValue();
 

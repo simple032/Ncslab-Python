@@ -19,7 +19,7 @@ public static MfcalcServer instance=new MfcalcServer();
 		MfcalcThread thread=null;
 		synchronized(mfcalcThreadList) {
 			for(MfcalcThread mfcalcThread:mfcalcThreadList) {
-				if(mfcalcThread.getIsBusy()==false) {
+				if(!mfcalcThread.getIsBusy()) {
 					thread=mfcalcThread;
 					mfcalcThread.setIsBusy(true);
 					break;
@@ -44,18 +44,18 @@ public static MfcalcServer instance=new MfcalcServer();
 			Socket socket = new Socket();
 
 			//ѭ�������ȴ��ͻ��˵�����
-            while(true){
+//            while(true){
             	// �����ͻ���
-            	socket = serverSocket.accept();
+//            	socket = serverSocket.accept();
 
             	MfcalcThread thread = new MfcalcThread(socket,this);
             	mfcalcThreadList.add(thread);
             	thread.start();
 
-            	InetAddress address=socket.getInetAddress();
-                System.out.println("��ǰMfcalc�ͻ��˵�IP��"+address.getHostAddress());
-                System.out.println("HelloMfcalcServer");
-            }
+//            	InetAddress address=socket.getInetAddress();
+//                System.out.println("��ǰMfcalc�ͻ��˵�IP��"+address.getHostAddress());
+//                System.out.println("HelloMfcalcServer");
+//            }
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

@@ -2,12 +2,16 @@ package com.ncslab.server.mfcalcServer;
 
 import java.net.*;
 
+import com.ncslab.code.m.MfcalcClient;
+import com.ncslab.code.m.MfcalcClientManager;
 import com.utils.Property;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import com.ncslab.code.m.CodeOctaveM;
 
 import java.io.*;
+import java.util.Optional;
 
 public class MfcalcThread extends Thread {
 	private Socket socket;
@@ -19,9 +23,10 @@ public class MfcalcThread extends Thread {
 	private Object waitObject=new Object();
 	private Object finishObject=new Object();
 
-	private boolean isBusy=true;
+    private boolean isBusy=true;
 
-	private String codePathBase= Property.instance.getProperty("MfcalcCodePath");
+	private String codePathBase= Property.instance.getProperty("MfcalcCodePath")
+        .replace("${M2PLAB_ROOT}", Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse(""));
 
 	private CodeOctaveM model=null;
 
@@ -33,12 +38,11 @@ public class MfcalcThread extends Thread {
 	public boolean getIsBusy() {
 		return isBusy;
 	}
+    public void setIsBusy(boolean isBusy) {
+    	this.isBusy=isBusy;
+    }
 
-	public void setIsBusy(boolean isBusy) {
-		this.isBusy=isBusy;
-	}
-
-	public void startOctave(CodeOctaveM model) {
+    public void startOctave(CodeOctaveM model) {
 		this.model=model;
 
 		System.out.println("startMfcalc...");
@@ -73,7 +77,7 @@ public class MfcalcThread extends Thread {
         int time =3000;//���룬�俴ʵ�����
         while (inStream.available() == 0) {
             if ((System.currentTimeMillis() - start) >time) {//��ʱ�˳�
-            	this.model.OutputResult=inStr;
+            	this.model.setOutputResult(inStr);
                 throw new SocketTimeoutException("��ʱ��ȡ");
             }
         }
@@ -95,7 +99,7 @@ public class MfcalcThread extends Thread {
         if (checkExist) {
                 readStreamWithRecursion(inStr,inStream);
         }else {
-        	this.model.OutputResult=inStr;
+        	this.model.setOutputResult(inStr);
         }
     }
     protected int readWait() {
@@ -104,12 +108,13 @@ public class MfcalcThread extends Thread {
 
 
 	public void run() {
-		try {
-			//socket.setKeepAlive(true);
-			in=new DataInputStream(socket.getInputStream());
-			out=new DataOutputStream(socket.getOutputStream());
 
-			while(true) {
+		try {
+//			socket.setKeepAlive(true);
+//			in=new DataInputStream(socket.getInputStream());
+//			out=new DataOutputStream(socket.getOutputStream());
+            MfcalcClient client = MfcalcClientManager.getClientForUser("18");
+			while(client != null) {
 
 				System.out.println("Executing mfcalc...");
 				isBusy=false;
@@ -121,99 +126,15 @@ public class MfcalcThread extends Thread {
 				isBusy=true;
 
 				String mainCode=model.getMainCode();
-				byte[] data =mainCode.getBytes();
-				out.writeInt(data.length);
-				out.write(data);
 
-				System.out.println("Executing...");
+                JSONObject jo = client.runScript(mainCode+"\n");
+                System.out.println(jo);
+                model.setOutputResult(jo.optString("log",""));
+                model.setFigureResult(jo.optJSONObject("figures"));
+                JSONObject variables = client.getVariables();
+                System.out.println(variables);
+                this.model.OutputMat = variables.toString();
 
-				byte tmpByte;
-				int size=0,len=0;
-				String inStr="";
-
-//				readStreamWithRecursion(inStr,in);
-
-
-				tmpByte=in.readByte();
-				inStr=inStr.concat(Character.toString((char)(tmpByte)));
-				while (in.available() != 0) {
-					tmpByte=in.readByte();
-					inStr=inStr.concat(Character.toString((char)(tmpByte)));
-
-		        }
-
-
-//				tmpByte=in.readByte();
-//				inStr=inStr.concat(Character.toString((char)(tmpByte)));
-//				len=in.available();
-//				System.out.println("len:"+len);
-//				if(len>0) {
-//					for(size=0;;size++) {
-//						tmpByte=in.readByte();
-//						//System.out.println(tmpByte);
-//						//if (tmpByte==-1) break;
-//						if (size > len-2) break;
-//						//System.out.print(Character.toString((char)(tmpByte)));
-//						inStr=inStr.concat(Character.toString((char)(tmpByte)));
-//					}
-//				}
-
-				System.out.println(inStr);
-
-				this.model.OutputResult = inStr.split("ZhouXWSplitBetweenResultAndFigNum")[0];
-
-				this.model.OutputFigBeginIndex = Integer.valueOf(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[1].split("ZhouXWSplitBetweenFigBeginAndFigEnd")[0]).intValue();
-
-				this.model.OutputFigEndIndex = Integer.valueOf(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[1].split("ZhouXWSplitBetweenFigBeginAndFigEnd")[1]).intValue();
-
-//				System.out.println(in.length());
-//				System.out.println(Character.toString((char)(in.readByte())));
-//				System.out.println(in.readByte());
-//				System.out.println(in.readByte());
-
-				Process proc;
-				String matline = null;
-				String matline2 = "";
-
-
-                String pythonPath = System.getenv("M2PLAB_ROOT") ;
-
-                String osName = System.getProperty("os.name").toLowerCase();
-
-                if (osName.contains("win")) {
-                    pythonPath += "/server/python/python.exe";
-//                    System.out.println("This is a Windows operating system.");
-                } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-//                    System.out.println("This is a Unix or Linux operating system.");
-                    pythonPath = "python";
-                } else if (osName.contains("mac")) {
-//                    System.out.println("This is a macOS operating system.");
-                } else {
-                    System.out.println("Unknown operating system: " + osName);
-                }
-
-		        try {
-		        	//��ݮ���ϲ���ʹ���������
-		            proc = Runtime.getRuntime().exec(pythonPath + " " + codePathBase +"/matload.py");// ִ��py�ļ�
-		            //���ص���ʹ���������
-//		        	proc = Runtime.getRuntime().exec("python D:\\Project\\react_antd\\faker\\NetConTop\\ncslablink\\src\\octaveserver\\matload.py");
-		            //���������������ȡ���
-		            System.out.println("proc:"+proc);
-
-		            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
-		            while ((matline = in.readLine()) != null) {
-		                System.out.println(matline);
-		                matline2 = matline2 + matline;
-		            }
-		            this.model.OutputMat = matline2;
-		            in.close();
-		            proc.waitFor();
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        } catch (InterruptedException e) {
-		            e.printStackTrace();
-		        }
 				System.out.println("Done...");
 
 				synchronized(finishObject) {
@@ -221,11 +142,7 @@ public class MfcalcThread extends Thread {
 				}
 			}
 
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
-		catch(InterruptedException e) {
+		} catch(InterruptedException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

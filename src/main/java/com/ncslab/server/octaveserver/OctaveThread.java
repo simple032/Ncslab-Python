@@ -8,77 +8,62 @@ import java.net.*;
 import org.json.JSONObject;
 
 import com.ncslab.code.m.CodeOctaveM;
+import com.ncslab.server.base.BaseServerThread;
 
 import java.io.*;
 
-public class OctaveThread extends Thread {
-	private Socket socket;
-	private OctaveServer server;
+public class OctaveThread extends BaseServerThread<OctaveThread, OctaveServer> {
+    private DataInputStream in;
+    private DataOutputStream out;
 
-	private DataInputStream in;
-	private DataOutputStream out;
+    private Object waitObject = new Object();
+    private Object finishObject = new Object();
 
-	private Object waitObject=new Object();
-	private Object finishObject=new Object();
+    private CodeOctaveM model = null;
 
-	private boolean isBusy=true;
+    public OctaveThread(Socket socket, OctaveServer server) {
+        super(socket, server);
+    }
 
-	private CodeOctaveM model=null;
+    public void startOctave(CodeOctaveM model) {
+        this.model = model;
 
-	public OctaveThread(Socket socket,OctaveServer server){
-		this.socket=socket;
-		this.server=server;
-	}
+        System.out.println("startOctave...");
+        synchronized(waitObject) {
+            waitObject.notify();
+        }
 
-	public boolean getIsBusy() {
-		return isBusy;
-	}
+        try {
+            synchronized(finishObject) {
+                finishObject.wait();
+            }
+        }
+        catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public void setIsBusy(boolean isBusy) {
-		this.isBusy=isBusy;
-	}
+    public String getResult() {
+        JSONObject jb = new JSONObject();
+        jb.put("code", 2000);
+        jb.put("message", "SUCCESS");
+        JSONObject data = new JSONObject();
+        data.put("figureFileUrl", "scope");
+        jb.put("data", data);
+        return jb.toString();
+    }
 
-	public void startOctave(CodeOctaveM model) {
-		this.model=model;
-
-		System.out.println("startOctave...");
-		synchronized(waitObject) {
-			waitObject.notify();
-		}
-
-		try {
-			synchronized(finishObject) {
-				finishObject.wait();
-			}
-		}
-		catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-
-	public String getResult() {
-		JSONObject jb=new JSONObject();
-		jb.put("code", 2000);
-		jb.put("message", "SUCCESS");
-		JSONObject data=new JSONObject();
-		data.put("figureFileUrl", "scope");
-		jb.put("data", data);
-		return jb.toString();
-	}
-
-
-	public void readStreamWithRecursion(String inStr,DataInputStream inStream) throws Exception {
-		long start = System.currentTimeMillis();
-        int time =3000;//���룬�俴ʵ�����
+    public void readStreamWithRecursion(String inStr, DataInputStream inStream) throws Exception {
+        long start = System.currentTimeMillis();
+        int time = 3000; // 设置超时时间
         while (inStream.available() == 0) {
-            if ((System.currentTimeMillis() - start) >time) {//��ʱ�˳�
-            	this.model.OutputResult=inStr;
-                throw new SocketTimeoutException("��ʱ��ȡ");
+            if ((System.currentTimeMillis() - start) > time) { // 超时退出
+                this.model.setOutputResult(inStr);
+                throw new SocketTimeoutException("超时读取");
             }
         }
         byte tmpByte = inStream.readByte();
-        inStr=inStr.concat(Character.toString((char)(tmpByte)));
+        inStr = inStr.concat(Character.toString((char)(tmpByte)));
 
         int wait = readWait();
         long startWait = System.currentTimeMillis();
@@ -87,136 +72,109 @@ public class OctaveThread extends Thread {
             int a = inStream.available();
             if (a > 0) {
                 checkExist = true;
-               // System.out.println("========����ʣ�ࣺ" + a + "���ֽ�����û��");
+                // System.out.println("========发现剩余：" + a + "个字节，继续读");
                 break;
             }
-
         }
         if (checkExist) {
-                readStreamWithRecursion(inStr,inStream);
-        }else {
-        	this.model.OutputResult=inStr;
+            readStreamWithRecursion(inStr, inStream);
+        } else {
+            this.model.setOutputResult(inStr);
         }
     }
+
     protected int readWait() {
         return 100;
     }
 
+    @Override
+    public void run() {
+        try {
+            // socket.setKeepAlive(true);
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
 
-	public void run() {
-		try {
-			//socket.setKeepAlive(true);
-			in=new DataInputStream(socket.getInputStream());
-			out=new DataOutputStream(socket.getOutputStream());
+            while(true) {
+                System.out.println("Executing octave...");
+                setIsBusy(false);
+                synchronized(waitObject) {
+                    System.out.println("waiting...");
+                    waitObject.wait();
+                }
 
-			while(true) {
+                setIsBusy(true);
 
-				System.out.println("Executing octave...");
-				isBusy=false;
-				synchronized(waitObject) {
-					System.out.println("waiting...");
-					waitObject.wait();
-				}
+                String mainCode = model.getMainCode();
+                byte data[] = mainCode.getBytes();
+                out.writeInt(data.length);
+                out.write(data);
 
-				isBusy=true;
+                System.out.println("Executing...");
 
-				String mainCode=model.getMainCode();
-				byte data[]=mainCode.getBytes();
-				out.writeInt(data.length);
-				out.write(data);
+                byte tmpByte;
+                int size = 0, len = 0;
+                String inStr = "";
 
-				System.out.println("Executing...");
+                // readStreamWithRecursion(inStr,in);
 
-				byte tmpByte;
-				int size=0,len=0;
-				String inStr="";
+                tmpByte = in.readByte();
+                inStr = inStr.concat(Character.toString((char)(tmpByte)));
+                while (in.available() != 0) {
+                    tmpByte = in.readByte();
+                    inStr = inStr.concat(Character.toString((char)(tmpByte)));
+                }
 
-//				readStreamWithRecursion(inStr,in);
+                System.out.println(inStr);
 
+                this.model.setOutputResult(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[0]);
 
-				tmpByte=in.readByte();
-				inStr=inStr.concat(Character.toString((char)(tmpByte)));
-				while (in.available() != 0) {
-					tmpByte=in.readByte();
-					inStr=inStr.concat(Character.toString((char)(tmpByte)));
+                this.model.OutputFigBeginIndex = Integer.valueOf(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[1].split("ZhouXWSplitBetweenFigBeginAndFigEnd")[0]).intValue();
 
-		        }
+                this.model.OutputFigEndIndex = Integer.valueOf(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[1].split("ZhouXWSplitBetweenFigBeginAndFigEnd")[1]).intValue();
 
+                Process proc;
+                String matline = null;
+                String matline2 = "";
+                try {
+                    // 树莓派上正式使用下面的命令
+                    proc = Runtime.getRuntime().exec("python /home/pi/NetConTop/NCSLabLink/octavecode/matload.py");// 执行py文件
+                    // 本地调试使用下面的命令
+                    // proc = Runtime.getRuntime().exec("python D:\\Project\\react_antd\\faker\\NetConTop\\ncslablink\\src\\octaveserver\\matload.py");
+                    // 用输入输出流来获取结果
+                    System.out.println("proc:" + proc);
 
-//				tmpByte=in.readByte();
-//				inStr=inStr.concat(Character.toString((char)(tmpByte)));
-//				len=in.available();
-//				System.out.println("len:"+len);
-//				if(len>0) {
-//					for(size=0;;size++) {
-//						tmpByte=in.readByte();
-//						//System.out.println(tmpByte);
-//						//if (tmpByte==-1) break;
-//						if (size > len-2) break;
-//						//System.out.print(Character.toString((char)(tmpByte)));
-//						inStr=inStr.concat(Character.toString((char)(tmpByte)));
-//					}
-//				}
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
-				System.out.println(inStr);
+                    while ((matline = bufferedReader.readLine()) != null) {
+                        System.out.println(matline);
+                        matline2 = matline2 + matline;
+                    }
+                    System.out.println("matline2 in octaveThread:" + matline2);
+                    this.model.OutputMat = matline2;
+                    bufferedReader.close();
+                    proc.waitFor();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Done...");
 
-				this.model.OutputResult = inStr.split("ZhouXWSplitBetweenResultAndFigNum")[0];
-
-				this.model.OutputFigBeginIndex = Integer.valueOf(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[1].split("ZhouXWSplitBetweenFigBeginAndFigEnd")[0]).intValue();
-
-				this.model.OutputFigEndIndex = Integer.valueOf(inStr.split("ZhouXWSplitBetweenResultAndFigNum")[1].split("ZhouXWSplitBetweenFigBeginAndFigEnd")[1]).intValue();
-
-//				System.out.println(in.length());
-//				System.out.println(Character.toString((char)(in.readByte())));
-//				System.out.println(in.readByte());
-//				System.out.println(in.readByte());
-
-				Process proc;
-				String matline = null;
-				String matline2 = "";
-		        try {
-		        	//��ݮ���ϲ���ʹ���������
-		            proc = Runtime.getRuntime().exec("python /home/pi/NetConTop/NCSLabLink/octavecode/matload.py");// ִ��py�ļ�
-		            //���ص���ʹ���������
-//		        	proc = Runtime.getRuntime().exec("python D:\\Project\\react_antd\\faker\\NetConTop\\ncslablink\\src\\octaveserver\\matload.py");
-		            //���������������ȡ���
-		            System.out.println("proc:"+proc);
-
-		            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
-		            while ((matline = in.readLine()) != null) {
-		                System.out.println(matline);
-		                matline2 = matline2 + matline;
-		            }
-		            System.out.println("matline2 in octaveThread:"+matline2);
-		            this.model.OutputMat = matline2;
-		            in.close();
-		            proc.waitFor();
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        } catch (InterruptedException e) {
-		            e.printStackTrace();
-		        }
-				System.out.println("Done...");
-
-				synchronized(finishObject) {
-					finishObject.notify();
-				}
-			}
-
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
-		catch(InterruptedException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally {
-			server.removeOctaveThread(this);
-		}
-	}
-
+                synchronized(finishObject) {
+                    finishObject.notify();
+                }
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        catch(InterruptedException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            server.removeOctaveThread(this);
+        }
+    }
 }
