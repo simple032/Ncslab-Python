@@ -22,4 +22,6 @@ public interface MdlBlockMapper {
 
     // 删除（Delete）
     int deleteById(Integer id);
+
+    MdlBlock selectByType(String type);
 }

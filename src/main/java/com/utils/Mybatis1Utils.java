@@ -2,6 +2,7 @@ package com.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -30,8 +31,13 @@ public class Mybatis1Utils {
             String resource = "mybatis-config.xml";
             InputStream inputStream = Resources.getResourceAsStream(resource);
 
+            // 加载环境变量
+            Properties properties = new Properties();
+            properties.putAll(System.getenv());
+
             // 使用指定的环境 id 构建 SqlSessionFactory
-            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream, environmentId);
+            SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
+            sqlSessionFactory = builder.build(inputStream, environmentId, properties);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
