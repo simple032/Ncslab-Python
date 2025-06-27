@@ -3,8 +3,7 @@ package com.ncslab.block;
 import java.util.Vector;
 
 import com.ncslab.block.io.*;
-import com.ncslab.code.xml.ld.CodeStructLadderDiagram;
-import com.ncslab.code.xml.st.CodeStructST;
+import com.ncslab.code.st.CodeStructST;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.velocity.VelocityContext;
@@ -429,16 +428,6 @@ public class Block implements MCodeBlock, CCodeBlock{
 
     }
 
-    public void generateBlockOutputCodeLD(CodeStructLadderDiagram code) {
-    }
-
-    public void generateBlockInitCodeLD(CodeStructLadderDiagram code) {
-
-    }
-
-    public void generateBlockUpdateCodeLD(CodeStructLadderDiagram code) {
-
-    }
 
     private void parseParameterList() {
         Vector<String> parameterNames = getParameterNames();
