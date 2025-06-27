@@ -39,6 +39,9 @@ public class SFcnModel {
 	private int inputPortNum;
 	private int outputPortNum;
 
+	@Setter
+    @Getter
+	private String[] parameterString;
 	protected String codePath;
 
     protected String codePathBase = Property.instance.getProperty("CCodePath").replace(
@@ -55,19 +58,20 @@ public class SFcnModel {
 
 		JSONObject paramList = sfcnData.getJSONObject("paramList");
 		this.functionName = paramList.getString("FunctionName");
-		String parameterString = paramList.getString("Parameters");
-		if (parameterString.length()<1) {
+		String parameter = paramList.getString("Parameters").replace("[","").replace("[","");
+		if (parameter.length()<1) {
 			this.parameterNum = 0;
 		}
 		else {
-			this.parameterNum = parameterString.split(",").length;
+		    this.parameterString = parameter.split(",");
+			this.parameterNum = parameterString.length;
 		}
 		this.functionCode = paramList.getString("SFunctionCode");
 
 		//检测函数名是否匹配
 		int firstIndex = this.functionCode.indexOf("#define S_FUNCTION_NAME");
 		int endIndex = this.functionCode.indexOf("\n", firstIndex);
-		String functionNameInSource = this.functionCode.substring(firstIndex, endIndex).replace("#define S_FUNCTION_NAME", "").replaceAll(" ",	"");
+		String functionNameInSource = this.functionCode.substring(firstIndex, endIndex).replace("#define S_FUNCTION_NAME", "").replaceAll(" ",	"").replaceAll("//.*","");
 		if(! functionNameInSource.equals(this.functionName)) {
 			throw new SFcnException("Error: S-function name is mismatch. Name in source is \"#include S_FUNCTION_NAME "+functionNameInSource
 					+"\", but name of the S-function on the dialog is \""+this.functionName+"\". Update the name in source");

@@ -1,18 +1,18 @@
 
 # OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncslabmain.o results.o Matrix.o
-OBJS = mainccode.o onestep.o util.o ncslabmain.o results.o Matrix.o
+OBJS = $(SFCNOBJS) mainccode.o onestep.o util.o ncslabmain.o results.o Matrix.o
 
 CC=g++
 
 LD=g++
 
-CCFlag=-D_SIMU -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings \
+CCFlag=-D_SIMU -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings -fpermissive\
 		-mwindows -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
 		-I$(M2PLAB_ROOT)/server/cruntime/include \
 		-IE:\M2PLab\server\cruntime\include \
 		-fopenmp
 
-LDFLAG=-lm -g -O2 -Wformat -fPIC -lwinmm -lws2_32 -L$(M2PLAB_ROOT)/server/cruntime/lib -lgsl
+LDFLAG=-lm -g -O2 -Wformat -fPIC -lwinmm -lws2_32 -fpermissive -L$(M2PLAB_ROOT)/server/cruntime/lib -lgsl
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)
@@ -36,7 +36,7 @@ Matrix.o: Matrix.cpp
 	$(CC) $(CCFlag)  -c Matrix.cpp
 
 
-%.o: %.c
+%.o: %.cpp
 	$(CC) $(CCFlag)  -c "$<"
 
 clean:

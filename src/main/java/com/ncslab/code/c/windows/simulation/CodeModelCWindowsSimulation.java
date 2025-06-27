@@ -72,27 +72,27 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 //            for (Map.Entry<String, String> entry : env.entrySet()) {
 //                envArray[i++] = entry.getKey() + "=" + entry.getValue();
 //            }
-            String dllFolderName = Optional.ofNullable(Property.instance.getProperty("DllFolder"))
-                .orElse(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
-
-            File dllFolder = new File(dllFolderName);
-            if(!dllFolder.exists()){
-                dllFolder = new File(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
-            }
-            File[] files = dllFolder.listFiles();
-            if(files != null){
-                for(File file : files){
-                    if(file.isFile() && file.getName().endsWith(".dll")){
-                        try{
-                            Path sourcePath = Paths.get(file.getAbsolutePath());
-                            Path targetPath = Paths.get(dir.getAbsolutePath(), file.getName());
-                            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
-                        }catch(IOException e){
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+//            String dllFolderName = Optional.ofNullable(Property.instance.getProperty("DllFolder"))
+//                .orElse(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
+//
+//            File dllFolder = new File(dllFolderName);
+//            if(!dllFolder.exists()){
+//                dllFolder = new File(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
+//            }
+//            File[] files = dllFolder.listFiles();
+//            if(files != null){
+//                for(File file : files){
+//                    if(file.isFile() && file.getName().endsWith(".dll")){
+//                        try{
+//                            Path sourcePath = Paths.get(file.getAbsolutePath());
+//                            Path targetPath = Paths.get(dir.getAbsolutePath(), file.getName());
+//                            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+//                        }catch(IOException e){
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//            }
 
             process = Runtime.getRuntime().exec(
                 exeFilePath + " " + this.getConfig().getStopTime(),

@@ -109,7 +109,8 @@ public class SimulateWebSocket {
                     modelC= CodeModelCLinuxPCSimulation.createFromJSON(jsonData,ModelMode.Simulation);
                 }
 
-                modelC.removeAllFiles();
+                //和sfunction冲突
+//                modelC.removeAllFiles();
 
                 modelC.generate();
 
@@ -140,7 +141,7 @@ public class SimulateWebSocket {
 	        	modelC.simulate(session);
 
 	        	sendMessage(session,"simulated");
-	        	sendResultMessage(session, modelC);
+	        	sendResultMessage(session, modelC);//发送至示波器
 	        }
 			catch(IOException e) {
 				System.err.println(e.getMessage());

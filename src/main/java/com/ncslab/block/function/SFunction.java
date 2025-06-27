@@ -205,10 +205,19 @@ public class SFunction extends DiscreteBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        
-        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/output.vm", context);
-        code.addOutputCode(codeStr);
+//        context.put("block", this);
+//
+//        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/output.vm", context);
+//        code.addOutputCode(codeStr);
+        String outputCode="/*Code for output of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+        if(this.numDiscState>0){
+            outputCode+="if(block"+this.getBlockId()+".discreteTime<=mp->time||block"+this.getBlockId()+".discreteTime-mp->time<0.0000001{;\n";
+            outputCode+="(*"+this.simStructName+"->outputs)("+this.simStructName+",0);\n";
+            outputCode+="}\n";
+        }else{
+            outputCode+="(*"+this.simStructName+"->outputs)("+this.simStructName+",0);\n";
+        }
+        code.addOutputCode(outputCode);
     }
 
     public void  generateDerivativeCodeC(CodeStructC code) {
