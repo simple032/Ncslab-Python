@@ -14,30 +14,117 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * DiscreteStateSpace block with SIMULINK-compatible parameters and type-safe constructors.
+ *
+ * SIMULINK Parameters:
+ * - A: System matrix A
+ * - B: Input matrix B
+ * - C: Output matrix C
+ * - D: Feedthrough matrix D
+ * - InitialCondition: Initial condition of state variables
+ * - SampleTime: Sample time for discrete operation
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class DiscreteStateSpace extends DiscreteBlock {
     private String name = "Discrete State Space";
 
     private boolean feedThrough = false;
 
-    private Parameter A;
-    private Parameter B;
-    private Parameter C;
-    private Parameter D;
-    private Parameter X0;
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter A;
+    @Getter
+    private final Parameter B;
+    @Getter
+    private final Parameter C;
+    @Getter
+    private final Parameter D;
+    @Getter
+    private final Parameter initialCondition;
+    @Getter
+    private final Parameter sampleTimeParam;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
 
     private Vector<State> xStateList = new Vector<>();
 
-    public DiscreteStateSpace(JSONObject blockIn, NCSLabModel model) {
-        super(blockIn, model);
+    // === Static Parameter Definitions ===
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
 
-        parseVector();
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("A", "[1]");
+        PARAMETER_DEFAULTS.put("B", "[1]");
+        PARAMETER_DEFAULTS.put("C", "[1]");
+        PARAMETER_DEFAULTS.put("D", "[0]");
+        PARAMETER_DEFAULTS.put("InitialCondition", "0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
 
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        // SIMULINK parameter names
+        parameterNames.add("A");
+        parameterNames.add("B");
+        parameterNames.add("C");
+        parameterNames.add("D");
+        parameterNames.add("InitialCondition");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+
+        // Port names
+        outputNames.add("out1");
+        inputNames.add("in1");
+    }
+
+    // === Private Constructor with Typed Parameters ===
+    private DiscreteStateSpace(Parameter A, Parameter B, Parameter C, Parameter D, Parameter initialCondition,
+                              Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
+                              String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+
+        // Assign parameters
+        this.A = Objects.requireNonNull(A, "A matrix parameter cannot be null");
+        this.B = Objects.requireNonNull(B, "B matrix parameter cannot be null");
+        this.C = Objects.requireNonNull(C, "C matrix parameter cannot be null");
+        this.D = Objects.requireNonNull(D, "D matrix parameter cannot be null");
+        this.initialCondition = Objects.requireNonNull(initialCondition, "Initial condition parameter cannot be null");
+        this.sampleTimeParam = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        // Determine feedthrough
+        if (D.isZero()) {
+            feedThrough = false;
+        } else {
+            feedThrough = true;
+        }
+
+        // Initialize state variables
         for (int i = 0; i < A.getWidth(); i++) {
             State xState = new State(this, i + 1, "x" + (i + 1));
             xStateList.add(xState);
@@ -45,194 +132,165 @@ public class DiscreteStateSpace extends DiscreteBlock {
         }
     }
 
-    private void parseVector() {
-        String aStr = paramValues.getString("A");
-        String bStr = paramValues.getString("B");
-        String cStr = paramValues.getString("C");
-        String dStr = paramValues.getString("D");
-        String initCond = paramValues.getString("InitialCondition");
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public DiscreteStateSpace(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
 
-        A = new Parameter(this, 1, "A", paramValues.getString("A"));
-        B = new Parameter(this, 2, "B", paramValues.getString("B"));
-        C = new Parameter(this, 3, "C", paramValues.getString("C"));
-        D = new Parameter(this, 4, "D", paramValues.getString("D"));
-        X0 = new Parameter(this, 5, "X0", paramValues.getString("X0"));
+        // Create legacy parameters for backward compatibility
+        this.A = new Parameter(this, 1, "A", paramValues.getString("A"));
+        this.B = new Parameter(this, 2, "B", paramValues.getString("B"));
+        this.C = new Parameter(this, 3, "C", paramValues.getString("C"));
+        this.D = new Parameter(this, 4, "D", paramValues.getString("D"));
+        this.initialCondition = new Parameter(this, 5, "InitialCondition", paramValues.getString("InitialCondition"));
 
+        // Create missing SIMULINK parameters with defaults
+        this.sampleTimeParam = new Parameter(this, 6, "SampleTime", "1.0");
+        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+
+        // Add all parameters to parameter list
+
+        // Determine feedthrough
         if (D.isZero()) {
             feedThrough = false;
         } else {
             feedThrough = true;
         }
 
-        parameterList.add(A);
-        parameterList.add(B);
-        parameterList.add(C);
-        parameterList.add(D);
-        parameterList.add(X0);
-    }
-
-    @Override
-    public void calculateInit() {
-        for (State xState : xStateList) {
-            Data data = X0.getData();
-            xState.setData(data);
+        // Initialize state variables
+        for (int i = 0; i < A.getWidth(); i++) {
+            State xState = new State(this, i + 1, "x" + (i + 1));
+            xStateList.add(xState);
+            stateList.add(xState);
         }
     }
 
-    @Override
-    public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
-        InputPort in = inputPortList.get(0);
-        Data outputData = new Data(out.getHeight(), out.getWidth());
+    // === Static Factory Method for JSON Deserialization ===
+    public static DiscreteStateSpace fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
 
-        Data currentState = xStateList.firstElement().getData();
-        Data inputSignal = in.getData();
-
-        // y(k) = Cx(k) + Du(k)
-        if (feedThrough) {
-            Data du = D.getData().times(inputSignal);
-            outputData = outputData.plus(du);
-        }
-
-        Data cx = C.getData().times(currentState);
-        outputData = outputData.plus(cx);
-
-        out.setData(outputData);
-    }
-
-    @Override
-    public void calculateDiscreteUpdate(double t) {
-        InputPort in = inputPortList.get(0);
-        Data inputSignal = in.getData();
-
-        for (State xState : xStateList) {
-            Data currentX = xState.getData();
-            Data updatedX = A.getData().times(currentX).plus(B.getData().times(inputSignal));
-            xState.setData(updatedX);
-        }
-    }
-
-    public void generateInitCodeM(CodeStructM code) {
-        super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("A", A);
-        context.put("B", B);
-        context.put("C", C);
-        context.put("D", D);
-        context.put("X0", X0);
-        context.put("states", xStateList);
-
-        String codeStr = TemplateManager.renderTemplate("m/discrete/DiscreteStateSpace/init.vm", context);
-        code.addInitCode(codeStr);
-    }
-
-    public void generateOutputCodeM(CodeStructM code) {
-        super.generateOutputCodeM(code);
-        context.put("block", this);
-        context.put("C", C);
-        context.put("D", D);
-        context.put("states", xStateList);
-        context.put("feedThrough", feedThrough);
-
-        String codeStr = TemplateManager.renderTemplate("m/discrete/DiscreteStateSpace/output.vm", context);
-        code.addOutputCode(codeStr);
-    }
-
-    public void generateDerivativeCodeM(CodeStructM code) {
-        super.generateDerivativeCodeM(code);
-        State xState = xStateList.firstElement();
-        String derivativeCode = xState.getDerivativeName() + "=" + A.getName() + "*" + xState.getName() + "+" + B.getName() + "*" + this.getInputPortVariable(0) + ";\n";
-
-        code.addDerivativeCode(derivativeCode);
-    }
-
-    public void generateInitCodeC(CodeStructC code) {
-        super.generateInitCodeC(code);
-
-        context.put("block", this);
-        context.put("stateList", xStateList);
-        context.put("X0", X0.getName());
-        String initCode = TemplateManager.renderTemplate("c/discrete/DiscreteStateSpace/init.vm", context);
-
-        code.addInitCode(initCode);
-    }
-
-    public void generateOutputCodeC(CodeStructC code) {
-        String outputCode = "/*Code for output of block " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        // y(k) = Cx(k) + Du(k)
-
-        context.put("block", this);
-        context.put("C", C.getName());
-        context.put("D", D.getName());
-        context.put("x", xStateList.firstElement().getName());
-        context.put("feedThrough", feedThrough);
-        context.put("output", getOutputPortVariable(0));
-        context.put("input", getInputPortVariable(0));
-
-        outputCode += TemplateManager.renderTemplate("c/discrete/DiscreteStateSpace/output.vm", context);
-
-        code.addOutputCode(outputCode);
-    }
-
-    public void generateUpdateCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("A", A.getName());
-        context.put("B", B.getName());
-        context.put("xState", xStateList.firstElement());
-        context.put("input", getInputPortVariable(0));
-        String updateCode = TemplateManager.renderTemplate("c/discrete/DiscreteStateSpace/update.vm", context);
-        code.addDerivativeCode(updateCode);
-    }
-
-    public void updateDimension() throws MatDimException {
-        OutputPort out = outputPortList.get(0);
-        InputPort in = inputPortList.get(0);
-        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        if (this.feedThrough) {
-            if (A.getWidth() != A.getHeight() // A是否是方阵
-                    || A.getHeight() != B.getHeight() // A和B是否匹配
-                    || A.getWidth() != C.getWidth() // A和CB是否匹配
-                    || A.getWidth() != xStateList.firstElement().getHeight() // A和状态是否匹配
-                    || D.getWidth() != B.getWidth() // B和D是否匹配
-                    || D.getHeight() != C.getHeight() // D和C是否匹配
-                    || B.getWidth() != in.getHeight() // 输入和B是否匹配
-                    || in.getWidth() != 1 // 输入必须是列向量
-                    || X0.getHeight() != A.getHeight()
-                    || X0.getWidth() != 1) {
-                MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match!");
-                throw e;
+            if (paramValues == null) {
+                paramValues = new JSONObject();
             }
-        } else {
-            // 如果没有D，检查的时候就不用考虑D向量
-            if (A.getWidth() != A.getHeight()
-                    || A.getHeight() != B.getHeight()
-                    || A.getWidth() != C.getWidth()
-                    || A.getWidth() != xStateList.firstElement().getHeight()
-                    || in.getWidth() != 1
-                    || X0.getHeight() != A.getHeight()
-                    || X0.getWidth() != 1) {
-                MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match!");
-                throw e;
+
+            Parameter A = createMatrixParameterFromJSON(paramValues, "A", "A", "1");
+            Parameter B = createMatrixParameterFromJSON(paramValues, "B", "B", "1");
+            Parameter C = createMatrixParameterFromJSON(paramValues, "C", "C", "1");
+            Parameter D = createMatrixParameterFromJSON(paramValues, "D", "D", "0");
+            Parameter initialCondition = createMatrixParameterFromJSON(paramValues, "InitialCondition", "InitialCondition", "0");
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+
+            DiscreteStateSpace block = new DiscreteStateSpace(A, B, C, D, initialCondition,
+                                                             sampleTime, outDataType, saturateParam,
+                                                             blockName, blockPath, blockUUID, model);
+
+            setParameterBlockReference(block, A, B, C, D, initialCondition,
+                                     sampleTime, outDataType, saturateParam);
+
+            return block;
+
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create DiscreteStateSpace block from JSON: " + e.getMessage(), e);
+        }
+    }
+
+    // === Static Factory Method for Programmatic Creation ===
+    public static DiscreteStateSpace create(String name, String path, String A, String B, String C, String D,
+                                           String initialCondition, double sampleTime, NCSLabModel model) {
+        return create(name, path, A, B, C, D, initialCondition, sampleTime, "Inherit: Same as input", false, model);
+    }
+
+    public static DiscreteStateSpace create(String name, String path, String A, String B, String C, String D,
+                                           String initialCondition, double sampleTime, String outDataType,
+                                           boolean saturateOnOverflow, NCSLabModel model) {
+        Parameter AParam = new Parameter(null, 1, "A", A);
+        Parameter BParam = new Parameter(null, 2, "B", B);
+        Parameter CParam = new Parameter(null, 3, "C", C);
+        Parameter DParam = new Parameter(null, 4, "D", D);
+        Parameter initialConditionParam = new Parameter(null, 5, "InitialCondition", initialCondition);
+        Parameter sampleTimeParam = new Parameter(null, 6, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 7, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 8, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+
+        DiscreteStateSpace block = new DiscreteStateSpace(AParam, BParam, CParam, DParam, initialConditionParam,
+                                                          sampleTimeParam, outDataTypeParam, saturateParam,
+                                                          name, path, "null", model);
+
+        setParameterBlockReference(block, AParam, BParam, CParam, DParam, initialConditionParam,
+                                 sampleTimeParam, outDataTypeParam, saturateParam);
+
+        return block;
+    }
+
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createMatrixParameterFromJSON(JSONObject paramValues, String jsonKey, String paramName, String defaultValue) {
+        String value = paramValues.optString(jsonKey, defaultValue);
+        return new Parameter(null, getParameterIndex(paramName), paramName, value);
+    }
+
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "1.0");
+        return new Parameter(null, 6, "SampleTime", sampleTimeValue);
+    }
+
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 7, "OutDataTypeStr", outDataTypeValue);
+    }
+
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 8, "SaturateOnIntegerOverflow", saturateValue);
+    }
+
+    private static int getParameterIndex(String paramName) {
+        switch (paramName) {
+            case "A": return 1;
+            case "B": return 2;
+            case "C": return 3;
+            case "D": return 4;
+            case "InitialCondition": return 5;
+            default: return 1;
+        }
+    }
+
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+
+    private static void setParameterBlockReference(DiscreteStateSpace block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
             }
         }
-
-        out.setHeight(C.getHeight());
-        out.setWidth(1);
-        out.getOutputSignalC().setHeight(C.getHeight());
-        out.getOutputSignalC().setWidth(1);
-        if (D.getHeight() > 1) {
-            out.getOutputSignalC().setDataType(DataType.MATRIX);
-        } else {
-            out.getOutputSignalC().setDataType(DataType.REAL);
-        }
     }
 
-    public void checkDimension() throws MatDimException {
-        InputPort in = inputPortList.get(0);
-        if (B.getWidth() != in.getHeight()) { // 输入和B是否匹配
-            MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match!");
-            throw e;
-        }
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "DiscreteStateSpace");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
     }
 }

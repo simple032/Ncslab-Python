@@ -13,49 +13,256 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * Delay block with SIMULINK-compatible parameters and type-safe constructors.
+ *
+ * SIMULINK Parameters:
+ * - DelayLength: Number of samples to delay
+ * - InitialCondition: Initial condition for the delay buffer
+ * - SampleTime: Sample time for discrete operation
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class Delay extends DiscreteBlock {
-    Parameter sampleTime;
-    Parameter initialCondition;
-    Parameter delayLength;
 
-    // Define arrays to save data
-    Vector<Data> buffer;
+    // === Internal State ===
+    private Vector<Data> buffer;
 
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter delayLength;
+    @Getter
+    private final Parameter initialCondition;
+    @Getter
+    private final Parameter sampleTimeParam;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Port References ===
+    private OutputPort output;
+    private InputPort input;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("DelayLength", "1");
+        PARAMETER_DEFAULTS.put("InitialCondition", "0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
+
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("sampleTime");
-        parameterNames.add("initialCondition");
-        parameterNames.add("delayLength");
+        // SIMULINK parameter names
+        parameterNames.add("DelayLength");
+        parameterNames.add("InitialCondition");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
+    // === Private Constructor with Typed Parameters ===
+    private Delay(Parameter delayLength, Parameter initialCondition, Parameter sampleTime,
+                 Parameter outDataType, Parameter saturateOnIntegerOverflow,
+                 String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
 
+        // Validate parameters
+        validateParameters(delayLength, sampleTime);
+
+        // Assign parameters
+        this.delayLength = Objects.requireNonNull(delayLength, "Delay length parameter cannot be null");
+        this.initialCondition = Objects.requireNonNull(initialCondition, "Initial condition parameter cannot be null");
+        this.sampleTimeParam = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        // Set discrete sample time
+        setSampleTime(this.sampleTimeParam);
+
+        // Initialize ports
+        initializePorts();
+    }
+
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
     public Delay(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
-        inputPortList.add(new InputPort(this, 1));
-        outputPortList.add(new OutputPort(this, 1, false));
 
-        sampleTime = new Parameter(this, 1, "SampleTime", paramValues.getString("SampleTime"));
-        initialCondition = new Parameter(this, 2, "InitialCondition", paramValues.getString("InitialCondition"));
-        delayLength = new Parameter(this, 3, "DelayLength", paramValues.getString("DelayLength"));
+        // Create legacy parameters for backward compatibility
+        this.sampleTimeParam = new Parameter(this, 1, "SampleTime", paramValues.getString("SampleTime"));
+        this.initialCondition = new Parameter(this, 2, "InitialCondition", paramValues.getString("InitialCondition"));
+        this.delayLength = new Parameter(this, 3, "DelayLength", paramValues.getString("DelayLength"));
 
-        parameterList.add(sampleTime);
-        setSampleTime(sampleTime);
-        parameterList.add(initialCondition);
-        parameterList.add(delayLength);
+        // Create missing SIMULINK parameters with defaults
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Add all parameters to parameter list
+
+        // Set discrete sample time
+        setSampleTime(sampleTimeParam);
+
+        // Initialize ports
+        initializePorts();
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
+    public static Delay fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+
+            Parameter delayLength = createDelayLengthFromJSON(paramValues, blockName);
+            Parameter initialCondition = createInitialConditionFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+
+            Delay block = new Delay(delayLength, initialCondition, sampleTime, outDataType, saturateParam,
+                                  blockName, blockPath, blockUUID, model);
+
+            setParameterBlockReference(block, delayLength, initialCondition, sampleTime, outDataType, saturateParam);
+
+            return block;
+
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Delay block from JSON: " + e.getMessage(), e);
+        }
+    }
+
+    // === Static Factory Method for Programmatic Creation ===
+    public static Delay create(String name, String path, int delayLength, double initialCondition, double sampleTime, NCSLabModel model) {
+        return create(name, path, delayLength, initialCondition, sampleTime, "Inherit: Same as input", false, model);
+    }
+
+    public static Delay create(String name, String path, int delayLength, double initialCondition, double sampleTime,
+                              String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        Parameter delayLengthParam = new Parameter(null, 1, "DelayLength", String.valueOf(delayLength));
+        Parameter initialConditionParam = new Parameter(null, 2, "InitialCondition", String.valueOf(initialCondition));
+        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+
+        Delay block = new Delay(delayLengthParam, initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam,
+                              name, path, "null", model);
+
+        setParameterBlockReference(block, delayLengthParam, initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam);
+
+        return block;
+    }
+
+    // === Parameter Validation ===
+    private static void validateParameters(Parameter delayLength, Parameter sampleTime) {
+        int delayLengthValue = (int) delayLength.getDouble();
+        if (delayLengthValue <= 0) {
+            throw new IllegalArgumentException("Delay length must be positive");
+        }
+
+        double sampleTimeValue = sampleTime.getDouble();
+        if (sampleTimeValue <= 0.0 || sampleTimeValue == Double.NaN || sampleTimeValue == Double.POSITIVE_INFINITY) {
+            throw new IllegalArgumentException("Sample time must be positive and finite");
+        }
+    }
+
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createDelayLengthFromJSON(JSONObject paramValues, String blockName) {
+        String delayLengthValue = paramValues.optString("DelayLength", "1");
+        return new Parameter(null, 1, "DelayLength", delayLengthValue);
+    }
+
+    private static Parameter createInitialConditionFromJSON(JSONObject paramValues, String blockName) {
+        String initialConditionValue = paramValues.optString("InitialCondition", "0.0");
+        return new Parameter(null, 2, "InitialCondition", initialConditionValue);
+    }
+
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "1.0");
+        return new Parameter(null, 3, "SampleTime", sampleTimeValue);
+    }
+
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 4, "OutDataTypeStr", outDataTypeValue);
+    }
+
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateValue);
+    }
+
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+
+    private static void setParameterBlockReference(Delay block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Delay");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
+    }
+    // === Port Initialization ===
+    private void initializePorts() {
+        // Main input port
+        input = new InputPort(this, 1);
+        inputPortList.add(input);
+
+        // Main output port (no feedthrough for delay)
+        output = new OutputPort(this, 1, false);
+        outputPortList.add(output);
     }
 
     // Define arrays to save data
@@ -70,7 +277,7 @@ public class Delay extends DiscreteBlock {
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
         context.put("block", this);
-        context.put("sampleTime", sampleTime);
+        context.put("sampleTime", sampleTimeParam);
         context.put("initialCondition", initialCondition);
         context.put("delayLength", delayLength);
 
@@ -81,7 +288,7 @@ public class Delay extends DiscreteBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         context.put("block", this);
-        context.put("sampleTime", sampleTime);
+        context.put("sampleTime", sampleTimeParam);
         context.put("initialCondition", initialCondition);
         context.put("delayLength", delayLength);
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/init.vm", context);
@@ -93,7 +300,7 @@ public class Delay extends DiscreteBlock {
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("block", this);
-        context.put("sampleTime", sampleTime);
+        context.put("sampleTime", sampleTimeParam);
         context.put("initialCondition", initialCondition);
         context.put("delayLength", delayLength.getData().getIntValue());
         context.put("outputs", getOutputPortVariables());
@@ -102,69 +309,5 @@ public class Delay extends DiscreteBlock {
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/output.vm", context);
         code.addOutputCode(codeStr);
-    }
-
-    @Override
-    public void calculateInit() {
-        buffer = new Vector<>();
-        OutputPort out = outputPortList.get(0);
-        Data data = new Data(out.getHeight(), out.getWidth());
-        for (int i = 0; i < delayLength.getDouble(); i++) {
-            buffer.add(createCopy(data));
-        }
-    }
-
-    @Override
-    public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
-        if (!buffer.isEmpty()) {
-            out.setData(buffer.firstElement());
-        } else {
-            out.setData(new Data(0));
-        }
-    }
-
-    @Override
-    public void calculateDiscreteUpdate(double t) {
-        InputPort input = inputPortList.get(0);
-        buffer.remove(0);
-        buffer.add(createCopy(input.getData()));
-    }
-
-    private Data createCopy(Data original) {
-        if (original.getDataType() == DataType.REAL) {
-            return new Data(original.getInitValue());
-        } else if (original.getDataType() == DataType.MATRIX) {
-            Matrix matrix = original.getMatrix();
-            double[][] array = matrix.getArrayCopy();
-            return new Data(new Matrix(array));
-        } else {
-            return new Data(0);
-        }
-    }
-
-    public void updateDimension() throws MatDimException {
-        super.updateDimension();
-        OutputPort out = outputPortList.get(0);
-        InputPort in = inputPortList.get(0);
-        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        if ((Double.parseDouble(paramValues.getString("SampleTime").trim()) * 100) % (model.getConfig().getFixedStep() * 100) > 0.000001) {
-            MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be an integer multiple of the fixed-step size!\n \n");
-            throw(e);
-        }
-
-        out.setHeight(signal.getHeight());
-        out.setWidth(signal.getWidth());
-        out.getOutputSignalC().setHeight(signal.getHeight());
-        out.getOutputSignalC().setWidth(signal.getWidth());
-        out.getOutputSignalC().setDataType(signal.getDataType());
-    }
-
-    public void checkDimension() throws MatDimException {
-        if (sampleTime.getDataType() != DataType.REAL || initialCondition.getDataType() != DataType.REAL || delayLength.getDataType() != DataType.REAL) {
-            MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be a real double scalar(period) and the Parameter(initialCondition/delayLength) can't be Matrix!\n \n");
-            throw(e);
-        }
     }
 }

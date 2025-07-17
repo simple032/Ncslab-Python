@@ -1,22 +1,43 @@
-/* Code for output of discrete_transfer_fun:(${block.blockId}) ${block.blockName} */
-{
-    real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
-#set($h = $den.width - $num.width - 1)
-  if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-  #if($feedThrough)
-      ${outputs.get(0)} = Block${block.blockId}_discrete_transfer_savedata[0] * ${num.getName()}(0, 0)
-      #set($numWidthIndex = $num.width - 1)
-      #foreach($index in [0..$numWidthIndex])
-          #set($nextIndex = $index + 1)
-          + ${num.getName()}(0, $nextIndex) * ${states.get($index).getName()}
-      #end
-  #else
-      ${outputs.get(0)} = 0
-      #set($wMax = $num.width - 1)
-      #foreach($index in [0..$wMax])
-          #set($nextIndex = $index + $h)
-          + ${num.getName()}(0, ${index}) * ${states.get($nextIndex).getName()}#if($states.get($nextIndex).width == 1 && $states.get($nextIndex).height == 1)(0, 0)#end
-      #end
-  #end
-  ;}
-}
+/*Code for output of block Discrete_Transfer_Fcn:(${block.getBlockId()})${block.getBlockName()}*/
+#if($num && $den && $states && $outputs && $outputs.size() > 0)
+    #set($outputVar = $outputs.get(0))
+    #set($blockId = $block.getBlockId())
+    
+    ## Determine sample time
+    #if($sampleTime)
+        real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
+    #else
+        real_T sampleTimeTmp = model.stepSize;
+    #end
+    
+    ## Check if it's a sample time hit
+    if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
+        #if($feedThrough)
+            ## Direct feedthrough case
+            $outputVar = Block${blockId}_discrete_transfer_savedata[0] * ${num.getName()}(0, 0);
+            #set($numWidthIndex = $num.width - 1)
+            #foreach($index in [0..$numWidthIndex])
+                #set($nextIndex = $index + 1)
+            $outputVar += ${num.getName()}(0, $nextIndex) * ${states.get($index).getName()};
+            #end
+        #else
+            ## No direct feedthrough
+            $outputVar = 0.0;
+            #set($h = $den.width - $num.width - 1)
+            #set($wMax = $num.width - 1)
+            #foreach($index in [0..$wMax])
+                #set($nextIndex = $index + $h)
+                #if($states.get($nextIndex).width == 1 && $states.get($nextIndex).height == 1)
+            $outputVar += ${num.getName()}(0, ${index}) * ${states.get($nextIndex).getName()}(0, 0);
+                #else
+            $outputVar += ${num.getName()}(0, ${index}) * ${states.get($nextIndex).getName()};
+                #end
+            #end
+        #end
+    }
+#else
+    ## Fallback if parameters missing
+    #if($outputs && $outputs.size() > 0)
+        ${outputs.get(0)} = 0.0; /* Discrete_Transfer_Fcn block missing parameters */
+    #end
+#end

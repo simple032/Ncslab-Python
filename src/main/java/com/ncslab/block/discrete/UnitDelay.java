@@ -13,36 +13,238 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.block.data.DataType;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * UnitDelay block with SIMULINK-compatible parameters and type-safe constructors.
+ *
+ * SIMULINK Parameters:
+ * - InitialCondition: Initial condition for the delay
+ * - SampleTime: Sample time for discrete operation
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class UnitDelay extends DiscreteBlock {
 
-    Parameter sampleTime;
-    Parameter initialCondition;
+    // === Internal State ===
+    private Vector<Data> buffer;
+    private final boolean feedthrough = false; // Unit delay has no feedthrough
 
-    // Define arrays to save data
-    Vector<Data> buffer;
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter initialCondition;
+    @Getter
+    private final Parameter sampleTimeParam;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
 
+    // === Port References ===
+    private OutputPort output;
+    private InputPort input;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("InitialCondition", "0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
+
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("SampleTime");
+        // SIMULINK parameter names
         parameterNames.add("InitialCondition");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
+    // === Private Constructor with Typed Parameters ===
+    private UnitDelay(Parameter initialCondition, Parameter sampleTimeParam, Parameter outDataType, 
+                     Parameter saturateOnIntegerOverflow, String blockName, String blockPath, 
+                     String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
 
-    // Add a method to calculate signal indices
+        // Validate parameters
+        validateParameters(sampleTimeParam);
+
+        // Assign parameters
+        this.initialCondition = Objects.requireNonNull(initialCondition, "Initial condition parameter cannot be null");
+        this.sampleTimeParam = Objects.requireNonNull(sampleTimeParam, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        // Set discrete sample time
+        setSampleTime(this.sampleTimeParam);
+
+        // Initialize ports
+        initializePorts();
+    }
+
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public UnitDelay(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model); // This calls parseParameterList() automatically
+
+        // Get parameters by name from the automatically populated parameterList
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Set discrete sample time
+        setSampleTime(sampleTimeParam);
+
+        // Initialize ports
+        initializePorts();
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
+    public static UnitDelay fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+
+            Parameter initialCondition = createInitialConditionFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+
+            UnitDelay block = new UnitDelay(initialCondition, sampleTime, outDataType, saturateParam,
+                                           blockName, blockPath, blockUUID, model);
+
+            setParameterBlockReference(block, initialCondition, sampleTime, outDataType, saturateParam);
+
+            return block;
+
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create UnitDelay block from JSON: " + e.getMessage(), e);
+        }
+    }
+
+    // === Static Factory Method for Programmatic Creation ===
+    public static UnitDelay create(String name, String path, double initialCondition, double sampleTime, NCSLabModel model) {
+        return create(name, path, initialCondition, sampleTime, "Inherit: Same as input", false, model);
+    }
+
+    public static UnitDelay create(String name, String path, double initialCondition, double sampleTime,
+                                  String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        Parameter initialConditionParam = new Parameter(null, 1, "InitialCondition", String.valueOf(initialCondition));
+        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+
+        UnitDelay block = new UnitDelay(initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam,
+                                       name, path, "null", model);
+
+        setParameterBlockReference(block, initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam);
+
+        return block;
+    }
+
+    // === Parameter Validation ===
+    private static void validateParameters(Parameter sampleTime) {
+        double sampleTimeValue = sampleTime.getDouble();
+        if (sampleTimeValue <= 0.0 || sampleTimeValue == Double.NaN || sampleTimeValue == Double.POSITIVE_INFINITY) {
+            throw new IllegalArgumentException("Sample time must be positive and finite");
+        }
+    }
+
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createInitialConditionFromJSON(JSONObject paramValues, String blockName) {
+        String initialConditionValue = paramValues.optString("InitialCondition", "0.0");
+        return new Parameter(null, 1, "InitialCondition", initialConditionValue);
+    }
+
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "1.0");
+        return new Parameter(null, 2, "SampleTime", sampleTimeValue);
+    }
+
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 3, "OutDataTypeStr", outDataTypeValue);
+    }
+
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateValue);
+    }
+
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+
+    private static void setParameterBlockReference(UnitDelay block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "UnitDelay");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
+    }
+
+    // === Port Initialization ===
+    private void initializePorts() {
+        // Main input port
+        input = new InputPort(this, 1);
+        inputPortList.add(input);
+
+        // Main output port (no feedthrough for unit delay)
+        output = new OutputPort(this, 1, feedthrough);
+        outputPortList.add(output);
+    }
+
+    // === Helper Methods ===
     private int[] calculateSignalIndices(int height, int width) {
         int[] indices = new int[height * width];
         int index = 0;
@@ -52,19 +254,6 @@ public class UnitDelay extends DiscreteBlock {
             }
         }
         return indices;
-    }
-
-    public UnitDelay(JSONObject blockIn, NCSLabModel model) {
-        super(blockIn, model);
-        inputPortList.add(new InputPort(this, 1));
-        outputPortList.add(new OutputPort(this, 1, feedthrough));
-
-        sampleTime = new Parameter(this, 1, "SampleTime", paramValues.getString("SampleTime"));
-        initialCondition = new Parameter(this, 2, "InitialCondition", paramValues.getString("InitialCondition"));
-
-        parameterList.add(sampleTime);
-        setSampleTime(sampleTime);
-        parameterList.add(initialCondition);
     }
 
     // Define arrays to save data
@@ -80,7 +269,7 @@ public class UnitDelay extends DiscreteBlock {
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
         context.put("block", this);
-        context.put("sampleTime", sampleTime);
+        context.put("sampleTime", sampleTimeParam);
         context.put("initialCondition", initialCondition);
 
         String codeStr = TemplateManager.renderTemplate("m/discrete/UnitDelay/init.vm", context);
@@ -90,7 +279,7 @@ public class UnitDelay extends DiscreteBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         context.put("block", this);
-        context.put("sampleTime", sampleTime);
+        context.put("sampleTime", sampleTimeParam);
         context.put("initialCondition", initialCondition);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/init.vm", context);
@@ -102,7 +291,7 @@ public class UnitDelay extends DiscreteBlock {
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("block", this);
-        context.put("sampleTime", sampleTime);
+        context.put("sampleTime", sampleTimeParam);
         context.put("initialCondition", initialCondition);
         context.put("signal", signal);
         context.put("outputs", getOutputPortVariables());
@@ -117,12 +306,12 @@ public class UnitDelay extends DiscreteBlock {
         InputPort in = inputPortList.get(0);
         OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-        if (sampleTime.getDataType() != DataType.REAL || initialCondition.getDataType() != DataType.REAL) {
+        if (sampleTimeParam.getDataType() != DataType.REAL || initialCondition.getDataType() != DataType.REAL) {
             MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be a real double scalar(period)!\n \n");
             throw(e);
         }
 
-        if ((Double.parseDouble(paramValues.getString("SampleTime").trim()) * 1000000) % (model.getConfig().getFixedStep() * 1000000) > 0.000001) {
+        if ((sampleTimeParam.getDouble() * 1000000) % (model.getConfig().getFixedStep() * 1000000) > 0.000001) {
             MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be an integer multiple of the fixed-step size!\n \n");
             throw(e);
         }

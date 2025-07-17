@@ -1,24 +1,44 @@
-/*Code for initialization of block discrete_time_integrator:($blockId)$blockName*/
-$gainval.initCodeC
-$sampleTime.initCodeC
-$initialCondition.initCodeC
-
-#if( $gainval.dataType == $realDataType && $xState.dataType == $realDataType )
-  $xState.getName()=$initialCondition.getName();
-#elseif( $gainval.dataType == $realDataType && $xState.dataType == $matrixDataType )
-  #set($hMax = $xState.getHeight() - 1)
-  #set($wMax = $xState.getWidth() - 1)
-  #foreach( $i in [0..$hMax] )
-    #foreach( $j in [0..$wMax] )
-      $xState.getName()($i,$j)=$initialCondition.getName();
+/*Code for initialization of block Discrete_Time_Integrator:(${block.getBlockId()})${block.getBlockName()}*/
+#if($gainval && $sampleTime && $initialCondition && $xState)
+    ## Initialize parameter variables
+    #if($gainval.initCodeC)
+        ${gainval.initCodeC}
     #end
-  #end
+    #if($sampleTime.initCodeC)
+        ${sampleTime.initCodeC}
+    #end
+    #if($initialCondition.initCodeC)
+        ${initialCondition.initCodeC}
+    #end
+    
+    ## Initialize state with initial condition
+    #if($gainval.dataType == $realDataType && $xState.dataType == $realDataType)
+        ## Scalar gain and scalar state
+        ${xState.getName()} = ${initialCondition.getName()};
+    #elseif($gainval.dataType == $realDataType && $xState.dataType == $matrixDataType)
+        ## Scalar gain and matrix state
+        #set($hMax = $xState.getHeight() - 1)
+        #set($wMax = $xState.getWidth() - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                ${xState.getName()}($i,$j) = ${initialCondition.getName()};
+            #end
+        #end
+    #else
+        ## Matrix gain and matrix state
+        #set($hMax = $xState.getHeight() - 1)
+        #set($wMax = $xState.getWidth() - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                #if($initialCondition.dataType == $realDataType)
+                    ${xState.getName()}($i,$j) = ${initialCondition.getName()};
+                #else
+                    ${xState.getName()}($i,$j) = ${initialCondition.getName()}($i,$j);
+                #end
+            #end
+        #end
+    #end
 #else
-  #set($hMax = $xState.getHeight() - 1)
-  #set($wMax = $xState.getWidth() - 1)
-  #foreach( $i in [0..$hMax] )
-    #foreach( $j in [0..$wMax] )
-      $xState.getName()($i,$j)=$initialCondition.getName()($i,$j);
-    #end
-  #end
+    ## Fallback if parameters missing
+    /* Discrete_Time_Integrator block ${block.getBlockId()} missing parameters */
 #end

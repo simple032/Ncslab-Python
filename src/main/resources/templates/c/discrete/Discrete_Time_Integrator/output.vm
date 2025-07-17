@@ -1,55 +1,79 @@
-/*Code for output of block Discrete-Time Integrator:($blockId)$blockName*/
-{
-real_T sampleTimeTmp = $sampleTime.getName()==-1?model.stepSize:$sampleTime.getName();
-if(fabs(floor(model.time/sampleTimeTmp+0.5)-model.time/sampleTimeTmp)<0.000001&&mp->majorStep>0) {
-#if( $signal.dataType == $realDataType )
-  #if( $gainval.dataType == $realDataType)
-    #if( $option == "Integration: Forward Euler" )
-      $out.getOutputSignalC().getName()=$xState.getName();
-      $xState.getName()=$xState.getName()+$gainval.getName()*$sampleTime.getName()*$signal.getName();
-    #elseif( $option == "Integration: Backward Euler" )
-      $out.getOutputSignalC().getName()=$xState.getName()+$gainval.getName()*$signal.getName()*$sampleTime.getName();
-      $xState.getName()=$out.getOutputSignalC().getName();
-    #elseif( $option == "Integration: Trapezoidal" )
-      $out.getOutputSignalC().getName()=$xState.getName()+$sampleTime.getName()/2*$signal.getName()*$gainval.getName();
-      $xState.getName()=$out.getOutputSignalC().getName()+$sampleTime.getName()/2*$signal.getName()*$gainval.getName();
-    #elseif( $option == "Accumulation: Forward Euler" )
-      $out.getOutputSignalC().getName()=$xState.getName();
-      $xState.getName()=$xState.getName()+$gainval.getName()*$signal.getName();
-    #elseif( $option == "Accumulation: Backward Euler" )
-      $out.getOutputSignalC().getName()=$xState.getName()+$gainval.getName()*$signal.getName();
-      $xState.getName()=$out.getOutputSignalC().getName();
-    #elseif( $option == "Accumulation: Trapezoidal" )
-      $out.getOutputSignalC().getName()=$xState.getName()+$signal.getName()*$gainval.getName()*0.5;
-      $xState.getName()=$out.getOutputSignalC().getName()+$signal.getName()*$gainval.getName()*0.5;
-    #end
-  #end
-#else
-  #set($hMax = $gainval.getHeight() - 1)
-  #set($wMax = $gainval.getWidth() - 1)
-  for(int i=0; i<=$hMax; i++) {
-    for(int j=0; j<=$wMax; j++) {
-      #if( $option == "Integration: Forward Euler")
-        $out.getOutputSignalC().getName()($i,$j)=$xState.getName()($i,$j);
-        $xState.getName()($i,$j)=$xState.getName()($i,$j)+$gainval.getName()($i,$j)*$sampleTime.getName()*$signal.getName();
-      #elseif( $option == "Integration: Backward Euler" )
-        $out.getOutputSignalC().getName()($i,$j)=$xState.getName()($i,$j)+$gainval.getName()($i,$j)*$signal.getName()*$sampleTime.getName();
-        $xState.getName()($i,$j)=$out.getOutputSignalC().getName()($i,$j);
-      #elseif( $option == "Integration: Trapezoidal" )
-        $out.getOutputSignalC().getName()($i,$j)=$xState.getName()($i,$j)+$sampleTime.getName()/2*$signal.getName()*$gainval.getName()($i,$j);
-        $xState.getName()($i,$j)=$out.getOutputSignalC().getName()($i,$j)+$sampleTime.getName()/2*$signal.getName()*$gainval.getName()($i,$j);
-      #elseif( $option == "Accumulation: Forward Euler" )
-        $out.getOutputSignalC().getName()($i,$j)=$xState.getName()($i,$j);
-        $xState.getName()($i,$j)=$xState.getName()($i,$j)+$gainval.getName()($i,$j)*$signal.getName();
-      #elseif( $option == "Accumulation: Backward Euler" )
-        $out.getOutputSignalC().getName()($i,$j)=$xState.getName()($i,$j)+$gainval.getName()($i,$j)*$signal.getName();
-        $xState.getName()($i,$j)=$out.getOutputSignalC().getName()($i,$j);
-      #elseif( $option == "Accumulation: Trapezoidal" )
-        $out.getOutputSignalC().getName()($i,$j)=$xState.getName()($i,$j)+$signal.getName()*$gainval.getName()($i,$j)*0.5;
-        $xState.getName()($i,$j)=$out.getOutputSignalC().getName()($i,$j)+$signal.getName()*$gainval.getName()($i,$j)*0.5;
-      #end
+/*Code for output of block Discrete_Time_Integrator:(${block.getBlockId()})${block.getBlockName()}*/
+#if($signal && $gainval && $xState && $out && $sampleTime)
+    #set($outputVar = $out.getOutputSignalC().getName())
+    #set($inputVar = $signal.getName())
+    #set($gainVar = $gainval.getName())
+    #set($stateVar = $xState.getName())
+    #set($sampleTimeVar = $sampleTime.getName())
+    
+    ## Determine sample time
+    real_T sampleTimeTmp = $sampleTimeVar == -1 ? model.stepSize : $sampleTimeVar;
+    
+    ## Check if it's a sample time hit
+    if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001 && mp->majorStep > 0) {
+        #if($signal.dataType == $realDataType)
+            ## Scalar discrete-time integration
+            #if($gainval.dataType == $realDataType)
+                #if($option == "Integration: Forward Euler")
+                    $outputVar = $stateVar;
+                    $stateVar = $stateVar + $gainVar * $sampleTimeVar * $inputVar;
+                #elseif($option == "Integration: Backward Euler")
+                    $outputVar = $stateVar + $gainVar * $inputVar * $sampleTimeVar;
+                    $stateVar = $outputVar;
+                #elseif($option == "Integration: Trapezoidal")
+                    $outputVar = $stateVar + $sampleTimeVar / 2 * $inputVar * $gainVar;
+                    $stateVar = $outputVar + $sampleTimeVar / 2 * $inputVar * $gainVar;
+                #elseif($option == "Accumulation: Forward Euler")
+                    $outputVar = $stateVar;
+                    $stateVar = $stateVar + $gainVar * $inputVar;
+                #elseif($option == "Accumulation: Backward Euler")
+                    $outputVar = $stateVar + $gainVar * $inputVar;
+                    $stateVar = $outputVar;
+                #elseif($option == "Accumulation: Trapezoidal")
+                    $outputVar = $stateVar + $inputVar * $gainVar * 0.5;
+                    $stateVar = $outputVar + $inputVar * $gainVar * 0.5;
+                #else
+                    ## Default to Forward Euler
+                    $outputVar = $stateVar;
+                    $stateVar = $stateVar + $gainVar * $sampleTimeVar * $inputVar;
+                #end
+            #end
+        #else
+            ## Matrix discrete-time integration
+            #set($hMax = $gainval.getHeight() - 1)
+            #set($wMax = $gainval.getWidth() - 1)
+            for(int i = 0; i <= $hMax; i++) {
+                for(int j = 0; j <= $wMax; j++) {
+                    #if($option == "Integration: Forward Euler")
+                        $outputVar(i,j) = $stateVar(i,j);
+                        $stateVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $sampleTimeVar * $inputVar;
+                    #elseif($option == "Integration: Backward Euler")
+                        $outputVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $inputVar * $sampleTimeVar;
+                        $stateVar(i,j) = $outputVar(i,j);
+                    #elseif($option == "Integration: Trapezoidal")
+                        $outputVar(i,j) = $stateVar(i,j) + $sampleTimeVar / 2 * $inputVar * $gainVar(i,j);
+                        $stateVar(i,j) = $outputVar(i,j) + $sampleTimeVar / 2 * $inputVar * $gainVar(i,j);
+                    #elseif($option == "Accumulation: Forward Euler")
+                        $outputVar(i,j) = $stateVar(i,j);
+                        $stateVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $inputVar;
+                    #elseif($option == "Accumulation: Backward Euler")
+                        $outputVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $inputVar;
+                        $stateVar(i,j) = $outputVar(i,j);
+                    #elseif($option == "Accumulation: Trapezoidal")
+                        $outputVar(i,j) = $stateVar(i,j) + $inputVar * $gainVar(i,j) * 0.5;
+                        $stateVar(i,j) = $outputVar(i,j) + $inputVar * $gainVar(i,j) * 0.5;
+                    #else
+                        ## Default to Forward Euler
+                        $outputVar(i,j) = $stateVar(i,j);
+                        $stateVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $sampleTimeVar * $inputVar;
+                    #end
+                }
+            }
+        #end
     }
-  }
+#else
+    ## Fallback if parameters missing
+    #if($out)
+        ${out.getOutputSignalC().getName()} = 0.0; /* Discrete_Time_Integrator block missing parameters */
+    #end
 #end
-}
-}

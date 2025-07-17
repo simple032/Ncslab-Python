@@ -9,6 +9,8 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.util.TemplateManager;
+import org.apache.velocity.VelocityContext;
 
 abstract public class DiscreteBlock extends Block {
 
@@ -56,8 +58,6 @@ abstract public class DiscreteBlock extends Block {
         discreteUpdateCode+="}\n";
         code.addDiscreteUpdateCode(discreteUpdateCode);
     }
-
-
     public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
 
     }
