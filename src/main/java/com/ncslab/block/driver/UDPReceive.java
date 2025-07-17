@@ -10,20 +10,26 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class UDPReceive extends com.ncslab.block.Block{
 
 	private String name = "UDPReceive";
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("LocalIPPort", "8080");
+        PARAMETER_DEFAULTS.put("address", "127.0.0.1");
+        PARAMETER_DEFAULTS.put("port", "8080");
+    }
+
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
-
     static {
 
         outputNames.add("out1");
@@ -43,7 +49,6 @@ public class UDPReceive extends com.ncslab.block.Block{
         }
 
         LocalIPPort=new Parameter(this,parameterList.size()+1,"LocalIPPort", ipPort);
-		parameterList.add(LocalIPPort);
 
 	}
 
@@ -66,67 +71,33 @@ public class UDPReceive extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="";
+		context.put("block", this);
+		context.put("localIPPort", paramValues.getInt("LocalIPPort"));
 
-		//udp receive
-		initCode+="sockfd_netrecv"+getBlockId()+" = socket(AF_INET, SOCK_DGRAM|SOCK_NONBLOCK,0);\n"
-				+ "if(sockfd_netrecv"+getBlockId()+"==-1){printf(\"can not create socket\\n\"); close(sockfd_netrecv"+getBlockId()+");} \r\n"
-				+ "adr_serv_netrecv"+getBlockId()+".sin_family = AF_INET; \r\n"
-				+ "adr_serv_netrecv"+getBlockId()+".sin_port =htons("+paramValues.getInt("LocalIPPort")+"); \r\n"
-				+ "adr_serv_netrecv"+getBlockId()+".sin_addr.s_addr=INADDR_ANY; \r\n"
-				+ "bind(sockfd_netrecv"+getBlockId()+",(struct sockaddr*)&adr_serv_netrecv"+getBlockId()+",sizeof(adr_serv_netrecv"+getBlockId()+"));\r\n";
-				;
-
-//		initCode+="sockfd = socket(AF_INET, SOCK_DGRAM|SOCK_NONBLOCK, 0);\n"
-//				 + "if(sockfd==-1){printf(\"can not create socket\\n\"); close(sockfd);} \r\n"
-//				 + "sock_addr.sin_family = AF_INET; \r\n"
-//				 + "sock_addr.sin_port =htons("+paramValues.getInt("LocalIPPort")+"); \r\n"
-//				 + "sock_addr.sin_addr.s_addr=INADDR_ANY; \r\n"
-//				 + "bind(sockfd,(struct sockaddr*)&sock_addr,sizeof(sock_addr));\r\n";
-
-
-		code.addInitCode(initCode);
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/UDPReceive/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block UDPReceive:("+getBlockId()+")"+getBlockName()+"*/\n";
+		super.generateOutputCodeC(code);
 
+		context.put("block", this);
 
-		outputCode+=
-					//"char *msg; \n"
-					//+"msg=mxCalloc(sizeof(double)+1, sizeof(char));\n"
-					"double recvbuf = 0;\n"
-					+"socklen_t len = sizeof(adr_serv_netrecv"+getBlockId()+");\r\n"
-				  +"union data_union_double data_union_recv"+getBlockId()+";\n"
-				  +"if(model.majorStep==1){\n"
-				  +"recvfrom(sockfd_netrecv"+getBlockId()+", "+"&data_union_recv"+getBlockId()+", sizeof(double), 0,(struct sockaddr*)&adr_serv_netrecv"+getBlockId()+",&len);\n"
-//				  + "data_union_recv"+getBlockId()+".c[3] = recvbuf >> 24;\r\n"
-//				  + "data_union_recv"+getBlockId()+".c[2] = recvbuf >> 16;\r\n"
-//				  + "data_union_recv"+getBlockId()+".c[1] = recvbuf >> 8;\r\n"
-//				  + "data_union_recv"+getBlockId()+".c[0] = recvbuf;\r\n"
-//				  +outputPortList.get(0).getOutputSignalC().getName()+"=data_union_recv"+getBlockId()+".v;\r\n"
-
-				  +"recvbuf = data_union_recv"+getBlockId()+".v;\n"
-				  +outputPortList.get(0).getOutputSignalC().getName()+"=recvbuf;\r\n"
-				  +"}\n";
-
-		code.addOutputCode(outputCode);
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/UDPReceive/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	public void generateTerminateCodeC(CodeStructC code) {
-		String terminateCode="/*Code for output of block UDPReceive:("+getBlockId()+")"+getBlockName()+"*/\n";
+		context.put("block", this);
 
-
-		terminateCode+="close(sockfd_netrecv"+getBlockId()+");\n";
-
-		code.addTerminateCode(terminateCode);
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/UDPReceive/terminate.vm", context);
+		code.addTerminateCode(codeStr);
 	}
 
 	public void generateStatementCodeC(CodeStructC code) {
-		String statementCode = "/*Code for statement of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		statementCode += "static struct sockaddr_in adr_serv_netrecv"+getBlockId()+";\n";
-		statementCode += "static int_T sockfd_netrecv"+getBlockId()+" ;//sockfd_netrecv;\n";
+		context.put("block", this);
 
-		code.addStatementCode(statementCode);
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/UDPReceive/statement.vm", context);
+		code.addStatementCode(codeStr);
 	}
 }

@@ -7,12 +7,31 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 
 public class EtherCATservo extends com.ncslab.block.Block {
     private static final String PARAM_SLAVE_ID = "SlaveID";
     private static final String PARAM_INTERFACE = "Interface";
     private static final String PARAM_TIME_SAMPLE = "timeSample";
     private static final String PARAM_OPERATION_MODE = "operationMode";
+    
+    public static final Vector<String> parameterNames = new Vector<>();
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    
+    static {
+        parameterNames.add(PARAM_SLAVE_ID);
+        parameterNames.add(PARAM_INTERFACE);
+        parameterNames.add(PARAM_TIME_SAMPLE);
+        parameterNames.add(PARAM_OPERATION_MODE);
+        
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put(PARAM_SLAVE_ID, "1");
+        PARAMETER_DEFAULTS.put(PARAM_INTERFACE, "eth0");
+        PARAMETER_DEFAULTS.put(PARAM_TIME_SAMPLE, "0.001");
+        PARAMETER_DEFAULTS.put(PARAM_OPERATION_MODE, "1"); // Position mode
+    }
 
     private enum ServoParam {
         SLAVE_ID(1, "slave_id", PARAM_SLAVE_ID),
@@ -68,12 +87,6 @@ public class EtherCATservo extends com.ncslab.block.Block {
             ServoParam.OPERATION_MODE.codeName,
             String.valueOf(paramValues.getInt(PARAM_OPERATION_MODE))
         );
-
-        parameterList.add(slaveId);
-        parameterList.add(interface_name);
-        parameterList.add(timeSample);
-        parameterList.add(operationMode);
-
         // 根据模式设置输入输出端口
         setupPortsForMode(paramValues.getInt(PARAM_OPERATION_MODE));
     }
@@ -101,7 +114,6 @@ public class EtherCATservo extends com.ncslab.block.Block {
     @Override
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        StringBuilder initCode = new StringBuilder();
 
         // 获取参数值
         int slaveIdValue = paramValues.getInt(PARAM_SLAVE_ID);
@@ -112,37 +124,19 @@ public class EtherCATservo extends com.ncslab.block.Block {
         code.addGlobalVariable(String.format("char %s_interface[] = \"%s\";\n",
             getBlockName(), paramValues.getString(PARAM_INTERFACE)));
 
-        // EtherCAT初始化
-        initCode.append("if(ECAT_init_Flag==0){\n")
-            .append("    auto* ethercat = EtherCATSE::getInstance();\n")
-            .append(String.format("    ethercat->setSamplingPeriod(%f);\n", sampleTime))
-            //.append(String.format("    if (!ethercat->init(%s_interface)) {\n", getBlockName()))
-            .append(String.format("    if (!ethercat->init(%s_interface, %d)) {\n", getBlockName(), operationModeValue))
-            .append("        printf(\"Failed to initialize EtherCAT\\n\");\n")
-            .append("        exit(1);\n")
-            .append("    } else {\n")
-            .append("        printf(\"EtherCAT initialized successfully\\n\");\n")
-            .append("    }\n")
-            .append("    ECAT_init_Flag=1;\n")
-            .append("}\n");
+        context.put("block", this);
+        context.put("slaveId", slaveIdValue);
+        context.put("sampleTime", sampleTime);
+        context.put("operationMode", operationModeValue);
 
-        // 创建并初始化伺服对象
-        initCode.append(String.format("ServoManager::createServo(%d);\n", slaveIdValue))
-            .append(String.format("auto* servo = ServoManager::getServo(%d);\n", slaveIdValue))
-            .append("if (!servo || !servo->init()) {\n")
-            .append("    printf(\"Failed to initialize EtherCAT Servo\\n\");\n")
-            .append("    exit(1);\n")
-            .append("} else {\n")
-            .append("    servo->enableServo();\n")
-            .append("    printf(\"EtherCAT Servo initialized and enabled\\n\");\n")
-            .append("}\n");
-
-        code.addInitCode(initCode.toString());
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/EtherCATservo/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
+        super.generateOutputCodeC(code);
+        
         int slaveIdValue = paramValues.getInt(PARAM_SLAVE_ID);
         int operationModeValue = paramValues.getInt(PARAM_OPERATION_MODE);
 
@@ -150,33 +144,13 @@ public class EtherCATservo extends com.ncslab.block.Block {
         String targetValue = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
         String actualValue = outputPortList.get(0).getOutputSignalC().getName();
 
-        // 生成运行代码
-        outputCode.append("if(model.majorStep==1){\n")
-            .append(String.format("    auto* servo = ServoManager::getServo(%d);\n", slaveIdValue));
-
-        // 根据不同模式生成相应的代码
-        switch (operationModeValue) {
-            case 1: // Position Mode
-                outputCode.append(String.format("    servo->setPosition(%s);\n", targetValue))
-                    .append("    int32_t current_position = 0;\n")
-                    .append("    servo->readActualPosition(&current_position);\n")
-                    .append(String.format("    %s = current_position;\n", actualValue));
-                break;
-            case 3: // Velocity Mode
-                outputCode.append(String.format("    servo->setVelocity(%s);\n", targetValue))
-                    .append("    int32_t current_velocity = 0;\n")
-                    .append("    servo->readActualVelocity(&current_velocity);\n")
-                    .append(String.format("    %s = current_velocity;\n", actualValue));
-                break;
-            case 4: // Torque Mode
-                outputCode.append(String.format("    servo->setTorque(%s);\n", targetValue))
-                    .append("    int32_t current_torque = 0;\n")
-                    .append("    servo->readActualTorque(&current_torque);\n")
-                    .append(String.format("    %s = current_torque;\n", actualValue));
-                break;
-        }
-
-        outputCode.append("}\n");
-        code.addOutputCode(outputCode.toString());
+        context.put("block", this);
+        context.put("slaveId", slaveIdValue);
+        context.put("operationMode", operationModeValue);
+        context.put("targetValue", targetValue);
+        context.put("actualValue", actualValue);
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/EtherCATservo/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 }

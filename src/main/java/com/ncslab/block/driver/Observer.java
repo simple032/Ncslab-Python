@@ -8,6 +8,8 @@ import com.ncslab.block.io.*;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class Observer extends Block {
@@ -17,6 +19,8 @@ public class Observer extends Block {
     public static final Vector<String> inputNames = new Vector<>();
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS;
 
     private String observerName;
 
@@ -26,6 +30,10 @@ public class Observer extends Block {
         outputNames.add("o1");
         outputNames.add("o2");
         outputNames.add("o3");
+        
+        // Observer typically has no configurable parameters, using fixed matrices
+        PARAMETER_DEFAULTS = new HashMap<>();
+        // No parameters to add for this observer implementation
     }
 
     public Observer(JSONObject blockJSON, NCSLabModel model) {
@@ -48,74 +56,36 @@ public class Observer extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        StringBuilder initCode = new StringBuilder();
-
-        initCode.append("/*Code for initialization of block Observer:(" + getBlockId() + ")" + observerName + "*/\n");
-
-        // 定义固定的系统矩阵
-        initCode.append("static const double A_" + observerName + "[9] = {1.2998,-0.4341,0.1343,1,0,0,0,1,0};\n");
-        initCode.append("static const double B_" + observerName + "[3] = {1,0,0};\n");
-        initCode.append("static const double C_" + observerName + "[3] = {3.5629,2.7739,1.0121};\n");
-        initCode.append("static const double L_" + observerName + "[3] = {0.0363,0.0439,0.1470};\n");
-
-        // 初始化状态为0
-        initCode.append(outputPortList.get(0).getOutputSignalC().getName() + " = 0.0;\n");
-        initCode.append(outputPortList.get(1).getOutputSignalC().getName() + " = 0.0;\n");
-        initCode.append(outputPortList.get(2).getOutputSignalC().getName() + " = 0.0;\n");
-
-        code.addInitCode(initCode.toString());
+        
+        context.put("block", this);
+        context.put("observerName", observerName);
+        context.put("x1Signal", outputPortList.get(0).getOutputSignalC().getName());
+        context.put("x2Signal", outputPortList.get(1).getOutputSignalC().getName());
+        context.put("x3Signal", outputPortList.get(2).getOutputSignalC().getName());
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/Observer/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append("/*Code for output of block Observer:(" + getBlockId() + ")" + observerName + "*/\n");
-
-        // 系统矩阵声明 - 在输出代码中也需要声明一次
-        outputCode.append("static const double A_" + observerName + "[9] = {1.2998,-0.4341,0.1343,1,0,0,0,1,0};\n");
-        outputCode.append("static const double B_" + observerName + "[3] = {1,0,0};\n");
-        outputCode.append("static const double C_" + observerName + "[3] = {3.5629,2.7739,1.0121};\n");
-        outputCode.append("static const double L_" + observerName + "[3] = {0.0363,0.0439,0.1470};\n\n");
-
-        // 获取信号名称
+        super.generateOutputCodeC(code);
+        
         String x1Name = outputPortList.get(0).getOutputSignalC().getName();
         String x2Name = outputPortList.get(1).getOutputSignalC().getName();
         String x3Name = outputPortList.get(2).getOutputSignalC().getName();
         String yName = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
         String uName = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-
-        // 计算创新项 (y - Cx)
-        outputCode.append("// Calculate innovation term\n");
-        outputCode.append("double innovation_" + observerName + " = " + yName + " - (C_" + observerName +
-            "[0] * " + x1Name + " + C_" + observerName + "[1] * " + x2Name + " + C_" +
-            observerName + "[2] * " + x3Name + ");\n\n");
-
-        // 计算新的状态估计
-        outputCode.append("// Calculate new state estimates\n");
-        outputCode.append("double x1_next = " + x1Name + " * A_" + observerName + "[0] + " +
-            x2Name + " * A_" + observerName + "[1] + " +
-            x3Name + " * A_" + observerName + "[2] + " +
-            "B_" + observerName + "[0] * " + uName + " + " +
-            "L_" + observerName + "[0] * innovation_" + observerName + ";\n");
-
-        outputCode.append("double x2_next = " + x1Name + " * A_" + observerName + "[3] + " +
-            x2Name + " * A_" + observerName + "[4] + " +
-            x3Name + " * A_" + observerName + "[5] + " +
-            "B_" + observerName + "[1] * " + uName + " + " +
-            "L_" + observerName + "[1] * innovation_" + observerName + ";\n");
-
-        outputCode.append("double x3_next = " + x1Name + " * A_" + observerName + "[6] + " +
-            x2Name + " * A_" + observerName + "[7] + " +
-            x3Name + " * A_" + observerName + "[8] + " +
-            "B_" + observerName + "[2] * " + uName + " + " +
-            "L_" + observerName + "[2] * innovation_" + observerName + ";\n\n");
-
-        // 更新状态
-        outputCode.append("// Update states\n");
-        outputCode.append(x1Name + " = x1_next;\n");
-        outputCode.append(x2Name + " = x2_next;\n");
-        outputCode.append(x3Name + " = x3_next;\n");
-
-        code.addOutputCode(outputCode.toString());
+        
+        context.put("block", this);
+        context.put("observerName", observerName);
+        context.put("x1Signal", x1Name);
+        context.put("x2Signal", x2Name);
+        context.put("x3Signal", x3Name);
+        context.put("ySignal", yName);
+        context.put("uSignal", uName);
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/Observer/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void updateDimension() throws MatDimException {

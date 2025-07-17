@@ -6,12 +6,31 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 
 public class EtherCATDO extends com.ncslab.block.Block {
     private static final String PARAM_SLAVE_ID = "SlaveID";
     private static final String PARAM_CHANNEL = "Channel";
     private static final String PARAM_INTERFACE = "Interface";
     private static final String PARAM_TIME_SAMPLE = "timeSample";
+    
+    public static final Vector<String> parameterNames = new Vector<>();
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    
+    static {
+        parameterNames.add(PARAM_SLAVE_ID);
+        parameterNames.add(PARAM_CHANNEL);
+        parameterNames.add(PARAM_INTERFACE);
+        parameterNames.add(PARAM_TIME_SAMPLE);
+        
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put(PARAM_SLAVE_ID, "1");
+        PARAMETER_DEFAULTS.put(PARAM_CHANNEL, "0");
+        PARAMETER_DEFAULTS.put(PARAM_INTERFACE, "eth0");
+        PARAMETER_DEFAULTS.put(PARAM_TIME_SAMPLE, "0.001");
+    }
 
     private enum EtherCATParam {
         SLAVE_ID(1, "slave_id", PARAM_SLAVE_ID),
@@ -70,19 +89,12 @@ public class EtherCATDO extends com.ncslab.block.Block {
             EtherCATParam.TIME_SAMPLE.codeName,
             String.valueOf(paramValues.getDouble(PARAM_TIME_SAMPLE))
         );
-
-        parameterList.add(slaveId);
-        parameterList.add(channel);
-        parameterList.add(interface_name);
-        parameterList.add(timeSample);
-
         inputPortList.add(new InputPort(this, 1));
     }
 
     @Override
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        StringBuilder initCode = new StringBuilder();
 
         // 获取参数值
         int slaveIdValue = paramValues.getInt(PARAM_SLAVE_ID);
@@ -93,48 +105,31 @@ public class EtherCATDO extends com.ncslab.block.Block {
         code.addGlobalVariable(String.format("char %s_interface[] = \"%s\";\n",
             getBlockName(), paramValues.getString(PARAM_INTERFACE)));
 
-        initCode.append("if(ECAT_init_Flag==0){\n")
-            .append("    auto* ethercat = EtherCAT::getInstance();\n")
-            .append(String.format("    ethercat->setSamplingPeriod(%f);\n", sampleTime))
-            .append(String.format("    if (!ethercat->init(%s_interface)) {\n", getBlockName()))
-            .append("        printf(\"Failed to initialize EtherCAT\\n\");\n")
-            .append("        exit(1);\n")
-            .append("    } else {\n")
-            .append("        printf(\"EtherCAT initialized successfully\\n\");\n")
-            .append("    }\n")
-            .append("    ECAT_init_Flag=1;\n")
-            .append("}\n");
+        context.put("block", this);
+        context.put("slaveId", slaveIdValue);
+        context.put("channel", channelValue);
+        context.put("sampleTime", sampleTime);
 
-        // 添加数字量输出设备初始化代码
-        initCode.append(String.format("DigitalIOManager::createDigitalOutput(%d, %d);\n",
-                slaveIdValue, channelValue))
-            .append(String.format("auto* digitalOutput = DigitalIOManager::getDigitalOutput(%d, %d);\n",
-                slaveIdValue, channelValue))
-            .append("if (!digitalOutput || !digitalOutput->init()) {\n")
-            .append("    printf(\"Failed to initialize EtherCAT Digital Output\\n\");\n")
-            .append("    exit(1);\n")
-            .append("} else {\n")
-            .append("    printf(\"EtherCAT Digital Output initialized successfully\\n\");\n")
-            .append("}\n");
-
-        code.addInitCode(initCode.toString());
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/EtherCATDO/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
+        super.generateOutputCodeC(code);
+        
         int slaveIdValue = paramValues.getInt(PARAM_SLAVE_ID);
         int channelValue = paramValues.getInt(PARAM_CHANNEL);
 
         // 获取输入信号
         String inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
 
-        outputCode.append("if(model.majorStep==1){\n")
-            .append(String.format("    bool output_value = (%s > 0.5);\n", inputSignal))
-            .append(String.format("    auto* digitalOutput = DigitalIOManager::getDigitalOutput(%d, %d);\n", slaveIdValue, channelValue))
-            .append("    digitalOutput->write(output_value);\n")
-            .append("}\n");
-
-        code.addOutputCode(outputCode.toString());
+        context.put("block", this);
+        context.put("slaveId", slaveIdValue);
+        context.put("channel", channelValue);
+        context.put("inputSignal", inputSignal);
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/EtherCATDO/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 }

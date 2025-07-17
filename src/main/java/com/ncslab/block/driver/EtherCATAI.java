@@ -5,11 +5,28 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 
 public class EtherCATAI extends com.ncslab.block.Block {
     private static final String PARAM_SLAVE_ID = "SlaveID";
     private static final String PARAM_INTERFACE = "Interface";
     private static final String PARAM_TIME_SAMPLE = "timeSample";
+    
+    public static final Vector<String> parameterNames = new Vector<>();
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    
+    static {
+        parameterNames.add(PARAM_SLAVE_ID);
+        parameterNames.add(PARAM_INTERFACE);
+        parameterNames.add(PARAM_TIME_SAMPLE);
+        
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put(PARAM_SLAVE_ID, "1");
+        PARAMETER_DEFAULTS.put(PARAM_INTERFACE, "eth0");
+        PARAMETER_DEFAULTS.put(PARAM_TIME_SAMPLE, "0.001");
+    }
 
     private enum EtherCATParam {
         SLAVE_ID(1, "slave_id", PARAM_SLAVE_ID),
@@ -60,17 +77,11 @@ public class EtherCATAI extends com.ncslab.block.Block {
             EtherCATParam.TIME_SAMPLE.codeName,
             String.valueOf(paramValues.getDouble(PARAM_TIME_SAMPLE))
         );
-
-        parameterList.add(slaveId);
-        parameterList.add(interface_name);
-        parameterList.add(timeSample);
-
     }
 
     @Override
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        StringBuilder initCode = new StringBuilder();
 
         // 获取参数值
         int slaveIdValue = paramValues.getInt(PARAM_SLAVE_ID);
@@ -80,52 +91,24 @@ public class EtherCATAI extends com.ncslab.block.Block {
         code.addGlobalVariable(String.format("char %s_interface[] = \"%s\";\n",
             getBlockName(), paramValues.getString(PARAM_INTERFACE)));
 
-        initCode.append(String.format("/*Code for initialization of block EtherCAT_AI:(%d)%s*/\n",
-            getBlockId(), getBlockName()));
+        context.put("block", this);
+        context.put("slaveId", slaveIdValue);
+        context.put("sampleTime", sampleTime);
 
-        // EtherCAT初始化
-        initCode.append("if(ECAT_init_Flag==0){\n")
-            //.append(String.format("  printf(\"Initializing EtherCAT with interface: %%s\\n\", %s_interface);\n", getBlockName()))
-            .append("    auto* ethercat = EtherCAT::getInstance();\n")
-            .append(String.format("    ethercat->setSamplingPeriod(%f);\n", sampleTime))
-            .append(String.format("    if (!ethercat->init(%s_interface)) {\n", getBlockName()))
-            .append("        printf(\"Failed to initialize EtherCAT\\n\");\n")
-            .append("        exit(1);\n")
-            .append("    } else {\n")
-            .append("        printf(\"EtherCAT initialized successfully\\n\");\n")
-            .append("    }\n")
-            .append("    ECAT_init_Flag=1;\n")
-            .append("}\n");
-
-        // 使用 AnalogIOManager 创建和初始化输入设备
-        initCode.append(String.format("AnalogIOManager::createAnalogInput(%d);\n", slaveIdValue))
-            .append(String.format("auto* analogInput = AnalogIOManager::getAnalogInput(%d);\n", slaveIdValue))
-            .append("if (!analogInput || !analogInput->init()) {\n")
-            .append("    printf(\"Failed to initialize EtherCAT Analog Input\\n\");\n")
-            .append("    exit(1);\n")
-            .append("} else {\n")
-            .append("    printf(\"EtherCAT Analog Input initialized successfully\\n\");\n")
-            .append("}\n");
-
-        code.addInitCode(initCode.toString());
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/EtherCATAI/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
+        super.generateOutputCodeC(code);
+        
         int slaveIdValue = paramValues.getInt(PARAM_SLAVE_ID);
 
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append(String.format("/*Code for output of block EtherCAT_AI:(%d)%s*/\n",
-            getBlockId(), getBlockName()));
+        context.put("block", this);
+        context.put("slaveId", slaveIdValue);
 
-        outputCode.append("if(model.majorStep==1){\n")
-            .append("    double value = 0.0f;\n")
-            .append(String.format("    auto* analogInput = AnalogIOManager::getAnalogInput(%d);\n", slaveIdValue))
-            .append("    if (analogInput && analogInput->read(&value)) {\n")
-            .append(String.format("        %s = value;\n", outputPortList.get(0).getOutputSignalC().getName()))
-            .append("    }\n")
-            .append("}\n");
-
-        code.addOutputCode(outputCode.toString());
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/EtherCATAI/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 }
