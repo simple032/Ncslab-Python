@@ -13,6 +13,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class Diode extends Block {
@@ -22,6 +24,8 @@ public class Diode extends Block {
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -29,12 +33,16 @@ public class Diode extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         inputNames.add("in1");
         parameterNames.add("Vf");
         parameterNames.add("Ron");
         parameterNames.add("Goff");
+        
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("Vf", "0.7");    // Forward voltage in volts
+        PARAMETER_DEFAULTS.put("Ron", "0.001"); // On-resistance in ohms
+        PARAMETER_DEFAULTS.put("Goff", "1e-5"); // Off-conductance in siemens
     }
 
 	public Diode(JSONObject blockJSON,NCSLabModel model) {
@@ -50,11 +58,6 @@ public class Diode extends Block {
 		vf=new Parameter(this,1,"Vf",paramValues.getString("Vf"));
 		ron=new Parameter(this,2,"Ron",paramValues.getString("Ron"));
 		goff=new Parameter(this,3,"Goff",paramValues.getString("Goff"));
-
-		parameterList.add(vf);
-		parameterList.add(ron);
-		parameterList.add(goff);
-
 		System.out.println(paramValues);
 	}
 

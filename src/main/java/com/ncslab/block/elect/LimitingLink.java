@@ -13,14 +13,16 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class LimitingLink extends Block{
 	protected Parameter rmin;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS;
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -28,10 +30,12 @@ public class LimitingLink extends Block{
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         inputNames.add("in1");
         parameterNames.add("Rmin");
+        
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("Rmin", "0.001"); // Minimum resistance in ohms
     }
 	public LimitingLink(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -43,9 +47,6 @@ public class LimitingLink extends Block{
 		outputPortList.add(out);
 		inputPortList.add(in);
 		rmin=new Parameter(this,1,"Rmin",paramValues.getString("Rmin"));
-
-		parameterList.add(rmin);
-
 		System.out.println(paramValues);
 	}
 	public void generateInitCodeC(CodeStructC code) {
