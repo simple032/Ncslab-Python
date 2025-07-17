@@ -16,6 +16,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * only support matrix input
@@ -48,6 +50,16 @@ public class LQRController extends Block {
         inputNames.add("in1");
     }
 
+    // === Parameter Defaults ===
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+    static {
+        PARAMETER_DEFAULTS.put("A", "[1 1; 0 1]");
+        PARAMETER_DEFAULTS.put("B", "[0; 1]");
+        PARAMETER_DEFAULTS.put("Q", "[1 0; 0 1]");
+        PARAMETER_DEFAULTS.put("R", "1");
+    }
+
     public LQRController(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
 
@@ -55,12 +67,6 @@ public class LQRController extends Block {
         B = new Parameter(this, 2, "B", paramValues.getString("B"));
         Q = new Parameter(this, 3, "Q", paramValues.getString("Q"));
         R = new Parameter(this, 4, "R", paramValues.getString("R"));
-
-        parameterList.add(A);
-        parameterList.add(B);
-        parameterList.add(Q);
-        parameterList.add(R);
-
         this.LQR_K = new LQRVariable(this, 1, "LQR_K", "[]");
         this.globalVariableList.add(this.LQR_K);
 
