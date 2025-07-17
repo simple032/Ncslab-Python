@@ -3,6 +3,9 @@ package com.ncslab.block.hardware.rasp;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -16,20 +19,20 @@ import java.util.Vector;
 public class AD extends Block{
 
 	Parameter channel;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
-
+    
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+    
     static {
-
         outputNames.add("out1");
         parameterNames.add("Channel");
-
+        
+        PARAMETER_DEFAULTS.put("Channel", "0");
     }
 	public AD(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -38,7 +41,6 @@ public class AD extends Block{
 		outputPortList.add(new OutputPort(this,"out",1,false));
 
 		channel=new Parameter(this,1,"channel",paramValues.getString("Channel"));
-		parameterList.add(channel);
 
 	}
 

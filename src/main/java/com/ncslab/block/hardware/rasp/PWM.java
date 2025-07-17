@@ -3,6 +3,9 @@ package com.ncslab.block.hardware.rasp;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -15,19 +18,19 @@ import java.util.Vector;
 public class PWM extends com.ncslab.block.Block{
 
 	Parameter port;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
-
-
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
         parameterNames.add("port");
         inputNames.add("in1");
+        
+        PARAMETER_DEFAULTS.put("port", "0");
     }
 	public PWM(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -36,7 +39,6 @@ public class PWM extends com.ncslab.block.Block{
 		inputPortList.add(new InputPort(this,1));
 
 		port=new Parameter(this,1,"port",paramValues.getString("port"));
-		parameterList.add(port);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
@@ -62,8 +64,6 @@ public class PWM extends com.ncslab.block.Block{
 		context.put("block", this);
 	
 		code.addInitCode(TemplateManager.renderTemplate("c/hardware/rasp/PWM/init.vm", context));
-
-
 		// Removed unused initCode reference
 	}
 

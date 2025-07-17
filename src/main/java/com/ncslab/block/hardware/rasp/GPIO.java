@@ -3,6 +3,9 @@ package com.ncslab.block.hardware.rasp;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -19,15 +22,17 @@ public class GPIO extends Block{
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
-
-
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
         inputNames.add("in1");
         parameterNames.add("Bcm");
+        
+        PARAMETER_DEFAULTS.put("Bcm", "18");
     }
 	public GPIO(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -36,7 +41,6 @@ public class GPIO extends Block{
 		inputPortList.add(new InputPort(this,1));
 
 		Bcm=new Parameter(this,1,"Bcm",paramValues.getString("Bcm"));
-		parameterList.add(Bcm);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
@@ -68,8 +72,6 @@ public class GPIO extends Block{
 		context.put("Bcm",  Bcm.getData().getIntValue());
 		context.put("inputSignal",  inputPortList.get(0) .getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/GPIO/output.vm", context));
-
-
 		code.addOutputCode(outputCode);
 	}
 }

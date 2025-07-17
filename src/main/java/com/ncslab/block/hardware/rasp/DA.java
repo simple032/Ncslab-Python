@@ -3,6 +3,9 @@ package com.ncslab.block.hardware.rasp;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -19,16 +22,17 @@ public class DA extends Block{
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
-
-
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
-
         inputNames.add("in1");
         parameterNames.add("channel");
+        
+        PARAMETER_DEFAULTS.put("Channel", "0");
     }
 	public DA(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
@@ -37,7 +41,6 @@ public class DA extends Block{
 		inputPortList.add(new InputPort(this,1));
 
 		channel=new Parameter(this,1,"channel",paramValues.getString("Channel"));
-		parameterList.add(channel);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {

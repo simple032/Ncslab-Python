@@ -10,24 +10,29 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class UDPReceiver extends com.ncslab.block.Block{
 
 	Parameter localPort;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("localPort", "8080");
+        PARAMETER_DEFAULTS.put("UdpReceiverLocalPortForStm32", "8080");
+
+        parameterNames.add("localPort");
+    }
+
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
-
     static {
-
         outputNames.add("out1");
-        parameterNames.add("localPort");
     }
 	public UDPReceiver(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
@@ -36,7 +41,6 @@ public class UDPReceiver extends com.ncslab.block.Block{
 		outputPortList.add(new OutputPort(this,1,false));
 
 		localPort=new Parameter(this,1,"localPort",paramValues.getString("UdpReceiverLocalPortForStm32"));
-		parameterList.add(localPort);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {

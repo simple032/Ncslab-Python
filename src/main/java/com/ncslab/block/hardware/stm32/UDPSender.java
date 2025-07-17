@@ -10,23 +10,32 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class UDPSender extends com.ncslab.block.Block{
 
 	Parameter remoteIp,remotePort;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("remoteIp", "192.168.1.100");
+        PARAMETER_DEFAULTS.put("remotePort", "8081");
+        PARAMETER_DEFAULTS.put("UdpSenderRemoteIpForStm32", "192.168.1.100");
+        PARAMETER_DEFAULTS.put("UdpSenderRemotePortForStm32", "8081");
+
+        parameterNames.add("remoteIp");
+        parameterNames.add("remotePort");
+    }
 
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("remoteIp");
-        parameterNames.add("remotePort");
         inputNames.add("in1");
     }
 	public UDPSender(JSONObject blockJSON, NCSLabModel model) {
@@ -36,9 +45,7 @@ public class UDPSender extends com.ncslab.block.Block{
 		inputPortList.add(new InputPort(this,1));
 
 		remoteIp=new Parameter(this,1,"remoteIp",paramValues.getString("UdpSenderRemoteIpForStm32"));
-		parameterList.add(remoteIp);
 		remotePort=new Parameter(this,2,"remotePort",paramValues.getString("UdpSenderRemotePortForStm32"));
-		parameterList.add(remotePort);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {

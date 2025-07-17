@@ -3,6 +3,9 @@ package com.ncslab.block.hardware.stm32;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -17,21 +20,23 @@ public class PWM extends com.ncslab.block.Block{
 	Parameter channel;
 	Parameter timx;
 	Parameter frequency;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
-
-
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
         parameterNames.add("channel");
         parameterNames.add("timx");
         parameterNames.add("frequency");
         inputNames.add("in1");
+        
+        PARAMETER_DEFAULTS.put("PWMForStm32Channel", "1");
+        PARAMETER_DEFAULTS.put("PWMForStm32TIM", "3");
+        PARAMETER_DEFAULTS.put("PWMForStm32Frequency", "1000");
     }
 	public PWM(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
@@ -40,11 +45,8 @@ public class PWM extends com.ncslab.block.Block{
 		inputPortList.add(new InputPort(this,1));
 
 		channel=new Parameter(this,1,"channel",paramValues.getString("PWMForStm32Channel"));
-		parameterList.add(channel);
 		timx=new Parameter(this,2,"timx",paramValues.getString("PWMForStm32TIM"));
-		parameterList.add(timx);
 		frequency=new Parameter(this,3,"frequency",Integer.toString(paramValues.getInt("PWMForStm32Frequency")));
-		parameterList.add(frequency);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {

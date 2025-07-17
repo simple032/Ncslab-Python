@@ -3,6 +3,9 @@ package com.ncslab.block.hardware.stm32;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -19,16 +22,19 @@ public class DAC extends com.ncslab.block.Block{
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
-
-
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
         parameterNames.add("index");
         parameterNames.add("channel");
         inputNames.add("in1");
+        
+        PARAMETER_DEFAULTS.put("DACForStm32Index", "1");
+        PARAMETER_DEFAULTS.put("DACForStm32Channel", "0");
     }
 	public DAC(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
@@ -38,8 +44,6 @@ public class DAC extends com.ncslab.block.Block{
 
 		index=new Parameter(this,1,"index",paramValues.getString("DACForStm32Index"));
 		channel=new Parameter(this,2,"channel",paramValues.getString("DACForStm32Channel"));
-		parameterList.add(index);
-		parameterList.add(channel);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {

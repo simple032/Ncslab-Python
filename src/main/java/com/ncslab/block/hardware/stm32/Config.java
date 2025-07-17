@@ -3,6 +3,9 @@ package com.ncslab.block.hardware.stm32;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -23,15 +26,21 @@ public class Config extends com.ncslab.block.Block{
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
-
+    
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+    
     static {
         parameterNames.add("ip");
         parameterNames.add("netmask");
         parameterNames.add("gateway");
         parameterNames.add("port");
         outputNames.add("out1");
-
+        
+        PARAMETER_DEFAULTS.put("ip_Stm32", "192.168.1.100");
+        PARAMETER_DEFAULTS.put("netmask_Stm32", "255.255.255.0");
+        PARAMETER_DEFAULTS.put("gateway_Stm32", "192.168.1.1");
+        PARAMETER_DEFAULTS.put("monitorPort_Stm32", "8080");
     }
 	public Config(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
@@ -43,10 +52,6 @@ public class Config extends com.ncslab.block.Block{
 		netmask=new Parameter(this,2,"netmask",paramValues.getString("netmask_Stm32"));
 		gateway=new Parameter(this,3,"gateway",paramValues.getString("gateway_Stm32"));
 		port=new Parameter(this,4,"port",paramValues.getString("monitorPort_Stm32"));
-		parameterList.add(ip);
-		parameterList.add(netmask);
-		parameterList.add(gateway);
-		parameterList.add(port);
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
