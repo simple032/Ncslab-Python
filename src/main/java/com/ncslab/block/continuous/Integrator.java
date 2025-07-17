@@ -4,10 +4,10 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.util.TemplateManager;
-//import java.util.Vector;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -18,239 +18,599 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.block.io.OutputSignal;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * Integrator block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * SIMULINK Parameters:
+ * - InitialCondition: Initial output value at t=0
+ * - ExternalReset: External reset mode (none, rising, falling, either, level, sampled level)
+ * - InitialConditionSource: Source of initial condition (internal, external)
+ * - LimitOutput: Whether to limit output values
+ * - UpperSaturationLimit: Upper limit for output
+ * - LowerSaturationLimit: Lower limit for output
+ * - ShowSaturationPort: Show saturation status port
+ * - ShowStatePort: Show state output port
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class Integrator extends Block {
-	private State stateIntegral;
-	private Parameter initialCondition;
-
-	OutputPort output;
-	InputPort input;
-
-    Parameter externalReset;//zhou_20240507 add externalReset
-    Parameter conditionSource;
-
-
+    
+    // === Internal State ===
+    private State stateIntegral;
+    
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter initialCondition;
+    @Getter
+    private final Parameter externalReset;
+    @Getter
+    private final Parameter conditionSource;
+    @Getter
+    private final Parameter limitOutput;
+    @Getter
+    private final Parameter upperSaturationLimit;
+    @Getter
+    private final Parameter lowerSaturationLimit;
+    @Getter
+    private final Parameter showSaturationPort;
+    @Getter
+    private final Parameter showStatePort;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+    
+    // === Port References ===
+    private OutputPort output;
+    private InputPort input;
+    
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("InitialCondition", "0");
+        PARAMETER_DEFAULTS.put("ExternalReset", "none");
+        PARAMETER_DEFAULTS.put("InitialConditionSource", "internal");
+        PARAMETER_DEFAULTS.put("LimitOutput", "off");
+        PARAMETER_DEFAULTS.put("UpperSaturationLimit", "inf");
+        PARAMETER_DEFAULTS.put("LowerSaturationLimit", "-inf");
+        PARAMETER_DEFAULTS.put("ShowSaturationPort", "off");
+        PARAMETER_DEFAULTS.put("ShowStatePort", "off");
+        PARAMETER_DEFAULTS.put("SampleTime", "0");  // Continuous
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
+    
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-
-    //这个的inputNames需要再次修改
     static {
+        // SIMULINK parameter names
         parameterNames.add("InitialCondition");
-        parameterNames.add("externalReset");//zhou_20240507 add externalReset
-        parameterNames.add("conditionSource");
+        parameterNames.add("ExternalReset");
+        parameterNames.add("InitialConditionSource");
+        parameterNames.add("LimitOutput");
+        parameterNames.add("UpperSaturationLimit");
+        parameterNames.add("LowerSaturationLimit");
+        parameterNames.add("ShowSaturationPort");
+        parameterNames.add("ShowStatePort");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
+    
+    // === Private Constructor with Typed Parameters ===
+    private Integrator(Parameter initialCondition, Parameter externalReset, Parameter conditionSource,
+                      Parameter limitOutput, Parameter upperSaturationLimit, Parameter lowerSaturationLimit,
+                      Parameter showSaturationPort, Parameter showStatePort,
+                      Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
+                      String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        
+        // Validate parameters
+        validateParameters(initialCondition, sampleTime, upperSaturationLimit, lowerSaturationLimit);
+        
+        // Assign parameters
+        this.initialCondition = Objects.requireNonNull(initialCondition, "Initial condition parameter cannot be null");
+        this.externalReset = Objects.requireNonNull(externalReset, "External reset parameter cannot be null");
+        this.conditionSource = Objects.requireNonNull(conditionSource, "Condition source parameter cannot be null");
+        this.limitOutput = Objects.requireNonNull(limitOutput, "Limit output parameter cannot be null");
+        this.upperSaturationLimit = Objects.requireNonNull(upperSaturationLimit, "Upper saturation limit parameter cannot be null");
+        this.lowerSaturationLimit = Objects.requireNonNull(lowerSaturationLimit, "Lower saturation limit parameter cannot be null");
+        this.showSaturationPort = Objects.requireNonNull(showSaturationPort, "Show saturation port parameter cannot be null");
+        this.showStatePort = Objects.requireNonNull(showStatePort, "Show state port parameter cannot be null");
+        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        
+        // Parameters are automatically added to parameterList by parent Block class
+        
+        // Initialize ports
+        initializePorts();
+    }
+    
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public Integrator(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
 
-	public Integrator(JSONObject blockIn, NCSLabModel model) {
-		super(blockIn, model);
-		initialCondition = new Parameter(this, 1, "InitialCondition", paramValues.getString("InitialCondition"));
-		parameterList.add(initialCondition);
-		input = new InputPort(this, 1);
-		inputPortList.add(input);
-		output = new OutputPort(this, 1, false);
-		outputPortList.add(output);
-
-        //zhou_20240514 add externalReset
-        externalReset=new Parameter(this,parameterList.size()+1,"externalReset",paramValues.optString("IntegratorExternalReset", "none"));
-        parameterList.add(externalReset);
-        conditionSource=new Parameter(this,parameterList.size()+1,"conditionSource",paramValues.optString("InitialConditionSource", "External"));
-        parameterList.add(conditionSource);
-        if(!externalReset.equals("none")&&conditionSource.equals("External")) {
-            inputPortList.add(new InputPort(this,2));
-            inputPortList.add(new InputPort(this,3));
-        }else if(!externalReset.equals("none")&&conditionSource.equals("Internal")
-            || externalReset.equals("none")&&conditionSource.equals("External")) {
-            inputPortList.add(new InputPort(this,2));
+        // Use name-based parameter access instead of index-based
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.externalReset = getParameterByName("ExternalReset");
+        this.conditionSource = getParameterByName("InitialConditionSource");
+        this.limitOutput = getParameterByName("LimitOutput");
+        this.upperSaturationLimit = getParameterByName("UpperSaturationLimit");
+        this.lowerSaturationLimit = getParameterByName("LowerSaturationLimit");
+        this.showSaturationPort = getParameterByName("ShowSaturationPort");
+        this.showStatePort = getParameterByName("ShowStatePort");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        
+        // Initialize ports based on legacy logic
+        input = new InputPort(this, 1);
+        inputPortList.add(input);
+        output = new OutputPort(this, 1, false);
+        outputPortList.add(output);
+        
+        // Add additional input ports based on reset and condition source
+        if (!externalReset.getInitString().equals("none") && conditionSource.getInitString().equals("external")) {
+            inputPortList.add(new InputPort(this, 2)); // Reset port
+            inputPortList.add(new InputPort(this, 3)); // External IC port
+        } else if (!externalReset.getInitString().equals("none") && conditionSource.getInitString().equals("internal")
+                || externalReset.getInitString().equals("none") && conditionSource.getInitString().equals("external")) {
+            inputPortList.add(new InputPort(this, 2)); // Reset or External IC port
         }
-	}
+    }
+    
+    // === Static Factory Method for JSON Deserialization ===
+    public static Integrator fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+            
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+            
+            Parameter initialCondition = createInitialConditionFromJSON(paramValues, blockName);
+            Parameter externalReset = createExternalResetFromJSON(paramValues, blockName);
+            Parameter conditionSource = createConditionSourceFromJSON(paramValues, blockName);
+            Parameter limitOutput = createLimitOutputFromJSON(paramValues, blockName);
+            Parameter upperSaturationLimit = createUpperSaturationLimitFromJSON(paramValues, blockName);
+            Parameter lowerSaturationLimit = createLowerSaturationLimitFromJSON(paramValues, blockName);
+            Parameter showSaturationPort = createShowSaturationPortFromJSON(paramValues, blockName);
+            Parameter showStatePort = createShowStatePortFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+            
+            Integrator block = new Integrator(initialCondition, externalReset, conditionSource,
+                                             limitOutput, upperSaturationLimit, lowerSaturationLimit,
+                                             showSaturationPort, showStatePort,
+                                             sampleTime, outDataType, saturateParam,
+                                             blockName, blockPath, blockUUID, model);
+            
+            setParameterBlockReference(block, initialCondition, externalReset, conditionSource,
+                                     limitOutput, upperSaturationLimit, lowerSaturationLimit,
+                                     showSaturationPort, showStatePort,
+                                     sampleTime, outDataType, saturateParam);
+            
+            return block;
+            
+        } catch (Exception e) {
+            String errorMsg = e.getMessage();
+            if (errorMsg == null) {
+                errorMsg = e.getClass().getSimpleName() + " occurred";
+            }
+            throw new BlockCreationException("Failed to create Integrator block from JSON: " + errorMsg, e);
+        }
+    }
+    
+    // === Static Factory Method for Programmatic Creation ===
+    public static Integrator create(String name, String path, double initialCondition, NCSLabModel model) {
+        return create(name, path, initialCondition, "none", "internal", false, 
+                     Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 
+                     false, false, 0.0, "Inherit: Same as input", false, model);
+    }
+    
+    public static Integrator create(String name, String path, double initialCondition,
+                                   String externalReset, String conditionSource, boolean limitOutput,
+                                   double upperLimit, double lowerLimit,
+                                   boolean showSaturationPort, boolean showStatePort,
+                                   double sampleTime, String outDataType, boolean saturateOnOverflow,
+                                   NCSLabModel model) {
+        Parameter initialConditionParam = new Parameter(null, 1, "InitialCondition", String.valueOf(initialCondition));
+        Parameter externalResetParam = new Parameter(null, 2, "ExternalReset", externalReset);
+        Parameter conditionSourceParam = new Parameter(null, 3, "InitialConditionSource", conditionSource);
+        Parameter limitOutputParam = new Parameter(null, 4, "LimitOutput", limitOutput ? "on" : "off");
+        Parameter upperSaturationLimitParam = new Parameter(null, 5, "UpperSaturationLimit", String.valueOf(upperLimit));
+        Parameter lowerSaturationLimitParam = new Parameter(null, 6, "LowerSaturationLimit", String.valueOf(lowerLimit));
+        Parameter showSaturationPortParam = new Parameter(null, 7, "ShowSaturationPort", showSaturationPort ? "on" : "off");
+        Parameter showStatePortParam = new Parameter(null, 8, "ShowStatePort", showStatePort ? "on" : "off");
+        Parameter sampleTimeParam = new Parameter(null, 9, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 10, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 11, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        
+        Integrator block = new Integrator(initialConditionParam, externalResetParam, conditionSourceParam,
+                                         limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
+                                         showSaturationPortParam, showStatePortParam,
+                                         sampleTimeParam, outDataTypeParam, saturateParam,
+                                         name, path, "null", model);
+        
+        setParameterBlockReference(block, initialConditionParam, externalResetParam, conditionSourceParam,
+                                 limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
+                                 showSaturationPortParam, showStatePortParam,
+                                 sampleTimeParam, outDataTypeParam, saturateParam);
+        
+        return block;
+    }
+    
+    // === Parameter Validation ===
+    private static void validateParameters(Parameter initialCondition, Parameter sampleTime,
+                                         Parameter upperLimit, Parameter lowerLimit) {
+        try {
+            double sampleTimeValue = sampleTime.getDouble();
+            if (sampleTimeValue < -1.0 || Double.isNaN(sampleTimeValue) || sampleTimeValue == Double.POSITIVE_INFINITY) {
+                throw new IllegalArgumentException("Sample time must be >= 0 or -1 (inherited), got: " + sampleTimeValue);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Sample time parameter '" + sampleTime.getInitString() + "' is not a valid number", e);
+        }
+        
+        // Validate saturation limits
+        try {
+            double upperLimitValue = upperLimit.getDouble();
+            double lowerLimitValue = lowerLimit.getDouble();
+            if (!Double.isInfinite(upperLimitValue) && !Double.isInfinite(lowerLimitValue)) {
+                if (upperLimitValue <= lowerLimitValue) {
+                    throw new IllegalArgumentException("Upper saturation limit must be greater than lower saturation limit");
+                }
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Saturation limit parameters are not valid numbers: upper='" 
+                + upperLimit.getInitString() + "', lower='" + lowerLimit.getInitString() + "'", e);
+        }
+    }
+    
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createInitialConditionFromJSON(JSONObject paramValues, String blockName) {
+        String initialConditionValue = paramValues.optString("InitialCondition", "0");
+        return new Parameter(null, 1, "InitialCondition", initialConditionValue);
+    }
+    
+    private static Parameter createExternalResetFromJSON(JSONObject paramValues, String blockName) {
+        String externalResetValue = paramValues.optString("IntegratorExternalReset", "none");
+        return new Parameter(null, 2, "ExternalReset", externalResetValue);
+    }
+    
+    private static Parameter createConditionSourceFromJSON(JSONObject paramValues, String blockName) {
+        String conditionSourceValue = paramValues.optString("InitialConditionSource", "internal");
+        return new Parameter(null, 3, "InitialConditionSource", conditionSourceValue);
+    }
+    
+    private static Parameter createLimitOutputFromJSON(JSONObject paramValues, String blockName) {
+        String limitOutputValue = paramValues.optString("LimitOutput", "off");
+        return new Parameter(null, 4, "LimitOutput", limitOutputValue);
+    }
+    
+    private static Parameter createUpperSaturationLimitFromJSON(JSONObject paramValues, String blockName) {
+        String upperLimitValue = paramValues.optString("UpperSaturationLimit", "inf");
+        return new Parameter(null, 5, "UpperSaturationLimit", upperLimitValue);
+    }
+    
+    private static Parameter createLowerSaturationLimitFromJSON(JSONObject paramValues, String blockName) {
+        String lowerLimitValue = paramValues.optString("LowerSaturationLimit", "-inf");
+        return new Parameter(null, 6, "LowerSaturationLimit", lowerLimitValue);
+    }
+    
+    private static Parameter createShowSaturationPortFromJSON(JSONObject paramValues, String blockName) {
+        String showSaturationPortValue = paramValues.optString("ShowSaturationPort", "off");
+        return new Parameter(null, 7, "ShowSaturationPort", showSaturationPortValue);
+    }
+    
+    private static Parameter createShowStatePortFromJSON(JSONObject paramValues, String blockName) {
+        String showStatePortValue = paramValues.optString("ShowStatePort", "off");
+        return new Parameter(null, 8, "ShowStatePort", showStatePortValue);
+    }
+    
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "0");
+        return new Parameter(null, 9, "SampleTime", sampleTimeValue);
+    }
+    
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 10, "OutDataTypeStr", outDataTypeValue);
+    }
+    
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 11, "SaturateOnIntegerOverflow", saturateValue);
+    }
+    
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+    
+    private static void setParameterBlockReference(Integrator block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+                // Update parameter name after setting block reference
+                param.updateParameterName();
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+    
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Integrator");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
+    }
+    
+    // === Port Initialization ===
+    private void initializePorts() {
+        // Main input port
+        input = new InputPort(this, 1);
+        inputPortList.add(input);
+        
+        // Main output port
+        output = new OutputPort(this, 1, false);
+        outputPortList.add(output);
+        
+        // Additional input ports based on reset and condition source
+        String resetMode = externalReset.getInitString();
+        String icSource = conditionSource.getInitString();
+        
+        if (!resetMode.equals("none") && icSource.equals("external")) {
+            inputPortList.add(new InputPort(this, 2)); // Reset port
+            inputPortList.add(new InputPort(this, 3)); // External IC port
+            inputNames.add("reset");
+            inputNames.add("IC0");
+        } else if (!resetMode.equals("none") && icSource.equals("internal")) {
+            inputPortList.add(new InputPort(this, 2)); // Reset port only
+            inputNames.add("reset");
+        } else if (resetMode.equals("none") && icSource.equals("external")) {
+            inputPortList.add(new InputPort(this, 2)); // External IC port only
+            inputNames.add("IC0");
+        }
+        
+        // Additional output ports
+        if (showStatePort.getInitString().equals("on")) {
+            outputPortList.add(new OutputPort(this, 2, false)); // State port
+            outputNames.add("state");
+        }
+        
+        if (showSaturationPort.getInitString().equals("on")) {
+            int portNum = showStatePort.getInitString().equals("on") ? 3 : 2;
+            outputPortList.add(new OutputPort(this, portNum, false)); // Saturation port
+            outputNames.add("saturation");
+        }
+    }
 
-	public void generateInitCodeM(CodeStructM code) {
-		super.generateInitCodeM(code);
-		context.put("block", this);
-		context.put("state", stateIntegral);
-		context.put("initialCondition", initialCondition);
+    // === Code Generation Methods (preserved from original) ===
+    public void generateInitCodeM(CodeStructM code) {
+        super.generateInitCodeM(code);
+        context.put("block", this);
+        context.put("state", stateIntegral);
+        context.put("initialCondition", initialCondition);
 
-		String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/init.vm", context);
-		code.addInitCode(codeStr);
-	}
+        String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/init.vm", context);
+        code.addInitCode(codeStr);
+    }
 
-	public void generateDerivativeCodeM(CodeStructM code) {
-		super.generateDerivativeCodeM(code);
-		context.put("block", this);
-		context.put("state", stateIntegral);
-		context.put("input", getInputPortVariables()[0]);
+    public void generateDerivativeCodeM(CodeStructM code) {
+        super.generateDerivativeCodeM(code);
+        context.put("block", this);
+        context.put("state", stateIntegral);
+        context.put("input", getInputPortVariables()[0]);
 
-		String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/derivative.vm", context);
-		code.addDerivativeCode(codeStr);
-	}
+        String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
+    }
 
-    //define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         context.put("block", this);
-        context.put("externalReset",externalReset.getData().getInitString());
-        context.put("conditionSource",conditionSource.getData().getInitString());
+        context.put("externalReset", externalReset.getData().getInitString());
+        context.put("conditionSource", conditionSource.getData().getInitString());
         String arraysCode = TemplateManager.renderTemplate("c/continuous/Integrator/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
 
-	public void generateOutputCodeM(CodeStructM code) {
-		super.generateOutputCodeM(code);
-		context.put("block", this);
-		context.put("state", stateIntegral);
-		context.put("output", getOutputPortVariables()[0]);
-
-		String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/output.vm", context);
-		code.addOutputCode(codeStr);
-	}
-
-    // TODO: requires check test
-
-
-	public void generateInitCodeC(CodeStructC code) {
-		super.generateInitCodeC(code);
+    public void generateOutputCodeM(CodeStructM code) {
+        super.generateOutputCodeM(code);
         context.put("block", this);
-        context.put("externalReset",externalReset.getData().getInitString());
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("state", stateIntegral);
+        context.put("output", getOutputPortVariables()[0]);
+
+        String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        context.put("block", this);
+        context.put("externalReset", externalReset.getData().getInitString());
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         InputPort inputPort;
         context.put("block", this);
         context.put("signal", signal);
         context.put("state", stateIntegral.getName());
         context.put("initialCondition", initialCondition);
-        if(conditionSource.equals("External")){
-            if(externalReset.equals("none")) {
+        if (conditionSource.getInitString().equals("external")) {
+            if (externalReset.getInitString().equals("none")) {
                 inputPort = inputPortList.get(1);
-            }else {
+            } else {
                 inputPort = inputPortList.get(2);
             }
             context.put("input", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
         }
         String initCode = TemplateManager.renderTemplate("c/continuous/Integrator/init.vm", context);
-		code.addInitCode(initCode);
-	}
+        code.addInitCode(initCode);
+    }
 
-
-
-
-	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-		context.put("externalReset", externalReset.getData().getInitString());
-		context.put("conditionSource", conditionSource.getData().getInitString());
+    public void generateOutputCodeC(CodeStructC code) {
+        context.put("block", this);
+        context.put("externalReset", externalReset.getData().getInitString());
+        context.put("conditionSource", conditionSource.getData().getInitString());
         context.put("state", stateIntegral);
         context.put("outputs", getOutputPortVariables());
-		String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/output.vm", context);
-		code.addOutputCode(codeStr);
-	}
+        String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
 
-	public void generateDerivativeCodeC(CodeStructC code) {
-		context.put("block", this);
-		context.put("externalReset", externalReset.getData().getInitString());
-		context.put("conditionSource", conditionSource.getData().getInitString());
-		context.put("state", stateIntegral);
+    public void generateDerivativeCodeC(CodeStructC code) {
+        context.put("block", this);
+        context.put("externalReset", externalReset.getData().getInitString());
+        context.put("conditionSource", conditionSource.getData().getInitString());
+        context.put("state", stateIntegral);
         context.put("stateDerivative", stateIntegral.getDerivativeName());
         context.put("inputs", getInputPortVariables());
         String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/derivative.vm", context);
-		code.addDerivativeCode(codeStr);
-	}
-	public void updateDimension() throws MatDimException {
+        code.addDerivativeCode(codeStr);
+    }
 
-		OutputPort out = outputPortList.get(0);
-		InputPort in = inputPortList.get(0);
-		OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch (signal.getDataType()) {
-		case REAL:
-			switch (initialCondition.getDataType()) {
-			case REAL:
-				out.setHeight(1);
-				out.setWidth(1);
-				out.getOutputSignalC().setHeight(1);
-				out.getOutputSignalC().setWidth(1);
-				out.getOutputSignalC().setDataType(DataType.REAL);
-				stateIntegral = new State(this, 1, "integral", 1, 1);
-				break;
-			case MATRIX:
-				out.setHeight(initialCondition.getHeight());
-				out.setWidth(initialCondition.getWidth());
-				out.getOutputSignalC().setHeight(initialCondition.getHeight());
-				out.getOutputSignalC().setWidth(initialCondition.getWidth());
-				out.getOutputSignalC().setDataType(DataType.MATRIX);
-				stateIntegral = new State(this, 1, "integral", initialCondition.getHeight(),initialCondition.getWidth());
-				break;
-			}
-			break;
-		case MATRIX:
-			switch (initialCondition.getDataType()) {
-			case REAL:
-				out.setHeight(signal.getHeight());
-				out.setWidth(signal.getWidth());
-				out.getOutputSignalC().setHeight(signal.getHeight());
-				out.getOutputSignalC().setWidth(signal.getWidth());
-				out.getOutputSignalC().setDataType(DataType.MATRIX);
-				stateIntegral = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
-				break;
-			case MATRIX:
-				out.setHeight(signal.getHeight());
-				out.setWidth(signal.getWidth());
-				out.getOutputSignalC().setHeight(signal.getHeight());
-				out.getOutputSignalC().setWidth(signal.getWidth());
-				out.getOutputSignalC().setDataType(DataType.MATRIX);
-				stateIntegral = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
-				break;
-			}
-			break;
-		}
-		stateList.add(stateIntegral);
-	}
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
+        switch (signal.getDataType()) {
+            case REAL:
+                switch (initialCondition.getDataType()) {
+                    case REAL:
+                        out.setHeight(1);
+                        out.setWidth(1);
+                        out.getOutputSignalC().setHeight(1);
+                        out.getOutputSignalC().setWidth(1);
+                        out.getOutputSignalC().setDataType(DataType.REAL);
+                        stateIntegral = new State(this, 1, "integral", 1, 1);
+                        break;
+                    case MATRIX:
+                        out.setHeight(initialCondition.getHeight());
+                        out.setWidth(initialCondition.getWidth());
+                        out.getOutputSignalC().setHeight(initialCondition.getHeight());
+                        out.getOutputSignalC().setWidth(initialCondition.getWidth());
+                        out.getOutputSignalC().setDataType(DataType.MATRIX);
+                        stateIntegral = new State(this, 1, "integral", initialCondition.getHeight(), initialCondition.getWidth());
+                        break;
+                }
+                break;
+            case MATRIX:
+                switch (initialCondition.getDataType()) {
+                    case REAL:
+                        out.setHeight(signal.getHeight());
+                        out.setWidth(signal.getWidth());
+                        out.getOutputSignalC().setHeight(signal.getHeight());
+                        out.getOutputSignalC().setWidth(signal.getWidth());
+                        out.getOutputSignalC().setDataType(DataType.MATRIX);
+                        stateIntegral = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
+                        break;
+                    case MATRIX:
+                        out.setHeight(signal.getHeight());
+                        out.setWidth(signal.getWidth());
+                        out.getOutputSignalC().setHeight(signal.getHeight());
+                        out.getOutputSignalC().setWidth(signal.getWidth());
+                        out.getOutputSignalC().setDataType(DataType.MATRIX);
+                        stateIntegral = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
+                        break;
+                }
+                break;
+        }
+        stateList.add(stateIntegral);
+    }
 
-	public void checkDimension() throws MatDimException {
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch (signal.getDataType()) {
-		case REAL:
-
-			break;
-		case MATRIX:
-			switch (initialCondition.getDataType()) {
-			case REAL:
-
-				break;
-			case MATRIX:
-				if (initialCondition.getHeight() != signal.getHeight()
-						|| initialCondition.getWidth() != signal.getWidth()) {
-					MatDimException e = new MatDimException(
-							"Dimension of input signal and Block " + this.blockName + " input dimension don't match!");
-					throw (e);
-				}
-				break;
-			}
-			break;
-		}
-
-	}
+    public void checkDimension() throws MatDimException {
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        switch (signal.getDataType()) {
+            case REAL:
+                break;
+            case MATRIX:
+                switch (initialCondition.getDataType()) {
+                    case REAL:
+                        break;
+                    case MATRIX:
+                        if (initialCondition.getHeight() != signal.getHeight()
+                                || initialCondition.getWidth() != signal.getWidth()) {
+                            MatDimException e = new MatDimException(
+                                    "Dimension of input signal and Block " + this.blockName + " input dimension don't match!");
+                            throw(e);
+                        }
+                        break;
+                }
+                break;
+        }
+    }
 
     @Override
-    public void calculateInit(){
+    public void calculateInit() {
         OutputPort output = outputPortList.get(0);
         stateIntegral.setData(initialCondition.getData());
         output.setData(stateIntegral.getData());
     }
 
     @Override
-    public void calculateDerivative(double t){
+    public void calculateDerivative(double t) {
         InputPort inputPort = inputPortList.get(0);
         OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-    	stateIntegral.setDerivateData(signal.getData());
+        stateIntegral.setDerivateData(signal.getData());
     }
 
     @Override
-    public void calculateOutput(double t){
+    public void calculateOutput(double t) {
         OutputPort output = outputPortList.get(0);
-        output.setData(stateIntegral.getData());
+        Data outputData = stateIntegral.getData();
+        
+        // Apply saturation limits if enabled
+        if (limitOutput.getInitString().equals("on")) {
+            double upperLimit = upperSaturationLimit.getDouble();
+            double lowerLimit = lowerSaturationLimit.getDouble();
+            
+            if (outputData.getDataType() == DataType.REAL) {
+                double value = outputData.getInitValue();
+                if (value > upperLimit) value = upperLimit;
+                if (value < lowerLimit) value = lowerLimit;
+                outputData = new Data(value);
+            }
+        }
+        
+        output.setData(outputData);
     }
 }

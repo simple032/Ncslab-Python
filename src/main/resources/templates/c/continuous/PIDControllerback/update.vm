@@ -1,19 +1,27 @@
-/* PIDControllerback($block.getBlockId()) $block.getBlockName() update */
-// Calculate time differential
-#set($dt = $block.getParameter('SampleTime'))
-
-// Update integral term with anti-windup
-#if($Ki != 0)
-integral += $error * $dt;
-// Apply integral clamping
-integral = (integral > ${block.getParameter('IntegralMax')}) ? ${block.getParameter('IntegralMax')} : 
-          (integral < ${block.getParameter('IntegralMin')}) ? ${block.getParameter('IntegralMin')} : integral;
-#end
-
-// Calculate derivative term with division protection
-#if($dt > 1e-6)  // Minimum time step protection
-derivative = ($error - prev_error) / $dt;
+/*Code for Update of :(${blockId})${blockName}*/
+{real_T currentTime = model.time;
+if(fabs(floor(currentTime/${sampleTime.name}+0.5)-currentTime/${sampleTime.name})<0.000001) {
+#if($inputSignal.dataType == $realDataType && $cparaP.dataType == $realDataType)
+  if(${sampleTime.name}==-1){
+    ${stateIntegral.name}=${stateIntegral.name}+${stateIntegral.derivativeName}*model.stepSize;
+    ${stateFilter.name}=${stateFilter.name}+${stateFilter.derivativeName}*model.stepSize;
+  }else{
+    ${stateIntegral.name}=${stateIntegral.name}+${stateIntegral.derivativeName}*${sampleTime.name};
+    ${stateFilter.name}=${stateFilter.name}+${stateFilter.derivativeName}*${sampleTime.name};
+  }
 #else
-derivative = 0.0;
+  #set($stateFilterHeightMax = $stateFilter.height - 1)
+  #set($stateFilterWidthMax = $stateFilter.width - 1)
+  #foreach($i in [0..$stateFilterHeightMax])
+    #foreach($j in [0..$stateFilterWidthMax])
+      if(${sampleTime.name}==-1){
+        ${stateIntegral.name}($i,$j)=${stateIntegral.name}($i,$j)+${stateIntegral.derivativeName}($i,$j)*model.stepSize;
+        ${stateFilter.name}($i,$j)=${stateFilter.name}($i,$j)+${stateFilter.derivativeName}($i,$j)*model.stepSize;
+      }else{
+        ${stateIntegral.name}($i,$j)=${stateIntegral.name}($i,$j)+${stateIntegral.derivativeName}($i,$j)*${sampleTime.name};
+        ${stateFilter.name}($i,$j)=${stateFilter.name}($i,$j)+${stateFilter.derivativeName}($i,$j)*${sampleTime.name};
+      }
+    #end
+  #end
 #end
-prev_error = $error;
+}}

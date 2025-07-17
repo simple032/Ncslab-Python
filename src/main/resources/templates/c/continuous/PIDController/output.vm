@@ -6,13 +6,13 @@
 #set($outputVar = $block.getOutputPortVariable(0))
 #set($m5 = 5)  // 矩阵间隔因子
 
-#if($cparaP.dataType == $realDataType)
+#if($proportionalGain.dataType == $realDataType)
   #if($signal.dataType == $realDataType)
   if(sfcnIsMajorStep()) {
-  Block${blockId}save_data[0] = ${cparaP.getName()} * ${signal.getName()};
-  Block${blockId}save_data[1] = ${cparaD.getName()} * ${signal.getName()};
-  Block${blockId}save_data[2] = ${cparaI.getName()} * ${signal.getName()};
-  Block${blockId}save_data[3] = (Block${blockId}save_data[1] - ${stateFilter.getName()}) * ${cparaN.getName()};
+  Block${blockId}save_data[0] = ${proportionalGain.getName()} * ${signal.getName()};
+  Block${blockId}save_data[1] = ${derivativeGain.getName()} * ${signal.getName()};
+  Block${blockId}save_data[2] = ${integralGain.getName()} * ${signal.getName()};
+  Block${blockId}save_data[3] = (Block${blockId}save_data[1] - ${stateFilter.getName()}) * ${filterCoefficient.getName()};
   double Block${blockId}_intermediate = Block${blockId}save_data[0] + ${stateIntegral.getName()} + Block${blockId}save_data[3];
 
     #if($externalReset == "on")
@@ -33,13 +33,13 @@
     for(int ${blockId}_i = 0; ${blockId}_i < ${signal.height}; ${blockId}_i++) {
       for(int ${blockId}_j = 0; ${blockId}_j < ${signal.width}; ${blockId}_j++) {
         if(sfcnIsMajorStep()) {
-          Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = ${cparaP.getName()} * ${signal.getName()}(${blockId}_i, ${blockId}_j);
-          Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = ${cparaD.getName()} * ${signal.getName()}(${blockId}_i, ${blockId}_j);
-          Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = ${cparaI.getName()} * ${signal.getName()}(${blockId}_i, ${blockId}_j);
+          Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = ${proportionalGain.getName()} * ${signal.getName()}(${blockId}_i, ${blockId}_j);
+          Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = ${derivativeGain.getName()} * ${signal.getName()}(${blockId}_i, ${blockId}_j);
+          Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = ${integralGain.getName()} * ${signal.getName()}(${blockId}_i, ${blockId}_j);
         }
   double Block${blockId}_intermediate = Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] +
     ${stateIntegral.getName()}(${blockId}_i, ${blockId}_j) +
-    (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - ${stateFilter.getName()}(${blockId}_i, ${blockId}_j)) * ${cparaN.getName()};
+    (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - ${stateFilter.getName()}(${blockId}_i, ${blockId}_j)) * ${filterCoefficient.getName()};
 
     #if($externalReset == "on")
     if(${resetSig}) {
@@ -49,26 +49,26 @@
     #end
 
     #if($limitOutput == "on")
-      ${outputVar}(${blockId}_i, ${blockId}_j) = (Block${blockId}_intermediate > ${upperSat.getName()}(${blockId}_i, ${blockId}_j)) ? ${upperSat.getName()}(${blockId}_i, ${blockId}_j) : \
-    ((Block${blockId}_intermediate < ${lowerSat.getName()}(${blockId}_i, ${blockId}_j)) ? ${lowerSat.getName()}(${blockId}_i, ${blockId}_j) : ${blockId}_intermediate);
+      ${outputVar}(Block${blockId}_i, Block${blockId}_j) = (Block${blockId}_intermediate > ${upperSat.getName()}(Block${blockId}_i, Block${blockId}_j)) ? ${upperSat.getName()}(Block${blockId}_i, Block${blockId}_j) : \
+    ((Block${blockId}_intermediate < ${lowerSat.getName()}(Block${blockId}_i, Block${blockId}_j)) ? ${lowerSat.getName()}(Block${blockId}_i, Block${blockId}_j) : Block${blockId}_intermediate);
     #else
-      ${outputVar}(${blockId}_i, ${blockId}_j) = Block${blockId}_intermediate;
+      ${outputVar}(Block${blockId}_i, Block${blockId}_j) = Block${blockId}_intermediate;
     #end
   }
   }
   #end
 #else
   #if($signal.dataType == $realDataType)
-    ${blockId}_loop_i: for(int ${blockId}_i = 0; ${blockId}_i < ${cparaP.height}; ${blockId}_i++) {
-    ${blockId}_loop_j: for(int ${blockId}_j = 0; ${blockId}_j < ${cparaP.width}; ${blockId}_j++) {
+    Block${blockId}_loop_i: for(int Block${blockId}_i = 0; Block${blockId}_i < ${proportionalGain.height}; Block${blockId}_i++) {
+    Block${blockId}_loop_j: for(int Block${blockId}_j = 0; Block${blockId}_j < ${proportionalGain.width}; Block${blockId}_j++) {
   if(sfcnIsMajorStep()) {
-  Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = ${cparaP.getName()}(${blockId}_i, ${blockId}_j) * ${signal.getName()};
-  Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = ${cparaD.getName()}(${blockId}_i, ${blockId}_j) * ${signal.getName()};
-  Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = ${cparaI.getName()}(${blockId}_i, ${blockId}_j) * ${signal.getName()};
+  Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}] = ${proportionalGain.getName()}(Block${blockId}_i, Block${blockId}_j) * ${signal.getName()};
+  Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}+1] = ${derivativeGain.getName()}(Block${blockId}_i, Block${blockId}_j) * ${signal.getName()};
+  Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}+2] = ${integralGain.getName()}(Block${blockId}_i, Block${blockId}_j) * ${signal.getName()};
   }
-  double Block${blockId}_intermediate = Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] + \
-    ${stateIntegral.getName()}(${blockId}_i, ${blockId}_j) + \
-  (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - ${stateFilter.getName()}(${blockId}_i, ${blockId}_j)) * ${cparaN.getName()}(${blockId}_i, ${blockId}_j);
+  double Block${blockId}_intermediate = Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}] + \
+    ${stateIntegral.getName()}(Block${blockId}_i, Block${blockId}_j) + \
+  (Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}+1] - ${stateFilter.getName()}(Block${blockId}_i, Block${blockId}_j)) * ${filterCoefficient.getName()}(Block${blockId}_i, Block${blockId}_j);
 
     #if($externalReset == "on")
     if(${resetSig}) {
@@ -78,24 +78,24 @@
     #end
 
     #if($limitOutput == "on")
-      ${outputVar}(${blockId}_i, ${blockId}_j) = (Block${blockId}_intermediate > ${upperSat.getName()}(${blockId}_i, ${blockId}_j)) ? ${upperSat.getName()}(${blockId}_i, ${blockId}_j) : \
-    ((Block${blockId}_intermediate < ${lowerSat.getName()}(${blockId}_i, ${blockId}_j)) ? ${lowerSat.getName()}(${blockId}_i, ${blockId}_j) : ${blockId}_intermediate);
+      ${outputVar}(Block${blockId}_i, Block${blockId}_j) = (Block${blockId}_intermediate > ${upperSat.getName()}(Block${blockId}_i, Block${blockId}_j)) ? ${upperSat.getName()}(Block${blockId}_i, Block${blockId}_j) : \
+    ((Block${blockId}_intermediate < ${lowerSat.getName()}(Block${blockId}_i, Block${blockId}_j)) ? ${lowerSat.getName()}(Block${blockId}_i, Block${blockId}_j) : Block${blockId}_intermediate);
     #else
-      ${outputVar}(${blockId}_i, ${blockId}_j) = Block${blockId}_intermediate;
+      ${outputVar}(Block${blockId}_i, Block${blockId}_j) = Block${blockId}_intermediate;
     #end
   }
   }
   #else
-    ${blockId}_loop_i: for(int ${blockId}_i = 0; ${blockId}_i < ${signal.height}; ${blockId}_i++) {
-    ${blockId}_loop_j: for(int ${blockId}_j = 0; ${blockId}_j < ${signal.width}; ${blockId}_j++) {
+    Block${blockId}_loop_i: for(int Block${blockId}_i = 0; Block${blockId}_i < ${signal.height}; Block${blockId}_i++) {
+    Block${blockId}_loop_j: for(int Block${blockId}_j = 0; Block${blockId}_j < ${signal.width}; Block${blockId}_j++) {
   if(sfcnIsMajorStep()) {
-  Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = ${cparaP.getName()}(${blockId}_i, ${blockId}_j) * ${signal.getName()}(${blockId}_i, ${blockId}_j);
-  Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = ${cparaD.getName()}(${blockId}_i, ${blockId}_j) * ${signal.getName()}(${blockId}_i, ${blockId}_j);
-  Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = ${cparaI.getName()}(${blockId}_i, ${blockId}_j) * ${signal.getName()}(${blockId}_i, ${blockId}_j);
+  Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}] = ${proportionalGain.getName()}(Block${blockId}_i, Block${blockId}_j) * ${signal.getName()}(Block${blockId}_i, Block${blockId}_j);
+  Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}+1] = ${derivativeGain.getName()}(Block${blockId}_i, Block${blockId}_j) * ${signal.getName()}(Block${blockId}_i, Block${blockId}_j);
+  Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}+2] = ${integralGain.getName()}(Block${blockId}_i, Block${blockId}_j) * ${signal.getName()}(Block${blockId}_i, Block${blockId}_j);
   }
-  double Block${blockId}_intermediate = Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] + \
-    ${stateIntegral.getName()}(${blockId}_i, ${blockId}_j) + \
-  (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - ${stateFilter.getName()}(${blockId}_i, ${blockId}_j)) * ${cparaN.getName()}(${blockId}_i, ${blockId}_j);
+  double Block${blockId}_intermediate = Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}] + \
+    ${stateIntegral.getName()}(Block${blockId}_i, Block${blockId}_j) + \
+  (Block${blockId}save_data[Block${blockId}_i][Block${blockId}_j*${m5}+1] - ${stateFilter.getName()}(Block${blockId}_i, Block${blockId}_j)) * ${filterCoefficient.getName()}(Block${blockId}_i, Block${blockId}_j);
 
     #if($externalReset == "on")
     if(${resetSig}) {
@@ -105,10 +105,10 @@
     #end
 
     #if($limitOutput == "on")
-      ${outputVar}(${blockId}_i, ${blockId}_j) = (Block${blockId}_intermediate > ${upperSat.getName()}(${blockId}_i, ${blockId}_j)) ? ${upperSat.getName()}(${blockId}_i, ${blockId}_j) : \
-    ((Block${blockId}_intermediate < ${lowerSat.getName()}(${blockId}_i, ${blockId}_j)) ? ${lowerSat.getName()}(${blockId}_i, ${blockId}_j) : ${blockId}_intermediate);
+      ${outputVar}(Block${blockId}_i, Block${blockId}_j) = (Block${blockId}_intermediate > ${upperSat.getName()}(Block${blockId}_i, Block${blockId}_j)) ? ${upperSat.getName()}(Block${blockId}_i, Block${blockId}_j) : \
+    ((Block${blockId}_intermediate < ${lowerSat.getName()}(Block${blockId}_i, Block${blockId}_j)) ? ${lowerSat.getName()}(Block${blockId}_i, Block${blockId}_j) : Block${blockId}_intermediate);
     #else
-      ${outputVar}(${blockId}_i, ${blockId}_j) = Block${blockId}_intermediate;
+      ${outputVar}(Block${blockId}_i, Block${blockId}_j) = Block${blockId}_intermediate;
     #end
   }
   }

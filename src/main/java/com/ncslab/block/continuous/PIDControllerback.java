@@ -13,8 +13,12 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.util.TemplateManager;
+import org.apache.velocity.VelocityContext;
 
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 public class PIDControllerback extends com.ncslab.block.Block{
 
@@ -29,8 +33,6 @@ public class PIDControllerback extends com.ncslab.block.Block{
 
 	Parameter externalReset;//zhou_20240507 add externalReset
 	Parameter sampleTime;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
@@ -39,13 +41,32 @@ public class PIDControllerback extends com.ncslab.block.Block{
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
         parameterNames.add("P");
         parameterNames.add("I");
         parameterNames.add("D");
         parameterNames.add("N");
+        parameterNames.add("externalReset");
+        parameterNames.add("simpleTime");
+        parameterNames.add("LimitOutput");
+        parameterNames.add("LowerSaturationLimit");
+        parameterNames.add("UpperSaturationLimit");
+        
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        PARAMETER_DEFAULTS.put("P", "1");
+        PARAMETER_DEFAULTS.put("I", "1");
+        PARAMETER_DEFAULTS.put("D", "0");
+        PARAMETER_DEFAULTS.put("N", "100");
+        PARAMETER_DEFAULTS.put("externalReset", "off");
+        PARAMETER_DEFAULTS.put("simpleTime", "-1");
+        PARAMETER_DEFAULTS.put("LimitOutput", "off");
+        PARAMETER_DEFAULTS.put("LowerSaturationLimit", "-inf");
+        PARAMETER_DEFAULTS.put("UpperSaturationLimit", "inf");
     }
 	public PIDControllerback(JSONObject blockIn,NCSLabModel model) {
 		super(blockIn,model);
@@ -54,263 +75,139 @@ public class PIDControllerback extends com.ncslab.block.Block{
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
 		cparaP=new Parameter(this,parameterList.size()+1,"P",paramValues.getString("P"));
-		parameterList.add(cparaP);
 		cparaI=new Parameter(this,parameterList.size()+1,"I",paramValues.getString("I"));
-		parameterList.add(cparaI);
 		cparaD=new Parameter(this,parameterList.size()+1,"D",paramValues.getString("D"));
-		parameterList.add(cparaD);
 		cparaN=new Parameter(this,parameterList.size()+1,"N",paramValues.getString("N"));
-		parameterList.add(cparaN);
 
 		//zhou_20240507 add externalReset
 		externalReset=new Parameter(this,parameterList.size()+1,"externalReset",paramValues.getString("externalReset"));
-		parameterList.add(externalReset);
 		if(paramValues.getString("externalReset").equals("on")) {
 			inputPortList.add(new InputPort(this,2));
 		}
 		sampleTime=new Parameter(this,parameterList.size()+1,"sampleTime",paramValues.getString("simpleTime"));
-		parameterList.add(sampleTime);
 		/*stateIntegral=new State(this,1,"integral");
 		stateList.add(stateIntegral);
 		stateFilter=new State(this,2,"filter");
 		stateList.add(stateFilter);*/
-
-
 		if(paramValues.getString("LimitOutput").equals("on")) {
 			lowerSaturationLimit=new Parameter(this,parameterList.size()+1,"LowerSaturationLimit",paramValues.getString("LowerSaturationLimit"));
-			parameterList.add(lowerSaturationLimit);
 			upperSaturationLimit=new Parameter(this,parameterList.size()+1,"UpperSaturationLimit",paramValues.getString("UpperSaturationLimit"));
-			parameterList.add(upperSaturationLimit);
 		}
 	}
 	 //define arrays to save data
 	 public void generateArraysCodeC(CodeStructC code) {
-		 String arraysCode="/*Define arrays for block discrete_Delay:("+getBlockId()+")"+getBlockName()+"*/\n";
-		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		// arraysCode+="double "+"Block"+getBlockId()+"save_data[5];\n";
-		 if(signal.getDataType()==DataType.MATRIX) {
-			 arraysCode+="double "+"Block"+getBlockId()+"save_data["+signal.getHeight()+"]["+signal.getWidth()+"*5];\n";
-		 }else if(signal.getDataType()==DataType.REAL&&cparaP.getDataType()==DataType.REAL) {
-		 arraysCode+="double "+"Block"+getBlockId()+"save_data[5];\n";
-		 }else {
-		 arraysCode+="double "+"Block"+getBlockId()+"save_data["+cparaP.getHeight()+"]["+cparaP.getWidth()+"*5];\n";
-		 }
+		 VelocityContext context = new VelocityContext();
+		 context.put("blockId", getBlockId());
+		 context.put("blockName", getBlockName());
+		 context.put("cparaP", cparaP);
+		 context.put("realDataType", DataType.REAL);
+		 context.put("matrixDataType", DataType.MATRIX);
+		 
+		 OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		 context.put("inputSignal", signal);
+		 
+		 String arraysCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/arrays.vm", context);
 		 code.addArraysCode(arraysCode);
 	 }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="";
-		initCode+=cparaP.getInitCodeC();
-		initCode+=cparaI.getInitCodeC();
-		initCode+=cparaD.getInitCodeC();
-		initCode+=cparaN.getInitCodeC();
+		
+		VelocityContext context = new VelocityContext();
+		context.put("cparaP", cparaP);
+		context.put("cparaI", cparaI);
+		context.put("cparaD", cparaD);
+		context.put("cparaN", cparaN);
+		context.put("limitOutput", paramValues.getString("LimitOutput"));
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		
 		if(paramValues.getString("LimitOutput").equals("on")) {
-			initCode+=lowerSaturationLimit.getInitCodeC();
-			initCode+=upperSaturationLimit.getInitCodeC();
+			context.put("lowerSaturationLimit", lowerSaturationLimit);
+			context.put("upperSaturationLimit", upperSaturationLimit);
 		}
-		if(cparaP.getDataType()==DataType.REAL&&stateIntegral.getDataType()==DataType.REAL) {
-			  initCode+=stateIntegral.getName()+"=0;\n";
-			  initCode+=stateFilter.getName()+"=0;\n";
-		}else{
-			  for(int i=0; i<stateIntegral.getHeight(); i++) {
-					for(int j=0;j<stateIntegral.getWidth();j++) {
-						initCode+=stateIntegral.getName()+"("+i+","+j+")=0;\n";
-						initCode+=stateFilter.getName()+"("+i+","+j+")=0;\n";
-						}
-					}
-				}
-
-		initCode+=sampleTime.getInitCodeC();
+		
+		context.put("stateIntegral", stateIntegral);
+		context.put("stateFilter", stateFilter);
+		context.put("sampleTime", sampleTime);
+		
+		String initCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/init.vm", context);
 		code.addInitCode(initCode);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
-		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		 outputCode+="{real_T currentTime = model.time;\n";
-		 outputCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-		 switch(cparaP.getDataType()) {
-		 case REAL:
-			 switch(signal.getDataType()) {
-			 case REAL:
-				 outputCode+="if(mp->majorStep>0) {\n";
-		            outputCode+="Block"+getBlockId()+"save_data[0]="+cparaP.getName()+"*"+signal.getName()+";\n";
-		            outputCode+="Block"+getBlockId()+"save_data[1]="+cparaD.getName()+"*"+signal.getName()+";\n";
-		            outputCode+="Block"+getBlockId()+"save_data[2]="+cparaI.getName()+"*"+signal.getName()+";\n";
-		            outputCode+="Block"+getBlockId()+"save_data[3]=(Block"+getBlockId()+"save_data[1]-"+stateFilter.getName()+")*"+cparaN.getName()+";\n";
-		            outputCode+="Block"+getBlockId()+"save_data[4]="+"Block"+getBlockId()+"save_data[0]"+"+"+stateIntegral.getName()+"+Block"+getBlockId()+"save_data[3]"+";\n";
-
-		            //zhou_20240507 add externalReset
-		            if(paramValues.getString("externalReset").equals("on")) {
-		            	outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-		            	outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-		            	outputCode+="}\n";
-		            }
-
-		            if(paramValues.getString("LimitOutput").equals("on")) {
-		            outputCode+="if(Block"+getBlockId()+"save_data[4]>"+upperSaturationLimit.getName()+"){\n";
-		            outputCode+=this.getOutputPortVariable(0)+"="+upperSaturationLimit.getName()+";}\n";
-		            outputCode+="else if(Block"+getBlockId()+"save_data[4]<"+lowerSaturationLimit.getName()+"){\n";
-		            outputCode+=this.getOutputPortVariable(0)+"="+lowerSaturationLimit.getName()+";}\n";
-		            outputCode+="else{\n";
-		            outputCode+=this.getOutputPortVariable(0)+"="+"Block"+getBlockId()+"save_data[4];}\n";
-		             }else {
-			        outputCode+=this.getOutputPortVariable(0)+"="+"Block"+getBlockId()+"save_data[4];\n";
-		                  }
-
-		            outputCode+="}\n";
-		         break;
-			 case MATRIX:
-				 for(int i=0; i<signal.getHeight(); i++) {
-						for(int j=0;j<signal.getWidth();j++) {
-							  outputCode+="if(mp->majorStep>0) {\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5]="+cparaP.getName()+"*"+signal.getName()+"("+i+","+j+");\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+1]="+cparaD.getName()+"*"+signal.getName()+"("+i+","+j+");\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+2]="+cparaI.getName()+"*"+signal.getName()+"("+i+","+j+");\n";
-					            outputCode+="}\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+3]=(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+1]-"+stateFilter.getName()+"("+i+","+j+"))*"+cparaN.getName()+";\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5]"+"+"+stateIntegral.getName()+"("+i+","+j+")+Block"+getBlockId()+"save_data["+i+"]["+j+"*5+3];\n";
-
-					            //zhou_20240507 add externalReset
-					            if(paramValues.getString("externalReset").equals("on")) {
-					            	outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-					            	outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-					            	outputCode+="}\n";
-					            }
-
-					            if(paramValues.getString("LimitOutput").equals("on")) {
-					            outputCode+="if(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]>"+upperSaturationLimit.getName()+"){\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+upperSaturationLimit.getName()+";}\n";
-					            outputCode+="else if(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]<"+lowerSaturationLimit.getName()+"){\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+lowerSaturationLimit.getName()+";}\n";
-					            outputCode+="else{\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4];}\n";
-					             }else {
-						        outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4];\n";
-					           }
-					            outputCode+="}\n";
-						  }
-						}
-				 break;
-		  }
-			 break;
-		 case MATRIX:
-			 switch(signal.getDataType()) {
-			 case REAL:
-				 for(int i=0; i<cparaP.getHeight(); i++) {
-						for(int j=0;j<cparaP.getWidth();j++) {
-							  outputCode+="if(mp->majorStep>0) {\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5]="+cparaP.getName()+"("+i+","+j+")*"+signal.getName()+";\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+1]="+cparaD.getName()+"("+i+","+j+")*"+signal.getName()+";\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+2]="+cparaI.getName()+"("+i+","+j+")*"+signal.getName()+";\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+3]=(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+1]-"+stateFilter.getName()+"("+i+","+j+"))*"+cparaN.getName()+"("+i+","+j+");\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5]"+"+"+stateIntegral.getName()+"("+i+","+j+")+Block"+getBlockId()+"save_data["+i+"]["+j+"*5+3];\n";
-
-					            //zhou_20240507 add externalReset
-					            if(paramValues.getString("externalReset").equals("on")) {
-					            	outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-					            	outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-					            	outputCode+="}\n";
-					            }
-
-					            if(paramValues.getString("LimitOutput").equals("on")) {
-					            outputCode+="if(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]>"+upperSaturationLimit.getName()+"("+i+","+j+")){\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+upperSaturationLimit.getName()+"("+i+","+j+");}\n";
-					            outputCode+="else if(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]<"+lowerSaturationLimit.getName()+"("+i+","+j+")){\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+lowerSaturationLimit.getName()+"("+i+","+j+");}\n";
-					            outputCode+="else{\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4];}\n";
-					             }else {
-						        outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4];\n";
-					           }
-					            outputCode+="}\n";
-						  }
-						}
-				 break;
-			 case MATRIX:
-				 for(int i=0; i<cparaP.getHeight(); i++) {
-						for(int j=0;j<cparaP.getWidth();j++) {
-							  outputCode+="if(mp->majorStep>0) {\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5]="+cparaP.getName()+"("+i+","+j+")*"+signal.getName()+"("+i+","+j+");\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+1]="+cparaD.getName()+"("+i+","+j+")*"+signal.getName()+"("+i+","+j+");\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+2]="+cparaI.getName()+"("+i+","+j+")*"+signal.getName()+"("+i+","+j+");\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+3]=(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+1]-"+stateFilter.getName()+"("+i+","+j+"))*"+cparaN.getName()+"("+i+","+j+");\n";
-					            outputCode+="Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5]"+"+"+stateIntegral.getName()+"("+i+","+j+")+Block"+getBlockId()+"save_data["+i+"]["+j+"*5+3];\n";
-					            //zhou_20240507 add externalReset
-					            if(paramValues.getString("externalReset").equals("on")) {
-					            	outputCode+="if("+inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+"){\n";
-					            	outputCode+="memset(Block"+getBlockId()+"save_data, 0, sizeof(Block"+getBlockId()+"save_data));\n";
-					            	outputCode+="}\n";
-					            }
-					            if(paramValues.getString("LimitOutput").equals("on")) {
-					            outputCode+="if(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]>"+upperSaturationLimit.getName()+"("+i+","+j+")){\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+upperSaturationLimit.getName()+"("+i+","+j+");}\n";
-					            outputCode+="else if(Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4]<"+lowerSaturationLimit.getName()+"("+i+","+j+")){\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+lowerSaturationLimit.getName()+"("+i+","+j+");}\n";
-					            outputCode+="else{\n";
-					            outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4];}\n";
-					             }else {
-						        outputCode+=this.getOutputPortVariable(0)+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+4];\n";
-					           }
-					            outputCode+="}\n";
-						  }
-						}
-				 break;
-			 }
-			 break;
+		VelocityContext context = new VelocityContext();
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		context.put("blockId", getBlockId());
+		context.put("blockName", getBlockName());
+		context.put("cparaP", cparaP);
+		context.put("cparaI", cparaI);
+		context.put("cparaD", cparaD);
+		context.put("cparaN", cparaN);
+		context.put("stateIntegral", stateIntegral);
+		context.put("stateFilter", stateFilter);
+		context.put("sampleTime", sampleTime);
+		context.put("externalReset", paramValues.getString("externalReset"));
+		context.put("limitOutput", paramValues.getString("LimitOutput"));
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		
+		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		context.put("inputSignal", signal);
+		
+		if(paramValues.getString("externalReset").equals("on")) {
+			context.put("externalResetSignal", inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
 		}
-		outputCode+="}}\n";
+		
+		if(paramValues.getString("LimitOutput").equals("on")) {
+			context.put("upperSaturationLimit", upperSaturationLimit);
+			context.put("lowerSaturationLimit", lowerSaturationLimit);
+		}
+		
+		context.put("outputPortVariable", this.getOutputPortVariable(0));
+		
+		String outputCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/output.vm", context);
 		code.addOutputCode(outputCode);
 	}
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode="/*Code for Derivative of PID Controller:("+getBlockId()+")"+getBlockName()+"*/\n";
-		 OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		 derivativeCode+="{real_T currentTime = model.time;\n";
-		 derivativeCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
-		 if(signal.getDataType()==DataType.REAL&&cparaP.getDataType()==DataType.REAL) {
-			 derivativeCode+=stateIntegral.getDerivativeName()+"="+"Block"+getBlockId()+"save_data[2];\n";
-			 derivativeCode+=stateFilter.getDerivativeName()+"="+"Block"+getBlockId()+"save_data[3];\n";
-		 }else {
-			 for(int i=0; i<stateIntegral.getHeight(); i++) {
-					for(int j=0;j<stateIntegral.getWidth();j++) {
-						derivativeCode+=stateIntegral.getDerivativeName()+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+2];\n";
-						derivativeCode+=stateFilter.getDerivativeName()+"("+i+","+j+")="+"Block"+getBlockId()+"save_data["+i+"]["+j+"*5+3];\n";
-						}
-					}
-		 }
-		derivativeCode+="}}\n";
+		VelocityContext context = new VelocityContext();
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		context.put("blockId", getBlockId());
+		context.put("blockName", getBlockName());
+		context.put("sampleTime", sampleTime);
+		context.put("stateIntegral", stateIntegral);
+		context.put("stateFilter", stateFilter);
+		context.put("cparaP", cparaP);
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		
+		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		context.put("inputSignal", signal);
+		
+		String derivativeCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/derivative.vm", context);
 		code.addDerivativeCode(derivativeCode);
 	}
 	public void  generateUpdateCodeC(CodeStructC code) {
- 		String updateCode="/*Code for Update of "+ ":("+getBlockId()+")"+getBlockName()+"*/\n";
- 		OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
- 		updateCode+="{real_T currentTime = model.time;\n";
- 		updateCode+="if(fabs(floor(currentTime/"+sampleTime.getName()+"+0.5)-currentTime/"+sampleTime.getName()+")<0.000001) {\n";
- 		if(signal.getDataType()==DataType.REAL&&cparaP.getDataType()==DataType.REAL) {
- 			updateCode+="if("+sampleTime.getName()+"==-1){\n";
- 			updateCode+=stateIntegral.getName()+"="+stateIntegral.getName()+"+"+stateIntegral.getDerivativeName()+"*model.stepSize;\n";
- 			updateCode+=stateFilter.getName()+"="+stateFilter.getName()+"+"+stateFilter.getDerivativeName()+"*model.stepSize;\n";
- 			updateCode+="}else{\n";
- 			updateCode+=stateIntegral.getName()+"="+stateIntegral.getName()+"+"+stateIntegral.getDerivativeName()+"*"+sampleTime.getName()+";\n";
- 			updateCode+=stateFilter.getName()+"="+stateFilter.getName()+"+"+stateFilter.getDerivativeName()+"*"+sampleTime.getName()+";\n";
- 			updateCode+="}\n";
- 		}else {
- 			 for(int i=0; i<stateFilter.getHeight(); i++) {
-					for(int j=0;j<stateFilter.getWidth();j++) {
-						updateCode+="if("+sampleTime.getName()+"==-1){\n";
-						updateCode+=stateIntegral.getName()+"("+i+","+j+")="+stateIntegral.getName()+"("+i+","+j+")+"+stateIntegral.getDerivativeName()+"("+i+","+j+")*model.stepSize;\n";
-			 			updateCode+=stateFilter.getName()+"("+i+","+j+")="+stateFilter.getName()+"("+i+","+j+")+"+stateFilter.getDerivativeName()+"("+i+","+j+")*model.stepSize;\n";
-			 			updateCode+="}else{\n";
-			 			updateCode+=stateIntegral.getName()+"("+i+","+j+")="+stateIntegral.getName()+"("+i+","+j+")+"+stateIntegral.getDerivativeName()+"("+i+","+j+")*"+sampleTime.getName()+";\n";
-			 			updateCode+=stateFilter.getName()+"("+i+","+j+")="+stateFilter.getName()+"("+i+","+j+")+"+stateFilter.getDerivativeName()+"("+i+","+j+")*"+sampleTime.getName()+";\n";
-			 			updateCode+="}\n";
-					}
-					}
- 		}
- 		updateCode+="}}\n";
- 		code.addUpdateCode(updateCode);
- 	}
+		VelocityContext context = new VelocityContext();
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		context.put("blockId", getBlockId());
+		context.put("blockName", getBlockName());
+		context.put("sampleTime", sampleTime);
+		context.put("stateIntegral", stateIntegral);
+		context.put("stateFilter", stateFilter);
+		context.put("cparaP", cparaP);
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		
+		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		context.put("inputSignal", signal);
+		
+		String updateCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/update.vm", context);
+		code.addUpdateCode(updateCode);
+	}
 	   public void updateDimension() throws MatDimException{
 		    OutputPort out  = outputPortList.get(0);
 		    InputPort in  = inputPortList.get(0);

@@ -1,11 +1,47 @@
-/* 初始化传输延迟模块: ($block.getBlockId()) $block.getBlockName() */
-/* 循环缓冲区初始化 */
-const int buf_capacity = (int)ceil($parameters.get("delayTime") / $stepSize) + 1;
-static double delay_buf[buf_capacity];
-static int write_idx = 0;
-static int read_idx = 0;
-
-/* 使用初始输入值初始化缓冲区 */
-for(int i=0; i<buf_capacity; i++){
-    delay_buf[i] = $inputs.get(0);
-}
+/*Code for initialization of block TransportDelay:(${blockId})${blockName}*/
+${delayTime.initCodeC}${initialOutput.initCodeC}${bufferSize.initCodeC}#if($isFixedStepSolver)
+  #if($inputSignal.dataType == $realDataType)
+    #if($delayTime.dataType == $realDataType)
+      for(int i=0; i<${bufferLength}; i++) {
+        Block${blockId}_transport_delay_savedata[i] = ${initialOutput.name};
+      }
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($delayHeightMax = $delayTime.height - 1)
+      #set($delayWidthMax = $delayTime.width - 1)
+      #foreach($i in [0..$delayHeightMax])
+        #foreach($j in [0..$delayWidthMax])
+          #set($bufferLen = $bufferLengths.get($i).get($j))
+          for(int m=0; m<$bufferLen; m++) {
+            Block${blockId}_transport_delay_savedata_${i}_${j}_[m] = ${initialOutput.name}($i,$j);
+          }
+        #end
+      #end
+    #end
+  #elseif($inputSignal.dataType == $matrixDataType)
+    #if($delayTime.dataType == $realDataType)
+      #set($inputHeightMax = $inputSignal.height - 1)
+      #set($inputWidthMax = $inputSignal.width - 1)
+      #foreach($i in [0..$inputHeightMax])
+        #foreach($j in [0..$inputWidthMax])
+          #set($bufferLen = $bufferLengths.get(0).get(0))
+          for(int m=0; m<$bufferLen; m++) {
+            Block${blockId}_transport_delay_savedata[m] = ${initialOutput.name};
+          }
+        #end
+      #end
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($inputHeightMax = $inputSignal.height - 1)
+      #set($inputWidthMax = $inputSignal.width - 1)
+      #foreach($i in [0..$inputHeightMax])
+        #foreach($j in [0..$inputWidthMax])
+          #set($index = $i * $inputSignal.width + $j)
+          for(int m=0; m<${bufferSize.data.intValue}; m++) {
+            Block${blockId}yout[${index}][m] = ${initialOutput.name}($i,$j);
+            Block${blockId}tout[${index}][m] = -1.0;
+          }
+        #end
+      #end
+    #end
+  #end
+#end
+init_buffer(&${bufferName}, ${bufferSize.data.intValue}, ${initialOutput.name});

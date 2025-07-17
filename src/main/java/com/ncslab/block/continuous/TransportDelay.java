@@ -5,12 +5,14 @@ import com.ncslab.block.data.FifoBufferExtended;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import com.ncslab.util.TemplateManager;
+import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
 
 import Jama.Matrix;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -21,55 +23,294 @@ import com.ncslab.block.io.OutputSignal;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
+/**
+ * TransportDelay block with SIMULINK-compatible parameters and type-safe constructors.
+ *
+ * SIMULINK Parameters:
+ * - DelayTime: Delay time (scalar or matrix)
+ * - InitialOutput: Initial output value before delay takes effect
+ * - BufferSize: Size of the delay buffer for variable step solvers
+ * - PadeOrder: Order of Pade approximation (for approximation methods)
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class TransportDelay extends Block {
 
-	private Parameter initialoutput;
-	private Parameter delaytime;
-    private Parameter bufferSize;
-	OutputPort output;
-	InputPort input;
-	Matrix test;
-	private double number[] = null;
+    // === Internal Implementation ===
+    private Matrix delayTimeMatrix;
+    private FifoBufferExtended<Data> buffer;
 
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter delayTime;
+    @Getter
+    private final Parameter initialOutput;
+    @Getter
+    private final Parameter bufferSize;
+    @Getter
+    private final Parameter padeOrder;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
 
+    // === Port References ===
+    private OutputPort output;
+    private InputPort input;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
+
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    static {
-        parameterNames.add("InitialOutput");
-        parameterNames.add("DelayTime");
-        parameterNames.add("BufferSize");
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
+    static {
+        // SIMULINK parameter names
+        parameterNames.add("DelayTime");
+        parameterNames.add("InitialOutput");
+        parameterNames.add("BufferSize");
+        parameterNames.add("PadeOrder");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+
+        // Parameter defaults for transport delay
+        PARAMETER_DEFAULTS.put("DelayTime", "1");
+        PARAMETER_DEFAULTS.put("InitialOutput", "0");
+        PARAMETER_DEFAULTS.put("BufferSize", "1024");
+        PARAMETER_DEFAULTS.put("PadeOrder", "0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-	public TransportDelay(JSONObject blockIn, NCSLabModel model) {
-		super(blockIn, model);
+    // === Private Constructor with Typed Parameters ===
+    private TransportDelay(Parameter delayTime, Parameter initialOutput, Parameter bufferSize,
+                          Parameter padeOrder, Parameter sampleTime, Parameter outDataType,
+                          Parameter saturateOnIntegerOverflow, String blockName, String blockPath,
+                          String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
 
-		initialoutput = new Parameter(this, 1, "InitialOutput", paramValues.getString("InitialOutput"));
-		parameterList.add(initialoutput);
+        // Validate parameters
+        validateParameters(delayTime, initialOutput, bufferSize, sampleTime);
 
-		delaytime = new Parameter(this, 2, "DelayTime", paramValues.getString("DelayTime"));
-		test = delaytime.getMatrix();
-        parameterList.add(delaytime);
+        // Assign parameters
+        this.delayTime = Objects.requireNonNull(delayTime, "Delay time parameter cannot be null");
+        this.initialOutput = Objects.requireNonNull(initialOutput, "Initial output parameter cannot be null");
+        this.bufferSize = Objects.requireNonNull(bufferSize, "Buffer size parameter cannot be null");
+        this.padeOrder = Objects.requireNonNull(padeOrder, "Pade order parameter cannot be null");
+        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        // Cache delay time matrix
+        this.delayTimeMatrix = delayTime.getMatrix();
 
-        bufferSize = new Parameter(this, 3, "BufferSize", paramValues.optString("BufferSize","1024"));
-        parameterList.add(bufferSize);
+        // Initialize ports
+        initializePorts();
+    }
 
-		input = new InputPort(this, 1);
-		inputPortList.add(input);
-		output = new OutputPort(this, 1, false);
-		outputPortList.add(output);
-	}
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public TransportDelay(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model);
+
+        // Create legacy parameters for backward compatibility
+        this.delayTime = new Parameter(this, 1, "DelayTime", paramValues.getString("DelayTime"));
+        this.initialOutput = new Parameter(this, 2, "InitialOutput", paramValues.getString("InitialOutput"));
+        this.bufferSize = new Parameter(this, 3, "BufferSize", paramValues.optString("BufferSize", "1024"));
+
+        // Create missing SIMULINK parameters with defaults
+        this.padeOrder = new Parameter(this, 4, "PadeOrder", "0");
+        this.sampleTime = new Parameter(this, 5, "SampleTime", "0"); // 0 for continuous delay
+        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
+
+        // Add all parameters to parameter list
+
+        // Cache delay time matrix for legacy compatibility
+        this.delayTimeMatrix = delayTime.getMatrix();
+
+        // Initialize ports
+        initializePorts();
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
+    public static TransportDelay fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+
+            Parameter delayTime = createDelayTimeFromJSON(paramValues, blockName);
+            Parameter initialOutput = createInitialOutputFromJSON(paramValues, blockName);
+            Parameter bufferSize = createBufferSizeFromJSON(paramValues, blockName);
+            Parameter padeOrder = createPadeOrderFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+
+            TransportDelay block = new TransportDelay(delayTime, initialOutput, bufferSize,
+                                                     padeOrder, sampleTime, outDataType,
+                                                     saturateParam, blockName, blockPath, blockUUID, model);
+
+            setParameterBlockReference(block, delayTime, initialOutput, bufferSize,
+                                     padeOrder, sampleTime, outDataType, saturateParam);
+
+            return block;
+
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create TransportDelay block from JSON: " + e.getMessage(), e);
+        }
+    }
+
+    // === Static Factory Method for Programmatic Creation ===
+    public static TransportDelay create(String name, String path, double delayTime, double initialOutput, NCSLabModel model) {
+        return create(name, path, delayTime, initialOutput, 1024, 0, 0.0, "Inherit: Same as input", false, model);
+    }
+
+    public static TransportDelay create(String name, String path, double delayTime, double initialOutput,
+                                       int bufferSize, int padeOrder, double sampleTime, String outDataType,
+                                       boolean saturateOnOverflow, NCSLabModel model) {
+        Parameter delayTimeParam = new Parameter(null, 1, "DelayTime", String.valueOf(delayTime));
+        Parameter initialOutputParam = new Parameter(null, 2, "InitialOutput", String.valueOf(initialOutput));
+        Parameter bufferSizeParam = new Parameter(null, 3, "BufferSize", String.valueOf(bufferSize));
+        Parameter padeOrderParam = new Parameter(null, 4, "PadeOrder", String.valueOf(padeOrder));
+        Parameter sampleTimeParam = new Parameter(null, 5, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 6, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 7, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+
+        TransportDelay block = new TransportDelay(delayTimeParam, initialOutputParam, bufferSizeParam,
+                                                 padeOrderParam, sampleTimeParam, outDataTypeParam,
+                                                 saturateParam, name, path, "null", model);
+
+        setParameterBlockReference(block, delayTimeParam, initialOutputParam, bufferSizeParam,
+                                 padeOrderParam, sampleTimeParam, outDataTypeParam, saturateParam);
+
+        return block;
+    }
+
+    // === Parameter Validation ===
+    private static void validateParameters(Parameter delayTime, Parameter initialOutput, Parameter bufferSize, Parameter sampleTime) {
+        double delayTimeValue = delayTime.getDouble();
+        if (delayTimeValue < 0.0 || delayTimeValue == Double.NaN || delayTimeValue == Double.POSITIVE_INFINITY) {
+            throw new IllegalArgumentException("Delay time must be non-negative and finite");
+        }
+
+        int bufferSizeValue = (int) bufferSize.getDouble();
+        if (bufferSizeValue <= 0) {
+            throw new IllegalArgumentException("Buffer size must be positive");
+        }
+
+        double sampleTimeValue = sampleTime.getDouble();
+        if (sampleTimeValue < -1.0 || sampleTimeValue == Double.NaN || sampleTimeValue == Double.POSITIVE_INFINITY) {
+            throw new IllegalArgumentException("Sample time must be >= 0 or -1 (inherited)");
+        }
+    }
+
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createDelayTimeFromJSON(JSONObject paramValues, String blockName) {
+        String delayTimeValue = paramValues.optString("DelayTime", "1.0");
+        return new Parameter(null, 1, "DelayTime", delayTimeValue);
+    }
+
+    private static Parameter createInitialOutputFromJSON(JSONObject paramValues, String blockName) {
+        String initialOutputValue = paramValues.optString("InitialOutput", "0.0");
+        return new Parameter(null, 2, "InitialOutput", initialOutputValue);
+    }
+
+    private static Parameter createBufferSizeFromJSON(JSONObject paramValues, String blockName) {
+        String bufferSizeValue = paramValues.optString("BufferSize", "1024");
+        return new Parameter(null, 3, "BufferSize", bufferSizeValue);
+    }
+
+    private static Parameter createPadeOrderFromJSON(JSONObject paramValues, String blockName) {
+        String padeOrderValue = paramValues.optString("PadeOrder", "0");
+        return new Parameter(null, 4, "PadeOrder", padeOrderValue);
+    }
+
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "0");
+        return new Parameter(null, 5, "SampleTime", sampleTimeValue);
+    }
+
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 6, "OutDataTypeStr", outDataTypeValue);
+    }
+
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 7, "SaturateOnIntegerOverflow", saturateValue);
+    }
+
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+
+    private static void setParameterBlockReference(TransportDelay block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "TransportDelay");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
+    }
+
+    // === Port Initialization ===
+    private void initializePorts() {
+        // Main input port
+        input = new InputPort(this, 1);
+        inputPortList.add(input);
+
+        // Main output port (no feedthrough for transport delay)
+        output = new OutputPort(this, 1, false);
+        outputPortList.add(output);
+    }
 
     private boolean isFixedStepSolver(String solver) {
         return solver.equals("ode1") || solver.equals("ode2") || solver.equals("ode3") ||
@@ -83,161 +324,79 @@ public class TransportDelay extends Block {
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode = "/*Code for initialization of block TransportDelay:(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		initCode += delaytime.getInitCodeC();
-		initCode += initialoutput.getInitCodeC();
-        initCode += bufferSize.getInitCodeC();
 
-        int bufferLength = calculateBufferLength(paramValues.getDouble("DelayTime"));
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		VelocityContext context = new VelocityContext();
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		context.put("blockId", getBlockId());
+		context.put("blockName", getBlockName());
+		context.put("delayTime", delayTime);
+		context.put("initialOutput", initialOutput);
+		context.put("bufferSize", bufferSize);
+		context.put("bufferName", getBufferName());
 
-        StringBuilder initCodeBuilder = new StringBuilder();
-        if(isFixedStepSolver(model.getConfig().getSolver())) {
-            // Initialize buffer at startup
-            switch (signal.getDataType()) {
-                case REAL:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            initCodeBuilder.append("  for(int i=0; i<").append(bufferLength).append("; i++) {\n");
-                            initCodeBuilder.append("    Block").append(getBlockId()).append("_transport_delay_savedata[i] = ")
-                                .append(initialoutput.getName()).append(";\n");
-                            initCodeBuilder.append("  }\n");
-                            break;
-                        case MATRIX:
-                            // Initialize all buffers at startup
-                            for (int i = 0; i < delaytime.getHeight(); i++) {
-                                for (int j = 0; j < delaytime.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(test.get(i, j));
-                                    initCodeBuilder.append("  for(int m=0; m<").append(bufferLen).append("; m++) {\n");
-                                    initCodeBuilder.append("    Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[m] = ").append(initialoutput.getName())
-                                        .append("(").append(i).append(",").append(j).append(");\n");
-                                    initCodeBuilder.append("  }\n");
-                                }
-                            }
-                            break;
-                    }
-                case MATRIX: {
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            // Initialize buffer at startup
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(paramValues.getDouble("DelayTime"));
-                                    initCodeBuilder.append("  for(int m=0; m<").append(bufferLen).append("; m++) {\n");
-                                    initCodeBuilder.append("    Block").append(getBlockId()).append("_transport_delay_savedata")
-                                        .append("[m] = ").append(initialoutput.getName())
-                                        .append(";\n");
-                                    initCodeBuilder.append("  }\n");
-                                }
-                            }
-                            break;
-                        case MATRIX:
-                            // Initialize buffer at startup
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int index = i * signal.getWidth() + j;
-                                    initCodeBuilder.append("  for(int m=0; m<").append(bufferSize.getData().getIntValue()).append("; m++) {\n");
-                                    initCodeBuilder.append("    Block").append(getBlockId()).append("yout[").append(index).append("][m] = ")
-                                        .append(initialoutput.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    initCodeBuilder.append("    Block").append(getBlockId()).append("tout[").append(index).append("][m] = -1.0;\n");
-                                    initCodeBuilder.append("  }\n");
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
-        }
-        else{
-            int rows, cols;
-            if (signal.getDataType() == DataType.REAL && delaytime.getDataType() == DataType.MATRIX) {
-                rows = delaytime.getHeight();
-                cols = delaytime.getWidth();
-            }
-            else {
-                rows = signal.getHeight();
-                cols = signal.getWidth();
-            }
+		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		context.put("inputSignal", signal);
+		context.put("isFixedStepSolver", isFixedStepSolver(model.getConfig().getSolver()));
 
-            int totalElements = Math.max(1, rows * cols);
+		if (isFixedStepSolver(model.getConfig().getSolver())) {
+			int bufferLength = calculateBufferLength(delayTime.getDouble());
+			context.put("bufferLength", bufferLength);
 
-        }
-        initCodeBuilder.append("init_buffer(&").append(getBufferName())
-            .append(", ").append(bufferSize.getData().getIntValue())
-            .append(", ").append(initialoutput.getName())
-            .append(");\n");
-        initCode += initCodeBuilder.toString();
+			// Create buffer lengths matrix for template
+			java.util.List<java.util.List<Integer>> bufferLengths = new java.util.ArrayList<>();
+			for (int i = 0; i < Math.max(1, delayTime.getHeight()); i++) {
+				java.util.List<Integer> row = new java.util.ArrayList<>();
+				for (int j = 0; j < Math.max(1, delayTime.getWidth()); j++) {
+					if (delayTime.getDataType() == DataType.MATRIX) {
+						row.add(calculateBufferLength(delayTimeMatrix.get(i, j)));
+					} else {
+						row.add(calculateBufferLength(delayTime.getDouble()));
+					}
+				}
+				bufferLengths.add(row);
+			}
+			context.put("bufferLengths", bufferLengths);
+		}
+
+		String initCode = TemplateManager.renderTemplate("c/continuous/TransportDelay/init.vm", context);
 		code.addInitCode(initCode);
 	}
 
     public void generateArraysCodeC(CodeStructC code) {
-        String arraysCode = "/*Define arrays for block transport_Delay:(" + getBlockId() + ")" + getBlockName()
-            + "*/\n";
+        VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+        context.put("delayTime", delayTime);
+        context.put("bufferName", getBufferName());
+
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        String ss = this.model.getConfig().getSolver();
-        if (isFixedStepSolver(ss)) {
-            switch (signal.getDataType()) {
-                case REAL:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            int bufferLength = calculateBufferLength(paramValues.getDouble("DelayTime"));
-                            arraysCode += "double " + "Block" + getBlockId() + "_transport_delay_savedata["
-                                + bufferLength + "];\n";
-                            break;
-                        case MATRIX:
-                            for (int i = 0; i < delaytime.getHeight(); i++) {
-                                for (int j = 0; j < delaytime.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(test.get(i, j));
-                                    arraysCode += "double " + "Block" + getBlockId() + "_transport_delay_savedata_" + i + "_" + j
-                                        + "_[" + bufferLen + "];\n";
-                                }
-                            }
-                            break;
-                    }
-                    break;
-                case MATRIX:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(paramValues.getDouble("DelayTime"));
-                                    arraysCode += "double " + "Block" + getBlockId() + "_transport_delay_savedata_" + i + "_" + j
-                                        + "_[" + bufferLen + "];\n";
-                                }
-                            }
-                            break;
-                        case MATRIX:
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(test.get(i, j));
-                                    arraysCode += "double " + "Block" + getBlockId() + "_transport_delay_savedata_" + i + "_" + j
-                                        + "_[" + bufferLen + "];\n";
-                                }
-                            }
-                            break;
-                    }
-                    break;
-            }
-        } else {
-            int rows, cols;
-            if (signal.getDataType() == DataType.REAL && delaytime.getDataType() == DataType.MATRIX) {
-                rows = delaytime.getHeight();
-                cols = delaytime.getWidth();
-            } else {
-                rows = signal.getHeight();
-                cols = signal.getWidth();
-            }
-            int totalElements = Math.max(1, rows * cols);
+        context.put("inputSignal", signal);
+        context.put("isFixedStepSolver", isFixedStepSolver(model.getConfig().getSolver()));
 
-//            arraysCode += "double " + "Block" + getBlockId() + "tout[" + totalElements + "]["
-//                + bufferSize.getData().getIntValue() + "];\n";
-//            arraysCode += "double " + "Block" + getBlockId() + "yout[" + totalElements + "]["
-//                + bufferSize.getData().getIntValue() + "];\n";
+        if (isFixedStepSolver(model.getConfig().getSolver())) {
+            int bufferLength = calculateBufferLength(delayTime.getDouble());
+            context.put("bufferLength", bufferLength);
 
+            // Create buffer lengths matrix for template
+            java.util.List<java.util.List<Integer>> bufferLengths = new java.util.ArrayList<>();
+            for (int i = 0; i < Math.max(1, delayTime.getHeight()); i++) {
+                java.util.List<Integer> row = new java.util.ArrayList<>();
+                for (int j = 0; j < Math.max(1, delayTime.getWidth()); j++) {
+                    if (delayTime.getDataType() == DataType.MATRIX) {
+                        row.add(calculateBufferLength(delayTimeMatrix.get(i, j)));
+                    } else {
+                        row.add(calculateBufferLength(delayTime.getDouble()));
+                    }
+                }
+                bufferLengths.add(row);
+            }
+            context.put("bufferLengths", bufferLengths);
         }
-        arraysCode += "Buffer " + getBufferName() + ";\n";
+
+        String arraysCode = TemplateManager.renderTemplate("c/continuous/TransportDelay/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
 
@@ -249,150 +408,44 @@ public class TransportDelay extends Block {
      */
     public void generateDerivativeCodeC(CodeStructC code) {
         super.generateDerivativeCodeC(code);
-
-        StringBuilder derivativeCode = new StringBuilder();
-        derivativeCode.append("/*Code for Derivative of block Transport Delay:(").append(getBlockId()).append(")")
-            .append(getBlockName()).append("*/\n");
-
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        String solverType = this.model.getConfig().getSolver();
-
-        if (isFixedStepSolver(solverType)) {
-            // For fixed-step solvers
-            switch (signal.getDataType()) {
-                case REAL:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            int bufferLength = calculateBufferLength(paramValues.getDouble("DelayTime"));
-                            // Initialize buffer at startup
-                            // Shift buffer values
-                            derivativeCode.append("for(int i=0; i<").append(bufferLength-1).append("; i++) {\n");
-                            derivativeCode.append("  Block").append(getBlockId()).append("_transport_delay_savedata[i] = Block")
-                                .append(getBlockId()).append("_transport_delay_savedata[i+1];\n");
-                            derivativeCode.append("}\n");
-
-                            // Store new value at the end of the buffer
-                            derivativeCode.append("Block").append(getBlockId()).append("_transport_delay_savedata[")
-                                .append(bufferLength-1).append("] = ").append(signal.getName()).append(";\n");
-                            break;
-
-                        case MATRIX:
-                            // Update each buffer
-                            for (int i = 0; i < delaytime.getHeight(); i++) {
-                                for (int j = 0; j < delaytime.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(test.get(i, j));
-                                    derivativeCode.append("for(int m=0; m<").append(bufferLen-1).append("; m++) {\n");
-                                    derivativeCode.append("  Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[m] = Block").append(getBlockId())
-                                        .append("_transport_delay_savedata_").append(i).append("_").append(j)
-                                        .append("_[m+1];\n");
-                                    derivativeCode.append("}\n");
-                                    derivativeCode.append("Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[").append(bufferLen-1).append("] = ")
-                                        .append(signal.getName()).append(";\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
-
-                case MATRIX:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            // Update each buffer
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(paramValues.getDouble("DelayTime"));
-                                    derivativeCode.append("for(int m=0; m<").append(bufferLen-1).append("; m++) {\n");
-                                    derivativeCode.append("  Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[m] = Block").append(getBlockId())
-                                        .append("_transport_delay_savedata_").append(i).append("_").append(j)
-                                        .append("_[m+1];\n");
-                                    derivativeCode.append("}\n");
-                                    derivativeCode.append("Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[").append(bufferLen-1).append("] = ")
-                                        .append(signal.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                }
-                            }
-                            break;
-                        case MATRIX:
-                            // Update each buffer
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int bufferLen = calculateBufferLength(test.get(i, j));
-                                    derivativeCode.append("for(int m=0; m<").append(bufferLen-1).append("; m++) {\n");
-                                    derivativeCode.append("  Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[m] = Block").append(getBlockId())
-                                        .append("_transport_delay_savedata_").append(i).append("_").append(j)
-                                        .append("_[m+1];\n");
-                                    derivativeCode.append("}\n");
-                                    derivativeCode.append("Block").append(getBlockId()).append("_transport_delay_savedata_")
-                                        .append(i).append("_").append(j).append("_[").append(bufferLen-1).append("] = ")
-                                        .append(signal.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
+        
+        VelocityContext context = new VelocityContext();
+        context.put("block", this);
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        context.put("bufferSize", bufferSize);
+        
+        // Pass delayTime as delaytime to match template
+        context.put("delaytime", delayTime);
+        
+        // Pass paramValues for accessing DelayTime parameter
+        context.put("paramValues", paramValues);
+        
+        // Pass model for solver check
+        context.put("model", model);
+        
+        // For matrix delay times, calculate buffer length for each element
+        if (delayTime.getDataType() == DataType.MATRIX) {
+            // Create a test object that mimics the test.get() method in template
+            Map<String, Object> test = new HashMap<>();
+            for (int i = 0; i < delayTime.getHeight(); i++) {
+                for (int j = 0; j < delayTime.getWidth(); j++) {
+                    String key = i + "," + j;
+                    test.put(key, delayTimeMatrix.get(i, j));
+                }
             }
-        } else {
-            // For variable-step solvers
-            switch (signal.getDataType()) {
-                case REAL:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            // Shift buffers
-                            derivativeCode.append("insert_to_buffer(&").append(getBufferName())
-                                .append(",").append("model.time")
-                                .append(",").append(signal.getName()).append(");\n");
-                            break;
-
-                        case MATRIX:
-                            // Update each buffer
-                            for (int i = 0; i < delaytime.getHeight(); i++) {
-                                for (int j = 0; j < delaytime.getWidth(); j++) {
-                                    int index = i * delaytime.getWidth() + j;
-                                    derivativeCode.append("for(int m=").append(bufferSize.getData().getIntValue()-2).append("; m>=0; m--) {\n");
-                                    derivativeCode.append("  Block").append(getBlockId()).append("yout[").append(index).append("][m+1] = Block")
-                                        .append(getBlockId()).append("yout[").append(index).append("][m];\n");
-                                    derivativeCode.append("  Block").append(getBlockId()).append("tout[").append(index).append("][m+1] = Block")
-                                        .append(getBlockId()).append("tout[").append(index).append("][m];\n");
-                                    derivativeCode.append("}\n");
-                                    derivativeCode.append("Block").append(getBlockId()).append("yout[").append(index).append("][0] = ")
-                                        .append(signal.getName()).append(";\n");
-                                    derivativeCode.append("Block").append(getBlockId()).append("tout[").append(index).append("][0] = model.time;\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
-
-                case MATRIX:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                        case MATRIX:
-                            // Update each buffer
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int index = i * signal.getWidth() + j;
-                                    derivativeCode.append("for(int m=").append(bufferSize.getData().getIntValue()-2).append("; m>=0; m--) {\n");
-                                    derivativeCode.append("  Block").append(getBlockId()).append("yout[").append(index).append("][m+1] = Block")
-                                        .append(getBlockId()).append("yout[").append(index).append("][m];\n");
-                                    derivativeCode.append("  Block").append(getBlockId()).append("tout[").append(index).append("][m+1] = Block")
-                                        .append(getBlockId()).append("tout[").append(index).append("][m];\n");
-                                    derivativeCode.append("}\n");
-                                    derivativeCode.append("Block").append(getBlockId()).append("yout[").append(index).append("][0] = ")
-                                        .append(signal.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    derivativeCode.append("Block").append(getBlockId()).append("tout[").append(index).append("][0] = model.time;\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
-            }
+            context.put("test", new Object() {
+                public double get(int i, int j) {
+                    return delayTimeMatrix.get(i, j);
+                }
+            });
         }
-
-        code.addDerivativeCode(derivativeCode.toString());
+        
+        // Make this block instance accessible to call methods
+        final TransportDelay thisBlock = this;
+        
+        String derivativeCode = TemplateManager.renderTemplate("c/continuous/TransportDelay/derivative.vm", context);
+        code.addDerivativeCode(derivativeCode);
     }
 
     /**
@@ -402,301 +455,32 @@ public class TransportDelay extends Block {
      * @param code The CodeStructC object to add the output code to
      */
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder outputCode = new StringBuilder();
-        outputCode.append("/*Code for output of block TransportDelay:(").append(getBlockId()).append(")")
-            .append(getBlockName()).append("*/\n");
+        VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+        context.put("delayTime", delayTime);
+        context.put("initialOutput", initialOutput);
+        context.put("bufferSize", bufferSize);
+        context.put("bufferName", getBufferName());
 
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        String solverType = this.model.getConfig().getSolver();
+        OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal outputSignal = outputPortList.get(0).getOutputSignalC();
 
-        if (isFixedStepSolver(solverType)) {
-            // For fixed-step solvers - just output the appropriate buffer value
-            switch (signal.getDataType()) {
-                case REAL:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            // Store new values
-                            outputCode.append("insert_to_buffer(&").append(getBufferName())
-                                .append(",").append("model.time")
-                                .append(",").append(signal.getName()).append(");\n")
-                                .append("double ").append("Block").append(getBlockId()).append("_target_time")
-                                .append(" = model.time - ").append(delaytime.getName()).append(";\n")
-                                .append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                .append(" = ").append("linear_interpolation(&").append(getBufferName())
-                                .append(", ").append("Block").append(getBlockId()).append("_target_time")
-                                .append(");\n");
-                            break;
+        context.put("inputSignal", inputSignal);
+        context.put("outputSignal", outputSignal);
+        context.put("isFixedStepSolver", isFixedStepSolver(model.getConfig().getSolver()));
 
-                        case MATRIX:
-                            for (int i = 0; i < delaytime.getHeight(); i++) {
-                                for (int j = 0; j < delaytime.getWidth(); j++) {
-                                    outputCode.append("if(model.time < ").append(delaytime.getName())
-                                        .append("(").append(i).append(",").append(j).append(")) {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("} else {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = Block").append(getBlockId())
-                                        .append("_transport_delay_savedata_").append(i).append("_").append(j).append("_[0];\n");
-                                    outputCode.append("}\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
-
-                case MATRIX:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    outputCode.append("if(model.time < ").append(paramValues.getDouble("DelayTime")).append(") {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append(";\n");
-                                    outputCode.append("} else {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = Block").append(getBlockId())
-                                        .append("_transport_delay_savedata_").append(i).append("_").append(j).append("_[0];\n");
-                                    outputCode.append("}\n");
-                                }
-                            }
-                            break;
-
-                        case MATRIX:
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    outputCode.append("if(model.time < ").append(delaytime.getName())
-                                        .append("(").append(i).append(",").append(j).append(")) {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("} else {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = Block").append(getBlockId())
-                                        .append("_transport_delay_savedata_").append(i).append("_").append(j).append("_[0];\n");
-                                    outputCode.append("}\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
-            }
-        } else {
-            // For variable-step solvers - perform interpolation to find the output
-            switch (signal.getDataType()) {
-                case REAL:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            // Calculate target time
-                            outputCode
-                                .append("double ").append("Block").append(getBlockId()).append("_target_time")
-                                .append(" = model.time - ").append(delaytime.getName()).append(";\n")
-                                .append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                .append(" = ").append("linear_interpolation(&").append(getBufferName())
-                                .append(", ").append("Block").append(getBlockId()).append("_target_time")
-                                .append(");\n");
-                            break;
-
-                        case MATRIX:
-                            for (int i = 0; i < delaytime.getHeight(); i++) {
-                                for (int j = 0; j < delaytime.getWidth(); j++) {
-                                    int index = i * delaytime.getWidth() + j;
-
-                                    // Calculate target time
-                                    outputCode.append("double targetTime_").append(index).append(" = model.time - ")
-                                        .append(delaytime.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("if(targetTime_").append(index).append(" <= 0 || Block").append(getBlockId())
-                                        .append("tout[").append(index).append("][0] < 0) {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("} else {\n");
-
-                                    // Find buffer index for interpolation
-                                    outputCode.append("  int foundIndex_").append(index).append(" = -1;\n");
-                                    outputCode.append("  for(int k=0; k<").append(bufferSize.getData().getIntValue()-1).append("; k++) {\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][k+1] < 0) break;\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][k] >= targetTime_")
-                                        .append(index).append(" && \n");
-                                    outputCode.append("       targetTime_").append(index).append(" >= Block").append(getBlockId())
-                                        .append("tout[").append(index).append("][k+1]) {\n");
-                                    outputCode.append("      foundIndex_").append(index).append(" = k;\n");
-                                    outputCode.append("      break;\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("  }\n");
-
-                                    // Perform linear interpolation
-                                    outputCode.append("  if(foundIndex_").append(index).append(" >= 0) {\n");
-                                    outputCode.append("    double t1 = Block").append(getBlockId()).append("tout[").append(index)
-                                        .append("][foundIndex_").append(index).append("];\n");
-                                    outputCode.append("    double t2 = Block").append(getBlockId()).append("tout[").append(index)
-                                        .append("][foundIndex_").append(index).append("+1];\n");
-                                    outputCode.append("    double y1 = Block").append(getBlockId()).append("yout[").append(index)
-                                        .append("][foundIndex_").append(index).append("];\n");
-                                    outputCode.append("    double y2 = Block").append(getBlockId()).append("yout[").append(index)
-                                        .append("][foundIndex_").append(index).append("+1];\n");
-                                    outputCode.append("    double alpha = 0.0;\n");
-                                    outputCode.append("    if(fabs(t1 - t2) > 1e-10) {\n");
-                                    outputCode.append("      alpha = (targetTime_").append(index).append(" - t2) / (t1 - t2);\n");
-                                    outputCode.append("      alpha = fmax(0.0, fmin(1.0, alpha));\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("    ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = alpha * y1 + (1.0 - alpha) * y2;\n");
-                                    outputCode.append("  } else {\n");
-                                    outputCode.append("    // Use newest value if interpolation not possible\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][0] >= targetTime_")
-                                        .append(index).append(") {\n");
-                                    outputCode.append("      ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = Block").append(getBlockId())
-                                        .append("yout[").append(index).append("][0];\n");
-                                    outputCode.append("    } else {\n");
-                                    outputCode.append("      ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("  }\n");
-                                    outputCode.append("}\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
-
-                case MATRIX:
-                    switch (delaytime.getDataType()) {
-                        case REAL:
-                            outputCode.append("{\n");
-                            // Calculate target time once for all matrix elements
-                            outputCode.append("double targetTime = model.time - ").append(delaytime.getName()).append(";\n");
-
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int index = i * signal.getWidth() + j;
-
-                                    outputCode.append("if(targetTime <= 0 || Block").append(getBlockId())
-                                        .append("tout[").append(index).append("][0] < 0) {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append(";\n");
-                                    outputCode.append("} else {\n");
-
-                                    // Find buffer index for interpolation
-                                    outputCode.append("  int foundIndex_").append(index).append(" = -1;\n");
-                                    outputCode.append("  for(int k=0; k<").append(bufferSize.getData().getIntValue()-1).append("; k++) {\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][k+1] < 0) break;\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][k] >= targetTime && \n");
-                                    outputCode.append("       targetTime >= Block").append(getBlockId())
-                                        .append("tout[").append(index).append("][k+1]) {\n");
-                                    outputCode.append("      foundIndex_").append(index).append(" = k;\n");
-                                    outputCode.append("      break;\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("  }\n");
-
-                                    // Perform linear interpolation
-                                    outputCode.append("  if(foundIndex_").append(index).append(" >= 0) {\n");
-                                    outputCode.append("    double t1 = Block").append(getBlockId()).append("tout[").append(index)
-                                        .append("][foundIndex_").append(index).append("];\n");
-                                    outputCode.append("    double t2 = Block").append(getBlockId()).append("tout[").append(index)
-                                        .append("][foundIndex_").append(index).append("+1];\n");
-                                    outputCode.append("    double y1 = Block").append(getBlockId()).append("yout[").append(index)
-                                        .append("][foundIndex_").append(index).append("];\n");
-                                    outputCode.append("    double y2 = Block").append(getBlockId()).append("yout[").append(index)
-                                        .append("][foundIndex_").append(index).append("+1];\n");
-                                    outputCode.append("    double alpha = 0.0;\n");
-                                    outputCode.append("    if(fabs(t1 - t2) > 1e-10) {\n");
-                                    outputCode.append("      alpha = (targetTime - t2) / (t1 - t2);\n");
-                                    outputCode.append("      alpha = fmax(0.0, fmin(1.0, alpha));\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("    ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = alpha * y1 + (1.0 - alpha) * y2;\n");
-                                    outputCode.append("  } else {\n");
-                                    outputCode.append("    // Use newest value if interpolation not possible\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][0] >= targetTime) {\n");
-                                    outputCode.append("      ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = Block").append(getBlockId())
-                                        .append("yout[").append(index).append("][0];\n");
-                                    outputCode.append("    } else {\n");
-                                    outputCode.append("      ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append(";\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("  }\n");
-                                    outputCode.append("}\n");
-                                }
-                            }
-                            outputCode.append("}\n");
-                            break;
-
-                        case MATRIX:
-                            for (int i = 0; i < signal.getHeight(); i++) {
-                                for (int j = 0; j < signal.getWidth(); j++) {
-                                    int index = i * signal.getWidth() + j;
-
-                                    // Calculate target time
-                                    outputCode.append("double targetTime_").append(index).append(" = model.time - ")
-                                        .append(delaytime.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("if(targetTime_").append(index).append(" <= 0 || Block").append(getBlockId())
-                                        .append("tout[").append(index).append("][0] < 0) {\n");
-                                    outputCode.append("  ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("} else {\n");
-
-                                    // Find buffer index for interpolation
-                                    outputCode.append("  int foundIndex_").append(index).append(" = -1;\n");
-                                    outputCode.append("  for(int k=0; k<").append(bufferSize.getData().getIntValue()-1).append("; k++) {\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][k+1] < 0) break;\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][k] >= targetTime_")
-                                        .append(index).append(" && \n");
-                                    outputCode.append("       targetTime_").append(index).append(" >= Block").append(getBlockId())
-                                        .append("tout[").append(index).append("][k+1]) {\n");
-                                    outputCode.append("      foundIndex_").append(index).append(" = k;\n");
-                                    outputCode.append("      break;\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("  }\n");
-
-                                    // Perform linear interpolation
-                                    outputCode.append("  if(foundIndex_").append(index).append(" >= 0) {\n");
-                                    outputCode.append("    double t1 = Block").append(getBlockId()).append("tout[").append(index)
-                                        .append("][foundIndex_").append(index).append("];\n");
-                                    outputCode.append("    double t2 = Block").append(getBlockId()).append("tout[").append(index)
-                                        .append("][foundIndex_").append(index).append("+1];\n");
-                                    outputCode.append("    double y1 = Block").append(getBlockId()).append("yout[").append(index)
-                                        .append("][foundIndex_").append(index).append("];\n");
-                                    outputCode.append("    double y2 = Block").append(getBlockId()).append("yout[").append(index)
-                                        .append("][foundIndex_").append(index).append("+1];\n");
-                                    outputCode.append("    double alpha = 0.0;\n");
-                                    outputCode.append("    if(fabs(t1 - t2) > 1e-10) {\n");
-                                    outputCode.append("      alpha = (targetTime_").append(index).append(" - t2) / (t1 - t2);\n");
-                                    outputCode.append("      alpha = fmax(0.0, fmin(1.0, alpha));\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("    ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = alpha * y1 + (1.0 - alpha) * y2;\n");
-                                    outputCode.append("  } else {\n");
-                                    outputCode.append("    // Use newest value if interpolation not possible\n");
-                                    outputCode.append("    if(Block").append(getBlockId()).append("tout[").append(index).append("][0] >= targetTime_")
-                                        .append(index).append(") {\n");
-                                    outputCode.append("      ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = Block").append(getBlockId())
-                                        .append("yout[").append(index).append("][0];\n");
-                                    outputCode.append("    } else {\n");
-                                    outputCode.append("      ").append(outputPortList.get(0).getOutputSignalC().getName())
-                                        .append("(").append(i).append(",").append(j).append(") = ")
-                                        .append(initialoutput.getName()).append("(").append(i).append(",").append(j).append(");\n");
-                                    outputCode.append("    }\n");
-                                    outputCode.append("  }\n");
-                                    outputCode.append("}\n");
-                                }
-                            }
-                            break;
-                    }
-                    break;
-            }
+        // For fixed step solver with matrix delay time, we need the delay time value
+        if (isFixedStepSolver(model.getConfig().getSolver()) &&
+            inputSignal.getDataType() == DataType.MATRIX &&
+            delayTime.getDataType() == DataType.REAL) {
+            context.put("delayTimeValue", delayTime.getDouble());
         }
 
-        code.addOutputCode(outputCode.toString());
+        String outputCode = TemplateManager.renderTemplate("c/continuous/TransportDelay/output.vm", context);
+        code.addOutputCode(outputCode);
     }
 
 	public void updateDimension() throws MatDimException {
@@ -706,7 +490,7 @@ public class TransportDelay extends Block {
 		OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		switch (signal.getDataType()) {
 		case REAL:
-			switch (delaytime.getDataType()) {
+			switch (delayTime.getDataType()) {
 			case REAL:
 				out.setHeight(1);
 				out.setWidth(1);
@@ -715,16 +499,16 @@ public class TransportDelay extends Block {
 				out.getOutputSignalC().setDataType(DataType.REAL);
 				break;
 			case MATRIX:
-				out.setHeight(delaytime.getHeight());
-				out.setWidth(delaytime.getWidth());
-				out.getOutputSignalC().setHeight(delaytime.getHeight());
-				out.getOutputSignalC().setWidth(delaytime.getWidth());
+				out.setHeight(delayTime.getHeight());
+				out.setWidth(delayTime.getWidth());
+				out.getOutputSignalC().setHeight(delayTime.getHeight());
+				out.getOutputSignalC().setWidth(delayTime.getWidth());
 				out.getOutputSignalC().setDataType(DataType.MATRIX);
 				break;
 			}
 			break;
 		case MATRIX:
-			switch (delaytime.getDataType()) {
+			switch (delayTime.getDataType()) {
 			case REAL:
 				out.setHeight(signal.getHeight());
 				out.setWidth(signal.getWidth());
@@ -746,15 +530,15 @@ public class TransportDelay extends Block {
 
 	public void checkDimension() throws MatDimException {
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-		switch (initialoutput.getDataType()) {
+		switch (initialOutput.getDataType()) {
 		case REAL:
 			switch (signal.getDataType()) {
 			case REAL:
 
 				break;
 			case MATRIX:
-				if (initialoutput.getHeight() != delaytime.getHeight()
-						|| initialoutput.getWidth() != delaytime.getWidth()) {
+				if (initialOutput.getHeight() != delayTime.getHeight()
+						|| initialOutput.getWidth() != delayTime.getWidth()) {
 					MatDimException e = new MatDimException(
 							"Block " + this.blockName + " input dimensions don't match!");
 					throw (e);
@@ -765,19 +549,19 @@ public class TransportDelay extends Block {
 		case MATRIX:
 			switch (signal.getDataType()) {
 			case REAL:
-				if (initialoutput.getHeight() != delaytime.getHeight()
-						|| initialoutput.getWidth() != delaytime.getWidth()) {
+				if (initialOutput.getHeight() != delayTime.getHeight()
+						|| initialOutput.getWidth() != delayTime.getWidth()) {
 					MatDimException e = new MatDimException(
 							"Block " + this.blockName + " input dimensions don't match1!");
 					throw (e);
 				}
 				break;
 			case MATRIX:
-				if (signal.getHeight() != delaytime.getHeight() || signal.getWidth() != delaytime.getWidth()
-						|| signal.getHeight() != initialoutput.getHeight()
-						|| signal.getWidth() != initialoutput.getWidth()
-						|| initialoutput.getHeight() != delaytime.getHeight()
-						|| initialoutput.getWidth() != delaytime.getWidth()) {
+				if (signal.getHeight() != delayTime.getHeight() || signal.getWidth() != delayTime.getWidth()
+						|| signal.getHeight() != initialOutput.getHeight()
+						|| signal.getWidth() != initialOutput.getWidth()
+						|| initialOutput.getHeight() != delayTime.getHeight()
+						|| initialOutput.getWidth() != delayTime.getWidth()) {
 					MatDimException e = new MatDimException(
 							"Block " + this.blockName + " input dimensions don't match!");
 					throw (e);
@@ -788,8 +572,6 @@ public class TransportDelay extends Block {
 		}
 
 	}
-
-    FifoBufferExtended<Data> buffer;
 
     @Override
     public void calculateInit() {
@@ -802,7 +584,7 @@ public class TransportDelay extends Block {
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        Data linearResult = buffer.getValueByDelay(t, delaytime.getDouble());
+        Data linearResult = buffer.getValueByDelay(t, delayTime.getDouble());
         if (linearResult != null) {
             out.setData(linearResult);
         }

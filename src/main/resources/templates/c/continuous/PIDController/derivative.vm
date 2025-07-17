@@ -1,24 +1,27 @@
 /*Code for Derivative of PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
-
-#set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
-
-
-
-#set($blockId = $block.getBlockId())
-
-#if($signal.dataType == $realDataType && $cparaP.dataType == $realDataType)
-  ${stateIntegral.getDerivativeName()} = Block${blockId}save_data[2];
-  ${stateFilter.getDerivativeName()} = Block${blockId}save_data[3];
-#else
-  #set($height = $stateIntegral.getHeight())
-  #set($width = $stateIntegral.getWidth())
-  #set($hMax = $height - 1)
-  #set($wMax = $width - 1)
-
-  #foreach($i in [0..$hMax])
-    #foreach($j in [0..$wMax])
-      ${stateIntegral.getDerivativeName()}($i, $j) = Block${blockId}save_data[$i][$j*5+2];
-      ${stateFilter.getDerivativeName()}($i, $j) = Block${blockId}save_data[$i][$j*5+3];
+#if($inputPortList && $inputPortList.size() > 0 && $stateIntegral && $stateFilter && $proportionalGain)
+    #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+    #set($blockId = $block.getBlockId())
+    
+    #if($signal.dataType == $realDataType && $proportionalGain.dataType == $realDataType)
+        ## Scalar PID derivative calculation
+        ${stateIntegral.getDerivativeName()} = Block${blockId}save_data[2];
+        ${stateFilter.getDerivativeName()} = Block${blockId}save_data[3];
+    #else
+        ## Matrix PID derivative calculation
+        #set($height = $stateIntegral.getHeight())
+        #set($width = $stateIntegral.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                ${stateIntegral.getDerivativeName()}[$i][$j] = Block${blockId}save_data[$i][$j*5+2];
+                ${stateFilter.getDerivativeName()}[$i][$j] = Block${blockId}save_data[$i][$j*5+3];
+            #end
+        #end
     #end
-  #end
+#else
+    ## Fallback if parameters missing
+    /* PID Controller derivative block ${block.getBlockId()} missing parameters */
 #end

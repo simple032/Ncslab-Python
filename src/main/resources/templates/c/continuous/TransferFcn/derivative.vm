@@ -2,7 +2,7 @@
 #set($statesSizeMax = $states.size() - 1)
 #foreach($i in [0..$statesSizeMax])
   #set($nextI = $i + 1)
-  ${xStateList.get($i).getDerivativeName()}=${xStateList.get($nextI).getName()}
+  ${states.get($i).getDerivativeName()}=${states.get($nextI).getName()}
 #end
 ## 处理最后一个状态的导数表达式
 #if($statesSize > 0)

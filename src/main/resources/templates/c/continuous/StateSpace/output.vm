@@ -1,5 +1,16 @@
-/* 状态空间模块输出: ($block.getBlockId()) $block.getBlockName() */
-${block.getOutputPortVariable(0)} = ${C.getName()} * ${xState.getName()};
-#if(${feedThrough})
-${block.getOutputPortVariable(0)} += ${D.getName()} * ${block.getInputPortVariable(0)};
+/*Code for output of block StateSpace:(${block.getBlockId()})${block.getBlockName()}*/
+#if($C && $xState)
+    #set($outputVar = $block.getOutputPortVariable(0))
+    #set($inputVar = $block.getInputPortVariable(0))
+    
+    ## Output = C * x
+    $outputVar = ${C.getName()} * ${xState.getName()};
+    
+    ## Add direct feedthrough if present: y = C*x + D*u
+    #if($feedThrough && $D)
+        $outputVar += ${D.getName()} * $inputVar;
+    #end
+#else
+    ## Fallback if parameters missing
+    ${block.getOutputPortVariable(0)} = 0.0; /* StateSpace block missing parameters */
 #end

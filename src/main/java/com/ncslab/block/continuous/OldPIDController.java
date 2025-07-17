@@ -11,10 +11,14 @@ import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.ncslablink.MatDimException;
 
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
+import lombok.Getter;
 
 public class OldPIDController extends Block {
 
@@ -25,8 +29,11 @@ public class OldPIDController extends Block {
     private State stateIntegral;
     private State stateFilter;
 
+    @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    @Getter
     public static final Vector<String> outputNames = new Vector<>();
+    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -39,6 +46,17 @@ public class OldPIDController extends Block {
         inputNames.add("in1");
     }
 
+    // === Parameter Defaults ===
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+    static {
+        PARAMETER_DEFAULTS.put("P", "1");
+        PARAMETER_DEFAULTS.put("I", "1");
+        PARAMETER_DEFAULTS.put("D", "0");
+        PARAMETER_DEFAULTS.put("N", "100");
+    }
+
+    @Deprecated
     public OldPIDController(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
 
@@ -47,13 +65,9 @@ public class OldPIDController extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
 
         cparaP = new Parameter(this, parameterList.size() + 1, "P", paramValues.getString("P"));
-        parameterList.add(cparaP);
         cparaI = new Parameter(this, parameterList.size() + 1, "I", paramValues.getString("I"));
-        parameterList.add(cparaI);
         cparaD = new Parameter(this, parameterList.size() + 1, "D", paramValues.getString("D"));
-        parameterList.add(cparaD);
         cparaN = new Parameter(this, parameterList.size() + 1, "N", paramValues.getString("N"));
-        parameterList.add(cparaN);
     }
 
     @Override
@@ -113,16 +127,15 @@ public class OldPIDController extends Block {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        String arraysCode = "/*Define arrays for block discrete_Delay:(" + getBlockId() + ")" + getBlockName() + "*/\n";
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        if (signal.getDataType() == DataType.MATRIX) {
-            arraysCode += "double " + "Block" + getBlockId() + "save_data[" + signal.getHeight() + "][" + signal.getWidth() + "*5];\n";
-        } else if (signal.getDataType() == DataType.REAL && cparaP.getDataType() == DataType.REAL) {
-            arraysCode += "double " + "Block" + getBlockId() + "save_data[5];\n";
-        } else {
-            arraysCode += "double " + "Block" + getBlockId() + "save_data[" + cparaP.getHeight() + "][" + cparaP.getWidth() + "*5];\n";
-        }
-        code.addArraysCode(arraysCode);
+        context.put("block", this);
+        context.put("signal", signal);
+        context.put("cparaP", cparaP);
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+
+        String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/arrays.vm", context);
+        code.addArraysCode(codeStr);
     }
 
     public void generateInitCodeC(CodeStructC code) {
@@ -130,6 +143,15 @@ public class OldPIDController extends Block {
         context.put("block", this);
         context.put("stateIntegral", stateIntegral);
         context.put("stateFilter", stateFilter);
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+
+        // Add states list for template
+        java.util.List<State> states = new java.util.ArrayList<>();
+        states.add(stateIntegral);
+        states.add(stateFilter);
+        context.put("states", states);
+
         String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/init.vm", context);
         code.addInitCode(codeStr);
     }
@@ -138,6 +160,17 @@ public class OldPIDController extends Block {
         context.put("block", this);
         context.put("stateIntegral", stateIntegral);
         context.put("stateFilter", stateFilter);
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+
+        // Set up inputs and outputs for template
+        java.util.List<String> inputs = new java.util.ArrayList<>();
+        java.util.List<String> outputs = new java.util.ArrayList<>();
+        inputs.add(getInputPortVariable(0));
+        outputs.add(getOutputPortVariable(0));
+        context.put("inputs", inputs);
+        context.put("outputs", outputs);
+
         String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -146,25 +179,30 @@ public class OldPIDController extends Block {
         context.put("block", this);
         context.put("stateIntegral", stateIntegral);
         context.put("stateFilter", stateFilter);
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+
+        // Set up inputs for template
+        java.util.List<String> inputs = new java.util.ArrayList<>();
+        inputs.add(getInputPortVariable(0));
+        context.put("inputs", inputs);
+
         String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
     public void generateUpdateCodeC(CodeStructC code) {
-        String updateCode = "/*Code for Update of " + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        if (signal.getDataType() == DataType.REAL && cparaP.getDataType() == DataType.REAL) {
-            updateCode += stateIntegral.getName() + "=" + stateIntegral.getName() + "+" + stateIntegral.getDerivativeName() + "*model.stepSize;\n";
-            updateCode += stateFilter.getName() + "=" + stateFilter.getName() + "+" + stateFilter.getDerivativeName() + "*model.stepSize;\n";
-        } else {
-            for (int i = 0; i < stateFilter.getHeight(); i++) {
-                for (int j = 0; j < stateFilter.getWidth(); j++) {
-                    updateCode += stateIntegral.getName() + "(" + i + "," + j + ")=" + stateIntegral.getName() + "(" + i + "," + j + ")+" + stateIntegral.getDerivativeName() + "(" + i + "," + j + ")*model.stepSize;\n";
-                    updateCode += stateFilter.getName() + "(" + i + "," + j + ")=" + stateFilter.getName() + "(" + i + "," + j + ")+" + stateFilter.getDerivativeName() + "(" + i + "," + j + ")*model.stepSize;\n";
-                }
-            }
-        }
-        code.addUpdateCode(updateCode);
+        context.put("block", this);
+        context.put("signal", signal);
+        context.put("cparaP", cparaP);
+        context.put("stateIntegral", stateIntegral);
+        context.put("stateFilter", stateFilter);
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+
+        String codeStr = TemplateManager.renderTemplate("c/continuous/OldPIDController/update.vm", context);
+        code.addUpdateCode(codeStr);
     }
 
     public void updateDimension() throws MatDimException {

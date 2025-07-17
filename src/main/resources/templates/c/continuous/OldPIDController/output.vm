@@ -1,19 +1,21 @@
 /* PID控制器模块输出: ($block.getBlockId()) $block.getBlockName() */
-#if($block.paramValues.get("P").dataType == $realDataType)
+#if($block.cparaP.dataType == $realDataType)
     #set($error = $inputs.get(0))
-    ${outputs.get(0)} = ${block.paramValues.get("P").getName()} * $error 
+    ${outputs.get(0)} = ${block.cparaP.getName()} * $error 
                         + ${stateIntegral.getName()} 
-                        + ${block.paramValues.get("D").getName()} * ${block.paramValues.get("N").getName()} 
+                        + ${block.cparaD.getName()} * ${block.cparaN.getName()} 
                         * ($error - ${stateFilter.getName()});
 #else
-#set($pHeightIndex = ${block.paramValues.get("P").getHeight()} - 1)
+#if($block.cparaP.getHeight() && $block.cparaP.getWidth())
+#set($pHeightIndex = ${block.cparaP.getHeight()} - 1)
     #foreach($i in [0..$pHeightIndex])
-#set($pWidthIndex = ${block.paramValues.get("P").getWidth()} - 1)
+#set($pWidthIndex = ${block.cparaP.getWidth()} - 1)
         #foreach($j in [0..$pWidthIndex])
-            ${outputs.get(0)}($i,$j) = ${block.paramValues.get("P").getName()}($i,$j) * $inputs.get(0)($i,$j)
+            ${outputs.get(0)}($i,$j) = ${block.cparaP.getName()}($i,$j) * $inputs.get(0)($i,$j)
                                       + ${stateIntegral.getName()}($i,$j)
-                                      + ${block.paramValues.get("D").getName()}($i,$j) * ${block.paramValues.get("N").getName()}($i,$j)
+                                      + ${block.cparaD.getName()}($i,$j) * ${block.cparaN.getName()}($i,$j)
                                       * ($inputs.get(0)($i,$j) - ${stateFilter.getName()}($i,$j));
         #end
     #end
+#end
 #end
