@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -14,33 +15,84 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * Relay block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * SIMULINK Parameters:
+ * - SwitchOnPoint: Input value at which the relay switches on
+ * - SwitchOffPoint: Input value at which the relay switches off
+ * - OutputWhenOn: Output value when relay is on
+ * - OutputWhenOff: Output value when relay is off
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class Relay extends Block {
+    // Legacy fields for backward compatibility
     Parameter onSwitchValue;
     Parameter offSwitchValue;
     Parameter onOutputValue;
     Parameter offOutputValue;
     private State xState;
 
-    
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter switchOnPoint;
+    @Getter
+    private final Parameter switchOffPoint;
+    @Getter
+    private final Parameter outputWhenOn;
+    @Getter
+    private final Parameter outputWhenOff;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
-
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("OnSwitchValue", "1.0");     // SwitchOnPoint
+        PARAMETER_DEFAULTS.put("OffSwitchValue", "0.0");    // SwitchOffPoint
+        PARAMETER_DEFAULTS.put("OnOutputValue", "1.0");     // OutputWhenOn
+        PARAMETER_DEFAULTS.put("OffOutputValue", "0.0");    // OutputWhenOff
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("OnSwitchValue");
-        parameterNames.add("OffSwitchValue");
-        parameterNames.add("OnOutputValue");
-        parameterNames.add("OffOutputValue");
+        // Parameter names matching legacy JSON field names
+        parameterNames.add("OnSwitchValue"); // Maps to SwitchOnPoint
+        parameterNames.add("OffSwitchValue"); // Maps to SwitchOffPoint
+        parameterNames.add("OnOutputValue"); // Maps to OutputWhenOn
+        parameterNames.add("OffOutputValue"); // Maps to OutputWhenOff
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
@@ -56,85 +108,114 @@ public class Relay extends Block {
         }
         return indices;
     }
-
-    public Relay(JSONObject blockIn, NCSLabModel model) {
-        super(blockIn, model);
-
-        // Initialize ports
+    // === Private Constructor with Typed Parameters ===
+    private Relay(String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        
+        // Get parameters by name from the automatically populated parameterList (via parseParameterList())
+        this.switchOnPoint = getParameterByName("OnSwitchValue"); // OnSwitchValue -> SwitchOnPoint
+        this.switchOffPoint = getParameterByName("OffSwitchValue"); // OffSwitchValue -> SwitchOffPoint
+        this.outputWhenOn = getParameterByName("OnOutputValue"); // OnOutputValue -> OutputWhenOn
+        this.outputWhenOff = getParameterByName("OffOutputValue"); // OffOutputValue -> OutputWhenOff
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        
+        // Legacy field mapping for backward compatibility
+        this.onSwitchValue = this.switchOnPoint;
+        this.offSwitchValue = this.switchOffPoint;
+        this.onOutputValue = this.outputWhenOn;
+        this.offOutputValue = this.outputWhenOff;
+        
+        // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-
-        // Initialize parameters
-        onSwitchValue = new Parameter(this, 1, "OnSwitchValue", paramValues.getString("OnSwitchValue"));
-        offSwitchValue = new Parameter(this, 2, "OffSwitchValue", paramValues.getString("OffSwitchValue"));
-        onOutputValue = new Parameter(this, 3, "OnOutputValue", paramValues.getString("OnOutputValue"));
-        offOutputValue = new Parameter(this, 4, "OffOutputValue", paramValues.getString("OffOutputValue"));
-        parameterList.add(onSwitchValue);
-        parameterList.add(offSwitchValue);
-        parameterList.add(onOutputValue);
-        parameterList.add(offOutputValue);
     }
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public Relay(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model); // This calls parseParameterList() automatically
+        
+        // Get parameters by name from the automatically populated parameterList
+        this.switchOnPoint = getParameterByName("OnSwitchValue"); // OnSwitchValue -> SwitchOnPoint
+        this.switchOffPoint = getParameterByName("OffSwitchValue"); // OffSwitchValue -> SwitchOffPoint
+        this.outputWhenOn = getParameterByName("OnOutputValue"); // OnOutputValue -> OutputWhenOn
+        this.outputWhenOff = getParameterByName("OffOutputValue"); // OffOutputValue -> OutputWhenOff
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-    @Override
-    public void calculateInit() {
-        // 初始化逻辑
+        // Legacy field mapping for backward compatibility
+        this.onSwitchValue = this.switchOnPoint;
+        this.offSwitchValue = this.switchOffPoint;
+        this.onOutputValue = this.outputWhenOn;
+        this.offOutputValue = this.outputWhenOff;
+
+        // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
     }
-
-    @Override
-    public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
-        Data inputData = inputPortList.get(0).getData();
-
-        Data resultData;
-        switch (inputData.getDataType()) {
-            case REAL:
-                double currentInput = inputData.getInitValue();
-                double previousState = xState != null ? xState.getData().getInitValue() : 0.0;
-                double onSwitchValueReal = onSwitchValue.getDouble();
-                double offSwitchValueReal = offSwitchValue.getDouble();
-                double onOutputValueReal = onOutputValue.getDouble();
-                double offOutputValueReal = offOutputValue.getDouble();
-
-                if (currentInput >= onSwitchValueReal && previousState < onSwitchValueReal) {
-                    resultData = new Data(onOutputValueReal);
-                } else if (currentInput <= offSwitchValueReal && previousState > offSwitchValueReal) {
-                    resultData = new Data(offOutputValueReal);
-                } else {
-                    resultData = new Data(previousState);
-                }
-                break;
-            case MATRIX:
-                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
-                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
-                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
-                        double currentInputMatrix = inputData.getMatrix().get(i, j);
-                        double previousStateMatrix = xState != null ? xState.getData().getMatrix().get(i, j) : 0.0;
-                        double onSwitchValueMatrix = onSwitchValue.getMatrix().get(i, j);
-                        double offSwitchValueMatrix = offSwitchValue.getMatrix().get(i, j);
-                        double onOutputValueMatrix = onOutputValue.getMatrix().get(i, j);
-                        double offOutputValueMatrix = offOutputValue.getMatrix().get(i, j);
-
-                        if (currentInputMatrix >= onSwitchValueMatrix && previousStateMatrix < onSwitchValueMatrix) {
-                            matrixResult.set(i, j, onOutputValueMatrix);
-                        } else if (currentInputMatrix <= offSwitchValueMatrix && previousStateMatrix > offSwitchValueMatrix) {
-                            matrixResult.set(i, j, offOutputValueMatrix);
-                        } else {
-                            matrixResult.set(i, j, previousStateMatrix);
-                        }
-                    }
-                }
-                resultData = new Data(matrixResult);
-                break;
-            default:
-                resultData = new Data(0);
-        }
-
-        out.setData(resultData);
-        if (xState != null) {
-            xState.setData(resultData);
+    // === Static Factory Method for JSON Deserialization ===
+    public static Relay fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            
+            return new Relay(blockName, blockPath, blockUUID, model);
+            
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Relay block from JSON: " + e.getMessage(), e);
         }
     }
+    
+    // === Static Factory Method for Programmatic Creation ===
+    public static Relay create(String name, String path, String switchOnPoint, String switchOffPoint,
+                              String outputWhenOn, String outputWhenOff, NCSLabModel model) {
+        return create(name, path, switchOnPoint, switchOffPoint, outputWhenOn, outputWhenOff,
+                     -1.0, "Inherit: Same as input", false, model);
+    }
+    public static Relay create(String name, String path, String switchOnPoint, String switchOffPoint,
+                              String outputWhenOn, String outputWhenOff, double sampleTime, 
+                              String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        // Create a JSONObject with parameter values for centralized parsing
+        JSONObject paramValues = new JSONObject();
+        paramValues.put("OnSwitchValue", switchOnPoint);
+        paramValues.put("OffSwitchValue", switchOffPoint);
+        paramValues.put("OnOutputValue", outputWhenOn);
+        paramValues.put("OffOutputValue", outputWhenOff);
+        paramValues.put("SampleTime", String.valueOf(sampleTime));
+        paramValues.put("OutDataTypeStr", outDataType);
+        paramValues.put("SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        
+        JSONObject blockJSON = createBlockIdentity(name, path, "null");
+        blockJSON.put("paramValues", paramValues);
+        
+        return new Relay(blockJSON, model);
+    }
+    
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+    
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Relay");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
+    }
 
+    // === Code Generation Methods ===
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
         context.put("block", this);
@@ -142,7 +223,6 @@ public class Relay extends Block {
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);
         context.put("offOutputValue", offOutputValue);
-        context.put("xState", xState);
 
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/Relay/init.vm", context);
         code.addInitCode(codeStr);
@@ -150,20 +230,13 @@ public class Relay extends Block {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("block", this);
         context.put("onSwitchValue", onSwitchValue);
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);
         context.put("offOutputValue", offOutputValue);
-        context.put("out", out);
-        context.put("ops", ops);
-        context.put("signal", signal);
-        context.put("xState", xState);
         context.put("outputs", getOutputPortVariables());
+        context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/Relay/output.vm", context);
         code.addOutputCode(codeStr);
@@ -176,79 +249,60 @@ public class Relay extends Block {
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);
         context.put("offOutputValue", offOutputValue);
-        context.put("xState", xState);
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("block", this);
         context.put("onSwitchValue", onSwitchValue);
         context.put("offSwitchValue", offSwitchValue);
         context.put("onOutputValue", onOutputValue);
         context.put("offOutputValue", offOutputValue);
-        context.put("out", out);
-        context.put("ops", ops);
-        context.put("signal", signal);
-        context.put("xState", xState);
         context.put("outputs", getOutputPortVariables());
+        context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
+    @Override
     public void updateDimension() throws MatDimException {
-        OutputPort out = outputPortList.get(0);
-        InputPort in = inputPortList.get(0);
-        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        super.updateDimension();
+    }
 
-        if (signal.getDataType() == DataType.REAL) {
-            xState = new State(this, 1, "save_data", onSwitchValue.getHeight(), onSwitchValue.getWidth());
-        } else {
-            xState = new State(this, 1, "save_data", signal.getHeight(), signal.getWidth());
-        }
-        stateList.add(xState);
+    @Override
+    public void checkDimension() throws MatDimException {
+        // No specific dimension checking needed
+    }
 
-        if (onSwitchValue.getWidth() != offSwitchValue.getWidth()
-                || onSwitchValue.getWidth() != onOutputValue.getWidth()
-                || onSwitchValue.getWidth() != offOutputValue.getWidth()
-                || onSwitchValue.getHeight() != offSwitchValue.getHeight()
-                || onSwitchValue.getHeight() != onOutputValue.getHeight()
-                || onSwitchValue.getHeight() != offOutputValue.getHeight()) {
-            MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match! All input dimensions should be same!");
-            throw(e);
-        }
-
-        if (onSwitchValue.getDataType() == DataType.MATRIX && signal.getDataType() == DataType.REAL) {
-            out.setHeight(onSwitchValue.getHeight());
-            out.setWidth(onSwitchValue.getWidth());
-            out.getOutputSignalC().setHeight(onSwitchValue.getHeight());
-            out.getOutputSignalC().setWidth(onSwitchValue.getWidth());
-            out.getOutputSignalC().setDataType(DataType.MATRIX);
-        } else if (onSwitchValue.getDataType() == DataType.REAL && signal.getDataType() == DataType.MATRIX) {
-            out.setHeight(signal.getHeight());
-            out.setWidth(signal.getWidth());
-            out.getOutputSignalC().setHeight(signal.getHeight());
-            out.getOutputSignalC().setWidth(signal.getWidth());
-            out.getOutputSignalC().setDataType(signal.getDataType());
-        } else {
-            if (onSwitchValue.getWidth() != signal.getWidth() || onSwitchValue.getHeight() != signal.getHeight()) {
-                MatDimException e = new MatDimException("Block " + this.blockName + " input dimension doesn't match the gain dimension!\n \n");
-                throw(e);
-            }
-            out.setHeight(onSwitchValue.getHeight());
-            out.setWidth(onSwitchValue.getWidth());
-            out.getOutputSignalC().setHeight(onSwitchValue.getHeight());
-            out.getOutputSignalC().setWidth(onSwitchValue.getWidth());
-            out.getOutputSignalC().setDataType(onSwitchValue.getDataType());
+    @Override
+    public void calculateInit() {
+        // Initialize state based on initial condition
+        if (xState != null) {
+            Data output = onOutputValue.getData();
+            outputPortList.get(0).getOutputSignalC().setData(output);
         }
     }
 
-    public void checkDimension() throws MatDimException {
-        // No specific dimension checking needed
+    @Override
+    public void calculateOutput(double t) {
+        Data input = inputPortList.get(0).getData();
+        double inputValue = input.getInitValue();
+        double onSwitch = onSwitchValue.getData().getInitValue();
+        double offSwitch = offSwitchValue.getData().getInitValue();
+        
+        Data output;
+        if (inputValue >= onSwitch) {
+            output = onOutputValue.getData();
+        } else if (inputValue <= offSwitch) {
+            output = offOutputValue.getData();
+        } else {
+            // Keep previous state - use current output
+            output = outputPortList.get(0).getOutputSignalC().getData();
+        }
+        
+        outputPortList.get(0).getOutputSignalC().setData(output);
     }
 }

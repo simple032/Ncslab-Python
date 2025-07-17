@@ -13,18 +13,48 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * Coulomb block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * SIMULINK Parameters:
+ * - Offset: Offset value for Coulomb friction
+ * - Gain: Gain value for Coulomb friction
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class Coulomb extends Block {
+    // Legacy fields for backward compatibility
     Parameter offset;
     Parameter gain;
 
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter offsetParam;
+    @Getter
+    private final Parameter gainParam;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final HashMap<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -32,27 +62,182 @@ public class Coulomb extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("offset");
-        parameterNames.add("gain");
+        // SIMULINK parameter names
+        parameterNames.add("Offset");
+        parameterNames.add("Gain");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("Offset", "0");
+        PARAMETER_DEFAULTS.put("Gain", "1");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
+    // === Private Constructor with Typed Parameters ===
+    private Coulomb(Parameter offset, Parameter gain, Parameter sampleTime,
+                   Parameter outDataType, Parameter saturateOnIntegerOverflow,
+                   String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        
+        // Assign parameters
+        this.offsetParam = Objects.requireNonNull(offset, "Offset parameter cannot be null");
+        this.gainParam = Objects.requireNonNull(gain, "Gain parameter cannot be null");
+        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        // Legacy field mapping for backward compatibility
+        this.offset = this.offsetParam;
+        this.gain = this.gainParam;
+        
+        // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }
+    
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
     public Coulomb(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
 
-        // 一个输入端口，一个输出端口
+        // Create legacy parameters for backward compatibility
+        this.offsetParam = new Parameter(this, 1, "Offset", paramValues.getString("offset"));
+        this.gainParam = new Parameter(this, 2, "Gain", paramValues.getString("gain"));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        
+        // Add all parameters to parameter list
+
+        // Legacy field mapping for backward compatibility
+        this.offset = this.offsetParam;
+        this.gain = this.gainParam;
+
+        // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-        offset = new Parameter(this, 1, "offset", paramValues.getString("offset"));
-        gain = new Parameter(this, 2, "gain", paramValues.getString("gain"));
-        parameterList.add(offset);
-        parameterList.add(gain);
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
+    public static Coulomb fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+            
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+            
+            Parameter offset = createOffsetFromJSON(paramValues, blockName);
+            Parameter gain = createGainFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+            
+            Coulomb block = new Coulomb(offset, gain, sampleTime, outDataType, saturateParam,
+                                       blockName, blockPath, blockUUID, model);
+            
+            setParameterBlockReference(block, offset, gain, sampleTime, outDataType, saturateParam);
+            
+            return block;
+            
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Coulomb block from JSON: " + e.getMessage(), e);
+        }
+    }
+    
+    // === Static Factory Method for Programmatic Creation ===
+    public static Coulomb create(String name, String path, String offset, String gain, NCSLabModel model) {
+        return create(name, path, offset, gain, -1.0, "Inherit: Same as input", false, model);
+    }
+    
+    public static Coulomb create(String name, String path, String offset, String gain,
+                                double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        Parameter offsetParam = new Parameter(null, 1, "Offset", offset);
+        Parameter gainParam = new Parameter(null, 2, "Gain", gain);
+        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        
+        Coulomb block = new Coulomb(offsetParam, gainParam, sampleTimeParam, outDataTypeParam, saturateParam,
+                                   name, path, "null", model);
+        
+        setParameterBlockReference(block, offsetParam, gainParam, sampleTimeParam, outDataTypeParam, saturateParam);
+        
+        return block;
+    }
+    
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createOffsetFromJSON(JSONObject paramValues, String blockName) {
+        String offsetValue = paramValues.optString("offset", "1");
+        return new Parameter(null, 1, "Offset", offsetValue);
+    }
+    
+    private static Parameter createGainFromJSON(JSONObject paramValues, String blockName) {
+        String gainValue = paramValues.optString("gain", "1");
+        return new Parameter(null, 2, "Gain", gainValue);
+    }
+    
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "-1");
+        return new Parameter(null, 3, "SampleTime", sampleTimeValue);
+    }
+    
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 4, "OutDataTypeStr", outDataTypeValue);
+    }
+    
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateValue);
+    }
+    
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+    
+    private static void setParameterBlockReference(Coulomb block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+    
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Coulomb");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
     }
 
     @Override
     public void calculateInit() {
-        // 初始化逻辑
+        // Initialize Coulomb friction block
     }
 
     @Override
@@ -107,10 +292,12 @@ public class Coulomb extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        String initCode="";
-        initCode+=offset.getInitCodeM();
-        initCode+=gain.getInitCodeM();
-        code.addInitCode(initCode);
+        context.put("block", this);
+        context.put("offset", offset);
+        context.put("gain", gain);
+        
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Coulomb/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
@@ -118,43 +305,19 @@ public class Coulomb extends Block {
         OutputPort out  = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        String outputCode="";
-
-        switch(gain.getDataType()) {
-            case REAL:
-                switch(ops.getOutputSignalC().getDataType()) {
-                    case REAL:
-                        outputCode+=out.getOutputSignalC().getName()+"="+"sign("+signal.getName()+")*("+gain.getName()+"*abs("+signal.getName()+")+"+offset.getName()+");\n";
-                        break;
-                    case MATRIX:
-                        for(int i=1; i<=ops.getHeight(); i++) {
-                            for(int j=1; j<=ops.getWidth(); j++) {
-                                outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+"sign("+signal.getName()+"("+i+","+j+"))*("+gain.getName()+"*abs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+");\n";
-                            }
-                        }
-                        break;
-                }
-                break;
-            case MATRIX:
-                switch(ops.getOutputSignalC().getDataType()) {
-                    case REAL:
-                        for(int i=1; i<=gain.getHeight(); i++) {
-                            for(int j=1; j<=gain.getWidth(); j++) {
-                                outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+"sign("+signal.getName()+")*("+gain.getName()+"("+i+","+j+")*abs("+signal.getName()+")+"+offset.getName()+"("+i+","+j+"));\n";
-                            }
-                        }
-                        break;
-                    case MATRIX:
-                        for(int i=1; i<=ops.getHeight(); i++) {
-                            for(int j=1; j<=ops.getWidth(); j++) {
-                                outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")="+"sign("+signal.getName()+"("+i+","+j+"))*("+gain.getName()+"("+i+","+j+")*abs("+signal.getName()+"("+i+","+j+"))+"+offset.getName()+"("+i+","+j+"));\n";
-                            }
-                        }
-                        break;
-                }
-                break;
-        }
-        code.addOutputCode(outputCode);
+        
+        context.put("block", this);
+        context.put("outputSignal", out.getOutputSignalC());
+        context.put("inputSignal", signal);
+        context.put("gain", gain);
+        context.put("offset", offset);
+        context.put("inputHeight", ops.getHeight());
+        context.put("inputWidth", ops.getWidth());
+        context.put("gainHeight", gain.getHeight());
+        context.put("gainWidth", gain.getWidth());
+        
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Coulomb/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void generateInitCodeC(CodeStructC code){

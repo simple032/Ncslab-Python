@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -13,19 +14,57 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * DeadZone block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * SIMULINK Parameters:
+ * - StartOfDeadZone: Start value of the dead zone
+ * - EndOfDeadZone: End value of the dead zone
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class DeadZone extends Block {
+    // Legacy fields for backward compatibility
     Parameter lowerValue;
     Parameter upperValue;
 
-    
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter startOfDeadZone;
+    @Getter
+    private final Parameter endOfDeadZone;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("LowerValue", "-0.5");       // StartOfDeadZone
+        PARAMETER_DEFAULTS.put("UpperValue", "0.5");        // EndOfDeadZone
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -45,168 +84,110 @@ public class DeadZone extends Block {
     }
 
     static {
-        parameterNames.add("LowerValue");
-        parameterNames.add("UpperValue");
+        // Parameter names matching legacy JSON field names
+        parameterNames.add("LowerValue"); // Maps to StartOfDeadZone
+        parameterNames.add("UpperValue"); // Maps to EndOfDeadZone
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
-
-    public DeadZone(JSONObject blockIn, NCSLabModel model) {
-        super(blockIn, model);
-
-        // Initialize ports
+    // === Private Constructor with Typed Parameters ===
+    private DeadZone(String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        
+        // Get parameters by name from the automatically populated parameterList (via parseParameterList())
+        this.startOfDeadZone = getParameterByName("LowerValue"); // LowerValue -> StartOfDeadZone
+        this.endOfDeadZone = getParameterByName("UpperValue"); // UpperValue -> EndOfDeadZone
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        
+        // Legacy field mapping for backward compatibility
+        this.lowerValue = this.startOfDeadZone;
+        this.upperValue = this.endOfDeadZone;
+        
+        // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-
-        // Initialize parameters
-        lowerValue = new Parameter(this, 1, "LowerValue", paramValues.getString("LowerValue"));
-        upperValue = new Parameter(this, 2, "UpperValue", paramValues.getString("UpperValue"));
-        parameterList.add(lowerValue);
-        parameterList.add(upperValue);
     }
 
-    @Override
-    public void calculateInit() {
-        // 初始化逻辑
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public DeadZone(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model); // This calls parseParameterList() automatically
+        
+        // Get parameters by name from the automatically populated parameterList
+        this.startOfDeadZone = getParameterByName("LowerValue"); // LowerValue -> StartOfDeadZone
+        this.endOfDeadZone = getParameterByName("UpperValue"); // UpperValue -> EndOfDeadZone
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Legacy field mapping for backward compatibility
+        this.lowerValue = this.startOfDeadZone;
+        this.upperValue = this.endOfDeadZone;
+
+        // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
     }
 
-    @Override
-    public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
-        Data inputData = inputPortList.get(0).getData();
-
-        Data resultData;
-        switch (inputData.getDataType()) {
-            case REAL:
-                double inputValue = inputData.getInitValue();
-                double lowerLimit = lowerValue.getDouble();
-                double upperLimit = upperValue.getDouble();
-                if (inputValue >= upperLimit) {
-                    resultData = new Data(inputValue - upperLimit);
-                } else if (inputValue <= lowerLimit) {
-                    resultData = new Data(inputValue + lowerLimit);
-                } else {
-                    resultData = new Data(0.0);
-                }
-                break;
-            case MATRIX:
-                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
-                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
-                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
-                        double inputValueMatrix = inputData.getMatrix().get(i, j);
-                        double lowerLimitMatrix = lowerValue.getMatrix().get(i, j);
-                        double upperLimitMatrix = upperValue.getMatrix().get(i, j);
-                        if (inputValueMatrix >= upperLimitMatrix) {
-                            matrixResult.set(i, j, inputValueMatrix - upperLimitMatrix);
-                        } else if (inputValueMatrix <= lowerLimitMatrix) {
-                            matrixResult.set(i, j, inputValueMatrix + lowerLimitMatrix);
-                        } else {
-                            matrixResult.set(i, j, 0.0);
-                        }
-                    }
-                }
-                resultData = new Data(matrixResult);
-                break;
-            default:
-                resultData = new Data(0);
-        }
-
-        out.setData(resultData);
-    }
-
-    public void generateInitCodeM(CodeStructM code) {
-        super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("lowerValue", lowerValue);
-        context.put("upperValue", upperValue);
-
-        String codeStr = TemplateManager.renderTemplate("m/discontinuous/DeadZone/init.vm", context);
-        code.addInitCode(codeStr);
-    }
-
-    public void generateOutputCodeM(CodeStructM code) {
-        super.generateOutputCodeM(code);
-
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
-        context.put("lowerValue", lowerValue);
-        context.put("upperValue", upperValue);
-        context.put("out", out);
-        context.put("ops", ops);
-        context.put("signal", signal);
-        context.put("outputs", getOutputPortVariables());
-
-        String codeStr = TemplateManager.renderTemplate("m/discontinuous/DeadZone/output.vm", context);
-        code.addOutputCode(codeStr);
-    }
-
-    public void generateInitCodeC(CodeStructC code) {
-        super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("lowerValue", lowerValue);
-        context.put("upperValue", upperValue);
-
-        String codeStr = TemplateManager.renderTemplate("c/discontinuous/DeadZone/init.vm", context);
-        code.addInitCode(codeStr);
-    }
-
-    public void generateOutputCodeC(CodeStructC code) {
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
-
-        context.put("lowerValue", lowerValue);
-        context.put("upperValue", upperValue);
-        context.put("lowerValueWidthIndex", lowerValue.getWidth()-1);
-        context.put("lowerValueHeightIndex", lowerValue.getHeight()-1);
-        context.put("out", out);
-        context.put("ops", ops);
-        context.put("opsWidthIndex", ops.getWidth()-1);
-        context.put("opsHeightIndex", ops.getHeight()-1);
-        context.put("signal", signal);
-        context.put("outputs", getOutputPortVariables());
-
-        String codeStr = TemplateManager.renderTemplate("c/discontinuous/DeadZone/output.vm", context);
-        code.addOutputCode(codeStr);
-    }
-
-    public void updateDimension() throws MatDimException{
-        OutputPort out  = outputPortList.get(0);
-        InputPort in  = inputPortList.get(0);
-        OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        if(lowerValue.getWidth()!=upperValue.getWidth()||lowerValue.getHeight()!=upperValue.getHeight()) {
-            MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!All input dimensions should be same!");
-            throw(e);
-        }
-        if(lowerValue.getDataType()==DataType.MATRIX&&signal.getDataType()==DataType.REAL) {
-            out.setHeight(lowerValue.getHeight());
-            out.setWidth(lowerValue.getWidth());
-            out.getOutputSignalC().setHeight(lowerValue.getHeight());
-            out.getOutputSignalC().setWidth(lowerValue.getWidth());
-            out.getOutputSignalC().setDataType(DataType.MATRIX);
-        }
-        else if(lowerValue.getDataType()==DataType.REAL&&signal.getDataType()==DataType.MATRIX) {
-            out.setHeight(signal.getHeight());
-            out.setWidth(signal.getWidth());
-            out.getOutputSignalC().setHeight(signal.getHeight());
-            out.getOutputSignalC().setWidth(signal.getWidth());
-            out.getOutputSignalC().setDataType(signal.getDataType());
-        }
-        else{
-            if(lowerValue.getWidth()!=signal.getWidth()||lowerValue.getHeight()!=signal.getHeight()) {
-            MatDimException e=new MatDimException("Block "+this.blockName+" input dimension doesn't match the gain dimension!\n \n");
-            throw(e);
-            }
-            out.setHeight(lowerValue.getHeight());
-            out.setWidth(lowerValue.getWidth());
-            out.getOutputSignalC().setHeight(lowerValue.getHeight());
-            out.getOutputSignalC().setWidth(lowerValue.getWidth());
-            out.getOutputSignalC().setDataType(lowerValue.getDataType());
+    // === Static Factory Method for JSON Deserialization ===
+    public static DeadZone fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            
+            return new DeadZone(blockName, blockPath, blockUUID, model);
+            
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create DeadZone block from JSON: " + e.getMessage(), e);
         }
     }
-    public void checkDimension() throws MatDimException{
+    
+    // === Static Factory Method for Programmatic Creation ===
+    public static DeadZone create(String name, String path, String startOfDeadZone, String endOfDeadZone, NCSLabModel model) {
+        return create(name, path, startOfDeadZone, endOfDeadZone, -1.0, "Inherit: Same as input", false, model);
+    }
+
+    public static DeadZone create(String name, String path, String startOfDeadZone, String endOfDeadZone,
+                                 double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        // Create a JSONObject with parameter values for centralized parsing
+        JSONObject paramValues = new JSONObject();
+        paramValues.put("LowerValue", startOfDeadZone);
+        paramValues.put("UpperValue", endOfDeadZone);
+        paramValues.put("SampleTime", String.valueOf(sampleTime));
+        paramValues.put("OutDataTypeStr", outDataType);
+        paramValues.put("SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        
+        JSONObject blockJSON = createBlockIdentity(name, path, "null");
+        blockJSON.put("paramValues", paramValues);
+        
+        return new DeadZone(blockJSON, model);
+    }
+    
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "DeadZone");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
     }
 }

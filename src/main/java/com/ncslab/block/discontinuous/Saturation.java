@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -13,19 +14,64 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * Saturation block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * SIMULINK Parameters:
+ * - UpperSaturationLimit: Upper saturation limit
+ * - LowerSaturationLimit: Lower saturation limit
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class Saturation extends Block {
+    // Legacy fields for backward compatibility
     Parameter lowerLimit;
     Parameter upperLimit;
 
-    
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter upperSaturationLimit;
+    @Getter
+    private final Parameter lowerSaturationLimit;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("UpperLimit", "1.0");
+        PARAMETER_DEFAULTS.put("LowerLimit", "-1.0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        
+        // Parameter names matching legacy JSON field names
+        parameterNames.add("UpperLimit");
+        parameterNames.add("LowerLimit");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -33,168 +79,146 @@ public class Saturation extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("LowerLimit");
-        parameterNames.add("UpperLimit");
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
-    public Saturation(JSONObject blockIn, NCSLabModel model) {
-        super(blockIn, model);
-
-        // Initialize ports
+    // === Private Constructor with Typed Parameters ===
+    private Saturation(String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        
+        // Get parameters by name from the automatically populated parameterList (via parseParameterList())
+        this.upperSaturationLimit = getParameterByName("UpperLimit");
+        this.lowerSaturationLimit = getParameterByName("LowerLimit");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        
+        // Legacy field mapping for backward compatibility
+        this.upperLimit = this.upperSaturationLimit;
+        this.lowerLimit = this.lowerSaturationLimit;
+        
+        // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-
-        // Initialize parameters
-        lowerLimit = new Parameter(this, 1, "LowerLimit", paramValues.getString("LowerLimit"));
-        upperLimit = new Parameter(this, 2, "UpperLimit", paramValues.getString("UpperLimit"));
-        parameterList.add(lowerLimit);
-        parameterList.add(upperLimit);
     }
 
-    @Override
-    public void calculateInit() {
-        // 初始化逻辑
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public Saturation(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model); // This calls parseParameterList() automatically
+        
+        // Get parameters by name from the automatically populated parameterList
+        this.upperSaturationLimit = getParameterByName("UpperLimit");
+        this.lowerSaturationLimit = getParameterByName("LowerLimit");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Legacy field mapping for backward compatibility
+        this.upperLimit = this.upperSaturationLimit;
+        this.lowerLimit = this.lowerSaturationLimit;
+
+        // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
     }
 
-    @Override
-    public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
-        Data inputData = inputPortList.get(0).getData();
-
-        Data resultData;
-        switch (inputData.getDataType()) {
-            case REAL:
-                double inputValue = inputData.getInitValue();
-                double lowerLimitValue = lowerLimit.getDouble();
-                double upperLimitValue = upperLimit.getDouble();
-                if (inputValue >= upperLimitValue) {
-                    resultData = new Data(upperLimitValue);
-                } else if (inputValue <= lowerLimitValue) {
-                    resultData = new Data(lowerLimitValue);
-                } else {
-                    resultData = new Data(inputValue);
-                }
-                break;
-            case MATRIX:
-                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
-                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
-                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
-                        double inputValueMatrix = inputData.getMatrix().get(i, j);
-                        double lowerLimitMatrix = lowerLimit.getMatrix().get(i, j);
-                        double upperLimitMatrix = upperLimit.getMatrix().get(i, j);
-                        if (inputValueMatrix >= upperLimitMatrix) {
-                            matrixResult.set(i, j, upperLimitMatrix);
-                        } else if (inputValueMatrix <= lowerLimitMatrix) {
-                            matrixResult.set(i, j, lowerLimitMatrix);
-                        } else {
-                            matrixResult.set(i, j, inputValueMatrix);
-                        }
-                    }
-                }
-                resultData = new Data(matrixResult);
-                break;
-            default:
-                resultData = new Data(0);
+    // === Static Factory Method for JSON Deserialization ===
+    public static Saturation fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            
+            return new Saturation(blockName, blockPath, blockUUID, model);
+            
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Saturation block from JSON: " + e.getMessage(), e);
         }
-
-        out.setData(resultData);
+    }
+    
+    // === Static Factory Method for Programmatic Creation ===
+    public static Saturation create(String name, String path, String upperLimit, String lowerLimit, NCSLabModel model) {
+        return create(name, path, upperLimit, lowerLimit, -1.0, "Inherit: Same as input", false, model);
     }
 
-    public void generateInitCodeM(CodeStructM code) {
-        super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("lowerLimit", lowerLimit);
-        context.put("upperLimit", upperLimit);
-
-        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Saturation/init.vm", context);
-        code.addInitCode(codeStr);
+    public static Saturation create(String name, String path, String upperLimit, String lowerLimit,
+                                   double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        // Create a JSONObject with parameter values for centralized parsing
+        JSONObject paramValues = new JSONObject();
+        paramValues.put("UpperLimit", upperLimit);
+        paramValues.put("LowerLimit", lowerLimit);
+        paramValues.put("SampleTime", String.valueOf(sampleTime));
+        paramValues.put("OutDataTypeStr", outDataType);
+        paramValues.put("SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        
+        JSONObject blockJSON = createBlockIdentity(name, path, "null");
+        blockJSON.put("paramValues", paramValues);
+        
+        return new Saturation(blockJSON, model);
+    }
+    
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+    
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Saturation");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
     }
 
-    public void generateOutputCodeM(CodeStructM code) {
-        super.generateOutputCodeM(code);
-
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
-        context.put("lowerLimit", lowerLimit);
-        context.put("lowerLimitHeightIndex", lowerLimit.getHeight()-1);
-        context.put("lowerLimitWidthIndex", lowerLimit.getWidth()-1);
-        context.put("upperLimit", upperLimit);
-        context.put("out", out);
-        context.put("ops", ops);
-        context.put("signal", signal);
-        context.put("outputs", getOutputPortVariables());
-
-        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Saturation/output.vm", context);
-        code.addOutputCode(codeStr);
-    }
-
-    public void generateInitCodeC(CodeStructC code) {
-        super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("lowerLimit", lowerLimit);
-        context.put("upperLimit", upperLimit);
-
-        String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/init.vm", context);
-        code.addInitCode(codeStr);
-    }
-
+    // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
-        context.put("lowerLimit", lowerLimit);
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
         context.put("upperLimit", upperLimit);
-        context.put("out", out);
-        context.put("ops", ops);
-        context.put("signal", signal);
-        context.put("outputs", getOutputPortVariables());
+        context.put("lowerLimit", lowerLimit);
+        context.put("inputPortList", getInputPortList());
+        context.put("outputPortList", getOutputPortList());
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+        context.put("upperLimit", upperLimit);
+        context.put("lowerLimit", lowerLimit);
+
+        String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    // === Dimension Management ===
     public void updateDimension() throws MatDimException {
         OutputPort out = outputPortList.get(0);
         InputPort in = inputPortList.get(0);
         OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-        if (lowerLimit.getWidth() != upperLimit.getWidth() || lowerLimit.getHeight() != upperLimit.getHeight()) {
-            MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions don't match! All input dimensions should be same!");
-            throw(e);
-        }
-
-        if (lowerLimit.getDataType() == DataType.MATRIX && signal.getDataType() == DataType.REAL) {
-            out.setHeight(lowerLimit.getHeight());
-            out.setWidth(lowerLimit.getWidth());
-            out.getOutputSignalC().setHeight(lowerLimit.getHeight());
-            out.getOutputSignalC().setWidth(lowerLimit.getWidth());
-            out.getOutputSignalC().setDataType(DataType.MATRIX);
-        } else if (lowerLimit.getDataType() == DataType.REAL && signal.getDataType() == DataType.MATRIX) {
-            out.setHeight(signal.getHeight());
-            out.setWidth(signal.getWidth());
-            out.getOutputSignalC().setHeight(signal.getHeight());
-            out.getOutputSignalC().setWidth(signal.getWidth());
-            out.getOutputSignalC().setDataType(signal.getDataType());
-        } else {
-            if (lowerLimit.getWidth() != signal.getWidth() || lowerLimit.getHeight() != signal.getHeight()) {
-                MatDimException e = new MatDimException("Block " + this.blockName + " input dimension doesn't match the Saturation dimension!\n \n");
-                throw(e);
-            }
-
-            out.setHeight(lowerLimit.getHeight());
-            out.setWidth(lowerLimit.getWidth());
-            out.getOutputSignalC().setHeight(lowerLimit.getHeight());
-            out.getOutputSignalC().setWidth(lowerLimit.getWidth());
-            out.getOutputSignalC().setDataType(lowerLimit.getDataType());
-        }
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
     }
 
     public void checkDimension() throws MatDimException {
-        // No specific dimension checking needed
+        // Check dimensions if needed
     }
 }

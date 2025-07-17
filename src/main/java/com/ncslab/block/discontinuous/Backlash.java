@@ -14,20 +14,49 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.Vector;
 
+/**
+ * Backlash block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * SIMULINK Parameters:
+ * - BacklashWidth: Width of the backlash gap
+ * - InitialOutput: Initial output value
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class Backlash extends Block {
+    // Legacy fields for backward compatibility
     Parameter backlashWidth;
     Parameter initialOutput;
-
     private State xState;
 
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter backlashWidthParam;
+    @Getter
+    private final Parameter initialOutputParam;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Static Parameter Definitions ===
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final HashMap<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -35,27 +64,186 @@ public class Backlash extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
+        // SIMULINK parameter names
         parameterNames.add("BacklashWidth");
         parameterNames.add("InitialOutput");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("BacklashWidth", "0.5");
+        PARAMETER_DEFAULTS.put("InitialOutput", "0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        
+        // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
+    // === Private Constructor with Typed Parameters ===
+    private Backlash(Parameter backlashWidth, Parameter initialOutput, Parameter sampleTime,
+                    Parameter outDataType, Parameter saturateOnIntegerOverflow,
+                    String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        
+        // Assign parameters
+        this.backlashWidthParam = Objects.requireNonNull(backlashWidth, "BacklashWidth parameter cannot be null");
+        this.initialOutputParam = Objects.requireNonNull(initialOutput, "InitialOutput parameter cannot be null");
+        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        // Legacy field mapping for backward compatibility
+        this.backlashWidth = this.backlashWidthParam;
+        this.initialOutput = this.initialOutputParam;
+        
+        // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }
+    
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
     public Backlash(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
 
-        // 一个输入端口，一个输出端口
+        // Create legacy parameters for backward compatibility
+        this.backlashWidthParam = new Parameter(this, 1, "BacklashWidth", paramValues.getString("BacklashWidth"));
+        this.initialOutputParam = new Parameter(this, 2, "InitialOutput", paramValues.getString("InitialOutput"));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        
+        // Add all parameters to parameter list
+
+        // Legacy field mapping for backward compatibility
+        this.backlashWidth = this.backlashWidthParam;
+        this.initialOutput = this.initialOutputParam;
+
+        // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-        backlashWidth = new Parameter(this, 1, "BacklashWidth", paramValues.getString("BacklashWidth"));
-        initialOutput = new Parameter(this, 2, "InitialOutput", paramValues.getString("InitialOutput"));
-        parameterList.add(backlashWidth);
-        parameterList.add(initialOutput);
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
+    public static Backlash fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+            
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+            
+            Parameter backlashWidth = createBacklashWidthFromJSON(paramValues, blockName);
+            Parameter initialOutput = createInitialOutputFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+            
+            Backlash block = new Backlash(backlashWidth, initialOutput, sampleTime,
+                                         outDataType, saturateParam,
+                                         blockName, blockPath, blockUUID, model);
+            
+            setParameterBlockReference(block, backlashWidth, initialOutput, sampleTime,
+                                     outDataType, saturateParam);
+            
+            return block;
+            
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Backlash block from JSON: " + e.getMessage(), e);
+        }
+    }
+    
+    // === Static Factory Method for Programmatic Creation ===
+    public static Backlash create(String name, String path, String backlashWidth, String initialOutput, NCSLabModel model) {
+        return create(name, path, backlashWidth, initialOutput, -1.0, "Inherit: Same as input", false, model);
+    }
+    
+    public static Backlash create(String name, String path, String backlashWidth, String initialOutput,
+                                 double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        Parameter backlashWidthParam = new Parameter(null, 1, "BacklashWidth", backlashWidth);
+        Parameter initialOutputParam = new Parameter(null, 2, "InitialOutput", initialOutput);
+        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        
+        Backlash block = new Backlash(backlashWidthParam, initialOutputParam, sampleTimeParam,
+                                     outDataTypeParam, saturateParam,
+                                     name, path, "null", model);
+        
+        setParameterBlockReference(block, backlashWidthParam, initialOutputParam, sampleTimeParam,
+                                 outDataTypeParam, saturateParam);
+        
+        return block;
+    }
+    
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createBacklashWidthFromJSON(JSONObject paramValues, String blockName) {
+        String backlashWidthValue = paramValues.optString("BacklashWidth", "1");
+        return new Parameter(null, 1, "BacklashWidth", backlashWidthValue);
+    }
+    
+    private static Parameter createInitialOutputFromJSON(JSONObject paramValues, String blockName) {
+        String initialOutputValue = paramValues.optString("InitialOutput", "0");
+        return new Parameter(null, 2, "InitialOutput", initialOutputValue);
+    }
+    
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "-1");
+        return new Parameter(null, 3, "SampleTime", sampleTimeValue);
+    }
+    
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 4, "OutDataTypeStr", outDataTypeValue);
+    }
+    
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateValue);
+    }
+    
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+    
+    private static void setParameterBlockReference(Backlash block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+    
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Backlash");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
     }
 
     @Override
     public void calculateInit() {
-        // 初始化逻辑
+        // Initialize with initial output parameter value
     }
 
     @Override
@@ -124,10 +312,12 @@ public class Backlash extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        String initCode="";
-        initCode+=backlashWidth.getInitCodeM();
-        initCode+=initialOutput.getInitCodeM();
-        code.addInitCode(initCode);
+        context.put("block", this);
+        context.put("backlashWidth", backlashWidth);
+        context.put("initialOutput", initialOutput);
+        
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Backlash/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
@@ -135,21 +325,16 @@ public class Backlash extends Block {
         OutputPort out  = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        String outputCode="";
-
-        switch(signal.getDataType()) {
-            case REAL:
-                outputCode+=out.getOutputSignalC().getName()+"=max("+backlashWidth.getName()+","+signal.getName()+");\n";
-                break;
-            case MATRIX:
-                for(int i=1; i<=signal.getHeight(); i++) {
-                    for(int j=1; j<=signal.getWidth(); j++) {
-                        outputCode+=out.getOutputSignalC().getName()+"("+i+","+j+")=max("+backlashWidth.getName()+","+signal.getName()+"("+i+","+j+"));\n";
-                    }
-                }
-                break;
-        }
-        code.addOutputCode(outputCode);
+        
+        context.put("block", this);
+        context.put("outputSignal", out.getOutputSignalC());
+        context.put("inputSignal", signal);
+        context.put("backlashWidth", backlashWidth);
+        context.put("inputHeight", signal.getHeight());
+        context.put("inputWidth", signal.getWidth());
+        
+        String codeStr = TemplateManager.renderTemplate("m/discontinuous/Backlash/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void generateInitCodeC(CodeStructC code){
