@@ -1,0 +1,11 @@
+/*Code for output of block ${block.getClass().getSimpleName()}: (${block.getBlockId()}) ${block.getBlockName()}*/
+auto ${modelVariable.getName()}_mat = ${inputSignal};
+
+{
+    std::vector<double> temp_vec = ${modelVariable.getName()}->step(${modelVariable.getName()}_mat, 0.01);
+    Eigen::MatrixXd temp_mat(temp_vec.size(), 1);
+    for (size_t i = 0; i < temp_vec.size(); ++i) {
+        temp_mat(i, 0) = temp_vec[i];
+    }
+    ${outputSignal} = temp_mat;
+}

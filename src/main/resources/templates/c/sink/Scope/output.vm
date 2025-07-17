@@ -1,17 +1,29 @@
-#set($signal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-#set($inputSignal = $signal.getName())
-#set($scopeName = $scopeStruct.getName())
-
-/* Code for output of block Scope:($blockId)$blockName */
-if (sfcnIsMajorStep()) {
-  ${scopeName}.timeList.push_back(sfcnGetT());
-#if($signal.dataType == $realDataType)
-  ${scopeName}.dataList.push_back($inputSignal);
-#else
-  for(int i=0;i<${signal.getHeight()};i++){
-    for(int j=0;j<${signal.getWidth()};j++){
-      ${scopeName}.dataList.push_back($inputSignal(i,j));
+/*Code for output of block Scope:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $scopeStruct)
+    #set($signal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($inputSignal = $signal.getName())
+    #set($scopeName = $scopeStruct.getName())
+    
+    ## Scope data logging - only on major time steps
+    if (sfcnIsMajorStep()) {
+        ## Log current simulation time
+        ${scopeName}.timeList.push_back(sfcnGetT());
+        
+        #if($signal.dataType == $realDataType)
+            ## Scalar data logging
+            ${scopeName}.dataList.push_back($inputSignal);
+        #else
+            ## Matrix data logging - flatten matrix into vector
+            #set($height = $signal.getHeight())
+            #set($width = $signal.getWidth())
+            for(int i = 0; i < $height; i++) {
+                for(int j = 0; j < $width; j++) {
+                    ${scopeName}.dataList.push_back($inputSignal(i, j));
+                }
+            }
+        #end
     }
-  }
+#else
+    ## Fallback if parameters missing
+    /* Scope block ${block.getBlockId()} missing parameters - no data logging */
 #end
-}

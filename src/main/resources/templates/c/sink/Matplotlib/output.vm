@@ -1,0 +1,50 @@
+/*Code for output of block Scope:(${block.getBlockId()})${block.getBlockName()}*/
+if(sfcnIsMajorStep()){
+#if($signal.getDataType().name() == "REAL")
+## Handle REAL data type
+#if($sampleTime > 0)
+## Discrete module - draw step diagram
+if(block${outputPort.getBLock().getBlockId()}.discreteUpdated){
+## Draw current time point
+${scopeStruct.getName()}.timeList.push_back(sfcnGetT());
+${scopeStruct.getName()}.dataList.push_back(${signal.getName()});
+## Hold for one sample period, draw next period point
+${scopeStruct.getName()}.timeList.push_back(sfcnGetT()+${sampleTime});
+${scopeStruct.getName()}.dataList.push_back(${signal.getName()});
+}
+#else
+## Continuous plotting
+${scopeStruct.getName()}.timeList.push_back(sfcnGetT());
+${scopeStruct.getName()}.dataList.push_back(${signal.getName()});
+#end
+#elseif($signal.getDataType().name() == "MATRIX")
+## Handle MATRIX data type  
+#if($sampleTime > 0)
+## Discrete module - draw step diagram
+if(block${outputPort.getBLock().getBlockId()}.discreteUpdated){
+## Draw current time point
+${scopeStruct.getName()}.timeList.push_back(sfcnGetT());
+for(int i=0;i<${signal.getHeight()};i++){
+for(int j=0;j<${signal.getWidth()};j++){
+${scopeStruct.getName()}.dataList.push_back(${signal.getName()}(i,j));
+}
+}
+## Hold for one sample period, draw next period point
+${scopeStruct.getName()}.timeList.push_back(sfcnGetT()+${sampleTime});
+for(int i=0;i<${signal.getHeight()};i++){
+for(int j=0;j<${signal.getWidth()};j++){
+${scopeStruct.getName()}.dataList.push_back(${signal.getName()}(i,j));
+}
+}
+}
+#else
+## Continuous plotting
+${scopeStruct.getName()}.timeList.push_back(sfcnGetT());
+for(int i=0;i<${signal.getHeight()};i++){
+for(int j=0;j<${signal.getWidth()};j++){
+${scopeStruct.getName()}.dataList.push_back(${signal.getName()}(i,j));
+}
+}
+#end
+#end
+}

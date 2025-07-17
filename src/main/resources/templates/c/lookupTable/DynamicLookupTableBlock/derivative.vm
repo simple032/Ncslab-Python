@@ -1,0 +1,2 @@
+/*Code for derivative of block Dynamic Lookup Table:(${block.getBlockId()})${block.getBlockName()}*/
+// TODO: Dynamic lookup table derivative implementation

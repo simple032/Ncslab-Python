@@ -1,0 +1,10 @@
+#set($DataType = $DataType)
+#if($firstInputSignal.getDataType() == $DataType.REAL)
+${outputSignal.getName()}=0#foreach($i in [0..$math.sub($sequence.length(),1)])#if($sequence.charAt($i) == '+')#set($sign = "+")#else#set($sign = "-")#end${sign}${inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()}#end;
+#elseif($firstInputSignal.getDataType() == $DataType.MATRIX)
+#foreach($m in [1..$inputHeight])
+#foreach($n in [1..$inputWidth])
+${outputSignal.getName()}($m,$n) = 0#foreach($i in [0..$math.sub($sequence.length(),1)])#if($sequence.charAt($i) == '+')#set($sign = "+")#else#set($sign = "-")#end${sign}${inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()}($m,$n)#end;
+#end
+#end
+#end

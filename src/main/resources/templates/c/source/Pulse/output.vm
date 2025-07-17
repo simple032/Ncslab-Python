@@ -1,28 +1,40 @@
-/* C代码生成模板 - Pulse模块 */
-#if($amplitude.dataType == $realDataType)
-if(model.time < ${phaseDelay.getName()}) {
-    ${outputs.get(0)} = 0;
-}
-else if(((int)((model.time-${phaseDelay.getName()})*100) % (int)(${period.getName()}*100)) < ${period.getName()}*${pulseWidth.getName()}) {
-    ${outputs.get(0)} = ${amplitude.getName()};
-}
-else {
-    ${outputs.get(0)} = 0;
-}
+/*Code for output of block Pulse:(${block.getBlockId()})${block.getBlockName()}*/
+#if($amplitude && $phaseDelay && $period && $pulseWidth && $outputs && $outputs.size() > 0)
+    #set($outputVar = $outputs.get(0))
+    
+    #if($amplitude.dataType == $realDataType)
+        ## Scalar pulse generation
+        if(model.time < ${phaseDelay.getName()}) {
+            $outputVar = 0.0;
+        } else if(((int)((model.time-${phaseDelay.getName()})*100) % (int)(${period.getName()}*100)) < ${period.getName()}*${pulseWidth.getName()}) {
+            $outputVar = ${amplitude.getName()};
+        } else {
+            $outputVar = 0.0;
+        }
+    #else
+        ## Matrix pulse generation
+        #set($amplitudeHeightIndex = $amplitude.getHeight() - 1)
+        #set($amplitudeWidthIndex = $amplitude.getWidth() - 1)
+        #foreach($i in [0..$amplitudeHeightIndex])
+            #foreach($j in [0..$amplitudeWidthIndex])
+        if(model.time < ${phaseDelay.getName()}[$i][$j]) {
+            $outputVar[$i][$j] = 0.0;
+        } else if(((int)((model.time-${phaseDelay.getName()}[$i][$j])*100) % (int)(${period.getName()}[$i][$j]*100)) < ${period.getName()}[$i][$j]*${pulseWidth.getName()}[$i][$j]) {
+            $outputVar[$i][$j] = ${amplitude.getName()}[$i][$j];
+        } else {
+            $outputVar[$i][$j] = 0.0;
+        }
+            #end
+        #end
+    #end
 #else
-  #set($amplitudeHeightIndex = $amplitude.getHeight() - 1)
-  #set($amplitudeWidthIndex = $amplitude.getWidth() - 1)
-#foreach($i in [0..$amplitudeHeightIndex])
-#foreach($j in [0..$amplitudeWidthIndex])
-if(model.time < ${phaseDelay.getName()}[$i][$j]) {
-    ${outputs.get(0)}[$i][$j] = 0;
-}
-else if(((int)((model.time-${phaseDelay.getName()}[$i][$j])*100) % (int)(${period.getName()}[$i][$j]*100)) < ${period.getName()}[$i][$j]*${pulseWidth.getName()}[$i][$j]) {
-    ${outputs.get(0)}[$i][$j] = ${amplitude.getName()}[$i][$j];
-}
-else {
-    ${outputs.get(0)}[$i][$j] = 0;
-}
-#end
-#end
+    ## Fallback with default pulse behavior
+    #if($outputs && $outputs.size() > 0)
+        ## Default: unit pulse with period 1, width 0.5, no delay
+        if(((int)(model.time*100) % 100) < 50) {
+            ${outputs.get(0)} = 1.0;
+        } else {
+            ${outputs.get(0)} = 0.0;
+        }
+    #end
 #end

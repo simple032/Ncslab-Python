@@ -1,0 +1,6 @@
+/*Code for output of block EtherCAT_DO:(${block.getBlockId()})${block.getBlockName()}*/
+if(model.majorStep==1){
+    bool output_value = (${inputSignal} > 0.5);
+    auto* digitalOutput = DigitalIOManager::getDigitalOutput(${slaveId}, ${channel});
+    digitalOutput->write(output_value);
+}

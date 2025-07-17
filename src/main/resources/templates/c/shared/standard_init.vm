@@ -1,0 +1,22 @@
+## ======================================================================================
+## Standard Block Initialization Template
+## Generates parameter initialization using PARAMETER_DEFAULTS
+## ======================================================================================
+#parse("c/shared/data_type_macros.vm")
+
+## Set up template context
+#set($operationType = "initialization")
+#parse("c/shared/block_header.vm")
+
+## Generate initialization code for all parameters
+#if($parameterList && $parameterList.size() > 0)
+    ## Initialize each parameter
+    #foreach($param in $parameterList)
+${param.getInitCodeC()}    #end
+#else
+    ## No parameters to initialize
+    /* No parameters for block ${block.getClass().getSimpleName()}:(${block.getBlockId()}) */
+#end
+
+## Additional block-specific initialization can be added here by including this template
+## and then adding custom code after the #parse directive

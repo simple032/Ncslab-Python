@@ -1,35 +1,60 @@
-#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
-
-/* Code for Sqrt block $blockId */
-#if($inputSignal.dataType == $realDataType)
-    #if($function == "sqrt")
-        $outputSignal = sqrt($inputSignal);
-    #elseif($function == "signedSqrt")
-        #if($inputSignal > 0)
-            $outputSignal = sqrt($inputSignal);
+/*Code for output of block Sqrt:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    #set($inputVar = $inputSignal.getName())
+    #set($outputVar = $outputSignal.getName())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar square root functions
+        #if($function == "sqrt")
+            ## Standard square root
+            $outputVar = sqrt($inputVar);
+        #elseif($function == "signedSqrt")
+            ## Signed square root: sqrt(|x|) * sign(x)
+            if($inputVar >= 0.0) {
+                $outputVar = sqrt($inputVar);
+            } else {
+                $outputVar = -sqrt(-$inputVar);
+            }
+        #elseif($function == "rSqrt")
+            ## Reciprocal square root: 1/sqrt(x)
+            $outputVar = 1.0 / sqrt($inputVar);
         #else
-            $outputSignal = -sqrt(-$inputSignal);
+            ## Default to standard square root
+            $outputVar = sqrt($inputVar);
         #end
-    #elseif($function == "rSqrt")
-        $outputSignal = 1 / sqrt($inputSignal);
-    #end
-#elseif($inputSignal.dataType == $matrixDataType)
-    #set($hMax = $inputSignal.getHeight() - 1)
-    #set($wMax = $inputSignal.getWidth() - 1)
-    #foreach($i in [0..$hMax])
-        #foreach($j in [0..$wMax])
-            #if($function == "sqrt")
-                $outputSignal($i, $j) = sqrt($inputSignal($i, $j));
-            #elseif($function == "signedSqrt")
-                if($inputSignal($i, $j) > 0)
-                    $outputSignal($i, $j) = sqrt($inputSignal($i, $j));
-                else
-                    $outputSignal($i, $j) = -sqrt(-$inputSignal($i, $j));
-                end
-            #elseif($function == "rSqrt")
-                $outputSignal($i, $j) = 1 / sqrt($inputSignal($i, $j));
+    #elseif($inputSignal.dataType == $matrixDataType)
+        ## Matrix square root functions - element-wise
+        #set($height = $inputSignal.getHeight())
+        #set($width = $inputSignal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                #if($function == "sqrt")
+                    ## Standard square root
+                    $outputVar($i, $j) = sqrt($inputVar($i, $j));
+                #elseif($function == "signedSqrt")
+                    ## Signed square root
+                    if($inputVar($i, $j) >= 0.0) {
+                        $outputVar($i, $j) = sqrt($inputVar($i, $j));
+                    } else {
+                        $outputVar($i, $j) = -sqrt(-$inputVar($i, $j));
+                    }
+                #elseif($function == "rSqrt")
+                    ## Reciprocal square root
+                    $outputVar($i, $j) = 1.0 / sqrt($inputVar($i, $j));
+                #else
+                    ## Default to standard square root
+                    $outputVar($i, $j) = sqrt($inputVar($i, $j));
+                #end
             #end
         #end
+    #end
+#else
+    ## Fallback if parameters missing
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Sqrt block missing parameters */
     #end
 #end

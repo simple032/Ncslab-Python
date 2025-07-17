@@ -1,0 +1,7 @@
+/*Code for initialization of block UDPReceiveBak:(${block.getBlockId()})${block.getBlockName()}*/
+sockfd_netrecv${block.getBlockId()} = socket(AF_INET, SOCK_DGRAM|SOCK_NONBLOCK,0);
+if(sockfd_netrecv${block.getBlockId()}==-1){printf("can not create socket\n"); close(sockfd_netrecv${block.getBlockId()});}
+adr_serv_netrecv${block.getBlockId()}.sin_family = AF_INET;
+adr_serv_netrecv${block.getBlockId()}.sin_port =htons(${localIPPort});
+adr_serv_netrecv${block.getBlockId()}.sin_addr.s_addr=INADDR_ANY;
+bind(sockfd_netrecv${block.getBlockId()},(struct sockaddr*)&adr_serv_netrecv${block.getBlockId()},sizeof(adr_serv_netrecv${block.getBlockId()}));

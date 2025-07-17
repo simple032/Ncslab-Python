@@ -1,0 +1,10 @@
+/*Code for initialization of block Observer:(${block.getBlockId()})${observerName}*/
+
+static const double A_${observerName}[9] = {1.2998,-0.4341,0.1343,1,0,0,0,1,0};
+static const double B_${observerName}[3] = {1,0,0};
+static const double C_${observerName}[3] = {3.5629,2.7739,1.0121};
+static const double L_${observerName}[3] = {0.0363,0.0439,0.1470};
+
+${x1Signal} = 0.0;
+${x2Signal} = 0.0;
+${x3Signal} = 0.0;

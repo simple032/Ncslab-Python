@@ -1,0 +1,8 @@
+/*Code for output of block EtherCAT_AI:(${block.getBlockId()})${block.getBlockName()}*/
+if(model.majorStep==1){
+    double value = 0.0f;
+    auto* analogInput = AnalogIOManager::getAnalogInput(${slaveId});
+    if (analogInput && analogInput->read(&value)) {
+        ${block.getOutputPortList().get(0).getOutputSignalC().getName()} = value;
+    }
+}

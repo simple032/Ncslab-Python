@@ -1,0 +1,21 @@
+/*Code for initialization of block EtherCAT_Servo:(${block.getBlockId()})${block.getBlockName()}*/
+if(ECAT_init_Flag==0){
+    auto* ethercat = EtherCATSE::getInstance();
+    ethercat->setSamplingPeriod(${sampleTime});
+    if (!ethercat->init(${block.getBlockName()}_interface, ${operationMode})) {
+        printf("Failed to initialize EtherCAT\n");
+        exit(1);
+    } else {
+        printf("EtherCAT initialized successfully\n");
+    }
+    ECAT_init_Flag=1;
+}
+ServoManager::createServo(${slaveId});
+auto* servo = ServoManager::getServo(${slaveId});
+if (!servo || !servo->init()) {
+    printf("Failed to initialize EtherCAT Servo\n");
+    exit(1);
+} else {
+    servo->enableServo();
+    printf("EtherCAT Servo initialized and enabled\n");
+}

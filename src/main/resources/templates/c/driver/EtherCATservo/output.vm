@@ -1,0 +1,23 @@
+/*Code for output of block EtherCAT_Servo:(${block.getBlockId()})${block.getBlockName()}*/
+if(model.majorStep==1){
+    auto* servo = ServoManager::getServo(${slaveId});
+#if ${operationMode} == 1
+    // Position Mode
+    servo->setPosition(${targetValue});
+    int32_t current_position = 0;
+    servo->readActualPosition(&current_position);
+    ${actualValue} = current_position;
+#elif ${operationMode} == 3
+    // Velocity Mode
+    servo->setVelocity(${targetValue});
+    int32_t current_velocity = 0;
+    servo->readActualVelocity(&current_velocity);
+    ${actualValue} = current_velocity;
+#elif ${operationMode} == 4
+    // Torque Mode
+    servo->setTorque(${targetValue});
+    int32_t current_torque = 0;
+    servo->readActualTorque(&current_torque);
+    ${actualValue} = current_torque;
+#endif
+}

@@ -10,8 +10,10 @@
         $outputPortList.getOutputSignalC().getName() = $element.getName();
     #end
 #elseif($elements.size() > 0 && $elements[0].dataType == $matrixDataType)
-    #foreach($i in [0..$height-1])
-        #foreach($j in [0..$width-1])
+    #set($heightMax = $height - 1)
+    #set($widthMax = $width - 1)
+    #foreach($i in [0..$heightMax])
+        #foreach($j in [0..$widthMax])
             $outputPortList.getOutputSignalC().getName()($i, $j) = $elements[$i][$j].getName();
         #end
     #end

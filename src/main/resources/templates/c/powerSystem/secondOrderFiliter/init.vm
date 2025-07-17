@@ -1,0 +1,43 @@
+/*Code for initialization of block Second-Order Filter:(${block.getBlockId()})${block.getBlockName()}*/
+${naturalFrequency.getInitCodeC()}
+${dampingRatio.getInitCodeC()}
+${sampleTime.getInitCodeC()}
+#if ("${initState}" == "on")
+${DCInitialInput.getInitCodeC()}
+#end
+
+#if ("${sampleTimeValue}" == "0" || "${sampleTimeValue}" == "-1")
+double T=STEP_SIZE;
+#else
+double T=${sampleTime.getName()};
+#end
+
+double omega_n = 2 * 3.14159265358979323846 * ${naturalFrequency.getName()};
+double w2T2 = omega_n*omega_n*T*T;
+double a0 = 4 + 4 * ${dampingRatio.getName()}*omega_n*T + w2T2;
+Block${block.getBlockId()}SecondOrderFilter_a[0]=(-8 + 2 * w2T2) / a0;
+Block${block.getBlockId()}SecondOrderFilter_a[1]=(4 - 4 * ${dampingRatio.getName()}*omega_n*T + w2T2) / a0;
+
+#if ("${filterTypeValue}" == "Lowpass")
+Block${block.getBlockId()}SecondOrderFilter_b[0]=(w2T2) / a0;
+Block${block.getBlockId()}SecondOrderFilter_b[1]=(2 * w2T2) / a0;
+Block${block.getBlockId()}SecondOrderFilter_b[2]=(w2T2) / a0;
+#elseif ("${filterTypeValue}" == "Highpass")
+Block${block.getBlockId()}SecondOrderFilter_b[0]=(4) / a0;
+Block${block.getBlockId()}SecondOrderFilter_b[1]=(-8) / a0;
+Block${block.getBlockId()}SecondOrderFilter_b[2]=(4) / a0;
+#elseif ("${filterTypeValue}" == "Bandpass")
+Block${block.getBlockId()}SecondOrderFilter_b[0]=(4 * omega_n * T * ${dampingRatio.getName()}) / a0;
+Block${block.getBlockId()}SecondOrderFilter_b[1]= 0;
+Block${block.getBlockId()}SecondOrderFilter_b[2]=(-4 * omega_n * T *${dampingRatio.getName()}) / a0;
+#else
+Block${block.getBlockId()}SecondOrderFilter_b[0]=(4 * omega_n * T * ${dampingRatio.getName()}) / a0;
+Block${block.getBlockId()}SecondOrderFilter_b[1]= 0;
+Block${block.getBlockId()}SecondOrderFilter_b[2]=(-4 * omega_n * T *${dampingRatio.getName()}) / a0;
+#end
+
+#if ("${initState}" == "on")
+double initialAC=${ACInitialInputs[0]}*sin(2*3.14159265358979323846*${ACInitialInputs[2]}/360.0*T+${ACInitialInputs[1]}*2*3.14159265358979323846/360);
+Block${block.getBlockId()}SecondOrderFilter_y[0]=initialAC+${DCInitialInput.getName()};
+Block${block.getBlockId()}SecondOrderFilter_y[1]=initialAC+${DCInitialInput.getName()};
+#end

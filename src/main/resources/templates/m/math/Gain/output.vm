@@ -1,0 +1,48 @@
+#set($DataType = $DataType)
+#if(!$matrixMultiplication)
+## Element-wise multiplication mode
+#if($gain.getDataType() == $DataType.REAL)
+#if($inputSignal.getDataType() == $DataType.REAL)
+${outputSignal.getName()}=${gain.getName()}*${inputSignal.getName()};
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#foreach($i in [1..$inputHeight])
+#foreach($j in [1..$inputWidth])
+${outputSignal.getName()}($i,$j)=${gain.getName()}*${inputSignal.getName()}($i,$j);
+#end
+#end
+#end
+#elseif($gain.getDataType() == $DataType.MATRIX)
+#if($inputSignal.getDataType() == $DataType.REAL)
+#foreach($i in [1..$gainHeight])
+#foreach($j in [1..$gainWidth])
+${outputSignal.getName()}($i,$j)=${gain.getName()}($i,$j)*${inputSignal.getName()};
+#end
+#end
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#foreach($i in [1..$inputHeight])
+#foreach($j in [1..$inputWidth])
+${outputSignal.getName()}($i,$j)=${gain.getName()}($i,$j)*${inputSignal.getName()}($i,$j);
+#end
+#end
+#end
+#end
+#else
+## Matrix multiplication mode
+#if($gain.getDataType() == $DataType.REAL)
+#if($inputSignal.getDataType() == $DataType.REAL)
+${outputSignal.getName()}=${gain.getName()}*${inputSignal.getName()};
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+for(int i=0;i<${inputHeight};i++){
+${outputSignal.getName()}(i,0)=${gain.getName()}*${inputSignal.getName()}(i,0);
+}
+#end
+#elseif($gain.getDataType() == $DataType.MATRIX)
+#if($inputSignal.getDataType() == $DataType.REAL)
+for(int i=0;i<${gainWidth};i++){
+${outputSignal.getName()}[0][i]=${gain.getName()}[0][i]*${inputSignal.getName()};
+}
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+${outputSignal.getName()}=${inputSignal.getName()}*${gain.getName()};
+#end
+#end
+#end

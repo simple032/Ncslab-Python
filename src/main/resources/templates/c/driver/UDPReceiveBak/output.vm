@@ -1,0 +1,11 @@
+/*Code for output of block ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+int recvbuf = 0;
+socklen_t len = sizeof(adr_serv_netrecv${block.getBlockId()});
+union data_union data_union_recv${block.getBlockId()};if(model.majorStep==1){
+recvfrom(sockfd_netrecv${block.getBlockId()}, &recvbuf, sizeof(recvbuf), 0,(struct sockaddr*)&adr_serv_netrecv${block.getBlockId()},&len);
+data_union_recv${block.getBlockId()}.c[3] = recvbuf >> 24;
+data_union_recv${block.getBlockId()}.c[2] = recvbuf >> 16;
+data_union_recv${block.getBlockId()}.c[1] = recvbuf >> 8;
+data_union_recv${block.getBlockId()}.c[0] = recvbuf;
+${outputSignal}=data_union_recv${block.getBlockId()}.v;
+}

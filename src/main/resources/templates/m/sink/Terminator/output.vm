@@ -1,0 +1,3 @@
+if storeEnable>0
+${block.getBlockName()}=[${block.getBlockName()} Block${block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()}_Output${block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()}];
+end

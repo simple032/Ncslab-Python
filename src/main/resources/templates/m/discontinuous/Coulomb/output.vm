@@ -1,0 +1,26 @@
+#set($DataType = $DataType)
+#if($gain.getDataType() == $DataType.REAL)
+#if($inputSignal.getDataType() == $DataType.REAL)
+${outputSignal.getName()}=sign(${inputSignal.getName()})*(${gain.getName()}*abs(${inputSignal.getName()})+${offset.getName()});
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#foreach($i in [1..$inputHeight])
+#foreach($j in [1..$inputWidth])
+${outputSignal.getName()}($i,$j)=sign(${inputSignal.getName()}($i,$j))*(${gain.getName()}*abs(${inputSignal.getName()}($i,$j))+${offset.getName()});
+#end
+#end
+#end
+#elseif($gain.getDataType() == $DataType.MATRIX)
+#if($inputSignal.getDataType() == $DataType.REAL)
+#foreach($i in [1..$gainHeight])
+#foreach($j in [1..$gainWidth])
+${outputSignal.getName()}($i,$j)=sign(${inputSignal.getName()})*(${gain.getName()}($i,$j)*abs(${inputSignal.getName()})+${offset.getName()}($i,$j));
+#end
+#end
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#foreach($i in [1..$inputHeight])
+#foreach($j in [1..$inputWidth])
+${outputSignal.getName()}($i,$j)=sign(${inputSignal.getName()}($i,$j))*(${gain.getName()}($i,$j)*abs(${inputSignal.getName()}($i,$j))+${offset.getName()}($i,$j));
+#end
+#end
+#end
+#end

@@ -1,0 +1,2 @@
+/*Code for initialization of block LogisticRegression:(${block.getBlockId()})${block.getBlockName()}*/
+${inputFeatures.getInitCodeC()}${outputFeatures.getInitCodeC()}${learningRate.getInitCodeC()}${epochs.getInitCodeC()}${modelVariable.getInitCodeC()}${modelVariable.getName()}->trainModel("/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/${datasetString}.csv", ${epochs.getName()}, ${learningRate.getName()});

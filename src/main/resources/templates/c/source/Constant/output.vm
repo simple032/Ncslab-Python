@@ -1,2 +1,7 @@
-/* Code for output of block Constant:(${block.blockId}) ${block.blockName} */
-${outputs.get(0)} = ${value.getName()};
+/*Code for output of block Constant:(${block.getBlockId()})${block.getBlockName()}*/
+#if($value)
+    ${outputs.get(0)} = ${value.getName()};
+#else
+    ## Fallback to default value if parameter not found
+    ${outputs.get(0)} = 1; /* Using default constant value */
+#end

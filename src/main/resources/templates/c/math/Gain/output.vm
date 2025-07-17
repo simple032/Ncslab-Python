@@ -1,20 +1,33 @@
-/* Code for Gain block $blockId */
-#set($outputPortList = $outputPortList.get(0))
-#set($gainValue = $gain.getName())
-#if($multiplication == false)
-    #if($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
-    $outputPortList.getOutputSignalC().getName() = $gainValue * $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-    #elseif($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
-        #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
-        #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-    $outputPortList.getOutputSignalC().getName()($i, $j) = $gainValue * $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($i, $j);
+/*Code for output of block Gain:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $gain)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    #set($gainValue = $gain.getName())
+
+    ## Element-wise multiplication (default behavior)
+    #if($multiplication == false)
+        #if($inputSignal.dataType == $realDataType)
+            ## Scalar input, scalar gain
+            ${outputSignal.getName()} = ${gainValue} * ${inputSignal.getName()};
+        #elseif($inputSignal.dataType == $matrixDataType)
+            ## Matrix input, element-wise multiplication
+            #set($height = $inputSignal.getHeight())
+            #set($width = $inputSignal.getWidth())
+            #set($hMax = $height - 1)
+            #set($wMax = $width - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    ${outputSignal.getName()}($i, $j) = ${gainValue} * ${inputSignal.getName()}($i, $j);
+                #end
             #end
         #end
+    #else
+        ## Matrix multiplication mode
+        ${outputSignal.getName()} = ${inputSignal.getName()} * ${gainValue};
     #end
 #else
-    $outputPortList.getOutputSignalC().getName() = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName() * $gainValue;
+    ## Fallback for missing parameters
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Gain block missing parameters */
+    #end
 #end

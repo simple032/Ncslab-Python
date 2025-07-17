@@ -1,0 +1,2 @@
+/*Define arrays for block 1-D Lookup table:(${block.getBlockId()})${block.getBlockName()}*/
+InterpolationTable1D ${tableName};

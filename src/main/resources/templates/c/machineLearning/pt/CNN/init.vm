@@ -1,0 +1,10 @@
+/*Code for initialization of block CNN:(${block.getBlockId()})${block.getBlockName()}*/
+${inputFeatures.getInitCodeC()}
+${activationFunction.getInitCodeC()}
+${learningRate.getInitCodeC()}
+${lossFunction.getInitCodeC()}
+${channelSize.getInitCodeC()}
+${dataset.getInitCodeC()}
+${modelVariable.getInitCodeC()}
+
+${modelVariable.getName()}->trainModel("/home/square/ncslablink/ncslablink/src/main/java/com/ncslab/code/c/winddata1.csv", 100, 0.01);

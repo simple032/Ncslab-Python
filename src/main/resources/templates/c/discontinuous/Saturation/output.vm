@@ -1,51 +1,73 @@
-/* Code for output of block Saturation:(${block.blockId}) ${block.blockName} */
-#if($lowerLimit.dataType == $realDataType)
-  #if($ops.outputSignalC.dataType == $realDataType)
-if(${signal.getName()} > ${upperLimit.getName()}) {
-    ${outputs.get(0)} = ${upperLimit.getName()};
-} else if(${signal.getName()} < ${lowerLimit.getName()}) {
-    ${outputs.get(0)} = ${lowerLimit.getName()};
-} else {
-    ${outputs.get(0)} = ${signal.getName()};
-}
-  #else
-    #foreach($i in [0..$optWidthIndex])
-      #foreach($j in [0..$optHeightIndex])
-if(${signal.getName()}(${i},${j}) > ${upperLimit.getName()}) {
-    ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()};
-} else if(${signal.getName()}(${i},${j}) < ${lowerLimit.getName()}) {
-    ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()};
-} else {
-    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
-}
-      #end
+/*Code for output of block Saturation:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList.size() > 0 && $upperLimit && $lowerLimit)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar input signal
+        #if($outputSignal.dataType == $realDataType)
+            ## Scalar to scalar saturation
+            if(${inputSignal.getName()} > ${upperLimit.getName()}) {
+                ${outputSignal.getName()} = ${upperLimit.getName()};
+            } else if(${inputSignal.getName()} < ${lowerLimit.getName()}) {
+                ${outputSignal.getName()} = ${lowerLimit.getName()};
+            } else {
+                ${outputSignal.getName()} = ${inputSignal.getName()};
+            }
+        #else
+            ## Scalar to matrix - broadcast scalar to matrix
+            #set($height = $outputSignal.getHeight())
+            #set($width = $outputSignal.getWidth())
+            #set($hMax = $height - 1)
+            #set($wMax = $width - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            if(${inputSignal.getName()} > ${upperLimit.getName()}) {
+                ${outputSignal.getName()}(${i},${j}) = ${upperLimit.getName()};
+            } else if(${inputSignal.getName()} < ${lowerLimit.getName()}) {
+                ${outputSignal.getName()}(${i},${j}) = ${lowerLimit.getName()};
+            } else {
+                ${outputSignal.getName()}(${i},${j}) = ${inputSignal.getName()};
+            }
+                #end
+            #end
+        #end
+    #else
+        ## Matrix input signal
+        #set($height = $inputSignal.getHeight())
+        #set($width = $inputSignal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #if($lowerLimit.dataType == $realDataType)
+            ## Matrix input with scalar limits
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            if(${inputSignal.getName()}(${i},${j}) > ${upperLimit.getName()}) {
+                ${outputSignal.getName()}(${i},${j}) = ${upperLimit.getName()};
+            } else if(${inputSignal.getName()}(${i},${j}) < ${lowerLimit.getName()}) {
+                ${outputSignal.getName()}(${i},${j}) = ${lowerLimit.getName()};
+            } else {
+                ${outputSignal.getName()}(${i},${j}) = ${inputSignal.getName()}(${i},${j});
+            }
+                #end
+            #end
+        #else
+            ## Matrix input with matrix limits
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            if(${inputSignal.getName()}(${i},${j}) > ${upperLimit.getName()}(${i},${j})) {
+                ${outputSignal.getName()}(${i},${j}) = ${upperLimit.getName()}(${i},${j});
+            } else if(${inputSignal.getName()}(${i},${j}) < ${lowerLimit.getName()}(${i},${j})) {
+                ${outputSignal.getName()}(${i},${j}) = ${lowerLimit.getName()}(${i},${j});
+            } else {
+                ${outputSignal.getName()}(${i},${j}) = ${inputSignal.getName()}(${i},${j});
+            }
+                #end
+            #end
+        #end
     #end
-  #end
 #else
-  #if($ops.outputSignalC.dataType == $realDataType)
-    #foreach($i in [0..$lowerLimitHeightIndex])
-      #foreach($j in [0..$lowerLimitWidthIndex])
-if(${signal.getName()} > ${upperLimit.getName()}(${i},${j})) {
-    ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()}(${i},${j});
-} else if(${signal.getName()} < ${lowerLimit.getName()}(${i},${j})) {
-    ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()}(${i},${j});
-} else {
-    ${outputs.get(0)}(${i},${j}) = ${signal.getName()};
-}
-      #end
-    #end
-  #else
-    #set($stateIndices = $block.calculateStateIndices($lowerLimitHeightIndex + 1, $lowerLimitWidthIndex + 1))
-    #foreach($index in $stateIndices)
-        #set($i = $index / ($lowerLimitWidthIndex + 1))
-        #set($j = $index % ($lowerLimitWidthIndex + 1))
-        if(${signal.getName()}(${i},${j}) > ${upperLimit.getName()}(${i},${j})) {
-            ${outputs.get(0)}(${i},${j}) = ${upperLimit.getName()}(${i},${j});
-        } else if(${signal.getName()}(${i},${j}) < ${lowerLimit.getName()}(${i},${j})) {
-            ${outputs.get(0)}(${i},${j}) = ${lowerLimit.getName()}(${i},${j});
-        } else {
-            ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
-        }
-    #end
-  #end
+    ## Fallback if parameters missing
+    /* Saturation block ${block.getBlockId()} missing parameters, using pass-through */
+    ${outputPortList.get(0).getOutputSignalC().getName()} = ${inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
 #end

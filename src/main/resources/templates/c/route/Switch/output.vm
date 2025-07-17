@@ -1,12 +1,19 @@
-#set($input1 = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($input2 = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($input3 = $inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($output = $outputPortList.get(0).getOutputSignalC().getName())
-#set($threshold = $threshold.getName())
-
-/* Code for output of block Switch:($blockId)$blockName */
-if ($input2 > $threshold) {
-    $output = $input1;
-} else {
-    $output = $input3;
-}
+/*Code for output of block Switch:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList.size() >= 3 && $threshold)
+    #set($input1 = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+    #set($input2 = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+    #set($input3 = $inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+    #set($output = $outputPortList.get(0).getOutputSignalC().getName())
+    #set($thresholdValue = $threshold.getName())
+    
+    ## Switch logic: if control input > threshold, use first input, else use third input
+    if (${input2} > ${thresholdValue}) {
+        ${output} = ${input1};
+    } else {
+        ${output} = ${input3};
+    }
+#else
+    ## Fallback if inputs missing
+    /* Switch block ${block.getBlockId()} missing inputs or threshold, using default */
+    ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0;
+#end

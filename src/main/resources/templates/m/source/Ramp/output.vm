@@ -1,5 +1,5 @@
 ## MATLAB代码生成模板 - Ramp模块
-#if($block.getParameter("slope").dataType == "REAL")
+#if($block.getParameter("slope").dataType == $realDataType)
 if sign(t-${start.getName()}+offset) >= 0
     ${outputs.get(0).getName()} = ${initial_output.getName()} + ${slope.getName()}*(t-${start.getName()}+offset);
 else

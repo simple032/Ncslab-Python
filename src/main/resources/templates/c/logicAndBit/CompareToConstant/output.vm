@@ -1,9 +1,47 @@
-#set($blockName = "CompareToConstantOutput")
-/*
- * $blockName - Output template for CompareToConstant
- */
-
-// Generate output here
-
-// Example:
-// return $outputValue;
+/*Code for output of block CompareToConstant:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $const && $relop)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    #set($inputVar = $inputSignal.getName())
+    #set($outputVar = $outputSignal.getName())
+    #set($constantValue = $const.getName())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar comparison
+        if($inputVar $relop $constantValue) {
+            $outputVar = 1.0;
+        } else {
+            $outputVar = 0.0;
+        }
+    #else
+        ## Matrix comparison - element-wise
+        #set($height = $inputSignal.getHeight())
+        #set($width = $inputSignal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                #if($const.dataType == $realDataType)
+                    ## Scalar constant compared to matrix elements
+                    if($inputVar($i, $j) $relop $constantValue) {
+                        $outputVar($i, $j) = 1.0;
+                    } else {
+                        $outputVar($i, $j) = 0.0;
+                    }
+                #else
+                    ## Matrix constant compared to matrix elements
+                    if($inputVar($i, $j) $relop $constantValue($i, $j)) {
+                        $outputVar($i, $j) = 1.0;
+                    } else {
+                        $outputVar($i, $j) = 0.0;
+                    }
+                #end
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* CompareToConstant block missing parameters */
+    #end
+#end

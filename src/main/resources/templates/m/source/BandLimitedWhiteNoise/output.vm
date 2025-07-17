@@ -5,8 +5,8 @@
 
 /* Code for output of block Band-Limited White Noise:($block.getBlockId())$block.getBlockName() */
 
-#if ($dataType == "REAL")
+#if ($dataType == $realDataType)
     $outputSignal = $lowPassFilter
-#elseif ($dataType == "MATRIX")
+#elseif ($dataType == $matrixDataType)
     // Matrix handling logic should be implemented here
 #end

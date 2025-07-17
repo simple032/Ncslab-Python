@@ -1,0 +1,20 @@
+/*Code for initialization of block EtherCAT_AO:(${block.getBlockId()})${block.getBlockName()}*/
+if(ECAT_init_Flag==0){
+    auto* ethercat = EtherCAT::getInstance();
+    ethercat->setSamplingPeriod(${sampleTime});
+    if (!ethercat->init(${block.getBlockName()}_interface)) {
+        printf("Failed to initialize EtherCAT\n");
+        exit(1);
+    } else {
+        printf("EtherCAT initialized successfully\n");
+    }
+    ECAT_init_Flag=1;
+}
+AnalogIOManager::createAnalogOutput(${slaveId});
+auto* analogOutput = AnalogIOManager::getAnalogOutput(${slaveId});
+if (!analogOutput || !analogOutput->init()) {
+    printf("Failed to initialize EtherCAT Analog Output\n");
+    exit(1);
+} else {
+    printf("EtherCAT Analog Output initialized successfully\n");
+}

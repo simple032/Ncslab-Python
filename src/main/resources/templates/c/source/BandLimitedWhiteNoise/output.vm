@@ -1,0 +1,6 @@
+/*Code for output of block Band-Limited White Noise::(${block.getBlockId()})${block.getBlockName()}*/
+#if($cov.getDataType().toString() == "REAL")
+${block.getOutputPortList().get(0).getOutputSignalC().getName()}= lowPassFilter(generateGaussianNoise(0.0, 1.0), 2.0 * M_PI *0.01);
+#elseif($cov.getDataType().toString() == "MATRIX")
+## Matrix noise generation would go here
+#end

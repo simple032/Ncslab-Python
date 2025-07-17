@@ -1,0 +1,1 @@
+${amplitude.getInitCodeM()}${period.getInitCodeM()}${pulseWidth.getInitCodeM()}${phaseDelay.getInitCodeM()}

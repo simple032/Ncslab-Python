@@ -1,12 +1,21 @@
-/* Code for output of block Sine Wave:(${block.blockId}) ${block.blockName} */
-{#if($amplitude.dataType == $realDataType)
-${outputs.get(0)} = ${bias.getName()} + ${amplitude.getName()} * sin(${frequency.getName()} * model.time + ${phase.getName()});
+/*Code for output of block SineWave:(${block.getBlockId()})${block.getBlockName()}*/
+#if($amplitude && $bias && $frequency && $phase)
+    #if($amplitude.dataType == $realDataType)
+        ## Scalar sine wave
+        ${outputs.get(0)} = ${bias.getName()} + ${amplitude.getName()} * sin(${frequency.getName()} * model.time + ${phase.getName()});
+    #else
+        ## Matrix sine wave
+        #set($height = $amplitude.height)
+        #set($width = $amplitude.width)
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputs.get(0)}($i,$j) = ${bias.getName()}($i,$j) + ${amplitude.getName()}($i,$j) * sin(${frequency.getName()}($i,$j) * model.time + ${phase.getName()}($i,$j));
+            #end
+        #end
+    #end
 #else
-#set($amplitudeIndices = $block.calculateAmplitudeIndices($amplitude.height, $amplitude.width))
-#foreach($index in $amplitudeIndices)
-    #set($i = $index / $amplitude.width)
-    #set($j = $index % $amplitude.width)
-    ${outputs.get(0)}(${i},${j}) = ${bias.getName()}(${i},${j}) + ${amplitude.getName()}(${i},${j}) * sin(${frequency.getName()}(${i},${j}) * model.time - ${phase.getName()}(${i},${j});
+    ## Fallback with default values
+    ${outputs.get(0)} = 1.0 * sin(1.0 * model.time + 0.0); /* Using default sine wave parameters */
 #end
-#end
-}

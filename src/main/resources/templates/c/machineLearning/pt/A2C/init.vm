@@ -1,0 +1,7 @@
+/*Code for initialization of block MLTest:(${block.getBlockId()})${block.getBlockName()}*/
+## Generate init code for parameters
+${inputFeatures.getInitCodeC()}${outputFeatures.getInitCodeC()}${learningRate.getInitCodeC()}${discountFactor.getInitCodeC()}## Generate init code for the model (must be after parameters)
+${modelVariable.getInitCodeC()}## Load model if path specified
+#if($loadPath && !$loadPath.equals("None"))
+${modelVariable.getName()}->loadModel("${loadPath}");
+#end

@@ -1,11 +1,20 @@
-/*Code for output of block Demux:(${block.blockId})${block.blockName}*/
-#set($outputNum = $outputNames.length() - 1)
-#if($input.getHeight() == 1)
-  #foreach($i in [0..$outputNum])
-    ${outputNames.get($i)}=${input.getName()}(0,$i);
-  #end
+/*Code for output of block Demux:(${block.getBlockId()})${block.getBlockName()}*/
+#if($input && $outputNames && $outputNames.size() > 0)
+    #set($numOutputs = $outputNames.size())
+    #set($maxOutputIdx = $numOutputs - 1)
+    
+    #if($input.getHeight() == 1)
+        ## Row vector input - split columns to outputs
+        #foreach($i in [0..$maxOutputIdx])
+        ${outputNames.get($i)} = ${input.getName()}(0,$i);
+        #end
+    #else
+        ## Column vector input - split rows to outputs
+        #foreach($i in [0..$maxOutputIdx])
+        ${outputNames.get($i)} = ${input.getName()}($i,0);
+        #end
+    #end
 #else
-  #foreach($i in [0..$outputNum])
-    ${outputNames.get($i)}=${input.getName()}($i,0);
-  #end
+    ## Fallback if parameters missing
+    /* Warning: Demux block ${block.getBlockId()} missing input or output configuration */
 #end

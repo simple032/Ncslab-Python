@@ -1,0 +1,27 @@
+## ======================================================================================
+## Shared Parameter Initialization Template
+## Generates consistent parameter initialization code with default fallbacks
+## Usage: #parse("c/shared/parameter_init.vm")
+## Required context variables: $block, $parameterName
+## ======================================================================================
+
+## Macro to generate parameter initialization with default fallback
+#macro(initParameter $param $defaultValue)
+#if($param)
+${param.getInitCodeC()}#else
+/* Parameter ${parameterName} not found, using default: $defaultValue */
+real_T ${parameterName}_${block.getBlockId()} = $defaultValue;
+#end
+#end
+
+## Macro to generate parameter initialization from PARAMETER_DEFAULTS
+#macro(initParameterWithDefaults $param $paramName)
+#set($defaults = $block.getClass().getDeclaredField("PARAMETER_DEFAULTS"))
+#if($defaults)
+    #set($defaultMap = $defaults.get(null))
+    #set($defaultValue = $defaultMap.get($paramName))
+    #initParameter($param $defaultValue)
+#else
+    #initParameter($param "0")
+#end
+#end

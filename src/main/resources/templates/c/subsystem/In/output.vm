@@ -1,0 +1,2 @@
+/*Code for output of block In:(${block.getBlockId()})${block.getBlockName()}*/
+${block.getOutputPortVariable(0)}=${block.getInputPortVariable(0)};

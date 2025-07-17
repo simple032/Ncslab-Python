@@ -1,0 +1,2 @@
+${block.getBlockName()}=[];
+ScopeNum=ScopeNum+1;

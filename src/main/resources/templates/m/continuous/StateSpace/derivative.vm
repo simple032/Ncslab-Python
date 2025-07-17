@@ -1,0 +1,1 @@
+${xState.getDerivativeName()}=${A.getName()}*${xState.getName()}+${B.getName()}*${inputVariable};

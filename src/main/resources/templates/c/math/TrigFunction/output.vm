@@ -1,18 +1,57 @@
-## TrigFunction block output calculation
-#set($function = $block.getParamValues().getString("TrigonometricFunction"))
-${block.outputPortList.get(0).getOutputSignalC().getName()} =
-#if($function == "sin")
-  sin(${signal.getName()});
-#elseif($function == "cos")
-  cos(${signal.getName()});
-#elseif($function == "tan")
-  tan(${signal.getName()});
-#elseif($function == "asin")
-  asin(${signal.getName()});
-#elseif($function == "acos")
-  acos(${signal.getName()});
-#elseif($function == "atan")
-  atan(${signal.getName()});
-#elseif($function == "atan2")
-  atan2(${signal.getName()}, ${block.inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()});
+/*Code for output of block TrigFunction:(${block.getBlockId()})${block.getBlockName()}*/
+#if($signal && $outputPortList && $outputPortList.size() > 0)
+    #set($outputVar = $outputPortList.get(0).getOutputSignalC().getName())
+    #set($inputVar = $signal.getName())
+    #set($function = $block.getParamValues().getString("TrigonometricFunction"))
+    
+    #if($signal.dataType == $realDataType)
+        ## Scalar trigonometric function
+        #if($function == "sin")
+        $outputVar = sin($inputVar);
+        #elseif($function == "cos")
+        $outputVar = cos($inputVar);
+        #elseif($function == "tan")
+        $outputVar = tan($inputVar);
+        #elseif($function == "asin")
+        $outputVar = asin($inputVar);
+        #elseif($function == "acos")
+        $outputVar = acos($inputVar);
+        #elseif($function == "atan")
+        $outputVar = atan($inputVar);
+        #elseif($function == "atan2" && $inputPortList.size() > 1)
+        $outputVar = atan2($inputVar, ${inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()});
+        #else
+        $outputVar = sin($inputVar); /* Default to sin function */
+        #end
+    #else
+        ## Matrix trigonometric function
+        #set($height = $signal.getHeight())
+        #set($width = $signal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                #if($function == "sin")
+        $outputVar($i,$j) = sin($inputVar($i,$j));
+                #elseif($function == "cos")
+        $outputVar($i,$j) = cos($inputVar($i,$j));
+                #elseif($function == "tan")
+        $outputVar($i,$j) = tan($inputVar($i,$j));
+                #elseif($function == "asin")
+        $outputVar($i,$j) = asin($inputVar($i,$j));
+                #elseif($function == "acos")
+        $outputVar($i,$j) = acos($inputVar($i,$j));
+                #elseif($function == "atan")
+        $outputVar($i,$j) = atan($inputVar($i,$j));
+                #else
+        $outputVar($i,$j) = sin($inputVar($i,$j)); /* Default to sin function */
+                #end
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* TrigFunction block missing parameters */
+    #end
 #end

@@ -1,5 +1,12 @@
-if($inputSignal){
-	digitalWrite($Bcm, HIGH);
-}else{
-	digitalWrite($Bcm, LOW);
-}
+/*Code for output of block GPIO:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputSignal && $Bcm)
+    if(${inputSignal}) {
+        digitalWrite(${Bcm}, HIGH);
+    } else {
+        digitalWrite(${Bcm}, LOW);
+    }
+#else
+    ## Fallback if parameters missing
+    /* GPIO parameters missing - using default BCM pin 18 */
+    digitalWrite(18, LOW);
+#end

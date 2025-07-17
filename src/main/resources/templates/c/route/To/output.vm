@@ -1,2 +1,2 @@
-/* To模块输出: ($block.getBlockId()) $block.getBlockName() */
-$outputs.get(0) = $inputs.get(0); // 直接传递输入值
+/*Code for output of block To:(${block.getBlockId()})${block.getBlockName()}*/
+${block.getOutputPortVariable(0)}=${block.getInputPortVariable(0)};

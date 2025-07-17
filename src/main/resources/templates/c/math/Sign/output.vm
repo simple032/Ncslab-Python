@@ -1,25 +1,40 @@
-#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
-
-/* Code for Sign block $blockId */
-#if($inputSignal.dataType == $realDataType)
-if($inputSignal > 0)
-    $outputSignal = 1.0;
-elseif($inputSignal == 0)
-    $outputSignal = 0;
-else
-    $outputSignal = -1.0;
-#elseif($inputSignal.dataType == $matrixDataType)
-    #set($wMax = $inputSignal.getWidth() - 1)
-    #set($hMax = $inputSignal.getHeight() - 1)
-    #foreach($i in [0..$hMax])
-        #foreach($j in [0..$wMax])
-    if($inputSignal($i, $j) > 0)
-        $outputSignal($i, $j) = 1.0;
-    elseif($inputSignal($i, $j) == 0)
-        $outputSignal($i, $j) = 0;
-    else
-        $outputSignal($i, $j) = -1.0;
+/*Code for output of block Sign:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    #set($inputVar = $inputSignal.getName())
+    #set($outputVar = $outputSignal.getName())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar sign function
+        if($inputVar > 0.0) {
+            $outputVar = 1.0;
+        } else if($inputVar == 0.0) {
+            $outputVar = 0.0;
+        } else {
+            $outputVar = -1.0;
+        }
+    #elseif($inputSignal.dataType == $matrixDataType)
+        ## Matrix sign function - element-wise
+        #set($height = $inputSignal.getHeight())
+        #set($width = $inputSignal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                if($inputVar($i, $j) > 0.0) {
+                    $outputVar($i, $j) = 1.0;
+                } else if($inputVar($i, $j) == 0.0) {
+                    $outputVar($i, $j) = 0.0;
+                } else {
+                    $outputVar($i, $j) = -1.0;
+                }
+            #end
         #end
+    #end
+#else
+    ## Fallback if parameters missing
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Sign block missing parameters */
     #end
 #end

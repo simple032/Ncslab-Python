@@ -1,0 +1,45 @@
+## ======================================================================================
+## Shared Data Type Handling Macros
+## Provides consistent data type detection and processing patterns
+## ======================================================================================
+
+## Macro to check if signal is scalar (real) data type
+#macro(isScalar $signal)
+$signal.dataType == $realDataType#end
+
+## Macro to check if signal is matrix data type  
+#macro(isMatrix $signal)
+$signal.dataType == $matrixDataType#end
+
+## Macro to get input signal reference
+#macro(getInputSignal $inputIndex)
+$inputPortList.get($inputIndex).getLinkedLine().getLinkedOutputPort().getOutputSignalC()#end
+
+## Macro to get input signal name
+#macro(getInputSignalName $inputIndex)
+$inputPortList.get($inputIndex).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()#end
+
+## Macro to get output signal name
+#macro(getOutputSignalName $outputIndex)
+$outputPortList.get($outputIndex).getOutputSignalC().getName()#end
+
+## Macro to generate matrix loop with given variable names and signal
+#macro(matrixLoop $loopVar_i $loopVar_j $signal $content)
+#set($height = $signal.getHeight())
+#set($width = $signal.getWidth())
+#set($hMax = $height - 1)
+#set($wMax = $width - 1)
+#foreach($i in [0..$hMax])
+    #foreach($j in [0..$wMax])
+        #set($loopVar_i = $i)
+        #set($loopVar_j = $j)
+        $content
+    #end
+#end
+#end
+
+## Macro to get parameter default value
+#macro(getParameterDefault $paramName)
+#if($block.getClass().getDeclaredField("PARAMETER_DEFAULTS"))
+${block.getClass().getDeclaredField("PARAMETER_DEFAULTS").get(null).get($paramName)}#end
+#end

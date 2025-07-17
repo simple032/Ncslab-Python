@@ -1,9 +1,2 @@
-#set($blockName = "IntervalTestInit")
-/*
- * $blockName - Initialization template for IntervalTest
- */
-
-// Initialize variables here
-
-// Example:
-// $variableName = $inputValue;
+/*Code for initialization of block IntervalTest:(${block.getBlockId()}) ${block.getBlockName()}*/
+${lowLimit.getInitCodeC()}${upLimit.getInitCodeC()}

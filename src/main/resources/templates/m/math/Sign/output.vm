@@ -1,0 +1,22 @@
+#set($DataType = $DataType)
+#if($inputSignal.getDataType() == $DataType.REAL)
+if ${inputSignal.getName()}>0
+${outputSignal.getName()}=1.0;
+elseif ${inputSignal.getName()}==0
+${outputSignal.getName()}=0;
+else
+${outputSignal.getName()}=-1.0;
+end
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#foreach($i in [1..$inputHeight])
+#foreach($j in [1..$inputWidth])
+if ${inputSignal.getName()}($i,$j)>0
+${outputSignal.getName()}($i,$j)=1.0;
+elseif ${inputSignal.getName()}($i,$j)==0
+${outputSignal.getName()}($i,$j)=0;
+else
+${outputSignal.getName()}($i,$j)=-1.0;
+end
+#end
+#end
+#end

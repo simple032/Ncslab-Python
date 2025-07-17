@@ -1,0 +1,18 @@
+## ======================================================================================
+## Improved Constant Block Output Template
+## Leverages PARAMETER_DEFAULTS and provides better error handling
+## ======================================================================================
+#parse("c/shared/data_type_macros.vm")
+
+## Set up template context
+#set($operationType = "output")
+#parse("c/shared/block_header.vm")
+
+## Generate constant assignment
+## Check if value parameter exists, otherwise use default
+#if($value)
+    #getOutputSignalName(0) = ${value.getName()};
+#else
+    ## Fallback to default value if parameter not found
+    #getOutputSignalName(0) = 1; /* Using default constant value */
+#end

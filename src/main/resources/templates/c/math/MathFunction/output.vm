@@ -1,50 +1,129 @@
-#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
-
-/* Code for MathFunction block $blockId */
-#if($inputSignal.dataType == $realDataType)
-    #if($function == "transpose")
-        $outputSignal = $inputSignal;
-    #elseif($function == "reciprocal")
-        $outputSignal = 1.0 / ($inputSignal);
-    #elseif($function == "square")
-        $outputSignal = ($inputSignal) * ($inputSignal);
-    #elseif($function == "exp" || $function == "log" || $function == "log10")
-        $outputSignal = $function($inputSignal);
-    #elseif($function == "pow")
-        $outputSignal = pow($inputSignal, $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+/*Code for output of block MathFunction:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $function)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    #set($inputVar = $inputSignal.getName())
+    #set($outputVar = $outputSignal.getName())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar mathematical functions
+        #if($function == "transpose")
+            ## Transpose of scalar is itself
+            $outputVar = $inputVar;
+        #elseif($function == "reciprocal")
+            ## Reciprocal: 1/x
+            $outputVar = 1.0 / ($inputVar);
+        #elseif($function == "square")
+            ## Square: x^2
+            $outputVar = ($inputVar) * ($inputVar);
+        #elseif($function == "exp")
+            ## Exponential: e^x
+            $outputVar = exp($inputVar);
+        #elseif($function == "log")
+            ## Natural logarithm: ln(x)
+            $outputVar = log($inputVar);
+        #elseif($function == "log10")
+            ## Base-10 logarithm: log10(x)
+            $outputVar = log10($inputVar);
+        #elseif($function == "pow")
+            ## Power: x^y (requires second input)
+            #if($inputPortList.size() > 1)
+                #set($exponent = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+                $outputVar = pow($inputVar, $exponent);
+            #else
+                $outputVar = $inputVar; /* Power function requires second input */
+            #end
+        #elseif($function == "sqrt")
+            ## Square root: sqrt(x)
+            $outputVar = sqrt($inputVar);
+        #else
+            ## Unknown function - default to identity
+            $outputVar = $inputVar;
+        #end
+    #elseif($inputSignal.dataType == $matrixDataType)
+        ## Matrix mathematical functions
+        #set($height = $inputSignal.getHeight())
+        #set($width = $inputSignal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        
+        #if($function == "transpose")
+            ## Matrix transpose
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($j, $i) = $inputVar($i, $j);
+                #end
+            #end
+        #elseif($function == "reciprocal")
+            ## Element-wise reciprocal
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($i, $j) = 1.0 / ($inputVar($i, $j));
+                #end
+            #end
+        #elseif($function == "square")
+            ## Element-wise square
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($i, $j) = ($inputVar($i, $j)) * ($inputVar($i, $j));
+                #end
+            #end
+        #elseif($function == "exp")
+            ## Element-wise exponential
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($i, $j) = exp($inputVar($i, $j));
+                #end
+            #end
+        #elseif($function == "log")
+            ## Element-wise natural logarithm
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($i, $j) = log($inputVar($i, $j));
+                #end
+            #end
+        #elseif($function == "log10")
+            ## Element-wise base-10 logarithm
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($i, $j) = log10($inputVar($i, $j));
+                #end
+            #end
+        #elseif($function == "pow")
+            ## Element-wise power
+            #if($inputPortList.size() > 1)
+                #set($exponent = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+                #foreach($i in [0..$hMax])
+                    #foreach($j in [0..$wMax])
+                        $outputVar($i, $j) = pow($inputVar($i, $j), $exponent);
+                    #end
+                #end
+            #else
+                #foreach($i in [0..$hMax])
+                    #foreach($j in [0..$wMax])
+                        $outputVar($i, $j) = $inputVar($i, $j); /* Power function requires second input */
+                    #end
+                #end
+            #end
+        #elseif($function == "sqrt")
+            ## Element-wise square root
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($i, $j) = sqrt($inputVar($i, $j));
+                #end
+            #end
+        #else
+            ## Unknown function - default to identity
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    $outputVar($i, $j) = $inputVar($i, $j);
+                #end
+            #end
+        #end
     #end
-#elseif($inputSignal.dataType == $matrixDataType)
-    #set($wMax = $inputSignal.getWidth() - 1)
-    #set($hMax = $inputSignal.getHeight() - 1)
-    #if($function == "transpose")
-        #foreach($i in [0..$wMax])
-            #foreach($j in [0..$hMax])
-                $outputSignal($j, $i) = $inputSignal($i, $j);
-            #end
-        #end
-    #elseif($function == "reciprocal")
-        #foreach($i in [0..$wMax])
-            #foreach($j in [0..$hMax]);
-            #end
-        #end
-    #elseif($function == "square")
-        #foreach($i in [0..$wMax])
-            #foreach($j in [0..$hMax])
-                $outputSignal($i, $j) = ($inputSignal($i, $j)) * ($inputSignal($i, $j));
-            #end
-        #end
-    #elseif($function == "exp" || $function == "log" || $function == "log10")
-        #foreach($i in [0..$wMax])
-            #foreach($j in [0..$hMax])
-                $outputSignal($i, $j) = $function($inputSignal($i, $j));
-            #end
-        #end
-    #elseif($function == "pow")
-        #foreach($i in [0..$wMax])
-            #foreach($j in [0..$hMax])
-                $outputSignal($i, $j) = pow($inputSignal($i, $j), $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-            #end
-        #end
+#else
+    ## Fallback if parameters missing
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* MathFunction block missing parameters */
     #end
 #end

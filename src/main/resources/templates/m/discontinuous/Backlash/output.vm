@@ -1,0 +1,10 @@
+#set($DataType = $DataType)
+#if($inputSignal.getDataType() == $DataType.REAL)
+${outputSignal.getName()}=max(${backlashWidth.getName()},${inputSignal.getName()});
+#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#foreach($i in [1..$inputHeight])
+#foreach($j in [1..$inputWidth])
+${outputSignal.getName()}($i,$j)=max(${backlashWidth.getName()},${inputSignal.getName()}($i,$j));
+#end
+#end
+#end

@@ -1,0 +1,16 @@
+/*Code for init of block 2-D Lookup table:(${block.getBlockId()})${block.getBlockName()}*/
+init_interpolation_table(&${tableName},${xDataLength},${yDataLength},1);
+
+#foreach($value in $xData)
+insert_to_x_table(&${tableName},${foreach.index},${value});
+#end
+
+#foreach($value in $yData)
+insert_to_y_table(&${tableName},${foreach.index},${value});
+#end
+
+#foreach($row in $zData)
+#foreach($value in $row)
+insert_to_z_table(&${tableName},${foreach.parent.index},${foreach.index},${value});
+#end
+#end

@@ -1,0 +1,2 @@
+/*Code for initialization of block IdentityMatrix: (${block.getBlockId()})${block.getBlockName()}*/
+${outputDimensions.getInitCodeC()}

@@ -1,0 +1,2 @@
+/*Code for output of IsTriangular: (${block.getBlockId()})${block.getBlockName()}*/
+${outputSignal} = ${inputSignal}.isTriangular() ? 1 : 0;

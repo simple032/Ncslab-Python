@@ -1,0 +1,15 @@
+/*Code for output of block Second-Order Filter:(${block.getBlockId()})${block.getBlockName()}*/
+if(mp->majorStep>0) {
+{real_T currentTime = model.time;
+real_T sampleTimeTmp = ${sampleTime.getName()}==-1?model.stepSize:${sampleTime.getName()};
+sampleTimeTmp = sampleTimeTmp ==0?model.stepSize:sampleTimeTmp;
+if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {
+
+${outputFilter}=Block${block.getBlockId()}SecondOrderFilter_b[0]*${inputData}+Block${block.getBlockId()}SecondOrderFilter_b[1]*Block${block.getBlockId()}SecondOrderFilter_x[0]+Block${block.getBlockId()}SecondOrderFilter_b[2]*Block${block.getBlockId()}SecondOrderFilter_x[1]-Block${block.getBlockId()}SecondOrderFilter_a[0]*Block${block.getBlockId()}SecondOrderFilter_y[0]-Block${block.getBlockId()}SecondOrderFilter_a[1]*Block${block.getBlockId()}SecondOrderFilter_y[1];
+Block${block.getBlockId()}SecondOrderFilter_x[1]=Block${block.getBlockId()}SecondOrderFilter_x[0];
+Block${block.getBlockId()}SecondOrderFilter_x[0]=${inputData};
+Block${block.getBlockId()}SecondOrderFilter_y[1]=Block${block.getBlockId()}SecondOrderFilter_y[0];
+Block${block.getBlockId()}SecondOrderFilter_y[0]=${outputFilter};
+}
+}
+}

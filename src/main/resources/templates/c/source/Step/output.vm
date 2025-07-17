@@ -1,20 +1,33 @@
-/* Code for output of block Step:(${block.blockId}) ${block.blockName} */
-{#if($time.dataType == $realDataType)
-if(model.time < ${time.getName()}) {
-    ${outputs.get(0)} = ${before.getName()};
-} else {
-    ${outputs.get(0)} = ${after.getName()};
-}
+/*Code for output of block Step:(${block.getBlockId()})${block.getBlockName()}*/
+#if($time && $before && $after)
+    #if($time.dataType == $realDataType)
+        ## Scalar step function
+        if(model.time < ${time.getName()}) {
+            ${outputs.get(0)} = ${before.getName()};
+        } else {
+            ${outputs.get(0)} = ${after.getName()};
+        }
+    #else
+        ## Matrix step function
+        #set($height = $time.height)
+        #set($width = $time.width)
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        if(model.time < ${time.getName()}(${i},${j})) {
+            ${outputs.get(0)}(${i},${j}) = ${before.getName()}(${i},${j});
+        } else {
+            ${outputs.get(0)}(${i},${j}) = ${after.getName()}(${i},${j});
+        }
+            #end
+        #end
+    #end
 #else
-#set($timeIndices = $block.calculateTimeIndices($time.height, $time.width))
-#foreach($index in $timeIndices)
-    #set($i = $index / $time.width)
-    #set($j = $index % $time.width)
-    if(model.time < ${time.getName()}(${i},${j})) {
-        ${outputs.get(0)}(${i},${j}) = ${before.getName()}(${i},${j});
+    ## Fallback with default step behavior
+    if(model.time < 1.0) {
+        ${outputs.get(0)} = 0.0;
     } else {
-        ${outputs.get(0)}(${i},${j}) = ${after.getName()}(${i},${j});
+        ${outputs.get(0)} = 1.0;
     }
 #end
-#end
-}

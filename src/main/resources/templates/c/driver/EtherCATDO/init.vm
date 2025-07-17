@@ -1,0 +1,20 @@
+/*Code for initialization of block EtherCAT_DO:(${block.getBlockId()})${block.getBlockName()}*/
+if(ECAT_init_Flag==0){
+    auto* ethercat = EtherCAT::getInstance();
+    ethercat->setSamplingPeriod(${sampleTime});
+    if (!ethercat->init(${block.getBlockName()}_interface)) {
+        printf("Failed to initialize EtherCAT\n");
+        exit(1);
+    } else {
+        printf("EtherCAT initialized successfully\n");
+    }
+    ECAT_init_Flag=1;
+}
+DigitalIOManager::createDigitalOutput(${slaveId}, ${channel});
+auto* digitalOutput = DigitalIOManager::getDigitalOutput(${slaveId}, ${channel});
+if (!digitalOutput || !digitalOutput->init()) {
+    printf("Failed to initialize EtherCAT Digital Output\n");
+    exit(1);
+} else {
+    printf("EtherCAT Digital Output initialized successfully\n");
+}

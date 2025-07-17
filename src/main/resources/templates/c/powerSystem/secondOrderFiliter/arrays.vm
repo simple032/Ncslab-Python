@@ -1,0 +1,5 @@
+/*Define arrays for block Second-Order Filter:(${block.getBlockId()})${block.getBlockName()}*/
+double Block${block.getBlockId()}SecondOrderFilter_b[3]={0};
+double Block${block.getBlockId()}SecondOrderFilter_a[2]={0};
+double Block${block.getBlockId()}SecondOrderFilter_x[2]={0};
+double Block${block.getBlockId()}SecondOrderFilter_y[2]={0};

@@ -1,0 +1,19 @@
+/*Code for output of block Observer:(${block.getBlockId()})${observerName}*/
+
+static const double A_${observerName}[9] = {1.2998,-0.4341,0.1343,1,0,0,0,1,0};
+static const double B_${observerName}[3] = {1,0,0};
+static const double C_${observerName}[3] = {3.5629,2.7739,1.0121};
+static const double L_${observerName}[3] = {0.0363,0.0439,0.1470};
+
+// Calculate innovation term
+double innovation_${observerName} = ${ySignal} - (C_${observerName}[0] * ${x1Signal} + C_${observerName}[1] * ${x2Signal} + C_${observerName}[2] * ${x3Signal});
+
+// Calculate new state estimates
+double x1_next = ${x1Signal} * A_${observerName}[0] + ${x2Signal} * A_${observerName}[1] + ${x3Signal} * A_${observerName}[2] + B_${observerName}[0] * ${uSignal} + L_${observerName}[0] * innovation_${observerName};
+double x2_next = ${x1Signal} * A_${observerName}[3] + ${x2Signal} * A_${observerName}[4] + ${x3Signal} * A_${observerName}[5] + B_${observerName}[1] * ${uSignal} + L_${observerName}[1] * innovation_${observerName};
+double x3_next = ${x1Signal} * A_${observerName}[6] + ${x2Signal} * A_${observerName}[7] + ${x3Signal} * A_${observerName}[8] + B_${observerName}[2] * ${uSignal} + L_${observerName}[2] * innovation_${observerName};
+
+// Update states
+${x1Signal} = x1_next;
+${x2Signal} = x2_next;
+${x3Signal} = x3_next;

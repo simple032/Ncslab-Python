@@ -1,0 +1,13 @@
+/*Code for output of block EtherCAT_DI:(${block.getBlockId()})${block.getBlockName()}*/
+if(model.majorStep==1){
+    bool value = false;
+    auto* digitalInput = DigitalIOManager::getDigitalInput(${slaveId}, ${channel});
+    if (!digitalInput) {
+        printf("Failed to get digital input\n");
+    }
+    else {
+        if (digitalInput->read(&value)) {
+            ${block.getOutputPortList().get(0).getOutputSignalC().getName()} = value ? 1.0 : 0.0;
+        }
+    }
+}

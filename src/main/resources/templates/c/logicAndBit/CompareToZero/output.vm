@@ -1,9 +1,36 @@
-#set($blockName = "CompareToZeroOutput")
-/*
- * $blockName - Output template for CompareToZero
- */
-
-// Generate output here
-
-// Example:
-// return $outputValue;
+/*Code for output of block CompareToZero:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $relationalOperator)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    #set($inputVar = $inputSignal.getName())
+    #set($outputVar = $outputSignal.getName())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar comparison to zero
+        if(${inputVar} ${relationalOperator} 0.0) {
+            ${outputVar} = 1.0;
+        } else {
+            ${outputVar} = 0.0;
+        }
+    #else
+        ## Matrix comparison to zero - element-wise
+        #set($height = $inputSignal.getHeight())
+        #set($width = $inputSignal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                if(${inputVar}($i, $j) ${relationalOperator} 0.0) {
+                    ${outputVar}($i, $j) = 1.0;
+                } else {
+                    ${outputVar}($i, $j) = 0.0;
+                }
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* CompareToZero block missing parameters */
+    #end
+#end

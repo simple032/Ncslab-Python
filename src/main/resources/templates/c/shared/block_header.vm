@@ -1,0 +1,6 @@
+## ======================================================================================
+## Shared Block Header Template - Provides consistent header formatting for all blocks
+## Usage: #parse("c/shared/block_header.vm")
+## Required context variables: $block, $operationType (e.g., "output", "init", "terminate")
+## ======================================================================================
+/*Code for ${operationType} of block ${block.getClass().getSimpleName()}:(${block.getBlockId()})${block.getBlockName()}*/

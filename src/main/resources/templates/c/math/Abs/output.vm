@@ -1,7 +1,24 @@
-#set($input = $inputPortList.get(0))
-#set($output = $outputPortList.get(0))
-#set($inputSignal = $input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($outputSignal = $output.getOutputSignalC().getName())
-
-/* Code for Abs block $blockId */
-$outputSignal = fabs($inputSignal);
+/*Code for output of block Abs:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList.size() > 0)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar absolute value
+        ${outputSignal.getName()} = fabs(${inputSignal.getName()});
+    #else
+        ## Matrix absolute value
+        #set($height = $inputSignal.getHeight())
+        #set($width = $inputSignal.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputSignal.getName()}($i,$j) = fabs(${inputSignal.getName()}($i,$j));
+            #end
+        #end
+    #end
+#else
+    ## Fallback if no input
+    ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0;
+#end

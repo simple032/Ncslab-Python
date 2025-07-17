@@ -1,6 +1,7 @@
 /*Code for output of block RateLimiter:(${block.getBlockId()})${block.getBlockName()}*/
 
-#set($dataVar = "Block${block.getBlockId()}RateLimiter_data")
+#set($blockId = $block.getBlockId())
+#set($dataVar = "Block${blockId}RateLimiter_data")
 
 if(mp->majorStep > 0) {
     if(${signal.getName()} - ${dataVar} > ${upperLimit.getName()} * STEP_SIZE) {

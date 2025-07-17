@@ -1,0 +1,2 @@
+j=${inputSignal.getName()};
+Block${block.getBlockId()}_Output1=${mathOperator}(j);

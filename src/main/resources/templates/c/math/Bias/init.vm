@@ -1,2 +1,2 @@
-/* Bias value: ${block.paramValues.getString("Bias")} */
+/*Code for initialization of block Bias:(${block.getBlockId()})${block.getBlockName()}*/
 ${bias.getInitCodeC()}

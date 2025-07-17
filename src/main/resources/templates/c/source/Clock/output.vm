@@ -1,3 +1,8 @@
 /*Code for output of block Clock:(${block.getBlockId()})${block.getBlockName()}*/
-
-$outputVar=model.time;
+#if($outputVar)
+    ## Output current simulation time
+    $outputVar = model.time;
+#else
+    ## Fallback if output variable not defined
+    ${block.getOutputPortVariable(0)} = model.time;
+#end

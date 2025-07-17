@@ -1,0 +1,4 @@
+${seed.getInitCodeC()}
+${cov.getInitCodeC()}
+${samplePeriod.getInitCodeC()}
+srand(+${seed.getDataString()});

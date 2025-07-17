@@ -1,0 +1,2 @@
+/*Code for terminate of block UDPSend:(${block.getBlockId()})${block.getBlockName()}*/
+close(sockfd_netsend${block.getBlockId()});

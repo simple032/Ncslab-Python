@@ -1,0 +1,2 @@
+/*Code for initialization of block Matrix Concatenate: (${block.getBlockId()})${block.getBlockName()}*/
+${ConcatenateDimension.getInitCodeC()}

@@ -1,0 +1,54 @@
+## ======================================================================================
+## Improved Sum Block Output Template
+## Supports dynamic input count and leverages shared macros
+## ======================================================================================
+#parse("c/shared/data_type_macros.vm")
+
+## Set up template context
+#set($operationType = "output")
+#parse("c/shared/block_header.vm")
+
+## Validate inputs exist
+#if($inputPortList.size() > 0)
+    #set($firstInput = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputVar = $outputPortList.get(0).getOutputSignalC().getName())
+    #set($numInputs = $inputPortList.size())
+    #set($maxIndex = $numInputs - 1)
+    
+    ## Handle scalar inputs
+    #if(#isScalar($firstInput))
+        ## Initialize output to zero
+        $outputVar = 0;
+        
+        ## Add each input with appropriate sign
+        #foreach($i in [0..$maxIndex])
+            #set($sign = $sequence.charAt($i))
+        $outputVar $sign= #getInputSignalName($i);
+        #end
+        
+    ## Handle matrix inputs
+    #elseif(#isMatrix($firstInput))
+        #set($height = $firstInput.getHeight())
+        #set($width = $firstInput.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        
+        ## Initialize each element to zero and sum
+        #foreach($m in [0..$hMax])
+            #foreach($n in [0..$wMax])
+                ## Initialize element
+                $outputVar($m, $n) = 0;
+                
+                ## Sum all inputs for this element
+                #foreach($i in [0..$maxIndex])
+                    #set($sign = $sequence.charAt($i))
+                $outputVar($m, $n) $sign= #getInputSignalName($i)($m, $n);
+                #end
+            #end
+        #end
+    #end
+#else
+    ## No inputs - this should not happen but handle gracefully
+    /* Warning: Sum block ${block.getBlockId()} has no inputs */
+    $outputPortList.get(0).getOutputSignalC().getName() = 0;
+#end

@@ -1,0 +1,2 @@
+/*Code for terminate code of block Scope:(${block.getBlockId()})${block.getBlockName()}*/
+## printf("%d\n",${scopeStruct.getName()}.cursor);

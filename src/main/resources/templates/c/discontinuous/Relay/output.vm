@@ -1,56 +1,72 @@
-/* Code for output of block Relay:(${block.blockId}) ${block.blockName} */
-#if($onSwitchValue.dataType == $realDataType)
-  #if($ops.outputSignalC.dataType == $realDataType)
-if(${signal.getName()} > ${onSwitchValue.getName()}) {
-    ${xState.getName()} = ${onOutputValue.getName()};
-} else {
-    if(${signal.getName()} < ${offSwitchValue.getName()}) {
-        ${xState.getName()} = ${offOutputValue.getName()};
-    }
-}
-${outputs.get(0)} = ${xState.getName()};
-  #else
-    #foreach($i in [0..$optWidthIndex])
-      #foreach($j in [0..$optHeightIndex])
-if(${signal.getName()}(${i},${j}) > ${onSwitchValue.getName()}) {
-    ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()};
-} else {
-    if(${signal.getName()}(${i},${j}) < ${offSwitchValue.getName()}) {
-        ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()};
-    }
-}
-${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
-      #end
+/*Code for output of block Relay:(${block.getBlockId()})${block.getBlockName()}*/
+#if($signal && $onSwitchValue && $offSwitchValue && $onOutputValue && $offOutputValue && $xState && $outputs && $outputs.size() > 0)
+    #set($inputVar = $signal.getName())
+    #set($outputVar = $outputs.get(0))
+    #set($stateVar = $xState.getName())
+    
+    #if($onSwitchValue.dataType == $realDataType)
+        ## Scalar switch values
+        #if($ops.outputSignalC.dataType == $realDataType)
+            ## Scalar relay - hysteresis behavior
+            if($inputVar > ${onSwitchValue.getName()}) {
+                $stateVar = ${onOutputValue.getName()};
+            } else if($inputVar < ${offSwitchValue.getName()}) {
+                $stateVar = ${offOutputValue.getName()};
+            }
+            ## Output current state
+            $outputVar = $stateVar;
+        #else
+            ## Scalar input to matrix output
+            #if($optWidthIndex && $optHeightIndex)
+                #foreach($i in [0..$optWidthIndex])
+                    #foreach($j in [0..$optHeightIndex])
+                        if($inputVar(${i},${j}) > ${onSwitchValue.getName()}) {
+                            $stateVar(${i},${j}) = ${onOutputValue.getName()};
+                        } else if($inputVar(${i},${j}) < ${offSwitchValue.getName()}) {
+                            $stateVar(${i},${j}) = ${offOutputValue.getName()};
+                        }
+                        $outputVar(${i},${j}) = $stateVar(${i},${j});
+                    #end
+                #end
+            #end
+        #end
+    #else
+        ## Matrix switch values
+        #if($ops.outputSignalC.dataType == $realDataType)
+            ## Matrix input to scalar output - process each element
+            #set($height = $onSwitchValue.height)
+            #set($width = $onSwitchValue.width)
+            #set($hMax = $height - 1)
+            #set($wMax = $width - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+                    if($inputVar > ${onSwitchValue.getName()}(${i},${j})) {
+                        $stateVar(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
+                    } else if($inputVar < ${offSwitchValue.getName()}(${i},${j})) {
+                        $stateVar(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+                    }
+                    $outputVar(${i},${j}) = $stateVar(${i},${j});
+                #end
+            #end
+        #else
+            ## Matrix input to matrix output
+            #if($optWidthIndex && $optHeightIndex)
+                #foreach($i in [0..$optWidthIndex])
+                    #foreach($j in [0..$optHeightIndex])
+                        if($inputVar(${i},${j}) > ${onSwitchValue.getName()}(${i},${j})) {
+                            $stateVar(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
+                        } else if($inputVar(${i},${j}) < ${offSwitchValue.getName()}(${i},${j})) {
+                            $stateVar(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+                        }
+                        $outputVar(${i},${j}) = $stateVar(${i},${j});
+                    #end
+                #end
+            #end
+        #end
     #end
-  #end
 #else
-  #if($ops.outputSignalC.dataType == $realDataType)
-    #set($stateIndices = $block.calculateStateIndices($onSwitchValue.height, $onSwitchValue.width))
-    #foreach($index in $stateIndices)
-        #set($i = $index / $onSwitchValue.width)
-        #set($j = $index % $onSwitchValue.width)
-        if(${signal.getName()} > ${onSwitchValue.getName()}(${i},${j})) {
-            ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
-        } else {
-            if(${signal.getName()} < ${offSwitchValue.getName()}(${i},${j})) {
-                ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
-            }
-        }
-        ${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
+    ## Fallback if parameters missing
+    #if($outputs && $outputs.size() > 0)
+        ${outputs.get(0)} = 0.0; /* Relay block missing parameters */
     #end
-  #else
-    #set($stateIndices = $block.calculateStateIndices($optWidthIndex + 1, $optHeightIndex + 1))
-    #foreach($index in $stateIndices)
-        #set($i = $index / ($optHeightIndex + 1))
-        #set($j = $index % ($optHeightIndex + 1))
-        if(${signal.getName()}(${i},${j}) > ${onSwitchValue.getName()}(${i},${j})) {
-            ${xState.getName()}(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
-        } else {
-            if(${signal.getName()}(${i},${j}) < ${offSwitchValue.getName()}(${i},${j})) {
-                ${xState.getName()}(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
-            }
-        }
-        ${outputs.get(0)}(${i},${j}) = ${xState.getName()}(${i},${j});
-    #end
-  #end
 #end

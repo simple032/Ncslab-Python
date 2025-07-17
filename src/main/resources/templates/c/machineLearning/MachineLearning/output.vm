@@ -1,0 +1,8 @@
+/*Code for output of block ${block.getClass().getSimpleName()}: (${block.getBlockId()}) ${block.getBlockName()}*/
+auto ${modelVariable.getName()}_mat = ${inputSignal};
+
+#if ${width} == 1
+${outputSignal} = ${modelVariable.getName()}->predict(${modelVariable.getName()}_mat)(0);
+#else
+${outputSignal} = ${modelVariable.getName()}->predict(${modelVariable.getName()}_mat);
+#end
