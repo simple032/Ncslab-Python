@@ -18,6 +18,8 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.data.DataType;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class EnsembleModel extends Block{
@@ -31,19 +33,29 @@ public class EnsembleModel extends Block{
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("m0", "1.0");
+        PARAMETER_DEFAULTS.put("m1", "0.1");
+        PARAMETER_DEFAULTS.put("l", "0.5");
+        PARAMETER_DEFAULTS.put("initState", "[0 0 0 0]");
+        PARAMETER_DEFAULTS.put("solver", "ode4");
+
+        parameterNames.add("m0");
+        parameterNames.add("m1");
+        parameterNames.add("l");
+        parameterNames.add("initState");
+    }
+
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         inputNames.add("in1");
-        parameterNames.add("m0");
-        parameterNames.add("m1");
-        parameterNames.add("l");
-        parameterNames.add("initState");
     }
 
     public EnsembleModel(JSONObject jsonObject, NCSLabModel model) {
@@ -57,12 +69,6 @@ public class EnsembleModel extends Block{
         this.modelVariable = new ENVariable(this, 1, "invertedPendulum", "233");
 
         this.solverString = paramValues.getString("solver").trim();
-
-        parameterList.add(this.m0);
-        parameterList.add(this.m1);
-        parameterList.add(this.l);
-        parameterList.add(this.initState);
-
         this.inputPortList.add(new InputPort(this, 1));
         this.outputPort = new OutputPort(this, 1);
         this.outputPortList.add(this.outputPort);
@@ -79,50 +85,31 @@ public class EnsembleModel extends Block{
         code.addIncludeCode("#include \"inverted_pendulum.hpp\"\n");
         code.addWrittenFile("../../ensemble/inverted_pendulum.hpp", "inverted_pendulum.hpp");
 
-        String initCode = "/*Code for initialization of block InvertedPendulumTest:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        context.put("block", this);
+        context.put("m0", m0);
+        context.put("m1", m1);
+        context.put("l", l);
+        context.put("initState", initState);
+        context.put("modelVariable", modelVariable);
 
-        initCode += this.m0.getInitCodeC();
-        initCode += this.m1.getInitCodeC();
-        initCode += this.l.getInitCodeC();
-        initCode += "REAL g = 9.8;\n";
-        initCode += this.initState.getInitCodeC();
-
-        initCode += "std::vector<double> init_state(4);\n";
-        initCode += "for (int i = 0; i < 4; ++i) {\n";
-        initCode += "    init_state[i] = InvertedPendulum1_initState(0, i);\n";
-        initCode += "}\n";
-
-        initCode += this.modelVariable.getInitCodeC();
-
-        code.addInitCode(initCode);
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/ensembleModel/EnsembleModel/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder sb = new StringBuilder(String.format(
-            "/*Code for output of block %s: (%s) %s*/\n",
-            getClass().getSimpleName(),
-            getBlockId(),
-            getBlockName()));
-        OutputPort in_opt1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort(); // input source's output
+        super.generateOutputCodeC(code);
+        
+        OutputPort in_opt1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputPort out_opt1 = outputPortList.get(0);
-
-        sb.append(String.format("auto %s_mat = %s;\n", this.modelVariable.getName(), in_opt1.getOutputSignalC().getName()));
-
-        sb.append(String.format(
-        "{\n" +
-        "    std::vector<double> temp_vec = %s->step(%s_mat, 0.01);\n" +
-        "    Eigen::MatrixXd temp_mat(temp_vec.size(), 1);\n" +
-        "    for (size_t i = 0; i < temp_vec.size(); ++i) {\n" +
-        "        temp_mat(i, 0) = temp_vec[i];\n" +
-        "    }\n" +
-        "    %s = temp_mat;\n" +
-        "}\n",
-        this.modelVariable.getName(),
-        this.modelVariable.getName(),
-        out_opt1.getOutputSignalC().getName()));
-
-        code.addOutputCode(sb.toString());
+        
+        context.put("block", this);
+        context.put("modelVariable", modelVariable);
+        context.put("inputSignal", in_opt1.getOutputSignalC().getName());
+        context.put("outputSignal", out_opt1.getOutputSignalC().getName());
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/ensembleModel/EnsembleModel/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public String getVariableName() {

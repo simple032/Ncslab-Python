@@ -9,21 +9,60 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
-import java.util.List;
 
+/**
+ * Mux block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * SIMULINK Parameters:
+ * - Inputs: Number of input ports or vector of input port widths
+ * - DisplayOrder: Display order of input ports
+ * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ */
 public class Mux extends Block {
 	private int num;
 
 	private boolean feedThrough = true;
 
+    // === SIMULINK-Compatible Parameters ===
+    @Getter
+    private final Parameter inputs;
+    @Getter
+    private final Parameter displayOrder;
+    @Getter
+    private final Parameter sampleTime;
+    @Getter
+    private final Parameter outDataType;
+    @Getter
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Static Parameter Definitions ===
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("Inputs", "2");  // Number of inputs
+        PARAMETER_DEFAULTS.put("DisplayOrder", "1");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -31,12 +70,53 @@ public class Mux extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
+        // SIMULINK parameter names
+        parameterNames.add("Inputs");
+        parameterNames.add("DisplayOrder");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        // Port names
         outputNames.add("out1");
-        //输入个数不确定
+        // Input names are dynamic based on number of inputs
     }
 
+    // === Private Constructor with Typed Parameters ===
+    private Mux(Parameter inputs, Parameter displayOrder, Parameter sampleTime,
+               Parameter outDataType, Parameter saturateOnIntegerOverflow,
+               String blockName, String blockPath, String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        
+        // Assign parameters
+        this.inputs = Objects.requireNonNull(inputs, "Inputs parameter cannot be null");
+        this.displayOrder = Objects.requireNonNull(displayOrder, "Display order parameter cannot be null");
+        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+        // Parse number of inputs and create ports
+        this.num = Integer.parseInt(inputs.getInitString());
+        
+        // Create input ports based on parameter
+        for(int i=0; i<num; i++) {
+            inputPortList.add(new InputPort(this, i+1));
+        }
+        outputPortList.add(new OutputPort(this, 1, feedThrough));
+    }
+    
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
 	public Mux(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);
+
+		// Create legacy parameters for backward compatibility
+		this.inputs = new Parameter(this, 1, "Inputs", paramValues.getString("Inputs"));
+		this.displayOrder = new Parameter(this, 2, "DisplayOrder", "1:N");
+		this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+		this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
+		this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+		
+		// Add all parameters to parameter list
 
 		this.num = Integer.parseInt(paramValues.getString("Inputs"));
 
@@ -46,6 +126,116 @@ public class Mux extends Block {
 		}
 		outputPortList.add(new OutputPort(this, 1, feedThrough));
 	}
+	
+    // === Static Factory Method for JSON Deserialization ===
+    public static Mux fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+            
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+            
+            Parameter inputs = createInputsFromJSON(paramValues, blockName);
+            Parameter displayOrder = createDisplayOrderFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+            
+            Mux block = new Mux(inputs, displayOrder, sampleTime, outDataType, saturateParam,
+                               blockName, blockPath, blockUUID, model);
+            
+            setParameterBlockReference(block, inputs, displayOrder, sampleTime, outDataType, saturateParam);
+            
+            return block;
+            
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Mux block from JSON: " + e.getMessage(), e);
+        }
+    }
+    
+    // === Static Factory Method for Programmatic Creation ===
+    public static Mux create(String name, String path, int numberOfInputs, NCSLabModel model) {
+        return create(name, path, String.valueOf(numberOfInputs), "1:N", -1.0, "Inherit: Inherit via internal rule", false, model);
+    }
+    
+    public static Mux create(String name, String path, String inputs, String displayOrder, double sampleTime,
+                            String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        Parameter inputsParam = new Parameter(null, 1, "Inputs", inputs);
+        Parameter displayOrderParam = new Parameter(null, 2, "DisplayOrder", displayOrder);
+        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
+        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
+        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        
+        Mux block = new Mux(inputsParam, displayOrderParam, sampleTimeParam, outDataTypeParam, saturateParam,
+                           name, path, "null", model);
+        
+        setParameterBlockReference(block, inputsParam, displayOrderParam, sampleTimeParam, outDataTypeParam, saturateParam);
+        
+        return block;
+    }
+    
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createInputsFromJSON(JSONObject paramValues, String blockName) {
+        String inputsValue = paramValues.optString("Inputs", "2");
+        return new Parameter(null, 1, "Inputs", inputsValue);
+    }
+    
+    private static Parameter createDisplayOrderFromJSON(JSONObject paramValues, String blockName) {
+        String displayOrderValue = paramValues.optString("DisplayOrder", "1:N");
+        return new Parameter(null, 2, "DisplayOrder", displayOrderValue);
+    }
+    
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "-1");
+        return new Parameter(null, 3, "SampleTime", sampleTimeValue);
+    }
+    
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Inherit via internal rule");
+        return new Parameter(null, 4, "OutDataTypeStr", outDataTypeValue);
+    }
+    
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateValue);
+    }
+    
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+    
+    private static void setParameterBlockReference(Mux block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+    
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Mux");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
+    }
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);

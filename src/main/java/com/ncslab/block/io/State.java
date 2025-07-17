@@ -80,14 +80,14 @@ public class State {
 
 	public String getDefineCodeC() {
 		//S-Function's states are defined in its generateArraysCodeC
-		if(this.block.getBlockType().equals("S-Function")) {
+        if(this.block.getBlockType().equals("S-Function")) {
 			return "";
 		}
 		String code;
 		if(this.block.getBlockType().equals("Discrete Transfer Fcn")&&this.data.getDataType()==DataType.REAL) {
-			code="Matrix "+name+"(1,1);\n";
+			code="Matrix "+this.getName()+"(1,1);\n";
 		}else {
-		code=data.getDefineCodeC(this.getName());
+		    code=data.getDefineCodeC(this.getName());
 		}
 
 		switch(data.getDataType()) {

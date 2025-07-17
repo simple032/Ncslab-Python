@@ -9,7 +9,28 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+
 public class DynamicLookupTableBlock extends LookupTableBlock{
+
+    // === Static Parameter Definitions ===
+    public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as first input");
+    }
+
+    static {
+        // Parameter names for dynamic lookup table
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+    }
 
     protected DynamicLookupTableBlock(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
@@ -26,20 +47,24 @@ public class DynamicLookupTableBlock extends LookupTableBlock{
     protected void parseParameters() {
 
     }
-
-
     @Override
     public void generateOutputCodeC(CodeStructC code){
-        String outputCode="/*Code for output of block Logical operator:("+getBlockId()+")"+getBlockName()+"*/\n";
-        //TODO: to be implemented
-        code.addOutputCode(outputCode);
+        super.generateOutputCodeC(code);
+        
+        context.put("block", this);
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/DynamicLookupTableBlock/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     @Override
     public void generateDerivativeCodeC(CodeStructC code){
-        String derivativeCode="/*Code for derivative of block Logical operator:("+getBlockId()+")"+getBlockName()+"*/\n";
-        //TODO: to be implemented
-        code.addOutputCode(derivativeCode);
+        super.generateDerivativeCodeC(code);
+        
+        context.put("block", this);
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/DynamicLookupTableBlock/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 
     @Override

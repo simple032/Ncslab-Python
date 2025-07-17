@@ -1,5 +1,7 @@
 package com.ncslab.block.machineLearning;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import lombok.Getter;
@@ -21,12 +23,17 @@ public abstract class MachineLearning extends Block{
     protected int _width, _height;
     protected MLVariable modelVariable;
     protected String savePath, loadPath;
-
-
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("savePath", "model.bin");
+        PARAMETER_DEFAULTS.put("loadPath", "None");
+    }
 
     static {
 
@@ -47,10 +54,13 @@ public abstract class MachineLearning extends Block{
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
-        String initCode = "/*Code for initialization of block MLTest:("+getBlockId()+")"+getBlockName()+"*/\n";
         code.addIncludeCode("#include \"MLModel.hpp\"\n");
         code.addWrittenFile("../../ml/MLModel.hpp", "MLModel.hpp");
-        code.addInitCode(initCode);
+        
+        context.put("block", this);
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/MachineLearning/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override
@@ -64,33 +74,19 @@ public abstract class MachineLearning extends Block{
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
-        StringBuilder sb = new StringBuilder(String.format(
-            "/*Code for output of block %s: (%s) %s*/\n",
-            getClass().getSimpleName(),
-            getBlockId(),
-            getBlockName()));
-        OutputPort in_opt1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort(); // input source's output
+        super.generateOutputCodeC(code);
+        
+        OutputPort in_opt1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputPort out_opt1 = outputPortList.get(0);
-
-        sb.append(String.format("auto %s_mat = %s;\n", this.modelVariable.getName(), in_opt1.getOutputSignalC().getName()));
-
-        if (this._width == 1) {
-            // return double.
-            sb.append(out_opt1.getOutputSignalC().getName());
-            sb.append(String.format("=%s->predict(%s_mat)(0);\n",
-            this.modelVariable.getName(),
-            this.modelVariable.getName()));
-
-        }else{
-            sb.append(String.format(
-                "%s = %s->predict(%s_mat);\n",
-                out_opt1.getOutputSignalC().getName(),
-                this.modelVariable.getName(),
-                this.modelVariable.getName()
-            ));
-        }
-
-        code.addOutputCode(sb.toString());
+        
+        context.put("block", this);
+        context.put("modelVariable", modelVariable);
+        context.put("inputSignal", in_opt1.getOutputSignalC().getName());
+        context.put("outputSignal", out_opt1.getOutputSignalC().getName());
+        context.put("width", _width);
+        
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/MachineLearning/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public abstract String getVariableName();

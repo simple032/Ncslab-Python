@@ -12,14 +12,30 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class Display extends Scope {
 
     @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+    }
+
+    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
         inputNames.add("in1");
     }
 

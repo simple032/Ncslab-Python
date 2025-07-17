@@ -82,8 +82,6 @@ public abstract class GlobalVariable {
 		return data.getDataType();
 	}
 
-
-
 	/**
 	 * This is for the project managers to define the Defined String in the cpp file.
 	 * @return String for the define code in the cpp file.

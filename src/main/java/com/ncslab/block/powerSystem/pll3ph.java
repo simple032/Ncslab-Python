@@ -2,6 +2,8 @@ package com.ncslab.block.powerSystem;
 
 import com.ncslab.block.Block;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,10 +30,20 @@ public class pll3ph extends Block{
 	Parameter maxFrequency;
 	Parameter filterFrequency;
 	Parameter sampleTime;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("MinimumFreq", "50");
+        PARAMETER_DEFAULTS.put("timeDerivative", "1");
+        PARAMETER_DEFAULTS.put("maxFrequency", "100");
+        PARAMETER_DEFAULTS.put("filterFrequency", "10");
+        PARAMETER_DEFAULTS.put("sampleTime", "0.001");
+        PARAMETER_DEFAULTS.put("initialInputs", "[0 0]");
+        PARAMETER_DEFAULTS.put("regularGains", "[1 1]");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -64,26 +76,20 @@ public class pll3ph extends Block{
 		outputPortList.add(new OutputPort(this,1,true));
 		outputPortList.add(new OutputPort(this,2,true));
 		MinimumFreq=new Parameter(this,parameterList.size()+1,"MinimumFreq",paramValues.getString("MinimumFreq"));
-		parameterList.add(MinimumFreq);
 		timeDerivative=new Parameter(this,parameterList.size()+1,"timeDerivative",paramValues.getString("timeDerivative"));
-		parameterList.add(timeDerivative);
 		maxFrequency=new Parameter(this,parameterList.size()+1,"maxFrequency",paramValues.getString("maxFrequency"));
-		parameterList.add(maxFrequency);
 		filterFrequency=new Parameter(this,parameterList.size()+1,"filterFrequency",paramValues.getString("filterFrequency"));
-		parameterList.add(filterFrequency);
 		sampleTime=new Parameter(this,parameterList.size()+1,"sampleTime",paramValues.getString("sampleTime"));
-		parameterList.add(sampleTime);
 	}
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="";
-		code.addInitCode(initCode);
+		
+		context.put("block", this);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/powerSystem/pll3ph/init.vm", context);
+		code.addInitCode(codeStr);
 	}
-
-
-
-
 	private void parseVector() {
 		String initialInputsStr=paramValues.getString("initialInputs");
 		String regularGainsStr=paramValues.getString("regularGains");
@@ -107,5 +113,17 @@ public class pll3ph extends Block{
 		for(int i=0;i<regularGainsArray.length();i++) {
 			regularGains[i]=regularGainsArray.getDouble(i);
 		}
+	}
+	
+	public void generateOutputCodeC(CodeStructC code) {
+		super.generateOutputCodeC(code);
+		
+		context.put("block", this);
+		context.put("MinimumFreq", MinimumFreq.getName());
+		context.put("sampleTime", sampleTime.getName());
+		context.put("regularGains", regularGains);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/powerSystem/pll3ph/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 }

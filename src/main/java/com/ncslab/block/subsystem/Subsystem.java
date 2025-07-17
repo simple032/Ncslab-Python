@@ -12,16 +12,12 @@ public class Subsystem extends Block{
 
     Vector<In> inBlockList;
     Vector<Out> outBlockList;
-
-
     public Subsystem(JSONObject blockJSON,NCSLabModel model) {
 
         super(blockJSON,model);
 		inBlockList=new Vector<In>();
 		outBlockList=new Vector<Out>();
 	}
-
-
     public void generateOutputCodeC(CodeStructC code) {
 
 	}

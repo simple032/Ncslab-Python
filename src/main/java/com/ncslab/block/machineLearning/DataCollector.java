@@ -11,6 +11,8 @@ import com.ncslab.block.Block;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class DataCollector extends Block{
@@ -22,6 +24,14 @@ public class DataCollector extends Block{
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("inputFeatures", "1");
+        PARAMETER_DEFAULTS.put("outputFeatures", "1");
+        PARAMETER_DEFAULTS.put("savePath", "data.csv");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -48,8 +58,6 @@ public class DataCollector extends Block{
         this.inputPortList.add(this._outputs);
         this.dataCollectorVariable = new DataCollectorVariable(this, 1, "data_collector");
 
-        parameterList.add(this.inputFeatures);
-        parameterList.add(this.outputFeatures);
         this.globalVariableList.add(this.dataCollectorVariable);
     }
 
@@ -58,23 +66,25 @@ public class DataCollector extends Block{
         super.generateInitCodeC(code);
         code.addIncludeCode("#include\"DataCollector.hpp\"");
         code.addWrittenFile("../../ml/DataCollector.hpp", "DataCollector.hpp");
-        String initCode="";
-        initCode += this.inputFeatures.getInitCodeC();
-        initCode += this.outputFeatures.getInitCodeC();
+        
+        context.put("inputFeatures", this.inputFeatures);
+        context.put("outputFeatures", this.outputFeatures);
+        context.put("dataCollectorVariable", this.dataCollectorVariable);
 
-        initCode += this.dataCollectorVariable.getInitCodeC();
-        code.addInitCode(initCode);
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/DataCollector/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override
     public void generateOutputCodeC(CodeStructC code){
         super.generateOutputCodeC(code);
-        String outputCode = "";
-        outputCode += String.format("%s->collect(%s, %s);\n",
-            this.dataCollectorVariable.getName(),
-            this._inputs.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName(),
-            this._outputs.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-        code.addOutputCode(outputCode);
+        
+        context.put("dataCollectorVariable", this.dataCollectorVariable);
+        context.put("inputSignal", this._inputs.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        context.put("outputSignal", this._outputs.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/DataCollector/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     /**

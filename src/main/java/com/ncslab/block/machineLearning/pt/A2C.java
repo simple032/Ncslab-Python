@@ -8,6 +8,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class A2C extends PTModel {
@@ -19,9 +21,15 @@ public class A2C extends PTModel {
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
-
+    public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
-
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("inputFeatures", "1");
+        PARAMETER_DEFAULTS.put("outputFeatures", "1");
+        PARAMETER_DEFAULTS.put("learningRate", "0.001");
+        PARAMETER_DEFAULTS.put("discountFactor", "0.99");
+        PARAMETER_DEFAULTS.put("loadPath", "None");
+        PARAMETER_DEFAULTS.put("savePath", "None");
 
         parameterNames.add("inputFeatures");
         parameterNames.add("outputFeatures");
@@ -46,10 +54,6 @@ public class A2C extends PTModel {
         this.savePath = paramValues.getString("savePath").trim();
 
         // add the 4 parameters to parameterList
-        parameterList.add(this.inputFeatures);
-        parameterList.add(this.outputFeatures);
-        parameterList.add(this.learningRate);
-        parameterList.add(this.discountFactor);
 
         // add the model to globalVariableList
         this.globalVariableList.add(this.modelVariable);
@@ -68,27 +72,16 @@ public class A2C extends PTModel {
         code.addWrittenFile("../../ml/pt/A2C.hpp", "A2C.hpp");
         code.addWrittenFile("../../ml/pt/A2C.py", "A2C.py");
 
-        String initCode = "/*Code for initialization of block MLTest:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        context.put("block", this);
+        context.put("inputFeatures", inputFeatures);
+        context.put("outputFeatures", outputFeatures);
+        context.put("learningRate", learningRate);
+        context.put("discountFactor", discountFactor);
+        context.put("modelVariable", modelVariable);
+        context.put("loadPath", loadPath);
 
-        // generate init code for parameters.
-        initCode += this.inputFeatures.getInitCodeC();
-        initCode += this.outputFeatures.getInitCodeC();
-        initCode += this.learningRate.getInitCodeC();
-        initCode += this.discountFactor.getInitCodeC();
-
-        // generate init code for the model.
-        // ATTENTION: you have to init the model AFTER you finished initializing the parameters that will
-        // pass to the constructor of the model in A2C.hpp!
-        initCode += this.modelVariable.getInitCodeC();
-
-        // load model.
-        if (loadPath != null && !loadPath.equals("None")){
-            initCode += String.format("%s->loadModel(\"%s\");\n",
-                this.modelVariable.getName(),
-                this.loadPath);
-        }
-
-        code.addInitCode(initCode);
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/pt/A2C/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override

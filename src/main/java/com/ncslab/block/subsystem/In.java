@@ -1,4 +1,6 @@
 package com.ncslab.block.subsystem;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import com.ncslab.block.io.Parameter;
@@ -26,7 +28,10 @@ public class In extends Block{
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
+    public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("No", "1");
 
         outputNames.add("out1");
         parameterNames.add("No");
@@ -36,12 +41,16 @@ public class In extends Block{
         inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
         no = new Parameter(this, 1, "no", String.valueOf(paramValues.getInt("No")));
-        parameterList.add(no);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block In:("+getBlockId()+")"+getBlockName()+"*/\n";
-	    outputCode+=this.getOutputPortVariable(0)+"="+this.getInputPortVariable(0)+";\n";
-		code.addOutputCode(outputCode);
+		super.generateOutputCodeC(code);
+		
+		context.put("block", this);
+		context.put("no", this.no);
+		context.put("subsystem", this.subsystem);
+
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/subsystem/In/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 	  public void updateDimension() throws MatDimException{
 			OutputPort out  = outputPortList.get(0);

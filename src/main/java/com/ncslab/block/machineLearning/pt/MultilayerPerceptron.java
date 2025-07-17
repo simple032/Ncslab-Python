@@ -8,6 +8,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class MultilayerPerceptron extends PTModel {
@@ -21,10 +23,19 @@ public class MultilayerPerceptron extends PTModel {
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
-
-
+    public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
-
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("inputFeatures", "1");
+        PARAMETER_DEFAULTS.put("outputFeatures", "1");
+        PARAMETER_DEFAULTS.put("hiddenLayers", "[64, 32]");
+        PARAMETER_DEFAULTS.put("learningRate", "0.01");
+        PARAMETER_DEFAULTS.put("epoch", "100");
+        PARAMETER_DEFAULTS.put("lossFunction", "MSE");
+        PARAMETER_DEFAULTS.put("dataset", "winddata1.csv");
+        PARAMETER_DEFAULTS.put("activationFunction", "relu");
+        PARAMETER_DEFAULTS.put("loadPath", "None");
+        PARAMETER_DEFAULTS.put("savePath", "None");
 
         parameterNames.add("inputFeatures");
         parameterNames.add("outputFeatures");
@@ -32,8 +43,6 @@ public class MultilayerPerceptron extends PTModel {
         parameterNames.add("learningRate");
         parameterNames.add("epoch");
     }
-
-
     public MultilayerPerceptron(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);
 
@@ -51,13 +60,6 @@ public class MultilayerPerceptron extends PTModel {
 
         this.loadPath = paramValues.getString("loadPath").trim();
         this.savePath = paramValues.getString("savePath").trim();
-
-        parameterList.add(this.inputFeatures);
-        parameterList.add(this.outputFeatures);
-        parameterList.add(this.hiddenLayers);
-        parameterList.add(this.learningRate);
-        parameterList.add(this.epochs);
-
         this.globalVariableList.add(this.modelVariable);
 
         this._height = 1;
@@ -71,30 +73,18 @@ public class MultilayerPerceptron extends PTModel {
         code.addWrittenFile("../../ml/pt/MultilayerPerceptron.hpp", "MultilayerPerceptron.hpp");
         code.addWrittenFile("../../ml/pt/multilayer_perceptron_model.py", "multilayer_perceptron_model.py");
 
-        String initCode = "/*Code for initialization of block MLTest:(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        context.put("block", this);
+        context.put("inputFeatures", inputFeatures);
+        context.put("outputFeatures", outputFeatures);
+        context.put("hiddenLayers", hiddenLayers);
+        context.put("learningRate", learningRate);
+        context.put("epochs", epochs);
+        context.put("modelVariable", modelVariable);
+        context.put("loadPath", loadPath);
+        context.put("datasetString", datasetString);
 
-        initCode += this.inputFeatures.getInitCodeC();
-        initCode += this.outputFeatures.getInitCodeC();
-        initCode += this.hiddenLayers.getInitCodeC();
-        initCode += this.learningRate.getInitCodeC();
-        initCode += this.epochs.getInitCodeC();
-
-        // init the model.
-        initCode += this.modelVariable.getInitCodeC();
-
-        if (loadPath != null && !loadPath.equals("None")){
-            initCode += String.format("%s->loadModel(\"%s\");\n",
-                this.modelVariable.getName(),
-                this.loadPath);
-        }
-        if(datasetString != null && !datasetString.equals("None")) {
-            initCode += String.format("%s->trainModel(\"%s\", int(%s), %s);\n", this.modelVariable.getName(),
-                this.datasetString,
-                this.epochs.getName(),
-                this.learningRate.getName());
-        }
-
-        code.addInitCode(initCode);
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/pt/MultilayerPerceptron/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override

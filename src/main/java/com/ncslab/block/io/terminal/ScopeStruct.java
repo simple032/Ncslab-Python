@@ -23,7 +23,7 @@ public class ScopeStruct extends Terminal {
 
 	public ScopeStruct(Block block,int id,String localName){
 		super(block, id, localName);
-		this.name="Block"+block.getBlockId()+"_Scope_"+localName;
+		this.name="Block" + block.getBlockId() + "_Scope_" + localName;
 		this.localName=localName;
 		this.timeList=new Vector<>();
 		this.dataList=new Vector<>();
@@ -37,7 +37,8 @@ public class ScopeStruct extends Terminal {
 		code+="SCOPE "+this.name+"={(char *)\""+this.localName+"\","
             +"(char *)\""+this.block.getBlockPath()+"\","
             +"(char *)\""+this.block.getBlockUUID()+"\","
-            +maxDataLength+","+width+","+height+"};\n";//",0,"+this.name+"_Buffer"+","+this.name+"_Time"+"};\n";
+            +maxDataLength+","+width+","+height+",0,"
+            +"std::list<REAL>(),std::list<REAL>(),0};\n";
 		code+=this.getTerminalDefineCode("Scope");
 
 		return code;

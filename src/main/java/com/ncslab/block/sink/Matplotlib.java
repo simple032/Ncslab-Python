@@ -19,18 +19,34 @@ import com.ncslab.block.io.terminal.ScopeStruct;
 import com.ncslab.ncslablink.ModelMode;
 
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Matplotlib extends SinkBlock{
 
 	ScopeStruct scopeStruct;
-
-
+    
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("SaveName", "MatplotlibData");
+        PARAMETER_DEFAULTS.put("SaveFormat", "Array");
+        PARAMETER_DEFAULTS.put("BufferSize", "100000");
+    }
 
-
+    static {
+        parameterNames.add("SampleTime");
+        parameterNames.add("SaveName");
+        parameterNames.add("SaveFormat");
+        parameterNames.add("BufferSize");
+        
         inputNames.add("in1");
     }
 
@@ -68,13 +84,11 @@ public class Matplotlib extends SinkBlock{
 		super.generateInitCodeC(code);
 
 		if(model.getModelMode()==ModelMode.Simulation) {
+			context.put("block", this);
+			context.put("scopeStruct", scopeStruct);
 
-			String initCode="";
-
-			//initCode+=scopeStruct.getName()+".cursor=0;\n";
-			//initCode+=scopeStruct.getName()+".isFull=0;\n";
-
-			code.addInitCode(initCode);
+			String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/sink/Matplotlib/init.vm", context);
+			code.addInitCode(codeStr);
 		}
 	}
 
@@ -83,79 +97,22 @@ public class Matplotlib extends SinkBlock{
 		if(model.getModelMode()==ModelMode.Simulation) {
 
 			OutputSignal signal=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
 			OutputPort out=this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
 
 			double sampleTime=-1;
-
-			//如果连接的是离散模块,就读出采样周期
 			if(signal.getBlock() instanceof DiscreteBlock) {
 				DiscreteBlock block=(DiscreteBlock)signal.getBlock();
 				sampleTime=block.getSampleTime();
 			}
 
-			String outputCode="/*Code for output of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
+			context.put("block", this);
+			context.put("signal", signal);
+			context.put("outputPort", out);
+			context.put("sampleTime", sampleTime);
+			context.put("scopeStruct", scopeStruct);
 
-			outputCode+="if(sfcnIsMajorStep()){\n";
-
-
-			switch(signal.getDataType()) {
-			case REAL:
-				//如果是离散模块,就画出阶梯图
-				if(sampleTime>0) {
-					outputCode+="if(block"+out.getBLock().getBlockId()+".discreteUpdated){\n";
-					//画当前时间的点
-					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
-					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
-					//保持一个采样周期sampleTime,画下一个周期的点
-					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT()+"+sampleTime+");\n";
-					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
-					outputCode+="}\n";
-				}
-				//否则就一般的画法
-				else {
-					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
-					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
-				}
-
-				break;
-			case MATRIX:
-				//如果是离散模块,就画出阶梯图
-				if(sampleTime>0) {
-					outputCode+="if(block"+out.getBLock().getBlockId()+".discreteUpdated){\n";
-					//画当前时间的点
-					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
-					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
-					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
-					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
-					outputCode+="}\n";
-					outputCode+="}\n";
-					//保持一个采样周期sampleTime,画下一个周期的点
-					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT()+"+sampleTime+");\n";
-					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
-					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
-					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
-					outputCode+="}\n";
-					outputCode+="}\n";
-
-					outputCode+="}\n";
-				}
-				//否则就一般的画法
-				else {
-					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
-					outputCode+="for(int i=0;i<"+signal.getHeight()+";i++){\n";
-					outputCode+="for(int j=0;j<"+signal.getWidth()+";j++){\n";
-					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+"(i,j));\n";
-					outputCode+="}\n";
-					outputCode+="}\n";
-				}
-				break;
-			}
-
-
-
-			outputCode+="}\n";
-			code.addOutputCode(outputCode);
+			String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/sink/Matplotlib/output.vm", context);
+			code.addOutputCode(codeStr);
 		}
 	}
 
@@ -178,8 +135,6 @@ public class Matplotlib extends SinkBlock{
 			String outputCode="/*Code for output of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
 
 			outputCode+="if(sfcnIsMajorStep()){\n";
-
-
 			switch(signal.getDataType()) {
 			case REAL:
 				//如果是离散模块,就画出阶梯图
@@ -234,8 +189,6 @@ public class Matplotlib extends SinkBlock{
 				break;
 			}
 
-
-
 			outputCode+="}\n";
 			code.addSinkOutputCode(outputCode);
 
@@ -248,18 +201,15 @@ public class Matplotlib extends SinkBlock{
 	public void generateTerminateCodeC(CodeStructC code) {
 
 		if(model.getModelMode()==ModelMode.Simulation) {
+			context.put("block", this);
+			context.put("scopeStruct", scopeStruct);
 
-			String terminateCode="/*Code for terminate code of block Scope:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-			//terminateCode+="printf(\"%d\\n\","+scopeStruct.getName()+".cursor);\n";
-
-			code.addTerminateCode(terminateCode);
+			String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/sink/Matplotlib/terminate.vm", context);
+			code.addTerminateCode(codeStr);
 		}
 	}
 
 	public void updateDimension() throws MatDimException{
-
-
 	}
 
 	public void checkDimension() throws MatDimException{

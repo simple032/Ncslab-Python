@@ -90,6 +90,8 @@ public class InputPort {
 
 		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
         context.put("blockId", block.getBlockId());
         context.put("blockName", block.getBlockName());
         context.put("blockPath", block.getBlockPath());

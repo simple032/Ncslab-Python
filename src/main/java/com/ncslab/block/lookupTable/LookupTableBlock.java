@@ -5,10 +5,34 @@ import com.ncslab.ncslablink.NCSLabModel;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 abstract public class LookupTableBlock extends Block {
+
+    // === Static Parameter Definitions ===
+    public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("InterpMethod", "Linear");
+        PARAMETER_DEFAULTS.put("ExtrapMethod", "Clip");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as first input");
+    }
+
+    static {
+        // Common parameter names for lookup tables
+        parameterNames.add("InterpMethod");
+        parameterNames.add("ExtrapMethod");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+    }
 
     protected LookupTableBlock(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
@@ -45,8 +69,6 @@ abstract public class LookupTableBlock extends Block {
         }
         return matrix;
     }
-
-
 
     abstract protected void parseParameters();
 }

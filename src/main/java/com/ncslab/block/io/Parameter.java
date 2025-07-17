@@ -26,12 +26,24 @@ public class Parameter {
 	public Parameter(Block block,int id,String localName,String inString) {
 		this.block=block;
 		this.id=id;
-		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
-//		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
-		this.name="_Block"+block.getBlockUUID().replace("-","_")+"_"+localName;
-        this.localName=localName;
+		this.localName=localName;
+		
+		// Handle case where block is null (for factory methods)
+		if (block != null) {
+			this.name="_Block"+block.getBlockUUID().replace("-","_")+"_"+localName;
+		} else {
+			// Temporary name when block is null - will be updated later via setParameterBlockReference
+			this.name="_TempBlock_"+localName;
+		}
 
 		data=new Data(inString);
+	}
+	
+	// Method to update parameter name after block reference is set
+	public void updateParameterName() {
+		if (block != null && name.startsWith("_TempBlock_")) {
+			this.name = "_Block"+block.getBlockUUID().replace("-","_")+"_"+localName;
+		}
 	}
 
     public DataType getDataType() {

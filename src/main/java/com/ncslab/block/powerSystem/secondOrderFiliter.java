@@ -3,6 +3,8 @@ package com.ncslab.block.powerSystem;
 import com.ncslab.block.Block;
 
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +39,9 @@ public class secondOrderFiliter extends Block{
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
 
         outputNames.add("out1");
@@ -47,6 +52,14 @@ public class secondOrderFiliter extends Block{
         parameterNames.add("sampleTime");
         parameterNames.add("initState");
         parameterNames.add("DCInitialInput");
+
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("filterType", "Lowpass");
+        PARAMETER_DEFAULTS.put("naturalFrequency", "1.0");
+        PARAMETER_DEFAULTS.put("dampingRatio", "0.707");
+        PARAMETER_DEFAULTS.put("sampleTime", "-1");
+        PARAMETER_DEFAULTS.put("initState", "off");
+        PARAMETER_DEFAULTS.put("DCInitialInput", "0");
     }
 
 	public secondOrderFiliter(JSONObject blockIn, NCSLabModel model) {
@@ -59,110 +72,53 @@ public class secondOrderFiliter extends Block{
 		outputPortList.add(new OutputPort(this,1,true));
 
 		filterType=new Parameter(this,parameterList.size()+1,"filterType",paramValues.getString("secondFilterType"));
-		parameterList.add(filterType);
 		naturalFrequency=new Parameter(this,parameterList.size()+1,"naturalFrequency",paramValues.getString("secondFrequency"));
-		parameterList.add(naturalFrequency);
 		dampingRatio=new Parameter(this,parameterList.size()+1,"dampingRatio",paramValues.getString("secondDampingRatio"));
-		parameterList.add(dampingRatio);
 		sampleTime=new Parameter(this,parameterList.size()+1,"sampleTime",paramValues.getString("sampleTime"));
-		parameterList.add(sampleTime);
 		initState=new Parameter(this,parameterList.size()+1,"initState",paramValues.getString("secondInitState"));
-		parameterList.add(initState);
 		DCInitialInput=new Parameter(this,parameterList.size()+1,"DCInitialInput",paramValues.getString("secondDCInput"));
-		parameterList.add(DCInitialInput);
 
 	}
 	public void generateArraysCodeC(CodeStructC code) {
-		 String arraysCode="/*Define arrays for block Second-Order Filter:("+getBlockId()+")"+getBlockName()+"*/\n";
-
-		 arraysCode+="double "+"Block"+getBlockId()+"SecondOrderFilter_b[3]={0};\n";
-		 arraysCode+="double "+"Block"+getBlockId()+"SecondOrderFilter_a[2]={0};\n";
-		 arraysCode+="double "+"Block"+getBlockId()+"SecondOrderFilter_x[2]={0};\n";
-		 arraysCode+="double "+"Block"+getBlockId()+"SecondOrderFilter_y[2]={0};\n";
-		 code.addArraysCode(arraysCode);
+		super.generateArraysCodeC(code);
+		
+		context.put("block", this);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/powerSystem/secondOrderFiliter/arrays.vm", context);
+		code.addArraysCode(codeStr);
 	 }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		String initCode="";
-
-		initCode+=naturalFrequency.getInitCodeC();
-		initCode+=dampingRatio.getInitCodeC();
-		initCode+=sampleTime.getInitCodeC();
-		if(paramValues.getString("secondInitState").equals("on")) initCode+=DCInitialInput.getInitCodeC();
-
-		if(paramValues.getString("sampleTime").equals("0")||paramValues.getString("sampleTime").equals("-1")) {
-			initCode+="double T=STEP_SIZE;\n";
-		}else {
-			initCode+="double T="+sampleTime.getName()+";\n";
+		
+		context.put("block", this);
+		context.put("naturalFrequency", naturalFrequency);
+		context.put("dampingRatio", dampingRatio);
+		context.put("sampleTime", sampleTime);
+		context.put("DCInitialInput", DCInitialInput);
+		context.put("initState", paramValues.getString("secondInitState"));
+		context.put("sampleTimeValue", paramValues.getString("sampleTime"));
+		context.put("filterTypeValue", paramValues.getString("secondFilterType"));
+		if(ACInitialInputs != null) {
+			context.put("ACInitialInputs", ACInitialInputs);
 		}
-		initCode+="double omega_n = 2 * 3.14159265358979323846 * "+naturalFrequency.getName()+";\n"
-				 +"double w2T2 = omega_n*omega_n*T*T;\n"
-				 ;
-		initCode+="double a0 = 4 + 4 * "+dampingRatio.getName()+"*omega_n*T + w2T2;\n"
-				 +"Block"+getBlockId()+"SecondOrderFilter_a[0]=(-8 + 2 * w2T2) / a0;\n"
-				 +"Block"+getBlockId()+"SecondOrderFilter_a[1]=(4 - 4 * "+dampingRatio.getName()+"*omega_n*T + w2T2) / a0;\n";
-
-		if(paramValues.getString("secondFilterType").equals("Lowpass")) {
-			initCode+="Block"+getBlockId()+"SecondOrderFilter_b[0]=(w2T2) / a0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[1]=(2 * w2T2) / a0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[2]=(w2T2) / a0;\n";
-		}else if(paramValues.getString("secondFilterType").equals("Highpass")) {
-			initCode+="Block"+getBlockId()+"SecondOrderFilter_b[0]=(4) / a0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[1]=(-8) / a0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[2]=(4) / a0;\n";
-		}else if(paramValues.getString("secondFilterType").equals("Bandpass")) {//Bandpass
-			initCode+="Block"+getBlockId()+"SecondOrderFilter_b[0]=(4 * omega_n * T * "+dampingRatio.getName()+") / a0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[1]= 0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[2]=(-4 * omega_n * T *"+dampingRatio.getName()+") / a0;\n";
-		}
-		else {//Bandstop(Notch)
-			initCode+="Block"+getBlockId()+"SecondOrderFilter_b[0]=(4 * omega_n * T * "+dampingRatio.getName()+") / a0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[1]= 0;\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_b[2]=(-4 * omega_n * T *"+dampingRatio.getName()+") / a0;\n";
-		}
-
-		if(paramValues.getString("secondInitState").equals("on")) {
-			initCode+="double initialAC="+ACInitialInputs[0]+"*sin(2*3.14159265358979323846*"+ACInitialInputs[2]+"/360.0*T+"+ACInitialInputs[1]+"*2*3.14159265358979323846/360);\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_y[0]=initialAC+"+DCInitialInput.getName()+";\n"
-					 +"Block"+getBlockId()+"SecondOrderFilter_y[1]=initialAC+"+DCInitialInput.getName()+";\n";
-		}
-
-		code.addInitCode(initCode);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/powerSystem/secondOrderFiliter/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
-
-
-
-
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Second-Order Filter:("+getBlockId()+")"+getBlockName()+"*/\n";
-		outputCode+="if(mp->majorStep>0) {\n";
-
-		outputCode+="{real_T currentTime = model.time;\n";
-		outputCode+="real_T sampleTimeTmp = "+sampleTime.getName()+"==-1?model.stepSize:"+sampleTime.getName()+";\n";
-		outputCode+="sampleTimeTmp = sampleTimeTmp ==0?model.stepSize:sampleTimeTmp;\n";
-		outputCode+="if(fabs(floor(currentTime/sampleTimeTmp+0.5)-currentTime/sampleTimeTmp)<0.000001) {\n";
-
+		super.generateOutputCodeC(code);
+		
 		String inputData = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
 		String outputFilter = outputPortList.get(0).getOutputSignalC().getName();
-
-		outputCode+=outputFilter+"=Block"+getBlockId()+"SecondOrderFilter_b[0]*"+inputData
-				  +"+Block"+getBlockId()+"SecondOrderFilter_b[1]*Block"+getBlockId()+"SecondOrderFilter_x[0]"
-				  +"+Block"+getBlockId()+"SecondOrderFilter_b[2]*Block"+getBlockId()+"SecondOrderFilter_x[1]"
-				  +"-Block"+getBlockId()+"SecondOrderFilter_a[0]*Block"+getBlockId()+"SecondOrderFilter_y[0]"
-				  +"-Block"+getBlockId()+"SecondOrderFilter_a[1]*Block"+getBlockId()+"SecondOrderFilter_y[1];\n";
-
-
-		outputCode+="Block"+getBlockId()+"SecondOrderFilter_x[1]=Block"+getBlockId()+"SecondOrderFilter_x[0];\n"
-				  +"Block"+getBlockId()+"SecondOrderFilter_x[0]="+inputData+";\n"
-				  +"Block"+getBlockId()+"SecondOrderFilter_y[1]=Block"+getBlockId()+"SecondOrderFilter_y[0];\n"
-				  +"Block"+getBlockId()+"SecondOrderFilter_y[0]="+outputFilter+";\n";
-
-
-		outputCode+="}\n";
-		outputCode+="}\n";
-		outputCode+="}\n";
-		code.addOutputCode(outputCode);
+		
+		context.put("block", this);
+		context.put("sampleTime", sampleTime);
+		context.put("inputData", inputData);
+		context.put("outputFilter", outputFilter);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/powerSystem/secondOrderFiliter/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 //	public void generateDerivativeCodeC(CodeStructC code) {
@@ -196,8 +152,6 @@ public class secondOrderFiliter extends Block{
 		out.getOutputSignalC().setWidth(signal.getWidth());
 		out.getOutputSignalC().setDataType(signal.getDataType());
     }
-
-
 	private void parseVector() {
 		String initialInputsStr=paramValues.getString("secondACInput");
 

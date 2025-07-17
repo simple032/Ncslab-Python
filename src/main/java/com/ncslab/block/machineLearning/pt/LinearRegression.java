@@ -8,6 +8,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class LinearRegression extends PTModel{
@@ -22,19 +24,32 @@ public class LinearRegression extends PTModel{
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("inputFeatures", "1");
+        PARAMETER_DEFAULTS.put("outputFeatures", "1");
+        PARAMETER_DEFAULTS.put("learningRate", "0.01");
+        PARAMETER_DEFAULTS.put("epochs", "100");
+        PARAMETER_DEFAULTS.put("lossFunction", "MSE");
+        PARAMETER_DEFAULTS.put("dataset", "winddata1.csv");
+        PARAMETER_DEFAULTS.put("loadPath", "None");
+        PARAMETER_DEFAULTS.put("savePath", "None");
+
+        parameterNames.add("inputFeatures");
+        parameterNames.add("outputFeatures");
+        parameterNames.add("learningRate");
+        parameterNames.add("epochs");
+    }
+
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-
         outputNames.add("out1");
         inputNames.add("in1");
-        parameterNames.add("inputFeatures");
-        parameterNames.add("outputFeatures");
-        parameterNames.add("learningRate");
-        parameterNames.add("epochs");
     }
 
     public LinearRegression(JSONObject jsonObject, NCSLabModel model){
@@ -51,12 +66,6 @@ public class LinearRegression extends PTModel{
 
         this.loadPath = paramValues.getString("loadPath").trim();
         this.savePath = paramValues.getString("savePath").trim();
-
-        parameterList.add(this.inputFeatures);
-        parameterList.add(this.outputFeatures);
-        parameterList.add(this.learningRate);
-        parameterList.add(this.epochs);
-
         this.globalVariableList.add(this.modelVariable);
 
         this._height = 1;
@@ -70,26 +79,17 @@ public class LinearRegression extends PTModel{
         code.addWrittenFile("../../ml/pt/LinearRegression.hpp", "LinearRegression.hpp");
         code.addWrittenFile("../../ml/pt/linear_regression_model.py", "linear_regression_model.py");
 
-		String initCode="";
+        context.put("block", this);
+        context.put("inputFeatures", inputFeatures);
+        context.put("outputFeatures", outputFeatures);
+        context.put("learningRate", learningRate);
+        context.put("epochs", epochs);
+        context.put("modelVariable", modelVariable);
+        context.put("loadPath", loadPath);
+        context.put("datasetString", datasetString);
 
-        initCode += this.inputFeatures.getInitCodeC();
-        initCode += this.outputFeatures.getInitCodeC();;
-        initCode += this.learningRate.getInitCodeC();
-        initCode += this.epochs.getInitCodeC();
-        initCode += this.modelVariable.getInitCodeC();
-
-        if (loadPath != null && !loadPath.equals("None")){
-            initCode += String.format("%s->loadModel(\"%s\");\n",
-                this.modelVariable.getName(),
-                this.loadPath);
-        }
-        if(datasetString != null && !datasetString.equals("None")) {
-            initCode += String.format("%s->trainModel(\"%s\", int(%s), %s);\n", this.modelVariable.getName(),
-                this.datasetString,
-                this.epochs.getName(),
-                this.learningRate.getName());
-        }
-        code.addInitCode(initCode);
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/pt/LinearRegression/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override
