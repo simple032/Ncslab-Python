@@ -4,10 +4,14 @@ import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.ncslablink.NCSLabModel;
+import lombok.Getter;
 import org.json.JSONObject;
 
 public class Matrix extends Block {
@@ -17,8 +21,49 @@ public class Matrix extends Block {
     public int column;
     private boolean scalar = false;
 
+    // === Static Parameter Definitions ===
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("MatrixValue", "[1]");  // Default 1x1 matrix
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
+        
+        // SIMULINK parameter names
+        parameterNames.add("MatrixValue");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+    }
+
+    @Getter
+    public static final Vector<String> outputNames = new Vector<>();
+    
+    @Getter
+    public static final Vector<String> inputNames = new Vector<>();
+
+    static {
+        // Port names
+        outputNames.add("out1");
+        // No input ports for matrix block
+    }
+
     public Matrix(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
+        
+        // Initialize matrix from parameter
+        Parameter matrixParam = getParameterByName("MatrixValue");
+        if (matrixParam != null) {
+            initialize(matrixParam.getInitString());
+        } else {
+            initialize("[1]"); // Default fallback
+        }
+        
+        // Add output port
+        outputPortList.add(new OutputPort(this, 1, false));
     }
 
     public void initialize(int row, int column) {
@@ -53,6 +98,7 @@ public class Matrix extends Block {
                     if (i == 0) {
                         this.column = substrs.length;
                     } else if (this.column != substrs.length) {
+                        throw new IllegalArgumentException("Matrix rows must have same length");
                     }
                     elements[i] = new double[this.column];
                     for (int j = 0; j < substrs.length; j++) {
@@ -60,87 +106,6 @@ public class Matrix extends Block {
                     }
                 }
                 this.scalar = this.row * this.column == 1;
-            }
-        }
-    }
-
-    @Override
-    public void calculateInit() {
-        // Initialization logic for Matrix block
-    }
-
-    @Override
-    public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
-        String matrixString = arrayToString(this.elements);
-        Data data = new Data(matrixString);
-        out.setData(data);
-    }
-
-    private String arrayToString(double[][] array) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < array.length; i++) {
-            if (i > 0) {
-                sb.append(";");
-            }
-            sb.append("[");
-            for (int j = 0; j < array[i].length; j++) {
-                if (j > 0) {
-                    sb.append(",");
-                }
-                sb.append(array[i][j]);
-            }
-            sb.append("]");
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    public void generateOutputCodeC(CodeStructC code) {
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
-        context.put("matrix", getMatrix());
-
-        String codeStr = TemplateManager.renderTemplate("c/math/Matrix/output.vm", context);
-        code.addOutputCode(codeStr);
-    }
-
-    private Matrix getMatrix() {
-        return this;
-    }
-
-    public void add(Matrix mat) {
-        if (this.row != mat.row || this.column != mat.column) {
-        } else {
-        }
-    }
-
-    public void product(Matrix mat) {
-        if (this.column != mat.row) {
-        } else {
-        }
-    }
-
-    public void product(Vector vec) {
-        if (this.column != vec.size()) {
-        } else {
-        }
-    }
-
-    public boolean isScalar() {
-        return this.scalar;
-    }
-
-    public int length() {
-        return this.row * this.column;
-    }
-
-    public void print() {
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < column; j++) {
-                System.out.print(" a[" + i + "][" + j + "]=" + elements[i][j]);
             }
         }
     }

@@ -15,6 +15,8 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 public class SumOfElements extends Block {
 
@@ -23,11 +25,33 @@ public class SumOfElements extends Block {
     private int dimension;
 
     @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+    
+    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("Inputs", "+");
+        PARAMETER_DEFAULTS.put("SumOver", "All dimensions");
+        PARAMETER_DEFAULTS.put("ElementsDimension", "1");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
+
+    static {
+        parameterNames.add("Inputs");
+        parameterNames.add("SumOver");
+        parameterNames.add("ElementsDimension");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
         outputNames.add("out1");
     }
 

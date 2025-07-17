@@ -7,6 +7,7 @@ import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
@@ -14,6 +15,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class ProductOfElements extends Block {
@@ -23,18 +26,46 @@ public class ProductOfElements extends Block {
     boolean multiplication = false;
     private int dimension;
 
+    // === Static Parameter Definitions ===
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+    
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("Inputs", "*");  // Single multiplication input
+        PARAMETER_DEFAULTS.put("Multiplication", "Element-wise(.*)");
+        PARAMETER_DEFAULTS.put("MultiplyOver", "All dimensions");
+        PARAMETER_DEFAULTS.put("ElementsDimension", "1");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        
+        // SIMULINK parameter names
+        parameterNames.add("Inputs");
+        parameterNames.add("Multiplication");
+        parameterNames.add("MultiplyOver");
+        parameterNames.add("ElementsDimension");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+    }
+
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
+        // Port names
         outputNames.add("out1");
     }
 
     public ProductOfElements(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
-        this.multiplication = "Matrix(*)".equals(paramValues.getString("Multiplication"));
+        
+        // Use name-based parameter access
+        Parameter multiplicationParam = getParameterByName("Multiplication");
+        this.multiplication = "Matrix(*)".equals(multiplicationParam.getInitString());
 
         OutputPort output = new OutputPort(this, 1, true);
         output.setDimThrough(false);
@@ -45,184 +76,17 @@ public class ProductOfElements extends Block {
 
     // Parse parameter values
     public void paraseParamValues() {
-        seq = paramValues.getString("Inputs");
+        Parameter inputsParam = getParameterByName("Inputs");
+        seq = inputsParam.getInitString();
 
         for (int i = 0; i < seq.length(); i++) {
             inputPortList.add(new InputPort(this, i + 1));
         }
 
-        allDimensions = "All dimensions".equals(paramValues.getString("MultiplyOver"));
-        dimension = paramValues.getInt("ElementsDimension");
-    }
-
-    @Override
-    public void calculateInit() {
-        // Initialization logic for ProductOfElements block
-    }
-
-    @Override
-    public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
-        Data resultData = new Data(out.getHeight(), out.getWidth());
-
-        if (!isAllDimensions()) {
-            if (getDimension() == 1) {
-                for (int i = 0; i < seq.length(); i++) {
-                    if (seq.charAt(i) == '*') {
-                        resultData = resultData.times(extractRow(inputPortList.get(i).getData()));
-                    } else if (seq.charAt(i) == '/') {
-                        resultData = resultData.divide(extractRow(inputPortList.get(i).getData()));
-                    }
-                }
-            } else if (getDimension() == 2) {
-                for (int i = 0; i < seq.length(); i++) {
-                    if (seq.charAt(i) == '*') {
-                        resultData = resultData.times(extractColumn(inputPortList.get(i).getData()));
-                    } else if (seq.charAt(i) == '/') {
-                        resultData = resultData.divide(extractColumn(inputPortList.get(i).getData()));
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < seq.length(); i++) {
-                if (seq.charAt(i) == '*') {
-                    resultData = resultData.times(inputPortList.get(i).getData());
-                } else if (seq.charAt(i) == '/') {
-                    resultData = resultData.divide(inputPortList.get(i).getData());
-                }
-            }
-        }
-
-        out.setData(resultData);
-    }
-
-    private Data extractRow(Data data) {
-        double[] row = data.getMatrix().getRowPackedCopy();
-        String rowString = arrayToString(row);
-        return new Data(rowString);
-    }
-
-    private Data extractColumn(Data data) {
-        double[] column = data.getMatrix().getColumnPackedCopy();
-        String columnString = arrayToString(column);
-        return new Data(columnString);
-    }
-
-    private String arrayToString(double[] array) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < array.length; i++) {
-            if (i > 0) {
-                sb.append(",");
-            }
-            sb.append(array[i]);
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    public void generateOutputCodeC(CodeStructC code) {
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
-        context.put("sequence", getSequence());
-        context.put("allDimensions", isAllDimensions());
-        context.put("dimension", getDimension());
-
-        String codeStr = TemplateManager.renderTemplate("c/math/ProductOfElements/output.vm", context);
-        code.addOutputCode(codeStr);
-    }
-
-    private String getSequence() {
-        return seq;
-    }
-
-    private boolean isAllDimensions() {
-        return allDimensions;
-    }
-
-    private int getDimension() {
-        return dimension;
-    }
-
-    public void updateDimension() throws MatDimException {
-        OutputPort out = outputPortList.get(0);
-        OutputSignal[] signal = new OutputSignal[seq.length()];
-        int m[] = new int[seq.length()];
-        int n[] = new int[seq.length()];
-
-        for (int i = 0; i < seq.length(); i++) {
-            signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-            m[i] = signal[i].getHeight();
-            n[i] = signal[i].getWidth();
-        }
-        int v = 1;
-
-        if (!isMultiplication()) {
-            for (OutputSignal x : signal) {
-                if ((x.getHeight() != m[0]) || (x.getWidth() != n[0])) {
-                    v = 0;
-                    MatDimException e = new MatDimException("Block " + this.blockName + " " + seq.length() + " input dimensions doesn't match !\n \n");
-                    throw(e);
-                }
-            }
-            if (v == 1) {
-                if (seq.length() == 1) {
-                    int height = 1, width = 1;
-                    DataType type = DataType.REAL;
-                    if (!isAllDimensions()) {
-                        if (getDimension() == 2) {
-                            width = signal[0].getWidth();
-                        } else {
-                            height = signal[0].getHeight();
-                        }
-                        type = DataType.MATRIX;
-                    }
-                    out.setHeight(height);
-                    out.setWidth(width);
-                    out.getOutputSignalC().setHeight(height);
-                    out.getOutputSignalC().setWidth(width);
-                    out.getOutputSignalC().setDataType(type);
-                } else {
-                    out.setHeight(signal[0].getHeight());
-                    out.setWidth(signal[0].getWidth());
-                    out.getOutputSignalC().setHeight(signal[0].getHeight());
-                    out.getOutputSignalC().setWidth(signal[0].getWidth());
-                    out.getOutputSignalC().setDataType(signal[0].getDataType());
-                }
-            }
-        } else {
-            if (seq.length() == 1) {
-                if (seq.charAt(0) == '/' && n[0] != m[0]) {
-                    MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions doesn't match !\n \n");
-                    throw(e);
-                }
-            } else {
-                for (int i = 0; i < seq.length() - 1; i++) {
-                    if (seq.charAt(i) == '/' && n[i] != m[i]) {
-                        v = 0;
-                        MatDimException e = new MatDimException("Block " + this.blockName + " " + seq.length() + " input dimensions doesn't match !\n \n");
-                        throw(e);
-                    }
-                    if (n[i] != m[i + 1]) {
-                        v = 0;
-                        MatDimException e = new MatDimException("Block " + this.blockName + " " + seq.length() + " input dimensions doesn't match !\n \n");
-                        throw(e);
-                    }
-                }
-            }
-            out.setHeight(signal[0].getHeight());
-            out.setWidth(signal[seq.length() - 1].getWidth());
-            out.getOutputSignalC().setHeight(signal[0].getHeight());
-            out.getOutputSignalC().setWidth(signal[seq.length() - 1].getWidth());
-            out.getOutputSignalC().setDataType(DataType.MATRIX);
-        }
-    }
-
-    public void checkDimension() throws MatDimException {
-    }
-
-    private boolean isMultiplication() {
-        return multiplication;
+        Parameter multiplyOverParam = getParameterByName("MultiplyOver");
+        allDimensions = "All dimensions".equals(multiplyOverParam.getInitString());
+        
+        Parameter dimensionParam = getParameterByName("ElementsDimension");
+        dimension = Integer.parseInt(dimensionParam.getInitString());
     }
 }

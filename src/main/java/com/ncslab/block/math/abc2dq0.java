@@ -13,6 +13,8 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 public class abc2dq0 extends Block{
     String function;
@@ -25,7 +27,22 @@ public class abc2dq0 extends Block{
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("rotatingFrame", "Stationary reference frame");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
+
+    static {
+        parameterNames.add("rotatingFrame");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
         outputNames.add("out1");
         outputNames.add("out2");
         outputNames.add("out3");
