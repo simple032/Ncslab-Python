@@ -4,9 +4,11 @@ import Jama.Matrix;
 //import com.greenpineyu.fel.*;
 import com.ncslab.code.m.MfcalcClient;
 import com.ncslab.code.m.MfcalcClientManager;
+import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.jexl3.JexlException;
+import org.apache.velocity.VelocityContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -134,8 +136,6 @@ public class Data {
         return result.trim();
 	}
 
-
-
 	public static boolean isStringMatrix(String matrixString) {
         return matrixString.startsWith("[") && matrixString.endsWith("]");
     }
@@ -243,20 +243,17 @@ public class Data {
 	}
 
 	public String getDefineCodeC(String name) {
-		String code = "";
-		switch (dataType) {
-			case REAL:
-				code += String.format("REAL %s;\n", name);
-				break;
-			case MATRIX:
-				// code+="REAL
-				// "+name+"["+initMatrix.getRowDimension()+"]["+initMatrix.getColumnDimension()+"]"+";\n";
-				code += String.format("Matrix %s(%d,%d);\n", name, initMatrix.getRowDimension(),
-						initMatrix.getColumnDimension());
-				break;
+		VelocityContext context = new VelocityContext();
+		context.put("name", name);
+		context.put("dataType", dataType);
+		context.put("realDataType", DataType.REAL);
+		context.put("matrixDataType", DataType.MATRIX);
+		if (dataType == DataType.MATRIX) {
+			context.put("rows", initMatrix.getRowDimension());
+			context.put("cols", initMatrix.getColumnDimension());
 		}
-		return code;
 
+		return TemplateManager.renderTemplate("c/data/Data/define.vm", context);
 	}
 
 	public double[] getDoubleArray() {
