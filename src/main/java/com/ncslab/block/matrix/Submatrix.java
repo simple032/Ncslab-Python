@@ -3,6 +3,9 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.Block;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.data.DataType;
@@ -21,8 +24,6 @@ public class Submatrix extends Block {
     private Parameter endingRow;
     private Parameter startingColumn;
     private Parameter endingColumn;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
@@ -30,15 +31,28 @@ public class Submatrix extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
-        outputNames.add("out1");
-        inputNames.add("in1");
         parameterNames.add("StartingRow");
         parameterNames.add("EndingRow");
         parameterNames.add("StartingColumn");
         parameterNames.add("EndingColumn");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        outputNames.add("out1");
+        inputNames.add("in1");
+        
+        PARAMETER_DEFAULTS.put("StartingRow", "1");
+        PARAMETER_DEFAULTS.put("EndingRow", "-1");
+        PARAMETER_DEFAULTS.put("StartingColumn", "1");
+        PARAMETER_DEFAULTS.put("EndingColumn", "-1");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
     public Submatrix(JSONObject blockJSON, NCSLabModel model) {
@@ -48,12 +62,6 @@ public class Submatrix extends Block {
         endingRow = new Parameter(this, 2, "EndingRow", paramValues.getString("EndingRow"));
         startingColumn = new Parameter(this, 3, "StartingColumn", paramValues.getString("StartingColumn"));
         endingColumn = new Parameter(this, 4, "EndingColumn", paramValues.getString("EndingColumn"));
-
-        parameterList.add(startingRow);
-        parameterList.add(endingRow);
-        parameterList.add(startingColumn);
-        parameterList.add(endingColumn);
-
         outputPortList.add(new OutputPort(this, 1, true));
         inputPortList.add(new InputPort(this, 1));
     }
@@ -62,16 +70,14 @@ public class Submatrix extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        StringBuilder initCode = new StringBuilder();
-        initCode.append(String.format("/*Code for initialization of block Submatrix: (%d)%s*/\n", getBlockId(),
-                getBlockName()));
+        context.put("block", this);
+        context.put("startingRow", startingRow);
+        context.put("endingRow", endingRow);
+        context.put("startingColumn", startingColumn);
+        context.put("endingColumn", endingColumn);
 
-        initCode.append(startingRow.getInitCodeC());
-        initCode.append(endingRow.getInitCodeC());
-        initCode.append(startingColumn.getInitCodeC());
-        initCode.append(endingColumn.getInitCodeC());
-
-        code.addInitCode(initCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/Submatrix/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override

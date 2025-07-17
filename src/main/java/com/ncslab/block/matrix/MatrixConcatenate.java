@@ -2,6 +2,8 @@ package com.ncslab.block.matrix;
 
 import java.util.Arrays;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 import lombok.Getter;
 import org.json.JSONObject;
@@ -17,13 +19,9 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
 import com.ncslab.util.TemplateManager;
-
-
 public class MatrixConcatenate extends Block {
     private String seq;
     private Parameter ConcatenateDimension;
-
-
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
@@ -31,12 +29,24 @@ public class MatrixConcatenate extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
+        parameterNames.add("Inputs");
+        parameterNames.add("ConcatenateDimension");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
         outputNames.add("out1");
         //输入的个数不确定
-        parameterNames.add("ConcatenateDimension");
+        
+        PARAMETER_DEFAULTS.put("Inputs", "2");
+        PARAMETER_DEFAULTS.put("ConcatenateDimension", "1");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
     public MatrixConcatenate(JSONObject blockJSON, NCSLabModel model) {
@@ -44,9 +54,6 @@ public class MatrixConcatenate extends Block {
 
         ConcatenateDimension = new Parameter(this, 1, "ConcatenateDimension",
                 paramValues.getString("ConcatenateDimension"));
-
-        parameterList.add(ConcatenateDimension);
-
         outputPortList.add(new OutputPort(this, 1, true));
 
         seq = paramValues.getString("Inputs");
@@ -61,13 +68,11 @@ public class MatrixConcatenate extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        StringBuilder initCode = new StringBuilder();
-        initCode.append(String.format("/*Code for initialization of block Matrix Concatenate: (%d)%s*/\n", getBlockId(),
-                getBlockName()));
+        context.put("block", this);
+        context.put("ConcatenateDimension", ConcatenateDimension);
 
-        initCode.append(ConcatenateDimension.getInitCodeC());
-
-        code.addInitCode(initCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/MatrixConcatenate/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override

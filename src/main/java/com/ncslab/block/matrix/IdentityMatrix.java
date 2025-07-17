@@ -3,6 +3,9 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.block.io.Parameter;
@@ -22,19 +25,26 @@ public class IdentityMatrix extends Block {
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-
-
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
-
-        outputNames.add("out1");
         parameterNames.add("outputDimensions");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
+        outputNames.add("out1");
+        
+        PARAMETER_DEFAULTS.put("outputDimensions", "3");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
     public IdentityMatrix(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
         outputDimensions = new Parameter(this, 1, "outputDimensions", paramValues.getString("outputDimensions"));
-        parameterList.add(outputDimensions);
 
         outputPortList.add(new OutputPort(this, 1, false));
     }
@@ -43,13 +53,11 @@ public class IdentityMatrix extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        StringBuilder initCode = new StringBuilder();
-        initCode.append(String.format("/*Code for initialization of block Submatrix: (%d)%s*/\n", getBlockId(),
-                getBlockName()));
+        context.put("block", this);
+        context.put("outputDimensions", outputDimensions);
 
-        initCode.append(outputDimensions.getInitCodeC());
-
-        code.addInitCode(initCode.toString());
+        String codeStr = TemplateManager.renderTemplate("c/matrix/IdentityMatrix/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     @Override

@@ -3,6 +3,9 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.block.data.DataType;
@@ -17,20 +20,27 @@ import java.util.Vector;
 
 public class CrossProduct extends Block {
 
-
-
-
-
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
         outputNames.add("out1");
         inputNames.add("in1");
         inputNames.add("in2");
+        
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
     public CrossProduct(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);

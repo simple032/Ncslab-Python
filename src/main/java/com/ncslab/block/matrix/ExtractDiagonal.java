@@ -14,16 +14,22 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class ExtractDiagonal extends Block {
-
-
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        // No parameters for ExtractDiagonal
+    }
 
     static {
 

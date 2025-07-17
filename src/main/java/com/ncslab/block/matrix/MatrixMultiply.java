@@ -3,6 +3,9 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -19,17 +22,28 @@ public class MatrixMultiply extends Block {
 
     private String seq;
 
-
-
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
+        parameterNames.add("Inputs");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
         outputNames.add("out1");
         //输入个数不确定
+        
+        PARAMETER_DEFAULTS.put("Inputs", "**");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
     public MatrixMultiply(JSONObject blockJSON, NCSLabModel model) {
