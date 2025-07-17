@@ -33,23 +33,23 @@ abstract public class CircuitBlock {
 	protected BlockMode blockMode;
 	
 	//等价的Block组合
-	protected Vector<Block> blockList=new Vector<Block>();
+	protected Vector<Block> blockList=new Vector<>();
 	
 	//等价的Line组合
-	protected Vector<Line> lineList=new Vector<Line>();
+	protected Vector<Line> lineList=new Vector<>();
 
 	// 电气端口的列表
-	protected Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
+	protected Vector<CircuitPort> circuitPortList = new Vector<>();
 	
 	//输出与外界连接的等价Block列表
-	protected Vector<Block> outputBlockList=new Vector<Block>();
+	protected Vector<Block> outputBlockList=new Vector<>();
 	
 	//输入与外界连接的等价Block列表
-	//protected Vector<Block> inputBlockList=new Vector<Block>();
-	protected Vector<InputPort> inputPortList=new Vector<InputPort>();
+	//protected Vector<Block> inputBlockList=new Vector<>();
+	protected Vector<InputPort> inputPortList=new Vector<>();
 	
 	//模块的电压方程
-	private Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
+	private Vector<BlockVoltage> voltageList=new Vector<>();
 	
 	//与其他的CircuitBlock生成的Block相连的输出Block
 	private Block outputBlock;
@@ -120,7 +120,7 @@ abstract public class CircuitBlock {
 				break;
 			}
 			
-			Vector<Block> blocks=new Vector<Block>();
+			Vector<Block> blocks=new Vector<>();
 			blocks.add(input.getBLock());
 			blocks.add(output.getBLock());
 			
