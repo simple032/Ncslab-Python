@@ -1,0 +1,2 @@
+/*Code for output of block ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+sfcnOutputs(sfcnStruc${block.getBlockId()},0);

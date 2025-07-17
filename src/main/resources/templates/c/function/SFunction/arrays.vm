@@ -1,0 +1,11 @@
+SimStruct S${simStructName};
+SimStruct *${simStructName}=&S${simStructName};
+extern void ${sfcnName}(SimStruct* S);
+#if($numContState > 0)
+REAL Block${blockId}_State_Cont[${numContState}] = { 0 };
+REAL Block${blockId}_State_Derivative[${numContState}] = { 0 };
+#end
+#if($numDiscState > 0)
+REAL Block${blockId}_State_Disc[${numDiscState}] = { 0 };
+REAL Block${blockId}_State_Derivative[${numDiscState}] = { 0 };
+#end

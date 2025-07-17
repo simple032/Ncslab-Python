@@ -1,14 +1,26 @@
-## Fcn 输出计算模板
-#set($output = $block.outputPortList.get(0).getOutputSignalC().getName())
-#set($signal = $block.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-#if($signal.dataType == $realDataType)
-{
-    const double u = ${signal.getName()};
-    ${output} = ${expression};
-}
+/*Code for output of block Fcn:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $expression)
+    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
+    #set($inputVar = $inputSignal.getName())
+    #set($outputVar = $outputSignal.getName())
+    
+    #if($inputSignal.dataType == $realDataType)
+        ## Scalar function evaluation
+        {
+            const double u = $inputVar;
+            $outputVar = ${expression};
+        }
+    #else
+        ## Matrix function evaluation
+        {
+            const Matrix& u = $inputVar;
+            $outputVar = ${expression};
+        }
+    #end
 #else
-{
-    const Matrix& u = ${signal.getName()};
-    ${output} = ${expression};
-}
+    ## Fallback if parameters missing
+    #if($outputPortList && $outputPortList.size() > 0)
+        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Fcn block missing parameters */
+    #end
 #end

@@ -1,0 +1,4 @@
+/*Code for initialization of block S-Function Builder:(${block.getBlockId()})${block.getBlockName()}*/
+${fcnName}_${block.getBlockId()}(&sfcnStruc${block.getBlockId()});
+block${block.getBlockId()}.inputPortNum=${inputPortCount};block${block.getBlockId()}.outputPortNum=${outputPortCount};sfcnStruc${block.getBlockId()}.parentBlock=(BLOCK*)&block${block.getBlockId()};
+sfcnStart(sfcnStruc${block.getBlockId()});

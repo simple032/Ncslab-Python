@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.regex.Pattern;
+import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.util.regex.Matcher;
 
 import com.utils.Property;
 import org.json.JSONObject;
+import lombok.Getter;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -29,11 +33,30 @@ public class SFunctionBuilder extends Block {
 	private String[] parameters;
 	private String[] sFunctionModuleList;
 
+	@Getter
+	public static final Vector<String> parameterNames = new Vector<>();
+
+	@Getter
+	public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
+	static {
+		parameterNames.add("FunctionBuilderName");
+		parameterNames.add("InputPortNumber");
+		parameterNames.add("OutputPortNumber");
+		parameterNames.add("Parameters");
+		parameterNames.add("SFunctionModules");
+		parameterNames.add("Code");
+		
+		PARAMETER_DEFAULTS.put("FunctionBuilderName", "sfunc_builder");
+		PARAMETER_DEFAULTS.put("InputPortNumber", "1");
+		PARAMETER_DEFAULTS.put("OutputPortNumber", "1");
+		PARAMETER_DEFAULTS.put("Parameters", "");
+		PARAMETER_DEFAULTS.put("SFunctionModules", "");
+		PARAMETER_DEFAULTS.put("Code", "{\"predefine\":\"\",\"start\":\"\",\"outputs\":\"\",\"update\":\"\",\"derivatives\":\"\",\"terminate\":\"\"}");
+	}
 
 	public SFunctionBuilder(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-
-
 		//һ�����룬�������
 
 		System.out.println(blockJSON);
@@ -80,7 +103,6 @@ public class SFunctionBuilder extends Block {
 			//  required: com.ncslab.block.Block,int,java.lang.String,java.lang.String
 			//  found: com.ncslab.block.function.SFunctionBuilder,int,java.lang.String
 			//  reason: actual and formal argument lists differ in length
-//			parameterList.add(new com.ncslab.block.io.Parameter(this, i+1, "Para"+(i+1)), "");
 		}
 		//TODO:deal s-function modules
 		if(paramValues.getString("SFunctionModules").length()>0) {
@@ -121,8 +143,6 @@ public class SFunctionBuilder extends Block {
 			code += "#define S_FUNCTION_NAME " + this.fcnName + "_" + getBlockId() + " \n"
 					+ "#include \"ncslabccode.h\"\n"
 					+ "#include \"ncslabdefines.h\"\n";
-
-
 			code += replaceParameters(this.code.getString("predefine")) +"\n";
 
 			code += "extern MODEL* mp;\n";
@@ -210,22 +230,16 @@ public class SFunctionBuilder extends Block {
 
 		code.addOutputCode(outputCode);
 	}
-
-
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode="";
-//		initCode+=pumpState.getName()+"="+0+";\n";
-//		initCode+=levelState.getName()+"="+0+";\n";
-		initCode += fcnName+"_"+getBlockId()+"(&sfcnStruc"+getBlockId()+");\n";
-		//init number of inputs and outputs
-		initCode += "block"+getBlockId()+".inputPortNum="+inputPortList.size()+";";
-		initCode += "block"+getBlockId()+".outputPortNum="+outputPortList.size()+";";
-		initCode += "sfcnStruc"+getBlockId()+".parentBlock=(BLOCK*)&block"+getBlockId()+";\n";
-		initCode +=  "sfcnStart(sfcnStruc" + getBlockId() + ");\n";
-
-		code.addInitCode(initCode);
+		context.put("block", this);
+		context.put("fcnName", fcnName);
+		context.put("inputPortCount", inputPortList.size());
+		context.put("outputPortCount", outputPortList.size());
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/function/SFunctionBuilder/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateIncludeCodeC(CodeStructC code) {
@@ -246,24 +260,27 @@ public class SFunctionBuilder extends Block {
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-
-//		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"="+pumpState.getName()+";\n";
-//		outputCode+=outputPortList.get(1).getOutputSignalC().getName()+"="+levelState.getName()+";\n";
-		outputCode +=  "sfcnOutputs(sfcnStruc" + getBlockId() + ",0);\n";
-		code.addOutputCode(outputCode);
+		context.put("block", this);
+		context.put("name", name);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/function/SFunctionBuilder/output.vm", context);
+		code.addOutputCode(codeStr);
 	}
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
-		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		derivativeCode +=  "sfcnDerivatives(sfcnStruc" + getBlockId() + ");\n";
-		code.addDerivativeCode(derivativeCode);
+		context.put("block", this);
+		context.put("name", name);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/function/SFunctionBuilder/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
 	}
 
 	public void generateStatementCodeC(CodeStructC code) {
-		String statementCode = "/*Code for statement of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-		statementCode += "SimStruct sfcnStruc"+ getBlockId() +";\n";
-		statementCode += "void "+ this.fcnName + "_" + getBlockId() +"(SimStruct* rts);\n";
-		code.addStatementCode(statementCode);
+		context.put("block", this);
+		context.put("name", name);
+		context.put("fcnName", fcnName);
+		
+		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/function/SFunctionBuilder/statement.vm", context);
+		code.addStatementCode(codeStr);
 	}
 }

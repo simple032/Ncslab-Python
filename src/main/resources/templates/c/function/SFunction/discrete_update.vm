@@ -1,0 +1,2 @@
+/*Code for discrete update of discrete_transfer_fun(Inside):(${block.getBlockId()})${block.getBlockName()}*/
+(*${simStructName}->update)(${simStructName});

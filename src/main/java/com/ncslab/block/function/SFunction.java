@@ -2,7 +2,10 @@ package com.ncslab.block.function;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.util.TemplateManager;
+import org.apache.velocity.VelocityContext;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.block.io.*;
 import com.ncslab.ncslablink.MatDimException;
@@ -40,7 +43,37 @@ public class SFunction extends DiscreteBlock {
     private Parameter sampleTime;
     State speedState;
 
+    @lombok.Getter
+    public static final Vector<String> parameterNames = new Vector<>();
 
+    @lombok.Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
+    static {
+        parameterNames.add("HasCodeCompiled");
+        parameterNames.add("FunctionName");
+        parameterNames.add("InputNum");
+        parameterNames.add("OutputNum");
+        parameterNames.add("NumContState");
+        parameterNames.add("NumDiscState");
+        parameterNames.add("Parameters");
+        parameterNames.add("InputPortWidth");
+        parameterNames.add("OutputPortWidth");
+        parameterNames.add("SampleTimes");
+        parameterNames.add("OffsetTimes");
+        
+        PARAMETER_DEFAULTS.put("HasCodeCompiled", "false");
+        PARAMETER_DEFAULTS.put("FunctionName", "sfunc");
+        PARAMETER_DEFAULTS.put("InputNum", "1");
+        PARAMETER_DEFAULTS.put("OutputNum", "1");
+        PARAMETER_DEFAULTS.put("NumContState", "0");
+        PARAMETER_DEFAULTS.put("NumDiscState", "0");
+        PARAMETER_DEFAULTS.put("Parameters", "");
+        PARAMETER_DEFAULTS.put("InputPortWidth", "1");
+        PARAMETER_DEFAULTS.put("OutputPortWidth", "1");
+        PARAMETER_DEFAULTS.put("SampleTimes", "-1");
+        PARAMETER_DEFAULTS.put("OffsetTimes", "0");
+    }
 
     public SFunction(JSONObject blockJSON,NCSLabModel model) throws ModelException{
         super(blockJSON,model);
@@ -74,7 +107,6 @@ public class SFunction extends DiscreteBlock {
         if(parameters.length()>0) {
             String[] para=parameters.split(",");
             for (int i = 0; i < para.length; i++) {
-                parameterList.add(new Parameter(this, i+1, "para"+(i+1), para[i].replaceAll(" ", "")));
             }
             parameterNum=para.length;
         }
@@ -88,7 +120,6 @@ public class SFunction extends DiscreteBlock {
         sampleTimes = paramValues.getString("SampleTimes").split(",");
         offsetTimes = paramValues.getString("OffsetTimes").split(",");
         sampleTime = new Parameter(this, 1+parameterNum, "sampleTime", sampleTimes[0]);
-        parameterList.add(sampleTime);
         setSampleTime(sampleTime);
 
         simStructName=blockName.replace("-", "");
@@ -154,49 +185,32 @@ public class SFunction extends DiscreteBlock {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        String arraysCode="SimStruct S"+this.simStructName+";\n";
-        arraysCode+="SimStruct *"+this.simStructName+"=&S"+this.simStructName+";\n";
-        //the main function of S-Function
-        arraysCode+="extern void "+this.getSFcnName()+"(SimStruct* S);\n";
-        if(this.numContState>0) {
-            arraysCode+="REAL Block"+this.blockId+"_State_Cont["+this.numContState+"] = { 0 };\n";
-            arraysCode+="REAL Block"+this.blockId+"_State_Derivative["+this.numContState+"] = { 0 };\n";
-        }
-        if(this.numDiscState>0) {
-            arraysCode+="REAL Block"+this.blockId+"_State_Disc["+this.numDiscState+"] = { 0 };\n";
-            arraysCode+="REAL Block"+this.blockId+"_State_Derivative["+this.numDiscState+"] = { 0 };\n";
-        }
-
+        VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        context.put("simStructName", simStructName);
+        context.put("sfcnName", getSFcnName());
+        context.put("blockId", blockId);
+        context.put("numContState", numContState);
+        context.put("numDiscState", numDiscState);
+        
+        String arraysCode = TemplateManager.renderTemplate("c/function/SFunction/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        String initCode="";
-
-        for(Parameter parameter:parameterList) {
-            initCode+=parameter.getInitCodeC();
-        }
-        initCode+=this.simStructName+"->parentBlock=&block"+this.getBlockId()+";\n";
-
-        if(this.numContState>0) {
-            initCode+=this.simStructName+"->states.contStates = Block"+this.blockId+"_State_Cont;\n";
-            initCode+=this.simStructName+"->states.derivative = Block"+this.blockId+"_State_Derivative;\n";
-        }
-        if(this.numDiscState>0) {
-            initCode+=this.simStructName+"->states.discStates = Block"+this.blockId+"_State_Disc;\n";
-            initCode+=this.simStructName+"->states.derivative = Block"+this.blockId+"_State_Derivative;\n";
-        }
-
-        initCode+=this.getSFcnName()+"("+this.simStructName+");\n";
-        initCode+="(*"+this.simStructName+"->initializeSizes)("+this.simStructName+");\n";
-        initCode+="(*"+this.simStructName+"->initializeSampleTimes)("+this.simStructName+");\n";
-        initCode+="(*"+this.simStructName+"->initializeConditions)("+this.simStructName+");\n";
-        initCode+="(*"+this.simStructName+"->start)("+this.simStructName+");\n";
-
-        initCode+="sample_time[sample_i]="+sampleTime.getName()+";\n";
-        initCode+="sample_i=sample_i+1;\n";
-        code.addInitCode(initCode);
+        context.put("block", this);
+        context.put("parameterList", parameterList);
+        context.put("simStructName", simStructName);
+        context.put("blockId", blockId);
+        context.put("numContState", numContState);
+        context.put("numDiscState", numDiscState);
+        context.put("sfcnName", getSFcnName());
+        context.put("sampleTime", sampleTime);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
@@ -205,58 +219,55 @@ public class SFunction extends DiscreteBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-//        context.put("block", this);
-//
-//        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/output.vm", context);
-//        code.addOutputCode(codeStr);
-        String outputCode="/*Code for output of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        if(this.numDiscState>0){
-            outputCode+="if(block"+this.getBlockId()+".discreteTime<=mp->time||block"+this.getBlockId()+".discreteTime-mp->time<0.0000001{;\n";
-            outputCode+="(*"+this.simStructName+"->outputs)("+this.simStructName+",0);\n";
-            outputCode+="}\n";
-        }else{
-            outputCode+="(*"+this.simStructName+"->outputs)("+this.simStructName+",0);\n";
-        }
-        code.addOutputCode(outputCode);
+        context.put("block", this);
+        context.put("name", name);
+        context.put("simStructName", simStructName);
+        context.put("numDiscState", numDiscState);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void  generateDerivativeCodeC(CodeStructC code) {
-        String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        derivativeCode+="(*"+this.simStructName+"->derivatives)("+this.simStructName+");\n";
-        code.addDerivativeCode(derivativeCode);
+        context.put("block", this);
+        context.put("name", name);
+        context.put("simStructName", simStructName);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 
     public void generateUpdateCodeC(CodeStructC code) throws MatDimException{
-        String updateCode="/*Code for update of block "+getBlockType()+":("+getBlockId()+")"+getBlockName()+"*/\n";
-        for (int i = 0; i < this.numContState; i++) {
-            State state = stateList.get(i);
-            updateCode+=state.getName()+"="
-                +state.getName()+"+"
-                +state.getDerivativeName()
-                +"*"
-                +"model.stepSize"
-                +";\n";
-        }
-
-        code.addUpdateCode(updateCode);
+        context.put("block", this);
+        context.put("numContState", numContState);
+        context.put("stateList", stateList);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/update.vm", context);
+        code.addUpdateCode(codeStr);
     }
 
     public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException{
-        String discreteUpdateCode="/*Code for discrete update of discrete_transfer_fun(Inside):("+getBlockId()+")"+getBlockName()+"*/\n";
-        discreteUpdateCode +="(*"+this.simStructName+"->update)("+this.simStructName+");\n";
-        code.addDiscreteUpdateCode(discreteUpdateCode);
+        context.put("block", this);
+        context.put("simStructName", simStructName);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/discrete_update.vm", context);
+        code.addDiscreteUpdateCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
-        String statementCode = "/*Code for statement of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-//		statementCode += "void "+ this.fcnName + "_" + getBlockId() +"(SimStruct* rts);\n";
-        code.addStatementCode(statementCode);
+        context.put("block", this);
+        context.put("name", name);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/statement.vm", context);
+        code.addStatementCode(codeStr);
     }
 
     public void generateTerminateCodeC(CodeStructC code) {
-        String terminateCode = "";
-        terminateCode+="(*"+this.simStructName+"->terminate)("+this.simStructName+");\n";
-        code.addTerminateCode(terminateCode);
+        context.put("block", this);
+        context.put("simStructName", simStructName);
+        
+        String codeStr = TemplateManager.renderTemplate("c/function/SFunction/terminate.vm", context);
+        code.addTerminateCode(codeStr);
     }
 
     public boolean isSFcnBlock() {

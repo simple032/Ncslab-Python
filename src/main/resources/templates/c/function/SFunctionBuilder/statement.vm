@@ -1,0 +1,3 @@
+/*Code for statement of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+SimStruct sfcnStruc${block.getBlockId()};
+void ${fcnName}_${block.getBlockId()}(SimStruct* rts);

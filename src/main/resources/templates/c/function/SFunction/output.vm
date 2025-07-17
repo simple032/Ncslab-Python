@@ -1,8 +1,8 @@
-## S-Function 输出计算模板
-#if(${block.numDiscState} > 0)
-    if(block${block.blockId}.discreteTime <= mp->time || block${block.blockId}.discreteTime - mp->time < 0.0000001) {
-        (*${block.simStructName}->outputs)(${block.simStructName}, 0);
-    }
+/*Code for output of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+#if($numDiscState > 0)
+if(block${block.getBlockId()}.discreteTime<=mp->time||block${block.getBlockId()}.discreteTime-mp->time<0.0000001{;
+(*${simStructName}->outputs)(${simStructName},0);
+}
 #else
-    (*${block.simStructName}->outputs)(${block.simStructName}, 0);
+(*${simStructName}->outputs)(${simStructName},0);
 #end

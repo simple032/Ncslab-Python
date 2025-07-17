@@ -1,0 +1,18 @@
+#foreach($parameter in $parameterList)
+${parameter.getInitCodeC()}#end
+${simStructName}->parentBlock=&block${blockId};
+#if($numContState > 0)
+${simStructName}->states.contStates = Block${blockId}_State_Cont;
+${simStructName}->states.derivative = Block${blockId}_State_Derivative;
+#end
+#if($numDiscState > 0)
+${simStructName}->states.discStates = Block${blockId}_State_Disc;
+${simStructName}->states.derivative = Block${blockId}_State_Derivative;
+#end
+${sfcnName}(${simStructName});
+(*${simStructName}->initializeSizes)(${simStructName});
+(*${simStructName}->initializeSampleTimes)(${simStructName});
+(*${simStructName}->initializeConditions)(${simStructName});
+(*${simStructName}->start)(${simStructName});
+sample_time[sample_i]=${sampleTime.getName()};
+sample_i=sample_i+1;

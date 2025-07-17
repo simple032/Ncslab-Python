@@ -1,0 +1,2 @@
+/*Code for Derivative of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+(*${simStructName}->derivatives)(${simStructName});

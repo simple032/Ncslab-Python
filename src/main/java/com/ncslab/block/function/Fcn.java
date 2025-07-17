@@ -18,6 +18,8 @@ import org.json.JSONObject;
 
 import java.util.Objects;
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Fcn extends Block{
 
@@ -26,12 +28,28 @@ public class Fcn extends Block{
 //    private M2PCodeFunctionEvaluator.Evaluator evaluator;
 
     @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("Expression", "u");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
 
+    static {
+        parameterNames.add("Expression");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        parameterNames.add("SaturateOnIntegerOverflow");
+        
         outputNames.add("out1");
         inputNames.add("in1");
     }
