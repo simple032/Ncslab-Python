@@ -1,9 +1,12 @@
 package com.ncslab.block;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Vector;
 
 import com.ncslab.block.io.*;
 import com.ncslab.code.st.CodeStructST;
+import com.ncslab.ncslablink.ModelMode;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.velocity.VelocityContext;
@@ -16,6 +19,9 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.lan.CCodeBlock;
 import com.ncslab.block.lan.MCodeBlock;
+import com.ncslab.util.TemplateUtils;
+
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
 public class Block implements MCodeBlock, CCodeBlock{
@@ -80,6 +86,39 @@ public class Block implements MCodeBlock, CCodeBlock{
     public static Vector<String> parameterNames = new Vector<>();
 	// abstract public Vector<String> getParameterNames();
 
+    // Get parameter defaults from the derived class's static PARAMETER_DEFAULTS field
+    protected Map<String, String> getParameterDefaults() {
+        try {
+            // Get the actual runtime class of this instance
+            Class<?> clazz = this.getClass();
+
+            // Try to get the static PARAMETER_DEFAULTS field
+            java.lang.reflect.Field defaultsField = clazz.getField("PARAMETER_DEFAULTS");
+
+            // Ensure it's a Map type
+            if (Map.class.isAssignableFrom(defaultsField.getType())) {
+                @SuppressWarnings("unchecked")
+                Map<String, String> defaults = (Map<String, String>) defaultsField.get(null);
+                return defaults != null ? defaults : new HashMap<>();
+            }
+        } catch (NoSuchFieldException | IllegalAccessException | SecurityException e) {
+            // If the field doesn't exist or can't be accessed, fall back to empty map
+            // This allows blocks without PARAMETER_DEFAULTS to still work
+            System.err.println("Can't get default parameters for " + this.getClass().getName());
+        }
+
+        // Fallback to empty map if no PARAMETER_DEFAULTS field found
+        return new HashMap<>();
+    }
+
+    // Helper method to get parameter by name instead of index
+    protected Parameter getParameterByName(String name) {
+        return parameterList.stream()
+            .filter(p -> p.getLocalName().equals(name))
+            .findFirst()
+            .orElse(null);
+    }
+
     @Getter
     public static Vector<String> inputNames = new Vector<>();
 
@@ -101,6 +140,12 @@ public class Block implements MCodeBlock, CCodeBlock{
         context = new VelocityContext();
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
+        context.put("modelMode", model.getModelMode());
+        context.put("compilationMode", ModelMode.Compilation);
+        context.put("simulationMode", ModelMode.Simulation);
+        
+        // Use enhanced template utilities for standardized context
+        TemplateUtils.populateStandardContext(context, this);
 	}
 
     public void setFeedThrough(boolean feedThrough) {
@@ -430,10 +475,18 @@ public class Block implements MCodeBlock, CCodeBlock{
 
 
     private void parseParameterList() {
-        Vector<String> parameterNames = getParameterNames();
-        for(int i=0; i<parameterNames.size(); i++) {
-            parameterList.add(new Parameter(this, i+1, parameterNames.get(i),
-                paramValues.getString(parameterNames.get(i))));
+        Map<String, String> defaults = getParameterDefaults();
+
+        int paramIndex = 1;
+        for(Map.Entry<String, String> entry : defaults.entrySet()) {
+            String paramName = entry.getKey();
+            String defaultValue = entry.getValue();
+
+            // Use optString to safely get parameter value with fallback to default
+            String actualValue = (paramValues != null) ?
+                paramValues.optString(paramName, defaultValue) : defaultValue;
+
+            parameterList.add(new Parameter(this, paramIndex++, paramName, actualValue));
         }
     }
 

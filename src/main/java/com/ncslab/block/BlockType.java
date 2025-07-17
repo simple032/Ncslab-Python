@@ -9,12 +9,8 @@ import com.ncslab.block.hardware.rasp.GPIO;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.ModelException;
-
-
 /**
  * Generate corresponding <code>Block</code> according to <code>BlockType</code>.
  * If your block is an instance of <code>Block</code> but not an instance of <code>SoughtedBlock</code>,
@@ -190,8 +186,6 @@ public class BlockType{
         blockClassTree.put("Inport", com.ncslab.block.subsystem.In.class);
         blockClassTree.put("Outport", com.ncslab.block.subsystem.Out.class);
         blockClassTree.put("Subsystem", com.ncslab.block.subsystem.Subsystem.class);
-
-
         // Matrix
         blockClassTree.put("CreateDiagonalMatrix", com.ncslab.block.matrix.CreateDiagonalMatrix.class);
         blockClassTree.put("CrossProduct", com.ncslab.block.matrix.CrossProduct.class);
@@ -244,12 +238,20 @@ public class BlockType{
         Block block = null;
         try {
             Class<? extends Block> blockClass = blockClassTree.get(blockType);
-            if(blockClass != null)
-                block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
-        }catch(InvocationTargetException|NoSuchMethodException|InstantiationException|IllegalAccessException|NullPointerException e){
-            log.error("e:", e);
-        }catch (Exception ee){
-            log.error("e:", ee);
+            if(blockClass != null) {
+//                TODO: change the interface to fromJSON.
+//                try {
+//                    // Try to use the new fromJSON factory method first
+//                    java.lang.reflect.Method fromJSONMethod = blockClass.getMethod("fromJSON", JSONObject.class, NCSLabModel.class);
+//                    block = (Block) fromJSONMethod.invoke(null, blockJSON, model);
+//                } catch (NoSuchMethodException e) {
+                    // Fall back to deprecated constructor if fromJSON method doesn't exist
+//                    log.warn("Block type '{}' does not have fromJSON method, using deprecated constructor", blockType);
+                    block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
+//                }
+            }
+        } catch (Exception ee){
+            log.error("Error creating block of type '{}': ", blockType, ee);
         }
         if(block == null)
             throw(new ModelException("Can not find blocktype \" "+ blockType+ " \" in mapped function"));
