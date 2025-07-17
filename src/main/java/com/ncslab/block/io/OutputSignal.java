@@ -11,14 +11,14 @@ public class OutputSignal {
 	private int id;
 	private String name;
 	private String localName;
-	@Getter
+    @Getter
     private int width=1;
-	@Getter
+    @Getter
     private int height=1;
 	@Setter
     @Getter
     private DataType dataType = DataType.REAL;
-	@Getter
+    @Getter
     private Block block;
 	private int outputPortId;
 

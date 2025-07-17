@@ -9,11 +9,10 @@ import java.util.Vector;
 
 public class ScopeStruct extends Terminal {
 	@Setter
-    @Getter
     private int maxDataLength=500;
-	@Getter
+    @Getter
     private int width=1;
-	@Getter
+    @Getter
     private int height=1;
 
     @Getter

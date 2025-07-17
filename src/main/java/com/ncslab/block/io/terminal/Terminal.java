@@ -5,10 +5,10 @@ import lombok.Getter;
 
 abstract public class Terminal {
 	protected int id;
-	@Getter
+    @Getter
     protected String name;
 	protected String localName;
-	@Getter
+    @Getter
     protected String terminalName;
 
 	protected Block block;

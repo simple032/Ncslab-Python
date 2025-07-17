@@ -36,17 +36,11 @@ import java.util.Vector;
 public class Product extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter inputs;
-    @Getter
     private final Parameter multiplication;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter inputSameDT;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Operational Settings ===
@@ -56,10 +50,9 @@ public class Product extends Block {
     private final boolean matrixMultiplication;
 
     // === Static Parameter Definitions ===
+
+    // Parameter defaults
     @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    
-    // Parameter defaults matching parameterNames
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -79,12 +72,6 @@ public class Product extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("Inputs");
-        parameterNames.add("Multiplication");
-        parameterNames.add("SampleTime");
-        parameterNames.add("InputSameDT");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
 
         // Port names
         outputNames.add("out1");
@@ -217,7 +204,7 @@ public class Product extends Block {
             }
         }
 
-        if (sequence.length() < 1) {
+        if (sequence.isEmpty()) {
             throw new IllegalArgumentException("Input sequence must have at least one input");
         }
 
@@ -325,7 +312,7 @@ public class Product extends Block {
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
-        
+
         context.put("block", this);
         context.put("sequence", getInputSequence());
         context.put("inputs", this.inputs);
@@ -343,8 +330,8 @@ public class Product extends Block {
     public void updateDimension() throws MatDimException {
         OutputPort out = outputPortList.get(0);
         OutputSignal[] signal = new OutputSignal[inputSequence.length()];
-        int m[] = new int[inputSequence.length()];
-        int n[] = new int[inputSequence.length()];
+        int[] m = new int[inputSequence.length()];
+        int[] n = new int[inputSequence.length()];
 
         for (int i = 0; i < inputSequence.length(); i++) {
             signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();

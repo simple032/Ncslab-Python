@@ -10,9 +10,10 @@ public class FifoBufferExtended<T> {
     private final int capacity;
     private InterpolationStrategy<T> interpolationStrategy;
 
-    @Getter
     public static class TimeDataPair<T> {
+        @Getter
         private final double timestamp;
+        @Getter
         private final T data;
 
         public TimeDataPair(double timestamp, T data) {
