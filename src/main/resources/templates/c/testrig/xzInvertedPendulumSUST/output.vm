@@ -1,42 +1,37 @@
-#set($inputSignal1 = $block.getInputPortVariable(0))
-#set($inputSignal2 = $block.getInputPortVariable(1))
-#set($outputRealX = $block.getOutputPortVariables().get(0))
-#set($outputAngle = $block.getOutputPortVariables().get(1))
-
-if ($modelMode == "Compilation") {
-    #set($accTmp1 = fabs($inputSignal1) / 9.424776)
-    #set($accInt1 = (int)$accTmp1)
-    #set($VspeedValue = (int)$inputSignal2 > 0 ? (int)$inputSignal2 : -(int)$inputSignal2)
-
-    if ($inputSignal1 > 0 && $accInt1 > 0) {
-        sprintf((char*)xzcmd2, "GZ000V%d\\r\\n", $VspeedValue);
-        sprintf((char*)xzcmd, "GZ100A%d\\r\\n", $accInt1);
-    } else if ($inputSignal1 < 0 && $accInt1 > 0) {
-        sprintf((char*)xzcmd2, "GZ000V-%d\\r\\n", $VspeedValue);
-        sprintf((char*)xzcmd, "GZ100A%d\\r\\n", $accInt1);
-    } else {
-        sprintf((char*)xzcmd2, "GZ000V0\\r\\n");
-        sprintf((char*)xzcmd, "GZ100A0\\r\\n");
-    }
-
-    usleep(3000);
-    Serialport_Send(hCommXzIPSUST, xzcmd, strlen(xzcmd));
-    Serialport_Send(hCommXzIPSUST, xzcmd2, strlen(xzcmd2));
-
-    char xzheadStr[] = {"POS"};
-    int xzpos1 = 0, xzpos2 = 0;
-
-    char *xzkeyStart = strstr(recvBuffXzIPSUST, xzheadStr);
-    if (xzkeyStart != NULL) {
-        xzkeyStart += 3;
-        xzpos1 = strtol(xzkeyStart, &xzkeyStart, 10);
-        xzpos2 = strtol(xzkeyStart + 1, NULL, 10);
-
-        #set($xzxPOS = $xzpos2 * 360.0 / (16 * 2000.0))
-        #set($xzAngle = ($xzpos1 % 4000) * 360.0 / 4000.0)
-        #set($xzAngle = ($xzpos1 >= 0) ? ($xzAngle - 180) : ($xzAngle + 180))
-
-        $outputRealX = $xzxPOS;
-        $outputAngle = $xzAngle;
-    }
+/*Code for output of block xzInvertedPendulumSUST:(${block.blockId})${block.blockName}*/
+if(mp->majorStep>0){
+char recvBuffXzIPSUST[255]={0};
+char sendBuffXzIPSUST[]={"GZ999POS*=?\r\n"};
+if(xzIPSUSTbool==false) {Serialport_Send(hCommXzIPSUST,sendBuffXzIPSUST,strlen(sendBuffXzIPSUST));
+ char cmdClearPos[] = {"GZ999POS*=0\r\n"};
+if((int)${POS0Flag.value}==1) {Serialport_Send(hCommXzIPSUST,cmdClearPos,strlen(cmdClearPos));
+usleep(3000);}
+}char xzcmd[50]={0},xzcmd2[50]={0};
+int xztmp = ${inputPortVariable1};
+float xzacctmp = xztmp/9.424776;
+float xzacc = (xztmp>=0)?xzacctmp:-xzacctmp;
+int xzaccInt=(int)xzacc;
+int VspeedValue = (int)${inputPortVariable2}>0?${inputPortVariable2}:-${inputPortVariable2};
+sprintf((char*)xzcmd,"GZ100A%d\r\n",xzaccInt);if(xzIPSUSTbool==false)Serialport_Recv(hCommXzIPSUST,recvBuffXzIPSUST,62);
+printf("recvBuff=%s\n",recvBuffXzIPSUST);
+if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd,strlen(xzcmd));
+if(xztmp<0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V-%d\r\n",VspeedValue);
+else if(xztmp>0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V%d\r\n",VspeedValue);
+else sprintf((char*)xzcmd2,"GZ000V0\r\n");
+if(xzIPSUSTbool==true)usleep(3000);
+if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd2,strlen(xzcmd2));
+char xzheadStr[]={"POS"};
+int xzpos1=0,xzpos2=0;
+char *xzkeyStart = strstr(recvBuffXzIPSUST,xzheadStr);
+if(xzkeyStart!=NULL){
+xzkeyStart+=3;
+xzpos1 = strtol(xzkeyStart,&xzkeyStart,10);
+xzpos2 = strtol(xzkeyStart+1,NULL,10);
+xzxPOS = xzpos2*360.0/(16*2000.0);
+xzAngle = (xzpos1%4000)*360.0/4000.0;
+xzAngle = (xzpos1>=0)?(xzAngle-180):(xzAngle+180);
+}
+if(xzIPSUSTbool==false)${outputPortVariable1}=xzxPOS;
+if(xzIPSUSTbool==false)${outputPortVariable2}=xzAngle;
+xzIPSUSTbool=!xzIPSUSTbool;
 }

@@ -4,11 +4,11 @@
 #set($VspeedValue = $block.getParameter("Vspeed").getName())
 #set($ENAOrDISValue = $block.getParameter("ENAOrDIS").getName())
 
-if ($modelMode == "Compilation") {
-    #set($hardwareDefineName = "Block" + $block.getBlockId() + "_InvertedPendulumSUST")
-    initInvertedPendulumSUST(&$hardwareDefineName);
+#if ($modelMode == $compilationMode)
+#set($hardwareDefineName = "Block" + $block.getBlockId() + "_InvertedPendulumSUST")
+initInvertedPendulumSUST(&$hardwareDefineName);
 
-    if (mp->majorStep > 0) {
+if (mp->majorStep > 0) {
         char recvBuffIPSUST[255] = {0};
         Serialport_Send(hCommIPSUST, sendLimitBuffSUST, strlen(sendLimitBuffSUST));
         usleep(2500);
@@ -43,4 +43,4 @@ if ($modelMode == "Compilation") {
             $outputAngle = (pos1 >= 0) ? ($outputAngle - 180) : ($outputAngle + 180);
         }
     }
-}
+#end

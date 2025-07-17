@@ -5,10 +5,10 @@
 #set($hardwareDefineName = "Block" + $blockId + "_Alp")
 $hardwareDefineName = ALP;
 
-#if ($modelMode == "Simulation")
+#if ($modelMode == $simulationMode)
     #foreach($state in $block.getStateList())
         $state.getName() = 0;
     #end
-#elseIf ($modelMode == "Compilation")
+#elseif ($modelMode == $compilationMode)
     initAlp(&$hardwareDefineName);
 #end

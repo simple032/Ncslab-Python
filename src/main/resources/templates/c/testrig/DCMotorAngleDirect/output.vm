@@ -2,14 +2,14 @@
 #set($outputSpeed = $block.getOutputPortVariables().get(0))
 #set($outputAngle = $block.getOutputPortVariables().get(1))
 
-if ($modelMode == "Compilation") {
+#if ($modelMode == $compilationMode)
     #set($hardwareDefineName = "Block" + $block.getBlockId() + "_DCMotorAngleDirect")
     initDCMotorAngleDirect(&$hardwareDefineName);
 
     if (mp->majorStep > 0) {
-        #set($pwmValue = $inputSignal)
-        #set($pwmValue = $pwmValue > 0.5 ? 0.5 : $pwmValue)
-        #set($pwmValue = $pwmValue < -0.5 ? -0.5 : $pwmValue)
+        $pwmValue = $inputSignal;
+        $pwmValue = $pwmValue > 0.5 ? 0.5 : $pwmValue;
+        $pwmValue = $pwmValue < -0.5 ? -0.5 : $pwmValue;
 
         $outputSpeed = $hardwareDefineName.getSpeedPulse() * 5.79582;
         outputDCMotorAngleDirect(&$hardwareDefineName);
@@ -29,6 +29,7 @@ if ($modelMode == "Compilation") {
         }
 
         $outputAngle = $angleN * 360 + Angle;
-        $block.setRWork("angledata", Angle);
+        $block.setRWork("angledata", Angle)
     }
-}
+#else
+#end

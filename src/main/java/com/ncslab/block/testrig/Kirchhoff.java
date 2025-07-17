@@ -12,6 +12,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import com.ncslab.util.TemplateManager;
@@ -27,10 +29,16 @@ public class Kirchhoff extends Block {
 	Parameter AD6;
 	Parameter AD7;
 
+    @Getter
     private static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     private static final Vector<String> outputNames = new Vector<>();
+    @Getter
     private static final Vector<String> inputNames = new Vector<>();
+
+    @Getter
+    private static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
 
@@ -50,6 +58,16 @@ public class Kirchhoff extends Block {
         parameterNames.add("AD5");
         parameterNames.add("AD6");
         parameterNames.add("AD7");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("BCM", "18");
+        PARAMETER_DEFAULTS.put("AD1", "0");
+        PARAMETER_DEFAULTS.put("AD2", "1");
+        PARAMETER_DEFAULTS.put("AD3", "2");
+        PARAMETER_DEFAULTS.put("AD4", "3");
+        PARAMETER_DEFAULTS.put("AD5", "4");
+        PARAMETER_DEFAULTS.put("AD6", "5");
+        PARAMETER_DEFAULTS.put("AD7", "6");
 
     }
 
@@ -59,29 +77,21 @@ public class Kirchhoff extends Block {
 		// 一个输入
 		inputPortList.add(new InputPort(this, 1));
 		BCM = new Parameter(this, 1, "BCM", paramValues.getString("BCM"));
-		parameterList.add(BCM);
 		// 七个输出
 		outputPortList.add(new OutputPort(this, "AD1", 1, false));
 		AD1 = new Parameter(this, 2, "AD1", paramValues.getString("AD1"));
-		parameterList.add(AD1);
 		outputPortList.add(new OutputPort(this, "AD2", 2, false));
 		AD2 = new Parameter(this, 3, "AD2", paramValues.getString("AD2"));
-		parameterList.add(AD2);
 		outputPortList.add(new OutputPort(this, "AD3", 3, false));
 		AD3 = new Parameter(this, 4, "AD3", paramValues.getString("AD3"));
-		parameterList.add(AD3);
 		outputPortList.add(new OutputPort(this, "AD4", 4, false));
 		AD4 = new Parameter(this, 5, "AD4", paramValues.getString("AD4"));
-		parameterList.add(AD4);
 		outputPortList.add(new OutputPort(this, "AD5", 5, false));
 		AD5 = new Parameter(this, 6, "AD5", paramValues.getString("AD5"));
-		parameterList.add(AD5);
 		outputPortList.add(new OutputPort(this, "AD6", 6, false));
 		AD6 = new Parameter(this, 7, "AD6", paramValues.getString("AD6"));
-		parameterList.add(AD6);
 		outputPortList.add(new OutputPort(this, "AD7", 7, false));
 		AD7 = new Parameter(this, 8, "AD7", paramValues.getString("AD7"));
-		parameterList.add(AD7);
 
 	}
 
@@ -102,62 +112,15 @@ public class Kirchhoff extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		String initCode = "/*Code for initialization of block Kirchhoff:(" + getBlockId() + ")" + getBlockName()
-				+ "*/\n";
-		initCode += AD1.getName() + "=" + paramValues.getDouble("AD1") + ";\n";
-		initCode += "DEV_ModuleInit();\n"
-				+ "if(ADS1256_init() == 1){\r\n"
-				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
-				+ "        DEV_ModuleExit();\r\n"
-				+ "        exit(0);\r\n"
-				+ "    }\n";
-		initCode += AD2.getName() + "=" + paramValues.getDouble("AD2") + ";\n";
-		initCode += "DEV_ModuleInit();\n"
-				+ "if(ADS1256_init() == 1){\r\n"
-				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
-				+ "        DEV_ModuleExit();\r\n"
-				+ "        exit(0);\r\n"
-				+ "    }\n";
-		initCode += AD3.getName() + "=" + paramValues.getDouble("AD3") + ";\n";
-		initCode += "DEV_ModuleInit();\n"
-				+ "if(ADS1256_init() == 1){\r\n"
-				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
-				+ "        DEV_ModuleExit();\r\n"
-				+ "        exit(0);\r\n"
-				+ "    }\n";
-		initCode += AD4.getName() + "=" + paramValues.getDouble("AD4") + ";\n";
-		initCode += "DEV_ModuleInit();\n"
-				+ "if(ADS1256_init() == 1){\r\n"
-				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
-				+ "        DEV_ModuleExit();\r\n"
-				+ "        exit(0);\r\n"
-				+ "    }\n";
-		initCode += AD5.getName() + "=" + paramValues.getDouble("AD5") + ";\n";
-		initCode += "DEV_ModuleInit();\n"
-				+ "if(ADS1256_init() == 1){\r\n"
-				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
-				+ "        DEV_ModuleExit();\r\n"
-				+ "        exit(0);\r\n"
-				+ "    }\n";
-		initCode += AD6.getName() + "=" + paramValues.getDouble("AD6") + ";\n";
-		initCode += "DEV_ModuleInit();\n"
-				+ "if(ADS1256_init() == 1){\r\n"
-				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
-				+ "        DEV_ModuleExit();\r\n"
-				+ "        exit(0);\r\n"
-				+ "    }\n";
-		initCode += AD7.getName() + "=" + paramValues.getDouble("AD7") + ";\n";
-		initCode += "DEV_ModuleInit();\n"
-				+ "if(ADS1256_init() == 1){\r\n"
-				+ "        printf(\"\\r\\n ADS1256_init   END \\r\\n\");\r\n"
-				+ "        DEV_ModuleExit();\r\n"
-				+ "        exit(0);\r\n"
-				+ "    }\n";
-
-		initCode += BCM.getName() + "=" + paramValues.getDouble("BCM") + ";\n";
-		initCode += "wiringPiSetupGpio();\n"
-				+ "pinMode (" + BCM.getName() + ", OUTPUT);\r\n";
-		code.addInitCode(initCode);
+		java.util.List<Parameter> adParameters = java.util.Arrays.asList(AD1, AD2, AD3, AD4, AD5, AD6, AD7);
+		
+		context.put("block", this);
+		context.put("adParameters", adParameters);
+		context.put("bcmParameter", BCM);
+		context.put("paramValues", paramValues);
+		
+		String codeStr = TemplateManager.renderTemplate("c/testrig/Kirchhoff/init.vm", context);
+		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
@@ -176,9 +139,10 @@ public class Kirchhoff extends Block {
 	}
 
 	public void generateDerivativeCodeC(CodeStructC code) {
-	    String derivativeCode = "/*Code for Derivative of Kirchhoff:(" + getBlockId() + ")" + getBlockName() + "*/\n";
-
-	    code.addDerivativeCode(derivativeCode);
+		context.put("block", this);
+		
+		String codeStr = TemplateManager.renderTemplate("c/testrig/Kirchhoff/derivative.vm", context);
+		code.addDerivativeCode(codeStr);
 	}
 
 }

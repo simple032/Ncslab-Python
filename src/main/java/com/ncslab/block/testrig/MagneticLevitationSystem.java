@@ -13,6 +13,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class MagneticLevitationSystem extends Block {
@@ -26,6 +28,9 @@ public class MagneticLevitationSystem extends Block {
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
         inputNames.add("in1");
         outputNames.add("Position");
@@ -35,6 +40,17 @@ public class MagneticLevitationSystem extends Block {
         parameterNames.add("EQUILIBRIUM_POINT_i0");
         parameterNames.add("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT");
         parameterNames.add("INPUT_RESISTANCE");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("gravity", "9.8");
+        PARAMETER_DEFAULTS.put("EQUILIBRIUM_POINT_x0", "0.2");
+        PARAMETER_DEFAULTS.put("EQUILIBRIUM_POINT_i0", "6.105");
+        PARAMETER_DEFAULTS.put("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "-4.5871056");
+        PARAMETER_DEFAULTS.put("INPUT_RESISTANCE", "5.8929");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     State position;
@@ -59,15 +75,10 @@ public class MagneticLevitationSystem extends Block {
         stateList.add(velocity);
 
         gravity = new Parameter(this, 1, "gravity", "9.8");
-        parameterList.add(gravity);
         x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "0.2");
-        parameterList.add(x0);
         i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "6.105");
-        parameterList.add(i0);
         Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "-4.5871056 ");
-        parameterList.add(Ks);
         Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "5.8929");
-        parameterList.add(Ka);
     }
 
     public void generateInitCodeM(CodeStructM code) {

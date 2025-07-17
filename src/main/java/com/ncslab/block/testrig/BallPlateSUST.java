@@ -12,6 +12,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class BallPlateSUST extends Block {
@@ -26,6 +28,9 @@ public class BallPlateSUST extends Block {
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
         outputNames.add("Real_X");
         outputNames.add("Real_Y");
@@ -34,6 +39,13 @@ public class BallPlateSUST extends Block {
 
         inputNames.add("in1");
         inputNames.add("in2");
+        
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     public BallPlateSUST(JSONObject blockJSON, NCSLabModel model) {
@@ -79,7 +91,11 @@ public class BallPlateSUST extends Block {
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
+        context.put("block", this);
+        context.put("name", name);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/include.vm", context);
+        code.addIncludeCode(codeStr);
     }
 
     public void addLine(String originCode, String newLine) {
@@ -97,19 +113,18 @@ public class BallPlateSUST extends Block {
     }
     
     public void generateDerivativeCodeC(CodeStructC code) {
-        String derivativeCode = "/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        code.addDerivativeCode(derivativeCode);
+        context.put("block", this);
+        context.put("name", name);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
-        String statementCode = "/*Code for statement of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        statementCode += "#define TOUCHPAD_NAME \"Name=\\\"Touch p303\\\"\"\n";
-        statementCode += "int hCommBPSUST;\n";
-        statementCode += "int BPfd;\n";
-        statementCode += "bool BPSUSTbool=true;\n";
-        statementCode += "struct input_event ev;\n";
-        statementCode += "int t_x,t_y;\n" + "int BPpos1=0,BPpos2=0;\n";
-        statementCode += "fd_set read_bpfds,write_bpfds;\n" + "struct timeval bptimeout;\n" + "int maxfdBP=0;\n";
-        code.addStatementCode(statementCode);
+        context.put("block", this);
+        context.put("name", name);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/statement.vm", context);
+        code.addStatementCode(codeStr);
     }
 }

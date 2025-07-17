@@ -20,17 +20,17 @@
 #set($outputAD6 = $block.getOutputPortVariables().get(5).getName())
 #set($outputAD7 = $block.getOutputPortVariables().get(6).getName())
 
-if ($input1) {
-    digitalWrite($BCM, HIGH);
-} else {
-    digitalWrite($BCM, LOW);
-}
+#if ($input1)
+digitalWrite($BCM, HIGH);
+#else
+digitalWrite($BCM, LOW);
+#end
 
-if ($DA) {
-    DAC8532_Out_Voltage(channel_B, $input2);
-} else {
-    DAC8532_Out_Voltage(channel_A, ($input2) / 4);
-}
+#if ($DA)
+DAC8532_Out_Voltage(channel_B, $input2);
+#else
+DAC8532_Out_Voltage(channel_A, ($input2) / 4);
+#end
 
 $outputAD1 = ADS1256_GetChannalValue($AD1) * 16.6666667 / 0x7fffff;
 $outputAD2 = ADS1256_GetChannalValue($AD2) * (-5.0) / 0x7fffff;

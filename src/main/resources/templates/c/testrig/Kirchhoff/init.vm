@@ -1,18 +1,13 @@
-/* Velocity Template for initialization of block Kirchhoff */
-#set($blockId = $block.getBlockId())
-#set($blockName = $block.getBlockName())
-
-#if ($modelMode == "Compilation")
-    #foreach($parameter in $block.getParameterList())
-        $parameter.getName() = $parameter.getInitDouble();
-    #end
-
-    wiringPiSetupGpio();
-    DEV_ModuleInit();
-
-    if (ADS1256_init() == 1) {
-        printf("\\r\\n ADS1256_init   END \\r\\n");
+/*Code for initialization of block Kirchhoff:(${block.getBlockId()})${block.getBlockName()}*/
+#foreach($param in $adParameters)
+${param.getName()}=${paramValues.getDouble($param.getName())};
+DEV_ModuleInit();
+if(ADS1256_init() == 1){
+        printf("\r\n ADS1256_init   END \r\n");
         DEV_ModuleExit();
         exit(0);
     }
 #end
+${bcmParameter.getName()}=${paramValues.getDouble($bcmParameter.getName())};
+wiringPiSetupGpio();
+pinMode (${bcmParameter.getName()}, OUTPUT);

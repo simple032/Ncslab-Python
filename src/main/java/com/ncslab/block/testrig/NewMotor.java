@@ -12,6 +12,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class NewMotor extends Block {
@@ -22,10 +24,25 @@ public class NewMotor extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
         outputNames.add("Speed");
         inputNames.add("in1");
+        parameterNames.add("motorK");
+        parameterNames.add("motorT");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("motorK", "0.01");
+        PARAMETER_DEFAULTS.put("motorT", "0.09");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     State speedState;
@@ -52,32 +69,33 @@ public class NewMotor extends Block {
     }
 
     public String getHardwareDefineCodeC() {
-        String hardwareDefineCode = "";
-        //hardwareDefineName="Block"+this.getBlockId()+"_WaterLevel";
-        hardwareDefineCode += "HANDLE hComm;\n";
-        hardwareDefineCode += "HANDLE hComm1;\n";
-        return hardwareDefineCode;
+        context.put("block", this);
+        
+        return TemplateManager.renderTemplate("c/testrig/NewMotor/hardware_define.vm", context);
     }
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        String initCode = "";
-        code.addInitCode(initCode);
+        context.put("block", this);
+        
+        String codeStr = TemplateManager.renderTemplate("m/testrig/NewMotor/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
-
-        String derivativeCode = "";
-
-        code.addDerivativeCode(derivativeCode);
+        context.put("block", this);
+        
+        String codeStr = TemplateManager.renderTemplate("m/testrig/NewMotor/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        String outputCode = "";
-
-        code.addOutputCode(outputCode);
+        context.put("block", this);
+        
+        String codeStr = TemplateManager.renderTemplate("m/testrig/NewMotor/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void generateInitCodeC(CodeStructC code) {
@@ -96,9 +114,6 @@ public class NewMotor extends Block {
         //code.addIncludeCode(includeCode);
     }
 
-    public void addLine(String originCode, String newLine) {
-    }
-
     public void generateOutputCodeC(CodeStructC code) {
         context.put("block", this);
         context.put("states", stateList);
@@ -108,15 +123,5 @@ public class NewMotor extends Block {
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/NewMotor/output.vm", context);
         code.addOutputCode(codeStr);
-    }
-
-    public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("modelMode", model.getModelMode().name());
-
-        String codeStr = TemplateManager.renderTemplate("c/testrig/NewMotor/derivative.vm", context);
-        code.addDerivativeCode(codeStr);
     }
 }

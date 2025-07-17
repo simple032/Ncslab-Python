@@ -2,7 +2,7 @@
 #set($blockId = $block.getBlockId())
 #set($blockName = $block.getBlockName())
 
-#if ($modelMode == "Compilation")
+#if ($modelMode == $compilationMode)
     char msg[255];
     int tmpHCommon1 = -1, tmpHCommon2 = -1;
 

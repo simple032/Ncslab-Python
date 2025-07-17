@@ -13,6 +13,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class InvertedPendulumSUST extends Block {
@@ -22,6 +24,16 @@ public class InvertedPendulumSUST extends Block {
 
     @Getter
     public static final Vector<String> parameterNames = new Vector<>();
+
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("Vspeed", "1.0");
+        PARAMETER_DEFAULTS.put("ENAOrDIS", "1");
+
+        parameterNames.add("Vspeed");
+        parameterNames.add("ENAOrDIS");
+    }
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -33,8 +45,6 @@ public class InvertedPendulumSUST extends Block {
         outputNames.add("Angle");
         inputNames.add("in1");
         inputNames.add("in2");
-        parameterNames.add("Vspeed");
-        parameterNames.add("ENAOrDIS");
     }
 
     public InvertedPendulumSUST(JSONObject blockJSON, NCSLabModel model) {
@@ -46,9 +56,7 @@ public class InvertedPendulumSUST extends Block {
         outputPortList.add(new OutputPort(this, "Angle", 2, false));
 
         Vspeed = new Parameter(this, parameterList.size() + 1, "Vspeed", paramValues.getString("Vspeed"));
-        parameterList.add(Vspeed);
         ENAOrDIS = new Parameter(this, parameterList.size() + 1, "ENAOrDIS", paramValues.getString("ENAOrDIS"));
-        parameterList.add(ENAOrDIS);
     }
 
     public void generateInitCodeM(CodeStructM code) {

@@ -1,0 +1,3 @@
+#include"DEV_Config.h"
+#include"DAC8532.h"
+HANDLE hComm;

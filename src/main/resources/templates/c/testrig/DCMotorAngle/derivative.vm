@@ -1,0 +1,12 @@
+/*Code for Derivative of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+#if($modelMode == "Simulation")
+double ${realInput} = 0.0;
+if(${inputPortVariable}>${inputMax})
+	${realInput}=${inputMax};
+else if(${inputPortVariable}<${inputMin})
+	${realInput}=${inputMin};
+else
+	${realInput}=${inputPortVariable};
+${speedState.getDerivativeName()}=(4*${realInput}*${motorK}-${speedState.getName()})*${1/$motorT};
+${angleState.getDerivativeName()}=${speedState.getName()};
+#end

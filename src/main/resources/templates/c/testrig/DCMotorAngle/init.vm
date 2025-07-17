@@ -2,11 +2,11 @@
 #set($blockId = $block.getBlockId())
 #set($blockName = $block.getBlockName())
 
-#if ($modelMode == "Simulation")
+#if ($modelMode == $simulationMode)
     #foreach($state in $block.getStateList())
         $state.getName() = 0;
     #end
-#elseIf ($modelMode == "Compilation")
+#elseif ($modelMode == $compilationMode)
     char msg[255];
     HANDLE hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
     HANDLE hComm1 = Serialport_Open("/dev/ttyUSB1", 115200, msg);

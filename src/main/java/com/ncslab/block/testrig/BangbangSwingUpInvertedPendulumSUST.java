@@ -13,11 +13,11 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class BangbangSwingUpInvertedPendulumSUST extends Block {
-
-
 	private String name = "BangbangSwingUpInvertedPendulumSUST";
 	Parameter v,vel;
 
@@ -28,6 +28,9 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
 
@@ -40,9 +43,11 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
         inputNames.add("in5");
         parameterNames.add("v");
         parameterNames.add("vel");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("v", "0");
+        PARAMETER_DEFAULTS.put("vel", "0");
     }
-
-
 	public BangbangSwingUpInvertedPendulumSUST(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 
@@ -54,23 +59,15 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
 		inputPortList.add(new InputPort(this,5));//vel
 		outputPortList.add(new OutputPort(this,"AccOutput",1,false));
 		outputPortList.add(new OutputPort(this,"SpeedOutput",2,false));
-
-
 		v=new Parameter(this,parameterList.size()+1,"v",paramValues.getString("v"));
-		parameterList.add(v);
 
 		vel=new Parameter(this,parameterList.size()+1,"vel",paramValues.getString("vel"));
-		parameterList.add(vel);
 
 		//pumpState=new State(this,1,"pumpState");
 		//stateList.add(pumpState);
 		//levelState=new State(this,2,"levelState");
 		//stateList.add(levelState);
 	}
-
-
-
-
 	public void generateIncludeCodeC(CodeStructC code) {
 		String includeCode="/*Code for include files of block " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
 //		code.addIncludeCode(includeCode);
@@ -102,8 +99,6 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-
-
 		code.addDerivativeCode(derivativeCode);
 	}
 

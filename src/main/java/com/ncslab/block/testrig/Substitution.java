@@ -12,6 +12,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class Substitution extends Block {
@@ -34,6 +36,9 @@ public class Substitution extends Block {
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
         outputNames.add("AD1");
         outputNames.add("AD2");
@@ -54,6 +59,17 @@ public class Substitution extends Block {
         parameterNames.add("AD5");
         parameterNames.add("AD6");
         parameterNames.add("AD7");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("BCM", "18");
+        PARAMETER_DEFAULTS.put("DA", "0");
+        PARAMETER_DEFAULTS.put("AD1", "0");
+        PARAMETER_DEFAULTS.put("AD2", "1");
+        PARAMETER_DEFAULTS.put("AD3", "2");
+        PARAMETER_DEFAULTS.put("AD4", "3");
+        PARAMETER_DEFAULTS.put("AD5", "4");
+        PARAMETER_DEFAULTS.put("AD6", "5");
+        PARAMETER_DEFAULTS.put("AD7", "6");
     }
 
     public Substitution(JSONObject blockJSON, NCSLabModel model) {
@@ -62,32 +78,23 @@ public class Substitution extends Block {
         // 两个输入
         inputPortList.add(new InputPort(this, 1));
         BCM = new Parameter(this, 1, "BCM", paramValues.getString("BCM"));
-        parameterList.add(BCM);
         inputPortList.add(new InputPort(this, 2));
         DA = new Parameter(this, 2, "DA", paramValues.getString("DA"));
-        parameterList.add(DA);
         // 七个输出
         outputPortList.add(new OutputPort(this, "AD1", 1, false));
         AD1 = new Parameter(this, 3, "AD1", paramValues.getString("AD1"));
-        parameterList.add(AD1);
         outputPortList.add(new OutputPort(this, "AD2", 2, false));
         AD2 = new Parameter(this, 4, "AD2", paramValues.getString("AD2"));
-        parameterList.add(AD2);
         outputPortList.add(new OutputPort(this, "AD3", 3, false));
         AD3 = new Parameter(this, 5, "AD3", paramValues.getString("AD3"));
-        parameterList.add(AD3);
         outputPortList.add(new OutputPort(this, "AD4", 4, false));
         AD4 = new Parameter(this, 6, "AD4", paramValues.getString("AD4"));
-        parameterList.add(AD4);
         outputPortList.add(new OutputPort(this, "AD5", 5, false));
         AD5 = new Parameter(this, 7, "AD5", paramValues.getString("AD5"));
-        parameterList.add(AD5);
         outputPortList.add(new OutputPort(this, "AD6", 6, false));
         AD6 = new Parameter(this, 8, "AD6", paramValues.getString("AD6"));
-        parameterList.add(AD6);
         outputPortList.add(new OutputPort(this, "AD7", 7, false));
         AD7 = new Parameter(this, 9, "AD7", paramValues.getString("AD7"));
-        parameterList.add(AD7);
     }
 
     public void generateInitCodeM(CodeStructM code) {

@@ -12,6 +12,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class DoubleTank extends Block {
@@ -22,11 +24,22 @@ public class DoubleTank extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
         outputNames.add("Pump_Speed");
         outputNames.add("Water_Level");
         inputNames.add("in1");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     State pumpState;

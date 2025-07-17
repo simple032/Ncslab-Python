@@ -1,0 +1,11 @@
+/*Code for statement of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+#define TOUCHPAD_NAME "Name=\"Touch p303\""
+int hCommBPSUST;
+int BPfd;
+bool BPSUSTbool=true;
+struct input_event ev;
+int t_x,t_y;
+int BPpos1=0,BPpos2=0;
+fd_set read_bpfds,write_bpfds;
+struct timeval bptimeout;
+int maxfdBP=0;

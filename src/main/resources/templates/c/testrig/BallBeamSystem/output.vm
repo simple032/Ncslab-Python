@@ -18,13 +18,13 @@
 #set($outputAngle = $block.getOutputPortVariables().get(1).getName())
 #set($outputDR = $block.getOutputPortVariables().get(2).getName())
 
-if ($stateX0 <= $lb_position) {
-    $outputPosition = $lb_position;
-} else if (($stateX0 > $lb_position) && ($stateX0 <= $ub_angle)) {
-    $outputPosition = $stateX0;
-} else {
-    $outputPosition = $ub_angle;
-}
+#if ($stateX0 <= $lb_position)
+$outputPosition = $lb_position;
+#elseif (($stateX0 > $lb_position) && ($stateX0 <= $ub_angle))
+$outputPosition = $stateX0;
+#else
+$outputPosition = $ub_angle;
+#end
 
 $outputAngle = $stateX1;
 $outputDR = $block.getRWork("tem") * 180 / AERO_PI;

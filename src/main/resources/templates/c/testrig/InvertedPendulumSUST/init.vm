@@ -2,7 +2,7 @@
 #set($blockId = $block.getBlockId())
 #set($blockName = $block.getBlockName())
 
-#if ($modelMode == "Compilation")
+#if ($modelMode == $compilationMode)
     char msg[255];
     HANDLE hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
 

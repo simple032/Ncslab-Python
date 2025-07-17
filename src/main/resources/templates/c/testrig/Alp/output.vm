@@ -2,19 +2,18 @@
 #set($outputFanSpeed = $block.getOutputPortVariables().get(0))
 #set($outputPosition = $block.getOutputPortVariables().get(1))
 
-if ($modelMode == "Simulation") {
-    #foreach($state in $states)
-        #set($numIndex = $den.size() - $foreach.index - 1)
-        #set($output = $outputFanSpeed + " += " + $state.getName() + " * " + $num[$numIndex] + ";")
-    #end
-} else if ($modelMode == "Compilation") {
-    #set($hardwareDefineName = "Block" + $block.getBlockId() + "_Alp")
-    #set($alpPWM = $hardwareDefineName + ".alpPWM = 2600 * " + $inputSignal + ";")
-    #set($alpPWMLimit1 = $alpPWM + " > 2400.0 ? 2400.0 : " + $alpPWM + ";")
-    #set($alpPWMLimit2 = $alpPWMLimit1 + " < 0 ? 0 : " + $alpPWMLimit1 + ";")
-    #set($alpPWMScaled = $alpPWMLimit2 + " * 1.0 / 2600.0;")
-    
-    outputAlp(&$hardwareDefineName);
-    $outputFanSpeed = 2.0 * $hardwareDefineName.fanspeed_output;
-    $outputPosition = calalpoutput(635 - 19.0114 * $hardwareDefineName.position);
-}
+#if ($modelMode == $simulationMode)
+#foreach($state in $states)
+#set($numIndex = $den.size() - $foreach.index - 1)
+#set($output = $outputFanSpeed + " += " + $state.getName() + " * " + $num[$numIndex] + ";")
+#end
+#elseif ($modelMode == $compilationMode)
+#set($hardwareDefineName = "Block" + $block.getBlockId() + "_Alp")
+$hardwareDefineName.alpPWM = 2600 * $inputSignal;
+$hardwareDefineName.alpPWM = $hardwareDefineName.alpPWM > 2400.0 ? 2400.0 : $hardwareDefineName.alpPWM;
+$hardwareDefineName.alpPWM = $hardwareDefineName.alpPWM < 0 ? 0 : $hardwareDefineName.alpPWM;
+
+outputAlp(&$hardwareDefineName);
+$outputFanSpeed = 2.0 * $hardwareDefineName.fanspeed_output;
+$outputPosition = calalpoutput(635 - 19.0114 * $hardwareDefineName.position);
+#end

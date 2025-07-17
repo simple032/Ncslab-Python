@@ -12,23 +12,23 @@
 #set($outputAD1 = $block.getOutputPortVariables().get(0).getName())
 #set($outputAD2 = $block.getOutputPortVariables().get(1).getName())
 
-if ($input1) {
-    digitalWrite($BCM1, HIGH);
-} else {
-    digitalWrite($BCM1, LOW);
-}
+#if ($input1)
+digitalWrite($BCM1, HIGH);
+#else
+digitalWrite($BCM1, LOW);
+#end
 
-if ($input2) {
-    digitalWrite($BCM2, HIGH);
-} else {
-    digitalWrite($BCM2, LOW);
-}
+#if ($input2)
+digitalWrite($BCM2, HIGH);
+#else
+digitalWrite($BCM2, LOW);
+#end
 
-if ($input3) {
-    digitalWrite($BCM3, HIGH);
-} else {
-    digitalWrite($BCM3, LOW);
-}
+#if ($input3)
+digitalWrite($BCM3, HIGH);
+#else
+digitalWrite($BCM3, LOW);
+#end
 
 $outputAD1 = ADS1256_GetChannalValue($AD1) * 16.6666667 / 0x7fffff;
 $outputAD2 = ADS1256_GetChannalValue($AD2) * 16.6666667 / 0x7fffff;

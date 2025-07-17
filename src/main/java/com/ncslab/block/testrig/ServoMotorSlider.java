@@ -12,6 +12,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class ServoMotorSlider extends Block {
@@ -22,10 +24,35 @@ public class ServoMotorSlider extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
         outputNames.add("Position");
         inputNames.add("in1");
+        parameterNames.add("num_0");
+        parameterNames.add("num_1");
+        parameterNames.add("num_2");
+        parameterNames.add("den_0");
+        parameterNames.add("den_1");
+        parameterNames.add("den_2");
+        parameterNames.add("den_3");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("num_0", "0");
+        PARAMETER_DEFAULTS.put("num_1", "17.41");
+        PARAMETER_DEFAULTS.put("num_2", "123.4");
+        PARAMETER_DEFAULTS.put("den_0", "1");
+        PARAMETER_DEFAULTS.put("den_1", "2.01");
+        PARAMETER_DEFAULTS.put("den_2", "38.86");
+        PARAMETER_DEFAULTS.put("den_3", "49.06");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     String hardwareDefineName;
@@ -57,12 +84,9 @@ public class ServoMotorSlider extends Block {
     }
 
     public String getHardwareDefineCodeC() {
-        String hardwareDefineCode = "";
-        // add some head files
-        hardwareDefineCode += "#include\"DEV_Config.h\"\n";
-        hardwareDefineCode += "#include\"DAC8532.h\"\n";
-        hardwareDefineCode += "HANDLE hComm;\n";
-        return hardwareDefineCode;
+        context.put("block", this);
+        
+        return TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/hardware_define.vm", context);
     }
 
     public void generateInitCodeC(CodeStructC code) {
@@ -77,10 +101,10 @@ public class ServoMotorSlider extends Block {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        String arraysCode = "/* Define arrays for block ServoMotorSlider:(" + getBlockId() + ")" + getBlockName() + " */\n";
-        arraysCode += "double servodata=0;\n";
-        arraysCode += "double servodata1=0;\n";
-        code.addArraysCode(arraysCode);
+        context.put("block", this);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/arrays.vm", context);
+        code.addArraysCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {

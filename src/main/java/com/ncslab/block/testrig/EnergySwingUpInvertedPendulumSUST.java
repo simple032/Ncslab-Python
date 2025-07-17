@@ -13,6 +13,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class EnergySwingUpInvertedPendulumSUST extends Block {
@@ -28,6 +30,9 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
         outputNames.add("AccOutput");
         outputNames.add("SpeedOutput");
@@ -39,6 +44,10 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
         inputNames.add("in6");
         parameterNames.add("InnerFactor");
         parameterNames.add("InitSpeed");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("InnerFactor", "1.0");
+        PARAMETER_DEFAULTS.put("InitSpeed", "0.0");
     }
 
     public EnergySwingUpInvertedPendulumSUST(JSONObject blockJSON, NCSLabModel model) {
@@ -54,10 +63,8 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
         outputPortList.add(new OutputPort(this, "SpeedOutput", 2, false));
 
         InnerFactor = new Parameter(this, parameterList.size() + 1, "InnerFactor", paramValues.getString("InnerFactor"));
-        parameterList.add(InnerFactor);
 
         InitSpeed = new Parameter(this, parameterList.size() + 1, "InitSpeed", paramValues.getString("InitSpeed"));
-        parameterList.add(InitSpeed);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {

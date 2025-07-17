@@ -21,8 +21,6 @@ public class Alp extends Block {
 	private double den[]= {1,3.091,1.19,0.2};
 	private Vector<State> xStateList=new Vector<State>();
 
-
-
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
@@ -54,10 +52,11 @@ public class Alp extends Block {
 			}
 	}
 	public String getHardwareDefineCodeC() {
-		String hardwareDefineCode="";
 		hardwareDefineName="Block"+this.getBlockId()+"_Alp";
-		hardwareDefineCode+="ALP "+hardwareDefineName+";\n";
-		return hardwareDefineCode;
+		context.put("block", this);
+		context.put("hardwareDefineName", hardwareDefineName);
+		
+		return TemplateManager.renderTemplate("c/testrig/Alp/hardware_define.vm", context);
 	}
 public void generateInitCodeC(CodeStructC code) {
     super.generateInitCodeC(code);

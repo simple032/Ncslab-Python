@@ -11,11 +11,11 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class xzInvertedPendulumSUSTbak extends Block {
-
-
 	private String name = "xzInvertedPendulumSUST";
 
 //	State speedState;
@@ -29,11 +29,20 @@ public class xzInvertedPendulumSUSTbak extends Block {
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
 
         outputNames.add("Real_X");
         outputNames.add("Angle");
         inputNames.add("in1");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
 	public xzInvertedPendulumSUSTbak(JSONObject blockJSON,NCSLabModel model) {
@@ -48,8 +57,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
 
 //		spState=new State(this,1,"SerialPortState");
 //		stateList.add(spState);
-
-
 
 		//pumpState=new State(this,1,"pumpState");
 		//stateList.add(pumpState);
@@ -77,8 +84,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
 
 		code.addOutputCode(outputCode);
 	}
-
-
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
@@ -88,8 +93,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
 		int baudrate = 115200;
 		initCode+="char xzIPSUSTmsg[255];\n";
 		initCode+="hCommXzIPSUST = Serialport_Open("+port+", "+baudrate+",xzIPSUSTmsg);\n";
-
-
 //		initCode+="char initCmd[50]={0};\n";
 //
 //		initCode+="sprintf((char*)initCmd,\"GZ200DIS\\r\\n\");\n";
@@ -153,8 +156,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
 
 		outputCode+="if(xzIPSUSTbool==false)Serialport_Recv(hCommXzIPSUST,recvBuffXzIPSUST,62);\n";
 		outputCode+="printf(\"recvBuff=%s\\n\",recvBuffXzIPSUST);\n";
-
-
 		outputCode+="if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd,strlen(xzcmd));\n";
 		outputCode+="if(xztmp<0) sprintf((char*)xzcmd2,\"GZ000V-500\\r\\n\");\n";
 		outputCode+="else if(xztmp>0) sprintf((char*)xzcmd2,\"GZ000V500\\r\\n\");\n";
@@ -189,8 +190,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
 		outputCode+="xzAngle = (xzpos1>=0)?(xzAngle-180):(xzAngle+180);\n"
 				+ "}\n";
 
-
-
 		outputCode+="if(xzIPSUSTbool==false)"+outputPortList.get(0).getOutputSignalC().getName()+"=xzxPOS;\n";
 		outputCode+="if(xzIPSUSTbool==false)"+outputPortList.get(1).getOutputSignalC().getName()+"=xzAngle;\n";
 		outputCode+="xzIPSUSTbool=!xzIPSUSTbool;\n";
@@ -200,8 +199,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
 		String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-
-
 		code.addDerivativeCode(derivativeCode);
 	}
 

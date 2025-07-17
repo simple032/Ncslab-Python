@@ -2,7 +2,7 @@
 #set($blockId = $block.getBlockId())
 #set($blockName = $block.getBlockName())
 
-#if ($modelMode == "Compilation")
+#if ($modelMode == $compilationMode)
     #set($hardwareDefineName = "Block" + $blockId + "_BangbangSwingUpInvertedPendulumSUST")
     initBangbangSwingUpInvertedPendulumSUST(&$hardwareDefineName);
 

@@ -2,6 +2,6 @@
 #set($blockId = $block.getBlockId())
 #set($blockName = $block.getBlockName())
 
-#if ($modelMode == "Compilation")
+#if ($modelMode == $compilationMode)
     DEV_ModuleInit();
 #end

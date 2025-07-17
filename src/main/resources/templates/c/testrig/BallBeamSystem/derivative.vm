@@ -1,0 +1,10 @@
+/*Code for Derivative of BallBeamSystem:(${block.blockId})${block.blockName}*/
+if (${inputPortVariable}< la)
+    u=la;
+else if ((${inputPortVariable} >= la) && (${inputPortVariable} <= ua))
+    u=${inputPortVariable};
+else
+    u=ua;
+${block.getDerivativeVariable(0)}=${block.getStateVariable(1)};
+${block.getDerivativeVariable(2)}>=u-${block.getStateVariable(2)};
+${block.getDerivativeVariable(1)}=-M*g*sin(d*u/L)/(J/(R*R)+M)+M*${block.getStateVariable(0)}*d*d*${block.getDerivativeVariable(2)}*${block.getDerivativeVariable(2)}/(L*L*(J/(R*R)+M));

@@ -1,7 +1,7 @@
 #set($inputPort1 = $block.getInputPortVariable(0))
 #set($outputPort1 = $block.getOutputPortVariables().get(0))
 
-if ($modelMode == "Compilation") {
+#if ($modelMode == $compilationMode) {
     #set($hardwareDefineName = "Block" + $block.getBlockId() + "_ServoMotorSlider")
     initServoMotorSlider(&$hardwareDefineName);
 
@@ -42,7 +42,7 @@ if ($modelMode == "Compilation") {
 
         servodata1 = (-0.0039 * servodata);
     }
-} else if ($modelMode == "Simulation") {
+#elseif ($modelMode == $simulationMode)
     #foreach($i in [0..2])
     #set($stateX = $block.getStateList().get($i).getName())
     #set($numValue = $block.getParameter("num").getValue($i))

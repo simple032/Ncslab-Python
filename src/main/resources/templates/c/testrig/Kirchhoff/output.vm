@@ -26,8 +26,8 @@ $outputAD5 = ADS1256_GetChannalValue($AD5) * 5.0 / 0x7fffff;
 $outputAD6 = ADS1256_GetChannalValue($AD6) * 16.6666667 / 0x7fffff;
 $outputAD7 = ADS1256_GetChannalValue($AD7) * 16.6666667 / 0x7fffff;
 
-if ($input) {
-    digitalWrite($BCM, HIGH);
-} else {
-    digitalWrite($BCM, LOW);
-}
+#if ($input)
+digitalWrite($BCM, HIGH);
+#else
+digitalWrite($BCM, LOW);
+#end

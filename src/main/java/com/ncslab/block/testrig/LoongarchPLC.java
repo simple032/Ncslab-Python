@@ -13,6 +13,8 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class LoongarchPLC extends Block {
@@ -23,12 +25,23 @@ public class LoongarchPLC extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+    @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
         outputNames.add("Position");
         outputNames.add("Angle");
         outputNames.add("dr");
         inputNames.add("in1");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     State x0State;
@@ -83,8 +96,11 @@ public class LoongarchPLC extends Block {
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        String includeCode = "/*Code for include files of block " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        code.addIncludeCode(includeCode);
+        context.put("block", this);
+        context.put("name", name);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/include.vm", context);
+        code.addIncludeCode(codeStr);
     }
 
     public void addLine(String originCode, String newLine) {
@@ -112,17 +128,10 @@ public class LoongarchPLC extends Block {
     }
 
     public void generateStatementCodeC(CodeStructC code) {
-        String statementCode = "/*Code for statement of " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
-        statementCode += "#define TOUCHPAD_NAME \"Name=\\\"Touch p303\\\"\"\n";
-        statementCode += "int hCommBPSUST;\n";
-        statementCode += "int BPfd;\n";
-        statementCode += "bool BPSUSTbool=true;\n";
-        statementCode += "struct input_event ev;\n";
-        statementCode += "int t_x,t_y;\n"
-                + "int BPpos1=0,BPpos2=0;\n";
-        statementCode += "fd_set read_bpfds,write_bpfds;\n"
-                + "struct timeval bptimeout;\n"
-                + "int maxfdBP=0;\n";
-        code.addStatementCode(statementCode);
+        context.put("block", this);
+        context.put("name", name);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/statement.vm", context);
+        code.addStatementCode(codeStr);
     }
 }

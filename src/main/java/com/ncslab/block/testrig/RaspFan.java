@@ -43,23 +43,15 @@ public class RaspFan extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+        
+        hardwareDefineName = "Block" + this.getBlockId() + "_RaspFan";
+        
         context.put("block", this);
         context.put("modelMode", model.getModelMode().name());
-
-        String initCode = "/* Code for initialization of block RaspFan:(" + getBlockId() + ")" + getBlockName() + " */\n";
-        switch (model.getModelMode()) {
-            case Simulation:
-                break;
-            case Compilation:
-                hardwareDefineName = "Block" + this.getBlockId() + "_RaspFan";
-                initCode += "initRaspFan(&" + hardwareDefineName + ");\n";
-                String port = "\"/dev/ttyUSB0\"";
-                int baudrate = 9600;
-                initCode += "char msg[255];\n";
-                initCode += "hComm = Serialport_Open((char *)" + port + ", " + baudrate + ",(char *)msg);\n";
-                break;
-        }
-        code.addInitCode(initCode);
+        context.put("hardwareDefineName", hardwareDefineName);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/RaspFan/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {

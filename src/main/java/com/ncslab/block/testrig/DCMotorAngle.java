@@ -13,6 +13,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class DCMotorAngle extends Block {
@@ -36,10 +38,27 @@ public class DCMotorAngle extends Block {
     @Getter
     private static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
         outputNames.add("Speed");
         outputNames.add("Angle");
         inputNames.add("in1");
+        parameterNames.add("motorK");
+        parameterNames.add("motorT");
+        parameterNames.add("input_max");
+        parameterNames.add("input_min");
+        parameterNames.add("SampleTime");
+        parameterNames.add("OutDataTypeStr");
+        
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("motorK", "106.25");
+        PARAMETER_DEFAULTS.put("motorT", "0.07");
+        PARAMETER_DEFAULTS.put("input_max", "1.0");
+        PARAMETER_DEFAULTS.put("input_min", "-1.0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     public DCMotorAngle(JSONObject blockJSON,NCSLabModel model) {
@@ -70,11 +89,10 @@ public class DCMotorAngle extends Block {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        String arraysCode="/*Define arrays for block DCMotorAngle:("+getBlockId()+")"+getBlockName()+"*/\n";
-        arraysCode+="double angledata=0;\n";
-        arraysCode+="double angledata1=0;\n";
-        arraysCode+="int angle_N=0;\n";
-        code.addArraysCode(arraysCode);
+        context.put("block", this);
+        
+        String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/arrays.vm", context);
+        code.addArraysCode(codeStr);
     }
 
     public void generateInitCodeC(CodeStructC code) {
@@ -109,28 +127,19 @@ public class DCMotorAngle extends Block {
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        String derivativeCode="/*Code for Derivative of " + name + ":("+getBlockId()+")"+getBlockName()+"*/\n";
-        String real_input = getBlockName() + "_real_input";
-        switch(model.getModelMode()) {
-        case Simulation:
-            derivativeCode+="double " + real_input + " = 0.0;\n";
-            derivativeCode+="if("+ this.getInputPortVariable(0) +">"+input_max+")\n";
-            derivativeCode+="\t" +real_input+ "="+input_max+";\n";
-            derivativeCode+="else if("+ this.getInputPortVariable(0) +"<"+input_min + ")\n";
-            derivativeCode+="\t" +real_input+ "="+input_min+";\n";
-            derivativeCode+="else\n";
-            derivativeCode+="\t" +real_input+ "="+this.getInputPortVariable(0)+";\n";
-            derivativeCode+=speedState.getDerivativeName()+"=("
-                    +"4*"+real_input
-                    +"*"+motorK+"-"+speedState.getName()+")"
-                    +"*"+(1/motorT)
-                    +";\n";
-            derivativeCode+=angleState.getDerivativeName()+"="
-                    +speedState.getName()+";\n";
-        case Compilation:
-            break;
-        }
+        context.put("block", this);
+        context.put("name", name);
+        context.put("realInput", getBlockName() + "_real_input");
+        context.put("inputPortVariable", getInputPortVariable(0));
+        context.put("inputMax", input_max);
+        context.put("inputMin", input_min);
+        context.put("speedState", speedState);
+        context.put("angleState", angleState);
+        context.put("motorK", motorK);
+        context.put("motorT", motorT);
+        context.put("modelMode", model.getModelMode().name());
 
-        code.addDerivativeCode(derivativeCode);
+        String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 }

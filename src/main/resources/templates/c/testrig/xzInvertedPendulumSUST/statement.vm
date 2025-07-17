@@ -1,0 +1,5 @@
+/*Code for statement of xzInvertedPendulumSUST:(${block.blockId})${block.blockName}*/
+HANDLE hCommXzIPSUST;
+bool xzIPSUSTbool=true;
+float xzAngle=0,xzxPOS=0;
+int lastDisOrEna=0;

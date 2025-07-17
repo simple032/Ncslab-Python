@@ -1,10 +1,10 @@
 #set($inputPort1 = $block.getInputPortVariable(0))
-#set($outputPort1 = $block.getOutputPortVariables().get(0))
+#set($outputPort1 = $block.getOutputPortVariable(0))
 #set($stateSpeed = $block.getStateList().get(0).getName())
 #set($motorK = $block.getParameter("motorK").getInitDouble())
 #set($motorT = $block.getParameter("motorT").getInitDouble())
 
-if ($modelMode == "Compilation") {
+#if ($modelMode == $compilationMode)
     #set($hardwareDefineName = "Block" + $block.getBlockId() + "_NewMotor")
     initNewMotor(&$hardwareDefineName);
 
@@ -31,6 +31,6 @@ if ($modelMode == "Compilation") {
         int sendLength = strlen(sendData);
         Serialport_Send(hComm1, (uint8_t*)sendData, sendLength);
     }
-} else if ($modelMode == "Simulation") {
+#elseif ($modelMode == $simulationMode)
     $outputPort1 = 10000 * $stateSpeed;
-}
+#end

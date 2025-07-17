@@ -17,7 +17,7 @@
 #if ($flagSign < 0)
     #set($v = $input4 * fabs($energy))
     #set($vel = $input5)
-#elseIf ($flagSign > 0)
+#elseif ($flagSign > 0)
     #set($v = -1 * $input4 * fabs($energy))
     #set($vel = -1 * $input5)
 #else

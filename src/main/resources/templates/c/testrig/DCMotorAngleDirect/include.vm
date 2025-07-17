@@ -1,0 +1,2 @@
+/*Code for include files of block ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+#include "ncs_serialport.h"

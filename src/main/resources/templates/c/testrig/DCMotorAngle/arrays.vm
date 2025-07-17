@@ -1,0 +1,4 @@
+/*Define arrays for block DCMotorAngle:(${block.getBlockId()})${block.getBlockName()}*/
+double angledata=0;
+double angledata1=0;
+int angle_N=0;

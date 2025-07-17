@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.RWork;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -13,7 +14,10 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
+import org.apache.velocity.VelocityContext;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class BallBeamSystem extends Block {
@@ -27,6 +31,9 @@ public class BallBeamSystem extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
+
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
         outputNames.add("Position");
@@ -42,6 +49,17 @@ public class BallBeamSystem extends Block {
         parameterNames.add("lb_angle");
         parameterNames.add("ub_angle");
         parameterNames.add("lb_position");
+
+        // Parameter defaults
+        PARAMETER_DEFAULTS.put("gravity", "9.8");
+        PARAMETER_DEFAULTS.put("mass_ball", "0.1");
+        PARAMETER_DEFAULTS.put("moment_of_inertial", "0.001");
+        PARAMETER_DEFAULTS.put("length_beam", "1.0");
+        PARAMETER_DEFAULTS.put("length_link", "0.5");
+        PARAMETER_DEFAULTS.put("radius_ball", "0.02");
+        PARAMETER_DEFAULTS.put("lb_angle", "-30.0");
+        PARAMETER_DEFAULTS.put("ub_angle", "30.0");
+        PARAMETER_DEFAULTS.put("lb_position", "-0.5");
     }
 
     public BallBeamSystem(JSONObject blockJSON, NCSLabModel model) {
@@ -58,36 +76,30 @@ public class BallBeamSystem extends Block {
 
         rworkList.add(new RWork(this, 1, "tem"));
 
-        parameterList.add(new Parameter(this, 1, "gravity", ""));
-        parameterList.add(new Parameter(this, 2, "mass_ball", ""));
-        parameterList.add(new Parameter(this, 3, "moment_of_inertial", ""));
-        parameterList.add(new Parameter(this, 4, "length_beam", ""));
-        parameterList.add(new Parameter(this, 5, "length_link", ""));
-        parameterList.add(new Parameter(this, 6, "radius_ball", ""));
-        parameterList.add(new Parameter(this, 7, "lb_angle", ""));
-        parameterList.add(new Parameter(this, 8, "ub_angle", ""));
-        parameterList.add(new Parameter(this, 9, "lb_position", ""));
     }
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        String initCode = "";
-        code.addInitCode(initCode);
+        context.put("block", this);
+
+        String codeStr = TemplateManager.renderTemplate("m/testrig/BallBeamSystem/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
+        context.put("block", this);
 
-        String derivativeCode = "";
-
-        code.addDerivativeCode(derivativeCode);
+        String codeStr = TemplateManager.renderTemplate("m/testrig/BallBeamSystem/derivative.vm", context);
+        code.addDerivativeCode(codeStr);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        String outputCode = "";
+        context.put("block", this);
 
-        code.addOutputCode(outputCode);
+        String codeStr = TemplateManager.renderTemplate("m/testrig/BallBeamSystem/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void generateInitCodeC(CodeStructC code) {
@@ -102,7 +114,12 @@ public class BallBeamSystem extends Block {
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        String includeCode = "/*Code for include files of block " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        context.put("block", this);
+
+        String includeCode = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/include.vm", context);
         code.addIncludeCode(includeCode);
     }
 
@@ -121,22 +138,13 @@ public class BallBeamSystem extends Block {
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        String derivativeCode = "/*Code for Derivative of " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        VelocityContext context = new VelocityContext();
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        context.put("block", this);
+        context.put("inputPortVariable", getInputPortVariable(0));
 
-        String content = "if (" + getInputPortVariable(0) + "< la)"
-                + "    u=la;"
-                + "else if ((" + getInputPortVariable(0) + " >= la) && (" + getInputPortVariable(0) + " <= ua))"
-                + "    u=" + getInputPortVariable(0) + ";"
-                + "else"
-                + "    u=ua;"
-                + getDerivativeVariable(0) + "=" + getStateVariable(1) + ";"
-                + getDerivativeVariable(2) + ">=u-" + getStateVariable(2) + ";"
-                + getDerivativeVariable(1) + "=-M*g*sin(d*u/L)/(J/(R*R)+M)+M*" + getStateVariable(0)
-                + "*d*d*" + getDerivativeVariable(2) + "*" + getDerivativeVariable(2)
-                + "/(L*L*(J/(R*R)+M));";
-
-        derivativeCode += content + ";\n";
-
+        String derivativeCode = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);
     }
 

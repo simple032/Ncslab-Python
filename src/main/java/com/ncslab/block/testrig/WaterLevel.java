@@ -59,11 +59,11 @@ public class WaterLevel extends Block {
     }
 
     public String getHardwareDefineCodeC() {
-        String hardwareDefineCode = "";
         hardwareDefineName = "Block" + this.getBlockId() + "_WaterLevel";
-        hardwareDefineCode += "WATER_LEVEL " + hardwareDefineName + ";";
-
-        return hardwareDefineCode;
+        context.put("block", this);
+        context.put("hardwareDefineName", hardwareDefineName);
+        
+        return TemplateManager.renderTemplate("c/testrig/WaterLevel/hardware_define.vm", context);
     }
 
     public void generateInitCodeM(CodeStructM code) {
