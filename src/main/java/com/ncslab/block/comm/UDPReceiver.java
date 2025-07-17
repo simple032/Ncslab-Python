@@ -10,6 +10,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
 import java.util.Vector;
+import java.util.Map;
+import java.util.HashMap;
 
 public class UDPReceiver extends Block {
 
@@ -19,11 +21,23 @@ public class UDPReceiver extends Block {
     private int port;
 
     @Getter
+    public static final Vector<String> parameterNames = new Vector<>();
+    
+    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
+    @Getter
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
     static {
+        parameterNames.add("RemoteAddr");
+        parameterNames.add("LocalPort");
+        
         outputNames.add("out1");
         outputNames.add("out2");
+        
+        PARAMETER_DEFAULTS.put("RemoteAddr", "127.0.0.1");
+        PARAMETER_DEFAULTS.put("LocalPort", "8080");
     }
 
     public UDPReceiver(JSONObject blockJSON, NCSLabModel model) {
