@@ -33,13 +33,42 @@ public class ScopeStruct extends Terminal {
 
 		//code+="REAL "+this.name+"_Buffer["+this.maxDataLength*this.width*this.height+"];\n";
 		//code+="REAL "+this.name+"_Time["+this.maxDataLength+"];\n";
-		code+="SCOPE "+this.name+"={(char *)\""+this.localName+"\","
-            +"(char *)\""+this.block.getBlockPath()+"\","
-            +"(char *)\""+this.block.getBlockUUID()+"\","
-            +maxDataLength+","+width+","+height+",0,"
-            +"std::list<REAL>(),std::list<REAL>(),0};\n";
+		
+		// Only declare the SCOPE variable, initialization happens in getInitCodeC()
+		code+="SCOPE "+this.name+";\n";
 		code+=this.getTerminalDefineCode("Scope");
 
+		return code;
+	}
+
+	public String getInitCodeC() {
+		String code="";
+		
+		// Check if this platform supports path and uuid fields
+		String blockPath = this.block.getBlockPath();
+		String blockUUID = this.block.getBlockUUID();
+		
+		// Generate SCOPE initialization based on platform capabilities
+		if (blockPath != null && blockUUID != null && !blockPath.isEmpty() && !blockUUID.isEmpty()) {
+			// Windows/standard version with path and uuid
+			code+=this.name+".name = (char *)\""+this.localName+"\";\n";
+			code+=this.name+".path = (char *)\""+blockPath+"\";\n";
+			code+=this.name+".uuid = (char *)\""+blockUUID+"\";\n";
+			code+=this.name+".maxDataLength = "+maxDataLength+";\n";
+			code+=this.name+".width = "+width+";\n";
+			code+=this.name+".height = "+height+";\n";
+			code+=this.name+".cursor = 0;\n";
+			code+=this.name+".isFull = 0;\n";
+		} else {
+			// Linux/loong version without path and uuid
+			code+=this.name+".name = (char *)\""+this.localName+"\";\n";
+			code+=this.name+".maxDataLength = "+maxDataLength+";\n";
+			code+=this.name+".width = "+width+";\n";
+			code+=this.name+".height = "+height+";\n";
+			code+=this.name+".cursor = 0;\n";
+			code+=this.name+".isFull = 0;\n";
+		}
+		
 		return code;
 	}
 

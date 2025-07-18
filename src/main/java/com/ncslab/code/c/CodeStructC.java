@@ -160,7 +160,7 @@ abstract public class CodeStructC{
 
 	public String hardwareDefineCode="";
 
-    final static String BLOCK_STRUCTURE_FORMAT = "BLOCK block%d={(char *)\"%s\",(char *)\"%s\",(char *)\"%s\",(char *)\"%s\",%d,%d,%d,%d,%d};\n";
+    final static String BLOCK_STRUCTURE_FORMAT = "BLOCK block%d={(char *)\"%s\",(char *)\"%s\",%d,%d,%d,%d,%d};\n";
 
     /*定义所有监控数据实体的代码，包括INPUT_PORT OUT_PORT PARAMTER STATE SIGNAL BLOCK*/
 	public String dataStructureCode="";
@@ -477,19 +477,43 @@ abstract public class CodeStructC{
 
 	//加入全局的Parameter的列表
 	public void addParameter(Parameter parameter) {
-		parameterList.add(parameter);
+		// Check if a parameter with the same name already exists
+		boolean exists = parameterList.stream()
+			.anyMatch(p -> p.getName().equals(parameter.getName()));
+		
+		if (!exists) {
+			parameterList.add(parameter);
+		}
 	}
 	//加入全局的state的列表
 	public void addState(State state) {
-		stateList.add(state);
+		// Check if a state with the same name already exists
+		boolean exists = stateList.stream()
+			.anyMatch(s -> s.getName().equals(state.getName()));
+		
+		if (!exists) {
+			stateList.add(state);
+		}
 	}
 	//加入全局的信号的列表
 	public void addOutputSignal(OutputSignal outputSignal) {
-		outputSignalList.add(outputSignal);
+		// Check if an output signal with the same name already exists
+		boolean exists = outputSignalList.stream()
+			.anyMatch(s -> s.getName().equals(outputSignal.getName()));
+		
+		if (!exists) {
+			outputSignalList.add(outputSignal);
+		}
 	}
 	// add global variables
 	public void addGlobalVariable(GlobalVariable variable){
-		this.variableList.add(variable);
+		// Check if a global variable with the same name already exists
+		boolean exists = variableList.stream()
+			.anyMatch(v -> v.getName().equals(variable.getName()));
+		
+		if (!exists) {
+			this.variableList.add(variable);
+		}
 	}
 
 	public void generateHardwareDefineCode() {
@@ -1105,8 +1129,10 @@ abstract public class CodeStructC{
                 int blockSignalNum = block.getSignalNum();
 
                 // 使用String.format来格式化字符串
+                double discreteTime = model.getConfig().getFixedStep(); // Use model's fixed step time
+                int discreteUpdated = 0; // Initialize as 0
                 String blockString = String.format(BLOCK_STRUCTURE_FORMAT,
-                    blockId, blockType, blockName, blockPath, blockUUID,
+                    blockId, blockType, blockName,
                     inputPortSize, outputPortSize, parameterSize, stateSize, blockSignalNum);
 //				dataStructureCode+="BLOCK block"+block.getBlockId()+"={(char *)\""+block.getBlockType()+"\",(char *)\""+block.getBlockName()+"\","+block.getInputPortList().size()+","+block.getOutputPortList().size()+","+block.getParameterList().size()+","+block.getStateList().size()+","+block.getSignalNum()+","+model.getConfig().getStartTime()+",0};\n";
 			    dataStructureCode+=blockString;
@@ -1116,7 +1142,7 @@ abstract public class CodeStructC{
 		else {
 			dataStructureCode+="BLOCK **blocks=NULL";
 		}
-		dataStructureCode+="MODEL model={(char *)\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+"};\n";
+		dataStructureCode+="MODEL model={(char *)\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+","+model.getConfig().getStartTime()+",0.0,"+model.getConfig().getFixedStep()+",0,0,0,0,NULL,NULL,NULL,NULL,0,0};\n";
 	}
 
 
@@ -1129,6 +1155,11 @@ abstract public class CodeStructC{
 
 			int i=0;
 			for(Terminal terminal:model.getTerminalList()) {
+				// Initialize terminal structures if they have init code
+				if (terminal instanceof com.ncslab.block.io.terminal.ScopeStruct) {
+					com.ncslab.block.io.terminal.ScopeStruct scope = (com.ncslab.block.io.terminal.ScopeStruct) terminal;
+					dataStructureInitCode+=scope.getInitCodeC();
+				}
 				dataStructureInitCode+="terminals["+i+"]=&"+terminal.getTerminalName()+";\n";
 				i++;
 			}

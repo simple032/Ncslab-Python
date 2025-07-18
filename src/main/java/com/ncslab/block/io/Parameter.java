@@ -9,28 +9,35 @@ import Jama.Matrix;
 
 public class Parameter {
 
-	@Getter
+    @Getter
     private int id;
     //this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
     //区分监控组态中不同模块中的参数,replace方法用于处理部分模块的非连续字符串命名问题
     //		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
     @Getter
     private String name;
-	@Getter
+    @Getter
     private String localName;
+    @Getter
 	private Block block;
 
-	@Getter
+    @Getter
     private Data data=null;
 
 	public Parameter(Block block,int id,String localName,String inString) {
 		this.block=block;
 		this.id=id;
 		this.localName=localName;
-		
+
 		// Handle case where block is null (for factory methods)
 		if (block != null) {
-			this.name="_Block"+block.getBlockUUID().replace("-","_")+"_"+localName;
+			String blockUUID = block.getBlockUUID();
+			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+				this.name="_Block"+blockUUID.replace("-","_")+"_"+localName;
+			} else {
+				// Use block ID when UUID is null/empty
+				this.name="_Block"+block.getBlockId()+"_"+localName;
+			}
 		} else {
 			// Temporary name when block is null - will be updated later via setParameterBlockReference
 			this.name="_TempBlock_"+localName;
@@ -38,11 +45,17 @@ public class Parameter {
 
 		data=new Data(inString);
 	}
-	
+
 	// Method to update parameter name after block reference is set
 	public void updateParameterName() {
 		if (block != null && name.startsWith("_TempBlock_")) {
-			this.name = "_Block"+block.getBlockUUID().replace("-","_")+"_"+localName;
+			String blockUUID = block.getBlockUUID();
+			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+				this.name = "_Block"+blockUUID.replace("-","_")+"_"+localName;
+			} else {
+				// Use block ID when UUID is null/empty
+				this.name = "_Block"+block.getBlockId()+"_"+localName;
+			}
 		}
 	}
 
