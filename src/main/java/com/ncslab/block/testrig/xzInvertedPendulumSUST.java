@@ -26,9 +26,8 @@ public class xzInvertedPendulumSUST extends Block {
 	Parameter POS0Flag;
 //	State speedState;
 //	State spState;
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -36,9 +35,6 @@ public class xzInvertedPendulumSUST extends Block {
         PARAMETER_DEFAULTS.put("ENAOrDIS", "1");
         PARAMETER_DEFAULTS.put("POS0Flag", "0");
 
-        parameterNames.add("Vspeed");
-        parameterNames.add("ENAOrDIS");
-        parameterNames.add("POS0Flag");
     }
 
     @Getter
@@ -99,10 +95,6 @@ public class xzInvertedPendulumSUST extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		VelocityContext context = new VelocityContext();
-		context.put("realDataType", DataType.REAL);
-		context.put("matrixDataType", DataType.MATRIX);
-		context.put("block", this);
 		context.put("ENAOrDIS", ENAOrDIS);
 
 		String initCode = TemplateManager.renderTemplate("c/testrig/xzInvertedPendulumSUST/init.vm", context);
@@ -119,10 +111,6 @@ public class xzInvertedPendulumSUST extends Block {
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
-		context.put("realDataType", DataType.REAL);
-		context.put("matrixDataType", DataType.MATRIX);
-		context.put("block", this);
 		context.put("inputPortVariable1", getInputPortVariable(0));
 		context.put("inputPortVariable2", getInputPortVariable(1));
 		context.put("outputPortVariable1", outputPortList.get(0).getOutputSignalC().getName());
@@ -140,11 +128,6 @@ public class xzInvertedPendulumSUST extends Block {
 	}
 
 	public void generateStatementCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
-		context.put("realDataType", DataType.REAL);
-		context.put("matrixDataType", DataType.MATRIX);
-		context.put("block", this);
-
 		String statementCode = TemplateManager.renderTemplate("c/testrig/xzInvertedPendulumSUST/statement.vm", context);
 		code.addStatementCode(statementCode);
 	}

@@ -27,8 +27,6 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -38,8 +36,6 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
         outputNames.add("Set_X");
         outputNames.add("out3");
         inputNames.add("Real_X");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("SampleTime", "-1");

@@ -33,19 +33,11 @@ public class SFunctionBuilder extends Block {
 	private String[] parameters;
 	private String[] sFunctionModuleList;
 
-	@Getter
-	public static final Vector<String> parameterNames = new Vector<>();
 
-	@Getter
+    @Getter
 	public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
 	static {
-		parameterNames.add("FunctionBuilderName");
-		parameterNames.add("InputPortNumber");
-		parameterNames.add("OutputPortNumber");
-		parameterNames.add("Parameters");
-		parameterNames.add("SFunctionModules");
-		parameterNames.add("Code");
 		
 		PARAMETER_DEFAULTS.put("FunctionBuilderName", "sfunc_builder");
 		PARAMETER_DEFAULTS.put("InputPortNumber", "1");

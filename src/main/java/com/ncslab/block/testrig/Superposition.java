@@ -24,9 +24,8 @@ public class Superposition extends Block {
     Parameter AD1;
     Parameter AD2;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -36,11 +35,6 @@ public class Superposition extends Block {
         PARAMETER_DEFAULTS.put("AD1", "0");
         PARAMETER_DEFAULTS.put("AD2", "1");
 
-        parameterNames.add("BCM1");
-        parameterNames.add("BCM2");
-        parameterNames.add("BCM3");
-        parameterNames.add("AD1");
-        parameterNames.add("AD2");
     }
 
     @Getter
@@ -108,11 +102,4 @@ public class Superposition extends Block {
         code.addOutputCode(codeStr);
     }
 
-    public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("modelMode", model.getModelMode().name());
-
-        String codeStr = TemplateManager.renderTemplate("c/testrig/Superposition/derivative.vm", context);
-        code.addDerivativeCode(codeStr);
-    }
 }

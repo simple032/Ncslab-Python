@@ -20,8 +20,6 @@ public class BallPlateSUST extends Block {
 
     private String name = "BallPlateSUST";
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -40,8 +38,6 @@ public class BallPlateSUST extends Block {
         inputNames.add("in1");
         inputNames.add("in2");
         
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
@@ -81,18 +77,14 @@ public class BallPlateSUST extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("name", name);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/include.vm", context);
         code.addIncludeCode(codeStr);
@@ -102,27 +94,21 @@ public class BallPlateSUST extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/output.vm", context);
         code.addOutputCode(codeStr);
     }
     
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("name", name);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("name", name);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/testrig/BallPlateSUST/statement.vm", context);
         code.addStatementCode(codeStr);

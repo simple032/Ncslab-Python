@@ -10,6 +10,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import org.checkerframework.checker.units.qual.s;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,9 +21,9 @@ import java.util.regex.Pattern;
 public class TwoDimensionLookupTableBlock extends LookupTableBlock{
 
     // === Static Parameter Definitions ===
-    public static final Vector<String> parameterNames = new Vector<>();
-    
+
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -37,13 +38,6 @@ public class TwoDimensionLookupTableBlock extends LookupTableBlock{
 
     static {
         // Parameter names for 2-D lookup table
-        parameterNames.add("BreakpointsForDimension1");
-        parameterNames.add("BreakpointsForDimension2");
-        parameterNames.add("Table");
-        parameterNames.add("InterpMethod");
-        parameterNames.add("ExtrapMethod");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
     }
 
     private Parameter breakpointsForDimension1;
@@ -82,7 +76,7 @@ public class TwoDimensionLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
-        
+
         context.put("block", this);
         context.put("tableName", getTableName());
         context.put("xDataLength", x_dat.length);
@@ -90,7 +84,7 @@ public class TwoDimensionLookupTableBlock extends LookupTableBlock{
         context.put("xData", x_dat);
         context.put("yData", y_dat);
         context.put("zData", z_dat);
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/TwoDimensionLookupTableBlock/init.vm", context);
         code.addInitCode(codeStr);
     }
@@ -98,10 +92,10 @@ public class TwoDimensionLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateArraysCodeC(CodeStructC code){
         super.generateArraysCodeC(code);
-        
+
         context.put("block", this);
         context.put("tableName", getTableName());
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/TwoDimensionLookupTableBlock/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
@@ -109,17 +103,17 @@ public class TwoDimensionLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateOutputCodeC(CodeStructC code){
         super.generateOutputCodeC(code);
-        
+
         String inputSignal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
         String inputSignal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
         String outputSignal = outputPortList.get(0).getOutputSignalC().getName();
-        
+
         context.put("block", this);
         context.put("tableName", getTableName());
         context.put("inputSignal1", inputSignal1);
         context.put("inputSignal2", inputSignal2);
         context.put("outputSignal", outputSignal);
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/TwoDimensionLookupTableBlock/output.vm", context);
         code.addOutputCode(codeStr);
     }

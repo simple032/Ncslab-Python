@@ -16,9 +16,7 @@ import java.util.Vector;
 public class RaspFan extends Block {
     String hardwareDefineName;
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -65,12 +63,4 @@ public class RaspFan extends Block {
         code.addOutputCode(codeStr);
     }
 
-    public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
-
-        String codeStr = TemplateManager.renderTemplate("c/testrig/RaspFan/derivative.vm", context);
-        code.addDerivativeCode(codeStr);
-    }
 }

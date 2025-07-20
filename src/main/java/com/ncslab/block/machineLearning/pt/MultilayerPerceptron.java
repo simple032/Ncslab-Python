@@ -20,9 +20,8 @@ public class MultilayerPerceptron extends PTModel {
                 epochs;
     private String lossFunctionString, datasetString, activationString;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -37,11 +36,6 @@ public class MultilayerPerceptron extends PTModel {
         PARAMETER_DEFAULTS.put("loadPath", "None");
         PARAMETER_DEFAULTS.put("savePath", "None");
 
-        parameterNames.add("inputFeatures");
-        parameterNames.add("outputFeatures");
-        parameterNames.add("hiddenLayers");
-        parameterNames.add("learningRate");
-        parameterNames.add("epoch");
     }
     public MultilayerPerceptron(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);

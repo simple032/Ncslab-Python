@@ -28,8 +28,6 @@ public class Substitution extends Block {
     Parameter AD6;
     Parameter AD7;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -50,15 +48,6 @@ public class Substitution extends Block {
 
         inputNames.add("in1");
         inputNames.add("in2");
-        parameterNames.add("BCM");
-        parameterNames.add("DA");
-        parameterNames.add("AD1");
-        parameterNames.add("AD2");
-        parameterNames.add("AD3");
-        parameterNames.add("AD4");
-        parameterNames.add("AD5");
-        parameterNames.add("AD6");
-        parameterNames.add("AD7");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("BCM", "18");
@@ -133,11 +122,4 @@ public class Substitution extends Block {
         code.addOutputCode(codeStr);
     }
 
-    public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("modelMode", model.getModelMode().name());
-
-        String codeStr = TemplateManager.renderTemplate("c/testrig/Substitution/derivative.vm", context);
-        code.addDerivativeCode(codeStr);
-    }
 }

@@ -14,8 +14,7 @@ import java.util.regex.Pattern;
 abstract public class LookupTableBlock extends Block {
 
     // === Static Parameter Definitions ===
-    public static final Vector<String> parameterNames = new Vector<>();
-    
+
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -28,10 +27,6 @@ abstract public class LookupTableBlock extends Block {
 
     static {
         // Common parameter names for lookup tables
-        parameterNames.add("InterpMethod");
-        parameterNames.add("ExtrapMethod");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
     }
 
     protected LookupTableBlock(JSONObject blockIn, NCSLabModel model) {

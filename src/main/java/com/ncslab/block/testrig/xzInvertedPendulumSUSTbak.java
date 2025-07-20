@@ -21,8 +21,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
 //	State speedState;
 //	State spState;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -37,8 +35,6 @@ public class xzInvertedPendulumSUSTbak extends Block {
         outputNames.add("Real_X");
         outputNames.add("Angle");
         inputNames.add("in1");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("SampleTime", "-1");

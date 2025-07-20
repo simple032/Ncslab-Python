@@ -21,8 +21,6 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
 	private String name = "BangbangSwingUpInvertedPendulumSUST";
 	Parameter v,vel;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -41,8 +39,6 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
         inputNames.add("in3");
         inputNames.add("in4");
         inputNames.add("in5");
-        parameterNames.add("v");
-        parameterNames.add("vel");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("v", "0");
@@ -77,11 +73,7 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
 
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-	    context.put("states", stateList);
-	    context.put("inputPortVariables", getInputPortVariables());
-	    context.put("outputPortVariables", getOutputPortVariables());
-	    context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 	    String codeStr = TemplateManager.renderTemplate("c/testrig/BangbangSwingUpInvertedPendulumSUST/output.vm", context);
 	    code.addOutputCode(codeStr);
@@ -89,9 +81,7 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
 
 	public void generateInitCodeC(CodeStructC code) {
 	    super.generateInitCodeC(code);
-        context.put("block", this);
-	    context.put("states", stateList);
-	    context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 	    String codeStr = TemplateManager.renderTemplate("c/testrig/BangbangSwingUpInvertedPendulumSUST/init.vm", context);
 	    code.addInitCode(codeStr);

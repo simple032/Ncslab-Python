@@ -28,6 +28,7 @@ public abstract class MachineLearning extends Block{
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();

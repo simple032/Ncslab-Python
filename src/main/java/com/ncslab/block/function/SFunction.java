@@ -6,6 +6,7 @@ import org.apache.velocity.VelocityContext;
 import java.util.Vector;
 import java.util.Map;
 import java.util.HashMap;
+import lombok.Getter;
 import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.block.io.*;
 import com.ncslab.ncslablink.MatDimException;
@@ -43,25 +44,11 @@ public class SFunction extends DiscreteBlock {
     private Parameter sampleTime;
     State speedState;
 
-    @lombok.Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-
-    @lombok.Getter
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("HasCodeCompiled");
-        parameterNames.add("FunctionName");
-        parameterNames.add("InputNum");
-        parameterNames.add("OutputNum");
-        parameterNames.add("NumContState");
-        parameterNames.add("NumDiscState");
-        parameterNames.add("Parameters");
-        parameterNames.add("InputPortWidth");
-        parameterNames.add("OutputPortWidth");
-        parameterNames.add("SampleTimes");
-        parameterNames.add("OffsetTimes");
-        
+
         PARAMETER_DEFAULTS.put("HasCodeCompiled", "false");
         PARAMETER_DEFAULTS.put("FunctionName", "sfunc");
         PARAMETER_DEFAULTS.put("InputNum", "1");
@@ -185,7 +172,7 @@ public class SFunction extends DiscreteBlock {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
+
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
         context.put("simStructName", simStructName);
@@ -193,7 +180,7 @@ public class SFunction extends DiscreteBlock {
         context.put("blockId", blockId);
         context.put("numContState", numContState);
         context.put("numDiscState", numDiscState);
-        
+
         String arraysCode = TemplateManager.renderTemplate("c/function/SFunction/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
@@ -208,7 +195,7 @@ public class SFunction extends DiscreteBlock {
         context.put("numDiscState", numDiscState);
         context.put("sfcnName", getSFcnName());
         context.put("sampleTime", sampleTime);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/init.vm", context);
         code.addInitCode(codeStr);
     }
@@ -223,7 +210,7 @@ public class SFunction extends DiscreteBlock {
         context.put("name", name);
         context.put("simStructName", simStructName);
         context.put("numDiscState", numDiscState);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -232,7 +219,7 @@ public class SFunction extends DiscreteBlock {
         context.put("block", this);
         context.put("name", name);
         context.put("simStructName", simStructName);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
@@ -241,7 +228,7 @@ public class SFunction extends DiscreteBlock {
         context.put("block", this);
         context.put("numContState", numContState);
         context.put("stateList", stateList);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/update.vm", context);
         code.addUpdateCode(codeStr);
     }
@@ -249,7 +236,7 @@ public class SFunction extends DiscreteBlock {
     public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException{
         context.put("block", this);
         context.put("simStructName", simStructName);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/discrete_update.vm", context);
         code.addDiscreteUpdateCode(codeStr);
     }
@@ -257,7 +244,7 @@ public class SFunction extends DiscreteBlock {
     public void generateStatementCodeC(CodeStructC code) {
         context.put("block", this);
         context.put("name", name);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/statement.vm", context);
         code.addStatementCode(codeStr);
     }
@@ -265,7 +252,7 @@ public class SFunction extends DiscreteBlock {
     public void generateTerminateCodeC(CodeStructC code) {
         context.put("block", this);
         context.put("simStructName", simStructName);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/function/SFunction/terminate.vm", context);
         code.addTerminateCode(codeStr);
     }

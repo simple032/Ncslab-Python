@@ -31,8 +31,6 @@ public class secondOrderFiliter extends Block{
 	Parameter initState;
 	Parameter DCInitialInput;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -46,12 +44,6 @@ public class secondOrderFiliter extends Block{
 
         outputNames.add("out1");
         inputNames.add("in1");
-        parameterNames.add("filterType");
-        parameterNames.add("naturalFrequency");
-        parameterNames.add("dampingRatio");
-        parameterNames.add("sampleTime");
-        parameterNames.add("initState");
-        parameterNames.add("DCInitialInput");
 
         // Parameter defaults
         PARAMETER_DEFAULTS.put("filterType", "Lowpass");

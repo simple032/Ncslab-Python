@@ -21,9 +21,8 @@ public class LinearRegression extends PTModel{
 
     private String lossString, datasetString;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -36,10 +35,6 @@ public class LinearRegression extends PTModel{
         PARAMETER_DEFAULTS.put("loadPath", "None");
         PARAMETER_DEFAULTS.put("savePath", "None");
 
-        parameterNames.add("inputFeatures");
-        parameterNames.add("outputFeatures");
-        parameterNames.add("learningRate");
-        parameterNames.add("epochs");
     }
 
     @Getter

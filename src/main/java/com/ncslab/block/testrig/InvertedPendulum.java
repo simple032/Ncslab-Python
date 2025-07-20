@@ -24,8 +24,6 @@ public class InvertedPendulum extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -35,8 +33,6 @@ public class InvertedPendulum extends Block {
         outputNames.add("Set_X");
         outputNames.add("out3");
         inputNames.add("Real_X");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
@@ -81,9 +77,7 @@ public class InvertedPendulum extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/InvertedPendulum/init.vm", context);
         code.addInitCode(codeStr);
@@ -98,21 +92,14 @@ public class InvertedPendulum extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/InvertedPendulum/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/InvertedPendulum/derivative.vm", context);
         code.addDerivativeCode(codeStr);

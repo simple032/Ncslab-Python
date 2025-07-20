@@ -27,8 +27,6 @@ public class Telegenic extends Block {
     Parameter AD6;
     Parameter AD7;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -48,14 +46,6 @@ public class Telegenic extends Block {
         outputNames.add("AD7");
 
         inputNames.add("in1");
-        parameterNames.add("DA");
-        parameterNames.add("AD1");
-        parameterNames.add("AD2");
-        parameterNames.add("AD3");
-        parameterNames.add("AD4");
-        parameterNames.add("AD5");
-        parameterNames.add("AD6");
-        parameterNames.add("AD7");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("DA", "0");
@@ -108,29 +98,17 @@ public class Telegenic extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
-        context.put("parameterList", parameterList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/Telegenic/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputPortVariables", getInputPortVariables());
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/Telegenic/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
-    public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("modelMode", model.getModelMode().name());
-
-        String codeStr = TemplateManager.renderTemplate("c/testrig/Telegenic/derivative.vm", context);
-        code.addDerivativeCode(codeStr);
-    }
 }

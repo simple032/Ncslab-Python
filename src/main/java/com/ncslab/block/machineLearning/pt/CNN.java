@@ -21,9 +21,8 @@ public class CNN extends MachineLearning {
     activationFunction, dataset;
     private MLVariable modelVariable;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -36,14 +35,6 @@ public class CNN extends MachineLearning {
         PARAMETER_DEFAULTS.put("hiddenLayers", "[64, 32]");
         PARAMETER_DEFAULTS.put("dataset", "winddata1.csv");
 
-        parameterNames.add("inputFeatures");
-        parameterNames.add("numClasses");
-        parameterNames.add("activationFunction");
-        parameterNames.add("learningRate");
-        parameterNames.add("lossFunction");
-        parameterNames.add("channelSize");
-        parameterNames.add("hiddenLayers");
-        parameterNames.add("dataset");
     }
 
     @Getter

@@ -37,17 +37,11 @@ import com.ncslab.util.TemplateManager;
 public class CompareToConstant extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter constantValue;
-    @Getter
     private final Parameter relationalOperator;
-    @Getter
     private final Parameter logicDataType;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -55,8 +49,6 @@ public class CompareToConstant extends Block {
     private InputPort input;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -65,6 +57,7 @@ public class CompareToConstant extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
     static {
@@ -77,12 +70,6 @@ public class CompareToConstant extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
 
         // SIMULINK parameter names
-        parameterNames.add("ConstantValue");
-        parameterNames.add("RelationalOperator");
-        parameterNames.add("LogicDataType");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
 
         // Port names
         outputNames.add("out1");

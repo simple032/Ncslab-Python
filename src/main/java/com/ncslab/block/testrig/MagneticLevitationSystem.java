@@ -25,8 +25,6 @@ public class MagneticLevitationSystem extends Block {
     public static final Vector<String> inputNames = new Vector<>();
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -35,13 +33,6 @@ public class MagneticLevitationSystem extends Block {
         inputNames.add("in1");
         outputNames.add("Position");
         outputNames.add("Velocity");
-        parameterNames.add("gravity");
-        parameterNames.add("EQUILIBRIUM_POINT_x0");
-        parameterNames.add("EQUILIBRIUM_POINT_i0");
-        parameterNames.add("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT");
-        parameterNames.add("INPUT_RESISTANCE");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("gravity", "9.8");
@@ -105,9 +96,7 @@ public class MagneticLevitationSystem extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/init.vm", context);
         code.addInitCode(codeStr);
@@ -119,21 +108,14 @@ public class MagneticLevitationSystem extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/derivative.vm", context);
         code.addDerivativeCode(codeStr);

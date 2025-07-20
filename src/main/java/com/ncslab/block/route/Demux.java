@@ -35,20 +35,13 @@ public class Demux extends Block {
 	private boolean feedThrough = true;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter outputs;
-    @Getter
     private final Parameter displayOrder;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -56,6 +49,7 @@ public class Demux extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -67,11 +61,6 @@ public class Demux extends Block {
     }
     static {
         // SIMULINK parameter names
-        parameterNames.add("Outputs");
-        parameterNames.add("DisplayOrder");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         inputNames.add("in1");
@@ -224,51 +213,49 @@ public class Demux extends Block {
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-		context.put("block", this);
-		context.put("outputs", getOutputPortVariables());
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("m/route/Demux/init.vm", context);
 		code.addInitCode(codeStr);
 	}
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		context.put("block", this);
-		context.put("inputs", getInputPortVariables());
-		context.put("outputs", getOutputPortVariables());
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("m/route/Demux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
 	public void generateDerivativeCodeM(CodeStructM code) {
 		super.generateDerivativeCodeM(code);
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("m/route/Demux/derivative.vm", context);
 		code.addDerivativeCode(codeStr);
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/init.vm", context);
 		code.addInitCode(codeStr);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-		context.put("input", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+		// Add specific context for output names
 		context.put("outputNames", getOutputPortVariables());
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
 	public void generateDerivativeCodeC(CodeStructC code) {
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/derivative.vm", context);
 		code.addDerivativeCode(codeStr);
 	}
 	public void generateUpdateCodeC(CodeStructC code) {
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/update.vm", context);
 		code.addUpdateCode(codeStr);

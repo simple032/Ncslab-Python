@@ -30,9 +30,8 @@ public class EnsembleModel extends Block{
     protected int _width, _height;
     protected ENVariable modelVariable;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -42,10 +41,6 @@ public class EnsembleModel extends Block{
         PARAMETER_DEFAULTS.put("initState", "[0 0 0 0]");
         PARAMETER_DEFAULTS.put("solver", "ode4");
 
-        parameterNames.add("m0");
-        parameterNames.add("m1");
-        parameterNames.add("l");
-        parameterNames.add("initState");
     }
 
     @Getter

@@ -38,22 +38,14 @@ public class DetectDecrease extends Block {
     private Data previousData;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter vinWhenRising;
-    @Getter
     private final Parameter vinWhenFalling;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
-    @Getter
     private final Parameter initialState;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -65,12 +57,6 @@ public class DetectDecrease extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("VinWhenRising");
-        parameterNames.add("VinWhenFalling");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        parameterNames.add("InitialState");
 
         // Port names
         outputNames.add("out1");

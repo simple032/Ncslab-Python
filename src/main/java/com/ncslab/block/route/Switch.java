@@ -33,15 +33,10 @@ import java.util.Vector;
 public class Switch extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter threshold;
-    @Getter
     private final Parameter criteria;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -51,8 +46,6 @@ public class Switch extends Block {
     private InputPort input2; // Second data input
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -61,6 +54,7 @@ public class Switch extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -72,11 +66,6 @@ public class Switch extends Block {
     }
     static {
         // SIMULINK parameter names
-        parameterNames.add("Threshold");
-        parameterNames.add("Criteria");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
 
         // Port names
         outputNames.add("out1");
@@ -250,19 +239,13 @@ public class Switch extends Block {
     }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		context.put("blockId", getBlockId());
-		context.put("blockName", getBlockName());
-		context.put("threshold", threshold);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String initCode = TemplateManager.renderTemplate("c/route/Switch/init.vm", context);
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("blockId", getBlockId());
-		context.put("blockName", getBlockName());
-		context.put("inputPortList", getInputPortList());
-		context.put("outputPortList", getOutputPortList());
-		context.put("threshold", threshold);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String outputCode = TemplateManager.renderTemplate("c/route/Switch/output.vm", context);
 		code.addOutputCode(outputCode);

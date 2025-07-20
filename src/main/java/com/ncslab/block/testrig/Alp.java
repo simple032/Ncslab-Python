@@ -21,9 +21,7 @@ public class Alp extends Block {
 	private double den[]= {1,3.091,1.19,0.2};
 	private Vector<State> xStateList=new Vector<State>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -53,7 +51,7 @@ public class Alp extends Block {
 	}
 	public String getHardwareDefineCodeC() {
 		hardwareDefineName="Block"+this.getBlockId()+"_Alp";
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 		context.put("hardwareDefineName", hardwareDefineName);
 		
 		return TemplateManager.renderTemplate("c/testrig/Alp/hardware_define.vm", context);
@@ -61,20 +59,15 @@ public class Alp extends Block {
 public void generateInitCodeC(CodeStructC code) {
     super.generateInitCodeC(code);
 
-    context.put("block", this);
-    context.put("states", stateList);
-    context.put("modelMode", model.getModelMode().name());
+    com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
     String codeStr = TemplateManager.renderTemplate("c/testrig/Alp/init.vm", context);
     code.addInitCode(codeStr);
 }
 	public void generateOutputCodeC(CodeStructC code) {
-	        context.put("block", this);
+	        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 	        context.put("states", xStateList);
 	        context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
-	        context.put("modelMode", model.getModelMode().name());
-	        context.put("inputPortVariable", getInputPortVariable(0));
-	        context.put("outputPortVariables", getOutputPortVariables());
 	
 	        String codeStr = TemplateManager.renderTemplate("c/testrig/Alp/output.vm", context);
 	        code.addOutputCode(codeStr);

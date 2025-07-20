@@ -37,24 +37,17 @@ public class LogicOperator extends Block {
     private double num;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter operator;
-    @Getter
     private final Parameter inputs;
-    @Getter
     private final Parameter allPortsSameDT;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -73,12 +66,6 @@ public class LogicOperator extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("Operator");
-        parameterNames.add("Inputs");
-        parameterNames.add("AllPortsSameDT");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");

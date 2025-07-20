@@ -30,8 +30,6 @@ public class DCMotorAngleDirect extends Block {
     private Parameter baudrate_encoder;
     private Parameter port_encoder;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -45,12 +43,6 @@ public class DCMotorAngleDirect extends Block {
         outputNames.add("Speed");
         outputNames.add("Angle");
         inputNames.add("in1");
-        parameterNames.add("motorK");
-        parameterNames.add("motorT");
-        parameterNames.add("port");
-        parameterNames.add("baudrate");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("motorK", "106.25");
@@ -94,16 +86,14 @@ public class DCMotorAngleDirect extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngleDirect/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("name", name);
         
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngleDirect/include.vm", context);
@@ -114,21 +104,14 @@ public class DCMotorAngleDirect extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngleDirect/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngleDirect/derivative.vm", context);
         code.addDerivativeCode(codeStr);

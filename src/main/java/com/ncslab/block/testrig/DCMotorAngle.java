@@ -30,12 +30,8 @@ public class DCMotorAngle extends Block {
     private double input_max = 1.0;
     private double input_min = -1.0;
 
-    @Getter
-    private static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     private static final Vector<String> outputNames = new Vector<>();
-    @Getter
     private static final Vector<String> inputNames = new Vector<>();
 
     @Getter
@@ -45,12 +41,6 @@ public class DCMotorAngle extends Block {
         outputNames.add("Speed");
         outputNames.add("Angle");
         inputNames.add("in1");
-        parameterNames.add("motorK");
-        parameterNames.add("motorT");
-        parameterNames.add("input_max");
-        parameterNames.add("input_min");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("motorK", "106.25");
@@ -116,28 +106,24 @@ public class DCMotorAngle extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariables", getInputPortVariables());
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add DCMotorAngle-specific variables
         context.put("name", name);
         context.put("realInput", getBlockName() + "_real_input");
-        context.put("inputPortVariable", getInputPortVariable(0));
         context.put("inputMax", input_max);
         context.put("inputMin", input_min);
         context.put("speedState", speedState);
         context.put("angleState", angleState);
         context.put("motorK", motorK);
         context.put("motorT", motorT);
-        context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/derivative.vm", context);
         code.addDerivativeCode(codeStr);

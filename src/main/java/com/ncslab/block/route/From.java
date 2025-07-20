@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 /**
  * From block with SIMULINK-compatible parameters and type-safe constructors.
- * 
+ *
  * SIMULINK Parameters:
  * - GotoTag: Tag name for the Goto/From pair
  * - IconDisplay: Icon display mode
@@ -29,24 +29,17 @@ import java.util.HashMap;
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
 public class From extends Block {
-	@Getter
+    @Getter
     private String tagName;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter gotoTag;
-    @Getter
     private final Parameter iconDisplay;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -55,12 +48,7 @@ public class From extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("GotoTag");
-        parameterNames.add("IconDisplay");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
+
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -82,7 +70,7 @@ public class From extends Block {
                 Parameter outDataType, Parameter saturateOnIntegerOverflow,
                 String blockName, String blockPath, String blockUUID, NCSLabModel model) {
         super(createBlockIdentity(blockName, blockPath, blockUUID), model);
-        
+
         // Assign parameters
         this.gotoTag = Objects.requireNonNull(gotoTag, "Goto tag parameter cannot be null");
         this.iconDisplay = Objects.requireNonNull(iconDisplay, "Icon display parameter cannot be null");
@@ -91,12 +79,12 @@ public class From extends Block {
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
         // Store tag name for easy access
         this.tagName = gotoTag.getInitString();
-        
+
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
     }
-    
+
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
 	public From(JSONObject blockIn, NCSLabModel model) {
@@ -108,17 +96,17 @@ public class From extends Block {
         this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
         this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: auto");
         this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-        
+
         // Add all parameters to parameter list
 
         // Store tag name for easy access
         this.tagName = paramValues.getString("GotoTag");
-        
+
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
 	}
-	
+
     // === Static Factory Method for JSON Deserialization ===
     public static From fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -126,34 +114,34 @@ public class From extends Block {
             String blockPath = requireNonEmptyString(blockJSON, "blockPath");
             String blockUUID = blockJSON.optString("blockUUID", "null");
             JSONObject paramValues = blockJSON.optJSONObject("paramValues");
-            
+
             if (paramValues == null) {
                 paramValues = new JSONObject();
             }
-            
+
             Parameter gotoTag = createGotoTagFromJSON(paramValues, blockName);
             Parameter iconDisplay = createIconDisplayFromJSON(paramValues, blockName);
             Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
             Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
             Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
-            
+
             From block = new From(gotoTag, iconDisplay, sampleTime, outDataType, saturateParam,
                                  blockName, blockPath, blockUUID, model);
-            
+
             setParameterBlockReference(block, gotoTag, iconDisplay, sampleTime, outDataType, saturateParam);
-            
+
             return block;
-            
+
         } catch (Exception e) {
             throw new BlockCreationException("Failed to create From block from JSON: " + e.getMessage(), e);
         }
     }
-    
+
     // === Static Factory Method for Programmatic Creation ===
     public static From create(String name, String path, String gotoTag, NCSLabModel model) {
         return create(name, path, gotoTag, "Tag", -1.0, "Inherit: auto", false, model);
     }
-    
+
     public static From create(String name, String path, String gotoTag, String iconDisplay, double sampleTime,
                              String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
         Parameter gotoTagParam = new Parameter(null, 1, "GotoTag", gotoTag);
@@ -161,41 +149,41 @@ public class From extends Block {
         Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
         Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
         Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
+
         From block = new From(gotoTagParam, iconDisplayParam, sampleTimeParam, outDataTypeParam, saturateParam,
                              name, path, "null", model);
-        
+
         setParameterBlockReference(block, gotoTagParam, iconDisplayParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
+
         return block;
     }
-    
+
     // === Helper Methods for JSON Parameter Creation ===
     private static Parameter createGotoTagFromJSON(JSONObject paramValues, String blockName) {
         String gotoTagValue = paramValues.optString("GotoTag", "Tag");
         return new Parameter(null, 1, "GotoTag", gotoTagValue);
     }
-    
+
     private static Parameter createIconDisplayFromJSON(JSONObject paramValues, String blockName) {
         String iconDisplayValue = paramValues.optString("IconDisplay", "Tag");
         return new Parameter(null, 2, "IconDisplay", iconDisplayValue);
     }
-    
+
     private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
         String sampleTimeValue = paramValues.optString("SampleTime", "-1");
         return new Parameter(null, 3, "SampleTime", sampleTimeValue);
     }
-    
+
     private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
         String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: auto");
         return new Parameter(null, 4, "OutDataTypeStr", outDataTypeValue);
     }
-    
+
     private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
         String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
         return new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateValue);
     }
-    
+
     // === Utility Methods ===
     private static String requireNonEmptyString(JSONObject json, String key) {
         if (!json.has(key)) {
@@ -207,7 +195,7 @@ public class From extends Block {
         }
         return value;
     }
-    
+
     private static void setParameterBlockReference(From block, Parameter... parameters) {
         for (Parameter param : parameters) {
             try {
@@ -219,7 +207,7 @@ public class From extends Block {
             }
         }
     }
-    
+
     private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
         JSONObject identity = new JSONObject();
         identity.put("blockType", "From");
@@ -231,7 +219,7 @@ public class From extends Block {
 
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
-        
+
         context.put("block", this);
         context.put("gotoTag", this.gotoTag);
         context.put("iconDisplay", this.iconDisplay);

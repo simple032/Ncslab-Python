@@ -30,9 +30,8 @@ public class pll3ph extends Block{
 	Parameter maxFrequency;
 	Parameter filterFrequency;
 	Parameter sampleTime;
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -57,11 +56,6 @@ public class pll3ph extends Block{
         inputNames.add("in1");
         inputNames.add("in2");
         inputNames.add("in3");
-        parameterNames.add("MinimumFreq");
-        parameterNames.add("timeDerivative");
-        parameterNames.add("maxFrequency");
-        parameterNames.add("filterFrequency");
-        parameterNames.add("sampleTime");
     }
 
 	public pll3ph(JSONObject blockIn, NCSLabModel model) {

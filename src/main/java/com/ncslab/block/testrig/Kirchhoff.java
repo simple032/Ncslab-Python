@@ -29,15 +29,10 @@ public class Kirchhoff extends Block {
 	Parameter AD6;
 	Parameter AD7;
 
-    @Getter
-    private static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     private static final Vector<String> outputNames = new Vector<>();
-    @Getter
     private static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     private static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
@@ -50,14 +45,6 @@ public class Kirchhoff extends Block {
         outputNames.add("AD6");
         outputNames.add("AD7");
         inputNames.add("in1");
-        parameterNames.add("BCM");
-        parameterNames.add("AD1");
-        parameterNames.add("AD2");
-        parameterNames.add("AD3");
-        parameterNames.add("AD4");
-        parameterNames.add("AD5");
-        parameterNames.add("AD6");
-        parameterNames.add("AD7");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("BCM", "18");
@@ -114,21 +101,16 @@ public class Kirchhoff extends Block {
 
 		java.util.List<Parameter> adParameters = java.util.Arrays.asList(AD1, AD2, AD3, AD4, AD5, AD6, AD7);
 		
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 		context.put("adParameters", adParameters);
 		context.put("bcmParameter", BCM);
-		context.put("paramValues", paramValues);
 		
 		String codeStr = TemplateManager.renderTemplate("c/testrig/Kirchhoff/init.vm", context);
 		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-	    context.put("states", getStates());
-	    context.put("inputPortVariable", getInputPortVariable(0));
-	    context.put("outputPortVariables", getOutputPortVariables());
-	    context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 	    String codeStr = TemplateManager.renderTemplate("c/testrig/Kirchhoff/output.vm", context);
 	    code.addOutputCode(codeStr);
@@ -139,7 +121,7 @@ public class Kirchhoff extends Block {
 	}
 
 	public void generateDerivativeCodeC(CodeStructC code) {
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 		
 		String codeStr = TemplateManager.renderTemplate("c/testrig/Kirchhoff/derivative.vm", context);
 		code.addDerivativeCode(codeStr);

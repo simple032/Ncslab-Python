@@ -38,20 +38,13 @@ public class IntervalTest extends Block {
     Parameter lowLimit;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter upperLimit;
-    @Getter
     private final Parameter lowerLimit;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -63,11 +56,6 @@ public class IntervalTest extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("UpperLimit");
-        parameterNames.add("LowerLimit");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");

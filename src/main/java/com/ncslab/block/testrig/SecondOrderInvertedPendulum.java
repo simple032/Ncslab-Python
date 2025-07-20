@@ -27,8 +27,6 @@ public class SecondOrderInvertedPendulum extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -38,8 +36,6 @@ public class SecondOrderInvertedPendulum extends Block {
         outputNames.add("Set_X");
         outputNames.add("out3");
         inputNames.add("Real_X");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
@@ -60,8 +56,7 @@ public class SecondOrderInvertedPendulum extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("states", stateList);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/testrig/SecondOrderInvertedPendulum/init.vm", context);
         code.addInitCode(codeStr);
@@ -69,9 +64,7 @@ public class SecondOrderInvertedPendulum extends Block {
 
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/testrig/SecondOrderInvertedPendulum/derivative.vm", context);
         code.addDerivativeCode(codeStr);
@@ -79,9 +72,7 @@ public class SecondOrderInvertedPendulum extends Block {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("outputPortVariables", getOutputPortVariables());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/testrig/SecondOrderInvertedPendulum/output.vm", context);
         code.addOutputCode(codeStr);
@@ -90,8 +81,7 @@ public class SecondOrderInvertedPendulum extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/SecondOrderInvertedPendulum/init.vm", context);
         code.addInitCode(codeStr);
@@ -106,18 +96,14 @@ public class SecondOrderInvertedPendulum extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputPortVariables", getInputPortVariables());
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/SecondOrderInvertedPendulum/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/SecondOrderInvertedPendulum/derivative.vm", context);
         code.addDerivativeCode(codeStr);

@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.RWork;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
@@ -24,8 +25,6 @@ public class DoubleTank extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -34,8 +33,6 @@ public class DoubleTank extends Block {
         outputNames.add("Pump_Speed");
         outputNames.add("Water_Level");
         inputNames.add("in1");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
@@ -58,6 +55,8 @@ public class DoubleTank extends Block {
         stateList.add(pumpState);
         levelState = new State(this, 2, "levelState");
         stateList.add(levelState);
+
+        rworkList.add(new RWork(this, 1, "tem"));
     }
 
     public void generateInitCodeM(CodeStructM code) {
@@ -83,39 +82,38 @@ public class DoubleTank extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DoubleTank/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        String includeCode = "/*Code for include files of block " + name + ":(" + getBlockId() + ")" + getBlockName() + "*/\n";
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        String includeCode = TemplateManager.renderTemplate("c/testrig/DoubleTank/include.vm", context);
         code.addIncludeCode(includeCode);
+    }
+
+    public void generateArraysCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        String arraysCode = TemplateManager.renderTemplate("c/testrig/DoubleTank/arrays.vm", context);
+        code.addArraysCode(arraysCode);
     }
 
     public void addLine(String originCode, String newLine) {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DoubleTank/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DoubleTank/derivative.vm", context);
         code.addDerivativeCode(codeStr);

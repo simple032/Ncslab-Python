@@ -22,8 +22,6 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
     private String name = "EnergySwingUpInvertedPendulumSUST";
     Parameter InnerFactor, InitSpeed;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -42,8 +40,6 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
         inputNames.add("in4");
         inputNames.add("in5");
         inputNames.add("in6");
-        parameterNames.add("InnerFactor");
-        parameterNames.add("InitSpeed");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("InnerFactor", "1.0");
@@ -75,11 +71,7 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariables", getInputPortVariables());
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/EnergySwingUpInvertedPendulumSUST/output.vm", context);
         code.addOutputCode(codeStr);

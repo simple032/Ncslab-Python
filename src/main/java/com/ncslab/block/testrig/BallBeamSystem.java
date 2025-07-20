@@ -24,8 +24,6 @@ public class BallBeamSystem extends Block {
 
     private String name = "BallBeamSystem";
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -40,15 +38,6 @@ public class BallBeamSystem extends Block {
         outputNames.add("Angle");
         outputNames.add("dr");
         inputNames.add("in1");
-        parameterNames.add("gravity");
-        parameterNames.add("mass_ball");
-        parameterNames.add("moment_of_inertial");
-        parameterNames.add("length_beam");
-        parameterNames.add("length_link");
-        parameterNames.add("radius_ball");
-        parameterNames.add("lb_angle");
-        parameterNames.add("ub_angle");
-        parameterNames.add("lb_position");
 
         // Parameter defaults
         PARAMETER_DEFAULTS.put("gravity", "9.8");
@@ -75,12 +64,11 @@ public class BallBeamSystem extends Block {
         stateList.add(new State(this, 3, "x2"));
 
         rworkList.add(new RWork(this, 1, "tem"));
-
     }
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/testrig/BallBeamSystem/init.vm", context);
         code.addInitCode(codeStr);
@@ -88,7 +76,7 @@ public class BallBeamSystem extends Block {
 
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/testrig/BallBeamSystem/derivative.vm", context);
         code.addDerivativeCode(codeStr);
@@ -96,7 +84,7 @@ public class BallBeamSystem extends Block {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/testrig/BallBeamSystem/output.vm", context);
         code.addOutputCode(codeStr);
@@ -104,45 +92,38 @@ public class BallBeamSystem extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
-        context.put("realDataType", DataType.REAL);
-        context.put("matrixDataType", DataType.MATRIX);
-        context.put("block", this);
-
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         String includeCode = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/include.vm", context);
         code.addIncludeCode(includeCode);
+    }
+
+    public void generateArraysCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        String arraysCode = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/arrays.vm", context);
+        code.addArraysCode(arraysCode);
     }
 
     public void addLine(String originCode, String newLine) {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", getStates());
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
-        context.put("realDataType", DataType.REAL);
-        context.put("matrixDataType", DataType.MATRIX);
-        context.put("block", this);
-        context.put("inputPortVariable", getInputPortVariable(0));
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String derivativeCode = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);

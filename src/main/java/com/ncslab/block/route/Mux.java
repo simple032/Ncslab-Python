@@ -38,22 +38,16 @@ public class Mux extends Block {
 	private boolean feedThrough = true;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter inputs;
-    @Getter
     private final Parameter displayOrder;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -71,11 +65,6 @@ public class Mux extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("Inputs");
-        parameterNames.add("DisplayOrder");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");
@@ -239,8 +228,7 @@ public class Mux extends Block {
 
 	public void generateInitCodeM(CodeStructM code) {
 		super.generateInitCodeM(code);
-		context.put("block", this);
-		context.put("outputs", getOutputPortVariables());
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("m/route/Mux/init.vm", context);
 		code.addInitCode(codeStr);
@@ -248,9 +236,7 @@ public class Mux extends Block {
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);
-		context.put("block", this);
-		context.put("inputs", getInputPortVariables());
-		context.put("outputs", getOutputPortVariables());
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("m/route/Mux/output.vm", context);
 		code.addOutputCode(codeStr);
@@ -258,23 +244,21 @@ public class Mux extends Block {
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/init.vm", context);
 		code.addInitCode(codeStr);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-		context.put("inputs", inputPortList);
-		context.put("outputs", getOutputPortVariables());
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
 
 	public void generateDerivativeCodeC(CodeStructC code) {
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/derivative.vm", context);
 		code.addDerivativeCode(codeStr);

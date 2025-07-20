@@ -24,8 +24,6 @@ public class ServoMotorSlider extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -33,15 +31,6 @@ public class ServoMotorSlider extends Block {
     static {
         outputNames.add("Position");
         inputNames.add("in1");
-        parameterNames.add("num_0");
-        parameterNames.add("num_1");
-        parameterNames.add("num_2");
-        parameterNames.add("den_0");
-        parameterNames.add("den_1");
-        parameterNames.add("den_2");
-        parameterNames.add("den_3");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("num_0", "0");
@@ -84,7 +73,7 @@ public class ServoMotorSlider extends Block {
     }
 
     public String getHardwareDefineCodeC() {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         return TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/hardware_define.vm", context);
     }
@@ -92,37 +81,31 @@ public class ServoMotorSlider extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
-        context.put("modelMode", model.getModelMode().name());
 
         String initCode = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/init.vm", context);
         code.addInitCode(initCode);
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/derivative.vm", context);
         code.addDerivativeCode(codeStr);

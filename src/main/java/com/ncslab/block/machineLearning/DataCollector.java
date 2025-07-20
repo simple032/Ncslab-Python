@@ -22,9 +22,8 @@ public class DataCollector extends Block{
     private InputPort _inputs, _outputs;
     private DataCollectorVariable dataCollectorVariable;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -42,8 +41,6 @@ public class DataCollector extends Block{
 
         outputNames.add("out1");
         inputNames.add("in1");
-        parameterNames.add("inputFeatures");
-        parameterNames.add("outputFeatures");
     }
 
     public DataCollector(JSONObject jsonObject, NCSLabModel model){

@@ -24,8 +24,6 @@ public class NewMotor extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -33,10 +31,6 @@ public class NewMotor extends Block {
     static {
         outputNames.add("Speed");
         inputNames.add("in1");
-        parameterNames.add("motorK");
-        parameterNames.add("motorT");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("motorK", "0.01");
@@ -101,9 +95,7 @@ public class NewMotor extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/NewMotor/init.vm", context);
         code.addInitCode(codeStr);
@@ -115,13 +107,21 @@ public class NewMotor extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/NewMotor/output.vm", context);
         code.addOutputCode(codeStr);
+    }
+
+    public void generateDerivativeCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add NewMotor-specific variables
+        context.put("speedState", speedState);
+        context.put("motorK", motorK);
+        context.put("motorT", motorT);
+
+        String derivativeCode = TemplateManager.renderTemplate("c/testrig/NewMotor/derivative.vm", context);
+        code.addDerivativeCode(derivativeCode);
     }
 }

@@ -25,8 +25,6 @@ public class LoongarchPLC extends Block {
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -36,8 +34,6 @@ public class LoongarchPLC extends Block {
         outputNames.add("Angle");
         outputNames.add("dr");
         inputNames.add("in1");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
         
         // Parameter defaults
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
@@ -86,50 +82,39 @@ public class LoongarchPLC extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateIncludeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("name", name);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/include.vm", context);
         code.addIncludeCode(codeStr);
+    }
+
+    public void generateArraysCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        String arraysCode = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/arrays.vm", context);
+        code.addArraysCode(arraysCode);
     }
 
     public void addLine(String originCode, String newLine) {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
-    public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("modelMode", model.getModelMode().name());
-
-        String codeStr = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/derivative.vm", context);
-        code.addDerivativeCode(codeStr);
-    }
 
     public void generateStatementCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("name", name);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/testrig/LoongarchPLC/statement.vm", context);
         code.addStatementCode(codeStr);

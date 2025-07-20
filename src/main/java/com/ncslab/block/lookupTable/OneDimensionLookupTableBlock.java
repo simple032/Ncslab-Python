@@ -5,6 +5,7 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
+import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,9 +18,9 @@ import java.util.regex.Pattern;
 public class OneDimensionLookupTableBlock extends LookupTableBlock{
 
     // === Static Parameter Definitions ===
-    public static final Vector<String> parameterNames = new Vector<>();
-    
+
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -33,12 +34,6 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
 
     static {
         // Parameter names for 1-D lookup table
-        parameterNames.add("BreakpointsForDimension1");
-        parameterNames.add("Table");
-        parameterNames.add("InterpMethod");
-        parameterNames.add("ExtrapMethod");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
     }
 
     private Parameter breakpointsForDimension1;
@@ -74,13 +69,13 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
-        
+
         context.put("block", this);
         context.put("tableName", getTableName());
         context.put("xDataLength", x_dat.length);
         context.put("xData", x_dat);
         context.put("yData", y_dat);
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/OneDimensionLookupTableBlock/init.vm", context);
         code.addInitCode(codeStr);
     }
@@ -88,10 +83,10 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateArraysCodeC(CodeStructC code){
         super.generateArraysCodeC(code);
-        
+
         context.put("block", this);
         context.put("tableName", getTableName());
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/OneDimensionLookupTableBlock/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
@@ -99,15 +94,15 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateOutputCodeC(CodeStructC code){
         super.generateOutputCodeC(code);
-        
+
         String inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
         String outputSignal = outputPortList.get(0).getOutputSignalC().getName();
-        
+
         context.put("block", this);
         context.put("tableName", getTableName());
         context.put("inputSignal", inputSignal);
         context.put("outputSignal", outputSignal);
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/OneDimensionLookupTableBlock/output.vm", context);
         code.addOutputCode(codeStr);
     }

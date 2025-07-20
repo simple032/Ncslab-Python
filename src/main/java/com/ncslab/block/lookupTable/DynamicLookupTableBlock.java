@@ -13,11 +13,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+
 public class DynamicLookupTableBlock extends LookupTableBlock{
 
     // === Static Parameter Definitions ===
-    public static final Vector<String> parameterNames = new Vector<>();
-    
+
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -28,8 +28,6 @@ public class DynamicLookupTableBlock extends LookupTableBlock{
 
     static {
         // Parameter names for dynamic lookup table
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
     }
 
     protected DynamicLookupTableBlock(JSONObject blockIn, NCSLabModel model) {
@@ -50,9 +48,9 @@ public class DynamicLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateOutputCodeC(CodeStructC code){
         super.generateOutputCodeC(code);
-        
+
         context.put("block", this);
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/DynamicLookupTableBlock/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -60,9 +58,9 @@ public class DynamicLookupTableBlock extends LookupTableBlock{
     @Override
     public void generateDerivativeCodeC(CodeStructC code){
         super.generateDerivativeCodeC(code);
-        
+
         context.put("block", this);
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/DynamicLookupTableBlock/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
