@@ -1,5 +1,4 @@
-#set($index = $block.getParameter("ADCForStm32Index").getIntValue())
-#set($channel = $block.getParameter("ADCForStm32Channel").getIntValue())
+## Variables now populated directly in Java context: $index, $channel
 
 MX_ADC_Config($index, $channel);
 MX_DMA_Init();

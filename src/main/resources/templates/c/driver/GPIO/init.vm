@@ -1,5 +1,5 @@
 /* GPIO初始化配置 */
-void ${block.getName()}_Init(void) {
+void $blockName_Init(void) {
     /* 引脚模式配置 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = ${pinNumber};
@@ -9,11 +9,11 @@ void ${block.getName()}_Init(void) {
     
     /* 中断配置（使用宏统一处理） */
     #if defined(${interruptEnable})
-    ${block.getName()}_ENABLE_INTERRUPT(${triggerEdge}, ${priority});
+    $blockName_ENABLE_INTERRUPT(${triggerEdge}, ${priority});
     #end
     
     HAL_GPIO_Init(${port}, &GPIO_InitStruct);
     
     /* 状态变量初始化 */
-    ${block.getName()}_Y = 0;
+    $blockName_Y = 0;
 }

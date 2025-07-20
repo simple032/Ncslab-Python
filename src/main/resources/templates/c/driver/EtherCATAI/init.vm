@@ -1,8 +1,8 @@
-/*Code for initialization of block EtherCAT_AI:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block EtherCAT_AI:($blockId)$blockName*/
 if(ECAT_init_Flag==0){
     auto* ethercat = EtherCAT::getInstance();
     ethercat->setSamplingPeriod(${sampleTime});
-    if (!ethercat->init(${block.getBlockName()}_interface)) {
+    if (!ethercat->init($blockName_interface)) {
         printf("Failed to initialize EtherCAT\n");
         exit(1);
     } else {

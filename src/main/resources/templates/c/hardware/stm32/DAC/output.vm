@@ -1,6 +1,4 @@
-#set($inputSignal = $block.getInputPort(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($index = $block.getParameter("DACForStm32Index").getIntValue())
-#set($channel = $block.getParameter("DACForStm32Channel").getIntValue())
+## Variables now populated directly in Java context: $inputSignal, $index, $channel
 
 if(model.majorStep == 1){
 	DAC_Set_Vol($index, $channel, $inputSignal);

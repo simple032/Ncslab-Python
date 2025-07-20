@@ -1,4 +1,4 @@
-/*Code for output of block EtherCAT_DI:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block EtherCAT_DI:($blockId)$blockName*/
 if(model.majorStep==1){
     bool value = false;
     auto* digitalInput = DigitalIOManager::getDigitalInput(${slaveId}, ${channel});
@@ -7,7 +7,7 @@ if(model.majorStep==1){
     }
     else {
         if (digitalInput->read(&value)) {
-            ${block.getOutputPortList().get(0).getOutputSignalC().getName()} = value ? 1.0 : 0.0;
+            ${blockOutputPortList.get(0).getOutputSignalC().getName()} = value ? 1.0 : 0.0;
         }
     }
 }

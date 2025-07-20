@@ -1,3 +1,3 @@
-/*Code for statement of ${block.getName()}:(${block.getBlockId()})${block.getBlockName()}*/
-static struct sockaddr_in adr_serv_netsend${block.getBlockId()};
-static int_T sockfd_netsend${block.getBlockId()};
+/*Code for statement of $blockName:($blockId)$blockName*/
+static struct sockaddr_in adr_serv_netsend$blockId;
+static int_T sockfd_netsend$blockId;

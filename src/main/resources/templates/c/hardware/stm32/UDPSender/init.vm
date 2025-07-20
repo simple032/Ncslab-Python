@@ -1,5 +1,4 @@
-#set($remoteIp = $block.getParameter("UdpSenderRemoteIpForStm32").getStringValue())
-#set($remotePort = $block.getParameter("UdpSenderRemotePortForStm32").getIntValue())
+## Variables now populated directly in Java context: $remoteIp, $remotePort
 
 UDP_Send_Config("$remoteIp", $remotePort);
 UDP_Client_Init();

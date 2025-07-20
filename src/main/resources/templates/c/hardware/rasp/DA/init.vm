@@ -1,4 +1,4 @@
-#set($channel = $block.getParameter("Channel").getDoubleValue())
+## Variables now populated directly in Java context: $channel
 
 DEV_ModuleInit();
 printf("\r\n Program start \r\n");

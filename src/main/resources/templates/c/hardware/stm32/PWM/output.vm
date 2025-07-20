@@ -1,7 +1,4 @@
-#set($inputSignal = $block.getInputPort(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($channel = $block.getParameter("PWMForStm32Channel").getIntValue())
-#set($timx = $block.getParameter("PWMForStm32TIM").getIntValue())
-#set($frequency = $block.getParameter("PWMForStm32Frequency").getIntValue())
+## Variables now populated directly in Java context: $inputSignal, $channel, $timx, $frequency
 
 if(model.majorStep == 1){
 	int pwmduty = 0;

@@ -1,3 +1,5 @@
+## Variables now populated directly in Java context: $frequency, $timx, $channel
+
 if($frequency >= 16 && $frequency <= 1000000){
 	TIM${timx}_PWM_Init(200-1, (int)(1000000.0/$frequency)-1, $channel);
 }else{

@@ -1,5 +1,5 @@
-/*Code for output of block ${name}:(${block.getBlockId()})${block.getBlockName()}*/
-union data_union data_union_send${block.getBlockId()};if(model.majorStep==1){
-data_union_send${block.getBlockId()}.v = ${inputSignal};
-sendto(sockfd_netsend${block.getBlockId()},&data_union_send${block.getBlockId()},sizeof(data_union_send${block.getBlockId()}),0,(struct sockaddr*)&adr_serv_netsend${block.getBlockId()},sizeof(adr_serv_netsend${block.getBlockId()}));
+/*Code for output of block ${name}:($blockId)$blockName*/
+union data_union data_union_send$blockId;if(model.majorStep==1){
+data_union_send$blockId.v = ${inputSignal};
+sendto(sockfd_netsend$blockId,&data_union_send$blockId,sizeof(data_union_send$blockId),0,(struct sockaddr*)&adr_serv_netsend$blockId,sizeof(adr_serv_netsend$blockId));
 }

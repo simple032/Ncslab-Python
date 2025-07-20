@@ -1,4 +1,4 @@
-/*Code for output of block Observer:(${block.getBlockId()})${observerName}*/
+/*Code for output of block Observer:($blockId)${observerName}*/
 
 static const double A_${observerName}[9] = {1.2998,-0.4341,0.1343,1,0,0,0,1,0};
 static const double B_${observerName}[3] = {1,0,0};

@@ -1,4 +1,4 @@
-/*Code for output of block EtherCAT_Servo:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block EtherCAT_Servo:($blockId)$blockName*/
 if(model.majorStep==1){
     auto* servo = ServoManager::getServo(${slaveId});
 #if ${operationMode} == 1

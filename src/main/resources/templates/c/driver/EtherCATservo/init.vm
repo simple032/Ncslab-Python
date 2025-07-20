@@ -1,8 +1,8 @@
-/*Code for initialization of block EtherCAT_Servo:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block EtherCAT_Servo:($blockId)$blockName*/
 if(ECAT_init_Flag==0){
     auto* ethercat = EtherCATSE::getInstance();
     ethercat->setSamplingPeriod(${sampleTime});
-    if (!ethercat->init(${block.getBlockName()}_interface, ${operationMode})) {
+    if (!ethercat->init($blockName_interface, ${operationMode})) {
         printf("Failed to initialize EtherCAT\n");
         exit(1);
     } else {

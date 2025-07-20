@@ -1,4 +1,3 @@
-#set($outputSignal = $block.getOutputPort(0).getOutputSignalC().getName())
-#set($channel = $block.getParameter("Channel").getDoubleValue())
+## Variables now populated directly in Java context: $outputSignal, $channel
 
 $outputSignal = ADS1256_GetChannalValue($channel) * 5.0 / 0x7fffff;

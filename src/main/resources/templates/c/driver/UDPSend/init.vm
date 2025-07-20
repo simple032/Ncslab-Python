@@ -1,7 +1,7 @@
-sockfd_netsend${block.getBlockId()} = socket(AF_INET, SOCK_DGRAM,0);
-if(sockfd_netsend${block.getBlockId()}==-1){printf("can not create socket\n"); close(sockfd_netsend${block.getBlockId()});}
-adr_serv_netsend${block.getBlockId()}.sin_family = AF_INET;
-adr_serv_netsend${block.getBlockId()}.sin_port =htons(${remoteIPPort});
-adr_serv_netsend${block.getBlockId()}.sin_addr.s_addr=inet_addr("${remoteIPAddress}");
-int udpret${block.getBlockId()} =connect(sockfd_netsend${block.getBlockId()},(struct sockaddr*)&adr_serv_netsend${block.getBlockId()},sizeof(adr_serv_netsend${block.getBlockId()}));
-if(0>udpret${block.getBlockId()}){printf("connect error\n");close(sockfd_netsend${block.getBlockId()});}
+sockfd_netsend$blockId = socket(AF_INET, SOCK_DGRAM,0);
+if(sockfd_netsend$blockId==-1){printf("can not create socket\n"); close(sockfd_netsend$blockId);}
+adr_serv_netsend$blockId.sin_family = AF_INET;
+adr_serv_netsend$blockId.sin_port =htons(${remoteIPPort});
+adr_serv_netsend$blockId.sin_addr.s_addr=inet_addr("${remoteIPAddress}");
+int udpret$blockId =connect(sockfd_netsend$blockId,(struct sockaddr*)&adr_serv_netsend$blockId,sizeof(adr_serv_netsend$blockId));
+if(0>udpret$blockId){printf("connect error\n");close(sockfd_netsend$blockId);}
