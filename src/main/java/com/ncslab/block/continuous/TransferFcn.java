@@ -48,21 +48,13 @@ public class TransferFcn extends Block {
     private Vector<State> xStateList = new Vector<>();
     
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter numerator;
-    @Getter
     private final Parameter denominator;
-    @Getter
     private final Parameter absoluteTolerance;
-    @Getter
     private final Parameter continuousStateAttributes;
-    @Getter
     private final Parameter realizeZeroPoleGain;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Port References ===
@@ -70,29 +62,14 @@ public class TransferFcn extends Block {
     private InputPort input;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("Numerator");
-        parameterNames.add("Denominator");
-        parameterNames.add("AbsoluteTolerance");
-        parameterNames.add("ContinuousStateAttributes");
-        parameterNames.add("RealizeZeroPoleGain");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -497,7 +474,7 @@ public class TransferFcn extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/TransferFcn/init.vm", context);
@@ -506,13 +483,11 @@ public class TransferFcn extends Block {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
         context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
         context.put("feedThrough", feedThrough);
         context.put("D", D);
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/TransferFcn/output.vm", context);
         code.addOutputCode(codeStr);
@@ -520,10 +495,9 @@ public class TransferFcn extends Block {
 
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
         context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
-        context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/TransferFcn/derivative.vm", context);
         code.addDerivativeCode(codeStr);
@@ -531,7 +505,7 @@ public class TransferFcn extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/init.vm", context);
@@ -539,23 +513,20 @@ public class TransferFcn extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
         context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
         context.put("feedThrough", feedThrough);
         context.put("D", D);
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
         context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
-        context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/derivative.vm", context);
         code.addDerivativeCode(codeStr);

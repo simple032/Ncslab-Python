@@ -26,7 +26,7 @@ import java.util.Vector;
 
 /**
  * PIDController block with SIMULINK-compatible parameters and type-safe constructors.
- * 
+ *
  * SIMULINK Parameters:
  * - P: Proportional gain
  * - I: Integral gain
@@ -48,45 +48,29 @@ public class PIDController extends Block {
     // === Internal State ===
     private State stateIntegral;
     private State stateFilter;
-    
+
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter proportionalGain;
-    @Getter
     private final Parameter integralGain;
-    @Getter
     private final Parameter derivativeGain;
-    @Getter
     private final Parameter filterCoefficient;
-    @Getter
     private final Parameter formulationType;
-    @Getter
     private final Parameter externalReset;
-    @Getter
     private final Parameter initialConditionForIntegrator;
-    @Getter
     private final Parameter initialConditionForFilter;
-    @Getter
     private final Parameter limitOutput;
-    @Getter
     private final Parameter upperSaturationLimit;
-    @Getter
     private final Parameter lowerSaturationLimit;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
-    
+
     // === Port References ===
     private OutputPort output;
     private InputPort input;
-    
+
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    
+
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -107,29 +91,11 @@ public class PIDController extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    
-    @Getter
+
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("P");
-        parameterNames.add("I");
-        parameterNames.add("D");
-        parameterNames.add("N");
-        parameterNames.add("FormulationType");
-        parameterNames.add("ExternalReset");
-        parameterNames.add("InitialConditionForIntegrator");
-        parameterNames.add("InitialConditionForFilter");
-        parameterNames.add("LimitOutput");
-        parameterNames.add("UpperSaturationLimit");
-        parameterNames.add("LowerSaturationLimit");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -143,10 +109,10 @@ public class PIDController extends Block {
                          Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
                          String blockName, String blockPath, String blockUUID, NCSLabModel model) {
         super(createBlockIdentity(blockName, blockPath, blockUUID), model);
-        
+
         // Validate parameters
         validateParameters(proportionalGain, integralGain, derivativeGain, filterCoefficient, sampleTime);
-        
+
         // Assign parameters
         this.proportionalGain = Objects.requireNonNull(proportionalGain, "Proportional gain parameter cannot be null");
         this.integralGain = Objects.requireNonNull(integralGain, "Integral gain parameter cannot be null");
@@ -164,11 +130,11 @@ public class PIDController extends Block {
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
         // Initialize ports
         initializePorts();
-        
+
         // Initialize states
         initializeStates();
     }
-    
+
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
     public PIDController(JSONObject blockIn, NCSLabModel model) {
@@ -179,14 +145,14 @@ public class PIDController extends Block {
         this.integralGain = new Parameter(this, 2, "I", paramValues.getString("I"));
         this.derivativeGain = new Parameter(this, 3, "D", paramValues.getString("D"));
         this.filterCoefficient = new Parameter(this, 4, "N", paramValues.getString("N"));
-        
+
         // Create missing SIMULINK parameters with defaults
         this.formulationType = new Parameter(this, 5, "FormulationType", "parallel");
         this.externalReset = new Parameter(this, 6, "ExternalReset", paramValues.optString("externalReset", "none"));
         this.initialConditionForIntegrator = new Parameter(this, 7, "InitialConditionForIntegrator", "0");
         this.initialConditionForFilter = new Parameter(this, 8, "InitialConditionForFilter", "0");
         this.limitOutput = new Parameter(this, 9, "LimitOutput", paramValues.getString("LimitOutput"));
-        
+
         // Handle saturation limits
         if (limitOutput.getInitString().equals("on")) {
             this.upperSaturationLimit = new Parameter(this, 10, "UpperSaturationLimit", paramValues.getString("UpperSaturationLimit"));
@@ -195,32 +161,32 @@ public class PIDController extends Block {
             this.upperSaturationLimit = new Parameter(this, 10, "UpperSaturationLimit", "inf");
             this.lowerSaturationLimit = new Parameter(this, 11, "LowerSaturationLimit", "-inf");
         }
-        
+
         this.sampleTime = new Parameter(this, 12, "SampleTime", paramValues.optString("sampleTime", "0"));
         this.outDataType = new Parameter(this, 13, "OutDataTypeStr", "Inherit: Same as input");
         this.saturateOnIntegerOverflow = new Parameter(this, 14, "SaturateOnIntegerOverflow", "off");
-        
+
         // Add all parameters to parameter list
-        
+
         // Initialize ports based on legacy logic
         input = new InputPort(this, 1);
         inputPortList.add(input);
         output = new OutputPort(this, 1, true); // feedthrough = true for PID
         outputPortList.add(output);
-        
+
         // Add external reset port if enabled
         if (externalReset.getInitString().equals("on")) {
             inputPortList.add(new InputPort(this, 2));
             inputNames.add("reset");
         }
-        
+
         // Initialize states
         stateIntegral = new State(this, 1, "stateIntegral", proportionalGain.getHeight(), proportionalGain.getWidth());
         stateFilter = new State(this, 2, "stateFilter", proportionalGain.getHeight(), proportionalGain.getWidth());
         stateList.add(stateIntegral);
         stateList.add(stateFilter);
     }
-    
+
     // === Static Factory Method for JSON Deserialization ===
     public static PIDController fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -228,11 +194,11 @@ public class PIDController extends Block {
             String blockPath = requireNonEmptyString(blockJSON, "blockPath");
             String blockUUID = blockJSON.optString("blockUUID", "null");
             JSONObject paramValues = blockJSON.optJSONObject("paramValues");
-            
+
             if (paramValues == null) {
                 paramValues = new JSONObject();
             }
-            
+
             Parameter proportionalGain = createProportionalGainFromJSON(paramValues, blockName);
             Parameter integralGain = createIntegralGainFromJSON(paramValues, blockName);
             Parameter derivativeGain = createDerivativeGainFromJSON(paramValues, blockName);
@@ -247,34 +213,34 @@ public class PIDController extends Block {
             Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
             Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
             Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
-            
+
             PIDController block = new PIDController(proportionalGain, integralGain, derivativeGain,
                                                    filterCoefficient, formulationType, externalReset,
                                                    initialConditionForIntegrator, initialConditionForFilter,
                                                    limitOutput, upperSaturationLimit, lowerSaturationLimit,
                                                    sampleTime, outDataType, saturateParam,
                                                    blockName, blockPath, blockUUID, model);
-            
+
             setParameterBlockReference(block, proportionalGain, integralGain, derivativeGain,
                                      filterCoefficient, formulationType, externalReset,
                                      initialConditionForIntegrator, initialConditionForFilter,
                                      limitOutput, upperSaturationLimit, lowerSaturationLimit,
                                      sampleTime, outDataType, saturateParam);
-            
+
             return block;
-            
+
         } catch (Exception e) {
             throw new BlockCreationException("Failed to create PIDController block from JSON: " + e.getMessage(), e);
         }
     }
-    
+
     // === Static Factory Method for Programmatic Creation ===
     public static PIDController create(String name, String path, double P, double I, double D, NCSLabModel model) {
-        return create(name, path, P, I, D, 100.0, "parallel", "none", 
+        return create(name, path, P, I, D, 100.0, "parallel", "none",
                      0.0, 0.0, false, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
                      0.0, "Inherit: Same as input", false, model);
     }
-    
+
     public static PIDController create(String name, String path, double P, double I, double D, double N,
                                       String formulationType, String externalReset,
                                       double initialConditionForIntegrator, double initialConditionForFilter,
@@ -295,108 +261,108 @@ public class PIDController extends Block {
         Parameter sampleTimeParam = new Parameter(null, 12, "SampleTime", String.valueOf(sampleTime));
         Parameter outDataTypeParam = new Parameter(null, 13, "OutDataTypeStr", outDataType);
         Parameter saturateParam = new Parameter(null, 14, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
+
         PIDController block = new PIDController(proportionalGainParam, integralGainParam, derivativeGainParam,
                                                filterCoefficientParam, formulationTypeParam, externalResetParam,
                                                initialConditionForIntegratorParam, initialConditionForFilterParam,
                                                limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
                                                sampleTimeParam, outDataTypeParam, saturateParam,
                                                name, path, "null", model);
-        
+
         setParameterBlockReference(block, proportionalGainParam, integralGainParam, derivativeGainParam,
                                  filterCoefficientParam, formulationTypeParam, externalResetParam,
                                  initialConditionForIntegratorParam, initialConditionForFilterParam,
                                  limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
                                  sampleTimeParam, outDataTypeParam, saturateParam);
-        
+
         return block;
     }
-    
+
     // === Parameter Validation ===
-    private static void validateParameters(Parameter proportionalGain, Parameter integralGain, 
+    private static void validateParameters(Parameter proportionalGain, Parameter integralGain,
                                          Parameter derivativeGain, Parameter filterCoefficient, Parameter sampleTime) {
         double filterValue = filterCoefficient.getDouble();
         if (filterValue <= 0.0 || Double.isNaN(filterValue) || Double.isInfinite(filterValue)) {
             throw new IllegalArgumentException("Filter coefficient (N) must be positive and finite");
         }
-        
+
         double sampleTimeValue = sampleTime.getDouble();
         if (sampleTimeValue < -1.0 || sampleTimeValue == Double.NaN || sampleTimeValue == Double.POSITIVE_INFINITY) {
             throw new IllegalArgumentException("Sample time must be >= 0 or -1 (inherited)");
         }
     }
-    
+
     // === Helper Methods for JSON Parameter Creation ===
     private static Parameter createProportionalGainFromJSON(JSONObject paramValues, String blockName) {
         String pValue = paramValues.optString("P", "1");
         return new Parameter(null, 1, "P", pValue);
     }
-    
+
     private static Parameter createIntegralGainFromJSON(JSONObject paramValues, String blockName) {
         String iValue = paramValues.optString("I", "1");
         return new Parameter(null, 2, "I", iValue);
     }
-    
+
     private static Parameter createDerivativeGainFromJSON(JSONObject paramValues, String blockName) {
         String dValue = paramValues.optString("D", "0");
         return new Parameter(null, 3, "D", dValue);
     }
-    
+
     private static Parameter createFilterCoefficientFromJSON(JSONObject paramValues, String blockName) {
         String nValue = paramValues.optString("N", "100");
         return new Parameter(null, 4, "N", nValue);
     }
-    
+
     private static Parameter createFormulationTypeFromJSON(JSONObject paramValues, String blockName) {
         String formulationTypeValue = paramValues.optString("FormulationType", "parallel");
         return new Parameter(null, 5, "FormulationType", formulationTypeValue);
     }
-    
+
     private static Parameter createExternalResetFromJSON(JSONObject paramValues, String blockName) {
         String externalResetValue = paramValues.optString("externalReset", "none");
         return new Parameter(null, 6, "ExternalReset", externalResetValue);
     }
-    
+
     private static Parameter createInitialConditionForIntegratorFromJSON(JSONObject paramValues, String blockName) {
         String initialConditionValue = paramValues.optString("InitialConditionForIntegrator", "0");
         return new Parameter(null, 7, "InitialConditionForIntegrator", initialConditionValue);
     }
-    
+
     private static Parameter createInitialConditionForFilterFromJSON(JSONObject paramValues, String blockName) {
         String initialConditionValue = paramValues.optString("InitialConditionForFilter", "0");
         return new Parameter(null, 8, "InitialConditionForFilter", initialConditionValue);
     }
-    
+
     private static Parameter createLimitOutputFromJSON(JSONObject paramValues, String blockName) {
         String limitOutputValue = paramValues.optString("LimitOutput", "off");
         return new Parameter(null, 9, "LimitOutput", limitOutputValue);
     }
-    
+
     private static Parameter createUpperSaturationLimitFromJSON(JSONObject paramValues, String blockName) {
         String upperLimitValue = paramValues.optString("UpperSaturationLimit", "inf");
         return new Parameter(null, 10, "UpperSaturationLimit", upperLimitValue);
     }
-    
+
     private static Parameter createLowerSaturationLimitFromJSON(JSONObject paramValues, String blockName) {
         String lowerLimitValue = paramValues.optString("LowerSaturationLimit", "-inf");
         return new Parameter(null, 11, "LowerSaturationLimit", lowerLimitValue);
     }
-    
+
     private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
         String sampleTimeValue = paramValues.optString("sampleTime", "0");
         return new Parameter(null, 12, "SampleTime", sampleTimeValue);
     }
-    
+
     private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
         String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
         return new Parameter(null, 13, "OutDataTypeStr", outDataTypeValue);
     }
-    
+
     private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
         String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
         return new Parameter(null, 14, "SaturateOnIntegerOverflow", saturateValue);
     }
-    
+
     // === Utility Methods ===
     private static String requireNonEmptyString(JSONObject json, String key) {
         if (!json.has(key)) {
@@ -408,7 +374,7 @@ public class PIDController extends Block {
         }
         return value;
     }
-    
+
     private static void setParameterBlockReference(PIDController block, Parameter... parameters) {
         for (Parameter param : parameters) {
             try {
@@ -420,7 +386,7 @@ public class PIDController extends Block {
             }
         }
     }
-    
+
     private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
         JSONObject identity = new JSONObject();
         identity.put("blockType", "PIDController");
@@ -429,24 +395,24 @@ public class PIDController extends Block {
         identity.put("blockUUID", blockUUID);
         return identity;
     }
-    
+
     // === Port Initialization ===
     private void initializePorts() {
         // Main input port
         input = new InputPort(this, 1);
         inputPortList.add(input);
-        
+
         // Main output port (feedthrough = true for PID)
         output = new OutputPort(this, 1, true);
         outputPortList.add(output);
-        
+
         // Additional input ports based on external reset
         if (!externalReset.getInitString().equals("none")) {
             inputPortList.add(new InputPort(this, 2)); // Reset port
             inputNames.add("reset");
         }
     }
-    
+
     // === State Initialization ===
     private void initializeStates() {
         stateIntegral = new State(this, 1, "stateIntegral", proportionalGain.getHeight(), proportionalGain.getWidth());
@@ -522,7 +488,7 @@ public class PIDController extends Block {
         if (proportionalGain.getDataType() == DataType.REAL && stateIntegral.getDataType() == DataType.REAL) {
             // Integral derivative: Ki * u(t)
             integralDerivative = integralGain.getData().times(inputPortList.get(0).getData());
-            
+
             // Filter derivative: N * (Kd * u(t) - filter_state)
             filterDerivative = filterCoefficient.getData().times(
                 derivativeGain.getData().times(inputPortList.get(0).getData()).minus(stateFilter.getData())
@@ -530,16 +496,16 @@ public class PIDController extends Block {
         } else {
             integralDerivative = new Data(stateIntegral.getHeight(), stateIntegral.getWidth());
             filterDerivative = new Data(stateFilter.getHeight(), stateFilter.getWidth());
-            
+
             for (int i = 0; i < stateIntegral.getHeight(); i++) {
                 for (int j = 0; j < stateIntegral.getWidth(); j++) {
                     // Integral derivative: Ki * u(t)
                     double integralDeriv = integralGain.getData().getMatrix().get(i, j) * inputPortList.get(0).getData().getMatrix().get(i, j);
                     integralDerivative.getMatrix().set(i, j, integralDeriv);
-                    
+
                     // Filter derivative: N * (Kd * u(t) - filter_state)
-                    double filterDeriv = filterCoefficient.getData().getMatrix().get(i, j) * 
-                        (derivativeGain.getData().getMatrix().get(i, j) * inputPortList.get(0).getData().getMatrix().get(i, j) - 
+                    double filterDeriv = filterCoefficient.getData().getMatrix().get(i, j) *
+                        (derivativeGain.getData().getMatrix().get(i, j) * inputPortList.get(0).getData().getMatrix().get(i, j) -
                          stateFilter.getData().getMatrix().get(i, j));
                     filterDerivative.getMatrix().set(i, j, filterDeriv);
                 }
@@ -551,81 +517,43 @@ public class PIDController extends Block {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
-        context.put("block", this);
-        context.put("inputSignal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
-        context.put("proportionalGain", proportionalGain);
-        context.put("realDataType", DataType.REAL);
-        context.put("matrixDataType", DataType.MATRIX);
-        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         String arraysCode = TemplateManager.renderTemplate("c/continuous/PIDController/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("stateIntegral", stateIntegral);
-        context.put("stateFilter", stateFilter);
-        context.put("proportionalGain", proportionalGain);
-        context.put("derivativeGain", derivativeGain);
-        context.put("integralGain", integralGain);
-        context.put("filterCoefficient", filterCoefficient);
-        context.put("initialConditionForIntegrator", initialConditionForIntegrator);
-        context.put("initialConditionForFilter", initialConditionForFilter);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         String codeStr = TemplateManager.renderTemplate("c/continuous/PIDController/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add PID-specific context variables
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-        context.put("block", this);
-        context.put("inputPortList", inputPortList);
-        context.put("proportionalGain", proportionalGain);
-        context.put("derivativeGain", derivativeGain);
-        context.put("integralGain", integralGain);
-        context.put("filterCoefficient", filterCoefficient);
-        context.put("stateFilter", stateFilter);
-        context.put("stateIntegral", stateIntegral);
-        context.put("externalReset", externalReset);
-        context.put("limitOutput", limitOutput);
-        context.put("upperSaturationLimit", upperSaturationLimit);
-        context.put("lowerSaturationLimit", lowerSaturationLimit);
         context.put("signal", signal);
         context.put("resetSig",
             inputPortList.size()>1?
             inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName():0
         );
-        
+
         String codeStr = TemplateManager.renderTemplate("c/continuous/PIDController/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     @Override
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputPortList", inputPortList);
-        context.put("proportionalGain", proportionalGain);
-        context.put("integralGain", integralGain);
-        context.put("derivativeGain", derivativeGain);
-        context.put("filterCoefficient", filterCoefficient);
-        context.put("stateIntegral", stateIntegral);
-        context.put("stateFilter", stateFilter);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         String derivativeCode = TemplateManager.renderTemplate("c/continuous/PIDController/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);
     }
 
     @Override
     public void generateUpdateCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputPortList", inputPortList);
-        context.put("proportionalGain", proportionalGain);
-        context.put("integralGain", integralGain);
-        context.put("derivativeGain", derivativeGain);
-        context.put("filterCoefficient", filterCoefficient);
-        context.put("stateIntegral", stateIntegral);
-        context.put("stateFilter", stateFilter);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         String updateCode = TemplateManager.renderTemplate("c/continuous/PIDController/update.vm", context);
         code.addUpdateCode(updateCode);
     }

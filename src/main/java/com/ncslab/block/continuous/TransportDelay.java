@@ -48,19 +48,12 @@ public class TransportDelay extends Block {
     private FifoBufferExtended<Data> buffer;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter delayTime;
-    @Getter
     private final Parameter initialOutput;
-    @Getter
     private final Parameter bufferSize;
-    @Getter
     private final Parameter padeOrder;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -68,28 +61,14 @@ public class TransportDelay extends Block {
     private InputPort input;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("DelayTime");
-        parameterNames.add("InitialOutput");
-        parameterNames.add("BufferSize");
-        parameterNames.add("PadeOrder");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -325,7 +304,7 @@ public class TransportDelay extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		VelocityContext context = new VelocityContext();
+
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
 		context.put("blockId", getBlockId());
@@ -364,7 +343,7 @@ public class TransportDelay extends Block {
 	}
 
     public void generateArraysCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
+
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
         context.put("blockId", getBlockId());
@@ -408,22 +387,22 @@ public class TransportDelay extends Block {
      */
     public void generateDerivativeCodeC(CodeStructC code) {
         super.generateDerivativeCodeC(code);
-        
-        VelocityContext context = new VelocityContext();
+
+
         context.put("block", this);
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
         context.put("bufferSize", bufferSize);
-        
+
         // Pass delayTime as delaytime to match template
         context.put("delaytime", delayTime);
-        
+
         // Pass paramValues for accessing DelayTime parameter
         context.put("paramValues", paramValues);
-        
+
         // Pass model for solver check
         context.put("model", model);
-        
+
         // For matrix delay times, calculate buffer length for each element
         if (delayTime.getDataType() == DataType.MATRIX) {
             // Create a test object that mimics the test.get() method in template
@@ -440,10 +419,10 @@ public class TransportDelay extends Block {
                 }
             });
         }
-        
+
         // Make this block instance accessible to call methods
         final TransportDelay thisBlock = this;
-        
+
         String derivativeCode = TemplateManager.renderTemplate("c/continuous/TransportDelay/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);
     }
@@ -455,7 +434,7 @@ public class TransportDelay extends Block {
      * @param code The CodeStructC object to add the output code to
      */
     public void generateOutputCodeC(CodeStructC code) {
-        VelocityContext context = new VelocityContext();
+
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
         context.put("blockId", getBlockId());

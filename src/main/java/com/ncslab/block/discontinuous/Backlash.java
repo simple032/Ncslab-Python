@@ -40,37 +40,20 @@ public class Backlash extends Block {
     private State xState;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter backlashWidthParam;
-    @Getter
     private final Parameter initialOutputParam;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     public static final HashMap<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("BacklashWidth");
-        parameterNames.add("InitialOutput");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Parameter defaults
         PARAMETER_DEFAULTS.put("BacklashWidth", "0.5");
         PARAMETER_DEFAULTS.put("InitialOutput", "0");

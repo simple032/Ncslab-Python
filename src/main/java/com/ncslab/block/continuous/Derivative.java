@@ -42,23 +42,14 @@ public class Derivative extends Block {
     private State stateIntegral;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter filterCoefficient;
-    @Getter
     private final Parameter initialCondition;
-    @Getter
     private final Parameter coefficientSource;
-    @Getter
     private final Parameter externalReset;
-    @Getter
     private final Parameter conditionSource;
-    @Getter
     private final Parameter showStatePort;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -66,8 +57,6 @@ public class Derivative extends Block {
     private InputPort input;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -85,24 +74,11 @@ public class Derivative extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("FilterCoefficient");
-        parameterNames.add("InitialCondition");
-        parameterNames.add("CoefficientSource");
-        parameterNames.add("ExternalReset");
-        parameterNames.add("InitialConditionSource");
-        parameterNames.add("ShowStatePort");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -350,7 +326,7 @@ public class Derivative extends Block {
     // === Code Generation Methods (preserved from original) ===
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("state", stateIntegral);
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/Derivative/init.vm", context);
@@ -358,14 +334,14 @@ public class Derivative extends Block {
     }
     public void generateArraysCodeC(CodeStructC code) {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("signal", signal);
         String arraysCode = TemplateManager.renderTemplate("c/continuous/Derivative/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("state", stateIntegral);
         context.put("input", getInputPortVariables()[0]);
 
@@ -374,7 +350,7 @@ public class Derivative extends Block {
     }
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("output", getOutputPortVariables()[0]);
         context.put("state", stateIntegral);
 
@@ -384,7 +360,7 @@ public class Derivative extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("signal", signal);
         context.put("state", stateIntegral);
         context.put("output", getOutputPortVariables()[0]);
@@ -393,7 +369,7 @@ public class Derivative extends Block {
         code.addInitCode(codeStr);
     }
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
         context.put("state", stateIntegral);
         context.put("solver", this.model.getConfig().getSolver());
@@ -402,7 +378,7 @@ public class Derivative extends Block {
         code.addOutputCode(codeStr);
     }
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", stateList);
         context.put("inputs", getInputPortVariables());
 

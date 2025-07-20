@@ -29,25 +29,15 @@ public class OldPIDController extends Block {
     private State stateIntegral;
     private State stateFilter;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("P");
-        parameterNames.add("I");
-        parameterNames.add("D");
-        parameterNames.add("N");
-
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
     // === Parameter Defaults ===
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
         PARAMETER_DEFAULTS.put("P", "1");

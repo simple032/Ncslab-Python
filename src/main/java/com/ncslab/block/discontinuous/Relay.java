@@ -45,24 +45,15 @@ public class Relay extends Block {
     private State xState;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter switchOnPoint;
-    @Getter
     private final Parameter switchOffPoint;
-    @Getter
     private final Parameter outputWhenOn;
-    @Getter
     private final Parameter outputWhenOff;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -77,21 +68,10 @@ public class Relay extends Block {
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // Parameter names matching legacy JSON field names
-        parameterNames.add("OnSwitchValue"); // Maps to SwitchOnPoint
-        parameterNames.add("OffSwitchValue"); // Maps to SwitchOffPoint
-        parameterNames.add("OnOutputValue"); // Maps to OutputWhenOn
-        parameterNames.add("OffOutputValue"); // Maps to OutputWhenOff
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");

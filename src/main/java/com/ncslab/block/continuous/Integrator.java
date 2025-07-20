@@ -45,27 +45,16 @@ public class Integrator extends Block {
     private State stateIntegral;
     
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter initialCondition;
-    @Getter
     private final Parameter externalReset;
-    @Getter
     private final Parameter conditionSource;
-    @Getter
     private final Parameter limitOutput;
-    @Getter
     private final Parameter upperSaturationLimit;
-    @Getter
     private final Parameter lowerSaturationLimit;
-    @Getter
     private final Parameter showSaturationPort;
-    @Getter
     private final Parameter showStatePort;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Port References ===
@@ -73,8 +62,6 @@ public class Integrator extends Block {
     private InputPort input;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -93,26 +80,11 @@ public class Integrator extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("InitialCondition");
-        parameterNames.add("ExternalReset");
-        parameterNames.add("InitialConditionSource");
-        parameterNames.add("LimitOutput");
-        parameterNames.add("UpperSaturationLimit");
-        parameterNames.add("LowerSaturationLimit");
-        parameterNames.add("ShowSaturationPort");
-        parameterNames.add("ShowStatePort");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -428,7 +400,7 @@ public class Integrator extends Block {
     // === Code Generation Methods (preserved from original) ===
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("state", stateIntegral);
         context.put("initialCondition", initialCondition);
 
@@ -438,7 +410,7 @@ public class Integrator extends Block {
 
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("state", stateIntegral);
         context.put("input", getInputPortVariables()[0]);
 
@@ -447,7 +419,7 @@ public class Integrator extends Block {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
         String arraysCode = TemplateManager.renderTemplate("c/continuous/Integrator/arrays.vm", context);
@@ -456,7 +428,7 @@ public class Integrator extends Block {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("state", stateIntegral);
         context.put("output", getOutputPortVariables()[0]);
 
@@ -466,11 +438,10 @@ public class Integrator extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("externalReset", externalReset.getData().getInitString());
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         InputPort inputPort;
-        context.put("block", this);
         context.put("signal", signal);
         context.put("state", stateIntegral.getName());
         context.put("initialCondition", initialCondition);
@@ -487,7 +458,7 @@ public class Integrator extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
         context.put("state", stateIntegral);
@@ -497,7 +468,7 @@ public class Integrator extends Block {
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
         context.put("state", stateIntegral);

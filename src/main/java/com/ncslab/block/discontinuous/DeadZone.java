@@ -39,20 +39,13 @@ public class DeadZone extends Block {
     Parameter upperValue;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter startOfDeadZone;
-    @Getter
     private final Parameter endOfDeadZone;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -66,9 +59,7 @@ public class DeadZone extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     // Add a method to calculate lower value indices
@@ -84,13 +75,6 @@ public class DeadZone extends Block {
     }
 
     static {
-        // Parameter names matching legacy JSON field names
-        parameterNames.add("LowerValue"); // Maps to StartOfDeadZone
-        parameterNames.add("UpperValue"); // Maps to EndOfDeadZone
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");

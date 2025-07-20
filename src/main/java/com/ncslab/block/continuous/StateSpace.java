@@ -45,25 +45,15 @@ public class StateSpace extends Block {
     private Vector<State> xStateList = new Vector<State>();
     
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter stateMatrix;
-    @Getter
     private final Parameter inputMatrix;
-    @Getter
     private final Parameter outputMatrix;
-    @Getter
     private final Parameter feedthroughMatrix;
-    @Getter
     private final Parameter initialState;
-    @Getter
     private final Parameter absoluteTolerance;
-    @Getter
     private final Parameter continuousStateAttributes;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Port References ===
@@ -71,31 +61,14 @@ public class StateSpace extends Block {
     private InputPort input;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("A");
-        parameterNames.add("B");
-        parameterNames.add("C");
-        parameterNames.add("D");
-        parameterNames.add("X0");
-        parameterNames.add("AbsoluteTolerance");
-        parameterNames.add("ContinuousStateAttributes");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");

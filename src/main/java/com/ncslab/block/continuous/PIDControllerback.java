@@ -33,31 +33,16 @@ public class PIDControllerback extends com.ncslab.block.Block{
 
 	Parameter externalReset;//zhou_20240507 add externalReset
 	Parameter sampleTime;
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("P");
-        parameterNames.add("I");
-        parameterNames.add("D");
-        parameterNames.add("N");
-        parameterNames.add("externalReset");
-        parameterNames.add("simpleTime");
-        parameterNames.add("LimitOutput");
-        parameterNames.add("LowerSaturationLimit");
-        parameterNames.add("UpperSaturationLimit");
-        
         outputNames.add("out1");
         inputNames.add("in1");
-        
+
         PARAMETER_DEFAULTS.put("P", "1");
         PARAMETER_DEFAULTS.put("I", "1");
         PARAMETER_DEFAULTS.put("D", "0");
@@ -96,23 +81,23 @@ public class PIDControllerback extends com.ncslab.block.Block{
 	}
 	 //define arrays to save data
 	 public void generateArraysCodeC(CodeStructC code) {
-		 VelocityContext context = new VelocityContext();
+
 		 context.put("blockId", getBlockId());
 		 context.put("blockName", getBlockName());
 		 context.put("cparaP", cparaP);
 		 context.put("realDataType", DataType.REAL);
 		 context.put("matrixDataType", DataType.MATRIX);
-		 
+
 		 OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		 context.put("inputSignal", signal);
-		 
+
 		 String arraysCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/arrays.vm", context);
 		 code.addArraysCode(arraysCode);
 	 }
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		
-		VelocityContext context = new VelocityContext();
+
+
 		context.put("cparaP", cparaP);
 		context.put("cparaI", cparaI);
 		context.put("cparaD", cparaD);
@@ -120,22 +105,22 @@ public class PIDControllerback extends com.ncslab.block.Block{
 		context.put("limitOutput", paramValues.getString("LimitOutput"));
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
-		
+
 		if(paramValues.getString("LimitOutput").equals("on")) {
 			context.put("lowerSaturationLimit", lowerSaturationLimit);
 			context.put("upperSaturationLimit", upperSaturationLimit);
 		}
-		
+
 		context.put("stateIntegral", stateIntegral);
 		context.put("stateFilter", stateFilter);
 		context.put("sampleTime", sampleTime);
-		
+
 		String initCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/init.vm", context);
 		code.addInitCode(initCode);
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
+
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
 		context.put("blockId", getBlockId());
@@ -151,27 +136,27 @@ public class PIDControllerback extends com.ncslab.block.Block{
 		context.put("limitOutput", paramValues.getString("LimitOutput"));
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
-		
+
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		context.put("inputSignal", signal);
-		
+
 		if(paramValues.getString("externalReset").equals("on")) {
 			context.put("externalResetSignal", inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
 		}
-		
+
 		if(paramValues.getString("LimitOutput").equals("on")) {
 			context.put("upperSaturationLimit", upperSaturationLimit);
 			context.put("lowerSaturationLimit", lowerSaturationLimit);
 		}
-		
+
 		context.put("outputPortVariable", this.getOutputPortVariable(0));
-		
+
 		String outputCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/output.vm", context);
 		code.addOutputCode(outputCode);
 	}
 
 	public void  generateDerivativeCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
+
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
 		context.put("blockId", getBlockId());
@@ -182,15 +167,15 @@ public class PIDControllerback extends com.ncslab.block.Block{
 		context.put("cparaP", cparaP);
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
-		
+
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		context.put("inputSignal", signal);
-		
+
 		String derivativeCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/derivative.vm", context);
 		code.addDerivativeCode(derivativeCode);
 	}
 	public void  generateUpdateCodeC(CodeStructC code) {
-		VelocityContext context = new VelocityContext();
+
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
 		context.put("blockId", getBlockId());
@@ -201,10 +186,10 @@ public class PIDControllerback extends com.ncslab.block.Block{
 		context.put("cparaP", cparaP);
 		context.put("realDataType", DataType.REAL);
 		context.put("matrixDataType", DataType.MATRIX);
-		
+
 		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		context.put("inputSignal", signal);
-		
+
 		String updateCode = TemplateManager.renderTemplate("c/continuous/PIDControllerback/update.vm", context);
 		code.addUpdateCode(updateCode);
 	}

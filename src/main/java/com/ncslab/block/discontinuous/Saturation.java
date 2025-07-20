@@ -39,20 +39,13 @@ public class Saturation extends Block {
     Parameter upperLimit;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter upperSaturationLimit;
-    @Getter
     private final Parameter lowerSaturationLimit;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -64,18 +57,9 @@ public class Saturation extends Block {
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
-        
-        // Parameter names matching legacy JSON field names
-        parameterNames.add("UpperLimit");
-        parameterNames.add("LowerLimit");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -183,12 +167,7 @@ public class Saturation extends Block {
 
     // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("upperLimit", upperLimit);
-        context.put("lowerLimit", lowerLimit);
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/output.vm", context);
         code.addOutputCode(codeStr);
@@ -196,10 +175,7 @@ public class Saturation extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("upperLimit", upperLimit);
-        context.put("lowerLimit", lowerLimit);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/init.vm", context);
         code.addInitCode(codeStr);

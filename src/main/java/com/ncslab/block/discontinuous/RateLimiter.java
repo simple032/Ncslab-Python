@@ -39,20 +39,13 @@ public class RateLimiter extends Block {
     Parameter upperLimit;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter risingSlew;
-    @Getter
     private final Parameter fallingSlew;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -66,19 +59,10 @@ public class RateLimiter extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // Parameter names matching legacy JSON field names
-        parameterNames.add("UpperLimit"); // Maps to RisingSlew
-        parameterNames.add("LowerLimit"); // Maps to FallingSlew
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");

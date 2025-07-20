@@ -36,21 +36,13 @@ import com.ncslab.util.TemplateManager;
 public class VariableTransportDelay extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter delayType;
-    @Getter
     private final Parameter maximumDelayTime;
-    @Getter
     private final Parameter initialOutput;
-    @Getter
     private final Parameter initialBufferSize;
-    @Getter
     private final Parameter padeOrder;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Port References ===
@@ -59,29 +51,14 @@ public class VariableTransportDelay extends Block {
     private InputPort inputDelay;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("DelayType");
-        parameterNames.add("MaximumDelayTime");
-        parameterNames.add("InitialOutput");
-        parameterNames.add("InitialBufferSize");
-        parameterNames.add("PadeOrder");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         inputNames.add("in1"); // Signal input
