@@ -21,8 +21,6 @@ public class DA extends Block{
 	Parameter channel;
 
     @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
     @Getter
@@ -30,7 +28,6 @@ public class DA extends Block{
 
     static {
         inputNames.add("in1");
-        parameterNames.add("channel");
         
         PARAMETER_DEFAULTS.put("Channel", "0");
     }

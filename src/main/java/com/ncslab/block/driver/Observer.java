@@ -13,12 +13,8 @@ import java.util.Map;
 import java.util.Vector;
 
 public class Observer extends Block {
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     public static final Map<String, String> PARAMETER_DEFAULTS;
 

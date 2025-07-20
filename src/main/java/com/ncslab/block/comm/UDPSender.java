@@ -20,18 +20,12 @@ public class UDPSender extends Block {
     private String addr;
     private int port;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("RemoteAddr");
-        parameterNames.add("RemotePort");
         
         inputNames.add("in1");
         inputNames.add("in2");

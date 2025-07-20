@@ -19,8 +19,6 @@ import java.util.Vector;
 public class AD extends Block{
 
 	Parameter channel;
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -30,7 +28,6 @@ public class AD extends Block{
     
     static {
         outputNames.add("out1");
-        parameterNames.add("Channel");
         
         PARAMETER_DEFAULTS.put("Channel", "0");
     }

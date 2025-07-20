@@ -19,15 +19,12 @@ public class PWM extends com.ncslab.block.Block{
 
 	Parameter port;
     @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("port");
         inputNames.add("in1");
         
         PARAMETER_DEFAULTS.put("port", "0");
@@ -61,17 +58,19 @@ public class PWM extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		// Add Raspberry Pi PWM-specific variables
+		context.put("port", port.getData().getIntValue());
 	
 		code.addInitCode(TemplateManager.renderTemplate("c/hardware/rasp/PWM/init.vm", context));
-		// Removed unused initCode reference
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		// Add Raspberry Pi PWM-specific variables
+		context.put("port", port.getData().getIntValue());
+		// inputSignal is already populated by TemplateUtils.populatePortVariables()
 	
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/PWM/output.vm", context));
-
-		// Removed unused outputCode reference
 	}
 }

@@ -17,16 +17,14 @@ import java.util.Vector;
 public class UDPReceiver extends com.ncslab.block.Block{
 
 	Parameter localPort;
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put("localPort", "8080");
         PARAMETER_DEFAULTS.put("UdpReceiverLocalPortForStm32", "8080");
 
-        parameterNames.add("localPort");
     }
 
     @Getter
@@ -67,21 +65,19 @@ public class UDPReceiver extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		// Add UDPReceiver-specific variables
 		context.put("localPort", localPort.getData().getIntValue());
 	
 		code.addInitCode(TemplateManager.renderTemplate("c/hardware/stm32/UDPReceiver/init.vm", context));
-		// Removed unused initCode reference
-
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-	
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		// Add UDPReceiver-specific variables
 		context.put("outputSignal", getOutputPortList().get(0).getOutputSignalC().getName());
 		context.put("localPort", localPort.getData().getIntValue());
+		
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/stm32/UDPReceiver/output.vm", context));
-
-		// Removed unused outputCode reference
 	}
 }

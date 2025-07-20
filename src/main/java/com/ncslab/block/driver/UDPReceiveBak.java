@@ -20,8 +20,6 @@ public class UDPReceiveBak extends com.ncslab.block.Block{
 
 	Parameter LocalIPPort;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -29,12 +27,10 @@ public class UDPReceiveBak extends com.ncslab.block.Block{
         PARAMETER_DEFAULTS.put("LocalIPPort", "8080");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     static {
 
         outputNames.add("out1");
-        parameterNames.add("LocalIPPort");
     }
 	public UDPReceiveBak(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);

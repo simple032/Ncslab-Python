@@ -22,9 +22,8 @@ public class Diode extends Block {
 	protected Parameter ron;
 	protected Parameter goff;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
     @Getter
@@ -35,9 +34,6 @@ public class Diode extends Block {
     static {
         outputNames.add("out1");
         inputNames.add("in1");
-        parameterNames.add("Vf");
-        parameterNames.add("Ron");
-        parameterNames.add("Goff");
         
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put("Vf", "0.7");    // Forward voltage in volts

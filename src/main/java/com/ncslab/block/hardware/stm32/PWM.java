@@ -21,17 +21,12 @@ public class PWM extends com.ncslab.block.Block{
 	Parameter timx;
 	Parameter frequency;
     @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("channel");
-        parameterNames.add("timx");
-        parameterNames.add("frequency");
         inputNames.add("in1");
         
         PARAMETER_DEFAULTS.put("PWMForStm32Channel", "1");
@@ -74,18 +69,23 @@ public class PWM extends com.ncslab.block.Block{
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
-		context.put("channel",  channel.getData().getIntValue());
-		context.put("timx",  timx.getData().getIntValue());
-		 context.put("frequency",  frequency.getData().getIntValue());
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		// Add PWM-specific variables
+		context.put("channel", channel.getData().getIntValue());
+		context.put("timx", timx.getData().getIntValue());
+		context.put("frequency", frequency.getData().getIntValue());
 
 		code.addInitCode(TemplateManager.renderTemplate("c/hardware/stm32/PWM/init.vm", context));
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-	
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		// Add PWM-specific variables
+		context.put("channel", channel.getData().getIntValue());
+		context.put("timx", timx.getData().getIntValue());
+		context.put("frequency", frequency.getData().getIntValue());
+		// inputSignal is already populated by TemplateUtils.populatePortVariables()
+		
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/stm32/PWM/output.vm", context));
-
-		// Removed unused outputCode reference
 	}
 }

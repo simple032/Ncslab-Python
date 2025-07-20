@@ -16,14 +16,9 @@ public class EtherCATDI extends com.ncslab.block.Block {
     private static final String PARAM_INTERFACE = "Interface";
     private static final String PARAM_TIME_SAMPLE = "timeSample";
     
-    public static final Vector<String> parameterNames = new Vector<>();
     public static final Map<String, String> PARAMETER_DEFAULTS;
     
     static {
-        parameterNames.add(PARAM_SLAVE_ID);
-        parameterNames.add(PARAM_CHANNEL);
-        parameterNames.add(PARAM_INTERFACE);
-        parameterNames.add(PARAM_TIME_SAMPLE);
         
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put(PARAM_SLAVE_ID, "1");

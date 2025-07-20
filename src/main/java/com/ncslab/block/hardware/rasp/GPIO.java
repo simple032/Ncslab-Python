@@ -21,8 +21,6 @@ public class GPIO extends Block{
 	Parameter Bcm;
 
     @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
     @Getter
@@ -30,7 +28,6 @@ public class GPIO extends Block{
 
     static {
         inputNames.add("in1");
-        parameterNames.add("Bcm");
         
         PARAMETER_DEFAULTS.put("Bcm", "18");
     }

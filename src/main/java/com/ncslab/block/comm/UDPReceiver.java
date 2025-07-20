@@ -20,18 +20,12 @@ public class UDPReceiver extends Block {
     private String addr;
     private int port;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("RemoteAddr");
-        parameterNames.add("LocalPort");
         
         outputNames.add("out1");
         outputNames.add("out2");

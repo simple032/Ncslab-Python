@@ -20,8 +20,6 @@ public class ADC extends com.ncslab.block.Block{
 	Parameter index;
 	Parameter channel;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -30,8 +28,6 @@ public class ADC extends com.ncslab.block.Block{
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     
     static {
-        parameterNames.add("index");
-        parameterNames.add("channel");
         outputNames.add("out1");
         
         PARAMETER_DEFAULTS.put("ADCForStm32Index", "1");

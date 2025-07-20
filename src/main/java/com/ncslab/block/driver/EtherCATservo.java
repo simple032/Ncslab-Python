@@ -17,14 +17,9 @@ public class EtherCATservo extends com.ncslab.block.Block {
     private static final String PARAM_TIME_SAMPLE = "timeSample";
     private static final String PARAM_OPERATION_MODE = "operationMode";
     
-    public static final Vector<String> parameterNames = new Vector<>();
     public static final Map<String, String> PARAMETER_DEFAULTS;
     
     static {
-        parameterNames.add(PARAM_SLAVE_ID);
-        parameterNames.add(PARAM_INTERFACE);
-        parameterNames.add(PARAM_TIME_SAMPLE);
-        parameterNames.add(PARAM_OPERATION_MODE);
         
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put(PARAM_SLAVE_ID, "1");

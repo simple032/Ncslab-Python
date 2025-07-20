@@ -17,8 +17,6 @@ import java.util.Vector;
 public class UDPReceive extends com.ncslab.block.Block{
 
 	private String name = "UDPReceive";
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -28,12 +26,10 @@ public class UDPReceive extends com.ncslab.block.Block{
         PARAMETER_DEFAULTS.put("port", "8080");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     static {
 
         outputNames.add("out1");
-        parameterNames.add("LocalIPPort");
     }
 	Parameter LocalIPPort;
 	public UDPReceive(JSONObject blockJSON,NCSLabModel model) {

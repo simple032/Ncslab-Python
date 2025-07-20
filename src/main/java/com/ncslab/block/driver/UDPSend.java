@@ -21,8 +21,6 @@ public class UDPSend extends com.ncslab.block.Block{
 	Parameter RemoteIPAddress;
 	Parameter RemoteIPPort;
 	Parameter LocalIPPort;
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -31,14 +29,10 @@ public class UDPSend extends com.ncslab.block.Block{
         PARAMETER_DEFAULTS.put("RemoteIPPort", "8081");
         PARAMETER_DEFAULTS.put("LocalIPPort", "8080");
     }
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
 
-        parameterNames.add("RemoteIPAddress");
-        parameterNames.add("RemoteIPPort");
-        parameterNames.add("LocalIPPort");
         inputNames.add("in1");
     }
 	public UDPSend(JSONObject blockJSON,NCSLabModel model) {

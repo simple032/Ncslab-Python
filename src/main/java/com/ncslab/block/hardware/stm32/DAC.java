@@ -21,16 +21,12 @@ public class DAC extends com.ncslab.block.Block{
 	Parameter channel;
 
     @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
     @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("index");
-        parameterNames.add("channel");
         inputNames.add("in1");
         
         PARAMETER_DEFAULTS.put("DACForStm32Index", "1");

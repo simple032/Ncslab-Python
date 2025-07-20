@@ -22,9 +22,8 @@ public class UDPSendBak extends com.ncslab.block.Block{
 	Parameter RemoteIPPort;
 	Parameter LocalIPPort;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -37,9 +36,6 @@ public class UDPSendBak extends com.ncslab.block.Block{
 
     static {
 
-        parameterNames.add("RemoteIPAddress");
-        parameterNames.add("RemoteIPPort");
-        parameterNames.add("LocalIPPort");
         inputNames.add("in1");
     }
 	public UDPSendBak(JSONObject blockJSON,NCSLabModel model) {
