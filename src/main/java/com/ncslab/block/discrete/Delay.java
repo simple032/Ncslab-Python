@@ -39,15 +39,10 @@ public class Delay extends DiscreteBlock {
     private Vector<Data> buffer;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter delayLength;
-    @Getter
     private final Parameter initialCondition;
-    @Getter
     private final Parameter sampleTimeParam;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -55,8 +50,6 @@ public class Delay extends DiscreteBlock {
     private InputPort input;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -69,19 +62,12 @@ public class Delay extends DiscreteBlock {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("DelayLength");
-        parameterNames.add("InitialCondition");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
 
         // Port names
         outputNames.add("out1");

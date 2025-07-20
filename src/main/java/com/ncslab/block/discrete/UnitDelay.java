@@ -39,13 +39,9 @@ public class UnitDelay extends DiscreteBlock {
     private final boolean feedthrough = false; // Unit delay has no feedthrough
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter initialCondition;
-    @Getter
     private final Parameter sampleTimeParam;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -53,8 +49,6 @@ public class UnitDelay extends DiscreteBlock {
     private InputPort input;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -66,18 +60,12 @@ public class UnitDelay extends DiscreteBlock {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("InitialCondition");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
 
         // Port names
         outputNames.add("out1");
@@ -258,8 +246,8 @@ public class UnitDelay extends DiscreteBlock {
 
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
         context.put("signal", signal);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/arrays.vm", context);
@@ -268,9 +256,7 @@ public class UnitDelay extends DiscreteBlock {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("sampleTime", sampleTimeParam);
-        context.put("initialCondition", initialCondition);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/discrete/UnitDelay/init.vm", context);
         code.addInitCode(codeStr);
@@ -278,23 +264,16 @@ public class UnitDelay extends DiscreteBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("sampleTime", sampleTimeParam);
-        context.put("initialCondition", initialCondition);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
-        context.put("sampleTime", sampleTimeParam);
-        context.put("initialCondition", initialCondition);
         context.put("signal", signal);
-        context.put("outputs", getOutputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/output.vm", context);
         code.addOutputCode(codeStr);

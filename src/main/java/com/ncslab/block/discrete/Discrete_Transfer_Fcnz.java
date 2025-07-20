@@ -30,19 +30,14 @@ import java.util.Vector;
 public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter sampleTimeParam;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Internal state ===
     private final boolean feedthrough = true; // Transfer function blocks have feedthrough
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -53,16 +48,11 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");

@@ -36,22 +36,14 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
     private Vector<State> xStateList = new Vector<>();
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter numerator;
-    @Getter
     private final Parameter denominator;
-    @Getter
     private final Parameter initialStates;
-    @Getter
     private final Parameter sampleTimeParam;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -66,19 +58,11 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("Numerator");
-        parameterNames.add("Denominator");
-        parameterNames.add("InitialStates");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
 
         // Port names
         outputNames.add("out1");

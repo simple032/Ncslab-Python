@@ -36,16 +36,11 @@ public class Zero_Order_Hold extends DiscreteBlock {
     private final boolean feedthrough = false; // Zero-order hold has no feedthrough
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter sampleTimeParam;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -56,16 +51,11 @@ public class Zero_Order_Hold extends DiscreteBlock {
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");
