@@ -20,18 +20,13 @@ import java.util.Vector;
 public class IdentityMatrix extends Block {
     private Parameter outputDimensions;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
-        parameterNames.add("outputDimensions");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         outputNames.add("out1");
         

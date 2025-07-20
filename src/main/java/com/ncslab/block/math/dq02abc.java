@@ -19,8 +19,6 @@ import com.ncslab.util.TemplateManager;
 public class dq02abc extends Block {
     private String function;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -28,6 +26,7 @@ public class dq02abc extends Block {
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -38,10 +37,6 @@ public class dq02abc extends Block {
     }
 
     static {
-        parameterNames.add("rotatingFrame");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         outputNames.add("out1");
         outputNames.add("out2");

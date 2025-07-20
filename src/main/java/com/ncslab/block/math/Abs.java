@@ -32,18 +32,14 @@ import java.util.Vector;
 public class Abs extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -52,9 +48,6 @@ public class Abs extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
         
         // SIMULINK parameter names
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
     }
 
     @Getter

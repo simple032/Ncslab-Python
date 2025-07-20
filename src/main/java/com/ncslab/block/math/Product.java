@@ -312,15 +312,10 @@ public class Product extends Block {
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        context.put("block", this);
+        // Add Product-specific context variables
         context.put("sequence", getInputSequence());
-        context.put("inputs", this.inputs);
-        context.put("multiplication", this.multiplication);
-        context.put("sampleTime", this.sampleTime);
-        context.put("inputSameDT", this.inputSameDT);
-        context.put("outDataType", this.outDataType);
-        context.put("saturateOnIntegerOverflow", this.saturateOnIntegerOverflow);
         context.put("matrixMultiplication", this.matrixMultiplication);
 
         String codeStr = TemplateManager.renderTemplate("c/math/Product/output.vm", context);

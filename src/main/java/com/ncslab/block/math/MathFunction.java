@@ -36,24 +36,18 @@ import java.util.Vector;
 public class MathFunction extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter operator;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Operational Settings ===
-    @Getter
     private final String mathOperator;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
-    // Parameter defaults matching parameterNames
+    // Parameter defaults
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -71,10 +65,6 @@ public class MathFunction extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("Operator");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");
@@ -279,9 +269,9 @@ public class MathFunction extends Block {
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        context.put("block", this);
-        context.put("inputSignal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+        // Add MathFunction-specific context variables
         context.put("mathOperator", mathOperator);
         
         String codeStr = TemplateManager.renderTemplate("m/math/MathFunction/output.vm", context);
@@ -289,11 +279,11 @@ public class MathFunction extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add MathFunction-specific context variables
         context.put("function", mathOperator);
+        context.put("mathOperator", mathOperator);
 
         String codeStr = TemplateManager.renderTemplate("c/math/MathFunction/output.vm", context);
         code.addOutputCode(codeStr);

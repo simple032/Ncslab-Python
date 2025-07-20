@@ -32,18 +32,12 @@ import java.util.Map;
 public class Sqrt extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter function;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
@@ -51,6 +45,7 @@ public class Sqrt extends Block {
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
     static {
@@ -61,10 +56,6 @@ public class Sqrt extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
         
         // SIMULINK parameter names
-        parameterNames.add("Function");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");

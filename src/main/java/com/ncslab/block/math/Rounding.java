@@ -23,10 +23,9 @@ public class Rounding extends Block {
     String operatorString;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -35,9 +34,6 @@ public class Rounding extends Block {
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         
         // SIMULINK parameter names
-        parameterNames.add("Operator");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
     }
 
     @Getter

@@ -24,24 +24,16 @@ public class Submatrix extends Block {
     private Parameter endingRow;
     private Parameter startingColumn;
     private Parameter endingColumn;
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
     @Getter
     public static final Vector<String> outputNames = new Vector<>();
     @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        parameterNames.add("StartingRow");
-        parameterNames.add("EndingRow");
-        parameterNames.add("StartingColumn");
-        parameterNames.add("EndingColumn");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         outputNames.add("out1");
         inputNames.add("in1");
