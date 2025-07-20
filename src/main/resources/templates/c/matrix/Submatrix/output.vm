@@ -6,5 +6,5 @@
 #set($startingColumn = $block.getParameter("StartingColumn").getData().getInitValue())
 #set($endingColumn = $block.getParameter("EndingColumn").getData().getInitValue())
 
-/* Code for output of Submatrix: ($block.getBlockId())$block.getBlockName() */
-$output.setName($input.getName().submatrix($startingRow, $endingRow, $startingColumn, $endingColumn))
+/* Code for output of Submatrix: ($blockBlockId)$blockBlockName */
+$output.setName($inputName.submatrix($startingRow, $endingRow, $startingColumn, $endingColumn))

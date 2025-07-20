@@ -1,7 +1,7 @@
-/*Code for output of block Sum:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Sum:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $sequence)
     #set($firstInput = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputVar = $outputPortList.get(0).getOutputSignalC().getName())
+    #set($outputVar = $outputSignal)
     #set($numInputs = $inputPortList.size())
     #set($maxIndex = $numInputs - 1)
     
@@ -23,8 +23,8 @@
         
     ## Handle matrix inputs
     #elseif($firstInput.dataType == $matrixDataType)
-        #set($height = $firstInput.getHeight())
-        #set($width = $firstInput.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         
@@ -50,6 +50,6 @@
 #else
     ## Fallback for missing parameters
     #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Sum block missing parameters */
+        $outputSignal = 0.0; /* Sum block missing parameters */
     #end
 #end

@@ -1,7 +1,7 @@
-/*Code for output of block Product:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Product:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $sequence)
     #set($firstInput = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputVar = $outputPortList.get(0).getOutputSignalC().getName())
+    #set($outputVar = $outputSignal)
     #set($numInputs = $inputPortList.size())
     #set($maxIndex = $numInputs - 1)
     
@@ -29,8 +29,8 @@
             
         #elseif($firstInput.dataType == $matrixDataType)
             ## Matrix element-wise operations
-            #set($height = $firstInput.getHeight())
-            #set($width = $firstInput.getWidth())
+            #set($height = $signalHeight)
+            #set($width = $signalWidth)
             #set($hMax = $height - 1)
             #set($wMax = $width - 1)
             
@@ -56,6 +56,6 @@
 #else
     ## Fallback for missing parameters
     #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 1.0; /* Product block missing parameters */
+        $outputSignal = 1.0; /* Product block missing parameters */
     #end
 #end

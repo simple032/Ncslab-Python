@@ -1,9 +1,9 @@
-/*Code for output of block MathFunction:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block MathFunction:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $function)
     #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
     #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignal.getName())
-    #set($outputVar = $outputSignal.getName())
+    #set($inputVar = $inputSignal)
+    #set($outputVar = $outputSignal)
     
     #if($inputSignal.dataType == $realDataType)
         ## Scalar mathematical functions
@@ -42,8 +42,8 @@
         #end
     #elseif($inputSignal.dataType == $matrixDataType)
         ## Matrix mathematical functions
-        #set($height = $inputSignal.getHeight())
-        #set($width = $inputSignal.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         
@@ -124,6 +124,6 @@
 #else
     ## Fallback if parameters missing
     #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* MathFunction block missing parameters */
+        $outputSignal = 0.0; /* MathFunction block missing parameters */
     #end
 #end

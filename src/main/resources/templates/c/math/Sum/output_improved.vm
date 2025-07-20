@@ -11,7 +11,7 @@
 ## Validate inputs exist
 #if($inputPortList.size() > 0)
     #set($firstInput = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputVar = $outputPortList.get(0).getOutputSignalC().getName())
+    #set($outputVar = $outputSignal)
     #set($numInputs = $inputPortList.size())
     #set($maxIndex = $numInputs - 1)
     
@@ -28,8 +28,8 @@
         
     ## Handle matrix inputs
     #elseif(#isMatrix($firstInput))
-        #set($height = $firstInput.getHeight())
-        #set($width = $firstInput.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         
@@ -49,6 +49,6 @@
     #end
 #else
     ## No inputs - this should not happen but handle gracefully
-    /* Warning: Sum block ${block.getBlockId()} has no inputs */
-    $outputPortList.get(0).getOutputSignalC().getName() = 0;
+    /* Warning: Sum block $blockId has no inputs */
+    $outputSignal = 0;
 #end

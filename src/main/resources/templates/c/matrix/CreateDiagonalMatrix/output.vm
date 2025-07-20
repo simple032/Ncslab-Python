@@ -1,13 +1,13 @@
 #set($input = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
 #set($output = $outputPortList.get(0).getOutputSignalC())
 
-#set($matrixHeight = $input.getHeight())
-#set($matrixWidth = $input.getWidth())
+#set($matrixHeight = $inputHeight)
+#set($matrixWidth = $inputWidth)
 
 #set($minDimension = $matrixHeight)
 #if($matrixWidth < $minDimension)
 #set($minDimension = $matrixWidth)
 #end
 
-/* Code for output of CreateDiagonalMatrix: ($block.getBlockId())$block.getBlockName() */
-$output.setName($input.getName().toDiagonal($minDimension))
+/* Code for output of CreateDiagonalMatrix: ($blockBlockId)$blockBlockName */
+$output.setName($inputName.toDiagonal($minDimension))

@@ -1,5 +1,5 @@
 #set($input = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
 #set($output = $outputPortList.get(0).getOutputSignalC())
 
-/* Code for output of IsSymmetric: ($block.getBlockId())$block.getBlockName() */
-$output.setName($input.getName() == $input.getName().transpose() ? 1 : 0)
+/* Code for output of IsSymmetric: ($blockBlockId)$blockBlockName */
+$output.setName($inputName == $inputName.transpose() ? 1 : 0)

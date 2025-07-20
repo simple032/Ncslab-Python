@@ -1,5 +1,5 @@
-/*Code for initialization of block Submatrix: (${block.getBlockId()})${block.getBlockName()}*/
-${startingRow.getInitCodeC()}
-${endingRow.getInitCodeC()}
-${startingColumn.getInitCodeC()}
-${endingColumn.getInitCodeC()}
+/*Code for initialization of block Submatrix: ($blockId)$blockName*/
+$startingRowInitCodeC
+$endingRowInitCodeC
+$startingColumnInitCodeC
+$endingColumnInitCodeC

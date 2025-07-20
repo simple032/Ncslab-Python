@@ -7,14 +7,14 @@
 /* Code for Matrix block $blockId */
 #if($elements.size() > 0 && $elements[0].dataType == $realDataType)
     #foreach($element in $elements)
-        $outputPortList.getOutputSignalC().getName() = $element.getName();
+        $outputSignal = $parameterName;
     #end
 #elseif($elements.size() > 0 && $elements[0].dataType == $matrixDataType)
     #set($heightMax = $height - 1)
     #set($widthMax = $width - 1)
     #foreach($i in [0..$heightMax])
         #foreach($j in [0..$widthMax])
-            $outputPortList.getOutputSignalC().getName()($i, $j) = $elements[$i][$j].getName();
+            $outputSignal($i, $j) = $parameterName;
         #end
     #end
 #end

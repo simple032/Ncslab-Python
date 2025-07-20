@@ -1,18 +1,18 @@
-/*Code for output of block Bias:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Bias:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $bias)
     #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
     #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignal.getName())
-    #set($outputVar = $outputSignal.getName())
-    #set($biasValue = $bias.getName())
+    #set($inputVar = $inputSignal)
+    #set($outputVar = $outputSignal)
+    #set($biasValue = $parameterName)
     
     #if($inputSignal.dataType == $realDataType)
         ## Scalar bias: output = input + bias
         $outputVar = $inputVar + $biasValue;
     #else
         ## Matrix bias: element-wise addition
-        #set($height = $inputSignal.getHeight())
-        #set($width = $inputSignal.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
@@ -30,6 +30,6 @@
 #else
     ## Fallback if parameters missing
     #if($outputPortList && $outputPortList.size() > 0 && $inputPortList && $inputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = ${inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()}; /* Bias block missing parameters, pass-through */
+        $outputSignal = $inputSignal; /* Bias block missing parameters, pass-through */
     #end
 #end

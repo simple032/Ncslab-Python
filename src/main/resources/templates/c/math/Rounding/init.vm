@@ -1,3 +1,3 @@
 ## Rounding block initialization
 #set($block = $blockInfo)
-/* Rounding function: ${block.paramValues.optString("Operator", "floor")} */
+/* Rounding function: $parameterName */

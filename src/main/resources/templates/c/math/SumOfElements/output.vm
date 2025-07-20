@@ -7,49 +7,49 @@
 /* Code for SumOfElements block $blockId */
 #if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
     #if($sequence.length() == 1)
-        $outputPortList.getOutputSignalC().getName() = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+        $outputSignal = $inputSignal;
     #else
-        $outputPortList.getOutputSignalC().getName() = 0;
+        $outputSignal = 0;
         #set($iMax = $sequence.length() - 1)
         #foreach($i in [0..$iMax])
-            $outputPortList.getOutputSignalC().getName() $sequence.charAt($i)= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+            $outputSignal $sequence.charAt($i)= $inputSignal;
         #end
     #end
 #elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
     #if($allDimensions)
-        #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
-        #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())
-        $outputPortList.getOutputSignalC().getName() = 0;
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
+        $outputSignal = 0;
         #set($mMax = $height - 1)
         #set($nMax = $width - 1)
         #foreach($m in [0..$mMax])
             #foreach($n in [0..$nMax])
-                $outputPortList.getOutputSignalC().getName()($m, $n) = 0;
+                $outputSignal($m, $n) = 0;
                 $set($iMax = $sequence.length()-1)
                 #foreach($i in [0..$iMax])
-                    $outputPortList.getOutputSignalC().getName()($m, $n) $sequence.charAt($i)= $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
+                    $outputSignal($m, $n) $sequence.charAt($i)= $inputSignal($m, $n);
                 #end
             #end
         #end
     #else
         #if($dimension == 2)
-            #set($width = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth())
+            #set($width = $signalWidth)
             #set($mMax = $width - 1)
             #foreach($m in [0..$mMax])
-                $outputPortList.getOutputSignalC().getName()(0, $m) = 0;
-                #set($nMax = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight() - 1)
+                $outputSignal(0, $m) = 0;
+                #set($nMax = $signalHeight - 1)
                 #foreach($n in [0..$nMax])
-                    $outputPortList.getOutputSignalC().getName()(0, $m) += $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($n, $m);
+                    $outputSignal(0, $m) += $inputSignal($n, $m);
                 #end
             #end
         #else
-            #set($height = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getHeight())
+            #set($height = $signalHeight)
             #set($mMax = $height - 1)
             #foreach($m in [0..$mMax])
-                $outputPortList.getOutputSignalC().getName()($m, 0) = 0;
-                $set($nMax = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getWidth() - 1)
+                $outputSignal($m, 0) = 0;
+                $set($nMax = $signalWidth - 1)
                 #foreach($n in [0..$nMax])
-                    $outputPortList.getOutputSignalC().getName()($m, 0) += $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()($m, $n);
+                    $outputSignal($m, 0) += $inputSignal($m, $n);
                 #end
             #end
         #end

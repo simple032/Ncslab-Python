@@ -1,2 +1,2 @@
-/*Code for initialization of block Bias:(${block.getBlockId()})${block.getBlockName()}*/
-${bias.getInitCodeC()}
+/*Code for initialization of block Bias:($blockId)$blockName*/
+$parameterName

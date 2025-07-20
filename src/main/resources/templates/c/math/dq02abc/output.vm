@@ -1,10 +1,10 @@
-#set($input1 = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($input2 = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($input3 = $inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($input4 = $inputPortList.get(3).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($output1 = $outputPortList.get(0).getOutputSignalC().getName())
-#set($output2 = $outputPortList.get(1).getOutputSignalC().getName())
-#set($output3 = $outputPortList.get(2).getOutputSignalC().getName())
+#set($input1 = $inputSignal)
+#set($input2 = $inputSignal)
+#set($input3 = $inputSignal)
+#set($input4 = $inputSignal)
+#set($output1 = $outputSignal)
+#set($output2 = $outputSignal)
+#set($output3 = $outputSignal)
 #set($function = $blockName)
 
 /* Code for dq02abc block $blockId */

@@ -1,8 +1,8 @@
 
-/*Code for output of block Add:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Add:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $sequence)
     #set($firstInput = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputVar = $outputPortList.get(0).getOutputSignalC().getName())
+    #set($outputVar = $outputSignal)
     #set($numInputs = $inputPortList.size())
     #set($maxIndex = $numInputs - 1)
     
@@ -14,7 +14,7 @@
         ## Add each input with appropriate sign
         #foreach($i in [0..$maxIndex])
             #set($sign = $sequence.charAt($i))
-            #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+            #set($inputVar = $inputSignal)
             #if($sign == '+')
                 ${outputVar} += ${inputVar};
             #elseif($sign == '-')
@@ -24,8 +24,8 @@
         
     ## Handle matrix inputs
     #elseif($firstInput.dataType == $matrixDataType)
-        #set($height = $firstInput.getHeight())
-        #set($width = $firstInput.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         
@@ -38,7 +38,7 @@
                 ## Sum all inputs for this element
                 #foreach($i in [0..$maxIndex])
                     #set($sign = $sequence.charAt($i))
-                    #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+                    #set($inputVar = $inputSignal)
                     #if($sign == '+')
                         ${outputVar}($m, $n) += ${inputVar}($m, $n);
                     #elseif($sign == '-')
@@ -51,6 +51,6 @@
 #else
     ## Fallback for missing parameters
     #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Add block missing parameters */
+        $outputSignal = 0.0; /* Add block missing parameters */
     #end
 #end

@@ -1,8 +1,8 @@
-/*Code for output of block TrigFunction:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block TrigFunction:($blockId)$blockName*/
 #if($signal && $outputPortList && $outputPortList.size() > 0)
-    #set($outputVar = $outputPortList.get(0).getOutputSignalC().getName())
-    #set($inputVar = $signal.getName())
-    #set($function = $block.getParamValues().getString("TrigonometricFunction"))
+    #set($outputVar = $outputSignal)
+    #set($inputVar = $signalName)
+    #set($function = $parameterName)
     
     #if($signal.dataType == $realDataType)
         ## Scalar trigonometric function
@@ -25,8 +25,8 @@
         #end
     #else
         ## Matrix trigonometric function
-        #set($height = $signal.getHeight())
-        #set($width = $signal.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
@@ -52,6 +52,6 @@
 #else
     ## Fallback if parameters missing
     #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* TrigFunction block missing parameters */
+        $outputSignal = 0.0; /* TrigFunction block missing parameters */
     #end
 #end

@@ -1,9 +1,9 @@
-/*Code for output of block Sign:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Sign:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0)
     #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
     #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignal.getName())
-    #set($outputVar = $outputSignal.getName())
+    #set($inputVar = $inputSignal)
+    #set($outputVar = $outputSignal)
     
     #if($inputSignal.dataType == $realDataType)
         ## Scalar sign function
@@ -16,8 +16,8 @@
         }
     #elseif($inputSignal.dataType == $matrixDataType)
         ## Matrix sign function - element-wise
-        #set($height = $inputSignal.getHeight())
-        #set($width = $inputSignal.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
@@ -35,6 +35,6 @@
 #else
     ## Fallback if parameters missing
     #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Sign block missing parameters */
+        $outputSignal = 0.0; /* Sign block missing parameters */
     #end
 #end
