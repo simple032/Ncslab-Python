@@ -1,8 +1,8 @@
-#set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-#set($outputSignal = $outputPortList.get(0).getOutputSignalC().getName())
-#set($sampleTime = $sampleTime.getName())
-#set($initialCondition = $initialCondition.getName())
-#set($blockId = $block.getBlockId())
+#set($inputSignal = $inputSignal)
+#set($outputSignal = $outputSignal)
+#set($sampleTime = $sampleTimeName)
+#set($initialCondition = $initialConditionName)
+#set($blockId = $blockId)
 
 /* Code for output of block Delay:($blockId)$blockName */
 {

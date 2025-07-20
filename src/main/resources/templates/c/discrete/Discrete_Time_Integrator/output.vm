@@ -1,10 +1,10 @@
-/*Code for output of block Discrete_Time_Integrator:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Discrete_Time_Integrator:(${blockId})${blockName}*/
 #if($signal && $gainval && $xState && $out && $sampleTime)
-    #set($outputVar = $out.getOutputSignalC().getName())
-    #set($inputVar = $signal.getName())
-    #set($gainVar = $gainval.getName())
-    #set($stateVar = $xState.getName())
-    #set($sampleTimeVar = $sampleTime.getName())
+    #set($outputVar = $outputSignal)
+    #set($inputVar = $signalName)
+    #set($gainVar = $gainvalName)
+    #set($stateVar = $xStateName)
+    #set($sampleTimeVar = $sampleTimeName)
     
     ## Determine sample time
     real_T sampleTimeTmp = $sampleTimeVar == -1 ? model.stepSize : $sampleTimeVar;
@@ -40,8 +40,8 @@
             #end
         #else
             ## Matrix discrete-time integration
-            #set($hMax = $gainval.getHeight() - 1)
-            #set($wMax = $gainval.getWidth() - 1)
+            #set($hMax = $gainvalHeight - 1)
+            #set($wMax = $gainvalWidth - 1)
             for(int i = 0; i <= $hMax; i++) {
                 for(int j = 0; j <= $wMax; j++) {
                     #if($option == "Integration: Forward Euler")
@@ -74,6 +74,6 @@
 #else
     ## Fallback if parameters missing
     #if($out)
-        ${out.getOutputSignalC().getName()} = 0.0; /* Discrete_Time_Integrator block missing parameters */
+        $outputSignal = 0.0; /* Discrete_Time_Integrator block missing parameters */
     #end
 #end

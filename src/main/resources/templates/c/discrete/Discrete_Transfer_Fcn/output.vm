@@ -1,11 +1,11 @@
-/*Code for output of block Discrete_Transfer_Fcn:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Discrete_Transfer_Fcn:(${blockId})${blockName}*/
 #if($num && $den && $states && $outputs && $outputs.size() > 0)
-    #set($outputVar = $outputs.get(0))
-    #set($blockId = $block.getBlockId())
+    #set($outputVar = $output1)
+    #set($blockId = $blockId)
     
     ## Determine sample time
     #if($sampleTime)
-        real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
+        real_T sampleTimeTmp = $sampleTimeName == -1 ? model.stepSize : $sampleTimeName;
     #else
         real_T sampleTimeTmp = model.stepSize;
     #end
@@ -14,23 +14,23 @@
     if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
         #if($feedThrough)
             ## Direct feedthrough case
-            $outputVar = Block${blockId}_discrete_transfer_savedata[0] * ${num.getName()}(0, 0);
-            #set($numWidthIndex = $num.width - 1)
+            $outputVar = Block${blockId}_discrete_transfer_savedata[0] * $numName(0, 0);
+            #set($numWidthIndex = $numWidth - 1)
             #foreach($index in [0..$numWidthIndex])
                 #set($nextIndex = $index + 1)
-            $outputVar += ${num.getName()}(0, $nextIndex) * ${states.get($index).getName()};
+            $outputVar += $numName(0, $nextIndex) * $stateName;
             #end
         #else
             ## No direct feedthrough
             $outputVar = 0.0;
-            #set($h = $den.width - $num.width - 1)
-            #set($wMax = $num.width - 1)
+            #set($h = $denWidth - $numWidth - 1)
+            #set($wMax = $numWidth - 1)
             #foreach($index in [0..$wMax])
                 #set($nextIndex = $index + $h)
-                #if($states.get($nextIndex).width == 1 && $states.get($nextIndex).height == 1)
-            $outputVar += ${num.getName()}(0, ${index}) * ${states.get($nextIndex).getName()}(0, 0);
+                #if($stateWidth == 1 && $stateHeight == 1)
+            $outputVar += $numName(0, ${index}) * $stateName(0, 0);
                 #else
-            $outputVar += ${num.getName()}(0, ${index}) * ${states.get($nextIndex).getName()};
+            $outputVar += $numName(0, ${index}) * $stateName;
                 #end
             #end
         #end
@@ -38,6 +38,6 @@
 #else
     ## Fallback if parameters missing
     #if($outputs && $outputs.size() > 0)
-        ${outputs.get(0)} = 0.0; /* Discrete_Transfer_Fcn block missing parameters */
+        ${output1} = 0.0; /* Discrete_Transfer_Fcn block missing parameters */
     #end
 #end

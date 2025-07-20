@@ -1,15 +1,15 @@
-/* Code for output of block Zero_Order_Hold:(${block.blockId}) ${block.blockName} */
-{real_T sampleTimeTmp = ${sampleTime.getName()} == -1 ? model.stepSize : ${sampleTime.getName()};
+/* Code for output of block Zero_Order_Hold:(${blockId}) ${blockName} */
+{real_T sampleTimeTmp = $sampleTimeName == -1 ? model.stepSize : $sampleTimeName;
 
-#if($signal.dataType == $realDataType)
+#if($signalDataType == $realDataType)
 if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-    ${outputs.get(0)} = ${signal.getName()};
+    ${output1} = $signalName;
 }
 #else
   #foreach($i in [0..$optHeightIndex])
     #foreach($j in [0..$optWidthIndex])
 if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-    ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j});
+    ${output1}(${i},${j}) = $signalName(${i},${j});
 }
     #end
   #end

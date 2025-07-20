@@ -4,12 +4,12 @@ ${offSwitchValue.initCodeC}
 ${onOutputValue.initCodeC}
 ${offOutputValue.initCodeC}
 #if($onSwitchValue.dataType == $realDataType && $xState.dataType == $realDataType)
-${xState.getName()} = 0;
+$xStateName = 0;
 #else
 #set($stateIndices = $block.calculateStateIndices($xState.height, $xState.width))
 #foreach($index in $stateIndices)
     #set($i = $index / $xState.width)
     #set($j = $index % $xState.width)
-    ${xState.getName()}(${i},${j}) = 0;
+    $xStateName(${i},${j}) = 0;
 #end
 #end

@@ -1,17 +1,17 @@
-/*Code for output of block Relay:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Relay:($blockId)$blockName*/
 #if($signal && $onSwitchValue && $offSwitchValue && $onOutputValue && $offOutputValue && $xState && $outputs && $outputs.size() > 0)
-    #set($inputVar = $signal.getName())
-    #set($outputVar = $outputs.get(0))
-    #set($stateVar = $xState.getName())
+    #set($inputVar = $signalName)
+    #set($outputVar = $output1)
+    #set($stateVar = $xStateName)
     
     #if($onSwitchValue.dataType == $realDataType)
         ## Scalar switch values
         #if($ops.outputSignalC.dataType == $realDataType)
             ## Scalar relay - hysteresis behavior
-            if($inputVar > ${onSwitchValue.getName()}) {
-                $stateVar = ${onOutputValue.getName()};
-            } else if($inputVar < ${offSwitchValue.getName()}) {
-                $stateVar = ${offOutputValue.getName()};
+            if($inputVar > $onSwitchValueName) {
+                $stateVar = $onOutputValueName;
+            } else if($inputVar < $offSwitchValueName) {
+                $stateVar = $offOutputValueName;
             }
             ## Output current state
             $outputVar = $stateVar;
@@ -20,10 +20,10 @@
             #if($optWidthIndex && $optHeightIndex)
                 #foreach($i in [0..$optWidthIndex])
                     #foreach($j in [0..$optHeightIndex])
-                        if($inputVar(${i},${j}) > ${onSwitchValue.getName()}) {
-                            $stateVar(${i},${j}) = ${onOutputValue.getName()};
-                        } else if($inputVar(${i},${j}) < ${offSwitchValue.getName()}) {
-                            $stateVar(${i},${j}) = ${offOutputValue.getName()};
+                        if($inputVar(${i},${j}) > $onSwitchValueName) {
+                            $stateVar(${i},${j}) = $onOutputValueName;
+                        } else if($inputVar(${i},${j}) < $offSwitchValueName) {
+                            $stateVar(${i},${j}) = $offOutputValueName;
                         }
                         $outputVar(${i},${j}) = $stateVar(${i},${j});
                     #end
@@ -40,10 +40,10 @@
             #set($wMax = $width - 1)
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    if($inputVar > ${onSwitchValue.getName()}(${i},${j})) {
-                        $stateVar(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
-                    } else if($inputVar < ${offSwitchValue.getName()}(${i},${j})) {
-                        $stateVar(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+                    if($inputVar > $onSwitchValueName(${i},${j})) {
+                        $stateVar(${i},${j}) = $onOutputValueName(${i},${j});
+                    } else if($inputVar < $offSwitchValueName(${i},${j})) {
+                        $stateVar(${i},${j}) = $offOutputValueName(${i},${j});
                     }
                     $outputVar(${i},${j}) = $stateVar(${i},${j});
                 #end
@@ -53,10 +53,10 @@
             #if($optWidthIndex && $optHeightIndex)
                 #foreach($i in [0..$optWidthIndex])
                     #foreach($j in [0..$optHeightIndex])
-                        if($inputVar(${i},${j}) > ${onSwitchValue.getName()}(${i},${j})) {
-                            $stateVar(${i},${j}) = ${onOutputValue.getName()}(${i},${j});
-                        } else if($inputVar(${i},${j}) < ${offSwitchValue.getName()}(${i},${j})) {
-                            $stateVar(${i},${j}) = ${offOutputValue.getName()}(${i},${j});
+                        if($inputVar(${i},${j}) > $onSwitchValueName(${i},${j})) {
+                            $stateVar(${i},${j}) = $onOutputValueName(${i},${j});
+                        } else if($inputVar(${i},${j}) < $offSwitchValueName(${i},${j})) {
+                            $stateVar(${i},${j}) = $offOutputValueName(${i},${j});
                         }
                         $outputVar(${i},${j}) = $stateVar(${i},${j});
                     #end
@@ -67,6 +67,6 @@
 #else
     ## Fallback if parameters missing
     #if($outputs && $outputs.size() > 0)
-        ${outputs.get(0)} = 0.0; /* Relay block missing parameters */
+        ${output1} = 0.0; /* Relay block missing parameters */
     #end
 #end

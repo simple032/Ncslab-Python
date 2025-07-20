@@ -1,29 +1,29 @@
-/*Code for initialization of block Backlash:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block Backlash:($blockId)$blockName*/
 #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
-${backlashWidth.getInitCodeC()}
-${initialOutput.getInitCodeC()}
+$backlashWidthInitCodeC
+$initialOutputInitCodeC
 #if($initialOutput.dataType == $realDataType && $signal.dataType == $realDataType)
-    ${xState.getName()} = ${initialOutput.getName()};
+    $xStateName = $initialOutputName;
 #elseif($initialOutput.dataType == $realDataType && $signal.dataType == $matrixDataType)
-    #set($height = $xState.getHeight())
-    #set($width = $xState.getWidth())
+    #set($height = $xStateHeight)
+    #set($width = $xStateWidth)
     #set($hMax = $height - 1)
     #set($wMax = $width - 1)
 
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-            ${xState.getName()}($i, $j) = ${initialOutput.getName()};
+            $xStateName($i, $j) = $initialOutputName;
         #end
     #end
 #else
-    #set($height = $xState.getHeight())
-    #set($width = $xState.getWidth())
+    #set($height = $xStateHeight)
+    #set($width = $xStateWidth)
     #set($hMax = $height - 1)
     #set($wMax = $width - 1)
 
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-            ${xState.getName()}($i, $j) = ${initialOutput.getName()}($i, $j);
+            $xStateName($i, $j) = $initialOutputName($i, $j);
         #end
     #end
 #end

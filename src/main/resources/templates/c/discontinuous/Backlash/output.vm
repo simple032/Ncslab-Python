@@ -1,4 +1,4 @@
-/*Code for output of block Backlash:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Backlash:($blockId)$blockName*/
 
 #set($out = $outputPortList[0])
 
@@ -6,68 +6,68 @@
 
 #if($backlashWidth.dataType == $realDataType)
     #if($ops.outputSignalC.dataType == $realDataType)
-        if(${signal.getName()} < ${xState.getName()} - 0.5 * ${backlashWidth.getName()}) {
-            ${outputSignal.getName()} = ${signal.getName()} + 0.5 * ${backlashWidth.getName()};
-        } else if(${signal.getName()} <= ${xState.getName()} + 0.5 * ${backlashWidth.getName()}) {
-            ${outputSignal.getName()} = ${xState.getName()};
+        if($signalName < $xStateName - 0.5 * $backlashWidthName) {
+            $outputSignalName = $signalName + 0.5 * $backlashWidthName;
+        } else if($signalName <= $xStateName + 0.5 * $backlashWidthName) {
+            $outputSignalName = $xStateName;
         } else {
-            ${outputSignal.getName()} = ${signal.getName()} - 0.5 * ${backlashWidth.getName()};
+            $outputSignalName = $signalName - 0.5 * $backlashWidthName;
         }
-        ${xState.getName()} = ${outputSignal.getName()};
+        $xStateName = $outputSignalName;
     #else
-        #set($height = $ops.getHeight())
-        #set($width = $ops.getWidth())
+        #set($height = $opsHeight)
+        #set($width = $opsWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
 
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if(${signal.getName()}($i, $j) < ${xState.getName()}($i, $j) - 0.5 * ${backlashWidth.getName()}) {
-                    ${outputSignal.getName()}($i, $j) = ${signal.getName()}($i, $j) + 0.5 * ${backlashWidth.getName()};
-                } else if(${signal.getName()}($i, $j) <= ${xState.getName()}($i, $j) + 0.5 * ${backlashWidth.getName()}) {
-                    ${outputSignal.getName()}($i, $j) = ${xState.getName()}($i, $j);
+                if($signalName($i, $j) < $xStateName($i, $j) - 0.5 * $backlashWidthName) {
+                    $outputSignalName($i, $j) = $signalName($i, $j) + 0.5 * $backlashWidthName;
+                } else if($signalName($i, $j) <= $xStateName($i, $j) + 0.5 * $backlashWidthName) {
+                    $outputSignalName($i, $j) = $xStateName($i, $j);
                 } else {
-                    ${outputSignal.getName()}($i, $j) = ${signal.getName()}($i, $j) - 0.5 * ${backlashWidth.getName()};
+                    $outputSignalName($i, $j) = $signalName($i, $j) - 0.5 * $backlashWidthName;
                 }
-                ${xState.getName()}($i, $j) = ${outputSignal.getName()}($i, $j);
+                $xStateName($i, $j) = $outputSignalName($i, $j);
             #end
         #end
     #end
 #else
     #if($ops.outputSignalC.dataType == $realDataType)
-        #set($height = $backlashWidth.getHeight())
-        #set($width = $backlashWidth.getWidth())
+        #set($height = $backlashWidthHeight)
+        #set($width = $backlashWidthWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
 
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if(${signal.getName()} < ${xState.getName()}($i, $j) - 0.5 * ${backlashWidth.getName()}($i, $j)) {
-                    ${outputSignal.getName()}($i, $j) = ${signal.getName()} + 0.5 * ${backlashWidth.getName()}($i, $j);
-                } else if(${signal.getName()} <= ${xState.getName()}($i, $j) + 0.5 * ${backlashWidth.getName()}($i, $j)) {
-                    ${outputSignal.getName()}($i, $j) = ${xState.getName()}($i, $j);
+                if($signalName < $xStateName($i, $j) - 0.5 * $backlashWidthName($i, $j)) {
+                    $outputSignalName($i, $j) = $signalName + 0.5 * $backlashWidthName($i, $j);
+                } else if($signalName <= $xStateName($i, $j) + 0.5 * $backlashWidthName($i, $j)) {
+                    $outputSignalName($i, $j) = $xStateName($i, $j);
                 } else {
-                    ${outputSignal.getName()}($i, $j) = ${signal.getName()} - 0.5 * ${backlashWidth.getName()}($i, $j);
+                    $outputSignalName($i, $j) = $signalName - 0.5 * $backlashWidthName($i, $j);
                 }
-                ${xState.getName()}($i, $j) = ${outputSignal.getName()}($i, $j);
+                $xStateName($i, $j) = $outputSignalName($i, $j);
             #end
         #end
     #else
-        #set($height = $ops.getHeight())
-        #set($width = $ops.getWidth())
+        #set($height = $opsHeight)
+        #set($width = $opsWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
 
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if(${signal.getName()}($i, $j) < ${xState.getName()}($i, $j) - 0.5 * ${backlashWidth.getName()}($i, $j)) {
-                    ${outputSignal.getName()}($i, $j) = ${signal.getName()}($i, $j) + 0.5 * ${backlashWidth.getName()}($i, $j);
-                } else if(${signal.getName()}($i, $j) <= ${xState.getName()}($i, $j) + 0.5 * ${backlashWidth.getName()}($i, $j)) {
-                    ${outputSignal.getName()}($i, $j) = ${xState.getName()}($i, $j);
+                if($signalName($i, $j) < $xStateName($i, $j) - 0.5 * $backlashWidthName($i, $j)) {
+                    $outputSignalName($i, $j) = $signalName($i, $j) + 0.5 * $backlashWidthName($i, $j);
+                } else if($signalName($i, $j) <= $xStateName($i, $j) + 0.5 * $backlashWidthName($i, $j)) {
+                    $outputSignalName($i, $j) = $xStateName($i, $j);
                 } else {
-                    ${outputSignal.getName()}($i, $j) = ${signal.getName()}($i, $j) - 0.5 * ${backlashWidth.getName()}($i, $j);
+                    $outputSignalName($i, $j) = $signalName($i, $j) - 0.5 * $backlashWidthName($i, $j);
                 }
-                ${xState.getName()}($i, $j) = ${outputSignal.getName()}($i, $j);
+                $xStateName($i, $j) = $outputSignalName($i, $j);
             #end
         #end
     #end

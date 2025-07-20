@@ -1,2 +1,2 @@
-/* Define arrays for block discrete_unit_Delay:(${block.blockId}) ${block.blockName} */
-double Block${block.blockId}_unit_delay_savedata[${signal.height}][${signal.width}*2];
+/* Define arrays for block discrete_unit_Delay:(${blockId}) ${blockName} */
+double Block${blockId}_unit_delay_savedata[${signalHeight}][${signalWidth}*2];

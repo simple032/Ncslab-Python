@@ -2,23 +2,23 @@
 #if($lowerValue.data.dataType == $realDataType)
   #if($ops.outputSignalC.dataType == $realDataType)
   // 双方都是实数类型，直接使用标量比较
-  if(${signal.getName()} > ${upperValue.getName()}) {
-    ${outputs.get(0)} = ${signal.getName()} - ${upperValue.getName()};
-  } else if(${signal.getName()} < ${lowerValue.getName()}) {
-    ${outputs.get(0)} = ${signal.getName()} - ${lowerValue.getName()};
+  if($signalName > $upperValueName) {
+    ${output1} = $signalName - $upperValueName;
+  } else if($signalName < $lowerValueName) {
+    ${output1} = $signalName - $lowerValueName;
   } else {
-    ${outputs.get(0)} = 0;
+    ${output1} = 0;
   }
   #else
     #foreach($i in [0..$opsWidthIndex])
       #foreach($j in [0..$opsHeightIndex])
       // 输入是实数，输出是矩阵，对矩阵每个元素应用实数阈值
-      if(${signal.getName()} > ${upperValue.getName()}) {
-        ${outputs.get(0)}(${i},${j}) = ${signal.getName()} - ${upperValue.getName()};
-      } else if(${signal.getName()} < ${lowerValue.getName()}) {
-        ${outputs.get(0)}(${i},${j}) = ${signal.getName()} - ${lowerValue.getName()};
+      if($signalName > $upperValueName) {
+        ${output1}(${i},${j}) = $signalName - $upperValueName;
+      } else if($signalName < $lowerValueName) {
+        ${output1}(${i},${j}) = $signalName - $lowerValueName;
       } else {
-        ${outputs.get(0)}(${i},${j}) = 0;
+        ${output1}(${i},${j}) = 0;
       }
       #end
     #end
@@ -29,24 +29,24 @@
     #foreach($index in $lowerValueIndices)
       #set($i = $index / $lowerValue.width)
       #set($j = $index % $lowerValue.width)
-    if(${signal.getName()}(${i},${j}) > ${upperValue.getName()}) {
-      ${outputs.get(0)} += ${signal.getName()}(${i},${j}) - ${upperValue.getName()};
-    } else if(${signal.getName()}(${i},${j}) < ${lowerValue.getName()}) {
-      ${outputs.get(0)} += ${signal.getName()}(${i},${j}) - ${lowerValue.getName()};
+    if($signalName(${i},${j}) > $upperValueName) {
+      ${output1} += $signalName(${i},${j}) - $upperValueName;
+    } else if($signalName(${i},${j}) < $lowerValueName) {
+      ${output1} += $signalName(${i},${j}) - $lowerValueName;
     } else {
-      ${outputs.get(0)} += 0; // 可以省略这行
+      ${output1} += 0; // 可以省略这行
     }
     #end
   #else
     #foreach($i in [0..$lowerValueHeightIndex])
       #foreach($j in [0..$lowerValueWidthIndex])
       // 双方都是矩阵，逐元素比较
-      if(${signal.getName()}(${i},${j}) > ${upperValue.getName()}(${i},${j})) {
-        ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${upperValue.getName()}(${i},${j});
-      } else if(${signal.getName()}(${i},${j}) < ${lowerValue.getName()}(${i},${j})) {
-        ${outputs.get(0)}(${i},${j}) = ${signal.getName()}(${i},${j}) - ${lowerValue.getName()}(${i},${j});
+      if($signalName(${i},${j}) > $upperValueName(${i},${j})) {
+        ${output1}(${i},${j}) = $signalName(${i},${j}) - $upperValueName(${i},${j});
+      } else if($signalName(${i},${j}) < $lowerValueName(${i},${j})) {
+        ${output1}(${i},${j}) = $signalName(${i},${j}) - $lowerValueName(${i},${j});
       } else {
-        ${outputs.get(0)}(${i},${j}) = 0;
+        ${output1}(${i},${j}) = 0;
       }
       #end
     #end

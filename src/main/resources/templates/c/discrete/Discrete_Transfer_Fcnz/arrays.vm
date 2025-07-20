@@ -1,4 +1,4 @@
-/* Define arrays for block discrete_Transfer_Fcnz:(${block.blockId}) ${block.blockName} */
-double Block${block.getBlockId()}_discrete_transferz_savedata[$signal1.getHeight()][$signal1.getWidth()];
-#set($stateNum = $signal1.getWidth() * ($signal3.getWidth() - 1))
-double Block${block.getBlockId()}_state[$signal1.getHeight()][$stateNum];
+/* Define arrays for block discrete_Transfer_Fcnz:(${blockId}) ${blockName} */
+double Block${blockId}_discrete_transferz_savedata[$signal1Height][$signal1Width];
+#set($stateNum = $signal1Width * ($signal3Width - 1))
+double Block${blockId}_state[$signal1Height][$stateNum];

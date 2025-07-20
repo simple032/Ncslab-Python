@@ -1,1 +1,1 @@
-/*Code for Update of Discrete_Time_Integrator:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for Update of Discrete_Time_Integrator:(${blockId})${blockName}*/

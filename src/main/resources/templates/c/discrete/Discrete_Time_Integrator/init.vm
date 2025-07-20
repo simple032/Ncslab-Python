@@ -1,4 +1,4 @@
-/*Code for initialization of block Discrete_Time_Integrator:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block Discrete_Time_Integrator:(${blockId})${blockName}*/
 #if($gainval && $sampleTime && $initialCondition && $xState)
     ## Initialize parameter variables
     #if($gainval.initCodeC)
@@ -14,31 +14,31 @@
     ## Initialize state with initial condition
     #if($gainval.dataType == $realDataType && $xState.dataType == $realDataType)
         ## Scalar gain and scalar state
-        ${xState.getName()} = ${initialCondition.getName()};
+        $xStateName = $initialConditionName;
     #elseif($gainval.dataType == $realDataType && $xState.dataType == $matrixDataType)
         ## Scalar gain and matrix state
-        #set($hMax = $xState.getHeight() - 1)
-        #set($wMax = $xState.getWidth() - 1)
+        #set($hMax = $xStateHeight - 1)
+        #set($wMax = $xStateWidth - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                ${xState.getName()}($i,$j) = ${initialCondition.getName()};
+                $xStateName($i,$j) = $initialConditionName;
             #end
         #end
     #else
         ## Matrix gain and matrix state
-        #set($hMax = $xState.getHeight() - 1)
-        #set($wMax = $xState.getWidth() - 1)
+        #set($hMax = $xStateHeight - 1)
+        #set($wMax = $xStateWidth - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
                 #if($initialCondition.dataType == $realDataType)
-                    ${xState.getName()}($i,$j) = ${initialCondition.getName()};
+                    $xStateName($i,$j) = $initialConditionName;
                 #else
-                    ${xState.getName()}($i,$j) = ${initialCondition.getName()}($i,$j);
+                    $xStateName($i,$j) = $initialConditionName($i,$j);
                 #end
             #end
         #end
     #end
 #else
     ## Fallback if parameters missing
-    /* Discrete_Time_Integrator block ${block.getBlockId()} missing parameters */
+    /* Discrete_Time_Integrator block ${blockId} missing parameters */
 #end
