@@ -33,25 +33,16 @@ public class LQRController extends Block {
 
     private LQRVariable LQR_K;
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("A");
-        parameterNames.add("B");
-        parameterNames.add("Q");
-        parameterNames.add("R");
         outputNames.add("out1");
         inputNames.add("in1");
     }
 
     // === Parameter Defaults ===
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
         PARAMETER_DEFAULTS.put("A", "[1 1; 0 1]");
@@ -111,7 +102,7 @@ public class LQRController extends Block {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("globals", globalVariableList);
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/LQRController/init.vm", context);
@@ -120,10 +111,8 @@ public class LQRController extends Block {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("globals", globalVariableList);
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/LQRController/output.vm", context);
         code.addOutputCode(codeStr);
@@ -135,7 +124,7 @@ public class LQRController extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("globals", globalVariableList);
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/LQRController/init.vm", context);
@@ -143,10 +132,8 @@ public class LQRController extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("globals", globalVariableList);
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/LQRController/output.vm", context);
         code.addOutputCode(codeStr);

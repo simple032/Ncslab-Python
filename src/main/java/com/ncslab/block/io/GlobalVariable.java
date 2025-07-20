@@ -38,8 +38,15 @@ public abstract class GlobalVariable {
 	public GlobalVariable(Block block,int id,String localName,String dataString) {
 		this.block=block;
 		this.id=id;
-		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
+		
+		// Use UUID if available, otherwise fall back to block ID
+		String blockUUID = block.getBlockUUID();
+		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+			this.name = "_Block" + blockUUID.replace("-", "_") + "_" + localName;
+		} else {
+			// Use block ID when UUID is null/empty
+			this.name = "_Block" + block.getBlockId() + "_" + localName;
+		}
 		this.localName=localName;
 
 		data=new Data(dataString);
@@ -59,9 +66,14 @@ public abstract class GlobalVariable {
 	 * @return String for the name of the variable.
 	 */
 	public String getName() {
-		//this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
-		//区分监控组态中不同模块中的参数,replace方法用于处理部分模块的非连续字符串命名问题
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+localName;
+		// Use UUID if available, otherwise fall back to block ID
+		String blockUUID = block.getBlockUUID();
+		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+			this.name = "_Block" + blockUUID.replace("-", "_") + "_" + localName;
+		} else {
+			// Use block ID when UUID is null/empty
+			this.name = "_Block" + block.getBlockId() + "_" + localName;
+		}
 		return this.name;
 	}
 

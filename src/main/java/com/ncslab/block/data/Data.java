@@ -20,23 +20,28 @@ import java.util.regex.Pattern;
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
 public class Data {
 
-	@Getter
+    @Getter
     private DataType dataType = DataType.REAL;
-	@Getter
     @Setter
+    @Getter
     private double initValue = 0;
+    @Setter
     @Getter
     private int intValue = 0;
 
 	private Matrix initMatrix = null;
-	@Getter
+    @Setter
+    @Getter
 	private String initString = "";
+    @Setter
     @Getter
     private String dataString = "";
 
-    @Getter
     @Setter
+    @Getter
     private static Vector<String> temp_variable_names = new Vector<>();
+
+    VelocityContext context = new VelocityContext();
 
 //	static FelEngine fel = new FelEngineImpl();
 //	static {
@@ -243,7 +248,7 @@ public class Data {
 	}
 
 	public String getDefineCodeC(String name) {
-		VelocityContext context = new VelocityContext();
+
 		context.put("name", name);
 		context.put("dataType", dataType);
 		context.put("realDataType", DataType.REAL);

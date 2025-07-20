@@ -26,10 +26,10 @@ public class OutputPort {
     @Getter
     private int height=1;
 
-	@Getter
+    @Getter
     private int number;
 
-	@Getter
+    @Getter
     private Vector<Line> linkedLineList=new Vector<Line>();
 
 	private boolean isFeedThrough=false;
@@ -44,30 +44,50 @@ public class OutputPort {
     @Getter
     private OutputSignal outputSignalC=null;
 
-	@Getter
     @Setter
+    @Getter
     private String name;
+
+    VelocityContext context = new VelocityContext();
 
 	public OutputPort(Block block,int number){
 		this.block=block;
 		this.number=number;
-		//区分监控组态中不同模块中的输出信号,replace方法用于处理部分模块的非连续字符串命名问题
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_out"+number;
+
+		// Use UUID if available, otherwise fall back to block ID
+		String blockUUID = block.getBlockUUID();
+		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+			this.name = "_Block" + blockUUID.replace("-", "_") + "_out" + number;
+		} else {
+			this.name = "_Block" + block.getBlockId() + "_out" + number;
+		}
 	}
 
 	public OutputPort(Block block,int number,boolean isFeedThrough){
 		this.block=block;
 		this.number=number;
-		//区分监控组态中不同模块中的输出信号,replace方法用于处理部分模块的非连续字符串命名问题
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_out"+number;
+
+		// Use UUID if available, otherwise fall back to block ID
+		String blockUUID = block.getBlockUUID();
+		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+			this.name = "_Block" + blockUUID.replace("-", "_") + "_out" + number;
+		} else {
+			this.name = "_Block" + block.getBlockId() + "_out" + number;
+		}
 		this.isFeedThrough=isFeedThrough;
 	}
 
 	public OutputPort(Block block,String name,int number,boolean isFeedThrough){
 		this.block=block;
 		this.number=number;
-		//区分监控组态中不同模块中的输出信号,replace方法用于处理部分模块的非连续字符串命名问题
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_"+name;
+
+		// Use UUID if available, otherwise fall back to block ID
+		String blockUUID = block.getBlockUUID();
+		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+			this.name = "_Block" + blockUUID.replace("-", "_") + "_" + name;
+		} else {
+			this.name = "_Block" + block.getBlockId() + "_" + name;
+		}
 		this.isFeedThrough=isFeedThrough;
 	}
 
@@ -108,7 +128,7 @@ public class OutputPort {
     public void setIsDimScaned(boolean isDimScaned) {        this.isDimScaned=isDimScaned;    }
 
     public String getDataStructureInitCodeC() {
-        VelocityContext context = new VelocityContext();
+
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
         context.put("blockId", block.getBlockId());

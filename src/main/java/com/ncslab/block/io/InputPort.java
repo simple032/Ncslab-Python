@@ -17,15 +17,17 @@ public class InputPort {
 
 	private Block block;
 
-	@Getter
+    @Getter
     private int number;
 
-	@Getter
+    @Getter
     private String name;
 
-	@Getter
     @Setter
+    @Getter
     private Line linkedLine=null;
+
+    VelocityContext context = new VelocityContext();
 
 	public InputPort(Block block,int number){
 		this.block=block;
@@ -33,11 +35,23 @@ public class InputPort {
 		this.number=number;
 
 		this.linkedOutputPort=null;
-		//区分监控组态中不同模块中的输入,replace方法用于处理部分模块的非连续字符串命名问题
+
+		// Use UUID if available, otherwise fall back to block ID
+		String blockUUID = block.getBlockUUID();
 		if(block.getBlockType().equals("Scope")) {
-			this.name=block.getBlockName();
-		}else {
-		this.name=block.getBlockName().replace(" ", "_").replace("-", "_").replace("(", "_").replace(")", "")+"_in"+number;
+			// For Scope, use simple name without suffix
+			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+				this.name = "_Block" + blockUUID.replace("-", "_");
+			} else {
+				this.name = "_Block" + block.getBlockId();
+			}
+		} else {
+			// For other blocks, add input port suffix
+			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+				this.name = "_Block" + blockUUID.replace("-", "_") + "_in" + number;
+			} else {
+				this.name = "_Block" + block.getBlockId() + "_in" + number;
+			}
 		}
 	}
 
@@ -89,15 +103,19 @@ public class InputPort {
 	public String getDataStructureInitCodeC() {
 
 		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        VelocityContext context = new VelocityContext();
+
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
         context.put("blockId", block.getBlockId());
         context.put("blockName", block.getBlockName());
         context.put("blockPath", block.getBlockPath());
-        context.put("signal", signal);
+
         context.put("number", getNumber());
         context.put("name", getName());
+        context.put("signalName", signal.getName());
+        context.put("signalWidth", signal.getWidth());
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalDataType", signal.getDataType());
 
         return TemplateManager.renderTemplate("c/io/InputPort/init.vm", context);
 	}

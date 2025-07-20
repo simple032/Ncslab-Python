@@ -7,20 +7,22 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class State {
-	@Getter
+    @Getter
     private int id;
 	private String name;
-	@Getter
+    @Getter
     private String localName;
+    @Setter
+    @Getter
 	private int width=1;
 
 	private Block block;
 
     @Getter
-	private Data data=null;
+    private Data data=null;
 
     @Getter
-	private Data derivateData=null;
+    private Data derivateData=null;
 
 	public State(Block block,int id,String localName){
 		this.block=block;

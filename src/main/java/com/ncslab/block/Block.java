@@ -27,41 +27,40 @@ import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 public class Block implements MCodeBlock, CCodeBlock{
 
 	//Block的类型，需要在BlockType中建立block的时候分别对待
-	@Getter
+    @Getter
     protected String blockType;
-	@Getter
+    @Getter
     protected String blockName;
 
-	@Getter
     @Setter
+    @Getter
     protected int blockId = 0;
     //xiazhiqiang:获取模块所处子系统的位置两个方法getBlockPath与getSubSystemName
     //Block所在画布的位置，不在子系统时为modelName，存在子系统时为modelName/subsystem
-	@Getter
+    @Getter
     protected String blockPath;
 	//Block的参数，因为不同的block有不同的参数，因此以原生的json格式存储
 
     @Getter
     protected String blockUUID = "null"; // 只有BlockCId才具有唯一性
 
-	@Getter
+    @Getter
     protected JSONObject paramValues;
 
 	//输入与输出端口的列表
-	@Getter
+    @Getter
     protected Vector<InputPort> inputPortList = new Vector<>();
-	@Getter
+    @Getter
     protected Vector<OutputPort> outputPortList = new Vector<OutputPort>();
-
-	@Getter
+    @Getter
     protected Vector<Parameter> parameterList = new Vector<Parameter>();
-	@Getter
+    @Getter
     protected Vector<State> stateList = new Vector<State>();
     @Getter
     protected Vector<State> dStateList = new Vector<State>();
     @Getter
     protected Vector<RWork> rworkList = new Vector<>();
-	@Getter
+    @Getter
     protected Vector<GlobalVariable> globalVariableList = new Vector<>(); // global variables
 
 	protected Vector<OutputSignal> outputSignalList = new Vector<OutputSignal>();
@@ -72,19 +71,16 @@ public class Block implements MCodeBlock, CCodeBlock{
 	protected boolean isDimScaned = false;
 
 	//指向上级Model模型的指针
-	@Getter
+    @Getter
     protected NCSLabModel model;
 
 	protected boolean isHardware = false;
 
 	//Block中Singal中的个数，Signal没有Java的数据结构，Signal可以是InputPort的量，也可以是OutputPort中的量，具体看代码生成时的认定
-	@Getter
     @Setter
+    @Getter
     protected int signalNum = 0;
 
-	@Getter
-    public static Vector<String> parameterNames = new Vector<>();
-	// abstract public Vector<String> getParameterNames();
 
     // Get parameter defaults from the derived class's static PARAMETER_DEFAULTS field
     protected Map<String, String> getParameterDefaults() {
@@ -138,14 +134,9 @@ public class Block implements MCodeBlock, CCodeBlock{
         this.blockUUID=blockIn.optString("blockUUID", "null");
         parseParameterList();
         context = new VelocityContext();
-        context.put("realDataType", DataType.REAL);
-        context.put("matrixDataType", DataType.MATRIX);
-        context.put("modelMode", model.getModelMode());
-        context.put("compilationMode", ModelMode.Compilation);
-        context.put("simulationMode", ModelMode.Simulation);
         
-        // Use enhanced template utilities for standardized context
-        TemplateUtils.populateStandardContext(context, this);
+        // Use enhanced template utilities for comprehensive context population
+        TemplateUtils.populateAllContext(context, this);
 	}
 
     public void setFeedThrough(boolean feedThrough) {

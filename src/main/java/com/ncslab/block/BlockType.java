@@ -280,7 +280,15 @@ public class BlockType{
                 continue;
             }
             // 调用静态方法
-            Vector<?> parameterNames = (Vector<?>) blockClass.getMethod("getParameterNames").invoke(null); // 注意这里是null，因为是静态方法
+            Set<?> parameterNames = null;
+            try {
+                // Try to get PARAMETER_DEFAULTS map and extract keys
+                java.util.Map<?, ?> parameterDefaults = (java.util.Map<?, ?>) blockClass.getField("PARAMETER_DEFAULTS").get(null);
+                parameterNames = parameterDefaults.keySet();
+            } catch (Exception e) {
+                // Fallback to empty set if PARAMETER_DEFAULTS doesn't exist
+                parameterNames = new java.util.HashSet<>();
+            }
             Vector<?> inputNames = (Vector<?>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法
             Vector<?> outputNames = (Vector<?>) blockClass.getMethod("getOutputNames").invoke(null); // 注意这里是null，因为是静态方法
 
