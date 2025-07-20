@@ -1,14 +1,14 @@
-/*Code for Update of :(${block.getBlockId()})${block.getBlockName()}*/
-#if($signal.getDataType() == $realDataType && $cparaP.getDataType() == $realDataType)
-${stateIntegral.getName()}=${stateIntegral.getName()}+${stateIntegral.getDerivativeName()}*model.stepSize;
-${stateFilter.getName()}=${stateFilter.getName()}+${stateFilter.getDerivativeName()}*model.stepSize;
+/*Code for Update of :($blockId)$blockName*/
+#if($signalDataType == $realDataType && $proportionalGainDataType == $realDataType)
+$integralStateName=$integralStateName+$integralStateDerivativeName*model.stepSize;
+$filterStateName=$filterStateName+$filterStateDerivativeName*model.stepSize;
 #else
-#set($stateFilterHeightMax = $stateFilter.getHeight() - 1)
-#set($stateFilterWidthMax = $stateFilter.getWidth() - 1)
+#set($stateFilterHeightMax = $filterStateHeight - 1)
+#set($stateFilterWidthMax = $filterStateWidth - 1)
 #foreach($i in [0..$stateFilterHeightMax])
 #foreach($j in [0..$stateFilterWidthMax])
-${stateIntegral.getName()}($i,$j)=${stateIntegral.getName()}($i,$j)+${stateIntegral.getDerivativeName()}($i,$j)*model.stepSize;
-${stateFilter.getName()}($i,$j)=${stateFilter.getName()}($i,$j)+${stateFilter.getDerivativeName()}($i,$j)*model.stepSize;
+$integralStateName($i,$j)=$integralStateName($i,$j)+$integralStateDerivativeName($i,$j)*model.stepSize;
+$filterStateName($i,$j)=$filterStateName($i,$j)+$filterStateDerivativeName($i,$j)*model.stepSize;
 #end
 #end
 #end

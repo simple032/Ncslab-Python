@@ -1,0 +1,16 @@
+${cparaP.initCodeC}${cparaI.initCodeC}${cparaD.initCodeC}${cparaN.initCodeC}#if($limitOutput == "on")
+${lowerSaturationLimit.initCodeC}${upperSaturationLimit.initCodeC}#end
+#if($cparaP.dataType == $realDataType && $stateIntegral.dataType == $realDataType)
+${stateIntegral.name}=0;
+${stateFilter.name}=0;
+#else
+  #set($stateIntegralHeightMax = $stateIntegral.height - 1)
+  #set($stateIntegralWidthMax = $stateIntegral.width - 1)
+  #foreach($i in [0..$stateIntegralHeightMax])
+    #foreach($j in [0..$stateIntegralWidthMax])
+${stateIntegral.name}($i,$j)=0;
+${stateFilter.name}($i,$j)=0;
+    #end
+  #end
+#end
+${sampleTime.initCodeC}

@@ -9,8 +9,8 @@
 #parse("c/shared/block_header.vm")
 
 ## Block-specific variables
-#set($blockId = $block.getBlockId())
-#set($outputVar = $block.getOutputPortVariable(0))
+#set($blockId = $blockId)
+#set($outputVar = $outputSignal)
 #set($inputSignal = #getInputSignal(0))
 
 ## PID Controller computation
@@ -18,11 +18,11 @@
     #if(#isScalar($inputSignal))
         ## Scalar PID computation
         if(sfcnIsMajorStep()) {
-            Block${blockId}save_data[0] = ${cparaP.getName()} * ${inputSignal.getName()};
-            Block${blockId}save_data[1] = ${cparaD.getName()} * ${inputSignal.getName()};
-            Block${blockId}save_data[2] = ${cparaI.getName()} * ${inputSignal.getName()};
-            Block${blockId}save_data[3] = (Block${blockId}save_data[1] - ${stateFilter.getName()}) * ${cparaN.getName()};
-            double Block${blockId}_intermediate = Block${blockId}save_data[0] + ${stateIntegral.getName()} + Block${blockId}save_data[3];
+            Block${blockId}save_data[0] = $proportionalGainName * $inputSignalName;
+            Block${blockId}save_data[1] = $derivativeGainName * $inputSignalName;
+            Block${blockId}save_data[2] = $integralGainName * $inputSignalName;
+            Block${blockId}save_data[3] = (Block${blockId}save_data[1] - $filterStateName) * $filterCoefficientName;
+            double Block${blockId}_intermediate = Block${blockId}save_data[0] + $integralStateName + Block${blockId}save_data[3];
 
             ## Handle external reset
             #if($externalReset == "on")
@@ -34,8 +34,8 @@
 
             ## Apply output saturation if enabled
             #if($limitOutput == "on")
-            ${outputVar} = (Block${blockId}_intermediate > ${upperSaturationLimit.getName()}) ? ${upperSaturationLimit.getName()} : 
-                         ((Block${blockId}_intermediate < ${lowerSaturationLimit.getName()}) ? ${lowerSaturationLimit.getName()} : Block${blockId}_intermediate);
+            ${outputVar} = (Block${blockId}_intermediate > $upperSaturationLimitName) ? $upperSaturationLimitName : 
+                         ((Block${blockId}_intermediate < $lowerSaturationLimitName) ? $lowerSaturationLimitName : Block${blockId}_intermediate);
             #else
             ${outputVar} = Block${blockId}_intermediate;
             #end
@@ -43,8 +43,8 @@
         
     #else
         ## Matrix input, scalar PID parameters
-        #set($height = $inputSignal.getHeight())
-        #set($width = $inputSignal.getWidth())
+        #set($height = $inputSignalHeight)
+        #set($width = $inputSignalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         #set($m5 = 5)
@@ -52,13 +52,13 @@
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
         if(sfcnIsMajorStep()) {
-            Block${blockId}save_data[${i}][${j}*${m5}] = ${cparaP.getName()} * ${inputSignal.getName()}(${i}, ${j});
-            Block${blockId}save_data[${i}][${j}*${m5}+1] = ${cparaD.getName()} * ${inputSignal.getName()}(${i}, ${j});
-            Block${blockId}save_data[${i}][${j}*${m5}+2] = ${cparaI.getName()} * ${inputSignal.getName()}(${i}, ${j});
+            Block${blockId}save_data[${i}][${j}*${m5}] = $proportionalGainName * $inputSignalName(${i}, ${j});
+            Block${blockId}save_data[${i}][${j}*${m5}+1] = $derivativeGainName * $inputSignalName(${i}, ${j});
+            Block${blockId}save_data[${i}][${j}*${m5}+2] = $integralGainName * $inputSignalName(${i}, ${j});
         }
         double Block${blockId}_intermediate = Block${blockId}save_data[${i}][${j}*${m5}] + 
-                                             ${stateIntegral.getName()}(${i}, ${j}) + 
-                                             (Block${blockId}save_data[${i}][${j}*${m5}+1] - ${stateFilter.getName()}(${i}, ${j})) * ${cparaN.getName()};
+                                             $integralStateName(${i}, ${j}) + 
+                                             (Block${blockId}save_data[${i}][${j}*${m5}+1] - $filterStateName(${i}, ${j})) * $filterCoefficientName;
 
         ## Handle external reset
         #if($externalReset == "on")
@@ -70,8 +70,8 @@
 
         ## Apply output saturation if enabled
         #if($limitOutput == "on")
-        ${outputVar}(${i}, ${j}) = (Block${blockId}_intermediate > ${upperSaturationLimit.getName()}(${i}, ${j})) ? ${upperSaturationLimit.getName()}(${i}, ${j}) : 
-                                  ((Block${blockId}_intermediate < ${lowerSaturationLimit.getName()}(${i}, ${j})) ? ${lowerSaturationLimit.getName()}(${i}, ${j}) : Block${blockId}_intermediate);
+        ${outputVar}(${i}, ${j}) = (Block${blockId}_intermediate > $upperSaturationLimitName(${i}, ${j})) ? $upperSaturationLimitName(${i}, ${j}) : 
+                                  ((Block${blockId}_intermediate < $lowerSaturationLimitName(${i}, ${j})) ? $lowerSaturationLimitName(${i}, ${j}) : Block${blockId}_intermediate);
         #else
         ${outputVar}(${i}, ${j}) = Block${blockId}_intermediate;
         #end
@@ -80,8 +80,8 @@
     #end
 #else
     ## Matrix PID parameters
-    #set($height = $cparaP.getHeight())
-    #set($width = $cparaP.getWidth())  
+    #set($height = $proportionalGainHeight)
+    #set($width = $proportionalGainWidth)  
     #set($hMax = $height - 1)
     #set($wMax = $width - 1)
     #set($m5 = 5)
@@ -91,13 +91,13 @@
         ${blockId}_loop_i: for(int ${blockId}_i = 0; ${blockId}_i < ${height}; ${blockId}_i++) {
         ${blockId}_loop_j: for(int ${blockId}_j = 0; ${blockId}_j < ${width}; ${blockId}_j++) {
             if(sfcnIsMajorStep()) {
-                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = ${cparaP.getName()}(${blockId}_i, ${blockId}_j) * ${inputSignal.getName()};
-                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = ${cparaD.getName()}(${blockId}_i, ${blockId}_j) * ${inputSignal.getName()};
-                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = ${cparaI.getName()}(${blockId}_i, ${blockId}_j) * ${inputSignal.getName()};
+                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = $proportionalGainName(${blockId}_i, ${blockId}_j) * $inputSignalName;
+                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = $derivativeGainName(${blockId}_i, ${blockId}_j) * $inputSignalName;
+                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = $integralGainName(${blockId}_i, ${blockId}_j) * $inputSignalName;
             }
             double Block${blockId}_intermediate = Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] + 
-                                                 ${stateIntegral.getName()}(${blockId}_i, ${blockId}_j) + 
-                                                 (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - ${stateFilter.getName()}(${blockId}_i, ${blockId}_j)) * ${cparaN.getName()}(${blockId}_i, ${blockId}_j);
+                                                 $integralStateName(${blockId}_i, ${blockId}_j) + 
+                                                 (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - $filterStateName(${blockId}_i, ${blockId}_j)) * $filterCoefficientName(${blockId}_i, ${blockId}_j);
 
             ## Handle external reset
             #if($externalReset == "on")
@@ -109,8 +109,8 @@
 
             ## Apply output saturation if enabled
             #if($limitOutput == "on")
-            ${outputVar}(${blockId}_i, ${blockId}_j) = (Block${blockId}_intermediate > ${upperSaturationLimit.getName()}(${blockId}_i, ${blockId}_j)) ? ${upperSaturationLimit.getName()}(${blockId}_i, ${blockId}_j) : 
-                                                      ((Block${blockId}_intermediate < ${lowerSaturationLimit.getName()}(${blockId}_i, ${blockId}_j)) ? ${lowerSaturationLimit.getName()}(${blockId}_i, ${blockId}_j) : Block${blockId}_intermediate);
+            ${outputVar}(${blockId}_i, ${blockId}_j) = (Block${blockId}_intermediate > $upperSaturationLimitName(${blockId}_i, ${blockId}_j)) ? $upperSaturationLimitName(${blockId}_i, ${blockId}_j) : 
+                                                      ((Block${blockId}_intermediate < $lowerSaturationLimitName(${blockId}_i, ${blockId}_j)) ? $lowerSaturationLimitName(${blockId}_i, ${blockId}_j) : Block${blockId}_intermediate);
             #else
             ${outputVar}(${blockId}_i, ${blockId}_j) = Block${blockId}_intermediate;
             #end
@@ -118,16 +118,16 @@
         }
     #else
         ## Matrix input, matrix PID parameters
-        ${blockId}_loop_i: for(int ${blockId}_i = 0; ${blockId}_i < ${inputSignal.getHeight()}; ${blockId}_i++) {
-        ${blockId}_loop_j: for(int ${blockId}_j = 0; ${blockId}_j < ${inputSignal.getWidth()}; ${blockId}_j++) {
+        ${blockId}_loop_i: for(int ${blockId}_i = 0; ${blockId}_i < $inputSignalHeight; ${blockId}_i++) {
+        ${blockId}_loop_j: for(int ${blockId}_j = 0; ${blockId}_j < $inputSignalWidth; ${blockId}_j++) {
             if(sfcnIsMajorStep()) {
-                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = ${cparaP.getName()}(${blockId}_i, ${blockId}_j) * ${inputSignal.getName()}(${blockId}_i, ${blockId}_j);
-                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = ${cparaD.getName()}(${blockId}_i, ${blockId}_j) * ${inputSignal.getName()}(${blockId}_i, ${blockId}_j);
-                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = ${cparaI.getName()}(${blockId}_i, ${blockId}_j) * ${inputSignal.getName()}(${blockId}_i, ${blockId}_j);
+                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] = $proportionalGainName(${blockId}_i, ${blockId}_j) * $inputSignalName(${blockId}_i, ${blockId}_j);
+                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] = $derivativeGainName(${blockId}_i, ${blockId}_j) * $inputSignalName(${blockId}_i, ${blockId}_j);
+                Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+2] = $integralGainName(${blockId}_i, ${blockId}_j) * $inputSignalName(${blockId}_i, ${blockId}_j);
             }
             double Block${blockId}_intermediate = Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}] + 
-                                                 ${stateIntegral.getName()}(${blockId}_i, ${blockId}_j) + 
-                                                 (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - ${stateFilter.getName()}(${blockId}_i, ${blockId}_j)) * ${cparaN.getName()}(${blockId}_i, ${blockId}_j);
+                                                 $integralStateName(${blockId}_i, ${blockId}_j) + 
+                                                 (Block${blockId}save_data[${blockId}_i][${blockId}_j*${m5}+1] - $filterStateName(${blockId}_i, ${blockId}_j)) * $filterCoefficientName(${blockId}_i, ${blockId}_j);
 
             ## Handle external reset
             #if($externalReset == "on")
@@ -139,8 +139,8 @@
 
             ## Apply output saturation if enabled
             #if($limitOutput == "on")
-            ${outputVar}(${blockId}_i, ${blockId}_j) = (Block${blockId}_intermediate > ${upperSaturationLimit.getName()}(${blockId}_i, ${blockId}_j)) ? ${upperSaturationLimit.getName()}(${blockId}_i, ${blockId}_j) : 
-                                                      ((Block${blockId}_intermediate < ${lowerSaturationLimit.getName()}(${blockId}_i, ${blockId}_j)) ? ${lowerSaturationLimit.getName()}(${blockId}_i, ${blockId}_j) : Block${blockId}_intermediate);
+            ${outputVar}(${blockId}_i, ${blockId}_j) = (Block${blockId}_intermediate > $upperSaturationLimitName(${blockId}_i, ${blockId}_j)) ? $upperSaturationLimitName(${blockId}_i, ${blockId}_j) : 
+                                                      ((Block${blockId}_intermediate < $lowerSaturationLimitName(${blockId}_i, ${blockId}_j)) ? $lowerSaturationLimitName(${blockId}_i, ${blockId}_j) : Block${blockId}_intermediate);
             #else
             ${outputVar}(${blockId}_i, ${blockId}_j) = Block${blockId}_intermediate;
             #end

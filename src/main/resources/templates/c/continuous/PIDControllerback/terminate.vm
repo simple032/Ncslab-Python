@@ -1,4 +1,4 @@
-/* PIDControllerback($block.getBlockId()) $block.getBlockName() terminate */
+/* PIDControllerback($blockId) $blockName terminate */
 // Cleanup resources
 prev_error = 0.0;
 integral = 0.0;

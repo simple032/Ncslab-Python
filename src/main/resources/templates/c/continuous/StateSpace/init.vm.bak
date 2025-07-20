@@ -1,0 +1,9 @@
+/* 初始化状态空间模块: ($block.getBlockId()) $block.getBlockName() */
+${A.getInitCodeC()}
+${B.getInitCodeC()}
+${C.getInitCodeC()}
+${D.getInitCodeC()}
+${X0.getInitCodeC()}
+
+// 初始化状态变量
+${xState.getName()} = ${X0.getName()};

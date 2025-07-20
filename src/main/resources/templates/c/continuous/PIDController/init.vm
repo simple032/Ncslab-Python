@@ -1,4 +1,4 @@
-/*Code for initialization of block PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block PID Controller:($blockId)$blockName*/
 #if($proportionalGain && $integralGain && $derivativeGain && $filterCoefficient && $stateIntegral && $stateFilter)
     ## Initialize PID parameters
     #if($proportionalGain.initCodeC)
@@ -27,22 +27,22 @@
     ## Initialize PID internal states
     #if($proportionalGain.dataType == $realDataType && $stateIntegral.dataType == $realDataType)
         ## Scalar PID controller
-        ${stateIntegral.getName()} = 0.0;
-        ${stateFilter.getName()} = 0.0;
+        $integralStateName = 0.0;
+        $filterStateName = 0.0;
     #else
         ## Matrix PID controller
-        #set($height = $stateIntegral.getHeight())
-        #set($width = $stateIntegral.getWidth())
+        #set($height = $integralStateHeight)
+        #set($width = $integralStateWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                ${stateIntegral.getName()}[$i][$j] = 0.0;
-                ${stateFilter.getName()}[$i][$j] = 0.0;
+                $integralStateName[$i][$j] = 0.0;
+                $filterStateName[$i][$j] = 0.0;
             #end
         #end
     #end
 #else
     ## Fallback if parameters missing
-    /* PID Controller block ${block.getBlockId()} missing parameters */
+    /* PID Controller block $blockId missing parameters */
 #end

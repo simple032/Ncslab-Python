@@ -1,0 +1,14 @@
+/*Code for Update of :(${block.getBlockId()})${block.getBlockName()}*/
+#if($signal.getDataType() == $realDataType && $cparaP.getDataType() == $realDataType)
+${stateIntegral.getName()}=${stateIntegral.getName()}+${stateIntegral.getDerivativeName()}*model.stepSize;
+${stateFilter.getName()}=${stateFilter.getName()}+${stateFilter.getDerivativeName()}*model.stepSize;
+#else
+#set($stateFilterHeightMax = $stateFilter.getHeight() - 1)
+#set($stateFilterWidthMax = $stateFilter.getWidth() - 1)
+#foreach($i in [0..$stateFilterHeightMax])
+#foreach($j in [0..$stateFilterWidthMax])
+${stateIntegral.getName()}($i,$j)=${stateIntegral.getName()}($i,$j)+${stateIntegral.getDerivativeName()}($i,$j)*model.stepSize;
+${stateFilter.getName()}($i,$j)=${stateFilter.getName()}($i,$j)+${stateFilter.getDerivativeName()}($i,$j)*model.stepSize;
+#end
+#end
+#end

@@ -1,7 +1,7 @@
 /*Code for output of block PID Controller:(${blockId})${blockName}*/
 {real_T currentTime = model.time;
 if(fabs(floor(currentTime/${sampleTime.name}+0.5)-currentTime/${sampleTime.name})<0.000001) {
-#if($cparaP.dataType == $realDataType)
+#if($proportionalGainDataType == $realDataType)
   #if($inputSignal.dataType == $realDataType)
     if(mp->majorStep>0) {
       Block${blockId}save_data[0]=${cparaP.name}*${inputSignal.name};
@@ -55,10 +55,10 @@ if(fabs(floor(currentTime/${sampleTime.name}+0.5)-currentTime/${sampleTime.name}
       #end
     #end
   #end
-#elseif($cparaP.dataType == $matrixDataType)
+#elseif($proportionalGainDataType == $matrixDataType)
   #if($inputSignal.dataType == $realDataType)
-    #set($cparaPHeightMax = $cparaP.height - 1)
-    #set($cparaPWidthMax = $cparaP.width - 1)
+    #set($cparaPHeightMax = $proportionalGainHeight - 1)
+    #set($cparaPWidthMax = $proportionalGainWidth - 1)
     #foreach($i in [0..$cparaPHeightMax])
       #foreach($j in [0..$cparaPWidthMax])
         if(mp->majorStep>0) {
@@ -86,8 +86,8 @@ if(fabs(floor(currentTime/${sampleTime.name}+0.5)-currentTime/${sampleTime.name}
       #end
     #end
   #elseif($inputSignal.dataType == $matrixDataType)
-    #set($cparaPHeightMax = $cparaP.height - 1)
-    #set($cparaPWidthMax = $cparaP.width - 1)
+    #set($cparaPHeightMax = $proportionalGainHeight - 1)
+    #set($cparaPWidthMax = $proportionalGainWidth - 1)
     #foreach($i in [0..$cparaPHeightMax])
       #foreach($j in [0..$cparaPWidthMax])
         if(mp->majorStep>0) {

@@ -1,27 +1,27 @@
-/*Code for Derivative of PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for Derivative of PID Controller:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $stateIntegral && $stateFilter && $proportionalGain)
     #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
-    #set($blockId = $block.getBlockId())
+    #set($blockId = $blockId)
     
-    #if($signal.dataType == $realDataType && $proportionalGain.dataType == $realDataType)
+    #if($signalDataType == $realDataType && $proportionalGain.dataType == $realDataType)
         ## Scalar PID derivative calculation
-        ${stateIntegral.getDerivativeName()} = Block${blockId}save_data[2];
-        ${stateFilter.getDerivativeName()} = Block${blockId}save_data[3];
+        $integralStateDerivativeName = Block${blockId}save_data[2];
+        $filterStateDerivativeName = Block${blockId}save_data[3];
     #else
         ## Matrix PID derivative calculation
-        #set($height = $stateIntegral.getHeight())
-        #set($width = $stateIntegral.getWidth())
+        #set($height = $integralStateHeight)
+        #set($width = $integralStateWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                ${stateIntegral.getDerivativeName()}[$i][$j] = Block${blockId}save_data[$i][$j*5+2];
-                ${stateFilter.getDerivativeName()}[$i][$j] = Block${blockId}save_data[$i][$j*5+3];
+                $integralStateDerivativeName[$i][$j] = Block${blockId}save_data[$i][$j*5+2];
+                $filterStateDerivativeName[$i][$j] = Block${blockId}save_data[$i][$j*5+3];
             #end
         #end
     #end
 #else
     ## Fallback if parameters missing
-    /* PID Controller derivative block ${block.getBlockId()} missing parameters */
+    /* PID Controller derivative block $blockId missing parameters */
 #end

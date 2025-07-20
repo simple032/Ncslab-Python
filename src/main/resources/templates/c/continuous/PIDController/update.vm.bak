@@ -1,0 +1,26 @@
+/*Code for Update of PID Controller:(${block.getBlockId()})${block.getBlockName()}*/
+#if($inputPortList && $inputPortList.size() > 0 && $stateIntegral && $stateFilter && $proportionalGain)
+    #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+    
+    #if($signal.dataType == $realDataType && $proportionalGain.dataType == $realDataType)
+        ## Scalar PID state update
+        ${stateIntegral.getName()} = ${stateIntegral.getName()} + ${stateIntegral.getDerivativeName()} * model.stepSize;
+        ${stateFilter.getName()} = ${stateFilter.getName()} + ${stateFilter.getDerivativeName()} * model.stepSize;
+    #else
+        ## Matrix PID state update
+        #set($height = $stateFilter.getHeight())
+        #set($width = $stateFilter.getWidth())
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                ${stateIntegral.getName()}[$i][$j] = ${stateIntegral.getName()}[$i][$j] + ${stateIntegral.getDerivativeName()}[$i][$j] * model.stepSize;
+                ${stateFilter.getName()}[$i][$j] = ${stateFilter.getName()}[$i][$j] + ${stateFilter.getDerivativeName()}[$i][$j] * model.stepSize;
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    /* PID Controller update block ${block.getBlockId()} missing parameters */
+#end

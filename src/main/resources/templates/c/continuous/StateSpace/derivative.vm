@@ -1,2 +1,2 @@
-/* 状态空间模块微分计算: ($block.getBlockId()) $block.getBlockName() */
-${xState.getDerivativeName()} = ${A.getName()} * ${xState.getName()} + ${B.getName()} * ${block.getInputPortVariable(0)};
+/* 状态空间模块微分计算: ($blockId) $blockName */
+${xState.getDerivativeName()} = ${A.getName()} * ${xState.getName()} + ${B.getName()} * $inputSignal;

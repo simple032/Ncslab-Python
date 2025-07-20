@@ -1,0 +1,21 @@
+/* PID控制器模块输出: ($block.getBlockId()) $block.getBlockName() */
+#if($block.cparaP.dataType == $realDataType)
+    #set($error = $inputs.get(0))
+    ${outputs.get(0)} = ${block.cparaP.getName()} * $error 
+                        + ${stateIntegral.getName()} 
+                        + ${block.cparaD.getName()} * ${block.cparaN.getName()} 
+                        * ($error - ${stateFilter.getName()});
+#else
+#if($block.cparaP.getHeight() && $block.cparaP.getWidth())
+#set($pHeightIndex = ${block.cparaP.getHeight()} - 1)
+    #foreach($i in [0..$pHeightIndex])
+#set($pWidthIndex = ${block.cparaP.getWidth()} - 1)
+        #foreach($j in [0..$pWidthIndex])
+            ${outputs.get(0)}($i,$j) = ${block.cparaP.getName()}($i,$j) * $inputs.get(0)($i,$j)
+                                      + ${stateIntegral.getName()}($i,$j)
+                                      + ${block.cparaD.getName()}($i,$j) * ${block.cparaN.getName()}($i,$j)
+                                      * ($inputs.get(0)($i,$j) - ${stateFilter.getName()}($i,$j));
+        #end
+    #end
+#end
+#end

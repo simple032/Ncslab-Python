@@ -1,7 +1,7 @@
-/*Code for output of block TransferFcn:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block TransferFcn:($blockId)$blockName*/
 #if($num && $states && $outputs && $outputs.size() > 0)
-    #set($outputVar = $outputs.get(0))
-    #set($inputVar = $inputs.get(0))
+    #set($outputVar = $outputSignal)
+    #set($inputVar = $inputSignal)
     
     ## Initialize output to zero
     $outputVar = 0.0;
@@ -11,7 +11,7 @@
         #set($i = $num.size() - 1)
         #foreach($state in $states)
             #if($i >= 0)
-        $outputVar += ${state.getName()} * ${num.get($i)};
+        $outputVar += $stateName * ${num.get($i)};
             #end
             #set($i = $i - 1)
         #end
@@ -24,6 +24,6 @@
 #else
     ## Fallback if parameters missing
     #if($outputs && $outputs.size() > 0)
-        ${outputs.get(0)} = 0.0; /* TransferFcn block missing parameters */
+        $outputSignal = 0.0; /* TransferFcn block missing parameters */
     #end
 #end

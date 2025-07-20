@@ -1,0 +1,4 @@
+/* 初始化PID控制器模块: ($block.getBlockId()) $block.getBlockName() */
+#foreach($state in $states)
+${state.getName()} = 0;
+#end

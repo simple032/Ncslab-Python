@@ -1,1 +1,1 @@
-/*Code for derivative of block Derivative: ${block.getBlockId()} ${block.getBlockName()} */
+/*Code for derivative of block Derivative: $blockId $blockName */

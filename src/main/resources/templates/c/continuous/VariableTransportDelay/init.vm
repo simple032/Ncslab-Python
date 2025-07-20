@@ -1,4 +1,4 @@
-/* 初始化可变传输延迟模块: ($block.getBlockId()) $block.getBlockName() */
+/* 初始化可变传输延迟模块: ($blockId) $blockName */
 /* 初始化历史缓冲区 */
 
 #foreach($i in $bufferIndices)

@@ -1,7 +1,7 @@
-/*Code for output of block StateSpace:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block StateSpace:($blockId)$blockName*/
 #if($C && $xState)
-    #set($outputVar = $block.getOutputPortVariable(0))
-    #set($inputVar = $block.getInputPortVariable(0))
+    #set($outputVar = $outputSignal)
+    #set($inputVar = $inputSignal)
     
     ## Output = C * x
     $outputVar = ${C.getName()} * ${xState.getName()};
@@ -12,5 +12,5 @@
     #end
 #else
     ## Fallback if parameters missing
-    ${block.getOutputPortVariable(0)} = 0.0; /* StateSpace block missing parameters */
+    $outputSignal = 0.0; /* StateSpace block missing parameters */
 #end

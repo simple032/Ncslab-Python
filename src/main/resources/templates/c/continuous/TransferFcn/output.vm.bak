@@ -1,0 +1,29 @@
+/*Code for output of block TransferFcn:(${block.getBlockId()})${block.getBlockName()}*/
+#if($num && $states && $outputs && $outputs.size() > 0)
+    #set($outputVar = $outputs.get(0))
+    #set($inputVar = $inputs.get(0))
+    
+    ## Initialize output to zero
+    $outputVar = 0.0;
+    
+    ## Add contributions from numerator coefficients and states
+    #if($num.size() > 0 && $states.size() > 0)
+        #set($i = $num.size() - 1)
+        #foreach($state in $states)
+            #if($i >= 0)
+        $outputVar += ${state.getName()} * ${num.get($i)};
+            #end
+            #set($i = $i - 1)
+        #end
+    #end
+    
+    ## Add direct feedthrough if present
+    #if($feedThrough && $D)
+        $outputVar += ${D} * $inputVar;
+    #end
+#else
+    ## Fallback if parameters missing
+    #if($outputs && $outputs.size() > 0)
+        ${outputs.get(0)} = 0.0; /* TransferFcn block missing parameters */
+    #end
+#end

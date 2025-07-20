@@ -1,4 +1,4 @@
-/*传递函数模块微分计算: ($block.blockId) $block.blockName*/
+/*传递函数模块微分计算: ($blockId) $blockName*/
 #set($statesSizeMax = $states.size() - 1)
 #foreach($i in [0..$statesSizeMax])
   #set($nextI = $i + 1)
@@ -6,10 +6,10 @@
 #end
 ## 处理最后一个状态的导数表达式
 #if($statesSize > 0)
-    ${states.lastElement().getDerivativeName()} = ($inputs.get(0)
+    ${states.lastElement().getDerivativeName()} = ($inputSignal
     #set($i = $den.size() - 1)
     #foreach($state in $states)
-    - ${state.getName()} * ${den.get($i)}
+    - $stateName * ${den.get($i)}
         #set($i = $i - 1)
     #end
 );

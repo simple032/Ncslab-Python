@@ -1,0 +1,8 @@
+/*Define arrays for block discrete_Delay:(${blockId})${blockName}*/
+#if($inputSignal.dataType == $matrixDataType)
+  double Block${blockId}save_data[${inputSignal.height}][${inputSignal.width}*5];
+#elseif($inputSignal.dataType == $realDataType && $cparaP.dataType == $realDataType)
+  double Block${blockId}save_data[5];
+#else
+  double Block${blockId}save_data[${cparaP.height}][${cparaP.width}*5];
+#end

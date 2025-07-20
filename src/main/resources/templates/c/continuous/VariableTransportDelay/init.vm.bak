@@ -1,0 +1,8 @@
+/* 初始化可变传输延迟模块: ($block.getBlockId()) $block.getBlockName() */
+/* 初始化历史缓冲区 */
+
+#foreach($i in $bufferIndices)
+    ${block.getInputBufferName($i)} = 0;
+    ${block.getTimeBufferName($i)} = -1.0; 
+#end
+${block.getCurrentIndexName()} = 0;

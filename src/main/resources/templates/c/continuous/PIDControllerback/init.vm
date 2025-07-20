@@ -1,6 +1,6 @@
 ${cparaP.initCodeC}${cparaI.initCodeC}${cparaD.initCodeC}${cparaN.initCodeC}#if($limitOutput == "on")
 ${lowerSaturationLimit.initCodeC}${upperSaturationLimit.initCodeC}#end
-#if($cparaP.dataType == $realDataType && $stateIntegral.dataType == $realDataType)
+#if($proportionalGainDataType == $realDataType && $stateIntegral.dataType == $realDataType)
 ${stateIntegral.name}=0;
 ${stateFilter.name}=0;
 #else

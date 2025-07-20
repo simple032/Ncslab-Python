@@ -1,0 +1,38 @@
+/*Define arrays for block transport_Delay:(${blockId})${blockName}*/
+#if($isFixedStepSolver)
+  #if($inputSignal.dataType == $realDataType)
+    #if($delayTime.dataType == $realDataType)
+      double Block${blockId}_transport_delay_savedata[${bufferLength}];
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($delayTimeHeightMax = $delayTime.height - 1)
+      #set($delayTimeWidthMax = $delayTime.width - 1)
+      #foreach($i in [0..$delayTimeHeightMax])
+        #foreach($j in [0..$delayTimeWidthMax])
+          #set($bufferLen = $bufferLengths.get($i).get($j))
+          double Block${blockId}_transport_delay_savedata_${i}_${j}_[${bufferLen}];
+        #end
+      #end
+    #end
+  #elseif($inputSignal.dataType == $matrixDataType)
+    #if($delayTime.dataType == $realDataType)
+      #set($inputSignalHeightMax = $inputSignal.height - 1)
+      #set($inputSignalWidthMax = $inputSignal.width - 1)
+      #foreach($i in [0..$inputSignalHeightMax])
+        #foreach($j in [0..$inputSignalWidthMax])
+          #set($bufferLen = $bufferLengths.get(0).get(0))
+          double Block${blockId}_transport_delay_savedata_${i}_${j}_[${bufferLen}];
+        #end
+      #end
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($inputSignalHeightMax = $inputSignal.height - 1)
+      #set($inputSignalWidthMax = $inputSignal.width - 1)
+      #foreach($i in [0..$inputSignalHeightMax])
+        #foreach($j in [0..$inputSignalWidthMax])
+          #set($bufferLen = $bufferLengths.get($i).get($j))
+          double Block${blockId}_transport_delay_savedata_${i}_${j}_[${bufferLen}];
+        #end
+      #end
+    #end
+  #end
+#end
+Buffer ${bufferName};

@@ -1,34 +1,34 @@
-/*Code for derivative of block Integrator:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for derivative of block Integrator:($blockId)$blockName*/
 #if($conditionSource == "External")
     ## External initial condition source
-    ${stateDerivative} = ${inputs.get(0)};
+    ${stateDerivative} = $inputSignal;
 #else
     ## Internal initial condition
-    #if($signal.getDataType() == $realDataType)
-        #if($initialCondition.getDataType() == $realDataType)
+    #if($signalDataType == $realDataType)
+        #if($initialConditionDataType == $realDataType)
             ## Scalar integrator
-            ${stateDerivative} = ${inputs.get(0)};
+            ${stateDerivative} = $inputSignal;
         #else
             ## Scalar input, matrix initial condition
-            #set($height = $initialCondition.getHeight())
-            #set($width = $initialCondition.getWidth())
+            #set($height = $initialConditionHeight)
+            #set($width = $initialConditionWidth)
             #set($hMax = $height - 1)
             #set($wMax = $width - 1)
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-            ${stateDerivative}($i,$j) = ${inputs.get(0)}($i,$j);
+            ${stateDerivative}($i,$j) = $inputSignal($i,$j);
                 #end
             #end
         #end
     #else
         ## Matrix integrator
-        #set($height = $signal.getHeight())
-        #set($width = $signal.getWidth())
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        ${stateDerivative}($i,$j) = ${inputs.get(0)}($i,$j);
+        ${stateDerivative}($i,$j) = $inputSignal($i,$j);
             #end
         #end
     #end

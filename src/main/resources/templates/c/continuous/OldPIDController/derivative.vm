@@ -1,19 +1,19 @@
-/* PID控制器微分计算: ($block.getBlockId()) $block.getBlockName() */
-#if($block.cparaP.dataType == $realDataType)
-    #set($error = $inputs.get(0))
-    ${stateIntegral.derivativeName} = ${block.cparaI.getName()} * $error;
-    ${stateFilter.derivativeName} = ${block.cparaN.getName()} * (
-        ${block.cparaD.getName()} * $error - ${stateFilter.getName()}
+/* PID控制器微分计算: ($blockId) $blockName */
+#if($proportionalGainDataType == $realDataType)
+    #set($error = $inputSignal)
+    $integralStateDerivativeName = $integralGainName * $error;
+    $filterStateDerivativeName = $filterCoefficientName * (
+        $derivativeGainName * $error - $filterStateName
     );
 #else
-#if($block.cparaP.getHeight() && $block.cparaP.getWidth())
-#set($pHeightIndex = ${block.cparaP.getHeight()} - 1)
+#if($proportionalGainHeight && $proportionalGainWidth)
+#set($pHeightIndex = $proportionalGainHeight - 1)
     #foreach($i in [0..$pHeightIndex])
-#set($pWidthIndex = ${block.cparaP.getWidth()} - 1)
+#set($pWidthIndex = $proportionalGainWidth - 1)
         #foreach($j in [0..$pWidthIndex])
-            ${stateIntegral.derivativeName}($i,$j) = ${block.cparaI.getName()}($i,$j) * $inputs.get(0)($i,$j);
-            ${stateFilter.derivativeName}($i,$j) = ${block.cparaN.getName()}($i,$j) * (
-                ${block.cparaD.getName()}($i,$j) * $inputs.get(0)($i,$j) - ${stateFilter.getName()}($i,$j)
+            $integralStateDerivativeName($i,$j) = $integralGainName($i,$j) * $inputSignal($i,$j);
+            $filterStateDerivativeName($i,$j) = $filterCoefficientName($i,$j) * (
+                $derivativeGainName($i,$j) * $inputSignal($i,$j) - $filterStateName($i,$j)
             );
         #end
     #end

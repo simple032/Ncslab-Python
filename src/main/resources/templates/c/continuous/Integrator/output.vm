@@ -1,7 +1,7 @@
-/*Code for output of block Integrator:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Integrator:($blockId)$blockName*/
 #if($state)
-    ${outputs.get(0)} = ${state.getName()};
+    $outputSignal = $stateName;
 #else
     ## Fallback if state not properly initialized
-    ${outputs.get(0)} = 0.0; /* Integrator state not found, using default */
+    $outputSignal = 0.0; /* Integrator state not found, using default */
 #end

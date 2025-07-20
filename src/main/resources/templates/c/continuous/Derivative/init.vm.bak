@@ -1,0 +1,13 @@
+/*Code for initialization of block Derivative:($blockId)$blockName*/
+$output = 0.0;
+#if($signalDataType == $realDataType)
+  $stateName = 0;
+#else
+    #set($signalHeightIndex = ($signalHeight - 1))
+    #set($signalWidthIndex = ($signalWidth - 1))
+    #foreach($i in [0..$signalHeightIndex])
+        #foreach($j in [0..$signalWidthIndex])
+          $stateName($i, $j) = 0;
+        #end
+    #end
+#end

@@ -1,0 +1,182 @@
+/*Code for output of block TransportDelay:(${blockId})${blockName}*/
+#if($isFixedStepSolver)
+  #if($inputSignal.dataType == $realDataType)
+    #if($delayTime.dataType == $realDataType)
+      insert_to_buffer(&${bufferName},model.time,${inputSignal.name});
+      double Block${blockId}_target_time = model.time - ${delayTime.name};
+      ${outputSignal.name} = linear_interpolation(&${bufferName}, Block${blockId}_target_time);
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($delayTimeHeightMax = $delayTime.height - 1)
+      #set($delayTimeWidthMax = $delayTime.width - 1)
+      #foreach($i in [0..$delayTimeHeightMax])
+        #foreach($j in [0..$delayTimeWidthMax])
+          if(model.time < ${delayTime.name}($i,$j)) {
+            ${outputSignal.name}($i,$j) = ${initialOutput.name}($i,$j);
+          } else {
+            ${outputSignal.name}($i,$j) = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
+          }
+        #end
+      #end
+    #end
+  #elseif($inputSignal.dataType == $matrixDataType)
+    #if($delayTime.dataType == $realDataType)
+      #set($inputSignalHeightMax = $inputSignal.height - 1)
+      #set($inputSignalWidthMax = $inputSignal.width - 1)
+      #foreach($i in [0..$inputSignalHeightMax])
+        #foreach($j in [0..$inputSignalWidthMax])
+          if(model.time < ${delayTimeValue}) {
+            ${outputSignal.name}($i,$j) = ${initialOutput.name};
+          } else {
+            ${outputSignal.name}($i,$j) = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
+          }
+        #end
+      #end
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($inputSignalHeightMax = $inputSignal.height - 1)
+      #set($inputSignalWidthMax = $inputSignal.width - 1)
+      #foreach($i in [0..$inputSignalHeightMax])
+        #foreach($j in [0..$inputSignalWidthMax])
+          if(model.time < ${delayTime.name}($i,$j)) {
+            ${outputSignal.name}($i,$j) = ${initialOutput.name}($i,$j);
+          } else {
+            ${outputSignal.name}($i,$j) = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
+          }
+        #end
+      #end
+    #end
+  #end
+#else
+  #if($inputSignal.dataType == $realDataType)
+    #if($delayTime.dataType == $realDataType)
+      double Block${blockId}_target_time = model.time - ${delayTime.name};
+      ${outputSignal.name} = linear_interpolation(&${bufferName}, Block${blockId}_target_time);
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($delayTimeHeightMax = $delayTime.height - 1)
+      #set($delayTimeWidthMax = $delayTime.width - 1)
+      #foreach($i in [0..$delayTimeHeightMax])
+        #foreach($j in [0..$delayTimeWidthMax])
+          #set($index = $i * $delayTime.width + $j)
+          double targetTime_${index} = model.time - ${delayTime.name}($i,$j);
+          if(targetTime_${index} <= 0 || Block${blockId}tout[${index}][0] < 0) {
+            ${outputSignal.name}($i,$j) = ${initialOutput.name}($i,$j);
+          } else {
+            int foundIndex_${index} = -1;
+            #set($bufferSizeMax = $bufferSize.data.intValue - 1)
+            for(int k=0; k<${bufferSizeMax}; k++) {
+              if(Block${blockId}tout[${index}][k+1] < 0) break;
+              if(Block${blockId}tout[${index}][k] >= targetTime_${index} && 
+                 targetTime_${index} >= Block${blockId}tout[${index}][k+1]) {
+                foundIndex_${index} = k;
+                break;
+              }
+            }
+            if(foundIndex_${index} >= 0) {
+              double t1 = Block${blockId}tout[${index}][foundIndex_${index}];
+              double t2 = Block${blockId}tout[${index}][foundIndex_${index}+1];
+              double y1 = Block${blockId}yout[${index}][foundIndex_${index}];
+              double y2 = Block${blockId}yout[${index}][foundIndex_${index}+1];
+              double alpha = 0.0;
+              if(fabs(t1 - t2) > 1e-10) {
+                alpha = (targetTime_${index} - t2) / (t1 - t2);
+                alpha = fmax(0.0, fmin(1.0, alpha));
+              }
+              ${outputSignal.name}($i,$j) = alpha * y1 + (1.0 - alpha) * y2;
+            } else {
+              if(Block${blockId}tout[${index}][0] >= targetTime_${index}) {
+                ${outputSignal.name}($i,$j) = Block${blockId}yout[${index}][0];
+              } else {
+                ${outputSignal.name}($i,$j) = ${initialOutput.name}($i,$j);
+              }
+            }
+          }
+        #end
+      #end
+    #end
+  #elseif($inputSignal.dataType == $matrixDataType)
+    #if($delayTime.dataType == $realDataType)
+      {
+        double targetTime = model.time - ${delayTime.name};
+        #set($inputSignalHeightMax = $inputSignal.height - 1)
+        #set($inputSignalWidthMax = $inputSignal.width - 1)
+        #foreach($i in [0..$inputSignalHeightMax])
+          #foreach($j in [0..$inputSignalWidthMax])
+            #set($index = $i * $inputSignal.width + $j)
+            if(targetTime <= 0 || Block${blockId}tout[${index}][0] < 0) {
+              ${outputSignal.name}($i,$j) = ${initialOutput.name};
+            } else {
+              int foundIndex_${index} = -1;
+              #set($bufferSizeMax = $bufferSize.data.intValue - 1)
+            for(int k=0; k<${bufferSizeMax}; k++) {
+                if(Block${blockId}tout[${index}][k+1] < 0) break;
+                if(Block${blockId}tout[${index}][k] >= targetTime && 
+                   targetTime >= Block${blockId}tout[${index}][k+1]) {
+                  foundIndex_${index} = k;
+                  break;
+                }
+              }
+              if(foundIndex_${index} >= 0) {
+                double t1 = Block${blockId}tout[${index}][foundIndex_${index}];
+                double t2 = Block${blockId}tout[${index}][foundIndex_${index}+1];
+                double y1 = Block${blockId}yout[${index}][foundIndex_${index}];
+                double y2 = Block${blockId}yout[${index}][foundIndex_${index}+1];
+                double alpha = 0.0;
+                if(fabs(t1 - t2) > 1e-10) {
+                  alpha = (targetTime - t2) / (t1 - t2);
+                  alpha = fmax(0.0, fmin(1.0, alpha));
+                }
+                ${outputSignal.name}($i,$j) = alpha * y1 + (1.0 - alpha) * y2;
+              } else {
+                if(Block${blockId}tout[${index}][0] >= targetTime) {
+                  ${outputSignal.name}($i,$j) = Block${blockId}yout[${index}][0];
+                } else {
+                  ${outputSignal.name}($i,$j) = ${initialOutput.name};
+                }
+              }
+            }
+          #end
+        #end
+      }
+    #elseif($delayTime.dataType == $matrixDataType)
+      #set($inputSignalHeightMax = $inputSignal.height - 1)
+      #set($inputSignalWidthMax = $inputSignal.width - 1)
+      #foreach($i in [0..$inputSignalHeightMax])
+        #foreach($j in [0..$inputSignalWidthMax])
+          #set($index = $i * $inputSignal.width + $j)
+          double targetTime_${index} = model.time - ${delayTime.name}($i,$j);
+          if(targetTime_${index} <= 0 || Block${blockId}tout[${index}][0] < 0) {
+            ${outputSignal.name}($i,$j) = ${initialOutput.name}($i,$j);
+          } else {
+            int foundIndex_${index} = -1;
+            #set($bufferSizeMax = $bufferSize.data.intValue - 1)
+            for(int k=0; k<${bufferSizeMax}; k++) {
+              if(Block${blockId}tout[${index}][k+1] < 0) break;
+              if(Block${blockId}tout[${index}][k] >= targetTime_${index} && 
+                 targetTime_${index} >= Block${blockId}tout[${index}][k+1]) {
+                foundIndex_${index} = k;
+                break;
+              }
+            }
+            if(foundIndex_${index} >= 0) {
+              double t1 = Block${blockId}tout[${index}][foundIndex_${index}];
+              double t2 = Block${blockId}tout[${index}][foundIndex_${index}+1];
+              double y1 = Block${blockId}yout[${index}][foundIndex_${index}];
+              double y2 = Block${blockId}yout[${index}][foundIndex_${index}+1];
+              double alpha = 0.0;
+              if(fabs(t1 - t2) > 1e-10) {
+                alpha = (targetTime_${index} - t2) / (t1 - t2);
+                alpha = fmax(0.0, fmin(1.0, alpha));
+              }
+              ${outputSignal.name}($i,$j) = alpha * y1 + (1.0 - alpha) * y2;
+            } else {
+              if(Block${blockId}tout[${index}][0] >= targetTime_${index}) {
+                ${outputSignal.name}($i,$j) = Block${blockId}yout[${index}][0];
+              } else {
+                ${outputSignal.name}($i,$j) = ${initialOutput.name}($i,$j);
+              }
+            }
+          }
+        #end
+      #end
+    #end
+  #end
+#end

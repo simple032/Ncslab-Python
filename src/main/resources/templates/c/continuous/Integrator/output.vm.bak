@@ -1,0 +1,7 @@
+/*Code for output of block Integrator:($blockId)$blockName*/
+#if($state)
+    ${outputs.get(0)} = $stateName;
+#else
+    ## Fallback if state not properly initialized
+    ${outputs.get(0)} = 0.0; /* Integrator state not found, using default */
+#end

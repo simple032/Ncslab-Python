@@ -1,4 +1,4 @@
-/* 初始化状态空间模块: ($block.getBlockId()) $block.getBlockName() */
+/* 初始化状态空间模块: ($blockId) $blockName */
 ${A.getInitCodeC()}
 ${B.getInitCodeC()}
 ${C.getInitCodeC()}
