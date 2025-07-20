@@ -1,6 +1,6 @@
-/*Code for output of block Ramp:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Ramp:($blockId)$blockName*/
 #if($signal && $outputs && $outputs.size() > 0)
-    #set($outputVar = $outputs.get(0))
+    #set($outputVar = $output1)
     
     #if($signal.dataType == $realDataType)
         ## Scalar ramp function
@@ -17,7 +17,7 @@
             if(model.time < ${start}[$i][$j]) {
                 $outputVar[$i][$j] = ${initial_output}[$i][$j];
             } else {
-                $outputVar[$i][$j] = ${initial_output}[$i][$j] + ${slope.getName()}[$i][$j]*(model.time - ${start}[$i][$j]);
+                $outputVar[$i][$j] = ${initial_output}[$i][$j] + ${slopeName}[$i][$j]*(model.time - ${start}[$i][$j]);
             }
                 #end
             #end
@@ -26,6 +26,6 @@
 #else
     ## Fallback with default ramp behavior
     #if($outputs && $outputs.size() > 0)
-        ${outputs.get(0)} = model.time; /* Default ramp: y = t */
+        ${output1} = model.time; /* Default ramp: y = t */
     #end
 #end

@@ -1,2 +1,2 @@
-/* Code for initialization of block Constant:(${block.blockId}) ${block.blockName} */
+/* Code for initialization of block Constant:($blockId) $blockName */
 ${value.initCodeC}

@@ -1,10 +1,10 @@
 /* C代码生成模板 - RepeatingSequence模块 */
-${outputs.get(0)} = ${rep_seq_y.getName()}(0,0);
+${output1} = ${rep_seq_yName}(0,0);
 int ll = 0;
 
 /* 查找当前时间所在的时间段 */
 for(int i = ${rep_seq_t.width} - 1; i > 0; i--) {
-    if((int)(model.time*100) % (int)((${rep_seq_t.getName()}(0,${rep_seq_t.width}-1) - ${rep_seq_t.getName()}(0,0))*100) < (int)(${rep_seq_t.getName()}(0,i)*100)) {
+    if((int)(model.time*100) % (int)((${rep_seq_tName}(0,${rep_seq_t.width}-1) - ${rep_seq_tName}(0,0))*100) < (int)(${rep_seq_tName}(0,i)*100)) {
         ll = i;
         break;
     }
@@ -12,10 +12,10 @@ for(int i = ${rep_seq_t.width} - 1; i > 0; i--) {
 
 /* 计算累计值 */
 for(int i = 0; i < ll-1; i++) {
-    ${outputs.get(0)} += Block${block.blockId}_savedata[i] * Block${block.blockId}_savedata1[i];
+    ${output1} += Block$block.Id_savedata[i] * Block$block.Id_savedata1[i];
 }
 
 /* 计算当前段的增量 */
-${outputs.get(0)} += Block${block.blockId}_savedata[ll-1] *
-    (model.time - floor(model.time/(${rep_seq_t.getName()}(0,${rep_seq_t.width}-1) - ${rep_seq_t.getName()}(0,0)))
-    * (${rep_seq_t.getName()}(0,${rep_seq_t.width}-1)) - ${rep_seq_t.getName()}(0,ll-1));
+${output1} += Block$block.Id_savedata[ll-1] *
+    (model.time - floor(model.time/(${rep_seq_tName}(0,${rep_seq_t.width}-1) - ${rep_seq_tName}(0,0)))
+    * (${rep_seq_tName}(0,${rep_seq_t.width}-1)) - ${rep_seq_tName}(0,ll-1));

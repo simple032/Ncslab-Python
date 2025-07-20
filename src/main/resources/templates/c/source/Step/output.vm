@@ -1,11 +1,11 @@
-/*Code for output of block Step:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Step:($blockId)$blockName*/
 #if($time && $before && $after)
     #if($time.dataType == $realDataType)
         ## Scalar step function
-        if(model.time < ${time.getName()}) {
-            ${outputs.get(0)} = ${before.getName()};
+        if(model.time < ${timeName}) {
+            ${output1} = ${beforeName};
         } else {
-            ${outputs.get(0)} = ${after.getName()};
+            ${output1} = ${afterName};
         }
     #else
         ## Matrix step function
@@ -15,10 +15,10 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        if(model.time < ${time.getName()}(${i},${j})) {
-            ${outputs.get(0)}(${i},${j}) = ${before.getName()}(${i},${j});
+        if(model.time < ${timeName}(${i},${j})) {
+            ${output1}(${i},${j}) = ${beforeName}(${i},${j});
         } else {
-            ${outputs.get(0)}(${i},${j}) = ${after.getName()}(${i},${j});
+            ${output1}(${i},${j}) = ${afterName}(${i},${j});
         }
             #end
         #end
@@ -26,8 +26,8 @@
 #else
     ## Fallback with default step behavior
     if(model.time < 1.0) {
-        ${outputs.get(0)} = 0.0;
+        ${output1} = 0.0;
     } else {
-        ${outputs.get(0)} = 1.0;
+        ${output1} = 1.0;
     }
 #end

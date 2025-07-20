@@ -1,8 +1,8 @@
-/*Code for output of block SineWave:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block SineWave:($blockId)$blockName*/
 #if($amplitude && $bias && $frequency && $phase)
     #if($amplitude.dataType == $realDataType)
         ## Scalar sine wave
-        ${outputs.get(0)} = ${bias.getName()} + ${amplitude.getName()} * sin(${frequency.getName()} * model.time + ${phase.getName()});
+        ${output1} = ${biasName} + ${amplitudeName} * sin(${frequencyName} * model.time + ${phaseName});
     #else
         ## Matrix sine wave
         #set($height = $amplitude.height)
@@ -11,11 +11,11 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        ${outputs.get(0)}($i,$j) = ${bias.getName()}($i,$j) + ${amplitude.getName()}($i,$j) * sin(${frequency.getName()}($i,$j) * model.time + ${phase.getName()}($i,$j));
+        ${output1}($i,$j) = ${biasName}($i,$j) + ${amplitudeName}($i,$j) * sin(${frequencyName}($i,$j) * model.time + ${phaseName}($i,$j));
             #end
         #end
     #end
 #else
     ## Fallback with default values
-    ${outputs.get(0)} = 1.0 * sin(1.0 * model.time + 0.0); /* Using default sine wave parameters */
+    ${output1} = 1.0 * sin(1.0 * model.time + 0.0); /* Using default sine wave parameters */
 #end

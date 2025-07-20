@@ -11,7 +11,7 @@
 ## Generate constant assignment
 ## Check if value parameter exists, otherwise use default
 #if($value)
-    #getOutputSignalName(0) = ${value.getName()};
+    #getOutputSignalName(0) = ${valueName};
 #else
     ## Fallback to default value if parameter not found
     #getOutputSignalName(0) = 1; /* Using default constant value */

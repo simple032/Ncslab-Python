@@ -1,1 +1,1 @@
-/*Code for terminate code of block Scope:(${block.getBlockId()})${block.getBlockPath()}/${block.getBlockName()}*/
+/*Code for terminate code of block Scope:($blockId)$blockPath/$blockName*/

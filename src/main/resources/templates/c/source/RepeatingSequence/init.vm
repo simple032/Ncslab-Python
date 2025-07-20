@@ -1,8 +1,8 @@
 /* 初始化模板 - RepeatingSequence */
-${rep_seq_t.initCodeC}
-${rep_seq_y.initCodeC}
+${rep_seq_tInitCodeC}
+${rep_seq_yInitCodeC}
 #set($reqSeqTWidthMax=${rep_seq_t.width} - 2)
 #foreach($i in [0..$reqSeqTWidthMax])
-Block${block.blockId}_savedata[$i] = (${rep_seq_y.getName()}(0,$i+1) - ${rep_seq_y.getName()}(0,$i)) / (${rep_seq_t.getName()}(0,$i+1) - ${rep_seq_t.getName()}(0,$i));
-Block${block.blockId}_savedata1[$i] = (${rep_seq_t.getName()}(0,$i+1) - ${rep_seq_t.getName()}(0,$i));
+Block$block.Id_savedata[$i] = (${rep_seq_yName}(0,$i+1) - ${rep_seq_yName}(0,$i)) / (${rep_seq_tName}(0,$i+1) - ${rep_seq_tName}(0,$i));
+Block$block.Id_savedata1[$i] = (${rep_seq_tName}(0,$i+1) - ${rep_seq_tName}(0,$i));
 #end

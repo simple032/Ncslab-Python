@@ -1,6 +1,6 @@
-/*Code for initialization of block Matplotlib:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block Matplotlib:($blockId)$blockName*/
 #if($scopeStruct)
 ## Currently no specific initialization code needed - placeholders for future expansion
-## ${scopeStruct.getName()}.cursor=0;
-## ${scopeStruct.getName()}.isFull=0;
+## $scopeStructName.cursor=0;
+## $scopeStructName.isFull=0;
 #end

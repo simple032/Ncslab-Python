@@ -1,4 +1,4 @@
-/* Code for initialization of block Step:(${block.blockId}) ${block.blockName} */
-${time.initCodeC}
-${after.initCodeC}
-${before.initCodeC}
+/* Code for initialization of block Step:($blockId) $blockName */
+${timeInitCodeC}
+${afterInitCodeC}
+${beforeInitCodeC}
