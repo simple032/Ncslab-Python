@@ -273,10 +273,7 @@ public class Sum extends Block {
     }
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("sequence", getInputSequence());
 
         String codeStr = TemplateManager.renderTemplate("c/math/Sum/output.vm", context);
@@ -313,5 +310,27 @@ public class Sum extends Block {
 
     public void checkDimension() throws MatDimException {
         // No additional dimension checks needed for sum block
+    }
+
+    // === Runtime Simulation API (restored) ===
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Sum block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data resultData = new Data(out.getHeight(), out.getWidth());
+
+        for (int i = 0; i < inputSequence.length(); i++) {
+            if (inputSequence.charAt(i) == '+') {
+                resultData = resultData.plus(inputPortList.get(i).getData());
+            } else if (inputSequence.charAt(i) == '-') {
+                resultData = resultData.minus(inputPortList.get(i).getData());
+            }
+        }
+
+        out.setData(resultData);
     }
 }

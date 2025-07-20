@@ -48,10 +48,9 @@ public class Gain extends Block {
     private final boolean matrixMultiplication;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -62,20 +61,11 @@ public class Gain extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("Gain");
-        parameterNames.add("Multiplication");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -262,8 +252,7 @@ public class Gain extends Block {
     // === Code Generation Methods (preserved from original) ===
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("gain", gain);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("m/math/Gain/init.vm", context);
         code.addInitCode(codeStr);
@@ -271,17 +260,13 @@ public class Gain extends Block {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add Gain-specific context
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        
-        context.put("block", this);
         context.put("outputSignal", out.getOutputSignalC());
         context.put("inputSignal", ops.getOutputSignalC());
-        context.put("gain", getGain());
-        context.put("inputHeight", ops.getHeight());
-        context.put("inputWidth", ops.getWidth());
-        context.put("gainHeight", getGain().getHeight());
-        context.put("gainWidth", getGain().getWidth());
         context.put("matrixMultiplication", this.matrixMultiplication);
         
         String codeStr = TemplateManager.renderTemplate("m/math/Gain/output.vm", context);
@@ -290,8 +275,7 @@ public class Gain extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("gain", getGain());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/math/Gain/init.vm", context);
         code.addInitCode(codeStr);
@@ -299,14 +283,11 @@ public class Gain extends Block {
 
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        context.put("block", this);
-        context.put("gain", getGain());
+        // Add Gain-specific context
         context.put("multiplication", isMatrixMultiplication());
         context.put("matrixMultiplication", isMatrixMultiplication());
-        context.put("sampleTime", this.sampleTime);
-        context.put("outDataType", this.outDataType);
-        context.put("saturateOnIntegerOverflow", this.saturateOnIntegerOverflow);
 
         String codeStr = TemplateManager.renderTemplate("c/math/Gain/output.vm", context);
         code.addOutputCode(codeStr);
@@ -364,5 +345,18 @@ public class Gain extends Block {
 
     public void checkDimension() throws MatDimException {
         // No additional dimension checks needed for gain block
+    }
+
+    // === Runtime Simulation API (restored) ===
+    @Override
+    public void calculateInit() {
+        
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data data = inputPortList.get(0).getData().times(gain.getData());        
+        out.setData(data);
     }
 }

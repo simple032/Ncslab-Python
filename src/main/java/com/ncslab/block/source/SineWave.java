@@ -37,30 +37,20 @@ import java.util.Vector;
 public class SineWave extends Block {
     
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter amplitude;
-    @Getter
     private final Parameter bias;
-    @Getter
     private final Parameter frequency;
-    @Getter
     private final Parameter phase;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter samples;
-    @Getter
     private final Parameter timeSource;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
     
     // Parameter defaults matching database format
+    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -82,15 +72,6 @@ public class SineWave extends Block {
 
     static {
         // SIMULINK parameter names
-        parameterNames.add("Amplitude");
-        parameterNames.add("Bias");
-        parameterNames.add("Frequency");
-        parameterNames.add("Phase");
-        parameterNames.add("SampleTime");
-        parameterNames.add("Samples");
-        parameterNames.add("TimeSource");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
         
         // Port names
         outputNames.add("out1");
@@ -321,45 +302,27 @@ public class SineWave extends Block {
     // === Code Generation Methods (preserved from original) ===
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("amplitude", amplitude);
-        context.put("bias", bias);
-        context.put("frequency", frequency);
-        context.put("phase", phase);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/source/SineWave/init.vm", context);
         code.addInitCode(codeStr);
     }
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
-        context.put("amplitude", amplitude);
-        context.put("bias", bias);
-        context.put("frequency", frequency);
-        context.put("phase", phase);
-        context.put("outputs", getOutputPortVariables());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/source/SineWave/output.vm", context);
         code.addOutputCode(codeStr);
     }
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("amplitude", amplitude);
-        context.put("bias", bias);
-        context.put("frequency", frequency);
-        context.put("phase", phase);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/source/SineWave/init.vm", context);
         code.addInitCode(codeStr);
     }
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("amplitude", amplitude);
-        context.put("bias", bias);
-        context.put("frequency", frequency);
-        context.put("phase", phase);
-        context.put("outputs", getOutputPortVariables());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/source/SineWave/output.vm", context);
         code.addOutputCode(codeStr);
@@ -378,5 +341,25 @@ public class SineWave extends Block {
 
     public void checkDimension() throws MatDimException {
         // No additional dimension checks needed for sine wave block
+    }
+
+    // === Runtime Simulation API (restored) ===
+    @Override
+    public void calculateOutput(double t) {
+        // 实现具体的输出计算逻辑
+        double amplitudeValue = amplitude.getData().getInitValue();
+        double biasValue = bias.getData().getInitValue();
+        double frequencyValue = frequency.getData().getInitValue();
+        double phaseValue = phase.getData().getInitValue();
+
+        double output = amplitudeValue * Math.sin(frequencyValue * t + phaseValue) + biasValue;
+        outputPortList.get(0).getOutputSignalC().setValue(output);
+    }
+
+    @Override
+    public void calculateInit() {
+        // 初始化逻辑
+        double biasValue = bias.getData().getInitValue();
+        outputPortList.get(0).getOutputSignalC().setValue(biasValue);
     }
 }
