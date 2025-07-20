@@ -1,0 +1,16 @@
+/*Code for Derivative of WaterLevel:(${block.blockId})${block.blockName}*/
+#if ($modelMode == $simulationMode)
+/* Simulation mode - WaterLevel system dynamics */
+double pumpK = 1.0;
+double pumpT = 2.0;
+double waterLevelK = 0.1;
+double waterLevelT = 50.0;
+
+/* Pump dynamics: first-order lag */
+${block.getDerivativeVariable(0)} = (pumpK * ${inputPortVariable} - ${block.getStateVariable(0)}) / pumpT;
+
+/* Water level dynamics: first-order lag */
+${block.getDerivativeVariable(1)} = (waterLevelK * ${block.getStateVariable(0)} - ${block.getStateVariable(1)}) / waterLevelT;
+#else
+/* Hardware mode - no continuous states */
+#end

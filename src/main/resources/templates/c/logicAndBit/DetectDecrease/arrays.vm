@@ -1,8 +1,8 @@
-#set($blockId = $block.getBlockId())
-#set($blockName = $block.getBlockName())
+#set($blockId = $blockBlockId)
+#set($blockName = $blockBlockName)
 /* Define variable/arrays for block Detect Decrease ($blockId) $blockName */
 #if($signal.dataType == $realDataType)
 double preValue_${blockId} = 0;
 #else
-double preValue_${blockId}[$signal.getHeight()][$signal.getWidth()];
+double preValue_${blockId}[$signalHeight][$signalWidth];
 #end

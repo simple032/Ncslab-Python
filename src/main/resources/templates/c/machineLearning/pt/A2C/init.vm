@@ -1,7 +1,7 @@
-/*Code for initialization of block MLTest:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block MLTest:($blockId)$blockName*/
 ## Generate init code for parameters
-${inputFeatures.getInitCodeC()}${outputFeatures.getInitCodeC()}${learningRate.getInitCodeC()}${discountFactor.getInitCodeC()}## Generate init code for the model (must be after parameters)
-${modelVariable.getInitCodeC()}## Load model if path specified
+$inputFeaturesInitCodeC$outputFeaturesInitCodeC$learningRateInitCodeC$discountFactorInitCodeC## Generate init code for the model (must be after parameters)
+$modelVariableInitCodeC## Load model if path specified
 #if($loadPath && !$loadPath.equals("None"))
-${modelVariable.getName()}->loadModel("${loadPath}");
+$modelVariableName->loadModel("${loadPath}");
 #end

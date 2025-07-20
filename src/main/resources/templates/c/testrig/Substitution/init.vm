@@ -1,10 +1,15 @@
 /* Velocity Template for initialization of block Substitution */
-#set($blockId = $block.getBlockId())
-#set($blockName = $block.getBlockName())
+#set($blockId = $blockBlockId)
+#set($blockName = $blockBlockName)
 
-#if ($modelMode == $compilationMode)
-    #foreach($parameter in $block.getParameterList())
-        $parameter.getName() = $parameter.getInitDouble();
+#if ($modelMode == $simulationMode)
+    // Simulation mode - No hardware initialization needed
+    #foreach($parameter in $blockParameterList)
+        $parameterName = $parameterInitDouble;
+    #end
+#elseif ($modelMode == $compilationMode)
+    #foreach($parameter in $blockParameterList)
+        $parameterName = $parameterInitDouble;
     #end
 
     wiringPiSetupGpio();

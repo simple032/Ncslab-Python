@@ -1,7 +1,7 @@
-/*Code for initialization of block MLTest:(${block.getBlockId()})${block.getBlockName()}*/
-${inputFeatures.getInitCodeC()}${outputFeatures.getInitCodeC()}${hiddenLayers.getInitCodeC()}${learningRate.getInitCodeC()}${epochs.getInitCodeC()}${modelVariable.getInitCodeC()}#if($loadPath && !$loadPath.equals("None"))
-${modelVariable.getName()}->loadModel("${loadPath}");
+/*Code for initialization of block MLTest:($blockId)$blockName*/
+$inputFeaturesInitCodeC$outputFeaturesInitCodeC$hiddenLayersInitCodeC$learningRateInitCodeC$epochsInitCodeC$modelVariableInitCodeC#if($loadPath && !$loadPath.equals("None"))
+$modelVariableName->loadModel("${loadPath}");
 #end
 #if($datasetString && !$datasetString.equals("None"))
-${modelVariable.getName()}->trainModel("${datasetString}", int(${epochs.getName()}), ${learningRate.getName()});
+$modelVariableName->trainModel("${datasetString}", int($epochsName), $learningRateName);
 #end

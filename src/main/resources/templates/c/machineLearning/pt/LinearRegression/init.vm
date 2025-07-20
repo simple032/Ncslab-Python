@@ -1,7 +1,7 @@
-/*Code for initialization of block LinearRegression:(${block.getBlockId()})${block.getBlockName()}*/
-${inputFeatures.getInitCodeC()}${outputFeatures.getInitCodeC()}${learningRate.getInitCodeC()}${epochs.getInitCodeC()}${modelVariable.getInitCodeC()}#if($loadPath && !$loadPath.equals("None"))
-${modelVariable.getName()}->loadModel("${loadPath}");
+/*Code for initialization of block LinearRegression:($blockId)$blockName*/
+$inputFeaturesInitCodeC$outputFeaturesInitCodeC$learningRateInitCodeC$epochsInitCodeC$modelVariableInitCodeC#if($loadPath && !$loadPath.equals("None"))
+$modelVariableName->loadModel("${loadPath}");
 #end
 #if($datasetString && !$datasetString.equals("None"))
-${modelVariable.getName()}->trainModel("${datasetString}", int(${epochs.getName()}), ${learningRate.getName()});
+$modelVariableName->trainModel("${datasetString}", int($epochsName), $learningRateName);
 #end

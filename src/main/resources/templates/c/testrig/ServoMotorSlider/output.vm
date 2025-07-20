@@ -1,15 +1,11 @@
-#set($inputPort1 = $block.getInputPortVariable(0))
-#set($outputPort1 = $block.getOutputPortVariables().get(0))
-
-#if ($modelMode == $compilationMode) {
-    #set($hardwareDefineName = "Block" + $block.getBlockId() + "_ServoMotorSlider")
+#if ($modelMode == $compilationMode)
     initServoMotorSlider(&$hardwareDefineName);
 
     if (mp->majorStep > 0) {
         int bufLen = 1024;
         char recvBuff[bufLen] = {0};
 
-        double da = $inputPort1;
+        double da = $input;
         da = da > 2.5 ? 2.5 : da;
         da = da < -2.5 ? -2.5 : da;
 
@@ -32,20 +28,20 @@
         printf("\n");
 
         if ((Read > 0.5) || (Read < -0.5)) {
-            $outputPort1 = (-0.0039 * Read);
-            printf("out=%f", $outputPort1);
+            $output = (-0.0039 * Read);
+            printf("out=%f", $output);
             servodata = Read;
             servodata1 = (-0.0039 * Read);
         } else {
-            $outputPort1 = (-0.0039 * servodata);
+            $output = (-0.0039 * servodata);
         }
 
         servodata1 = (-0.0039 * servodata);
     }
 #elseif ($modelMode == $simulationMode)
     #foreach($i in [0..2])
-    #set($stateX = $block.getStateList().get($i).getName())
+    #set($stateX = $blockStateList.get($i).getName())
     #set($numValue = $block.getParameter("num").getValue($i))
-    $outputPort1 += $stateX * $numValue;
+    $output += $stateX * $numValue;
     #end
-}
+#end

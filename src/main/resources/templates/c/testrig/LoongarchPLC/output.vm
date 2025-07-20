@@ -1,0 +1,15 @@
+/* Code for output of block LoongarchPLC:($blockId)$blockName */
+
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for Loongarch PLC system
+    // TODO: Add specific hardware operations for Loongarch PLC
+    $output1 = $stateX0;  // Position
+    $output2 = $stateX1;  // Angle  
+    $output3 = $stateX2;  // Derivative
+
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model output
+    $output1 = $stateX0;  // Position
+    $output2 = $stateX1;  // Angle
+    $output3 = $stateX2;  // Derivative
+#end

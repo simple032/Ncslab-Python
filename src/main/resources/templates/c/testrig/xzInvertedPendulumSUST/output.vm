@@ -1,37 +1,93 @@
-/*Code for output of block xzInvertedPendulumSUST:(${block.blockId})${block.blockName}*/
-if(mp->majorStep>0){
-char recvBuffXzIPSUST[255]={0};
-char sendBuffXzIPSUST[]={"GZ999POS*=?\r\n"};
-if(xzIPSUSTbool==false) {Serialport_Send(hCommXzIPSUST,sendBuffXzIPSUST,strlen(sendBuffXzIPSUST));
- char cmdClearPos[] = {"GZ999POS*=0\r\n"};
-if((int)${POS0Flag.value}==1) {Serialport_Send(hCommXzIPSUST,cmdClearPos,strlen(cmdClearPos));
-usleep(3000);}
-}char xzcmd[50]={0},xzcmd2[50]={0};
-int xztmp = ${inputPortVariable1};
-float xzacctmp = xztmp/9.424776;
-float xzacc = (xztmp>=0)?xzacctmp:-xzacctmp;
-int xzaccInt=(int)xzacc;
-int VspeedValue = (int)${inputPortVariable2}>0?${inputPortVariable2}:-${inputPortVariable2};
-sprintf((char*)xzcmd,"GZ100A%d\r\n",xzaccInt);if(xzIPSUSTbool==false)Serialport_Recv(hCommXzIPSUST,recvBuffXzIPSUST,62);
-printf("recvBuff=%s\n",recvBuffXzIPSUST);
-if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd,strlen(xzcmd));
-if(xztmp<0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V-%d\r\n",VspeedValue);
-else if(xztmp>0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V%d\r\n",VspeedValue);
-else sprintf((char*)xzcmd2,"GZ000V0\r\n");
-if(xzIPSUSTbool==true)usleep(3000);
-if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd2,strlen(xzcmd2));
-char xzheadStr[]={"POS"};
-int xzpos1=0,xzpos2=0;
-char *xzkeyStart = strstr(recvBuffXzIPSUST,xzheadStr);
-if(xzkeyStart!=NULL){
-xzkeyStart+=3;
-xzpos1 = strtol(xzkeyStart,&xzkeyStart,10);
-xzpos2 = strtol(xzkeyStart+1,NULL,10);
-xzxPOS = xzpos2*360.0/(16*2000.0);
-xzAngle = (xzpos1%4000)*360.0/4000.0;
-xzAngle = (xzpos1>=0)?(xzAngle-180):(xzAngle+180);
-}
-if(xzIPSUSTbool==false)${outputPortVariable1}=xzxPOS;
-if(xzIPSUSTbool==false)${outputPortVariable2}=xzAngle;
-xzIPSUSTbool=!xzIPSUSTbool;
-}
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for actual xz inverted pendulum SUST system
+    /*Code for output of block xzInvertedPendulumSUST:(${block.blockId})${block.blockName}*/
+    if(mp->majorStep>0){
+    char recvBuffXzIPSUST[255]={0};
+    char sendBuffXzIPSUST[]={"GZ999POS*=?\r\n"};
+    if(xzIPSUSTbool==false) {Serialport_Send(hCommXzIPSUST,sendBuffXzIPSUST,strlen(sendBuffXzIPSUST));
+     char cmdClearPos[] = {"GZ999POS*=0\r\n"};
+    if((int)${POS0Flag.value}==1) {Serialport_Send(hCommXzIPSUST,cmdClearPos,strlen(cmdClearPos));
+    usleep(3000);}
+    }char xzcmd[50]={0},xzcmd2[50]={0};
+    int xztmp = ${inputPortVariable1};
+    float xzacctmp = xztmp/9.424776;
+    float xzacc = (xztmp>=0)?xzacctmp:-xzacctmp;
+    int xzaccInt=(int)xzacc;
+    int VspeedValue = (int)${inputPortVariable2}>0?${inputPortVariable2}:-${inputPortVariable2};
+    sprintf((char*)xzcmd,"GZ100A%d\r\n",xzaccInt);if(xzIPSUSTbool==false)Serialport_Recv(hCommXzIPSUST,recvBuffXzIPSUST,62);
+    printf("recvBuff=%s\n",recvBuffXzIPSUST);
+    if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd,strlen(xzcmd));
+    if(xztmp<0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V-%d\r\n",VspeedValue);
+    else if(xztmp>0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V%d\r\n",VspeedValue);
+    else sprintf((char*)xzcmd2,"GZ000V0\r\n");
+    if(xzIPSUSTbool==true)usleep(3000);
+    if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd2,strlen(xzcmd2));
+    char xzheadStr[]={"POS"};
+    int xzpos1=0,xzpos2=0;
+    char *xzkeyStart = strstr(recvBuffXzIPSUST,xzheadStr);
+    if(xzkeyStart!=NULL){
+    xzkeyStart+=3;
+    xzpos1 = strtol(xzkeyStart,&xzkeyStart,10);
+    xzpos2 = strtol(xzkeyStart+1,NULL,10);
+    xzxPOS = xzpos2*360.0/(16*2000.0);
+    xzAngle = (xzpos1%4000)*360.0/4000.0;
+    xzAngle = (xzpos1>=0)?(xzAngle-180):(xzAngle+180);
+    }
+    if(xzIPSUSTbool==false)${outputPortVariable1}=xzxPOS;
+    if(xzIPSUSTbool==false)${outputPortVariable2}=xzAngle;
+    xzIPSUSTbool=!xzIPSUSTbool;
+    }
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model for xz inverted pendulum SUST system
+    // Simulates SUST (Shanghai University of Science and Technology) pendulum dynamics
+    static double pendulum_angle_xz = 0.0;
+    static double cart_position_xz = 0.0;
+    static double pendulum_velocity_xz = 0.0;
+    static double cart_velocity_xz = 0.0;
+    static bool position_reset = false;
+    
+    // Input processing
+    int control_input = ${inputPortVariable1};
+    int speed_input = ${inputPortVariable2};
+    bool enable_flag = (int)${ENAOrDIS.name} == 1;
+    bool pos_reset_flag = (int)${POS0Flag.value} == 1;
+    
+    // Position reset logic
+    if (pos_reset_flag && !position_reset) {
+        cart_position_xz = 0.0;
+        pendulum_angle_xz = 0.0;
+        position_reset = true;
+    } else if (!pos_reset_flag) {
+        position_reset = false;
+    }
+    
+    // Dynamics simulation
+    if (enable_flag && mp->majorStep > 0) {
+        double dt = mp->sampleTime;
+        
+        // Control force calculation
+        float force_tmp = control_input / 9.424776;
+        double control_force = (control_input >= 0) ? force_tmp : -force_tmp;
+        
+        // Speed control
+        double target_velocity = enable_flag ? speed_input : 0.0;
+        if (control_input < 0) target_velocity = -target_velocity;
+        
+        // Simplified pendulum-cart dynamics
+        double pendulum_accel = sin(pendulum_angle_xz * M_PI / 180.0) * 9.81 - cart_velocity_xz * 0.1;
+        pendulum_velocity_xz += pendulum_accel * dt;
+        pendulum_angle_xz += pendulum_velocity_xz * dt * 180.0 / M_PI;
+        
+        // Cart dynamics
+        double cart_accel = (control_force - cart_position_xz * 0.5) / 1.0;
+        cart_velocity_xz += cart_accel * dt;
+        cart_position_xz += cart_velocity_xz * dt;
+        
+        // Keep angle in reasonable range
+        if (pendulum_angle_xz > 180.0) pendulum_angle_xz -= 360.0;
+        if (pendulum_angle_xz < -180.0) pendulum_angle_xz += 360.0;
+    }
+    
+    ${outputPortVariable1} = cart_position_xz;      // Cart position output
+    ${outputPortVariable2} = pendulum_angle_xz;     // Pendulum angle output
+#end

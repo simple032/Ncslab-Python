@@ -1,7 +1,7 @@
 #set( $block = $context.get("block") )
-#set( $parameters = $block.getParameterList() )
+#set( $parameters = $blockParameterList )
 
 /* Initialization code for block DiodeCurrent */
 #foreach( $param in $parameters )
-    ${param.getInitCodeC()}
+    $paramInitCodeC
 #end

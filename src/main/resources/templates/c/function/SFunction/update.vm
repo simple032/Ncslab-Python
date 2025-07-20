@@ -1,5 +1,5 @@
-/*Code for update of block ${block.getBlockType()}:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for update of block $blockBlockType:($blockId)$blockName*/
 #foreach($i in [0..$numContState])
 #set($state = $stateList.get($i))
-${state.getName()}=${state.getName()}+${state.getDerivativeName()}*model.stepSize;
+$stateName=$stateName+$stateDerivativeName*model.stepSize;
 #end

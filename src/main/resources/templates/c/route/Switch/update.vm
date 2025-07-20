@@ -1,2 +1,2 @@
-/* Code for update of block Switch:(${block.getBlockId()}) ${block.getBlockName()} */
+/* Code for update of block Switch:($blockId) $blockName */
 /* No persistent states to update */

@@ -1,1 +1,1 @@
-${dataCollectorVariable.getName()}->collect(${inputSignal}, ${outputSignal});
+$dataCollectorVariableName->collect(${inputSignal}, ${outputSignal});

@@ -1,2 +1,2 @@
-/* 初始化To模块: ($block.getBlockId()) $block.getBlockName() */
+/* 初始化To模块: ($blockBlockId) $blockBlockName */
 // To模块无需状态初始化（根据实际需求补充）

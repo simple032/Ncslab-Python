@@ -1,7 +1,7 @@
-/*Code for output of block Mux:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Mux:($blockId)$blockName*/
 #if($inputs && $inputs.size() > 0)
     #set($outputIdx = 0)
-    #set($outputVar = $outputs.get(0))
+    #set($outputVar = $output1)
     
     #foreach($input in $inputs)
         #if($input.linkedLine.linkedOutputPort.outputSignalC.dataType == $realDataType)
@@ -28,5 +28,5 @@
     #end
 #else
     ## No inputs - shouldn't happen but handle gracefully
-    /* Warning: Mux block ${block.getBlockId()} has no inputs */
+    /* Warning: Mux block $blockId has no inputs */
 #end

@@ -1,2 +1,2 @@
-/*Code for initialization of block pll3ph:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block pll3ph:($blockId)$blockName*/
 // PLL 3-Phase initialization placeholder

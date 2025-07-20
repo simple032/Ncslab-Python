@@ -4,21 +4,43 @@
 #set($input4 = $block.getParameter("v").getName())
 #set($input5 = $block.getParameter("vel").getName())
 
-#set($output1 = $block.getOutputPortVariables().get(0).getName())
-#set($output2 = $block.getOutputPortVariables().get(1).getName())
+#set($output1 = $blockOutputPortVariables.get(0).getName())
+#set($output2 = $blockOutputPortVariables.get(1).getName())
 
-#if ($input1 * $input2 <= 0 && $input2 < 0)
-    #set($v = -$input4)
-#elseif ($input1 * $input2 <= 0 && $input2 > 0)
-    #set($v = $input4)
-#elseif ($input1 * $input2 >= 0 && $input2 > 0)
-    #set($v = 0.001)
-#elseif ($input1 * $input2 >= 0 && $input2 < 0)
-    #set($v = 0.001)
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for actual inverted pendulum system
+    #if ($input1 * $input2 <= 0 && $input2 < 0)
+        #set($v = -$input4)
+    #elseif ($input1 * $input2 <= 0 && $input2 > 0)
+        #set($v = $input4)
+    #elseif ($input1 * $input2 >= 0 && $input2 > 0)
+        #set($v = 0.001)
+    #elseif ($input1 * $input2 >= 0 && $input2 < 0)
+        #set($v = 0.001)
+    #end
+
+    #set($acc = fabs($v / 0.09424776))
+    #set($acc1 = (int)$acc)
+
+    $output1 = $v * 100;
+    $output2 = $acc1;
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model for bang-bang swing-up inverted pendulum
+    // Simulates the control algorithm behavior without hardware interaction
+    double v;
+    if ($input1 * $input2 <= 0 && $input2 < 0) {
+        v = -$input4;
+    } else if ($input1 * $input2 <= 0 && $input2 > 0) {
+        v = $input4;
+    } else if ($input1 * $input2 >= 0 && $input2 > 0) {
+        v = 0.001;
+    } else if ($input1 * $input2 >= 0 && $input2 < 0) {
+        v = 0.001;
+    }
+    
+    double acc = fabs(v / 0.09424776);
+    int acc1 = (int)acc;
+    
+    $output1 = v * 100;  // Control voltage output (scaled)
+    $output2 = acc1;     // Acceleration command
 #end
-
-#set($acc = fabs($v / 0.09424776))
-#set($acc1 = (int)$acc)
-
-$output1 = $v * 100;
-$output2 = $acc1;

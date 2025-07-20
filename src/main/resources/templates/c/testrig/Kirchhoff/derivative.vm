@@ -1,1 +1,1 @@
-/*Code for Derivative of Kirchhoff:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for Derivative of Kirchhoff:($blockId)$blockName*/

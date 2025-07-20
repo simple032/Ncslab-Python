@@ -1,10 +1,10 @@
-/*Code for output of block pll3ph:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block pll3ph:($blockId)$blockName*/
 // PLL 3-Phase algorithm implementation
 // Inputs: A, B, C phases
 // Outputs: Frequency, Phase
-double va = ${block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
-double vb = ${block.getInputPortList().get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
-double vc = ${block.getInputPortList().get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
+double va = ${blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
+double vb = ${blockInputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
+double vc = ${blockInputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
 
 // Clarke transformation
 double v_alpha = va;
@@ -21,5 +21,5 @@ static double integrator = 0;
 integrator += error * ${sampleTime};
 double frequency = ${MinimumFreq} + error * ${regularGains[0]} + integrator * ${regularGains[1]};
 
-${block.getOutputPortList().get(0).getOutputSignalC().getName()} = frequency;
-${block.getOutputPortList().get(1).getOutputSignalC().getName()} = theta;
+${blockOutputPortList.get(0).getOutputSignalC().getName()} = frequency;
+${blockOutputPortList.get(1).getOutputSignalC().getName()} = theta;

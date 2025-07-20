@@ -1,6 +1,6 @@
 /* Velocity Template for initialization of block BallPlateSUST */
-#set($blockId = $block.getBlockId())
-#set($blockName = $block.getBlockName())
+#set($blockId = $blockBlockId)
+#set($blockName = $blockBlockName)
 
 #if ($modelMode == $compilationMode)
     char msg[255];

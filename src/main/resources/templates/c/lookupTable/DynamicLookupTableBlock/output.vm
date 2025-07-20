@@ -1,4 +1,4 @@
-/*Code for output of block Dynamic Lookup Table:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block Dynamic Lookup Table:($blockId)$blockName*/
 // TODO: Dynamic lookup table implementation
 // Inputs: input signal, x data array, y data array
 // Output: interpolated value

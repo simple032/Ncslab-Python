@@ -1,20 +1,22 @@
-/*Code for output of block BallPlateSUST:(${block.getBlockId()})${block.getBlockName()}*/
-{
-if(mp->majorStep > 0){
+/*Code for output of block BallPlateSUST:($blockId)$blockName*/
+
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for actual ball plate SUST system
+    if(mp->majorStep > 0){
 char recvBuffBPSUST[255]={0};
 
 char bpcmd[50]={0},bpcmd2[50]={0};char bpcmd3[50]={0},bpcmd4[50]={0};double accTmp;
-accTmp=fabs(${block.getInputPortVariable(0)})+0.8;
-int bptmp = ${block.getInputPortVariable(0)};
-int bptmp2 = ${block.getInputPortVariable(1)};
+accTmp=fabs($input1)+0.8;
+int bptmp = $input1;
+int bptmp2 = $input2;
 
-if(${block.getInputPortVariable(0)}>0&&((int)accTmp)>0) {sprintf((char*)bpcmd2,"GZ000V200\\r\\n");sprintf((char*)bpcmd,"GZ100A%d\\r\\n",(int)accTmp);}
-else if(${block.getInputPortVariable(0)}<0&&((int)accTmp)>0) {sprintf((char*)bpcmd2,"GZ000V-200\\r\\n");sprintf((char*)bpcmd,"GZ100A%d\\r\\n",(int)accTmp);}
+if($input1>0&&((int)accTmp)>0) {sprintf((char*)bpcmd2,"GZ000V200\\r\\n");sprintf((char*)bpcmd,"GZ100A%d\\r\\n",(int)accTmp);}
+else if($input1<0&&((int)accTmp)>0) {sprintf((char*)bpcmd2,"GZ000V-200\\r\\n");sprintf((char*)bpcmd,"GZ100A%d\\r\\n",(int)accTmp);}
 else {sprintf((char*)bpcmd2,"GZ000V0\\r\\n");sprintf((char*)bpcmd,"GZ100A0\\r\\n");}
  
-accTmp=fabs(${block.getInputPortVariable(1)})+0.8;
-if(${block.getInputPortVariable(1)}>0&&((int)accTmp)>0) {sprintf((char*)bpcmd4,"GZ001V200\\r\\n");sprintf((char*)bpcmd3,"GZ101A%d\\r\\n",(int)accTmp);}
-else if(${block.getInputPortVariable(1)}<0&&((int)accTmp)>0) {sprintf((char*)bpcmd4,"GZ001V-200\\r\\n");sprintf((char*)bpcmd3,"GZ101A%d\\r\\n",(int)accTmp);}
+accTmp=fabs($input2)+0.8;
+if($input2>0&&((int)accTmp)>0) {sprintf((char*)bpcmd4,"GZ001V200\\r\\n");sprintf((char*)bpcmd3,"GZ101A%d\\r\\n",(int)accTmp);}
+else if($input2<0&&((int)accTmp)>0) {sprintf((char*)bpcmd4,"GZ001V-200\\r\\n");sprintf((char*)bpcmd3,"GZ101A%d\\r\\n",(int)accTmp);}
 else {sprintf((char*)bpcmd4,"GZ001V0\\r\\n");sprintf((char*)bpcmd3,"GZ101A0\\r\\n");}
 
 BPSUSTbool=!BPSUSTbool;
@@ -67,9 +69,17 @@ t_y=ev.value;}
 }}
 }
 
-${block.outputPortList.get(0).getOutputSignalC().getName()} = (-t_x + 16088) / 80.4;
-${block.outputPortList.get(1).getOutputSignalC().getName()} = (t_y - 15968) / 107.47;
-${block.outputPortList.get(2).getOutputSignalC().getName()} = BPpos1;
-${block.outputPortList.get(3).getOutputSignalC().getName()} = BPpos2;
+        $output1 = (-t_x + 16088) / 80.4;
+        $output2 = (t_y - 15968) / 107.47;
+        $output3 = BPpos1;
+        $output4 = BPpos2;
+    }
 
-}
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model for ball plate system
+    // Ball position on plate based on state variables
+    $output1 = $stateX0;  // Ball X position
+    $output2 = $stateX1;  // Ball Y position  
+    $output3 = $stateX2;  // Plate X angle
+    $output4 = $stateX3;  // Plate Y angle
+#end

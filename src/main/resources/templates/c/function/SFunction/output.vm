@@ -1,6 +1,6 @@
-/*Code for output of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of ${name}:($blockId)$blockName*/
 #if($numDiscState > 0)
-if(block${block.getBlockId()}.discreteTime<=mp->time||block${block.getBlockId()}.discreteTime-mp->time<0.0000001{;
+if(block$blockId.discreteTime<=mp->time||block$blockId.discreteTime-mp->time<0.0000001{;
 (*${simStructName}->outputs)(${simStructName},0);
 }
 #else

@@ -1,2 +1,2 @@
-/*Code for initialization of block IntervalTest:(${block.getBlockId()}) ${block.getBlockName()}*/
-${lowLimit.getInitCodeC()}${upLimit.getInitCodeC()}
+/*Code for initialization of block IntervalTest:($blockId) $blockName*/
+$lowLimitInitCodeC$upLimitInitCodeC

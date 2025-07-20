@@ -1,10 +1,10 @@
-/*Code for output of block CompareToConstant:(${block.getBlockId()})${block.getBlockName()}*/
-#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $const && $relop)
+/*Code for output of block CompareToConstant:($blockId)$blockName*/
+#if($inputPortList && $inputPortListSize > 0 && $outputPortList && $outputPortListSize > 0 && $const && $relop)
     #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
     #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignal.getName())
-    #set($outputVar = $outputSignal.getName())
-    #set($constantValue = $const.getName())
+    #set($inputVar = $inputSignalName)
+    #set($outputVar = $outputSignalName)
+    #set($constantValue = $constName)
     
     #if($inputSignal.dataType == $realDataType)
         ## Scalar comparison
@@ -15,8 +15,8 @@
         }
     #else
         ## Matrix comparison - element-wise
-        #set($height = $inputSignal.getHeight())
-        #set($width = $inputSignal.getWidth())
+        #set($height = $inputSignalHeight)
+        #set($width = $inputSignalWidth)
         #set($hMax = $height - 1)
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
@@ -41,7 +41,7 @@
     #end
 #else
     ## Fallback if parameters missing
-    #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* CompareToConstant block missing parameters */
+    #if($outputPortList && $outputPortListSize > 0)
+        $outputPort0SignalName = 0.0; /* CompareToConstant block missing parameters */
     #end
 #end

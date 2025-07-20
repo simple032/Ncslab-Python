@@ -9,26 +9,50 @@
 #set($AD1 = $block.getParameter("AD1").getDoubleValue())
 #set($AD2 = $block.getParameter("AD2").getDoubleValue())
 
-#set($outputAD1 = $block.getOutputPortVariables().get(0).getName())
-#set($outputAD2 = $block.getOutputPortVariables().get(1).getName())
+#set($outputAD1 = $blockOutputPortVariables.get(0).getName())
+#set($outputAD2 = $blockOutputPortVariables.get(1).getName())
 
-#if ($input1)
-digitalWrite($BCM1, HIGH);
-#else
-digitalWrite($BCM1, LOW);
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for actual circuit superposition experiments
+    #if ($input1)
+    digitalWrite($BCM1, HIGH);
+    #else
+    digitalWrite($BCM1, LOW);
+    #end
+
+    #if ($input2)
+    digitalWrite($BCM2, HIGH);
+    #else
+    digitalWrite($BCM2, LOW);
+    #end
+
+    #if ($input3)
+    digitalWrite($BCM3, HIGH);
+    #else
+    digitalWrite($BCM3, LOW);
+    #end
+
+    $outputAD1 = ADS1256_GetChannalValue($AD1) * 16.6666667 / 0x7fffff;
+    $outputAD2 = ADS1256_GetChannalValue($AD2) * 16.6666667 / 0x7fffff;
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model for circuit superposition principle
+    // Demonstrates linear superposition of multiple sources
+    
+    // Calculate superposition effect of three inputs
+    double source1_effect = $input1 ? 1.0 : 0.0;
+    double source2_effect = $input2 ? 1.0 : 0.0;
+    double source3_effect = $input3 ? 1.0 : 0.0;
+    
+    // Apply superposition principle - linear combination of effects
+    double time = getTimeStep();
+    
+    // Output 1: Superposition of all three sources with different weights
+    $outputAD1 = (source1_effect * 5.0 * sin(time * 0.1) + 
+                  source2_effect * 3.0 * cos(time * 0.15) + 
+                  source3_effect * 2.0 * sin(time * 0.08 + 1.57)) + 8.33;
+    
+    // Output 2: Different superposition combination
+    $outputAD2 = (source1_effect * 2.0 * cos(time * 0.12) + 
+                  source2_effect * 4.0 * sin(time * 0.18) + 
+                  source3_effect * 3.0 * cos(time * 0.09 + 0.785)) + 8.33;
 #end
-
-#if ($input2)
-digitalWrite($BCM2, HIGH);
-#else
-digitalWrite($BCM2, LOW);
-#end
-
-#if ($input3)
-digitalWrite($BCM3, HIGH);
-#else
-digitalWrite($BCM3, LOW);
-#end
-
-$outputAD1 = ADS1256_GetChannalValue($AD1) * 16.6666667 / 0x7fffff;
-$outputAD2 = ADS1256_GetChannalValue($AD2) * 16.6666667 / 0x7fffff;

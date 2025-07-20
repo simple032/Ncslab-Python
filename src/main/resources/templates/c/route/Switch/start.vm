@@ -1,2 +1,2 @@
-/* Code for start of block Switch:(${block.getBlockId()}) ${block.getBlockName()} */
-${block.threshold.getName()} = ${block.threshold.value};
+/* Code for start of block Switch:($blockId) $blockName */
+${block.thresholdName} = ${block.threshold.value};

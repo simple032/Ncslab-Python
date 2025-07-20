@@ -1,2 +1,2 @@
-/* From模块微分计算: ($block.getBlockId()) $block.getBlockName() */
+/* From模块微分计算: ($blockBlockId) $blockBlockName */
 /* 无状态导数 - 直接信号传递 */

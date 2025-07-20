@@ -1,2 +1,2 @@
-/* Code for termination of block Switch:(${block.getBlockId()}) ${block.getBlockName()} */
+/* Code for termination of block Switch:($blockId) $blockName */
 /* No cleanup required */

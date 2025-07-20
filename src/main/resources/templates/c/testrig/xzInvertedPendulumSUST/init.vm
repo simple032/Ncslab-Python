@@ -1,14 +1,23 @@
-char xzIPSUSTmsg[255];
-hCommXzIPSUST = Serialport_Open("/dev/ttyUSB0", 115200,xzIPSUSTmsg);
-tcflush(hCommXzIPSUST,TCIOFLUSH);
-char cmdInit2[] = {"GZ200ENA\r\n"};
-char cmdInit4[] = {"GZ200DIS\r\n"};
-if((int)${ENAOrDIS.value}==1) Serialport_Send(hCommXzIPSUST,cmdInit2,strlen(cmdInit2));
-else Serialport_Send(hCommXzIPSUST,cmdInit4,strlen(cmdInit4));
-usleep(15000);
-char cmdInit3[] = {"GZ000A10\r\n"};
-Serialport_Send(hCommXzIPSUST,cmdInit3,strlen(cmdInit3));
-usleep(5000);
-char cmdInit[] = {"GZ000V100\r\n"};
-Serialport_Send(hCommXzIPSUST,cmdInit,strlen(cmdInit));
-usleep(1500000);
+/* Velocity Template for initialization of block xzInvertedPendulumSUST */
+#set($blockId = $blockBlockId)
+#set($blockName = $blockBlockName)
+
+#if ($modelMode == $simulationMode)
+    // Simulation mode - No hardware initialization needed
+    // Mathematical model initialization would go here if needed
+#elseif ($modelMode == $compilationMode)
+    char xzIPSUSTmsg[255];
+    hCommXzIPSUST = Serialport_Open("/dev/ttyUSB0", 115200,xzIPSUSTmsg);
+    tcflush(hCommXzIPSUST,TCIOFLUSH);
+    char cmdInit2[] = {"GZ200ENA\r\n"};
+    char cmdInit4[] = {"GZ200DIS\r\n"};
+    if((int)${ENAOrDIS.value}==1) Serialport_Send(hCommXzIPSUST,cmdInit2,strlen(cmdInit2));
+    else Serialport_Send(hCommXzIPSUST,cmdInit4,strlen(cmdInit4));
+    usleep(15000);
+    char cmdInit3[] = {"GZ000A10\r\n"};
+    Serialport_Send(hCommXzIPSUST,cmdInit3,strlen(cmdInit3));
+    usleep(5000);
+    char cmdInit[] = {"GZ000V100\r\n"};
+    Serialport_Send(hCommXzIPSUST,cmdInit,strlen(cmdInit));
+    usleep(1500000);
+#end

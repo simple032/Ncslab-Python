@@ -1,8 +1,8 @@
-/*Code for output of block ${block.getClass().getSimpleName()}: (${block.getBlockId()}) ${block.getBlockName()}*/
-auto ${modelVariable.getName()}_mat = ${inputSignal};
+/*Code for output of block $blockType: ($blockId) $blockName*/
+auto $modelVariableName_mat = ${inputSignal};
 
 #if ${width} == 1
-${outputSignal} = ${modelVariable.getName()}->predict(${modelVariable.getName()}_mat)(0);
+${outputSignal} = $modelVariableName->predict($modelVariableName_mat)(0);
 #else
-${outputSignal} = ${modelVariable.getName()}->predict(${modelVariable.getName()}_mat);
+${outputSignal} = $modelVariableName->predict($modelVariableName_mat);
 #end

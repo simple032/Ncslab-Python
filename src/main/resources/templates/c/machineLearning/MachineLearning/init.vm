@@ -1,1 +1,1 @@
-/*Code for initialization of block MLTest:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for initialization of block MLTest:($blockId)$blockName*/

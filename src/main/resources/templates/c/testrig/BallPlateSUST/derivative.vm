@@ -1,1 +1,1 @@
-/*Code for Derivative of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for Derivative of ${name}:($blockId)$blockName*/

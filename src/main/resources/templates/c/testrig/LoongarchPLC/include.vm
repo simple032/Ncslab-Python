@@ -1,1 +1,1 @@
-/*Code for include files of block ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for include files of block ${name}:($blockId)$blockName*/

@@ -1,2 +1,2 @@
 /* Code for initialization of block Switch:($blockId)$blockName */
-$threshold.getInitCodeC()
+$thresholdInitCodeC

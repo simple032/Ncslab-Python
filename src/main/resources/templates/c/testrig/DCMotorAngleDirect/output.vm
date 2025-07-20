@@ -1,9 +1,9 @@
 #set($inputSignal = $block.getInputPortVariable(0))
-#set($outputSpeed = $block.getOutputPortVariables().get(0))
-#set($outputAngle = $block.getOutputPortVariables().get(1))
+#set($outputSpeed = $blockOutputPortVariables.get(0))
+#set($outputAngle = $blockOutputPortVariables.get(1))
 
 #if ($modelMode == $compilationMode)
-    #set($hardwareDefineName = "Block" + $block.getBlockId() + "_DCMotorAngleDirect")
+    #set($hardwareDefineName = "Block" + $blockBlockId + "_DCMotorAngleDirect")
     initDCMotorAngleDirect(&$hardwareDefineName);
 
     if (mp->majorStep > 0) {
@@ -11,7 +11,7 @@
         $pwmValue = $pwmValue > 0.5 ? 0.5 : $pwmValue;
         $pwmValue = $pwmValue < -0.5 ? -0.5 : $pwmValue;
 
-        $outputSpeed = $hardwareDefineName.getSpeedPulse() * 5.79582;
+        $outputSpeed = $hardwareDefineNameSpeedPulse * 5.79582;
         outputDCMotorAngleDirect(&$hardwareDefineName);
 
         unsigned char cmdangle[] = {0x01, 0x04, 0x00, 0x00, 0x00, 0x04, 0xf1, 0xc9};

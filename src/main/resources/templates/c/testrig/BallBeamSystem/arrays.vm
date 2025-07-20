@@ -1,0 +1,6 @@
+/*Arrays for BallBeamSystem Block $blockId*/
+#if($rworkList && $rworkList.size() > 0)
+#foreach($rwork in $rworkList)
+REAL $rwork.name;
+#end
+#end

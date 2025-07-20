@@ -1,2 +1,2 @@
-/*Code for output of block To:(${block.getBlockId()})${block.getBlockName()}*/
-${block.getOutputPortVariable(0)}=${block.getInputPortVariable(0)};
+/*Code for output of block To:($blockId)$blockName*/
+$outputSignal=$inputSignal;

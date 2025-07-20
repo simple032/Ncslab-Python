@@ -1,27 +1,27 @@
-#set($blockId = $block.getBlockId())
-#set($blockName = $block.getBlockName())
-#set($out = $outputs.get(0))
+#set($blockId = $blockBlockId)
+#set($blockName = $blockBlockName)
+#set($out = $output1)
 #set($signal = $inputs.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
 
 /* Code for output of block Detect Increase ($blockId) $blockName */
 #if($signal.dataType == $realDataType)
-if(${signal.getName()} > preValue_${blockId}) {
-    ${out.getName()} = 1.0;
+if($signalName > preValue_${blockId}) {
+    $outName = 1.0;
 } else {
-    ${out.getName()} = 0.0;
+    $outName = 0.0;
 }
-preValue_${blockId} = ${signal.getName()};
+preValue_${blockId} = $signalName;
 #else
-#set($signalHeightIndex = $signal.getHeight() - 1)
+#set($signalHeightIndex = $signalHeight - 1)
 #foreach($i in [0..$signalHeightIndex])
-#set($signalWidthIndex = $signal.getWidth() - 1)
+#set($signalWidthIndex = $signalWidth - 1)
     #foreach($j in [0..$signalWidthIndex])
-        if(${signal.getName()}($i,$j) > preValue_${blockId}[$i][$j]) {
-            ${out.getName()}($i,$j) = 1.0;
+        if($signalName($i,$j) > preValue_${blockId}[$i][$j]) {
+            $outName($i,$j) = 1.0;
         } else {
-            ${out.getName()}($i,$j) = 0.0;
+            $outName($i,$j) = 0.0;
         }
-        preValue_${blockId}[$i][$j] = ${signal.getName()}($i,$j);
+        preValue_${blockId}[$i][$j] = $signalName($i,$j);
     #end
 #end
 #end

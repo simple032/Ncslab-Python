@@ -1,1 +1,1 @@
-/*Code for statement of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for statement of ${name}:($blockId)$blockName*/

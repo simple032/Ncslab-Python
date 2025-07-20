@@ -12,30 +12,52 @@
 #set($AD6 = $block.getParameter("AD6").getDoubleValue())
 #set($AD7 = $block.getParameter("AD7").getDoubleValue())
 
-#set($outputAD1 = $block.getOutputPortVariables().get(0).getName())
-#set($outputAD2 = $block.getOutputPortVariables().get(1).getName())
-#set($outputAD3 = $block.getOutputPortVariables().get(2).getName())
-#set($outputAD4 = $block.getOutputPortVariables().get(3).getName())
-#set($outputAD5 = $block.getOutputPortVariables().get(4).getName())
-#set($outputAD6 = $block.getOutputPortVariables().get(5).getName())
-#set($outputAD7 = $block.getOutputPortVariables().get(6).getName())
+#set($outputAD1 = $blockOutputPortVariables.get(0).getName())
+#set($outputAD2 = $blockOutputPortVariables.get(1).getName())
+#set($outputAD3 = $blockOutputPortVariables.get(2).getName())
+#set($outputAD4 = $blockOutputPortVariables.get(3).getName())
+#set($outputAD5 = $blockOutputPortVariables.get(4).getName())
+#set($outputAD6 = $blockOutputPortVariables.get(5).getName())
+#set($outputAD7 = $blockOutputPortVariables.get(6).getName())
 
-#if ($input1)
-digitalWrite($BCM, HIGH);
-#else
-digitalWrite($BCM, LOW);
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for actual circuit substitution experiments
+    #if ($input1)
+    digitalWrite($BCM, HIGH);
+    #else
+    digitalWrite($BCM, LOW);
+    #end
+
+    #if ($DA)
+    DAC8532_Out_Voltage(channel_B, $input2);
+    #else
+    DAC8532_Out_Voltage(channel_A, ($input2) / 4);
+    #end
+
+    $outputAD1 = ADS1256_GetChannalValue($AD1) * 16.6666667 / 0x7fffff;
+    $outputAD2 = ADS1256_GetChannalValue($AD2) * (-5.0) / 0x7fffff;
+    $outputAD3 = ADS1256_GetChannalValue($AD3) * 16.6666667 / 0x7fffff;
+    $outputAD4 = ADS1256_GetChannalValue($AD4) * (-5.0) / 0x7fffff;
+    $outputAD5 = ADS1256_GetChannalValue($AD5) * 16.6666667 / 0x7fffff;
+    $outputAD6 = ADS1256_GetChannalValue($AD6) * 16.6666667 / 0x7fffff;
+    $outputAD7 = ADS1256_GetChannalValue($AD7) * 16.6666667 / 0x7fffff;
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model for circuit substitution analysis
+    // Simulates circuit behavior with element substitution effects
+    
+    // Simulate digital control output (no hardware GPIO operations)
+    double digital_control = $input1;
+    
+    // Simulate analog output (no DAC operations)
+    double analog_output = $input2;
+    
+    // Simulate analog input readings based on circuit substitution
+    double time = getTimeStep();
+    $outputAD1 = sin(time * 0.1 + analog_output * 0.01) * 8.33 + 8.33;     // Positive measurement
+    $outputAD2 = cos(time * 0.12 + digital_control * 3.14) * (-2.5) - 2.5;  // Negative measurement
+    $outputAD3 = sin(time * 0.08 + analog_output * 0.02) * 8.33 + 8.33;     // Circuit response 1
+    $outputAD4 = cos(time * 0.15 + digital_control * 1.57) * (-2.5) - 2.5;  // Circuit response 2
+    $outputAD5 = sin(time * 0.11 + analog_output * 0.015) * 8.33 + 8.33;    // Substitution effect 1
+    $outputAD6 = cos(time * 0.09 + digital_control * 2.35) * 8.33 + 8.33;   // Substitution effect 2
+    $outputAD7 = sin(time * 0.13 + analog_output * 0.025) * 8.33 + 8.33;    // Combined response
 #end
-
-#if ($DA)
-DAC8532_Out_Voltage(channel_B, $input2);
-#else
-DAC8532_Out_Voltage(channel_A, ($input2) / 4);
-#end
-
-$outputAD1 = ADS1256_GetChannalValue($AD1) * 16.6666667 / 0x7fffff;
-$outputAD2 = ADS1256_GetChannalValue($AD2) * (-5.0) / 0x7fffff;
-$outputAD3 = ADS1256_GetChannalValue($AD3) * 16.6666667 / 0x7fffff;
-$outputAD4 = ADS1256_GetChannalValue($AD4) * (-5.0) / 0x7fffff;
-$outputAD5 = ADS1256_GetChannalValue($AD5) * 16.6666667 / 0x7fffff;
-$outputAD6 = ADS1256_GetChannalValue($AD6) * 16.6666667 / 0x7fffff;
-$outputAD7 = ADS1256_GetChannalValue($AD7) * 16.6666667 / 0x7fffff;

@@ -1,9 +1,9 @@
-/*Code for output of block Fcn:(${block.getBlockId()})${block.getBlockName()}*/
-#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $expression)
+/*Code for output of block Fcn:($blockId)$blockName*/
+#if($inputPortList && $inputPortListSize > 0 && $outputPortList && $outputPortListSize > 0 && $expression)
     #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
     #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignal.getName())
-    #set($outputVar = $outputSignal.getName())
+    #set($inputVar = $inputSignalName)
+    #set($outputVar = $outputSignalName)
     
     #if($inputSignal.dataType == $realDataType)
         ## Scalar function evaluation
@@ -20,7 +20,7 @@
     #end
 #else
     ## Fallback if parameters missing
-    #if($outputPortList && $outputPortList.size() > 0)
-        ${outputPortList.get(0).getOutputSignalC().getName()} = 0.0; /* Fcn block missing parameters */
+    #if($outputPortList && $outputPortListSize > 0)
+        $outputPort0SignalName = 0.0; /* Fcn block missing parameters */
     #end
 #end

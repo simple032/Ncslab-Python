@@ -1,11 +1,11 @@
-/*Code for output of block RelationalOperator:(${block.getBlockId()})${block.getBlockName()}*/
+/*Code for output of block RelationalOperator:($blockId)$blockName*/
 #if($signal1 && $signal2 && $ops && $relop)
     #if($signal1.dataType == $realDataType)
         ## Scalar relational operation
-        if(${signal1.getName()} $relop ${signal2.getName()}) {
-            ${ops.getName()} = 1.0;
+        if($signal1Name $relop $signal2Name) {
+            $opsName = 1.0;
         } else {
-            ${ops.getName()} = 0.0;
+            $opsName = 0.0;
         }
     #else
         ## Matrix relational operation
@@ -15,15 +15,15 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        if(${signal1.getName()}($i,$j) $relop ${signal2.getName()}($i,$j)) {
-            ${ops.getName()}($i,$j) = 1.0;
+        if($signal1Name($i,$j) $relop $signal2Name($i,$j)) {
+            $opsName($i,$j) = 1.0;
         } else {
-            ${ops.getName()}($i,$j) = 0.0;
+            $opsName($i,$j) = 0.0;
         }
             #end
         #end
     #end
 #else
     ## Fallback if parameters missing
-    ${ops.getName()} = 0.0; /* RelationalOperator parameters missing, using default */
+    $opsName = 0.0; /* RelationalOperator parameters missing, using default */
 #end

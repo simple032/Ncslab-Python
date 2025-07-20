@@ -1,15 +1,26 @@
-#set( $blockId = $block.getBlockId() )
-#set( $blockName = $block.getBlockName() )
+/* Code for output of block DoubleTank:($blockId)$blockName */
 
-/* Code for output of block DoubleTank:(${blockId})${blockName} */
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for actual double tank system
+    if ($stateX0 <= $lb_position) {
+        $output1 = $lb_position;
+    } else if (($stateX0 > $lb_position) && ($stateX0 <= $ub_angle)) {
+        $output1 = $stateX0;
+    } else {
+        $output1 = $ub_angle;
+    }
 
-if (${stateList.get(0).getName()} <= ${paramValues.getDouble("lb_position")}) {
-    ${outputPortList.get(0).getOutputSignalC().getName()} = ${paramValues.getDouble("lb_position")};
-} else if ((${stateList.get(0).getName()} > ${paramValues.getDouble("lb_position")}) && (${stateList.get(0).getName()} <= ${paramValues.getDouble("ub_angle")})) {
-    ${outputPortList.get(0).getOutputSignalC().getName()} = ${stateList.get(0).getName()};
-} else {
-    ${outputPortList.get(0).getOutputSignalC().getName()} = ${paramValues.getDouble("ub_angle")};
-}
+    $output2 = $stateX1;
+    $output3 = $rwork_tem * 180 / AERO_PI;
 
-${outputPortList.get(1).getOutputSignalC().getName()} = ${stateList.get(1).getName()};
-${outputPortList.get(2).getOutputSignalC().getName()} = ${rworkList.get(0).getName()} * 180 / AERO_PI;
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model for double tank water level system
+    // Output 1: Pump Speed (proportional to input)
+    $output1 = $input1 > 0 ? $input1 : 0;
+    
+    // Output 2: Water Level (from state variable)
+    $output2 = $stateX1;
+    
+    // Output 3: Flow rate or tank level indicator
+    $output3 = $stateX0 * 100 / 3.14159; // Convert to percentage or flow rate
+#end

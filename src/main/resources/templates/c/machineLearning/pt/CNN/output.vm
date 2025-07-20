@@ -1,3 +1,3 @@
-/*Code for output of block CNN:(${block.getBlockId()})${block.getBlockName()}*/
-std::vector<double> ${modelVariable.getName()}_v = {1.0,2.0,3.0};
-${outputSignal} = ${modelVariable.getName()}->predict(${modelVariable.getName()}_v)[0];
+/*Code for output of block CNN:($blockId)$blockName*/
+std::vector<double> $modelVariableName_v = {1.0,2.0,3.0};
+${outputSignal} = $modelVariableName->predict($modelVariableName_v)[0];

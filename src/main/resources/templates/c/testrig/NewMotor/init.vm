@@ -1,10 +1,10 @@
 /* Velocity Template for initialization of block NewMotor */
-#set($blockId = $block.getBlockId())
-#set($blockName = $block.getBlockName())
+#set($blockId = $blockBlockId)
+#set($blockName = $blockBlockName)
 
 #if ($modelMode == $simulationMode)
-    #foreach($state in $block.getStateList())
-        $state.getName() = 0;
+    #foreach($state in $blockStateList)
+        $stateName = 0;
     #end
 #elseif ($modelMode == $compilationMode)
     char msg[255];

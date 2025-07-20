@@ -1,2 +1,2 @@
-/*Code for Derivative of ${name}:(${block.getBlockId()})${block.getBlockName()}*/
-sfcnDerivatives(sfcnStruc${block.getBlockId()});
+/*Code for Derivative of ${name}:($blockId)$blockName*/
+sfcnDerivatives(sfcnStruc$blockId);

@@ -8,15 +8,15 @@
 ## Macro to generate parameter initialization with default fallback
 #macro(initParameter $param $defaultValue)
 #if($param)
-${param.getInitCodeC()}#else
+$paramInitCodeC#else
 /* Parameter ${parameterName} not found, using default: $defaultValue */
-real_T ${parameterName}_${block.getBlockId()} = $defaultValue;
+real_T ${parameterName}_$blockId = $defaultValue;
 #end
 #end
 
 ## Macro to generate parameter initialization from PARAMETER_DEFAULTS
 #macro(initParameterWithDefaults $param $paramName)
-#set($defaults = $block.getClass().getDeclaredField("PARAMETER_DEFAULTS"))
+#set($defaults = $blockClass.getDeclaredField("PARAMETER_DEFAULTS"))
 #if($defaults)
     #set($defaultMap = $defaults.get(null))
     #set($defaultValue = $defaultMap.get($paramName))

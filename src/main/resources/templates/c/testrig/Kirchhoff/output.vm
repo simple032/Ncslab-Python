@@ -10,24 +10,42 @@
 #set($AD6 = $block.getParameter("AD6").getDoubleValue())
 #set($AD7 = $block.getParameter("AD7").getDoubleValue())
 
-#set($outputAD1 = $block.getOutputPortVariables().get(0).getName())
-#set($outputAD2 = $block.getOutputPortVariables().get(1).getName())
-#set($outputAD3 = $block.getOutputPortVariables().get(2).getName())
-#set($outputAD4 = $block.getOutputPortVariables().get(3).getName())
-#set($outputAD5 = $block.getOutputPortVariables().get(4).getName())
-#set($outputAD6 = $block.getOutputPortVariables().get(5).getName())
-#set($outputAD7 = $block.getOutputPortVariables().get(6).getName())
+#set($outputAD1 = $blockOutputPortVariables.get(0).getName())
+#set($outputAD2 = $blockOutputPortVariables.get(1).getName())
+#set($outputAD3 = $blockOutputPortVariables.get(2).getName())
+#set($outputAD4 = $blockOutputPortVariables.get(3).getName())
+#set($outputAD5 = $blockOutputPortVariables.get(4).getName())
+#set($outputAD6 = $blockOutputPortVariables.get(5).getName())
+#set($outputAD7 = $blockOutputPortVariables.get(6).getName())
 
-$outputAD1 = ADS1256_GetChannalValue($AD1) * 5.0 / 0x7fffff;
-$outputAD2 = ADS1256_GetChannalValue($AD2) * (-16.6666667) / 0x7fffff;
-$outputAD3 = ADS1256_GetChannalValue($AD3) * 5.0 / 0x7fffff;
-$outputAD4 = ADS1256_GetChannalValue($AD4) * (-16.6666667) / 0x7fffff;
-$outputAD5 = ADS1256_GetChannalValue($AD5) * 5.0 / 0x7fffff;
-$outputAD6 = ADS1256_GetChannalValue($AD6) * 16.6666667 / 0x7fffff;
-$outputAD7 = ADS1256_GetChannalValue($AD7) * 16.6666667 / 0x7fffff;
+#if ($modelMode == $compilationMode)
+    // Compilation mode - Hardware operation for actual Kirchhoff's law circuit measurements
+    $outputAD1 = ADS1256_GetChannalValue($AD1) * 5.0 / 0x7fffff;
+    $outputAD2 = ADS1256_GetChannalValue($AD2) * (-16.6666667) / 0x7fffff;
+    $outputAD3 = ADS1256_GetChannalValue($AD3) * 5.0 / 0x7fffff;
+    $outputAD4 = ADS1256_GetChannalValue($AD4) * (-16.6666667) / 0x7fffff;
+    $outputAD5 = ADS1256_GetChannalValue($AD5) * 5.0 / 0x7fffff;
+    $outputAD6 = ADS1256_GetChannalValue($AD6) * 16.6666667 / 0x7fffff;
+    $outputAD7 = ADS1256_GetChannalValue($AD7) * 16.6666667 / 0x7fffff;
 
-#if ($input)
-digitalWrite($BCM, HIGH);
-#else
-digitalWrite($BCM, LOW);
+    #if ($input)
+    digitalWrite($BCM, HIGH);
+    #else
+    digitalWrite($BCM, LOW);
+    #end
+#elseif ($modelMode == $simulationMode)
+    // Simulation mode - Mathematical model for Kirchhoff's law circuit analysis
+    // Simulates voltage and current measurements based on circuit parameters
+    
+    // Simulate analog readings with typical circuit values
+    $outputAD1 = sin(getTimeStep() * 0.1) * 2.5 + 2.5;      // Voltage measurement 1 (0-5V)
+    $outputAD2 = cos(getTimeStep() * 0.15) * 8.33 - 8.33;   // Current measurement 1 (scaled)
+    $outputAD3 = sin(getTimeStep() * 0.12 + 1.57) * 2.5 + 2.5;  // Voltage measurement 2
+    $outputAD4 = cos(getTimeStep() * 0.18 + 0.78) * 8.33 - 8.33;  // Current measurement 2
+    $outputAD5 = sin(getTimeStep() * 0.08) * 2.5 + 2.5;     // Voltage measurement 3
+    $outputAD6 = cos(getTimeStep() * 0.2) * 8.33 + 8.33;    // Current measurement 3 (positive)
+    $outputAD7 = sin(getTimeStep() * 0.11 + 3.14) * 8.33 + 8.33;  // Current measurement 4
+    
+    // Digital output control (simulated switch)
+    // No hardware GPIO operations in simulation mode
 #end

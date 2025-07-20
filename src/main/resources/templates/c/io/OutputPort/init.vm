@@ -1,8 +1,8 @@
 
 #set($path = $blockPath + "/" + $blockName + "/" + $name)
-signal${blockId}_Out${number}.vp=&$signal.getName();
-signal${blockId}_Out${number}.width=$signal.getWidth();
-signal${blockId}_Out${number}.height=$signal.getHeight();
+signal${blockId}_Out${number}.vp=&$signal.name;
+signal${blockId}_Out${number}.width=$signal.width;
+signal${blockId}_Out${number}.height=$signal.height;
 signal${blockId}_Out${number}.name=(char *)"$name";
 signal${blockId}_Out${number}.path=(char *)"$path";
 #if($signal.dataType == $realDataType)

@@ -25,8 +25,8 @@ $outputPortList.get($outputIndex).getOutputSignalC().getName()#end
 
 ## Macro to generate matrix loop with given variable names and signal
 #macro(matrixLoop $loopVar_i $loopVar_j $signal $content)
-#set($height = $signal.getHeight())
-#set($width = $signal.getWidth())
+#set($height = $signalHeight)
+#set($width = $signalWidth)
 #set($hMax = $height - 1)
 #set($wMax = $width - 1)
 #foreach($i in [0..$hMax])
@@ -40,6 +40,6 @@ $outputPortList.get($outputIndex).getOutputSignalC().getName()#end
 
 ## Macro to get parameter default value
 #macro(getParameterDefault $paramName)
-#if($block.getClass().getDeclaredField("PARAMETER_DEFAULTS"))
-${block.getClass().getDeclaredField("PARAMETER_DEFAULTS").get(null).get($paramName)}#end
+#if($blockClass.getDeclaredField("PARAMETER_DEFAULTS"))
+${blockClass.getDeclaredField("PARAMETER_DEFAULTS").get(null).get($paramName)}#end
 #end
