@@ -1,0 +1,5 @@
+## ======================================================================================
+## PTModel Initialization Template
+## PyTorch-based machine learning model initialization
+## ======================================================================================
+/*Code for initialization of pytorch based block:(${blockId})${blockName}*/

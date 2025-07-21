@@ -63,12 +63,9 @@ public class GPIO extends Block{
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		String outputCode="/*Code for output of block Bcm:("+getBlockId()+")"+getBlockName()+"*/\n";
-
 		context.put("block", this);
 		context.put("Bcm",  Bcm.getData().getIntValue());
 		context.put("inputSignal",  inputPortList.get(0) .getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/GPIO/output.vm", context));
-		code.addOutputCode(outputCode);
 	}
 }

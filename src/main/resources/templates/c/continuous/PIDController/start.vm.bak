@@ -1,4 +1,0 @@
-## PID控制器启动配置
-rtb_PIDController_DSTATE = 0.0;
-rtb_PIDController_DSTATE_d = 0.0;
-rtb_PIDController_DSTATE_i = 0.0;

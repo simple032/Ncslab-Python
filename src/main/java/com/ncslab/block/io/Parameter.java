@@ -65,6 +65,8 @@ public class Parameter {
 
     public double getDouble() { return data.getInitValue(); }
 
+    public double getValue() { return data.getInitValue(); }
+
     public String getInitString() { return data.getInitString(); }
 
     public String getDataString() { return data.getDataString(); }

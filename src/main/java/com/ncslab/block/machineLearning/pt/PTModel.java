@@ -20,7 +20,14 @@ public abstract class PTModel extends MachineLearning {
     @Override
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
-        String initCode = "/*Code for initialization of pytorch based block:("+getBlockId()+")"+getBlockName()+"*/\n";
+        
+        // Use template-based generation instead of string concatenation
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        context.put("pyInit", PY_INIT);
+        context.put("pyInclude", PY_INCLUDE);
+        
+        String initCode = com.ncslab.util.TemplateManager.renderTemplate("c/machineLearning/pt/PTModel/init.vm", context);
+        
         code.addGlobalInitCode(PY_INIT);
         code.addGlobalInitCode(PY_INCLUDE);
         code.addIncludeCode("#include \"PTModel.hpp\"\n");
