@@ -6,16 +6,16 @@ if(sfcnIsMajorStep()){
 ## Discrete module - draw step diagram
 if(block$outputPortBlockId.discreteUpdated){
 ## Draw current time point
-$scopeStructName.timeList.push_back(sfcnGetT());
-$scopeStructName.dataList.push_back($signalName);
+${scopeStructName}.timeList.push_back(sfcnGetT());
+${scopeStructName}.dataList.push_back($signalName);
 ## Hold for one sample period, draw next period point
-$scopeStructName.timeList.push_back(sfcnGetT()+$sampleTime);
-$scopeStructName.dataList.push_back($signalName);
+${scopeStructName}.timeList.push_back(sfcnGetT()+$sampleTime);
+${scopeStructName}.dataList.push_back($signalName);
 }
 #else
 ## Continuous plotting
-$scopeStructName.timeList.push_back(sfcnGetT());
-$scopeStructName.dataList.push_back($signalName);
+${scopeStructName}.timeList.push_back(sfcnGetT());
+${scopeStructName}.dataList.push_back($signalName);
 #end
 #elseif($signalDataType.name() == "MATRIX")
 ## Handle MATRIX data type  
@@ -23,26 +23,26 @@ $scopeStructName.dataList.push_back($signalName);
 ## Discrete module - draw step diagram
 if(block$outputPortBlockId.discreteUpdated){
 ## Draw current time point
-$scopeStructName.timeList.push_back(sfcnGetT());
+${scopeStructName}.timeList.push_back(sfcnGetT());
 for(int i=0;i<$signalHeight;i++){
 for(int j=0;j<$signalWidth;j++){
-$scopeStructName.dataList.push_back($signalName(i,j));
+${scopeStructName}.dataList.push_back($signalName(i,j));
 }
 }
 ## Hold for one sample period, draw next period point
-$scopeStructName.timeList.push_back(sfcnGetT()+$sampleTime);
+${scopeStructName}.timeList.push_back(sfcnGetT()+$sampleTime);
 for(int i=0;i<$signalHeight;i++){
 for(int j=0;j<$signalWidth;j++){
-$scopeStructName.dataList.push_back($signalName(i,j));
+${scopeStructName}.dataList.push_back($signalName(i,j));
 }
 }
 }
 #else
 ## Continuous plotting
-$scopeStructName.timeList.push_back(sfcnGetT());
+${scopeStructName}.timeList.push_back(sfcnGetT());
 for(int i=0;i<$signalHeight;i++){
 for(int j=0;j<$signalWidth;j++){
-$scopeStructName.dataList.push_back($signalName(i,j));
+${scopeStructName}.dataList.push_back($signalName(i,j));
 }
 }
 #end

@@ -1,17 +1,4 @@
-#set($input1 = $block.getInputPortVariable(0))
-
-#set($gravity = $block.getParameter("gravity").getDoubleValue())
-#set($x0 = $block.getParameter("EQUILIBRIUM_POINT_x0").getDoubleValue())
-#set($i0 = $block.getParameter("EQUILIBRIUM_POINT_i0").getDoubleValue())
-#set($Ks = $block.getParameter("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT").getDoubleValue())
-#set($Ka = $block.getParameter("INPUT_RESISTANCE").getDoubleValue())
-
-#set($position = $blockStateList.get(0).getName())
-#set($velocity = $blockStateList.get(1).getName())
-
-#set($outputPosition = $blockOutputPortVariables.get(0).getName())
-#set($outputVelocity = $blockOutputPortVariables.get(1).getName())
-
+/*Code for Output of MagneticLevitationSystem:(${block.blockId})${block.blockName}*/
 #if ($modelMode == $compilationMode)
     // Compilation mode - Hardware operation for actual magnetic levitation system
     $outputPosition = -100 / 4.587156 * $position;

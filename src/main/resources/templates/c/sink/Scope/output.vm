@@ -1,20 +1,18 @@
 /*Code for output of block Scope:($blockId)$blockName*/
-#if($inputPortList && $inputPortListSize > 0 && $scopeStruct)
-    #set($scopeName = $scopeStructName)
-    
+#if($inputPortList && $inputPortListSize > 0 && $scopeStruct)    
     ## Scope data logging - only on major time steps
     if (sfcnIsMajorStep()) {
         ## Log current simulation time
-        ${scopeName}.timeList.push_back(sfcnGetT());
+        ${scopeStructName}.timeList.push_back(sfcnGetT());
         
         #if($inputSignal1DataType == $realDataType)
             ## Scalar data logging
-            ${scopeName}.dataList.push_back($inputSignal);
+            ${scopeStructName}.dataList.push_back($inputSignal);
         #else
             ## Matrix data logging - flatten matrix into vector
             for(int i = 0; i < $inputSignal1Height; i++) {
                 for(int j = 0; j < $inputSignal1Width; j++) {
-                    ${scopeName}.dataList.push_back($inputSignal(i, j));
+                    ${scopeStructName}.dataList.push_back($inputSignal(i, j));
                 }
             }
         #end

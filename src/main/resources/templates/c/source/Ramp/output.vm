@@ -1,31 +1,29 @@
 /*Code for output of block Ramp:($blockId)$blockName*/
-#if($signal && $outputs && $outputs.size() > 0)
-    #set($outputVar = $output1)
-    
-    #if($signal.dataType == $realDataType)
+#if($Slope && $Start && $InitialOutput)
+    #if($SlopeObject.dataType == $realDataType)
         ## Scalar ramp function
-        if(model.time < ${start}) {
-            $outputVar = ${initial_output};
+        if(model.time < $Start) {
+            $outputSignal = $InitialOutput;
         } else {
-            $outputVar = ${initial_output} + $slopeValue*(model.time - ${start});
+            $outputSignal = $InitialOutput + $Slope*(model.time - $Start);
         }
     #else
         ## Matrix ramp function
-        #if($slopeHeightIndex && $slopeWidthIndex)
-            #foreach($i in [0..$slopeHeightIndex])
-                #foreach($j in [0..$slopeWidthIndex])
-            if(model.time < ${start}[$i][$j]) {
-                $outputVar[$i][$j] = ${initial_output}[$i][$j];
-            } else {
-                $outputVar[$i][$j] = ${initial_output}[$i][$j] + ${slopeName}[$i][$j]*(model.time - ${start}[$i][$j]);
-            }
-                #end
+        #set($height = $SlopeObject.height)
+        #set($width = $SlopeObject.width)
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        if(model.time < $Start($i,$j)) {
+            $outputSignal($i,$j) = $InitialOutput($i,$j);
+        } else {
+            $outputSignal($i,$j) = $InitialOutput($i,$j) + $Slope($i,$j)*(model.time - $Start($i,$j));
+        }
             #end
         #end
     #end
 #else
     ## Fallback with default ramp behavior
-    #if($outputs && $outputs.size() > 0)
-        ${output1} = model.time; /* Default ramp: y = t */
-    #end
+    $outputSignal = model.time; /* Default ramp: y = t */
 #end

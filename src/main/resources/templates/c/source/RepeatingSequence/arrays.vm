@@ -1,4 +1,7 @@
-/* 数组声明模板 - RepeatingSequence */
-double Block$block.Id_savedata[${rep_seq_t.width}-1];
-double Block$block.Id_savedata1[${rep_seq_t.width}-1];
-double Block$block.Id_savedata2 = 0;
+/* Array declarations for RepeatingSequence block:($blockId) $blockName */
+#if($TimeValuesObject && $TimeValuesObject.width > 1)
+    #set($arraySize = $TimeValuesObject.width - 1)
+    double Block${blockId}_savedata[$arraySize];
+    double Block${blockId}_savedata1[$arraySize];
+    double Block${blockId}_savedata2 = 0;
+#end

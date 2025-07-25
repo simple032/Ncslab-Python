@@ -1,4 +1,2 @@
 /* Code for initialization of block Step:($blockId) $blockName */
-${timeInitCodeC}
-${afterInitCodeC}
-${beforeInitCodeC}
+/* Parameters: Time=$Time, Before=$Before, After=$After */

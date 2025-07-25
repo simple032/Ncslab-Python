@@ -1,4 +1,6 @@
 /*Code for output of block Backlash:($blockId)$blockName*/
+## TODO: Fix "Right side of range operator [n..m] has null value" Velocity template errors  
+## The $hMax and $wMax variables are causing null value errors in range operators on lines 23, 43, 61
 
 #set($out = $outputPortList[0])
 

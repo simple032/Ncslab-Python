@@ -1,7 +1,7 @@
 /*Define arrays for block discrete_Delay:($blockId)$blockName*/
 #set($signal = $inputSignal)
 #if($signalDataType == $matrixDataType)
-double Block$blockIdsave_data[$signalHeight][$signalWidth}*5];
+double Block$blockIdsave_data[$signalHeight][$signalWidth*5];
 #elseif($signalDataType == $realDataType && $proportionalGainDataType == $realDataType)
 double Block$blockIdsave_data[5];
 #else

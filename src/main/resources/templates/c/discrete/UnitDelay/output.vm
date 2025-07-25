@@ -26,21 +26,37 @@
         ## Matrix Unit Delay  
         #set($height = $signalHeight)
         #set($width = $signalWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-        if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-            Block${blockId}_unit_delay_savedata[${i}][(int)(model.time/sampleTimeTmp)%2+2*${j}] = $signalName(${i},${j});
-        }
-        
-        if(model.time < sampleTimeTmp) {
-            ${output1}(${i},${j}) = $initialConditionName(${i},${j});
-        } else {
+        #if($height == 1 && $width == 1)
+            ## Scalar signal being treated as matrix - use direct access
             if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-                ${output1}(${i},${j}) = Block${blockId}_unit_delay_savedata[${i}][!((int)(model.time/sampleTimeTmp)%2)+2*${j}];
+                Block${blockId}_unit_delay_savedata[0][(int)(model.time/sampleTimeTmp)%2] = $signalName;
             }
-        }
+            
+            if(model.time < sampleTimeTmp) {
+                ${output1} = $initialConditionName;
+            } else {
+                if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
+                    ${output1} = Block${blockId}_unit_delay_savedata[0][!((int)(model.time/sampleTimeTmp)%2)];
+                }
+            }
+        #else
+            ## True matrix signals
+            #set($hMax = $height - 1)
+            #set($wMax = $width - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
+                Block${blockId}_unit_delay_savedata[${i}][(int)(model.time/sampleTimeTmp)%2+2*${j}] = $signalName(${i},${j});
+            }
+            
+            if(model.time < sampleTimeTmp) {
+                ${output1}(${i},${j}) = $initialConditionName(${i},${j});
+            } else {
+                if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
+                    ${output1}(${i},${j}) = Block${blockId}_unit_delay_savedata[${i}][!((int)(model.time/sampleTimeTmp)%2)+2*${j}];
+                }
+            }
+                #end
             #end
         #end
     #end

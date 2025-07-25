@@ -1,1 +1,1 @@
-double Block$blockId_discrete_delay_savedata[$signalHeight][$signalWidth*($delayLength)];
+double Block${blockId}_discrete_delay_savedata[${signalHeight}][${signalWidth}*${delayLength}];

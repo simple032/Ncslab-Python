@@ -1,16 +1,17 @@
 /* Velocity Template for initialization of block MagneticLevitationSystem */
-#set($blockId = $blockBlockId)
-#set($blockName = $blockBlockName)
+/*Code for initialization of block MagneticLevitationSystem:(${block.blockId})${block.blockName}*/
 
 #if ($modelMode == $simulationMode)
-    // Simulation mode - No hardware initialization needed
-    #foreach($parameter in $blockParameterList)
-        $parameterName = $parameterInitDouble;
+    /* Simulation mode - No hardware initialization needed */
+    #foreach($parameter in $block.parameterList)
+        /* Initialize parameter: ${parameter.name} */
+        /* Parameter initialized in global scope */
     #end
 #elseif ($modelMode == $compilationMode)
-    #foreach($parameter in $blockParameterList)
-        $parameterName = $parameterInitDouble;
+    /* Compilation mode - Initialize hardware parameters */
+    #foreach($parameter in $block.parameterList)
+        /* Initialize parameter: ${parameter.name} */
+        /* Parameter initialized in global scope */
     #end
 
-    DEV_ModuleInit();
 #end

@@ -1,5 +1,2 @@
 /* Code for initialization of block Sine Wave:($blockId) $blockName */
-${amplitudeInitCodeC}
-${frequencyInitCodeC}
-${phaseInitCodeC}
-${biasInitCodeC}
+/* Parameters: Amplitude=$Amplitude, Frequency=$Frequency, Phase=$Phase, Bias=$Bias */

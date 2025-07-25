@@ -1,27 +1,26 @@
-/* 初始化Integrator模块: ($blockId) $blockName */
-#if($conditionSource == "External")
-$initialConditionName = $input;
+/* Code for initialization of block Integrator:($blockId) $blockName */
+#if($ConditionSource == "External")
+$InitialCondition = $inputSignal;
 #else
-$initialConditionInitCodeC
-  #if($signalDataType == $realDataType)
-    #if($initialConditionDataType == $realDataType)
-      $state=$initialConditionName;
+  #if($outputSignalObject.dataType == $realDataType)
+    #if($InitialConditionObject.dataType == $realDataType)
+      $state = $InitialCondition;
     #else
-      for(int i=0; i<$initialConditionHeight; i++){
-        for(int j=0; j<$initialConditionWidth; j++){
-          $state(i,j)=$initialConditionName(i,j);
+      for(int i=0; i<$InitialConditionObject.height; i++){
+        for(int j=0; j<$InitialConditionObject.width; j++){
+          $state(i,j) = $InitialCondition(i,j);
         }
       }
     #end
   #else
-    #if($initialConditionDataType == $realDataType)
-      for(int i=0; i<$signalHeight; i++){
-        for(int j=0; j<$signalWidth; j++){
-          $state(i,j)=$initialConditionName;
+    #if($InitialConditionObject.dataType == $realDataType)
+      for(int i=0; i<$outputSignalObject.height; i++){
+        for(int j=0; j<$outputSignalObject.width; j++){
+          $state(i,j) = $InitialCondition;
         }
       }
     #else
-      $state=$initialConditionName;
+      $state = $InitialCondition;
     #end
   #end
 #end
