@@ -6,6 +6,7 @@ import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
+import com.ncslab.code.c.CodeStructC;
 import com.ncslab.line.Line;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
@@ -55,11 +56,11 @@ public class OutputPort {
 		this.number=number;
 
 		// Use UUID if available, otherwise fall back to block ID
-		String blockUUID = block.getBlockUUID();
+		String blockUUID = "null"; // placeholder for UUID
 		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
 			this.name = "_Block" + blockUUID.replace("-", "_") + "_out" + number;
 		} else {
-			this.name = "_Block" + block.getBlockId() + "_out" + number;
+			this.name = "out" + number;
 		}
 	}
 
@@ -68,11 +69,11 @@ public class OutputPort {
 		this.number=number;
 
 		// Use UUID if available, otherwise fall back to block ID
-		String blockUUID = block.getBlockUUID();
+		String blockUUID = "null"; // placeholder for UUID
 		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
 			this.name = "_Block" + blockUUID.replace("-", "_") + "_out" + number;
 		} else {
-			this.name = "_Block" + block.getBlockId() + "_out" + number;
+			this.name = "out" + number;
 		}
 		this.isFeedThrough=isFeedThrough;
 	}
@@ -82,11 +83,11 @@ public class OutputPort {
 		this.number=number;
 
 		// Use UUID if available, otherwise fall back to block ID
-		String blockUUID = block.getBlockUUID();
+		String blockUUID = "null"; // Placeholder for UUID retrieval logic
 		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
-			this.name = "_Block" + blockUUID.replace("-", "_") + "_" + name;
+			this.name = "Block" + blockUUID.replace("-", "_") + "_" + name;
 		} else {
-			this.name = "_Block" + block.getBlockId() + "_" + name;
+			this.name = name;
 		}
 		this.isFeedThrough=isFeedThrough;
 	}
@@ -147,6 +148,35 @@ public class OutputPort {
         }else if(data.getDataType()==DataType.REAL) {
         	outputSignalC.setValue(data.getInitValue());
         }
+    }
+
+    /**
+     * Generate C code for OUTPUT_PORT data structure definition
+     * @param code The CodeStructC instance to add the generated code to
+     */
+    public void generateDataStructureCodeC(CodeStructC code) {
+        context.put("blockId", block.getBlockId());
+        context.put("portNumber", number);
+        context.put("portName", name);
+        context.put("portWidth", width);
+        
+        String structCode = TemplateManager.renderTemplate("c/io/OutputPort/dataStructure.vm", context);
+        code.dataStructureCode += structCode + "\n";
+    }
+
+    /**
+     * Generate C code for signal structure definition related to this output port
+     * @param code The CodeStructC instance to add the generated code to
+     */
+    public void generateSignalStructureCodeC(CodeStructC code) {
+        context.put("blockId", block.getBlockId());
+        context.put("portNumber", number);
+        context.put("portName", name);
+        context.put("portWidth", width);
+        context.put("portHeight", height);
+        
+        String signalCode = TemplateManager.renderTemplate("c/io/OutputPort/signalStructure.vm", context);
+        code.dataStructureCode += signalCode + "\n";
     }
 
 }

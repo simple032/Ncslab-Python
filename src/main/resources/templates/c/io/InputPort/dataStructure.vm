@@ -1,0 +1,1 @@
+INPUT_PORT inputPort${blockId}_${portNumber}={(char *)"Block${blockId}_${portName}",${portWidth}};

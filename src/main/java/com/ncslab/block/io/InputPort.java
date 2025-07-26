@@ -6,6 +6,7 @@ import com.ncslab.line.Line;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.data.Data;
+import com.ncslab.code.c.CodeStructC;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,8 +38,8 @@ public class InputPort {
 		this.linkedOutputPort=null;
 
 		// Use UUID if available, otherwise fall back to block ID
-		String blockUUID = block.getBlockUUID();
-		if(block.getBlockType().equals("Scope")) {
+		String blockUUID = "null"; // placeholder for UUID
+		if(block instanceof com.ncslab.block.sink.Scope) {
 			// For Scope, use simple name without suffix
 			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
 				this.name = "_Block" + blockUUID.replace("-", "_");
@@ -50,7 +51,7 @@ public class InputPort {
 			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
 				this.name = "_Block" + blockUUID.replace("-", "_") + "_in" + number;
 			} else {
-				this.name = "_Block" + block.getBlockId() + "_in" + number;
+				this.name = "in" + number;
 			}
 		}
 	}
@@ -123,5 +124,34 @@ public class InputPort {
     // 为了解决方法调用链过长的问题，将getValue方法移到InputPort类中
     public Data getData() {
         return this.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getData();
+    }
+
+    /**
+     * Generate C code for INPUT_PORT data structure definition
+     * @param code The CodeStructC instance to add the generated code to
+     */
+    public void generateDataStructureCodeC(CodeStructC code) {
+        context.put("blockId", block.getBlockId());
+        context.put("portNumber", number);
+        context.put("portName", name);
+        context.put("portWidth", getWidth());
+        
+        String structCode = TemplateManager.renderTemplate("c/io/InputPort/dataStructure.vm", context);
+        code.dataStructureCode += structCode + "\n";
+    }
+
+    /**
+     * Generate C code for signal structure definition related to this input port
+     * @param code The CodeStructC instance to add the generated code to
+     */
+    public void generateSignalStructureCodeC(CodeStructC code) {
+        context.put("blockId", block.getBlockId());
+        context.put("portNumber", number);
+        context.put("portName", name);
+        context.put("portWidth", getWidth());
+        context.put("portHeight", getHeight());
+        
+        String signalCode = TemplateManager.renderTemplate("c/io/InputPort/signalStructure.vm", context);
+        code.dataStructureCode += signalCode + "\n";
     }
 }

@@ -13,7 +13,6 @@ public class State {
     @Getter
     private String localName;
     @Setter
-    @Getter
 	private int width=1;
 
 	private Block block;

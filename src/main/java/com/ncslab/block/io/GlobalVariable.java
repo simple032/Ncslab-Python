@@ -40,12 +40,12 @@ public abstract class GlobalVariable {
 		this.id=id;
 		
 		// Use UUID if available, otherwise fall back to block ID
-		String blockUUID = block.getBlockUUID();
+		String blockUUID = "null"; // Placeholder for UUID retrieval logic
 		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
-			this.name = "_Block" + blockUUID.replace("-", "_") + "_" + localName;
+			this.name = "Block" + blockUUID.replace("-", "_") + "_" + localName;
 		} else {
 			// Use block ID when UUID is null/empty
-			this.name = "_Block" + block.getBlockId() + "_" + localName;
+			this.name = "Block" + block.getBlockId() + "_" + localName;
 		}
 		this.localName=localName;
 
@@ -67,12 +67,12 @@ public abstract class GlobalVariable {
 	 */
 	public String getName() {
 		// Use UUID if available, otherwise fall back to block ID
-		String blockUUID = block.getBlockUUID();
+		String blockUUID = "null"; // Placeholder for UUID retrieval logic
 		if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
-			this.name = "_Block" + blockUUID.replace("-", "_") + "_" + localName;
+			this.name = "Block" + blockUUID.replace("-", "_") + "_" + localName;
 		} else {
 			// Use block ID when UUID is null/empty
-			this.name = "_Block" + block.getBlockId() + "_" + localName;
+			this.name = "Block" + block.getBlockId() + "_" + localName;
 		}
 		return this.name;
 	}
