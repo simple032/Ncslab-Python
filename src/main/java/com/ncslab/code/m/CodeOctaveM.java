@@ -16,6 +16,11 @@ public class CodeOctaveM {
 	 * 保存新建的m文件
 	 */
 
+	// 用户ID
+	// 目前仅用于获取用户的OctaveClient
+	@Getter
+	@Setter
+	int userId = -1; // 用户ID
 
 
 	//获取的代码
@@ -32,7 +37,9 @@ public class CodeOctaveM {
     @Setter
     private JSONObject figureResult;
 	//OutputMat输出的工作区
-	public String OutputMat="";
+	@Getter
+	@Setter
+	private String OutputMat="";
 	//OutputMat输出的工作区
 	public String OutputFigFileUrl="";
 	//OutputMat输出的工作区
@@ -41,9 +48,5 @@ public class CodeOctaveM {
 	public int OutputFigBeginIndex=0;
 
 	public int OutputFigEndIndex=0;
-
-    public String getOutputMat() {
-		return OutputMat;
-	}
 
 }

@@ -19,10 +19,10 @@
             #foreach($j in [0..$wMax])
                 #if($bias.dataType == $realDataType)
                     ## Scalar bias applied to matrix
-                    $outputVar($i, $j) = $inputVar($i, $j) + $biasValue;
+                    ${outputVar}($i, $j) = ${inputVar}($i, $j) + $biasValue;
                 #else
                     ## Matrix bias applied to matrix
-                    $outputVar($i, $j) = $inputVar($i, $j) + $biasValue($i, $j);
+                    ${outputVar}($i, $j) = ${inputVar}($i, $j) + ${biasValue}($i, $j);
                 #end
             #end
         #end

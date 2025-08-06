@@ -1,6 +1,4 @@
-/*Code for output of block Abs:($blockId)$blockName*/
-## TODO: Fix "Right side of range operator [n..m] has null value" Velocity template error
-## The $hMax and $wMax variables are causing null value errors on line 10
+/*Code for output of block Abs:($blockId)$blockName*/r
 #if($inputPortList.size() > 0)
     #if($inputSignal1DataType == $realDataType)
         ## Scalar absolute value
@@ -11,7 +9,7 @@
         #set($wMax = $signalWidth - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        $outputSignal($i,$j) = fabs($inputSignal1Name($i,$j));
+        ${outputSignal}($i,$j) = fabs(${inputSignal1Name}($i,$j));
             #end
         #end
     #end

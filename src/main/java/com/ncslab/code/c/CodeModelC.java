@@ -33,16 +33,6 @@ abstract public class CodeModelC extends CodeModel {
 	protected String user = Optional.ofNullable(Property.instance.getProperty("user")).orElse("m2plab");
 	protected String group = Optional.ofNullable(Property.instance.getProperty("group")).orElse("m2plab");
 
-
-	//生成代码的时候统计signal和parameter的个数
-	@Setter
-	@Getter
-    private int signalNum=0;
-
-	@Setter
-	@Getter
-    private int parameterNum=0;
-
 	abstract protected CodeStructC getCodeStructC();
 
 	protected CodeModelC(JSONObject jsonIn,ModelMode mode) throws ModelException{
@@ -291,7 +281,8 @@ abstract public class CodeModelC extends CodeModel {
 
         //2.删除临时文件
         if(!"true".equals(Optional.ofNullable(Property.instance.getProperty("debug")).orElse("false"))){
-            removeAllFiles();
+            System.out.println("Cleaning up temporary files...");
+			removeAllFiles();
         }
     }
 }
