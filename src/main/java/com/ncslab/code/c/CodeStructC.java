@@ -604,7 +604,33 @@ abstract public class CodeStructC{
 
 	protected void writeMakefile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
-		InputStream InputStream = this.getClass().getResourceAsStream(fileName);
+		
+		// Use the same resource loading mechanism as writeNCSLabFile
+        InputStream inputStream = templateProvider.getTemplate(fileName);
+
+        // Fallback to the old method if template provider fails
+        if (inputStream == null) {
+            // Get subdirectory from class name to search in resources
+            String subDirectory = getResourceSubdirectory();
+
+            // Try to get the resource using ResourceUtils with nested search capability
+            inputStream = ResourceUtils.getResourceAsStream(fileName, subDirectory);
+
+            // Final fallback to the old method
+            if (inputStream == null) {
+                int count = 3;
+                String srcFileName = fileName;
+                while(inputStream == null && (count--) > 0) {
+                    inputStream = this.getClass().getResourceAsStream(srcFileName);
+                    srcFileName = "../" + srcFileName;
+                }
+            }
+        }
+
+        if(inputStream == null) {
+            System.err.println("No makefile "+fileName+"...");
+            return;
+        }
 
 		File file = new File(codePath+"/"+fileName);
 		FileOutputStream outputStream;
@@ -630,7 +656,7 @@ abstract public class CodeStructC{
 			buffer = new byte[1024];
 
 			int len;
-			while((len=InputStream.read(buffer))>0) {
+			while((len=inputStream.read(buffer))>0) {
 				outputStream.write(buffer,0,len);
 			}
 
@@ -653,25 +679,22 @@ abstract public class CodeStructC{
     protected void writeNCSLabFile(String fileName,String fileNameOut,boolean overwrite) {
 //        System.out.println("Writing file "+fileName+"...");
 
-        // Get the template using our template provider, which handles nested search
-        InputStream inputStream = templateProvider.getTemplate(fileName);
+        // Skip template provider for C/C++ files and go directly to ResourceUtils
+        InputStream inputStream = null;
+        
+        // Get subdirectory from class name to search in resources
+        String subDirectory = getResourceSubdirectory();
 
-        // Fallback to the old method if template provider fails
+        // Try to get the resource using ResourceUtils with nested search capability
+        inputStream = ResourceUtils.getResourceAsStream(fileName, subDirectory);
+
+        // Final fallback to the old method with relative paths
         if (inputStream == null) {
-            // Get subdirectory from class name to search in resources
-            String subDirectory = getResourceSubdirectory();
-
-            // Try to get the resource using ResourceUtils with nested search capability
-            inputStream = ResourceUtils.getResourceAsStream(fileName, subDirectory);
-
-            // Final fallback to the old method
-            if (inputStream == null) {
-                int count = 3;
-                String srcFileName = fileName;
-                while(inputStream == null && (count--) > 0) {
-                    inputStream = this.getClass().getResourceAsStream(srcFileName);
-                    srcFileName = "../" + srcFileName;
-                }
+            int count = 3;
+            String srcFileName = fileName;
+            while(inputStream == null && (count--) > 0) {
+                inputStream = this.getClass().getResourceAsStream(srcFileName);
+                srcFileName = "../" + srcFileName;
             }
         }
 

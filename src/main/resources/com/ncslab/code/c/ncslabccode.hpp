@@ -19,6 +19,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }INPUT_PORT;
 
 typedef struct {
@@ -26,6 +27,7 @@ typedef struct {
 	int width;
 	int height;
 	void *vp;
+	DATA_TYPE type;
 }OUTPUT_PORT;
 
 typedef struct {
@@ -58,11 +60,15 @@ typedef struct {
 typedef struct {
 	char *type;
 	char *name;
+	char *path;
+	char *uuid;
 	int inputPortNum;
 	int outputPortNum;
 	int parameterNum;
 	int stateNum;
 	int signalNum;
+
+	REAL discreteTime;
 	int discreteUpdated;
 
 	INPUT_PORT **inputPorts;
@@ -105,7 +111,7 @@ typedef struct {
 }ssSize;
 
 typedef struct {
-	
+
 	void* contStates;
 	void* discStates;
 
@@ -121,18 +127,24 @@ typedef struct {
 
 }ssWork;
 
-typedef struct 
+typedef struct
 {
 	REAL* sampleTimes;
 	REAL* offsetTimes;
 }ssStInfo;
 
+typedef struct
+{
+	unsigned int* error_flag = NULL;
+	//string error_msg;
+}ssError;
 
 typedef struct SimStruct_tag{
 	ssSize sizes;
 	ssStates states;
 	ssStInfo stInfo;
 	ssWork work;
+  ssError error;
 
 	MdlInitializeSizesFcn initializeSizes;
 	MdlInitializeSampleTimesFcn initializeSampleTimes;
@@ -142,7 +154,7 @@ typedef struct SimStruct_tag{
 	MdlStartFcn start;
 	MdlDerivativesFcn derivatives;
 	MdlTerminateFcn terminate;
-	
+
 
 	BLOCK* parentBlock;
 }SimStruct;
@@ -168,9 +180,9 @@ typedef struct {
 
 	BLOCK **blocks;
 	int majorStep;
-#ifndef __WIN32
+#ifndef _WIN32
 	struct timeval tv;
-#endif // __WIN32
+#endif // _WIN32
   int terminalNum;
 }MODEL;
 

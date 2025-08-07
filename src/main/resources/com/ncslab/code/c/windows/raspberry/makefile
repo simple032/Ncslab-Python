@@ -23,14 +23,32 @@ ncslab.exe: $(OBJS)
 mainccode.o: mainccode.cpp
 	$(CC) $(CCFLAGS)  -c mainccode.cpp
 
-# onestep.o: onestep.cpp
-# 	$(CC) $(CCFLAGS)  -c onestep.cpp
+onestep.o: onestep.cpp
+	$(CC) $(CCFLAGS)  -c onestep.cpp
+
+util.o: util.cpp
+	$(CC) $(CCFLAGS)  -c util.cpp
+
+ServerThread.o: ServerThread.cpp
+	$(CC) $(CCFLAGS)  -c ServerThread.cpp
+
+ClientThread.o: ClientThread.cpp
+	$(CC) $(CCFLAGS)  -c ClientThread.cpp
+
+DataApi.o: DataApi.cpp
+	$(CC) $(CCFLAGS)  -c DataApi.cpp
+
+UploadThread.o: UploadThread.cpp
+	$(CC) $(CCFLAGS)  -c UploadThread.cpp
+
+Matrix.o: Matrix.cpp
+	$(CC) $(CCFLAGS)  -c Matrix.cpp
 
 ncslabmain.o: ncslabmain.cpp
 	$(CC) $(CCFLAGS)  -c ncslabmain.cpp
 
-# hardware.o: hardware.c
-#   $(CC) $(CCFLAGS)  -c hardware.c
+%.o : %.c
+	$(CC) $(CCFLAGS)  -c "$<"
 
 clean:
 	rm ncslab $(OBJS)
