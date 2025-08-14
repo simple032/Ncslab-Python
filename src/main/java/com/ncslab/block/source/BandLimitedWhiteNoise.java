@@ -10,6 +10,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,99 +28,90 @@ import java.util.Vector;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class BandLimitedWhiteNoise extends com.ncslab.block.Block {
+public class BandLimitedWhiteNoise extends SourceBlock {
 
-    // === SIMULINK-Compatible Parameters ===
-    @Getter
+    // === BandLimitedWhiteNoise-Specific SIMULINK Parameters ===
     private final Parameter seed;
-    @Getter
     private final Parameter cov;
-    @Getter
     private final Parameter samplePeriod;
-    @Getter
-    private final Parameter sampleTime;
-    @Getter
-    private final Parameter outDataType;
-    @Getter
-    private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("Seed");
-        parameterNames.add("Cov");
-        parameterNames.add("Ts");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         // No input ports for noise block
         
-        // Parameter defaults
-        PARAMETER_DEFAULTS.put("Seed", "0");
-        PARAMETER_DEFAULTS.put("Cov", "1");
-        PARAMETER_DEFAULTS.put("Ts", "0.1");
-        PARAMETER_DEFAULTS.put("SampleTime", "-1");
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
-        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        // Noise-specific defaults
+        Map<String, String> noiseDefaults = new HashMap<>();
+        noiseDefaults.put("Seed", "0");
+        noiseDefaults.put("Cov", "1");
+        noiseDefaults.put("Ts", "0.1");
+        
+        // Merge with common source block defaults
+        PARAMETER_DEFAULTS.putAll(mergeWithCommonDefaults(noiseDefaults));
     }
     
     // === Private Constructor with Typed Parameters ===
     private BandLimitedWhiteNoise(Parameter seed, Parameter cov, Parameter samplePeriod,
                                  Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
                                  String blockName, String blockPath, String blockUUID, NCSLabModel model) {
-        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        super("BandLimitedWhiteNoise", sampleTime, outDataType, saturateOnIntegerOverflow, blockName, blockPath, blockUUID, model);
         
         // Validate parameters
         validateParameters(seed, cov, samplePeriod, sampleTime);
         
-        // Assign parameters
+        // Assign BandLimitedWhiteNoise-specific parameters
         this.seed = Objects.requireNonNull(seed, "Seed parameter cannot be null");
         this.cov = Objects.requireNonNull(cov, "Covariance parameter cannot be null");
         this.samplePeriod = Objects.requireNonNull(samplePeriod, "Sample period parameter cannot be null");
-        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
-        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
-        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+        
+        // Add noise-specific parameters to parameter list
+        parameterList.add(seed);
+        parameterList.add(cov);
+        parameterList.add(samplePeriod);
+        
+        // Set port dimensions
         initializePorts();
     }
     
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
-    public BandLimitedWhiteNoise(JSONObject blockJSON, NCSLabModel model) throws MatDimException {
+    public BandLimitedWhiteNoise(JSONObject blockJSON, NCSLabModel model){
         super(blockJSON, model);
 
-        // Create legacy parameters for backward compatibility
+        // Create legacy parameters for backward compatibility  
         this.seed = new Parameter(this, 1, "Seed", String.valueOf(paramValues.getInt("Seed")));
         this.cov = new Parameter(this, 2, "Cov", String.valueOf(paramValues.getDouble("Cov")));
         this.samplePeriod = new Parameter(this, 3, "Ts", String.valueOf(paramValues.getDouble("Ts")));
-        
-        // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 4, "SampleTime", "0"); // 0 for continuous noise
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "double");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
         
         // Add all parameters to parameter list
         
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates BandLimitedWhiteNoise block directly from BlockJson DTO
+     */
+    public BandLimitedWhiteNoise(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.seed = new Parameter(this, 1, "Seed", "0");
+        this.cov = new Parameter(this, 2, "Cov", "0");
+        this.samplePeriod = new Parameter(this, 3, "Sampleperiod", "0");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-    
-    // === Static Factory Method for JSON Deserialization ===
+
+// === Static Factory Method for JSON Deserialization ===
     public static BandLimitedWhiteNoise fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");
@@ -250,18 +242,10 @@ public class BandLimitedWhiteNoise extends com.ncslab.block.Block {
         }
     }
     
-    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
-        JSONObject identity = new JSONObject();
-        identity.put("blockType", "BandLimitedWhiteNoise");
-        identity.put("blockName", blockName);
-        identity.put("blockPath", blockPath);
-        identity.put("blockUUID", blockUUID);
-        return identity;
-    }
     
-    // === Port Initialization ===
+    // === Port Dimension Setup ===
     private void initializePorts() {
-        outputPortList.add(new OutputPort(this, 1, false));
+        // Set port dimensions based on seed parameter
         outputPortList.get(0).setHeight(seed.getHeight());
         outputPortList.get(0).setWidth(seed.getWidth());
     }

@@ -1,4 +1,5 @@
 /*Code for Derivative of MagneticLevitationSystem:(${block.blockId})${block.blockName}*/
+{
 #if ($modelMode == $simulationMode)
 /* Simulation mode - Magnetic Levitation System dynamics */
 /* Physical constants and parameters */
@@ -30,3 +31,4 @@ $velocityDerivative = g - mag_force;
 $positionDerivative = $velocity;
 $velocityDerivative = $inputPortVariable - 9.8;
 #end
+}

@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
@@ -106,9 +107,33 @@ public class RateLimiter extends Block {
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates RateLimiter block directly from BlockJson DTO
+     */
+    public RateLimiter(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
-    // === Static Factory Method for JSON Deserialization ===
+        // Initialize final parameters from DTO
+        this.risingSlew = new Parameter(this, 1, "Risingslew", "0");
+        this.fallingSlew = new Parameter(this, 2, "Fallingslew", "0");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Legacy field mapping for backward compatibility
+        this.upperLimit = this.risingSlew;
+        this.lowerLimit = this.fallingSlew;
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }// === Static Factory Method for JSON Deserialization ===
     public static RateLimiter fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");

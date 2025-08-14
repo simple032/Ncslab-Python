@@ -1,6 +1,7 @@
 package com.ncslab.block.driver;
 
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -15,6 +16,18 @@ public class EtherCATDI extends com.ncslab.block.Block {
     private static final String PARAM_CHANNEL = "Channel";
     private static final String PARAM_INTERFACE = "Interface";
     private static final String PARAM_TIME_SAMPLE = "timeSample";
+    
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates EtherCATDI block directly from BlockJson DTO
+     */
+    public EtherCATDI(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: EtherCATDI block created successfully - " + blockDto.getBlockName());
+    }
+
+
     
     public static final Map<String, String> PARAMETER_DEFAULTS;
     

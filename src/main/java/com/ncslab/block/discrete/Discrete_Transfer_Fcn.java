@@ -7,6 +7,7 @@ import java.util.Vector;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -134,7 +135,46 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         }
 
         setSampleTime(sampleTimeParam);
+    }    /**
+     * DTO-NATIVE Constructor - Creates Discrete_Transfer_Fcn block directly from BlockJson DTO
+     */
+    public Discrete_Transfer_Fcn(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.numerator = new Parameter(this, 1, "Numerator", "[1]");
+        this.denominator = new Parameter(this, 2, "Denominator", "[1 -1]");
+        this.initialStates = new Parameter(this, 3, "Initialstates", "0");
+        this.sampleTimeParam = new Parameter(this, 4, "Sampletimeparam", "0");
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Determine feedthrough
+        if (denominator.getWidth() == numerator.getWidth()) {
+            feedThrough = true;
+        }
+        
+        // Create state variables
+        for (int i = 0; i < denominator.getWidth() - 1; i++) {
+            State xState = new State(this, i + 1, "x" + (i + 1));
+            xStateList.add(xState);
+            stateList.add(xState);
+        }
+        
+        setSampleTime(sampleTimeParam);
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, feedThrough));
+    }
+
+
 
     // === Static Factory Method for JSON Deserialization ===
     public static Discrete_Transfer_Fcn fromJSON(JSONObject blockJSON, NCSLabModel model) {

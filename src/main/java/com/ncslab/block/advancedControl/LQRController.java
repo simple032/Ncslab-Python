@@ -2,6 +2,7 @@ package com.ncslab.block.advancedControl;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.data.Data;
@@ -67,6 +68,15 @@ public class LQRController extends Block {
 
         inputPortList.add(input);
         outputPortList.add(output);
+    }
+    
+    /**
+     * DTO-NATIVE Constructor - Creates LQRController block directly from BlockJson DTO
+     */
+    public LQRController(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        // TODO: Add specific initialization if needed
+        System.out.println("DTO-NATIVE: LQRController block created successfully - " + blockDto.getBlockName());
     }
 
     @Override

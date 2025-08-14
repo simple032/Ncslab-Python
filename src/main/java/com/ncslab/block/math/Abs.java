@@ -2,6 +2,7 @@ package com.ncslab.block.math;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -39,7 +40,6 @@ public class Abs extends Block {
     // === Static Parameter Definitions ===
     
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -50,10 +50,8 @@ public class Abs extends Block {
         // SIMULINK parameter names
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -91,9 +89,24 @@ public class Abs extends Block {
         
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates Abs block directly from BlockJson DTO
+     */
+    public Abs(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.sampleTime = new Parameter(this, 1, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-    
-    // === Static Factory Method for JSON Deserialization ===
+
+// === Static Factory Method for JSON Deserialization ===
     public static Abs fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");

@@ -2,6 +2,7 @@ package com.ncslab.block.sink;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -26,9 +27,17 @@ public class Matplotlib extends SinkBlock{
 
 	ScopeStruct scopeStruct;
     
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Matplotlib block directly from BlockJson DTO
+     */
+    public Matplotlib(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: Matplotlib block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
@@ -42,11 +51,6 @@ public class Matplotlib extends SinkBlock{
     }
 
     static {
-        parameterNames.add("SampleTime");
-        parameterNames.add("SaveName");
-        parameterNames.add("SaveFormat");
-        parameterNames.add("BufferSize");
-        
         inputNames.add("in1");
     }
 

@@ -1,16 +1,49 @@
 /*传递函数模块微分计算: ($blockId) $blockName*/
-#set($statesSizeMax = $states.size() - 1)
+#if($states.size() > 1)
+#set($statesSizeMax = $states.size() - 2)
 #foreach($i in [0..$statesSizeMax])
   #set($nextI = $i + 1)
-  ${states.get($i).getDerivativeName()}=${states.get($nextI).getName()}
+  #if($i == 0)
+  $stateDerivativeName0=$stateName1;
+  #elseif($i == 1)
+  $stateDerivativeName1=$stateName2;
+  #elseif($i == 2)
+  $stateDerivativeName2=$stateName3;
+  #else
+  ${states.get($i).getDerivativeName()}=${states.get($nextI).getName()}; /* fallback for order > 4 */
+  #end
+#end
 #end
 ## 处理最后一个状态的导数表达式
-#if($statesSize > 0)
-    ${states.lastElement().getDerivativeName()} = ($inputSignal
-    #set($i = $den.size() - 1)
+#if($states.size() > 0)
+    #set($lastStateIndex = $states.size() - 1)
+    #if($lastStateIndex == 0)
+    $stateDerivativeName0 = ($inputSignal
+    #elseif($lastStateIndex == 1)
+    $stateDerivativeName1 = ($inputSignal
+    #elseif($lastStateIndex == 2)
+    $stateDerivativeName2 = ($inputSignal
+    #elseif($lastStateIndex == 3)
+    $stateDerivativeName3 = ($inputSignal
+    #else
+    ${states.lastElement().getDerivativeName()} = ($inputSignal /* fallback for order > 4 */
+    #end
+    #set($denIndex = $den.size() - 1)
+    #set($stateIndex = 0)
     #foreach($state in $states)
-    - $stateName * ${den.get($i)}
-        #set($i = $i - 1)
+        #if($stateIndex == 0)
+    - $stateName0 * ${den.get($denIndex)}
+        #elseif($stateIndex == 1)
+    - $stateName1 * ${den.get($denIndex)}
+        #elseif($stateIndex == 2)
+    - $stateName2 * ${den.get($denIndex)}
+        #elseif($stateIndex == 3)
+    - $stateName3 * ${den.get($denIndex)}
+        #else
+    - ${state.getName()} * ${den.get($denIndex)} /* fallback for order > 4 */
+        #end
+        #set($denIndex = $denIndex - 1)
+        #set($stateIndex = $stateIndex + 1)
     #end
 );
 #end

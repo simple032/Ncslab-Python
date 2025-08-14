@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -47,7 +48,6 @@ public class LogicOperator extends Block {
     // === Static Parameter Definitions ===
     
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -59,9 +59,7 @@ public class LogicOperator extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -122,7 +120,30 @@ public class LogicOperator extends Block {
         for (int i = 0; i < num; i++) {
             inputPortList.add(new InputPort(this, i + 1));
         }
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates LogicOperator block directly from BlockJson DTO
+     */
+    public LogicOperator(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.operator = new Parameter(this, 1, "Operator", "AND");
+        this.inputs = new Parameter(this, 2, "Inputs", "2");
+        this.allPortsSameDT = new Parameter(this, 3, "AllPortsSameDT", "on");
+        this.sampleTime = new Parameter(this, 4, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        inputPortList.add(new InputPort(this, 2));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }   
 
     // === Static Factory Method for JSON Deserialization ===
     public static LogicOperator fromJSON(JSONObject blockJSON, NCSLabModel model) {

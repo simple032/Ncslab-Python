@@ -2,6 +2,7 @@ package com.ncslab.block.matrix;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -22,12 +23,20 @@ public class MatrixMultiply extends Block {
 
     private String seq;
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates MatrixMultiply block directly from BlockJson DTO
+     */
+    public MatrixMultiply(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: MatrixMultiply block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {

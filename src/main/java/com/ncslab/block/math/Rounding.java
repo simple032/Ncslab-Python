@@ -11,6 +11,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,17 @@ public class Rounding extends Block {
     // === Static Parameter Definitions ===
     
     // Parameter defaults matching database format
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Rounding block directly from BlockJson DTO
+     */
+    public Rounding(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: Rounding block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -36,9 +47,7 @@ public class Rounding extends Block {
         // SIMULINK parameter names
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {

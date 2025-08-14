@@ -12,6 +12,7 @@ import com.ncslab.block.io.*;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.code.c.CodeStructC;
@@ -44,7 +45,17 @@ public class SFunction extends DiscreteBlock {
     private Parameter sampleTime;
     State speedState;
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates SFunction block directly from BlockJson DTO
+     */
+    public SFunction(BlockJson blockDto, NCSLabModel model) throws ModelException{
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: SFunction block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {

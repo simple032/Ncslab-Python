@@ -1,6 +1,7 @@
 package com.ncslab.block.sink;
 
 import com.ncslab.block.data.Data;
+import com.ncslab.dto.BlockJson;
 import lombok.Getter;
 import com.ncslab.util.TemplateManager;
 import org.json.JSONObject;
@@ -43,38 +44,21 @@ public class Scope extends SinkBlock {
     ScopeStruct[] scopeStructs;
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter numberOfInputs;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter saveName;
-    @Getter
     private final Parameter saveFormat;
-    @Getter
     private final Parameter bufferSize;
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    static {
-        // SIMULINK parameter names
-        parameterNames.add("NumberOfInputs");
-        parameterNames.add("SampleTime");
-        parameterNames.add("SaveName");
-        parameterNames.add("SaveFormat");
-        parameterNames.add("BufferSize");
-        
+    static {        
         // Dynamic input names based on number of inputs
         inputNames.add("in1");
     }
 
     // === Parameter Defaults ===
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
         PARAMETER_DEFAULTS.put("NumberOfInputs", "1");
@@ -115,7 +99,7 @@ public class Scope extends SinkBlock {
         // Determine number of inputs from legacy parameters
         int inputCount;
         if(paramValues.has("Inputs")) {
-            inputCount = Integer.parseInt(paramValues.getString("Number"));
+            inputCount = Integer.parseInt(paramValues.getString("Inputs"));
         } else {
             inputCount = 1;
         }
@@ -137,7 +121,28 @@ public class Scope extends SinkBlock {
             inputPortList.add(new InputPort(this, i+1));
             scopeStructs[i] = new ScopeStruct(this, i+1, "in"+(i+1));
         }
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates Scope block directly from BlockJson DTO
+     */
+    public Scope(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.numberOfInputs = new Parameter(this, 1, "Numberofinputs", "0");
+        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
+        this.saveName = new Parameter(this, 3, "Savename", "0");
+        this.saveFormat = new Parameter(this, 4, "Saveformat", "0");
+        this.bufferSize = new Parameter(this, 5, "Buffersize", "0");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+    }        
+        
 
     // === Static Factory Method for JSON Deserialization ===
     public static Scope fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -280,9 +285,18 @@ public class Scope extends SinkBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         if (model.getModelMode() == ModelMode.Simulation) {
+            com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+            
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("scopeStruct", scopeStructs[0]);
+            
+            // TODO: Fix scopeStructName template variable not resolving properly
+            // The template engine is not resolving $scopeStructName variable, appears to be
+            // an issue with variable resolution order or template engine configuration
+            String scopeStructName = scopeStructs[0].getName();
+            context.put("scopeStructName", scopeStructName);
+            context.put("inputPortListSize", inputPortList.size());
 
             String initCode = TemplateManager.renderTemplate("c/sink/Scope/init.vm", context);
             code.addInitCode(initCode);
@@ -291,10 +305,30 @@ public class Scope extends SinkBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         if (model.getModelMode() == ModelMode.Simulation) {
+            com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+            
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("inputPortList", getInputPortList());
+            context.put("inputPortListSize", inputPortList.size());
             context.put("scopeStruct", scopeStructs[0]);
+            
+            // TODO: Fix scopeStructName template variable not resolving properly
+            // The template engine is not resolving $scopeStructName variable, appears to be
+            // an issue with variable resolution order or template engine configuration
+            String scopeStructName = scopeStructs[0].getName();
+            context.put("scopeStructName", scopeStructName);
+            
+            // Add input signal dimensions and details
+            if (!inputPortList.isEmpty()) {
+                OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+                context.put("inputSignal1Height", inputSignal.getHeight());
+                context.put("inputSignal1Width", inputSignal.getWidth());
+                context.put("inputSignal1Name", inputSignal.getName());
+                context.put("inputSignal", inputSignal.getName());
+                context.put("inputSignal1DataType", inputSignal.getDataType());
+                context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+            }
 
             String outputCode = TemplateManager.renderTemplate("c/sink/Scope/output.vm", context);
             code.addSinkOutputCode(outputCode);
@@ -307,10 +341,30 @@ public class Scope extends SinkBlock {
 
     public void generateOutputSinkCodeC(CodeStructC code) {
         if (model.getModelMode() == ModelMode.Simulation) {
+            com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+            
             context.put("blockId", getBlockId());
             context.put("blockName", getBlockName());
             context.put("inputPortList", getInputPortList());
+            context.put("inputPortListSize", inputPortList.size());
             context.put("scopeStruct", scopeStructs[0]);
+            
+            // TODO: Fix scopeStructName template variable not resolving properly
+            // The template engine is not resolving $scopeStructName variable, appears to be
+            // an issue with variable resolution order or template engine configuration
+            String scopeStructName = scopeStructs[0].getName();
+            context.put("scopeStructName", scopeStructName);
+            
+            // Add input signal dimensions and details
+            if (!inputPortList.isEmpty()) {
+                OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+                context.put("inputSignal1Height", inputSignal.getHeight());
+                context.put("inputSignal1Width", inputSignal.getWidth());
+                context.put("inputSignal1Name", inputSignal.getName());
+                context.put("inputSignal", inputSignal.getName());
+                context.put("inputSignal1DataType", inputSignal.getDataType());
+                context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+            }
 
             String outputCode = TemplateManager.renderTemplate("c/sink/Scope/output.vm", context);
             code.addSinkOutputCode(outputCode);
@@ -354,6 +408,11 @@ public class Scope extends SinkBlock {
                         t,
                         inputPortList.get(i).getData()
                     );
+                    // Debug: Periodic logging (every 1000 data points)
+                    if (scopeStructs[i].getTimeList().size() % 1000 == 0) {
+                        System.out.printf("RT Simulation: Scope %s collected %d data points (latest t=%.3f)%n", 
+                            this.getBlockName(), scopeStructs[i].getTimeList().size(), t);
+                    }
                 }
             }
         }

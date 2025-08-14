@@ -2,6 +2,7 @@ package com.ncslab.block.hardware.stm32;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -18,7 +19,17 @@ public class UDPReceiver extends com.ncslab.block.Block{
 
 	Parameter localPort;
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates UDPReceiver block directly from BlockJson DTO
+     */
+    public UDPReceiver(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: UDPReceiver block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -27,7 +38,6 @@ public class UDPReceiver extends com.ncslab.block.Block{
 
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     static {
         outputNames.add("out1");

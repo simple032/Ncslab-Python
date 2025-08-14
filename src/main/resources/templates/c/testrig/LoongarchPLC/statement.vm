@@ -1,5 +1,5 @@
 /*Code for statement of ${name}:($blockId)$blockName*/
-#define TOUCHPAD_NAME "Name=\"Touch p303\""
+\#define TOUCHPAD_NAME "Name=\"Touch p303\""
 int hCommBPSUST;
 int BPfd;
 bool BPSUSTbool=true;

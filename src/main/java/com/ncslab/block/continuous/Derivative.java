@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.io.*;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.util.TemplateManager;
 import java.util.HashMap;
 
@@ -133,6 +134,27 @@ public class Derivative extends Block {
         inputPortList.add(input);
         output = new OutputPort(this, 1, true); // feedthrough = true for derivative
         outputPortList.add(output);
+    }    /**
+     * DTO-NATIVE Constructor - Creates Derivative block directly from BlockJson DTO
+     */
+    public Derivative(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.filterCoefficient = new Parameter(this, 1, "FilterCoefficient", "100");
+        this.initialCondition = new Parameter(this, 2, "InitialCondition", "0");
+        this.coefficientSource = new Parameter(this, 3, "CoefficientSource", "internal");
+        this.externalReset = new Parameter(this, 4, "ExternalReset", "none");
+        this.conditionSource = new Parameter(this, 5, "InitialConditionSource", "internal");
+        this.showStatePort = new Parameter(this, 6, "ShowStatePort", "off");
+        this.sampleTime = new Parameter(this, 7, "SampleTime", "0");
+        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
     // === Static Factory Method for JSON Deserialization ===
@@ -285,6 +307,7 @@ public class Derivative extends Block {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to satisfy base constructor
         return identity;
     }
     // === Port Initialization ===

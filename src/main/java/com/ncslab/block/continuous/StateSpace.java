@@ -4,6 +4,7 @@ import Jama.Matrix;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Objects;
 import java.util.Vector;
@@ -155,7 +156,33 @@ public class StateSpace extends Block {
         output = new OutputPort(this, 1, feedThrough);
         output.setHeight(outputMatrix.getHeight());
         outputPortList.add(output);
+    }    /**
+     * DTO-NATIVE Constructor - Creates StateSpace block directly from BlockJson DTO
+     */
+    public StateSpace(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.stateMatrix = new Parameter(this, 1, "Statematrix", "0");
+        this.inputMatrix = new Parameter(this, 2, "Inputmatrix", "0");
+        this.outputMatrix = new Parameter(this, 3, "Outputmatrix", "0");
+        this.feedthroughMatrix = new Parameter(this, 4, "Feedthroughmatrix", "0");
+        this.initialState = new Parameter(this, 5, "Initialstate", "0");
+        this.absoluteTolerance = new Parameter(this, 6, "AbsoluteTolerance", "auto");
+        this.continuousStateAttributes = new Parameter(this, 7, "ContinuousStateAttributes", "'''");
+        this.sampleTime = new Parameter(this, 8, "SampleTime", "0");
+        this.outDataType = new Parameter(this, 9, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 10, "SaturateOnIntegerOverflow", "off");
+
+        
+        // Initialize states and ports
+        initializeStates();
+        initializePorts();
+        
+        System.out.println("DTO-NATIVE: StateSpace block created successfully - " + blockDto.getBlockName());
     }
+
+
     
     // === Static Factory Method for JSON Deserialization ===
     public static StateSpace fromJSON(JSONObject blockJSON, NCSLabModel model) {

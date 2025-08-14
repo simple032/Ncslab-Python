@@ -3,6 +3,7 @@ package com.ncslab.block.machineLearning.pt;
 import com.ncslab.block.machineLearning.MachineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -19,7 +20,17 @@ public class A2C extends PTModel {
                 discountFactor;
 
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates A2C block directly from BlockJson DTO
+     */
+    public A2C(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: A2C block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();

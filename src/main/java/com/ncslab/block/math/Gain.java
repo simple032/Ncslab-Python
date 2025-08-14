@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.dto.BlockJson;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -36,21 +37,16 @@ public class Gain extends Block {
     // === SIMULINK-Compatible Parameters ===
     @Getter
     protected Parameter gain;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Operational Settings ===
-    @Getter
     private final boolean matrixMultiplication;
 
     // === Static Parameter Definitions ===
     
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -107,6 +103,23 @@ public class Gain extends Block {
 
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates Gain block directly from BlockJson DTO
+     */
+    public Gain(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.gain = new Parameter(this, 1, "Gain", "1");
+        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.matrixMultiplication = false; // Default to element-wise multiplication
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
     // === Static Factory Method for JSON Deserialization ===
@@ -279,6 +292,10 @@ public class Gain extends Block {
         
         String codeStr = TemplateManager.renderTemplate("c/math/Gain/init.vm", context);
         code.addInitCode(codeStr);
+    }
+
+    private boolean isMatrixMultiplication() {
+        return matrixMultiplication;
     }
 
     public void generateOutputCodeC(CodeStructC code) {

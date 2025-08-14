@@ -1,11 +1,19 @@
 #set( $block = $context.get("block") )
 #set( $out = $blockOutputPortList.get(0) )
-#set( $ops = $blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort() )
+#if($blockInputPortList.get(0).getLinkedLine() && $blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort())
+    #set( $ops = $blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort() )
+#else
+    #set( $ops = null )
+#end
 
 /* Output code for block DiodeCurrent */
+#if($ops)
 if(${opsOutputSignalC.getName()} > 0) {
     ${outOutputSignalC.getName()} = (${opsOutputSignalC.getName()} * ${ron}) + ${vf};
 }
 else {
     ${outOutputSignalC.getName()} = ${opsOutputSignalC.getName()} / ${goff};
 }
+#else
+${outOutputSignalC.getName()} = 0.0;
+#end

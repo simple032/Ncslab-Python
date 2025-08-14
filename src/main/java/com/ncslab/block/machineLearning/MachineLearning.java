@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
@@ -23,12 +24,20 @@ public abstract class MachineLearning extends Block{
     protected int _width, _height;
     protected MLVariable modelVariable;
     protected String savePath, loadPath;
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates MachineLearning block directly from BlockJson DTO
+     */
+    public MachineLearning(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: MachineLearning block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();

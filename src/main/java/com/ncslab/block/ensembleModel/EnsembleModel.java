@@ -1,9 +1,10 @@
 package com.ncslab.block.ensembleModel;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
@@ -31,7 +32,17 @@ public class EnsembleModel extends Block{
     protected ENVariable modelVariable;
 
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates EnsembleModel block directly from BlockJson DTO
+     */
+    public EnsembleModel(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: EnsembleModel block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -43,9 +54,7 @@ public class EnsembleModel extends Block{
 
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {

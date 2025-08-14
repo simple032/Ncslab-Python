@@ -2,6 +2,7 @@ package com.ncslab.block.testrig;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import com.ncslab.util.TemplateManager;
+
 
 public class Kirchhoff extends Block {
 

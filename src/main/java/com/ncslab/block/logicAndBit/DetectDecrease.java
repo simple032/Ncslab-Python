@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import Jama.Matrix;
@@ -47,12 +48,9 @@ public class DetectDecrease extends Block {
 
     // === Static Parameter Definitions ===
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
@@ -107,8 +105,30 @@ public class DetectDecrease extends Block {
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates DetectDecrease block directly from BlockJson DTO
+     */
+    public DetectDecrease(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
+        // Initialize final parameters from DTO
+        this.vinWhenRising = new Parameter(this, 1, "VinWhenRising", "0");
+        this.vinWhenFalling = new Parameter(this, 2, "VinWhenFalling", "1");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.initialState = new Parameter(this, 6, "InitialState", "0");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static DetectDecrease fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

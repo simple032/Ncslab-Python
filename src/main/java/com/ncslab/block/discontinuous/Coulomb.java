@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -106,8 +107,34 @@ public class Coulomb extends Block {
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates Coulomb block directly from BlockJson DTO
+     */
+    public Coulomb(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
+        // Initialize final parameters from DTO
+        this.offsetParam = new Parameter(this, 1, "Offsetparam", "0");
+        this.gainParam = new Parameter(this, 2, "Gainparam", "0");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Legacy field mapping for backward compatibility
+        this.offset = this.offsetParam;
+        this.gain = this.gainParam;
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static Coulomb fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

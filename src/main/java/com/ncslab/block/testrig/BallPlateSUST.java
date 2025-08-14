@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -21,12 +22,20 @@ public class BallPlateSUST extends Block {
     private String name = "BallPlateSUST";
 
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates BallPlateSUST block directly from BlockJson DTO
+     */
+    public BallPlateSUST(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: BallPlateSUST block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {

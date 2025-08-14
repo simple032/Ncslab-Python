@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -106,6 +107,32 @@ public class Backlash extends Block {
         this.initialOutput = this.initialOutputParam;
 
         // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }    /**
+     * DTO-NATIVE Constructor - Creates Backlash block directly from BlockJson DTO
+     */
+    public Backlash(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.backlashWidthParam = new Parameter(this, 1, "Backlashwidthparam", "0");
+        this.initialOutputParam = new Parameter(this, 2, "Initialoutputparam", "0");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Legacy field mapping for backward compatibility
+        this.backlashWidth = this.backlashWidthParam;
+        this.initialOutput = this.initialOutputParam;
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
+    private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
     }
@@ -322,13 +349,77 @@ public class Backlash extends Block {
 
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
-        prepareContext();
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add required template variables
+        context.put("backlashWidth", backlashWidth);
+        context.put("backlashWidthName", backlashWidth.getName());
+        context.put("initialOutput", initialOutput);
+        context.put("xState", xState);
+        context.put("xStateName", xState != null ? xState.getName() : "save_data");
+        
+        // Generate backlash width initialization code if needed
+        StringBuilder backlashWidthInitCode = new StringBuilder();
+        if (backlashWidth.getDataType() == DataType.MATRIX) {
+            for (int i = 0; i < backlashWidth.getHeight(); i++) {
+                for (int j = 0; j < backlashWidth.getWidth(); j++) {
+                    backlashWidthInitCode.append(backlashWidth.getName())
+                                       .append("(").append(i).append(",").append(j).append(") = ")
+                                       .append(backlashWidth.getMatrix().get(i, j)).append(";\n");
+                }
+            }
+        } else {
+            backlashWidthInitCode.append(backlashWidth.getName())
+                               .append(" = ").append(backlashWidth.getDouble()).append(";\n");
+        }
+        context.put("backlashWidthInitCodeC", backlashWidthInitCode.toString());
+        
+        // Generate initial output initialization code if needed
+        StringBuilder initialOutputInitCode = new StringBuilder();
+        if (initialOutput.getDataType() == DataType.MATRIX) {
+            for (int i = 0; i < initialOutput.getHeight(); i++) {
+                for (int j = 0; j < initialOutput.getWidth(); j++) {
+                    initialOutputInitCode.append(initialOutput.getName())
+                                        .append("(").append(i).append(",").append(j).append(") = ")
+                                        .append(initialOutput.getMatrix().get(i, j)).append(";\n");
+                }
+            }
+        } else {
+            initialOutputInitCode.append(initialOutput.getName())
+                                .append(" = ").append(initialOutput.getDouble()).append(";\n");
+        }
+        context.put("initialOutputInitCodeC", initialOutputInitCode.toString());
+        
         String initCode = TemplateManager.renderTemplate("c/discontinuous/Backlash/init.vm", context);
         code.addInitCode(initCode);
     }
 
     public void generateOutputCodeC(CodeStructC code){
         super.generateOutputCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add input signal information
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("signalName", signal.getName());
+        context.put("inputSignalName", signal.getName());
+        
+        // Add output signal information
+        OutputSignal outputSignal = outputPortList.get(0).getOutputSignalC();
+        context.put("outputSignalName", outputSignal.getName());
+        
+        // Add state information
+        context.put("xState", xState);
+        context.put("xStateName", xState != null ? xState.getName() : "save_data");
+        
+        // TODO: Add missing dimension variables for template - xStateHeight, xStateWidth, 
+        // opsHeight, opsWidth, backlashWidthHeight, backlashWidthWidth to fix Velocity 
+        // "Right side of range operator [n..m] has null value" errors
+        
+        // Add parameter names
+        context.put("backlashWidth", backlashWidth);
+        context.put("backlashWidthName", backlashWidth.getName());
+        context.put("initialOutput", initialOutput);
+        
         String outputCode = TemplateManager.renderTemplate("c/discontinuous/Backlash/output.vm", context);
         code.addOutputCode(outputCode);
     }

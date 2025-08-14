@@ -2,6 +2,7 @@ package com.ncslab.block.machineLearning;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
@@ -23,7 +24,17 @@ public class DataCollector extends Block{
     private DataCollectorVariable dataCollectorVariable;
 
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates DataCollector block directly from BlockJson DTO
+     */
+    public DataCollector(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: DataCollector block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -32,9 +43,7 @@ public class DataCollector extends Block{
         PARAMETER_DEFAULTS.put("savePath", "data.csv");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {

@@ -1,6 +1,7 @@
 package com.ncslab.block.continuous;
 
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
@@ -28,6 +29,18 @@ public class OldPIDController extends Block {
     private Parameter cparaN;
     private State stateIntegral;
     private State stateFilter;
+
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates OldPIDController block directly from BlockJson DTO
+     */
+    public OldPIDController(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: OldPIDController block created successfully - " + blockDto.getBlockName());
+    }
+
+
 
     public static final Vector<String> outputNames = new Vector<>();
     public static final Vector<String> inputNames = new Vector<>();
@@ -120,7 +133,15 @@ public class OldPIDController extends Block {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("block", this);
         context.put("signal", signal);
+        context.put("inputSignal", signal);
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
+        context.put("signalDataType", signal.getDataType());
         context.put("cparaP", cparaP);
+        context.put("proportionalGain", cparaP);
+        context.put("proportionalGainHeight", cparaP.getHeight());
+        context.put("proportionalGainWidth", cparaP.getWidth());
+        context.put("proportionalGainDataType", cparaP.getDataType());
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
 

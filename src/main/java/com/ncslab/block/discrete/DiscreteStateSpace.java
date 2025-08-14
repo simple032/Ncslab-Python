@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -144,7 +145,50 @@ public class DiscreteStateSpace extends DiscreteBlock {
             xStateList.add(xState);
             stateList.add(xState);
         }
+    }    /**
+     * DTO-NATIVE Constructor - Creates DiscreteStateSpace block directly from BlockJson DTO
+     */
+    public DiscreteStateSpace(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.A = new Parameter(this, 1, "A", "[1]");
+        this.B = new Parameter(this, 2, "B", "[1]");
+        this.C = new Parameter(this, 3, "C", "[1]");
+        this.D = new Parameter(this, 4, "D", "[0]");
+        this.initialCondition = new Parameter(this, 5, "Initialcondition", "0");
+        this.sampleTimeParam = new Parameter(this, 6, "SampleTime", "1.0");
+        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Determine feedthrough
+        if (D.isZero()) {
+            feedThrough = false;
+        } else {
+            feedThrough = true;
+        }
+        
+        // Initialize state variables
+        for (int i = 0; i < A.getWidth(); i++) {
+            State xState = new State(this, i + 1, "x" + (i + 1));
+            xStateList.add(xState);
+            stateList.add(xState);
+        }
+        
+        setSampleTime(sampleTimeParam);
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }
+
+
 
     // === Static Factory Method for JSON Deserialization ===
     public static DiscreteStateSpace fromJSON(JSONObject blockJSON, NCSLabModel model) {

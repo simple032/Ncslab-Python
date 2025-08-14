@@ -1,12 +1,20 @@
 #set( $block = $context.get("block") )
 #set( $out = $blockOutputPortList.get(0) )
-#set( $ops = $blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort() )
+#if($blockInputPortList.get(0).getLinkedLine() && $blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort())
+    #set( $ops = $blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort() )
+#else
+    #set( $ops = null )
+#end
 #set( $rmin = $blockParameterList.get(0).getName() )
 
 /* Output code for block LimitingLink */
+#if($ops)
 if(${opsOutputSignalC.getName()} >= ${rmin}) {
     ${outOutputSignalC.getName()} = 1 / ${opsOutputSignalC.getName()};
 }
 else {
     ${outOutputSignalC.getName()} = 1 / ${rmin};
 }
+#else
+${outOutputSignalC.getName()} = 0.0;
+#end

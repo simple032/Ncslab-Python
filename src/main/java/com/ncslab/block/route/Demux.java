@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -43,13 +44,10 @@ public class Demux extends Block {
 
     // === Static Parameter Definitions ===
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -110,7 +108,31 @@ public class Demux extends Block {
 			outputPortList.add(new OutputPort(this, i+1, feedThrough));
 		}
 		inputPortList.add(new InputPort(this, 1));
-	}
+	}    /**
+     * DTO-NATIVE Constructor - Creates Demux block directly from BlockJson DTO
+     */
+    public Demux(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.outputs = new Parameter(this, 1, "Outputs", "2");
+        this.displayOrder = new Parameter(this, 2, "DisplayOrder", "1:N");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+        outputPortList.add(new OutputPort(this, 2, true));
+    }
+
+
     // === Static Factory Method for JSON Deserialization ===
     public static Demux fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

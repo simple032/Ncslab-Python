@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
@@ -134,8 +135,37 @@ public class Relay extends Block {
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
+    }    /**
+     * DTO-NATIVE Constructor - Creates Relay block directly from BlockJson DTO
+     */
+    public Relay(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.switchOnPoint = new Parameter(this, 1, "Switchonpoint", "0");
+        this.switchOffPoint = new Parameter(this, 2, "Switchoffpoint", "0");
+        this.outputWhenOn = new Parameter(this, 3, "Outputwhenon", "0");
+        this.outputWhenOff = new Parameter(this, 4, "Outputwhenoff", "0");
+        this.sampleTime = new Parameter(this, 5, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Legacy field mapping for backward compatibility
+        this.onSwitchValue = this.switchOnPoint;
+        this.offSwitchValue = this.switchOffPoint;
+        this.onOutputValue = this.outputWhenOn;
+        this.offOutputValue = this.outputWhenOff;
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-    // === Static Factory Method for JSON Deserialization ===
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }// === Static Factory Method for JSON Deserialization ===
     public static Relay fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");
@@ -224,24 +254,42 @@ public class Relay extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add parameter objects and their names
         context.put("onSwitchValue", onSwitchValue);
+        context.put("onSwitchValueName", onSwitchValue.getName());
         context.put("offSwitchValue", offSwitchValue);
+        context.put("offSwitchValueName", offSwitchValue.getName());
         context.put("onOutputValue", onOutputValue);
+        context.put("onOutputValueName", onOutputValue.getName());
         context.put("offOutputValue", offOutputValue);
+        context.put("offOutputValueName", offOutputValue.getName());
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        super.generateOutputCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add parameter objects and their names
         context.put("onSwitchValue", onSwitchValue);
+        context.put("onSwitchValueName", onSwitchValue.getName());
         context.put("offSwitchValue", offSwitchValue);
+        context.put("offSwitchValueName", offSwitchValue.getName());
         context.put("onOutputValue", onOutputValue);
+        context.put("onOutputValueName", onOutputValue.getName());
         context.put("offOutputValue", offOutputValue);
-        context.put("outputs", getOutputPortVariables());
+        context.put("offOutputValueName", offOutputValue.getName());
+        
+        // Add input/output signal names
         context.put("inputs", getInputPortVariables());
+        context.put("outputs", getOutputPortVariables());
+        
+        // Add the missing output1 variable
+        context.put("output1", getOutputPortVariable(0));
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/output.vm", context);
         code.addOutputCode(codeStr);

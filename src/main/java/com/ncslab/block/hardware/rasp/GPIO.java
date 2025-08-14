@@ -2,6 +2,7 @@ package com.ncslab.block.hardware.rasp;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -20,10 +21,19 @@ public class GPIO extends Block{
 
 	Parameter Bcm;
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates GPIO block directly from BlockJson DTO
+     */
+    public GPIO(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: GPIO block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> inputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {

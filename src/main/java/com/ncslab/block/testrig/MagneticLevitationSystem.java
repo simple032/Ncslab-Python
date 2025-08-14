@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -21,12 +22,21 @@ public class MagneticLevitationSystem extends Block {
 
     private String name = "MagneticLevitationSystem";
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates MagneticLevitationSystem block directly from BlockJson DTO
+     */
+    public MagneticLevitationSystem(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: MagneticLevitationSystem block created successfully - " + blockDto.getBlockName());
+    }
+    
+
+
     public static final Vector<String> inputNames = new Vector<>();
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
@@ -109,6 +119,12 @@ public class MagneticLevitationSystem extends Block {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add specific variables needed by the template
+        context.put("position", position.getName());
+        context.put("velocity", velocity.getName());
+        context.put("outputPosition", getOutputPortVariable(0));
+        context.put("outputVelocity", getOutputPortVariable(1));
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/output.vm", context);
         code.addOutputCode(codeStr);
@@ -116,6 +132,20 @@ public class MagneticLevitationSystem extends Block {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add specific variables needed by the template
+        context.put("position", position.getName());
+        context.put("velocity", velocity.getName());
+        context.put("positionDerivative", position.getDerivativeName());
+        context.put("velocityDerivative", velocity.getDerivativeName());
+        // Handle unconnected input with safe fallback
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null &&
+            inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC() != null) {
+            context.put("inputPortVariable", getInputPortVariable(0));
+        } else {
+            context.put("inputPortVariable", "0.0"); // Default input value for unconnected input
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/MagneticLevitationSystem/derivative.vm", context);
         code.addDerivativeCode(codeStr);

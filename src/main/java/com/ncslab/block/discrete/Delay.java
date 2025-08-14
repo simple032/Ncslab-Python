@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -116,8 +117,25 @@ public class Delay extends DiscreteBlock {
 
         // Initialize ports
         initializePorts();
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates Delay block directly from BlockJson DTO
+     */
+    public Delay(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
+        // Initialize final parameters from DTO
+        this.delayLength = new Parameter(this, 1, "Delaylength", "0");
+        this.initialCondition = new Parameter(this, 2, "Initialcondition", "0");
+        this.sampleTimeParam = new Parameter(this, 3, "Sampletimeparam", "0");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static Delay fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -254,7 +272,10 @@ public class Delay extends DiscreteBlock {
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         context.put("block", this);
-        context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("signal", signal);
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
         context.put("delayLength", delayLength.getData().getIntValue());
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/arrays.vm", context);
         code.addArraysCode(codeStr);
@@ -275,7 +296,9 @@ public class Delay extends DiscreteBlock {
         super.generateInitCodeC(code);
         context.put("block", this);
         context.put("sampleTime", sampleTimeParam);
+        context.put("sampleTimeName", sampleTimeParam.getName());
         context.put("initialCondition", initialCondition);
+        context.put("initialConditionName", initialCondition.getName());
         context.put("delayLength", delayLength);
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/init.vm", context);
         code.addInitCode(codeStr);
@@ -287,8 +310,12 @@ public class Delay extends DiscreteBlock {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("block", this);
         context.put("sampleTime", sampleTimeParam);
+        context.put("sampleTimeName", sampleTimeParam.getName());
         context.put("initialCondition", initialCondition);
+        context.put("initialConditionName", initialCondition.getName());
         context.put("delayLength", delayLength.getData().getIntValue());
+        context.put("inputSignal", getInputPortVariable(0));
+        context.put("outputSignal", getOutputPortVariable(0));
         context.put("outputs", getOutputPortVariables());
         context.put("inputPortList", inputPortList);
         context.put("outputPortList", outputPortList);

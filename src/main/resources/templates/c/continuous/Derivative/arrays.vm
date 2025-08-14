@@ -1,7 +1,7 @@
 /*Code for arrays of block Derivative: $blockId $blockName */
 
-#set($height = $signalHeight)
-#set($width = $signalWidth)
+#set($height = $inputHeight)
+#set($width = $inputWidth)
 
 double Block${blockId}tout[${height}][${width}];
 double Block${blockId}yout[${height}][${width}];

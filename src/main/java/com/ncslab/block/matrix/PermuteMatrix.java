@@ -2,6 +2,7 @@ package com.ncslab.block.matrix;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -18,12 +19,20 @@ import java.util.Vector;
 import com.ncslab.util.TemplateManager;
 // TODO(squarezhong@outlook.com) compeletely wrong
 public class PermuteMatrix extends Block {
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates PermuteMatrix block directly from BlockJson DTO
+     */
+    public PermuteMatrix(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: PermuteMatrix block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();

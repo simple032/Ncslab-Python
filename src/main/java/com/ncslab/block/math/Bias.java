@@ -2,6 +2,7 @@ package com.ncslab.block.math;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.data.Data;
@@ -40,7 +41,6 @@ public class Bias extends Block {
     // === Static Parameter Definitions ===
     
     // Parameter defaults
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -50,10 +50,8 @@ public class Bias extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -97,6 +95,22 @@ public class Bias extends Block {
         
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates Bias block directly from BlockJson DTO
+     */
+    public Bias(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.bias = new Parameter(this, 1, "Bias", "0");
+        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
     
     // === Static Factory Method for JSON Deserialization ===

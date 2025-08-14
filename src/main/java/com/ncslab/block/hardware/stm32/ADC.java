@@ -2,6 +2,7 @@ package com.ncslab.block.hardware.stm32;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -21,10 +22,19 @@ public class ADC extends com.ncslab.block.Block{
 	Parameter channel;
 
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates ADC block directly from BlockJson DTO
+     */
+    public ADC(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: ADC block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     
     static {

@@ -2,6 +2,7 @@ package com.ncslab.block.source;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
+import com.ncslab.dto.BlockJson;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -13,6 +14,7 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
+import com.ncslab.util.TemplateUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,49 +31,30 @@ import java.util.Vector;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Constant extends Block {
+public class Constant extends SourceBlock {
     
-    // === SIMULINK-Compatible Parameters ===
-    @Getter
+    // === Constant-Specific SIMULINK Parameters ===
     private final Parameter value;
-    @Getter
-    private final Parameter sampleTime;
-    @Getter
     private final Parameter framePeriod;
-    @Getter
-    private final Parameter outDataType;
-    @Getter
-    private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
-        PARAMETER_DEFAULTS = new HashMap<>();
-        PARAMETER_DEFAULTS.put("Value", "1");
-        PARAMETER_DEFAULTS.put("SampleTime", "0");  // 0 for continuous constant
-        PARAMETER_DEFAULTS.put("FramePeriod", "1");
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as parameter");
-        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        // Constant-specific defaults
+        Map<String, String> constantDefaults = new HashMap<>();
+        constantDefaults.put("Value", "1");
+        constantDefaults.put("FramePeriod", "1");
+        
+        // Merge with common source block defaults
+        PARAMETER_DEFAULTS = mergeWithCommonDefaults(constantDefaults);
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    static {
-        // SIMULINK parameter names
-        parameterNames.add("Value");
-        parameterNames.add("SampleTime");
-        parameterNames.add("FramePeriod");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
+    static {        
         // Port names
         outputNames.add("out1");
         // No input ports for constant block
@@ -81,18 +64,20 @@ public class Constant extends Block {
                     Parameter outDataType, Parameter saturateOnIntegerOverflow,
                     String blockName, String blockPath, String blockUUID, 
                     NCSLabModel model) {
-        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        super("Constant", sampleTime, outDataType, saturateOnIntegerOverflow, blockName, blockPath, blockUUID, model);
         
         // Validate parameters
         validateParameters(value, sampleTime, framePeriod);
         
-        // Assign parameters
+        // Assign Constant-specific parameters
         this.value = Objects.requireNonNull(value, "Value parameter cannot be null");
-        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.framePeriod = Objects.requireNonNull(framePeriod, "Frame period parameter cannot be null");
-        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
-        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+        
+        // Add Constant-specific parameters to parameter list
+        parameterList.add(value);
+        parameterList.add(framePeriod);
+        
+        // Set port dimensions
         initializePorts();
     }
     
@@ -103,14 +88,31 @@ public class Constant extends Block {
         
         // Get parameters by name from the automatically populated parameterList
         this.value = getParameterByName("Value");
-        this.sampleTime = getParameterByName("SampleTime");
         this.framePeriod = getParameterByName("FramePeriod");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        
+        // Verify SourceBlock parameters are properly inherited
+        if (getSampleTime() == null || getOutDataType() == null || getSaturateOnIntegerOverflow() == null) {
+            throw new IllegalStateException("SourceBlock common parameters not properly initialized");
+        }
         
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates Constant block directly from BlockJson DTO
+     */
+    public Constant(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.value = new Parameter(this, 1, "Value", "0");
+        this.framePeriod = new Parameter(this, 2, "Frameperiod", "0");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
     
     // === Static Factory Method for JSON Deserialization ===
     public static Constant fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -146,35 +148,35 @@ public class Constant extends Block {
     }
     
     // === Static Factory Method for Programmatic Creation ===
-    public static Constant create(String name, String path, String constantValue, NCSLabModel model) {
+    public static Constant create(String name, String path, double constantValue, NCSLabModel model) {
         return create(name, path, constantValue, 0.0, 1.0, "Inherit: Same as parameter", false, model);
     }
     
-    public static Constant create(String name, String path, String constantValue,
+    public static Constant create(String name, String path, double constantValue,
                                  double sampleTime, double framePeriod, String outDataType, 
                                  boolean saturateOnOverflow, NCSLabModel model) {
         // Create parameters
-        Parameter value = new Parameter(null, 1, "Value", constantValue);
+        Parameter valueParam = new Parameter(null, 1, "Value", String.valueOf(constantValue));
         Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
         Parameter framePeriodParam = new Parameter(null, 3, "FramePeriod", String.valueOf(framePeriod));
         Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
         Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
         
-        Constant block = new Constant(value, sampleTimeParam, framePeriodParam, outDataTypeParam, saturateParam,
+        Constant block = new Constant(valueParam, sampleTimeParam, framePeriodParam, outDataTypeParam, saturateParam,
                                      name, path, "null", model);
         
         // Set block reference in parameters
-        setParameterBlockReference(block, value, sampleTimeParam, framePeriodParam, outDataTypeParam, saturateParam);
+        setParameterBlockReference(block, valueParam, sampleTimeParam, framePeriodParam, outDataTypeParam, saturateParam);
         
         return block;
     }
     
     // === Parameter Validation ===
     private static void validateParameters(Parameter value, Parameter sampleTime, Parameter framePeriod) {
-        // Validate value is not null/empty
-        String valueStr = value.getInitString();
-        if (valueStr == null || valueStr.trim().isEmpty()) {
-            throw new IllegalArgumentException("Constant value cannot be empty");
+        // Validate value is finite
+        double val = value.getDouble();
+        if (Double.isNaN(val) || Double.isInfinite(val)) {
+            throw new IllegalArgumentException("Value must be finite");
         }
         
         // Validate sample time (0 for continuous, >0 for discrete, -1 for inherited)
@@ -240,19 +242,10 @@ public class Constant extends Block {
         }
     }
     
-    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
-        JSONObject identity = new JSONObject();
-        identity.put("blockType", "Constant");
-        identity.put("blockName", blockName);
-        identity.put("blockPath", blockPath);
-        identity.put("blockUUID", blockUUID);
-        return identity;
-    }
     
-    // === Port Initialization ===
+    // === Port Dimension Setup ===
     private void initializePorts() {
-        // Create output port (constant blocks have no input)
-        outputPortList.add(new OutputPort(this, 1, true));
+        // Set port dimensions based on value parameter
         outputPortList.get(0).setHeight(value.getHeight());
         outputPortList.get(0).setWidth(value.getWidth());
     }
@@ -286,9 +279,11 @@ public class Constant extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        // Context is automatically populated with standard variables by TemplateUtils
-        // Just add block-specific variables
-        context.put("value", value);
+        // Populate all standard context variables
+        TemplateUtils.populateAllContext(context, this);
+        
+        // Add block-specific variables with proper C names
+        context.put("value", value.getName());
         context.put("outputs", getOutputPortVariables());
 
         // Use the improved template (now updated directly)

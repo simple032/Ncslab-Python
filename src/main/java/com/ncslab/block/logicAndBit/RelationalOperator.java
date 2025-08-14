@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -46,9 +47,7 @@ public class RelationalOperator extends Block {
 
     // === Static Parameter Definitions ===
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -61,7 +60,6 @@ public class RelationalOperator extends Block {
     }
 
     // === Parameter Defaults ===
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
         PARAMETER_DEFAULTS.put("Operator", "==");
@@ -129,7 +127,31 @@ public class RelationalOperator extends Block {
         inputPortList.add(new InputPort(this, 2));
         OutputPort output = new OutputPort(this, 1, true);
         outputPortList.add(output);
+    }    /**
+     * DTO-NATIVE Constructor - Creates RelationalOperator block directly from BlockJson DTO
+     */
+    public RelationalOperator(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.operator = new Parameter(this, 1, "Operator", "==");
+        this.logicDataType = new Parameter(this, 2, "Logicdatatype", "0");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        inputPortList.add(new InputPort(this, 2));
+        outputPortList.add(new OutputPort(this, 1, true));
     }
+
+
 
     // === Static Factory Method for JSON Deserialization ===
     public static RelationalOperator fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -306,17 +328,24 @@ public class RelationalOperator extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         OutputPort out = outputPortList.get(0);
         OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
-        context.put("signal1", signal1);
-        context.put("signal2", signal2);
-        context.put("ops", out.getOutputSignalC());
+        
+        // Use proper C variable names instead of Java object references
+        context.put("signal1Name", signal1.getName());
+        context.put("signal2Name", signal2.getName());
+        context.put("opsName", out.getOutputSignalC().getName());
         context.put("relop", relop);
+        
+        // Add input port variables
+        context.put("inputSignal1", getInputPortVariable(0));
+        context.put("inputSignal2", getInputPortVariable(1));
+        context.put("outputSignal", getOutputPortVariable(0));
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/RelationalOperator/output.vm", context);
-
         code.addOutputCode(codeStr);
     }
 

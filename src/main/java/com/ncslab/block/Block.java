@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.code.c.CodeStructC;
@@ -21,7 +22,6 @@ import com.ncslab.block.lan.CCodeBlock;
 import com.ncslab.block.lan.MCodeBlock;
 import com.ncslab.util.TemplateUtils;
 
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 
 //各个Block模块的基类，定义了block的框架；如果需要生成各种语言，需要连接各种语言生成器的接口
 public class Block implements MCodeBlock, CCodeBlock{
@@ -122,6 +122,26 @@ public class Block implements MCodeBlock, CCodeBlock{
     public static Vector<String> outputNames = new Vector<>();
 
     protected VelocityContext context = null;
+
+    /**
+     * DTO-NATIVE Constructor - Creates Block from BlockJson DTO
+     * This constructor provides the foundation for DTO-native block creation
+     */
+    protected Block(BlockJson blockDto, NCSLabModel model) {
+        this.blockType = blockDto.getBlockType();
+        this.blockName = blockDto.getBlockName();
+        if (blockDto.getParamValues() != null) {
+            this.paramValues = new JSONObject(blockDto.getParamValues());
+        }
+        this.model = model;
+        this.blockPath = blockDto.getBlockPath();
+        this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";
+        parseParameterList();
+        context = new VelocityContext();
+        
+        // Use enhanced template utilities for comprehensive context population
+        TemplateUtils.populateAllContext(context, this);
+    }
 
     protected Block(JSONObject blockIn, NCSLabModel model) {
 		this.blockType=blockIn.getString("blockType");

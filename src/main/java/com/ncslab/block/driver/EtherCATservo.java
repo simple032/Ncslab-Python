@@ -1,6 +1,7 @@
 package com.ncslab.block.driver;
 
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -16,6 +17,18 @@ public class EtherCATservo extends com.ncslab.block.Block {
     private static final String PARAM_INTERFACE = "Interface";
     private static final String PARAM_TIME_SAMPLE = "timeSample";
     private static final String PARAM_OPERATION_MODE = "operationMode";
+    
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates EtherCATservo block directly from BlockJson DTO
+     */
+    public EtherCATservo(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: EtherCATservo block created successfully - " + blockDto.getBlockName());
+    }
+
+
     
     public static final Map<String, String> PARAMETER_DEFAULTS;
     

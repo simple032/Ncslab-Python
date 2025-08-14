@@ -3,6 +3,7 @@ package com.ncslab.block.source;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -21,85 +22,55 @@ import java.util.Vector;
 import com.ncslab.util.TemplateManager;
 
 /**
- * Clock block with SIMULINK-compatible parameters and type-safe constructors.
- *
- * SIMULINK Parameters:
- * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
- * - OutDataTypeStr: Output data type specification
- * - SaturateOnIntegerOverflow: Handle integer overflow
+ * Clock block with SIMULINK-compatible parameters.
+ * Extends SourceBlock for common source block functionality.
+ * 
+ * Clock-specific behavior: Outputs current simulation time.
  */
-public class Clock extends com.ncslab.block.Block {
-
-    // === SIMULINK-Compatible Parameters ===
-    @Getter
-    private final Parameter sampleTime;
-    @Getter
-    private final Parameter outDataType;
-    @Getter
-    private final Parameter saturateOnIntegerOverflow;
+public class Clock extends SourceBlock {
 
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-
-    // Parameter defaults matching database format
+    // Parameter defaults (inherited common ones from SourceBlock)
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
-        PARAMETER_DEFAULTS = new HashMap<>();
+        // Clock uses the common defaults from SourceBlock
+        PARAMETER_DEFAULTS = new HashMap<>(COMMON_PARAMETER_DEFAULTS);
+        // Clock is typically continuous by default
         PARAMETER_DEFAULTS.put("SampleTime", "0");  // Continuous
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
-        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
-    }
-
-    @Getter
-    public static final Vector<String> outputNames = new Vector<>();
-
-    @Getter
-    public static final Vector<String> inputNames = new Vector<>();
-
-    static {
-        // SIMULINK parameter names
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-
-        // Port names
-        outputNames.add("out1");
-        // No input ports for clock block
     }
 
     // === Private Constructor with Typed Parameters ===
     private Clock(Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
                  String blockName, String blockPath, String blockUUID, NCSLabModel model) {
-        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        super("Clock", sampleTime, outDataType, saturateOnIntegerOverflow, blockName, blockPath, blockUUID, model);
 
         // Validate parameters
         validateParameters(sampleTime);
-
-        // Assign parameters
-        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
-        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
-        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
-        initializePorts();
     }
 
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
     public Clock(JSONObject blockJSON, NCSLabModel model) {
-        super(blockJSON, model);
-
-        // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 1, "SampleTime", "0"); // 0 for continuous clock
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "double");
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
-
-        // Add all parameters to parameter list
-
-        // Initialize ports
-        initializePorts();
+        // Extract parameters from JSON and initialize SourceBlock properly
+        this(
+            createSampleTimeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createOutDataTypeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createSaturateFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            blockJSON.optString("blockName", "Clock"),
+            blockJSON.optString("blockPath", ""),
+            blockJSON.optString("blockUUID", "null"),
+            model
+        );
     }
-
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Clock block directly from BlockJson DTO
+     */
+    public Clock(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: Clock block created successfully - " + blockDto.getBlockName());
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static Clock fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -155,21 +126,6 @@ public class Clock extends com.ncslab.block.Block {
         }
     }
 
-    // === Helper Methods for JSON Parameter Creation ===
-    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
-        String sampleTimeValue = paramValues.optString("SampleTime", "0");
-        return new Parameter(null, 1, "SampleTime", sampleTimeValue);
-    }
-
-    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
-        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "double");
-        return new Parameter(null, 2, "OutDataTypeStr", outDataTypeValue);
-    }
-
-    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
-        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
-        return new Parameter(null, 3, "SaturateOnIntegerOverflow", saturateValue);
-    }
 
     // === Utility Methods ===
     private static String requireNonEmptyString(JSONObject json, String key) {
@@ -195,26 +151,45 @@ public class Clock extends com.ncslab.block.Block {
         }
     }
 
-    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
-        JSONObject identity = new JSONObject();
-        identity.put("blockType", "Clock");
-        identity.put("blockName", blockName);
-        identity.put("blockPath", blockPath);
-        identity.put("blockUUID", blockUUID);
-        identity.put("paramValues", new JSONObject());
-        return identity;
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        if (paramValues == null) {
+            paramValues = new JSONObject();
+        }
+        String sampleTimeValue = paramValues.optString("SampleTime", "0");
+        return new Parameter(null, 1, "SampleTime", sampleTimeValue);
+    }
+    
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        if (paramValues == null) {
+            paramValues = new JSONObject();
+        }
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "double");
+        return new Parameter(null, 2, "OutDataTypeStr", outDataTypeValue);
+    }
+    
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        if (paramValues == null) {
+            paramValues = new JSONObject();
+        }
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 3, "SaturateOnIntegerOverflow", saturateValue);
     }
 
-    // === Port Initialization ===
-    private void initializePorts() {
-        outputPortList.add(new OutputPort(this, 1, false));
-    }
+
 
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
+        // Populate all standard context variables
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add Clock-specific context variables
         context.put("block", this);
-        context.put("outputVar", outputPortList.get(0).getOutputSignalC().getName());
+        context.put("outputVar", getOutputPortVariable(0));
+        context.put("outputSignal", getOutputPortVariable(0));
+        context.put("outputSignalName", getOutputPortVariable(0));
+        
         String outputCode = TemplateManager.renderTemplate("c/source/Clock/output.vm", context);
         code.addOutputCode(outputCode);
     }

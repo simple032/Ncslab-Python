@@ -3,10 +3,10 @@ package com.ncslab.block.continuous;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.FifoBufferExtended;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import com.ncslab.util.TemplateManager;
 import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import Jama.Matrix;
 
@@ -131,9 +131,26 @@ public class TransportDelay extends Block {
 
         // Initialize ports
         initializePorts();
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates TransportDelay block directly from BlockJson DTO
+     */
+    public TransportDelay(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
-    // === Static Factory Method for JSON Deserialization ===
+        // Initialize final parameters from DTO
+        this.delayTime = new Parameter(this, 1, "Delaytime", "0");
+        this.initialOutput = new Parameter(this, 2, "Initialoutput", "0");
+        this.bufferSize = new Parameter(this, 3, "Buffersize", "0");
+        this.padeOrder = new Parameter(this, 4, "PadeOrder", "0");
+        this.sampleTime = new Parameter(this, 5, "SampleTime", "0");
+        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }// === Static Factory Method for JSON Deserialization ===
     public static TransportDelay fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");

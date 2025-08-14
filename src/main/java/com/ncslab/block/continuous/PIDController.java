@@ -18,6 +18,7 @@ import org.apache.velocity.VelocityContext;
 import lombok.Getter;
 
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -185,7 +186,46 @@ public class PIDController extends Block {
         stateFilter = new State(this, 2, "stateFilter", proportionalGain.getHeight(), proportionalGain.getWidth());
         stateList.add(stateIntegral);
         stateList.add(stateFilter);
+    }    /**
+     * DTO-NATIVE Constructor - Creates PIDController block directly from BlockJson DTO
+     */
+    public PIDController(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.proportionalGain = new Parameter(this, 1, "Proportionalgain", "0");
+        this.integralGain = new Parameter(this, 2, "Integralgain", "0");
+        this.derivativeGain = new Parameter(this, 3, "Derivativegain", "0");
+        this.filterCoefficient = new Parameter(this, 4, "Filtercoefficient", "0");
+        this.formulationType = new Parameter(this, 5, "FormulationType", "parallel");
+        this.externalReset = new Parameter(this, 6, "Externalreset", "0");
+        this.initialConditionForIntegrator = new Parameter(this, 7, "InitialConditionForIntegrator", "0");
+        this.initialConditionForFilter = new Parameter(this, 8, "InitialConditionForFilter", "0");
+        this.limitOutput = new Parameter(this, 9, "Limitoutput", "0");
+        this.upperSaturationLimit = new Parameter(this, 10, "Uppersaturationlimit", "0");
+        this.lowerSaturationLimit = new Parameter(this, 11, "Lowersaturationlimit", "0");
+        this.sampleTime = new Parameter(this, 12, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 13, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 14, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    
+
+        // Initialize states
+        if (proportionalGain != null) {
+            stateIntegral = new State(this, 1, "stateIntegral", proportionalGain.getHeight(), proportionalGain.getWidth());
+            stateFilter = new State(this, 2, "stateFilter", proportionalGain.getHeight(), proportionalGain.getWidth());
+            stateList.add(stateIntegral);
+            stateList.add(stateFilter);
+        }
+        
+        System.out.println("DTO-NATIVE: PIDController block created successfully - " + blockDto.getBlockName());
     }
+
+
 
     // === Static Factory Method for JSON Deserialization ===
     public static PIDController fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -393,6 +433,7 @@ public class PIDController extends Block {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to satisfy base constructor
         return identity;
     }
 
@@ -518,6 +559,15 @@ public class PIDController extends Block {
 
     public void generateArraysCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add PID-specific context variables for arrays template
+        context.put("proportionalGainHeight", proportionalGain.getHeight());
+        context.put("proportionalGainWidth", proportionalGain.getWidth());
+        context.put("proportionalGainDataType", proportionalGain.getDataType());
+        context.put("inputSignalDataType", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getDataType());
+        context.put("inputSignalHeight", inputPortList.get(0).getHeight());
+        context.put("inputSignalWidth", inputPortList.get(0).getWidth());
+        
         String arraysCode = TemplateManager.renderTemplate("c/continuous/PIDController/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
@@ -525,6 +575,16 @@ public class PIDController extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add missing template variables for init
+        context.put("integralStateName", stateIntegral.getName());
+        context.put("filterStateName", stateFilter.getName());
+        context.put("integralStateHeight", stateIntegral.getHeight());
+        context.put("integralStateWidth", stateIntegral.getWidth());
+        context.put("filterStateHeight", stateFilter.getHeight());
+        context.put("filterStateWidth", stateFilter.getWidth());
+        context.put("realDataType", DataType.REAL);
+        
         String codeStr = TemplateManager.renderTemplate("c/continuous/PIDController/init.vm", context);
         code.addInitCode(codeStr);
     }
@@ -539,6 +599,17 @@ public class PIDController extends Block {
             inputPortList.size()>1?
             inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName():0
         );
+        
+        // Add missing template variables that aren't in populateAllContext
+        context.put("outputVar", outputPortList.get(0).getOutputSignalC().getName());
+        context.put("signalName", signal.getName());
+        context.put("signalDataType", signal.getDataType());
+        
+        
+        // Add reset signal name if external reset is enabled
+        if (inputPortList.size() > 1) {
+            context.put("resetSigName", inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/PIDController/output.vm", context);
         code.addOutputCode(codeStr);
@@ -554,6 +625,18 @@ public class PIDController extends Block {
     @Override
     public void generateUpdateCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add missing template variables for update
+        context.put("integralStateName", stateIntegral.getName());
+        context.put("filterStateName", stateFilter.getName());
+        context.put("integralStateDerivativeName", stateIntegral.getDerivativeName());
+        context.put("filterStateDerivativeName", stateFilter.getDerivativeName());
+        context.put("integralStateHeight", stateIntegral.getHeight());
+        context.put("integralStateWidth", stateIntegral.getWidth());
+        context.put("filterStateHeight", stateFilter.getHeight());
+        context.put("filterStateWidth", stateFilter.getWidth());
+        context.put("signalDataType", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getDataType());
+        
         String updateCode = TemplateManager.renderTemplate("c/continuous/PIDController/update.vm", context);
         code.addUpdateCode(updateCode);
     }

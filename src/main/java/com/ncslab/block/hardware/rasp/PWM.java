@@ -2,6 +2,7 @@ package com.ncslab.block.hardware.rasp;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -18,10 +19,19 @@ import java.util.Vector;
 public class PWM extends com.ncslab.block.Block{
 
 	Parameter port;
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates PWM block directly from BlockJson DTO
+     */
+    public PWM(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: PWM block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> inputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {

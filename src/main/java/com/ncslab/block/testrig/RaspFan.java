@@ -2,6 +2,7 @@ package com.ncslab.block.testrig;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -15,6 +16,18 @@ import java.util.Vector;
 
 public class RaspFan extends Block {
     String hardwareDefineName;
+
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates RaspFan block directly from BlockJson DTO
+     */
+    public RaspFan(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: RaspFan block created successfully - " + blockDto.getBlockName());
+    }
+
+
 
     public static final Vector<String> outputNames = new Vector<>();
     public static final Vector<String> inputNames = new Vector<>();

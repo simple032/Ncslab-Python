@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -34,25 +35,15 @@ import java.util.Vector;
 public class Pulse extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    @Getter
     private final Parameter amplitude;
-    @Getter
     private final Parameter period;
-    @Getter
     private final Parameter pulseWidth;
-    @Getter
     private final Parameter phaseDelay;
-    @Getter
     private final Parameter sampleTime;
-    @Getter
     private final Parameter outDataType;
-    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -66,22 +57,11 @@ public class Pulse extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("Amplitude");
-        parameterNames.add("Period");
-        parameterNames.add("PulseWidth");
-        parameterNames.add("PhaseDelay");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         // No input ports for pulse block
@@ -127,6 +107,25 @@ public class Pulse extends Block {
         
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates Pulse block directly from BlockJson DTO
+     */
+    public Pulse(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.amplitude = new Parameter(this, 1, "Amplitude", "1");
+        this.period = new Parameter(this, 2, "Period", "1");
+        this.pulseWidth = new Parameter(this, 3, "Pulsewidth", "0");
+        this.phaseDelay = new Parameter(this, 4, "Phasedelay", "0");
+        this.sampleTime = new Parameter(this, 5, "SampleTime", "0");
+        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "Inherit: Same as parameter");
+        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
     
     // === Static Factory Method for JSON Deserialization ===

@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.ModelException;
+import com.ncslab.dto.BlockJson;
 /**
  * Generate corresponding <code>Block</code> according to <code>BlockType</code>.
  * If your block is an instance of <code>Block</code> but not an instance of <code>SoughtedBlock</code>,
@@ -75,9 +76,16 @@ public class BlockType{
         blockClassTree.put("Abs", com.ncslab.block.math.Abs.class);
         blockClassTree.put("Bias", com.ncslab.block.math.Bias.class);
         blockClassTree.put("Sqrt", com.ncslab.block.math.Sqrt.class);
+        blockClassTree.put("MinMax", com.ncslab.block.math.MinMax.class);
+        blockClassTree.put("Divide", com.ncslab.block.math.Divide.class);
+        blockClassTree.put("Power", com.ncslab.block.math.Power.class);
         blockClassTree.put("ProductOfElements", com.ncslab.block.math.ProductOfElements.class);
         blockClassTree.put("SumOfElements", com.ncslab.block.math.SumOfElements.class);
         blockClassTree.put("Rounding", com.ncslab.block.math.Rounding.class);
+        blockClassTree.put("Logarithm", com.ncslab.block.math.Logarithm.class);
+        blockClassTree.put("Exponential", com.ncslab.block.math.Exponential.class);
+        blockClassTree.put("Modulo", com.ncslab.block.math.Modulo.class);
+        blockClassTree.put("Reciprocal", com.ncslab.block.math.Reciprocal.class);
 
         // Continuous
         blockClassTree.put("Derivative", com.ncslab.block.continuous.Derivative.class);
@@ -118,9 +126,11 @@ public class BlockType{
         blockClassTree.put("L2IP", com.ncslab.block.testrig.SecondOrderInvertedPendulum.class);
         blockClassTree.put("R1IP", com.ncslab.block.testrig.RotaryInvertedPendulum.class);
         blockClassTree.put("R2IP", com.ncslab.block.testrig.SecondOrderRotaryInvertedPendulum.class);
-        blockClassTree.put("BallPlateSystem", com.ncslab.block.testrig.BallPlateSUST.class);
+        blockClassTree.put("BallPlateSystem", com.ncslab.block.testrig.BallPlateSystem.class);
         blockClassTree.put("FanRasp", com.ncslab.block.testrig.RaspFan.class);
         blockClassTree.put("NetWaterLevel", com.ncslab.block.testrig.WaterLevel.class);
+
+        blockClassTree.put("BallPlateSystemSUST", com.ncslab.block.testrig.BallPlateSUST.class);
 
         // Function
         blockClassTree.put("Fcn", com.ncslab.block.function.Fcn.class);
@@ -261,6 +271,83 @@ public class BlockType{
 
 		return block;
 		// return null;
+	}
+	
+	/**
+	 * DTO-NATIVE factory method for creating blocks from BlockJson DTOs
+	 * This is the REAL DTO implementation that doesn't convert to JSONObject
+	 * @param id Block ID
+	 * @param blockDto BlockJson DTO
+	 * @param model NCSLabModel instance
+	 * @return Block instance created directly from DTO
+	 * @throws ModelException if block creation fails
+	 */
+	public static Block createBlockFromDto(int id, BlockJson blockDto, NCSLabModel model) throws ModelException {
+		if (blockDto == null) {
+			throw new ModelException("BlockJson DTO cannot be null");
+		}
+		
+		if (!blockDto.isValid()) {
+			throw new ModelException("Invalid BlockJson DTO: " + blockDto.getValidationError());
+		}
+		
+		String blockType = blockDto.getBlockType()
+			.replace("Block", "")
+			.replace(" ", "")
+			.replace("\n", "");
+
+		Block block = null;
+		try {
+			Class<? extends Block> blockClass = blockClassTree.get(blockType);
+			if (blockClass != null) {
+				try {
+					// First try to use DTO constructor (new approach)
+					block = blockClass.getConstructor(BlockJson.class, NCSLabModel.class).newInstance(blockDto, model);
+					System.out.println("Successfully created block: " + blockType + "/" + blockDto.getBlockName());
+				} catch (NoSuchMethodException e) {
+					// Fall back to JSONObject constructor (compatibility mode)
+					System.out.println("Block " + blockType + " doesn't have DTO constructor, converting to JSONObject");
+					JSONObject blockJSON = convertBlockDtoToJsonObject(blockDto);
+					block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
+				}
+			} else {
+				System.out.println("Could not find block type: " + blockType);
+				throw new ModelException("Unknown block type: " + blockType);
+			}
+		} catch (ModelException e) {
+			// Re-throw ModelException (like unknown block type)
+			throw e;
+		} catch (Exception e) {
+			System.err.println("Error parsing block DTO: " + blockDto.getBlockName() + " - " + e.getMessage());
+			e.printStackTrace(); // Add stack trace for debugging
+			return null; // Return null for construction failures to match caller expectation
+		}
+
+		block.setBlockId(id);
+		block.updateBlock();
+
+		return block;
+	}
+	
+	/**
+	 * Temporary conversion utility for blocks that haven't been migrated to DTO constructors yet
+	 * This method will be removed once all blocks have DTO constructors
+	 * @param blockDto BlockJson DTO
+	 * @return JSONObject for legacy compatibility
+	 */
+	private static JSONObject convertBlockDtoToJsonObject(BlockJson blockDto) {
+		JSONObject blockJSON = new JSONObject();
+		blockJSON.put("blockType", blockDto.getBlockType());
+		blockJSON.put("srcBlock", blockDto.getSrcBlock());
+		blockJSON.put("blockName", blockDto.getBlockName());
+		blockJSON.put("blockPath", blockDto.getBlockPath());
+		blockJSON.put("blockUUID", blockDto.getBlockUUID());
+		
+		if (blockDto.getParamValues() != null) {
+			blockJSON.put("paramValues", new JSONObject(blockDto.getParamValues()));
+		}
+		
+		return blockJSON;
 	}
 
     public static Set<String> getBlockTypes(){

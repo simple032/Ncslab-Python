@@ -3,6 +3,7 @@ package com.ncslab.block.route;
 import com.ncslab.block.Block;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -47,14 +48,11 @@ public class Switch extends Block {
 
     // === Static Parameter Definitions ===
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -107,9 +105,24 @@ public class Switch extends Block {
 
         // Initialize ports
         initializePorts();
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates Switch block directly from BlockJson DTO
+     */
+    public Switch(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
-    // === Static Factory Method for JSON Deserialization ===
+        // Initialize final parameters from DTO
+        this.threshold = new Parameter(this, 1, "Threshold", "0");
+        this.criteria = new Parameter(this, 2, "Criteria", ">=");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }// === Static Factory Method for JSON Deserialization ===
     public static Switch fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");
@@ -240,12 +253,33 @@ public class Switch extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		
+		// Add threshold parameter for template
+		context.put("threshold", threshold);
+		context.put("thresholdInitCodeC", threshold.getInitCodeC());
 
 		String initCode = TemplateManager.renderTemplate("c/route/Switch/init.vm", context);
 		code.addInitCode(initCode);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
 		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		
+		// Add input port list size
+		context.put("inputPortListSize", inputPortList.size());
+		
+		// Add input port signal names
+		if (inputPortList.size() >= 3) {
+			context.put("inputPort0SignalName", getInputPortVariable(0));
+			context.put("inputPort1SignalName", getInputPortVariable(1));
+			context.put("inputPort2SignalName", getInputPortVariable(2));
+		}
+		
+		// Add output port signal name
+		context.put("outputPort0SignalName", getOutputPortVariable(0));
+		
+		// Add threshold parameter and name
+		context.put("threshold", threshold);
+		context.put("thresholdName", threshold.getName());
 
 		String outputCode = TemplateManager.renderTemplate("c/route/Switch/output.vm", context);
 		code.addOutputCode(outputCode);

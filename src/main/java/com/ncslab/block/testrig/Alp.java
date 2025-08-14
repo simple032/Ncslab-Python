@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -20,6 +21,18 @@ public class Alp extends Block {
 	private double num[] = {0.1308,0,0};
 	private double den[]= {1,3.091,1.19,0.2};
 	private Vector<State> xStateList=new Vector<State>();
+
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Alp block directly from BlockJson DTO
+     */
+    public Alp(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: Alp block created successfully - " + blockDto.getBlockName());
+    }
+
+
 
     public static final Vector<String> outputNames = new Vector<>();
     public static final Vector<String> inputNames = new Vector<>();

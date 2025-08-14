@@ -1,6 +1,7 @@
 package com.ncslab.block.sink;
 
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.dto.BlockJson;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -14,9 +15,6 @@ import java.util.Vector;
 
 public class Terminator extends SinkBlock{
 
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -25,13 +23,9 @@ public class Terminator extends SinkBlock{
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        
         inputNames.add("in1");
     }
 	public Terminator(JSONObject scopeIn,NCSLabModel model) {
@@ -39,6 +33,15 @@ public class Terminator extends SinkBlock{
 
 		//һ������
 		inputPortList.add(new InputPort(this,1));
+	}
+	
+	/**
+	 * DTO-NATIVE Constructor - Creates Terminator block directly from BlockJson DTO
+	 */
+	public Terminator(BlockJson blockDto, NCSLabModel model) {
+		super(blockDto, model);
+		inputPortList.add(new InputPort(this,1));
+		System.out.println("DTO-NATIVE: Terminator block created successfully - " + blockDto.getBlockName());
 	}
 
 	public void generateOutputCodeM(CodeStructM code) {

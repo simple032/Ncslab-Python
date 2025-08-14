@@ -9,6 +9,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.util.TemplateManager;
 import org.apache.velocity.VelocityContext;
 
@@ -17,13 +18,37 @@ abstract public class DiscreteBlock extends Block {
     @Getter
     protected double sampleTime=-1;
     protected boolean feedthrough = false;
+    
+    // === Timing Precision Constants ===
+    private static final double TIMING_EPSILON = 1e-9;
+    private static final long TIMING_SCALE = 1000000000L; // nanosecond precision
 
     public DiscreteBlock(JSONObject blockIn,NCSLabModel model) {
         super(blockIn,model);
     }
 
+    /**
+     * DTO-NATIVE Constructor - Creates DiscreteBlock block directly from BlockJson DTO
+     */
+    public DiscreteBlock(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: DiscreteBlock block created successfully - " + blockDto.getBlockName());
+    }
+
     public void setSampleTime(Parameter sampleTime) {
         this.sampleTime=sampleTime.getData().getInitValue();
+    }
+    
+    // === Timing Precision Helper Methods ===
+    protected boolean isTimeForUpdate(double currentTime, double nextDiscreteTime) {
+        return nextDiscreteTime <= currentTime || 
+               Math.abs(nextDiscreteTime - currentTime) < TIMING_EPSILON;
+    }
+    
+    protected boolean isSampleTimeMultiple(double sampleTime, double fixedStep) {
+        double ratio = sampleTime / fixedStep;
+        double roundedRatio = Math.round(ratio);
+        return Math.abs(ratio - roundedRatio) < TIMING_EPSILON;
     }
 
     public void generateDiscreteUpdateCodeCInside(CodeStructC code) throws MatDimException{
@@ -48,7 +73,7 @@ abstract public class DiscreteBlock extends Block {
 
         //discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time){\n";
 
-        discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time||"+"block"+this.getBlockId()+".discreteTime-mp->time<0.0000001){\n";
+        discreteUpdateCode+="while(block"+this.getBlockId()+".discreteTime<=mp->time||"+"fabs(block"+this.getBlockId()+".discreteTime-mp->time)<"+TIMING_EPSILON+"){\n";
         code.addDiscreteUpdateCode(discreteUpdateCode);
 
         generateDiscreteUpdateCodeCInside(code);

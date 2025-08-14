@@ -1,22 +1,29 @@
 /*Code for output of block Fcn:($blockId)$blockName*/
 #if($inputPortList && $inputPortListSize > 0 && $outputPortList && $outputPortListSize > 0 && $expression)
-    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #if($inputPortList.get(0).getLinkedLine() && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort())
+        #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+    #else
+        #set($inputSignal = null)
+    #end
     #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
     #set($inputVar = $inputSignalName)
     #set($outputVar = $outputSignalName)
     
-    #if($inputSignal.dataType == $realDataType)
+    #if($inputSignal && $inputSignal.dataType == $realDataType)
         ## Scalar function evaluation
         {
             const double u = $inputVar;
             $outputVar = ${expression};
         }
-    #else
+    #elseif($inputSignal)
         ## Matrix function evaluation
         {
             const Matrix& u = $inputVar;
             $outputVar = ${expression};
         }
+    #else
+        ## Unconnected input - use default value
+        $outputVar = 0.0; /* Fcn block with unconnected input */
     #end
 #else
     ## Fallback if parameters missing

@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputSignal;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -50,14 +51,11 @@ public class CompareToConstant extends Block {
 
     // === Static Parameter Definitions ===
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
     static {
@@ -122,7 +120,27 @@ public class CompareToConstant extends Block {
 
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates CompareToConstant block directly from BlockJson DTO
+     */
+    public CompareToConstant(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.constantValue = new Parameter(this, 1, "Constantvalue", "0");
+        this.relationalOperator = new Parameter(this, 2, "Relationaloperator", "0");
+        this.logicDataType = new Parameter(this, 3, "Logicdatatype", "0");
+        this.sampleTime = new Parameter(this, 4, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+
 
     // === Static Factory Method for JSON Deserialization ===
     public static CompareToConstant fromJSON(JSONObject blockJSON, NCSLabModel model) {

@@ -15,6 +15,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.apache.commons.jexl3.*;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Objects;
 import java.util.Vector;
@@ -27,13 +28,14 @@ public class Fcn extends Block{
 
 //    private M2PCodeFunctionEvaluator.Evaluator evaluator;
 
-    @Getter
+    
+    
+    
+
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -57,6 +59,18 @@ public class Fcn extends Block{
 		inputPortList.add(new InputPort(this,1));
         expression = paramValues.getString("Expression");
 	}
+
+    /**
+     * DTO-NATIVE Constructor - Creates Fcn block directly from BlockJson DTO
+     */
+    public Fcn(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        expression = paramValues.getString("Expression");
+        
+        System.out.println("DTO-NATIVE: Fcn block created successfully - " + blockDto.getBlockName());
+    }
+
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);

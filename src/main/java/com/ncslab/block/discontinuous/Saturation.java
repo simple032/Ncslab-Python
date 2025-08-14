@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
@@ -107,9 +108,33 @@ public class Saturation extends Block {
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates Saturation block directly from BlockJson DTO
+     */
+    public Saturation(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
-    // === Static Factory Method for JSON Deserialization ===
+        // Initialize final parameters from DTO
+        this.upperSaturationLimit = new Parameter(this, 1, "Uppersaturationlimit", "0");
+        this.lowerSaturationLimit = new Parameter(this, 2, "Lowersaturationlimit", "0");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Legacy field mapping for backward compatibility
+        this.upperLimit = this.upperSaturationLimit;
+        this.lowerLimit = this.lowerSaturationLimit;
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }// === Static Factory Method for JSON Deserialization ===
     public static Saturation fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");
@@ -168,6 +193,21 @@ public class Saturation extends Block {
     // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add input port list size
+        context.put("inputPortListSize", inputPortList.size());
+        
+        // Add parameter objects and their names
+        context.put("lowerLimit", lowerLimit);
+        context.put("upperLimit", upperLimit);
+        context.put("lowerLimitName", lowerLimit.getName());
+        context.put("upperLimitName", upperLimit.getName());
+        
+        // Add port signal names
+        context.put("inputPort0SignalName", getInputPortVariable(0));
+        context.put("outputPort0SignalName", getOutputPortVariable(0));
+        context.put("inputSignalName", getInputPortVariable(0));
+        context.put("outputSignalName", getOutputPortVariable(0));
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/output.vm", context);
         code.addOutputCode(codeStr);
@@ -176,6 +216,10 @@ public class Saturation extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add parameter objects for template
+        context.put("lowerLimit", lowerLimit);
+        context.put("upperLimit", upperLimit);
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/init.vm", context);
         code.addInitCode(codeStr);

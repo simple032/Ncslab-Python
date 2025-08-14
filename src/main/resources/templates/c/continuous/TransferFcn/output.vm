@@ -8,12 +8,24 @@
     
     ## Add contributions from numerator coefficients and states
     #if($num.size() > 0 && $states.size() > 0)
-        #set($i = $num.size() - 1)
+        #set($numIndex = $num.size() - 1)
+        #set($stateIndex = 0)
         #foreach($state in $states)
-            #if($i >= 0)
-        $outputVar += $stateName * ${num.get($i)};
+            #if($numIndex >= 0)
+                #if($stateIndex == 0)
+        $outputVar += $stateName0 * ${num.get($numIndex)};
+                #elseif($stateIndex == 1)
+        $outputVar += $stateName1 * ${num.get($numIndex)};
+                #elseif($stateIndex == 2)
+        $outputVar += $stateName2 * ${num.get($numIndex)};
+                #elseif($stateIndex == 3)
+        $outputVar += $stateName3 * ${num.get($numIndex)};
+                #else
+        $outputVar += ${state.getName()} * ${num.get($numIndex)}; /* fallback for order > 4 */
+                #end
             #end
-            #set($i = $i - 1)
+            #set($numIndex = $numIndex - 1)
+            #set($stateIndex = $stateIndex + 1)
         #end
     #end
     

@@ -1,6 +1,7 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.data.Data;
+import com.ncslab.dto.BlockJson;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -47,7 +48,6 @@ public class Add extends Block {
     // === Static Parameter Definitions ===
 
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -58,10 +58,8 @@ public class Add extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
 
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -108,6 +106,27 @@ public class Add extends Block {
 
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates Add block directly from BlockJson DTO
+     */
+    public Add(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+
+
+        // Initialize final parameters from DTO
+        this.inputs = new Parameter(this, 1, "Inputs", "++");
+        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
+        this.inputSameDT = new Parameter(this, 3, "Inputsamedt", "0");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        this.inputSequence = this.inputs.getInitString();
+        
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
     // === Static Factory Method for JSON Deserialization ===
@@ -249,6 +268,7 @@ public class Add extends Block {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to satisfy base constructor
         return identity;
     }
 

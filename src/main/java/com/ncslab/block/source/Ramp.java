@@ -6,6 +6,7 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -32,53 +33,32 @@ import java.util.Vector;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Ramp extends Block {
+public class Ramp extends SourceBlock {
 
-    // === SIMULINK-Compatible Parameters ===
-    @Getter
+    // === Ramp-Specific SIMULINK Parameters ===
     private final Parameter slope;
-    @Getter
     private final Parameter start;
-    @Getter
     private final Parameter initialOutput;
-    @Getter
-    private final Parameter sampleTime;
-    @Getter
-    private final Parameter outDataType;
-    @Getter
-    private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
-        PARAMETER_DEFAULTS = new HashMap<>();
-        PARAMETER_DEFAULTS.put("Slope", "1");
-        PARAMETER_DEFAULTS.put("Start", "0");
-        PARAMETER_DEFAULTS.put("InitialOutput", "0");
-        PARAMETER_DEFAULTS.put("SampleTime", "0");  // Continuous
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
-        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        // Ramp-specific defaults
+        Map<String, String> rampDefaults = new HashMap<>();
+        rampDefaults.put("Slope", "1");
+        rampDefaults.put("Start", "0");
+        rampDefaults.put("InitialOutput", "0");
+        
+        // Merge with common source block defaults
+        PARAMETER_DEFAULTS = mergeWithCommonDefaults(rampDefaults);
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("Slope");
-        parameterNames.add("Start");
-        parameterNames.add("InitialOutput");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         // No input ports for ramp block
@@ -87,41 +67,59 @@ public class Ramp extends Block {
     private Ramp(Parameter slope, Parameter start, Parameter initialOutput,
                 Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
                 String blockName, String blockPath, String blockUUID, NCSLabModel model) {
-        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        super("Ramp", sampleTime, outDataType, saturateOnIntegerOverflow, blockName, blockPath, blockUUID, model);
         
         // Validate parameters
         validateParameters(slope, start, sampleTime);
         
-        // Assign parameters
+        // Assign Ramp-specific parameters
         this.slope = Objects.requireNonNull(slope, "Slope parameter cannot be null");
         this.start = Objects.requireNonNull(start, "Start parameter cannot be null");
         this.initialOutput = Objects.requireNonNull(initialOutput, "Initial output parameter cannot be null");
-        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
-        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
-        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+        
+        // Add Ramp-specific parameters to parameter list
+        parameterList.add(slope);
+        parameterList.add(start);
+        parameterList.add(initialOutput);
+        
+        // Set port dimensions
         initializePorts();
     }
     
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
     public Ramp(JSONObject blockJSON, NCSLabModel model) {
-        super(blockJSON, model);
+        // Extract parameters from JSON and initialize SourceBlock properly
+        this(
+            createSlopeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createStartFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createInitialOutputFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createSampleTimeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createOutDataTypeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createSaturateFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            blockJSON.optString("blockName", "Ramp"),
+            blockJSON.optString("blockPath", ""),
+            blockJSON.optString("blockUUID", "null"),
+            model
+        );
+        
+        // Set parameter block references for legacy compatibility
+        setParameterBlockReference(this, slope, start, initialOutput);
+    }    /**
+     * DTO-NATIVE Constructor - Creates Ramp block directly from BlockJson DTO
+     */
+    public Ramp(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
-        // Create legacy parameters for backward compatibility
-        this.slope = new Parameter(this, 1, "Slope", paramValues.getString("slope"));
-        this.start = new Parameter(this, 2, "Start", paramValues.getString("start"));
-        this.initialOutput = new Parameter(this, 3, "InitialOutput", paramValues.getString("X0"));
-        
-        // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 4, "SampleTime", "0"); // 0 for continuous ramp
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as parameter");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
-        
-        // Add all parameters to parameter list
-        
+        // Initialize final parameters from DTO
+        this.slope = new Parameter(this, 1, "Slope", "0");
+        this.start = new Parameter(this, 2, "Start", "0");
+        this.initialOutput = new Parameter(this, 3, "Initialoutput", "0");
+
         // Initialize ports
         initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
     
     // === Static Factory Method for JSON Deserialization ===
@@ -250,18 +248,10 @@ public class Ramp extends Block {
         }
     }
     
-    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
-        JSONObject identity = new JSONObject();
-        identity.put("blockType", "Ramp");
-        identity.put("blockName", blockName);
-        identity.put("blockPath", blockPath);
-        identity.put("blockUUID", blockUUID);
-        return identity;
-    }
     
-    // === Port Initialization ===
+    // === Port Dimension Setup ===
     private void initializePorts() {
-        outputPortList.add(new OutputPort(this, 1, false));
+        // Set port dimensions based on slope parameter
         outputPortList.get(0).setHeight(slope.getHeight());
         outputPortList.get(0).setWidth(slope.getWidth());
     }
@@ -292,26 +282,14 @@ public class Ramp extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("slope", slope);
-        context.put("start", start);
-        context.put("initialOutput", initialOutput);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         String codeStr = TemplateManager.renderTemplate("c/source/Ramp/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        OutputSignal signal = outputPortList.get(0).getOutputSignalC();
-        context.put("block", this);
-        context.put("outputs", getOutputPortVariables());
-        context.put("signal", signal);
-        context.put("slope", slope);
-        context.put("slopeValue", slope.getDataString());
-        context.put("start", start.getInitString());
-        context.put("slopeHeightIndex", slope.getHeight() - 1);
-        context.put("slopeWidthIndex", slope.getWidth() - 1);
-        context.put("initial_output", initialOutput.getInitString());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/source/Ramp/output.vm", context);
         code.addOutputCode(codeStr);

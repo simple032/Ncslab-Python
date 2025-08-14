@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -50,7 +51,6 @@ public class SineWave extends Block {
     // === Static Parameter Definitions ===
     
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -64,10 +64,8 @@ public class SineWave extends Block {
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -125,8 +123,29 @@ public class SineWave extends Block {
         
         // Initialize ports
         initializePorts();
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates SineWave block directly from BlockJson DTO
+     */
+    public SineWave(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
+        // Initialize final parameters from DTO
+        this.amplitude = new Parameter(this, 1, "Amplitude", "1");
+        this.bias = new Parameter(this, 2, "Bias", "0");
+        this.frequency = new Parameter(this, 3, "Frequency", "1");
+        this.phase = new Parameter(this, 4, "Phase", "0");
+        this.sampleTime = new Parameter(this, 5, "SampleTime", "0");
+        this.samples = new Parameter(this, 6, "Samples", "1");
+        this.timeSource = new Parameter(this, 7, "TimeSource", "Use simulation time");
+        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "Inherit: Same as parameter");
+        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static SineWave fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

@@ -2,6 +2,7 @@ package com.ncslab.block.matrix;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -25,12 +26,20 @@ public class Submatrix extends Block {
     private Parameter startingColumn;
     private Parameter endingColumn;
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Submatrix block directly from BlockJson DTO
+     */
+    public Submatrix(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: Submatrix block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {

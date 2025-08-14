@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -31,7 +32,17 @@ public class pll3ph extends Block{
 	Parameter filterFrequency;
 	Parameter sampleTime;
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates pll3ph block directly from BlockJson DTO
+     */
+    public pll3ph(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: pll3ph block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -44,9 +55,7 @@ public class pll3ph extends Block{
         PARAMETER_DEFAULTS.put("regularGains", "[1 1]");
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {

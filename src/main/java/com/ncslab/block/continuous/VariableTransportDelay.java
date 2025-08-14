@@ -2,6 +2,7 @@ package com.ncslab.block.continuous;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -119,6 +120,26 @@ public class VariableTransportDelay extends Block {
 
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates VariableTransportDelay block directly from BlockJson DTO
+     */
+    public VariableTransportDelay(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.delayType = new Parameter(this, 1, "Delaytype", "0");
+        this.maximumDelayTime = new Parameter(this, 2, "Maximumdelaytime", "0");
+        this.initialOutput = new Parameter(this, 3, "Initialoutput", "0");
+        this.initialBufferSize = new Parameter(this, 4, "Initialbuffersize", "0");
+        this.padeOrder = new Parameter(this, 5, "Padeorder", "0");
+        this.sampleTime = new Parameter(this, 6, "SampleTime", "0");
+        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
     
     // === Static Factory Method for JSON Deserialization ===

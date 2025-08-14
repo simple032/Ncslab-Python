@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -27,7 +28,17 @@ public class xzInvertedPendulumSUST extends Block {
 //	State speedState;
 //	State spState;
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates xzInvertedPendulumSUST block directly from BlockJson DTO
+     */
+    public xzInvertedPendulumSUST(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: xzInvertedPendulumSUST block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -37,9 +48,7 @@ public class xzInvertedPendulumSUST extends Block {
 
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {

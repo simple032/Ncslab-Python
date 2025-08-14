@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
@@ -118,8 +119,34 @@ public class DeadZone extends Block {
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates DeadZone block directly from BlockJson DTO
+     */
+    public DeadZone(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
+        // Initialize final parameters from DTO
+        this.startOfDeadZone = new Parameter(this, 1, "Startofdeadzone", "0");
+        this.endOfDeadZone = new Parameter(this, 2, "Endofdeadzone", "0");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        // Legacy field mapping for backward compatibility
+        this.lowerValue = this.startOfDeadZone;
+        this.upperValue = this.endOfDeadZone;
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static DeadZone fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

@@ -2,6 +2,7 @@ package com.ncslab.block.matrix;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -18,12 +19,20 @@ import java.util.Vector;
 
 public class IsTriangular extends Block {
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates IsTriangular block directly from BlockJson DTO
+     */
+    public IsTriangular(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: IsTriangular block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();

@@ -1,2 +1,2 @@
 /*Code for include files of block ${name}:($blockId)$blockName*/
-#include "ncs_serialport.h"
+\#include "ncs_serialport.h"

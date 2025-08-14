@@ -2,6 +2,7 @@ package com.ncslab.block.elect;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
@@ -21,12 +22,20 @@ public class Limiting extends Block{
 	protected Parameter rmin;
 
     
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Limiting block directly from BlockJson DTO
+     */
+    public Limiting(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: Limiting block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {

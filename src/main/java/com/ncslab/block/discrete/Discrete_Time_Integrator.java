@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -116,9 +117,25 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
 
         // Initialize ports
         initializePorts();
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates Discrete_Time_Integrator block directly from BlockJson DTO
+     */
+    public Discrete_Time_Integrator(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
-    // === Static Factory Method for JSON Deserialization ===
+        // Initialize final parameters from DTO
+        this.gain = new Parameter(this, 1, "Gain", "1");
+        this.initialCondition = new Parameter(this, 2, "Initialcondition", "0");
+        this.integratorMethod = new Parameter(this, 3, "Integratormethod", "0");
+        this.sampleTimeParam = new Parameter(this, 4, "Sampletimeparam", "0");
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }// === Static Factory Method for JSON Deserialization ===
     public static Discrete_Time_Integrator fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");
@@ -328,17 +345,19 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
+        // Use proper C variable names instead of Java object references
         context.put("block", this);
-        context.put("out", out);
-        context.put("ops", ops);
-        context.put("signal", signal);
-        context.put("xState", xState);
-        context.put("gain", gain);
-        context.put("sampleTime", sampleTimeParam);
+        context.put("out", getOutputPortVariable(0));
+        context.put("outputSignal", getOutputPortVariable(0));
+        context.put("signal", getInputPortVariable(0));
+        context.put("signalName", getInputPortVariable(0));
+        context.put("xState", xState.getName());
+        context.put("xStateName", xState.getName());
+        context.put("gain", gain.getName());
+        context.put("gainval", gain.getName());
+        context.put("gainvalName", gain.getName());
+        context.put("sampleTime", sampleTimeParam.getName());
+        context.put("sampleTimeName", sampleTimeParam.getName());
         context.put("option", integratorMethod.getInitString());
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/output.vm", context);
@@ -373,7 +392,7 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         }
         stateList.add(xState);
 
-        if ((sampleTimeParam.getDouble() * 1000000) % (model.getConfig().getFixedStep() * 1000000) > 0.000001) {
+        if (!isSampleTimeMultiple(sampleTimeParam.getDouble(), model.getConfig().getFixedStep())) {
             MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be an integer multiple of the fixed-step size!\n \n");
             throw(e);
         }

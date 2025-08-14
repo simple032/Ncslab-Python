@@ -1,6 +1,7 @@
 package com.ncslab.block.continuous;
 
 import com.ncslab.block.data.Data;
+import com.ncslab.dto.BlockJson;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.util.TemplateManager;
@@ -43,6 +44,11 @@ public class Integrator extends Block {
     
     // === Internal State ===
     private State stateIntegral;
+    
+    // === Saturation Optimization ===
+    private boolean saturationEnabled = false;
+    private double upperLimit = Double.POSITIVE_INFINITY;
+    private double lowerLimit = Double.NEGATIVE_INFINITY;
     
     // === SIMULINK-Compatible Parameters ===
     private final Parameter initialCondition;
@@ -118,6 +124,9 @@ public class Integrator extends Block {
         
         // Initialize ports
         initializePorts();
+        
+        // Pre-compute saturation settings for performance
+        updateSaturationSettings();
     }
     
     // === Legacy Constructor (Deprecated) ===
@@ -440,11 +449,14 @@ public class Integrator extends Block {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("externalReset", externalReset.getData().getInitString());
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("conditionSource", conditionSource.getData().getInitString());
+        // Use proper C variable name instead of Java object reference
         InputPort inputPort;
-        context.put("signal", signal);
+        context.put("signal", getInputPortVariable(0));
+        context.put("signalName", getInputPortVariable(0));
         context.put("state", stateIntegral.getName());
-        context.put("initialCondition", initialCondition);
+        context.put("initialCondition", initialCondition.getData().getInitString());
+        context.put("InitialCondition", initialCondition.getData().getInitString());
         if (conditionSource.getInitString().equals("external")) {
             if (externalReset.getInitString().equals("none")) {
                 inputPort = inputPortList.get(1);
@@ -461,7 +473,7 @@ public class Integrator extends Block {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("state", stateIntegral);
+        context.put("state", stateIntegral.getName());
         context.put("outputs", getOutputPortVariables());
         String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/output.vm", context);
         code.addOutputCode(codeStr);
@@ -471,9 +483,21 @@ public class Integrator extends Block {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("state", stateIntegral);
+        context.put("state", stateIntegral.getName());
         context.put("stateDerivative", stateIntegral.getDerivativeName());
+        context.put("inputSignal", getInputPortVariable(0));
         context.put("inputs", getInputPortVariables());
+        
+        // Add dimension variables for template loops
+        if (stateIntegral.getHeight() > 1 || stateIntegral.getWidth() > 1) {
+            context.put("signalHeight", stateIntegral.getHeight());
+            context.put("signalWidth", stateIntegral.getWidth());
+        }
+        if (initialCondition.getHeight() > 1 || initialCondition.getWidth() > 1) {
+            context.put("initialConditionHeight", initialCondition.getHeight());
+            context.put("initialConditionWidth", initialCondition.getWidth());
+        }
+        
         String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
@@ -526,7 +550,30 @@ public class Integrator extends Block {
                 break;
         }
         stateList.add(stateIntegral);
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates Integrator block directly from BlockJson DTO
+     */
+    public Integrator(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.initialCondition = new Parameter(this, 1, "Initialcondition", "0");
+        this.externalReset = new Parameter(this, 2, "Externalreset", "0");
+        this.conditionSource = new Parameter(this, 3, "Conditionsource", "0");
+        this.limitOutput = new Parameter(this, 4, "Limitoutput", "0");
+        this.upperSaturationLimit = new Parameter(this, 5, "Uppersaturationlimit", "0");
+        this.lowerSaturationLimit = new Parameter(this, 6, "Lowersaturationlimit", "0");
+        this.showSaturationPort = new Parameter(this, 7, "Showsaturationport", "0");
+        this.showStatePort = new Parameter(this, 8, "Showstateport", "0");
+        this.sampleTime = new Parameter(this, 9, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 10, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 11, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    } 
 
     public void checkDimension() throws MatDimException {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -569,19 +616,42 @@ public class Integrator extends Block {
         OutputPort output = outputPortList.get(0);
         Data outputData = stateIntegral.getData();
         
-        // Apply saturation limits if enabled
-        if (limitOutput.getInitString().equals("on")) {
-            double upperLimit = upperSaturationLimit.getDouble();
-            double lowerLimit = lowerSaturationLimit.getDouble();
-            
+        // Apply saturation limits if enabled (optimized)
+        if (saturationEnabled) {
             if (outputData.getDataType() == DataType.REAL) {
                 double value = outputData.getInitValue();
-                if (value > upperLimit) value = upperLimit;
-                if (value < lowerLimit) value = lowerLimit;
-                outputData = new Data(value);
+                if (value > upperLimit) {
+                    outputData = new Data(upperLimit);
+                } else if (value < lowerLimit) {
+                    outputData = new Data(lowerLimit);
+                }
+                // No new Data object created if no saturation needed
             }
         }
         
         output.setData(outputData);
+    }
+    
+    // === Saturation Optimization Methods ===
+    private void updateSaturationSettings() {
+        saturationEnabled = limitOutput.getInitString().equals("on");
+        if (saturationEnabled) {
+            upperLimit = upperSaturationLimit.getDouble();
+            lowerLimit = lowerSaturationLimit.getDouble();
+        }
+    }
+    
+    private Data applySaturation(Data data) {
+        if (!saturationEnabled || data.getDataType() != DataType.REAL) {
+            return data;
+        }
+        
+        double value = data.getInitValue();
+        if (value > upperLimit) {
+            return new Data(upperLimit);
+        } else if (value < lowerLimit) {
+            return new Data(lowerLimit);
+        }
+        return data; // Return original if no saturation needed
     }
 }

@@ -20,7 +20,6 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
     // === Static Parameter Definitions ===
 
     // Parameter defaults matching database format
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();

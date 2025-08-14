@@ -2,6 +2,7 @@ package com.ncslab.block.matrix;
 
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -21,10 +22,19 @@ public class IdentityMatrix extends Block {
     private Parameter outputDimensions;
 
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates IdentityMatrix block directly from BlockJson DTO
+     */
+    public IdentityMatrix(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: IdentityMatrix block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
         

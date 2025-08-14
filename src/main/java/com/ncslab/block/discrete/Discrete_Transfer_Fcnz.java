@@ -4,6 +4,7 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -100,7 +101,32 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 		outputPortList.add(new OutputPort(this, 1, feedthrough));
 
         setSampleTime(sampleTimeParam);
+    }    /**
+     * DTO-NATIVE Constructor - Creates Discrete_Transfer_Fcnz block directly from BlockJson DTO
+     */
+    public Discrete_Transfer_Fcnz(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.sampleTimeParam = new Parameter(this, 1, "Sampletimeparam", "0");
+        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+        
+        setSampleTime(sampleTimeParam);
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));  // Input signal
+        inputPortList.add(new InputPort(this, 2));  // Numerator coefficients
+        inputPortList.add(new InputPort(this, 3));  // Denominator coefficients
+        outputPortList.add(new OutputPort(this, 1, feedthrough));
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static Discrete_Transfer_Fcnz fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

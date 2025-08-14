@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -31,53 +32,32 @@ import java.util.Vector;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Step extends Block {
+public class Step extends SourceBlock {
 
-    // === SIMULINK-Compatible Parameters ===
-    @Getter
+    // === Step-Specific SIMULINK Parameters ===
     private final Parameter time;
-    @Getter
     private final Parameter initialValue;
-    @Getter
     private final Parameter finalValue;
-    @Getter
-    private final Parameter sampleTime;
-    @Getter
-    private final Parameter outDataType;
-    @Getter
-    private final Parameter saturateOnIntegerOverflow;
     
     // === Static Parameter Definitions ===
-    @Getter
-    public static final Vector<String> parameterNames = new Vector<>();
-    
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
-        PARAMETER_DEFAULTS = new HashMap<>();
-        PARAMETER_DEFAULTS.put("Time", "1");                    // Step time
-        PARAMETER_DEFAULTS.put("InitialValue", "0");           // Before step
-        PARAMETER_DEFAULTS.put("FinalValue", "1");             // After step
-        PARAMETER_DEFAULTS.put("SampleTime", "0");             // Continuous
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
-        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        // Step-specific defaults
+        Map<String, String> stepDefaults = new HashMap<>();
+        stepDefaults.put("Time", "1");                    // Step time
+        stepDefaults.put("InitialValue", "0");           // Before step
+        stepDefaults.put("FinalValue", "1");             // After step
+        
+        // Merge with common source block defaults
+        PARAMETER_DEFAULTS = mergeWithCommonDefaults(stepDefaults);
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
-        // SIMULINK parameter names
-        parameterNames.add("Time");
-        parameterNames.add("InitialValue");
-        parameterNames.add("FinalValue");
-        parameterNames.add("SampleTime");
-        parameterNames.add("OutDataTypeStr");
-        parameterNames.add("SaturateOnIntegerOverflow");
-        
         // Port names
         outputNames.add("out1");
         // No input ports for step block
@@ -87,38 +67,61 @@ public class Step extends Block {
     private Step(Parameter time, Parameter initialValue, Parameter finalValue,
                 Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
                 String blockName, String blockPath, String blockUUID, NCSLabModel model) {
-        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+        super("Step", sampleTime, outDataType, saturateOnIntegerOverflow, blockName, blockPath, blockUUID, model);
         
         // Validate parameters
         validateParameters(time, sampleTime);
         
-        // Assign parameters
+        // Assign Step-specific parameters
         this.time = Objects.requireNonNull(time, "Time parameter cannot be null");
         this.initialValue = Objects.requireNonNull(initialValue, "Initial value parameter cannot be null");
         this.finalValue = Objects.requireNonNull(finalValue, "Final value parameter cannot be null");
-        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
-        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
-        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+        
+        // Add Step-specific parameters to parameter list
+        parameterList.add(time);
+        parameterList.add(initialValue);
+        parameterList.add(finalValue);
+        
+        // Set port dimensions
         initializePorts();
     }
     
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
     public Step(JSONObject blockJSON, NCSLabModel model) {
-        super(blockJSON, model);
-
-        // Use name-based parameter access instead of index-based
-        this.time = getParameterByName("Time");
-        this.initialValue = getParameterByName("InitialValue");
-        this.finalValue = getParameterByName("FinalValue");
-        this.sampleTime = getParameterByName("SampleTime");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        // Extract parameters from JSON and initialize SourceBlock properly
+        this(
+            createTimeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createInitialValueFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createFinalValueFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createSampleTimeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createOutDataTypeFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            createSaturateFromJSON(blockJSON.optJSONObject("paramValues"), blockJSON.optString("blockName")),
+            blockJSON.optString("blockName", "Step"),
+            blockJSON.optString("blockPath", ""),
+            blockJSON.optString("blockUUID", "null"),
+            model
+        );
         
+        // Set parameter block references for legacy compatibility
+        setParameterBlockReference(this, time, initialValue, finalValue);
+    }    /**
+     * DTO-NATIVE Constructor - Creates Step block directly from BlockJson DTO
+     */
+    public Step(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.time = new Parameter(this, 1, "Time", "0");
+        this.initialValue = new Parameter(this, 2, "Initialvalue", "0");
+        this.finalValue = new Parameter(this, 3, "Finalvalue", "0");
+
         // Initialize ports
         initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
     // === Static Factory Method for JSON Deserialization ===
     public static Step fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -240,18 +243,10 @@ public class Step extends Block {
         }
     }
     
-    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
-        JSONObject identity = new JSONObject();
-        identity.put("blockType", "Step");
-        identity.put("blockName", blockName);
-        identity.put("blockPath", blockPath);
-        identity.put("blockUUID", blockUUID);
-        return identity;
-    }
     
-    // === Port Initialization ===
+    // === Port Dimension Setup ===
     private void initializePorts() {
-        outputPortList.add(new OutputPort(this, 1, false));
+        // Set port dimensions based on time parameter
         outputPortList.get(0).setHeight(time.getHeight());
         outputPortList.get(0).setWidth(time.getWidth());
     }
@@ -282,21 +277,14 @@ public class Step extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("time", time);
-        context.put("after", finalValue);
-        context.put("before", initialValue);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/source/Step/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("time", time);
-        context.put("after", finalValue);
-        context.put("before", initialValue);
-        context.put("outputs", getOutputPortVariables());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/source/Step/output.vm", context);
         code.addOutputCode(codeStr);

@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -146,7 +147,29 @@ public class TransferFcn extends Block {
         // Initialize ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, feedThrough));
+    }    /**
+     * DTO-NATIVE Constructor - Creates TransferFcn block directly from BlockJson DTO
+     */
+    public TransferFcn(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.numerator = new Parameter(this, 1, "Numerator", "[1]");
+        this.denominator = new Parameter(this, 2, "Denominator", "[1 1]");
+        this.absoluteTolerance = new Parameter(this, 3, "AbsoluteTolerance", "auto");
+        this.continuousStateAttributes = new Parameter(this, 4, "ContinuousStateAttributes", "'''");
+        this.realizeZeroPoleGain = new Parameter(this, 5, "RealizeZeroPoleGain", "off");
+        this.sampleTime = new Parameter(this, 6, "SampleTime", "0");
+        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+
     
     // === Static Factory Method for JSON Deserialization ===
     public static TransferFcn fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -518,6 +541,16 @@ public class TransferFcn extends Block {
         context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
         context.put("feedThrough", feedThrough);
         context.put("D", D);
+        
+        // Add individual state names for easy template access
+        for (int i = 0; i < xStateList.size(); i++) {
+            State state = xStateList.get(i);
+            context.put("stateName" + i, state.getName());
+            context.put("stateDerivativeName" + i, state.getDerivativeName());
+        }
+        if (!xStateList.isEmpty()) {
+            context.put("stateName", xStateList.get(0).getName()); // For single state access
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/output.vm", context);
         code.addOutputCode(codeStr);
@@ -527,6 +560,16 @@ public class TransferFcn extends Block {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
         context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
+        
+        // Add individual state names for easy template access
+        for (int i = 0; i < xStateList.size(); i++) {
+            State state = xStateList.get(i);
+            context.put("stateName" + i, state.getName());
+            context.put("stateDerivativeName" + i, state.getDerivativeName());
+        }
+        if (!xStateList.isEmpty()) {
+            context.put("stateName", xStateList.get(0).getName()); // For single state access
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/derivative.vm", context);
         code.addDerivativeCode(codeStr);

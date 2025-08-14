@@ -4,6 +4,7 @@ import Jama.Matrix;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.block.io.InputPort;
@@ -35,7 +36,8 @@ import java.util.Vector;
 public class UnitDelay extends DiscreteBlock {
 
     // === Internal State ===
-    private Vector<Data> buffer;
+    private Data currentValue;
+    private Data previousValue;
     private final boolean feedthrough = false; // Unit delay has no feedthrough
 
     // === SIMULINK-Compatible Parameters ===
@@ -108,8 +110,24 @@ public class UnitDelay extends DiscreteBlock {
 
         // Initialize ports
         initializePorts();
-    }
+    }    /**
+     * DTO-NATIVE Constructor - Creates UnitDelay block directly from BlockJson DTO
+     */
+    public UnitDelay(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
+        // Initialize final parameters from DTO
+        this.initialCondition = new Parameter(this, 1, "Initialcondition", "0");
+        this.sampleTimeParam = new Parameter(this, 2, "Sampletimeparam", "0");
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
     // === Static Factory Method for JSON Deserialization ===
     public static UnitDelay fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -247,8 +265,21 @@ public class UnitDelay extends DiscreteBlock {
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("signal", signal);
+        // Use proper C variable name instead of Java object reference
+        context.put("signal", getInputPortVariable(0));
+        context.put("signalName", getInputPortVariable(0));
+        
+        // Add dimension variables for arrays
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort.getLinkedLine() == null) {
+            // Use default values if no line is linked (shouldn't happen in normal cases)
+            context.put("signalHeight", 1);
+            context.put("signalWidth", 1);
+        } else {
+            OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            context.put("signalHeight", signal.getHeight());
+            context.put("signalWidth", signal.getWidth());
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/arrays.vm", context);
         code.addArraysCode(codeStr);
@@ -265,6 +296,12 @@ public class UnitDelay extends DiscreteBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add parameter objects and their names for template
+        context.put("sampleTime", sampleTimeParam);
+        context.put("sampleTimeName", sampleTimeParam.getName());
+        context.put("initialCondition", initialCondition);
+        context.put("initialConditionName", initialCondition.getName());
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/init.vm", context);
         code.addInitCode(codeStr);
@@ -272,8 +309,22 @@ public class UnitDelay extends DiscreteBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("signal", signal);
+        // Use proper C variable name instead of Java object reference
+        context.put("signal", getInputPortVariable(0));
+        context.put("signalName", getInputPortVariable(0));
+        context.put("output1", getOutputPortVariable(0));
+        
+        // Add parameter objects and their names
+        context.put("sampleTime", sampleTimeParam);
+        context.put("sampleTimeName", sampleTimeParam.getName());
+        context.put("initialCondition", initialCondition);
+        context.put("initialConditionName", initialCondition.getName());
+        
+        // Add dimension variables for template loops
+        InputPort inputPort = inputPortList.get(0);
+        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/output.vm", context);
         code.addOutputCode(codeStr);
@@ -290,7 +341,7 @@ public class UnitDelay extends DiscreteBlock {
             throw(e);
         }
 
-        if ((sampleTimeParam.getDouble() * 1000000) % (model.getConfig().getFixedStep() * 1000000) > 0.000001) {
+        if (!isSampleTimeMultiple(sampleTimeParam.getDouble(), model.getConfig().getFixedStep())) {
             MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be an integer multiple of the fixed-step size!\n \n");
             throw(e);
         }
@@ -308,23 +359,24 @@ public class UnitDelay extends DiscreteBlock {
 
     @Override
     public void calculateInit() {
-        buffer = new Vector<>();
         OutputPort out = outputPortList.get(0);
-        Data data = new Data(out.getHeight(), out.getWidth());
-        buffer.add(data);
+        // Initialize both values with initial condition
+        currentValue = new Data(initialCondition.getData().getInitValue());
+        previousValue = new Data(initialCondition.getData().getInitValue());
     }
 
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        // Calculate the index of the current sample
-        out.setData(buffer.elementAt(0));
+        // Output the previous value (unit delay behavior)
+        out.setData(previousValue);
     }
 
     @Override
     public void calculateDiscreteUpdate(double t) {
         InputPort input = inputPortList.get(0);
-        buffer.remove(0);
-        buffer.add(input.getData());
+        // Shift values: previous becomes current input
+        previousValue = currentValue;
+        currentValue = input.getData();
     }
 }

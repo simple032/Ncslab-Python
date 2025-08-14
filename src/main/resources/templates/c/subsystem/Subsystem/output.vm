@@ -1,0 +1,14 @@
+/*Code for subsystem block Subsystem:($blockId)$blockName*/
+
+/* Subsystem internal block calculations */
+#foreach($block in $containedBlocks)
+#if(!($block.getClass().getSimpleName() == "In" || $block.getClass().getSimpleName() == "Out"))
+/* Block: $block.blockName (Type: $block.blockType) */
+#end
+#end
+
+/* Subsystem boundary management */
+/* Input ports: $inputPortList.size() */
+/* Output ports: $outputPortList.size() */
+/* Internal blocks: $containedBlocks.size() */
+/* Internal lines: $containedLines.size() */

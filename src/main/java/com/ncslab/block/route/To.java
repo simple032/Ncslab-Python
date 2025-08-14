@@ -8,6 +8,7 @@ import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -41,9 +42,7 @@ public class To extends Block {
 
     // === Static Parameter Definitions ===
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
@@ -55,7 +54,6 @@ public class To extends Block {
     }
 
     // === Parameter Defaults ===
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
         PARAMETER_DEFAULTS.put("GotoTag", "tag1");
@@ -105,9 +103,27 @@ public class To extends Block {
         // Create ports
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-	}
+	}    /**
+     * DTO-NATIVE Constructor - Creates To block directly from BlockJson DTO
+     */
+    public To(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
 
-    // === Static Factory Method for JSON Deserialization ===
+        // Initialize final parameters from DTO
+        this.gotoTag = new Parameter(this, 1, "Gototag", "0");
+        this.iconDisplay = new Parameter(this, 2, "IconDisplay", "Tag");
+        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: auto");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }    
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+    }// === Static Factory Method for JSON Deserialization ===
     public static To fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");

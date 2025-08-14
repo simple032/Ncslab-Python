@@ -29,7 +29,6 @@ public class Power extends Block {
     private final Parameter saturateOnIntegerOverflow;
     
     // === Static Definitions ===
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     static {
         PARAMETER_DEFAULTS.put("PowerMethod", "Element-wise(.^)");
@@ -38,9 +37,7 @@ public class Power extends Block {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
     
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
     
     static {

@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -41,13 +42,10 @@ public class TrigFunction extends Block {
     
     // === Static Parameter Definitions ===
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
     
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
-    @Getter
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
     static {
@@ -111,7 +109,26 @@ public class TrigFunction extends Block {
         
         // Initialize ports
         initializePorts();
+    }    /**
+     * DTO-NATIVE Constructor - Creates TrigFunction block directly from BlockJson DTO
+     */
+    public TrigFunction(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Initialize final parameters from DTO
+        this.function = new Parameter(this, 1, "Function", "sin");
+        this.trigFunction = "sin"; // Initialize final field
+        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+
     // === Static Factory Method for JSON Deserialization ===
     public static TrigFunction fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

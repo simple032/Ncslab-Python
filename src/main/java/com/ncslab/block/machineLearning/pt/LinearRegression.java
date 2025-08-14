@@ -3,6 +3,7 @@ package com.ncslab.block.machineLearning.pt;
 import com.ncslab.block.machineLearning.MachineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
+import com.ncslab.dto.BlockJson;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -22,7 +23,17 @@ public class LinearRegression extends PTModel{
     private String lossString, datasetString;
 
 
-    @Getter
+    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates LinearRegression block directly from BlockJson DTO
+     */
+    public LinearRegression(BlockJson blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        System.out.println("DTO-NATIVE: LinearRegression block created successfully - " + blockDto.getBlockName());
+    }
+
+
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
@@ -37,9 +48,7 @@ public class LinearRegression extends PTModel{
 
     }
 
-    @Getter
     public static final Vector<String> outputNames = new Vector<>();
-    @Getter
     public static final Vector<String> inputNames = new Vector<>();
 
     static {
