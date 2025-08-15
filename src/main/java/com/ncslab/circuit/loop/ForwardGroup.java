@@ -1,19 +1,20 @@
 package com.ncslab.circuit.loop;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ForwardGroup {
 	
 	private LinearBlockElement startElement;
 	private LinearBlockElement endElement;
 	
-	private Vector<Vector<LinearBlockElement>> loopList=new Vector<Vector<LinearBlockElement>>();
+	private List<List<LinearBlockElement>> loopList = new ArrayList<>();
 	
-	private Vector<ForwardLine> forwardLineList=new Vector<ForwardLine>();
+	private List<ForwardLine> forwardLineList = new ArrayList<>();
 	
-	public ForwardGroup(Vector<LinearBlockElement> forward,Vector<Vector<LinearBlockElement>> loopList) {
-		startElement=forward.lastElement();
-		endElement=forward.firstElement();
+	public ForwardGroup(List<LinearBlockElement> forward,List<List<LinearBlockElement>> loopList) {
+		startElement=forward.get(forward.size() - 1);
+		endElement=forward.get(0);
 		//forwardList.add(forward);
 		
 		ForwardLine forwardLine=new ForwardLine(forward);
@@ -31,14 +32,14 @@ public class ForwardGroup {
 		}
 	}
 	
-	public void addForward(Vector<LinearBlockElement> forward) {
+	public void addForward(List<LinearBlockElement> forward) {
 		//forwardList.add(forward);
 		
 		ForwardLine forwardLine=new ForwardLine(forward);
 		forwardLineList.add(forwardLine);
 	}
 	
-	public Vector<ForwardLine> getForwardLineList(){
+	public List<ForwardLine> getForwardLineList(){
 		return this.forwardLineList;
 	}
 	
@@ -71,7 +72,7 @@ public class ForwardGroup {
 		
 		String denString="/(1";
 		
-		for(Vector<LinearBlockElement> loop:loopList) {
+		for(List<LinearBlockElement> loop:loopList) {
 			denString+="-"+ForwardLine.getLineString(loop);
 		}
 		

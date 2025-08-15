@@ -5,7 +5,6 @@ import java.net.*;
 import com.ncslab.code.m.MfcalcClient;
 import com.ncslab.code.m.MfcalcClientManager;
 import com.utils.Property;
-import lombok.Setter;
 import org.json.JSONObject;
 
 import com.ncslab.code.m.CodeOctaveM;
@@ -113,35 +112,33 @@ public class MfcalcThread extends Thread {
 //			socket.setKeepAlive(true);
 //			in=new DataInputStream(socket.getInputStream());
 //			out=new DataOutputStream(socket.getOutputStream());
-            MfcalcClient client = MfcalcClientManager.getClientForUser("18");
-			while(client != null) {
-
-				System.out.println("Executing mfcalc...");
-				isBusy=false;
-				synchronized(waitObject) {
-					System.out.println("waiting...");
-					waitObject.wait();
-				}
-
-				isBusy=true;
-
-				String mainCode=model.getMainCode();
-
-                JSONObject jo = client.runScript(mainCode+"\n");
-                System.out.println(jo);
-                model.setOutputResult(jo.optString("log",""));
-                model.setFigureResult(jo.optJSONObject("figures"));
-                JSONObject variables = client.getVariables();
-                System.out.println(variables);
-                this.model.OutputMat = variables.toString();
-
-				System.out.println("Done...");
-
-				synchronized(finishObject) {
-					finishObject.notify();
-				}
+		while (true) {
+            
+			System.out.println("Executing mfcalc...");
+			isBusy=false;
+			synchronized(waitObject) {
+				System.out.println("waiting...");
+				waitObject.wait();
 			}
 
+			isBusy=true;
+			MfcalcClient client = MfcalcClientManager.getClientForUser(String.valueOf(model.getUserId()));
+			String mainCode=model.getMainCode();
+
+			JSONObject jo = client.runScript(mainCode+"\n");
+			System.out.println(jo);
+			model.setOutputResult(jo.optString("log",""));
+			model.setFigureResult(jo.optJSONObject("figures"));
+			JSONObject variables = client.getVariables();
+			System.out.println(variables);
+			model.setOutputMat(variables.toString());
+
+			System.out.println("Done...");
+
+			synchronized(finishObject) {
+				finishObject.notify();
+			}			
+		}
 		} catch(InterruptedException e) {
 			e.printStackTrace();
 		} catch (Exception e) {

@@ -13,7 +13,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Config extends com.ncslab.block.Block{
 
@@ -34,7 +35,7 @@ public class Config extends com.ncslab.block.Block{
     }
 
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
     
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
     

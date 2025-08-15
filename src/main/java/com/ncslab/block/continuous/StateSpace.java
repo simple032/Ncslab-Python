@@ -7,7 +7,8 @@ import org.json.JSONObject;
 import com.ncslab.dto.BlockJson;
 
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import com.ncslab.block.Block;
@@ -43,7 +44,7 @@ public class StateSpace extends Block {
     // === Internal Implementation ===
     private boolean feedThrough = false;
     private State xState;
-    private Vector<State> xStateList = new Vector<State>();
+    private List<State> xStateList = new ArrayList<>();
     
     // === SIMULINK-Compatible Parameters ===
     private final Parameter stateMatrix;
@@ -63,9 +64,9 @@ public class StateSpace extends Block {
     
     // === Static Parameter Definitions ===
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
     
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
     
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 

@@ -9,7 +9,6 @@ import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 public class EtherCATDI extends com.ncslab.block.Block {
     private static final String PARAM_SLAVE_ID = "SlaveID";

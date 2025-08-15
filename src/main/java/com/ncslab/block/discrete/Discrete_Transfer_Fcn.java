@@ -3,7 +3,8 @@ package com.ncslab.block.discrete;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -34,7 +35,7 @@ import com.ncslab.util.TemplateManager;
  */
 public class Discrete_Transfer_Fcn extends DiscreteBlock {
     private boolean feedThrough = false;
-    private Vector<State> xStateList = new Vector<>();
+    private List<State> xStateList = new ArrayList<>();
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter numerator;
@@ -59,8 +60,8 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // SIMULINK parameter names

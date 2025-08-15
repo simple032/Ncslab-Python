@@ -13,7 +13,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,7 @@ public class Data {
 
     @Setter
     @Getter
-    private static Vector<String> temp_variable_names = new Vector<>();
+    private static List<String> temp_variable_names = new ArrayList<>();
 
     VelocityContext context = new VelocityContext();
 

@@ -4,7 +4,8 @@ import com.ncslab.block.Block;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,8 +56,8 @@ public class pll3ph extends Block{
         PARAMETER_DEFAULTS.put("regularGains", "[1 1]");
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
 

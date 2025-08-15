@@ -16,7 +16,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Limiting extends Block{
 	protected Parameter rmin;
@@ -35,8 +36,8 @@ public class Limiting extends Block{
 
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         outputNames.add("out1");

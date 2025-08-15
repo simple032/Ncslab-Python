@@ -8,7 +8,8 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
@@ -46,9 +47,9 @@ public class Matrix extends Block {
         // SIMULINK parameter names
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
     
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // Port names

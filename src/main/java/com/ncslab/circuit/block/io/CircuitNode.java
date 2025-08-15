@@ -1,13 +1,14 @@
 package com.ncslab.circuit.block.io;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.circuit.block.BlockMode;
 import com.ncslab.circuit.block.io.CircuitPort;
 
 public class CircuitNode {
 	
-	private Vector<CircuitPort> circuitPortList=new Vector<CircuitPort>();
+	private List<CircuitPort> circuitPortList = new ArrayList<>();
 	
 	private int nodeId;
 	
@@ -26,7 +27,7 @@ public class CircuitNode {
 		circuitPort.setCircuitNode(this);
 	}
 	
-	public Vector<CircuitPort> getCircuitPortList(){
+	public List<CircuitPort> getCircuitPortList(){
 		return this.circuitPortList;
 	}
 	
@@ -50,7 +51,7 @@ public class CircuitNode {
 			System.out.print(""+i+":"+port.getBlock().getBlockName()+"/"+port.getName()+"\t"+port.getIsCurrentDecided()+"\t");
 			i++;
 			
-			Vector<PortCurrent> currentList=port.getCurrentList();
+			List<PortCurrent> currentList=port.getCurrentList();
 			for(PortCurrent current:currentList) {
 				System.out.print(current.getCircuitBlock().getBlockName()+"/"+(current.getSign()?"+":"-"));
 			}
@@ -59,8 +60,8 @@ public class CircuitNode {
 		
 	}
 	
-	public Vector<CircuitPort> getOtherCircuitPortList(CircuitPort basePort){
-		Vector<CircuitPort> otherPortList=new Vector<CircuitPort>();
+	public List<CircuitPort> getOtherCircuitPortList(CircuitPort basePort){
+		List<CircuitPort> otherPortList = new ArrayList<>();
 		for(CircuitPort port:circuitPortList) {
 			if(basePort!=port) {
 				otherPortList.add(port);
@@ -71,7 +72,7 @@ public class CircuitNode {
 	
 	private void setupLastPortCurrent() {
 		CircuitPort lastPort=null;
-		Vector<CircuitPort> otherPortList=new Vector<CircuitPort>();
+		List<CircuitPort> otherPortList = new ArrayList<>();
 		
 		for(CircuitPort port:circuitPortList) {
 			if(port.getIsCurrentDecided()==false) {
@@ -97,7 +98,7 @@ public class CircuitNode {
 		//System.out.println("Setup node "+nodeId+"...");
 		
 		//记录被确定电流表达的Port的个数,记录到n
-		Vector<CircuitPort> undecidedPortList=new Vector<CircuitPort>();
+		List<CircuitPort> undecidedPortList = new ArrayList<>();
 		int n=0;
 		for(CircuitPort port:circuitPortList) {
 			//如果Port被确定电流表达,计数加一

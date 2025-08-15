@@ -15,7 +15,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.util.TemplateManager;
 
@@ -32,8 +33,8 @@ public class Kirchhoff extends Block {
 	Parameter AD7;
 
 
-    private static final Vector<String> outputNames = new Vector<>();
-    private static final Vector<String> inputNames = new Vector<>();
+    private static final List<String> outputNames = new ArrayList<>();
+    private static final List<String> inputNames = new ArrayList<>();
 
     private static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
@@ -118,7 +119,7 @@ public class Kirchhoff extends Block {
 	    code.addOutputCode(codeStr);
 	}
 
-	private Vector<State> getStates() {
+	private List<State> getStates() {
 	    return stateList;
 	}
 

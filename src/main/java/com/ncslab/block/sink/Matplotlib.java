@@ -19,7 +19,8 @@ import com.ncslab.block.io.terminal.ScopeStruct;
 
 import com.ncslab.ncslablink.ModelMode;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -38,7 +39,7 @@ public class Matplotlib extends SinkBlock{
     }
 
 
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;

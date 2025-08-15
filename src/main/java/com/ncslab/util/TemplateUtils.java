@@ -3,6 +3,7 @@ package com.ncslab.util;
 import org.apache.velocity.VelocityContext;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
+import com.ncslab.block.io.InputPort;
 import com.ncslab.ncslablink.ModelMode;
 
 /**
@@ -10,6 +11,80 @@ import com.ncslab.ncslablink.ModelMode;
  * Provides common variables and helper methods for template rendering.
  */
 public class TemplateUtils {
+
+    /**
+     * Populates the VelocityContext with all available block variables including
+     * parameters, states, ports, and comprehensive context information.
+     *
+     * @param context The VelocityContext to populate
+     * @param block The block instance for context-specific information
+     */
+    public static void populateAllContext(VelocityContext context, Block block) {
+        // Use standard context as base
+        populateStandardContext(context, block);
+
+        // Add all parameter defaults if available
+//        if (block.getParameterDefaults() != null) {
+//            context.put("parameterDefaults", block.getParameterDefaults());
+//
+//            // Add individual parameter values for easy template access
+//            java.util.Map<String, Object> paramDefaults = block.getParameterDefaults();
+//            for (java.util.Map.Entry<String, Object> entry : paramDefaults.entrySet()) {
+//                context.put(entry.getKey(), entry.getValue());
+//            }
+//        }
+
+        // Add detailed parameter information - both C variable names and values
+        for (com.ncslab.block.io.Parameter param : block.getParameterList()) {
+            context.put(param.getName(), param.getName()); // C variable name as string
+            context.put(param.getName() + "Name", param.getName()); // Explicit C variable name
+            context.put(param.getName() + "Value", param.getData().getInitValue());
+            context.put(param.getName() + "Object", param); // Keep object for advanced access if needed
+        }
+
+        // Add detailed state information - both C variable names and values
+        for (com.ncslab.block.io.State state : block.getStateList()) {
+            context.put(state.getName(), state.getName()); // C variable name as string
+            context.put(state.getName() + "Name", state.getName()); // Explicit C variable name
+            context.put(state.getName() + "Value", state.getData().getInitValue());
+            context.put(state.getName() + "Object", state); // Keep object for advanced access if needed
+        }
+
+        // Add input/output signal variable names (C variable names as strings)
+        if (!block.getInputPortList().isEmpty()) {
+            context.put("inputSignal", block.getInputPortVariable(0));
+        }
+        if (!block.getOutputPortList().isEmpty()) {
+            context.put("outputSignal", block.getOutputPortVariable(0));
+        }
+
+        // Add block-specific configuration
+//        context.put("sampleTime", block.getSampleTime());
+//        context.put("isDiscrete", block.isDiscrete());
+//        context.put("isContinuous", block.isContinuous());
+//        context.put("hasDirectFeedthrough", block.hasDirectFeedthrough());
+
+        // Add dimension information for template loops
+        context.put("inputWidth", !block.getInputPortList().isEmpty() ? block.getInputPortList().get(0).getWidth() : 0);
+        context.put("inputHeight", !block.getInputPortList().isEmpty() ? block.getInputPortList().get(0).getHeight() : 0);
+        context.put("outputWidth", !block.getOutputPortList().isEmpty() ? block.getOutputPortList().get(0).getWidth() : 0);
+        context.put("outputHeight", !block.getOutputPortList().isEmpty() ? block.getOutputPortList().get(0).getHeight() : 0);
+
+        // Add parameter dimension information (for blocks like Gain that need gainHeight/gainWidth)
+        for (com.ncslab.block.io.Parameter param : block.getParameterList()) {
+            context.put(param.getName() + "Height", param.getHeight());
+            context.put(param.getName() + "Width", param.getWidth());
+        }
+
+        // Add DataType constants for template comparisons
+        context.put("DataType", com.ncslab.block.data.DataType.class);
+
+        // Add block information object for template access
+        context.put("blockInfo", block);
+
+        // Add common template variables
+        context.put("matrixMultiplication", false); // Default for most blocks
+    }
 
     /**
      * Populates the VelocityContext with standard variables that are commonly
@@ -50,7 +125,14 @@ public class TemplateUtils {
         if (!block.getInputPortList().isEmpty()) {
             java.util.List<String> inputs = new java.util.ArrayList<>();
             for (int i = 0; i < block.getInputPortList().size(); i++) {
-                inputs.add(block.getInputPortVariable(i));
+                InputPort inputPort = block.getInputPortList().get(i);
+                if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null &&
+                    inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC() != null) {
+                    inputs.add(block.getInputPortVariable(i));
+                } else {
+                    // For unconnected inputs, add a default value of 0.0
+                    inputs.add("0.0");
+                }
             }
             context.put("inputs", inputs);
         }

@@ -4,7 +4,9 @@ import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.List;
 
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.circuit.block.CircuitBlock;
@@ -14,14 +16,17 @@ import com.ncslab.circuit.CircuitModel;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
+import com.ncslab.dto.CircuitBlockJson;
+import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.LineJson;
 
 import com.ncslab.ncslablink.ModelException;
 
 public class CircuitParser {
 
 	private NCSLabModel model;
-	private Vector<CircuitBlock> blockList=new Vector<CircuitBlock>();
-	private Vector<CircuitLine> lineList=new Vector<CircuitLine>();
+	private List<CircuitBlock> blockList = new ArrayList<>();
+	private List<CircuitLine> lineList = new ArrayList<>();
 
 	@Getter
     private CircuitModel circuitModel;
@@ -35,6 +40,31 @@ public class CircuitParser {
 		else {
 			return false;
 		}
+	}
+	
+	/**
+	 * DTO-based method to check if a block is a circuit block
+	 * @param blockDto Block DTO
+	 * @return true if circuit block
+	 */
+	private static boolean isCircuitBlock(BlockJson blockDto) {
+		String srcBlock = blockDto.getSrcBlock();
+		return srcBlock != null && (srcBlock.startsWith("fl_lib") || srcBlock.startsWith("elec_lib"));
+	}
+	
+	/**
+	 * Enhanced method that works with both DTO and JSONObject
+	 * @param blockDto Block DTO (preferred)
+	 * @param blockJSON Block JSONObject (fallback)
+	 * @return true if circuit block
+	 */
+	private static boolean isCircuitBlockEnhanced(BlockJson blockDto, JSONObject blockJSON) {
+		if (blockDto != null) {
+			return isCircuitBlock(blockDto);
+		} else if (blockJSON != null) {
+			return isCircuitBlock(blockJSON);
+		}
+		return false;
 	}
 
 	private boolean isCircuitLine(JSONObject lineJSON) {
@@ -64,6 +94,46 @@ public class CircuitParser {
 		}
 
 		return true;
+	}
+	
+	/**
+	 * DTO-based method to check if a line is a circuit line
+	 * @param lineDto Line DTO
+	 * @return true if circuit line
+	 */
+	private boolean isCircuitLine(LineJson lineDto) {
+		String fromBlockName = lineDto.getFromBlockName();
+		String toBlockName = lineDto.getToBlockName();
+
+		// Check if both blocks exist in circuit block list
+		boolean foundFromBlock = false;
+		boolean foundToBlock = false;
+		
+		for (CircuitBlock block : blockList) {
+			if (block.getBlockName().equals(fromBlockName)) {
+				foundFromBlock = true;
+			}
+			if (block.getBlockName().equals(toBlockName)) {
+				foundToBlock = true;
+			}
+		}
+		
+		return foundFromBlock && foundToBlock;
+	}
+	
+	/**
+	 * Enhanced method that works with both DTO and JSONObject for line checking
+	 * @param lineDto Line DTO (preferred)
+	 * @param lineJSON Line JSONObject (fallback)
+	 * @return true if circuit line
+	 */
+	private boolean isCircuitLineEnhanced(LineJson lineDto, JSONObject lineJSON) {
+		if (lineDto != null) {
+			return isCircuitLine(lineDto);
+		} else if (lineJSON != null) {
+			return isCircuitLine(lineJSON);
+		}
+		return false;
 	}
 
 	private boolean isFromCircuitLine(JSONObject lineJSON) {

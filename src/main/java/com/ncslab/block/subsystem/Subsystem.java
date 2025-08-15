@@ -13,22 +13,23 @@ import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Subsystem extends Block{
 
     @Getter
-    private Vector<In> inBlockList;
+    private List<In> inBlockList;
     @Getter
-    private Vector<Out> outBlockList;
+    private List<Out> outBlockList;
     
     // Container for all blocks within this subsystem
     @Getter
-    private Vector<Block> containedBlocks;
+    private List<Block> containedBlocks;
     
     // Container for all lines within this subsystem  
     @Getter
-    private Vector<Line> containedLines;
+    private List<Line> containedLines;
     
     
     // Static parameter defaults for consistency with other blocks
@@ -49,15 +50,15 @@ public class Subsystem extends Block{
         // Basic subsystem parameters - minimal for now
     }
     
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
     
     public Subsystem(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
-        inBlockList = new Vector<>();
-        outBlockList = new Vector<>();
-        containedBlocks = new Vector<>();
-        containedLines = new Vector<>();
+        inBlockList = new ArrayList<>();
+        outBlockList = new ArrayList<>();
+        containedBlocks = new ArrayList<>();
+        containedLines = new ArrayList<>();
         
         
         // Initialize with empty collections - blocks and lines will be added via management methods
@@ -277,13 +278,13 @@ public class Subsystem extends Block{
         return containedLines.size();
     }
     
-    public Vector<Line> getInternalLines() {
-        return new Vector<>(containedLines);
+    public List<Line> getInternalLines() {
+        return new ArrayList<>(containedLines);
     }
     
     // Get lines that connect to subsystem boundary (In/Out blocks)
-    public Vector<Line> getBoundaryLines() {
-        Vector<Line> boundaryLines = new Vector<>();
+    public List<Line> getBoundaryLines() {
+        List<Line> boundaryLines = new ArrayList<>();
         
         for (Line line : containedLines) {
             Block fromBlock = line.getLinkedOutputPort().getBLock();
@@ -300,8 +301,8 @@ public class Subsystem extends Block{
     }
     
     // Get purely internal lines (not connecting to In/Out blocks)
-    public Vector<Line> getPureInternalLines() {
-        Vector<Line> internalLines = new Vector<>();
+    public List<Line> getPureInternalLines() {
+        List<Line> internalLines = new ArrayList<>();
         
         for (Line line : containedLines) {
             Block fromBlock = line.getLinkedOutputPort().getBLock();

@@ -186,8 +186,10 @@ public class ServerResponseJson {
     
     /**
      * Convert to legacy JSONObject format
+     * @deprecated Use Jackson serialization with JsonUtils.serializeDto() instead
      * @return JSONObject representation
      */
+    @Deprecated
     public JSONObject toLegacyJson() {
         JSONObject json = new JSONObject();
         

@@ -24,7 +24,8 @@ import com.ncslab.block.io.terminal.ScopeStruct;
 import com.ncslab.ncslablink.ModelMode;
 
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -51,7 +52,7 @@ public class Scope extends SinkBlock {
     private final Parameter bufferSize;
 
     // === Static Parameter Definitions ===
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {        
         // Dynamic input names based on number of inputs
@@ -127,22 +128,25 @@ public class Scope extends SinkBlock {
     public Scope(BlockJson blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.numberOfInputs = new Parameter(this, 1, "Numberofinputs", "0");
+        // Initialize final parameters from DTO with proper defaults
+        this.numberOfInputs = new Parameter(this, 1, "NumberOfInputs", "1");
         this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.saveName = new Parameter(this, 3, "Savename", "0");
-        this.saveFormat = new Parameter(this, 4, "Saveformat", "0");
-        this.bufferSize = new Parameter(this, 5, "Buffersize", "0");
+        this.saveName = new Parameter(this, 3, "SaveName", "ScopeData");
+        this.saveFormat = new Parameter(this, 4, "SaveFormat", "Array");
+        this.bufferSize = new Parameter(this, 5, "BufferSize", "100000");
 
-        // Initialize ports
-        initializePorts();
+        // Initialize scope arrays and ports
+        this.inportNum = Integer.parseInt(numberOfInputs.getInitString());
+        this.scopeStructs = new ScopeStruct[inportNum];
+        
+        // Add input ports and create scope structures
+        for(int i = 0; i < inportNum; i++) {
+            inputPortList.add(new InputPort(this, i+1));
+            scopeStructs[i] = new ScopeStruct(this, i+1, "in"+(i+1));
+        }
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }    
-    private void initializePorts() {
-        inputPortList.add(new InputPort(this, 1));
     }        
-        
 
     // === Static Factory Method for JSON Deserialization ===
     public static Scope fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -403,7 +407,7 @@ public class Scope extends SinkBlock {
     public void calculateDiscreteUpdate(double t){
         if (model.getModelMode() == ModelMode.Simulation) {
             for(int i = 0; i < inportNum; i++) {
-                if (scopeStructs[i].getTimeList().isEmpty() || t > scopeStructs[i].getTimeList().lastElement()) {
+                if (scopeStructs[i].getTimeList().isEmpty() || t > scopeStructs[i].getTimeList().get(scopeStructs[i].getTimeList().size() - 1)) {
                     scopeStructs[i].addTimeSeries(
                         t,
                         inputPortList.get(i).getData()
@@ -421,7 +425,7 @@ public class Scope extends SinkBlock {
 //    public void calculateTerminate(double t) {
 //        if (model.getModelMode() == ModelMode.Simulation) {
 //            for(int i = 0; i < inportNum; i++) {
-//                if (scopeStructs[i].getTimeList().isEmpty() || t > scopeStructs[i].getTimeList().lastElement()) {
+//                if (scopeStructs[i].getTimeList().isEmpty() || t > scopeStructs[i].getTimeList().get(scopeStructs[i].getTimeList().size() - 1)) {
 //                    scopeStructs[i].addTimeSeries(
 //                        t,
 //                        inputPortList.get(i).getData()

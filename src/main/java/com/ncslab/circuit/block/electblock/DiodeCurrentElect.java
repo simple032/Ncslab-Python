@@ -1,6 +1,7 @@
 package com.ncslab.circuit.block.electblock;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -14,7 +15,7 @@ public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
 	
 	private String electLoopString;
 	
-	private Vector<Block> relatedBlockList=new Vector<Block>();
+	private List<Block> relatedBlockList = new ArrayList<>();
 	
 	public DiodeCurrentElect(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
@@ -30,11 +31,11 @@ public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
 		this.electLoopString=electLoopString;
 	}
 	
-	public void setRelatedBlockList(Vector<Block> relatedBlockList) {
+	public void setRelatedBlockList(List<Block> relatedBlockList) {
 		this.relatedBlockList=relatedBlockList;
 	}
 	
-	public Vector<Block> getRelatedBlockList(){
+	public List<Block> getRelatedBlockList(){
 		return this.relatedBlockList;
 	}
 	
@@ -50,7 +51,7 @@ public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
 	@Override
 	public void clearLoop() {
 		// TODO Auto-generated method stub
-		relatedBlockList=new Vector<Block>();
+		relatedBlockList=new ArrayList<>();
 		electLoopString=null;
 	}
 

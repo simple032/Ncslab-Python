@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 import com.ncslab.block.data.Data;
 import com.ncslab.code.m.MfcalcClient;
@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
+import com.ncslab.dto.ModelJson;
 
 import com.utils.AlgorithmsMapper;
 import com.utils.Mybatis1Utils;
@@ -35,8 +36,19 @@ abstract public class CodeModelC extends CodeModel {
 
 	abstract protected CodeStructC getCodeStructC();
 
+	// 原有JSONObject构造函数
 	protected CodeModelC(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
+	}
+	
+	// 新增String构造函数，支持Jackson DTO解析
+	protected CodeModelC(String jsonString, ModelMode mode) throws ModelException{
+		super(jsonString, mode);
+	}
+	
+	// 新增ModelJson DTO构造函数
+	protected CodeModelC(ModelJson modelDto, ModelMode mode) throws ModelException{
+		super(modelDto, mode);
 	}
 
 	public String getIpAddress() {

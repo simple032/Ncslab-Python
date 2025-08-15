@@ -1,6 +1,7 @@
 package com.ncslab.circuit.block.electblock;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import com.ncslab.block.Block;
 
 import com.ncslab.circuit.loop.CircuitLoopException;
@@ -10,9 +11,9 @@ public interface ElectBlock {
 	
 	public void setElecLoopString(String electLoopString);
 	
-	public void setRelatedBlockList(Vector<Block> relatedBlockList);
+	public void setRelatedBlockList(List<Block> relatedBlockList);
 	
-	public Vector<Block> getRelatedBlockList();
+	public List<Block> getRelatedBlockList();
 	
 	public boolean isLoopPoint();
 	

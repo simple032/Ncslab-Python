@@ -4,14 +4,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpoint;
 
 import org.json.JSONObject;
 
 import com.ncslab.code.c.SFcnCompileModelC;
+import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.util.JsonUtils;
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
@@ -30,36 +33,69 @@ public class SFcnCompileWebSocket {
 		session.setMaxBinaryMessageBufferSize(1024*1024);
 	}
 	
-	private void sendMessage(Session session,String msgString) throws IOException{
-		JSONObject jb=new JSONObject();
-		jb.put("msg", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+	private void sendMessage(Session session, String msgString) throws IOException{
+		WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage(msgString, null);
+		session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
 	}
 	
-	private void sendErrorMessage(Session session,String msgString) throws IOException{
-		JSONObject jb=new JSONObject();
-		jb.put("msg", "error");
-		jb.put("error", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+	private void sendErrorMessage(Session session, String msgString) throws IOException{
+		WebSocketMessageJson message = WebSocketMessageJson.createErrorMessage(msgString);
+		session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
 	}
 	
-	private void sendResultMessage(Session session,String msgString) throws IOException{
-		JSONObject jb=new JSONObject();
-		jb.put("msg", "result");
-		jb.put("result", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+	private void sendResultMessage(Session session, String msgString) throws IOException{
+		WebSocketMessageJson message = WebSocketMessageJson.builder()
+			.msg("result")
+			.status("success")
+			.data(msgString)
+			.timestamp(System.currentTimeMillis())
+			.build();
+		session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
 	}
 	
 	@OnMessage
 	public void onMessage(Session session,String msgString) {
 
 		System.out.println(msgString);
-		JSONObject msg = new JSONObject(msgString);
-		String com = msg.getString("com");
+		
+        // Try to parse as DTO first, fall back to legacy JSONObject
+        WebSocketMessageJson wsMessage = null;
+        JSONObject msg = null;
+        String com = null;
+        
+        try {
+        	// Try DTO parsing first
+        	JSONObject tempJson = new JSONObject(msgString);
+        	wsMessage = WebSocketMessageJson.fromLegacyJson(tempJson);
+        	if (wsMessage != null && wsMessage.getCom() != null) {
+        		com = wsMessage.getCom();
+        		System.out.println("Using DTO-based SFcn Compile WebSocket message parsing for command: " + com);
+        	} else {
+        		throw new Exception("DTO parsing failed or no command");
+        	}
+        } catch (Exception e) {
+        	// Fall back to legacy parsing
+        	System.out.println("DTO SFcn Compile WebSocket message parsing failed, using legacy JSONObject: " + e.getMessage());
+        	msg = new JSONObject(msgString);
+        	com = msg.getString("com");
+        }
 		if(com.equals("sfcncompile")) {
 			try {
 				sendMessage(session, "start");
-				JSONObject jsonData=msg.getJSONObject("jsonData");
+				
+				// Extract jsonData using DTO or legacy approach
+				JSONObject jsonData;
+				if (wsMessage != null && wsMessage.getData() != null) {
+					// Use DTO approach - convert data back to JSONObject for compatibility
+					if (wsMessage.getData() instanceof JSONObject) {
+						jsonData = (JSONObject) wsMessage.getData();
+					} else {
+						jsonData = new JSONObject(wsMessage.getData().toString());
+					}
+				} else {
+					// Use legacy approach
+					jsonData = msg.getJSONObject("jsonData");
+				}
 				
 				SFcnCompileModelC modelSFcn=new SFcnCompileModelC(jsonData);
 				modelSFcn.writeSFcnFile();

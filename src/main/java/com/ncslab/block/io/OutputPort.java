@@ -1,6 +1,7 @@
 package com.ncslab.block.io;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
@@ -31,7 +32,7 @@ public class OutputPort {
     private int number;
 
     @Getter
-    private Vector<Line> linkedLineList=new Vector<Line>();
+    private List<Line> linkedLineList = new ArrayList<>();
 
 	private boolean isFeedThrough=false;
 

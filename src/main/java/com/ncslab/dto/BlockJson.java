@@ -128,6 +128,12 @@ public class BlockJson {
     }
 
     // 逆转换：将BlockJson转换为JSONObject
+    /**
+     * Convert to legacy JSONObject format
+     * @deprecated Use Jackson serialization with JsonUtils.serializeDto() instead
+     * @return JSONObject representation
+     */
+    @Deprecated
     public JSONObject toLegacyJson() {
         
         try {

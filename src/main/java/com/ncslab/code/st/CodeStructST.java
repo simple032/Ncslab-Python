@@ -8,7 +8,8 @@ import lombok.Getter;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CodeStructST {
 	//init初始化的代码
@@ -30,9 +31,9 @@ public class CodeStructST {
 	//目标文件夹的位置codePathBase/用户id/modelId
 	private String codePath;
 
-	private Vector<Parameter> parameterList=new Vector<Parameter>();
-	private Vector<State> stateList=new Vector<State>();
-	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
+	private List<Parameter> parameterList = new ArrayList<>();
+	private List<State> stateList = new ArrayList<>();
+	private List<OutputSignal> outputSignalList = new ArrayList<>();
 
     //return initCode+outputCode+updateCode+derivativeCode;
     @Getter

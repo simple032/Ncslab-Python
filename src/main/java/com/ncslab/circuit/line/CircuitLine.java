@@ -1,6 +1,7 @@
 package com.ncslab.circuit.line;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -8,9 +9,9 @@ import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.circuit.block.io.CircuitPort;
 
 public class CircuitLine {
-	private Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
+	private List<CircuitPort> circuitPortList = new ArrayList<>();
 
-	public CircuitLine(JSONObject lineJSON, Vector<CircuitBlock> blockList) {
+	public CircuitLine(JSONObject lineJSON, List<CircuitBlock> blockList) {
 		String fromBlockName = lineJSON.getString("fromBlockName");
 		String toBlockName = lineJSON.getString("toBlockName");
 
@@ -35,7 +36,7 @@ public class CircuitLine {
 		String fromPortNo = lineJSON.getString("fromPortNo");
 		CircuitPort fromPort = null;
 
-		Vector<CircuitPort> fromBlockPortList = fromBlock.getCurcuitPortList();
+		List<CircuitPort> fromBlockPortList = fromBlock.getCurcuitPortList();
 		for (CircuitPort circuitPort : fromBlockPortList) {
 			if (circuitPort.getName().equals(fromPortNo)) {
 				fromPort = circuitPort;
@@ -51,7 +52,7 @@ public class CircuitLine {
 		String toPortNo = lineJSON.getString("toPortNo");
 		CircuitPort toPort = null;
 
-		Vector<CircuitPort> toBlockPortList = toBlock.getCurcuitPortList();
+		List<CircuitPort> toBlockPortList = toBlock.getCurcuitPortList();
 		for (CircuitPort circuitPort : toBlockPortList) {
 			if (circuitPort.getName().equals(toPortNo)) {
 				toPort = circuitPort;
@@ -72,7 +73,7 @@ public class CircuitLine {
 		return this.circuitPortList.get(1);
 	}
 	
-	public static CircuitLine createCircuitLine(JSONObject lineJSON,Vector<CircuitBlock> blockList) {
+	public static CircuitLine createCircuitLine(JSONObject lineJSON,List<CircuitBlock> blockList) {
 		CircuitLine line=new CircuitLine(lineJSON,blockList);
 		
 		return line;

@@ -22,7 +22,8 @@ import com.ncslab.util.TemplateManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Delay block with SIMULINK-compatible parameters and type-safe constructors.
@@ -37,7 +38,7 @@ import java.util.Vector;
 public class Delay extends DiscreteBlock {
 
     // === Internal State ===
-    private Vector<Data> buffer;
+    private List<Data> buffer;
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter delayLength;
@@ -63,9 +64,9 @@ public class Delay extends DiscreteBlock {
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
 
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // SIMULINK parameter names

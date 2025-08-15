@@ -21,7 +21,8 @@ import com.ncslab.block.data.DataType;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EnsembleModel extends Block{
     private Parameter m0, m1, l, initState, g;
@@ -54,8 +55,8 @@ public class EnsembleModel extends Block{
 
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         outputNames.add("out1");

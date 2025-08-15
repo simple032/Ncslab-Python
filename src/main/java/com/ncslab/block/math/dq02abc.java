@@ -12,7 +12,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import com.ncslab.util.TemplateManager;
@@ -32,8 +33,8 @@ public class dq02abc extends Block {
     }
 
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;

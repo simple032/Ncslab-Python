@@ -3,12 +3,13 @@ package com.ncslab.code.c.windows.simulation;
 import com.google.common.io.LittleEndianDataInputStream;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.dto.ModelJson;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.utils.Property;
 import org.json.JSONObject;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -19,8 +20,19 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 
 	private CodeStructCWindowsSimulation codeStructC = new CodeStructCWindowsSimulation(this);
 
+	// 原有JSONObject构造函数
 	CodeModelCWindowsSimulation(JSONObject jsonIn, ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
+	}
+	
+	// 新增String构造函数，支持Jackson DTO解析
+	CodeModelCWindowsSimulation(String jsonString, ModelMode mode) throws ModelException{
+		super(jsonString, mode);
+	}
+	
+	// DTO构造函数 - 现代化直接DTO支持
+	CodeModelCWindowsSimulation(ModelJson modelDto, ModelMode mode) throws ModelException{
+		super(modelDto, mode);
 	}
 
 	@Override
@@ -28,8 +40,19 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		return codeStructC;
 	}
 
+	// 原有JSONObject工厂方法
 	public static CodeModelCWindowsSimulation createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException {
         return new CodeModelCWindowsSimulation(jsonIn,mode);
+	}
+	
+	// 新增String工厂方法
+	public static CodeModelCWindowsSimulation createFromString(String jsonString, ModelMode mode) throws ModelException {
+        return new CodeModelCWindowsSimulation(jsonString, mode);
+	}
+	
+	// DTO工厂方法 - 现代化直接DTO支持
+	public static CodeModelCWindowsSimulation createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+        return new CodeModelCWindowsSimulation(modelDto, mode);
 	}
 
 	private void sendSimulatingMessage(Session session, double time) throws IOException{

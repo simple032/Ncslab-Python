@@ -18,7 +18,8 @@ import com.ncslab.dto.BlockJson;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Output port block for subsystems with SIMULINK-compatible parameters.
@@ -52,9 +53,9 @@ public class Out extends Block {
         PARAMETER_DEFAULTS.put("OutputDataTypeStr", "Inherit: auto");
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
 
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // Port names - Out block receives from inside subsystem

@@ -8,12 +8,16 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 import org.json.JSONArray;
-
+import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.LineJson;
+import com.ncslab.dto.SaveInfoJson;
+import com.ncslab.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Vector;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.BlockType;
@@ -54,6 +58,15 @@ abstract public class NCSLabModel {
 
 	@Getter
     private long uuid;
+    
+    @Getter
+    private String templateName;
+    
+    @Getter
+    private int copyNum;
+    
+    @Getter
+    private JSONObject option;
 
 	@Getter
     private JSONObject saveInfo;
@@ -64,40 +77,40 @@ abstract public class NCSLabModel {
 
 	// all blocks in the model
 	@Getter
-    protected Vector<Block> blockList=new Vector<Block>();
-    protected Vector<From> fromBlockList=new Vector<From>();
-    protected Vector<To> gotoBlockList=new Vector<To>();
-    protected Vector<Subsystem> subsystemBlockList=new Vector<Subsystem>();
-    protected Vector<In> inBlockList=new Vector<In>();
-    protected Vector<Out> outBlockList=new Vector<Out>();
+    protected List<Block> blockList = new CopyOnWriteArrayList<>();
+    protected List<From> fromBlockList = new ArrayList<>();
+    protected List<To> gotoBlockList = new ArrayList<>();
+    protected List<Subsystem> subsystemBlockList = new ArrayList<>();
+    protected List<In> inBlockList = new ArrayList<>();
+    protected List<Out> outBlockList = new ArrayList<>();
 
-	private Vector<Block> dimensionList=new Vector<Block>();
-	private Vector<Block> scanDimList=new Vector<Block>();
-	private Vector<Block> dimTerminalBlockList=new Vector<Block>();
-	private Vector<OutputPort> dimOutputPortPathList=new Vector<OutputPort>();
+	private List<Block> dimensionList = new ArrayList<>();
+	private List<Block> scanDimList = new ArrayList<>();
+	private List<Block> dimTerminalBlockList = new ArrayList<>();
+	private List<OutputPort> dimOutputPortPathList = new ArrayList<>();
 
     // output chain
     private boolean isAlgebraicLoop=false;
-    private Vector<Block> terminalBlockList=new Vector<Block>();
+    private List<Block> terminalBlockList = new ArrayList<>();
 
-    private Vector<Block> scanBlockList=new Vector<Block>();
-    private Vector<OutputPort> outputPortPathList=new Vector<OutputPort>();
+    private List<Block> scanBlockList = new ArrayList<>();
+    private List<OutputPort> outputPortPathList = new ArrayList<>();
 
     //输出链，应该先输出哪个，然后再输出哪个
-    protected Vector<Block> outputChain=new Vector<Block>();
+    protected List<Block> outputChain = new ArrayList<>();
 
 
     // all lines
-	protected Vector<Line> lineList=new Vector<Line>();
-    protected Vector<Line> fromLineList=new Vector<>();
-    protected Vector<Line> gotoLineList=new Vector<>();
+	protected List<Line> lineList = new ArrayList<>();
+    protected List<Line> fromLineList = new ArrayList<>();
+    protected List<Line> gotoLineList = new ArrayList<>();
 
 	// all error info
 	@Getter
-    protected Vector<ErrorMessage> errorList=new Vector<ErrorMessage>();
+    protected List<ErrorMessage> errorList = new CopyOnWriteArrayList<>();
 
 	@Getter
-    protected Vector<Terminal> terminalList=new Vector<Terminal>();
+    protected List<Terminal> terminalList = new ArrayList<>();
 
 	private int blockSeq=0;
 	private int lineSeq=0;
@@ -120,26 +133,151 @@ abstract public class NCSLabModel {
     @Getter
     protected int outputNum=0;
 
-	//解析model，变成数据结构
+	//解析model，变成数据结构 - 原有JSONObject构造函数
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
-		this.mode=mode;
-
-		this.jsonIn=jsonIn;
-
+		initFromJsonObject(jsonIn, mode);
+	}
+	
+	// 新增：String-based构造函数，支持Jackson DTO解析  
+	protected NCSLabModel(String jsonString, ModelMode mode) throws ModelException {
+		try {
+			// 验证JSON结构
+			String validationError = JsonUtils.validateJsonStructure(jsonString);
+			if (validationError != null) {
+				throw new ModelException("Invalid JSON structure: " + validationError);
+			}
+			
+			// Use Jackson DTO parsing only - no fallback
+			ModelJson modelDto = JsonUtils.parseModelJson(jsonString);
+			if (modelDto == null || !modelDto.isValid()) {
+				String error = (modelDto != null) ? modelDto.getValidationError() : "Failed to parse JSON to DTO";
+				throw new ModelException("DTO parsing failed: " + error);
+			}
+			
+			System.out.println("Using DTO parsing for model: " + modelDto.getModelName());
+			initFromDto(modelDto, mode);
+		} catch (Exception e) {
+			throw new ModelException("Failed to parse model JSON: " + e.getMessage());
+		}
+	}
+	
+	// 新增：直接从DTO构造函数
+	protected NCSLabModel(ModelJson modelDto, ModelMode mode) throws ModelException {
+		if (modelDto == null) {
+			throw new ModelException("ModelJson cannot be null");
+		}
+		
+		if (!modelDto.isValid()) {
+			throw new ModelException("Invalid ModelJson: " + modelDto.getValidationError());
+		}
+		
+		initFromDto(modelDto, mode);
+	}
+	
+	// 从JSONObject初始化的通用方法
+	private void initFromJsonObject(JSONObject jsonIn, ModelMode mode) throws ModelException {
+		this.mode = mode;
+		this.jsonIn = jsonIn;
+		
 		//解析model，变成数据结构
 		parseModel();
-
-        //解析模型state,signal,parameter,input,output数量
+		
+		//解析模型state,signal,parameter,input,output数量
 		parseContext();
-
-        //构造模块输出链
-        setupOuputChain();
-
-		modelSeq=modelSeqCount;
-
+		
+		//构造模块输出链
+		setupOuputChain();
+		
+		modelSeq = modelSeqCount;
 		modelSeqCount++;
-
-		//System.out.println(config.getFixedStep());
+	}
+	
+	// 从ModelJson DTO初始化的新方法
+	private void initFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+		this.mode = mode;
+		
+		// 从DTO设置基本属性
+		this.modelName = modelDto.getModelName();
+		this.modelRealName = modelDto.getModelRealName();
+		this.userId = modelDto.getUserId();
+		this.modelId = modelDto.getModelId();
+		this.uuid = modelDto.getUuid();
+		this.testRig = modelDto.getTestRig();
+		
+		// 处理可选字段
+		this.templateName = modelDto.getTemplateName();
+		this.copyNum = modelDto.getCopyNum();
+		
+		// 为了向后兼容，创建等价的JSONObject
+		// Removed fallback conversion - using native DTO approach
+		
+		// 解析配置 - 直接使用DTO方式
+		try {
+			if (modelDto.getConfig() != null) {
+				// Using direct DTO config - create Config from DTO
+				config = Config.createFromConfigJson(modelDto.getConfig(), mode);
+			}
+		} catch (Exception e) {
+			System.err.println("Failed to parse config from DTO, skipping: " + e.getMessage());
+		}
+		
+		// 解析保存信息 - 直接使用DTO方式
+		try {
+			if (modelDto.getSaveInfo() != null) {
+				// Using direct DTO saveInfo - extract relevant fields
+				saveInfo = createSaveInfoFromDto(modelDto.getSaveInfo());
+			}
+		} catch (Exception e) {
+			System.err.println("Failed to parse saveInfo from DTO, skipping: " + e.getMessage());
+		}
+		
+		// 处理options字段
+		if (modelDto.getOption() != null && !modelDto.getOption().isEmpty()) {
+			// Convert options map for compatibility
+			this.option = new JSONObject(modelDto.getOption());
+		}
+		
+		// 使用增强的DTO解析blocks和lines
+		try {
+			parseBlocksFromDto(modelDto.getBlocks());
+			parseLinesFromDto(modelDto.getLines());
+		} catch (Exception e) {
+			throw new ModelException("Failed to parse blocks/lines from DTO: " + e.getMessage());
+		}
+		
+		// 继续现有工作流程
+		parseContext();
+		
+		// IMPORTANT: Add missing connection auto-generation for DTO path
+		// This ensures DTO parsing has the same auto-generation behavior as JSON parsing
+		System.out.println("Checking for unlinked ports and auto-generating missing connections...");
+		int blockCountBefore = blockList.size();
+		checkUnlinkedPorts();
+		int blockCountAfter = blockList.size();
+		if (blockCountAfter > blockCountBefore) {
+			System.out.printf("Auto-generated %d blocks for unconnected ports%n", blockCountAfter - blockCountBefore);
+		} else {
+			System.out.println("No auto-generation needed - all ports are connected");
+		}
+		
+		// CRITICAL FIX: Add missing dimension processing for DTO path
+		// This was causing RT simulation to have empty scope results
+		System.out.println("DTO Fix: Setting up dimension processing...");
+		setupDimensionList();
+		try {
+			updateDimensions();
+		} catch (Exception e) {
+			System.err.println("DTO Fix: Error during dimension processing: " + e.getMessage());
+			e.printStackTrace();
+		}
+		
+		setupOuputChain();
+		
+		modelSeq = modelSeqCount;
+		modelSeqCount++;
+		
+		System.out.println("Successfully initialized model from DTO: " + modelName + 
+		                   " with " + blockList.size() + " blocks and " + lineList.size() + " lines");
 	}
 
 	public ModelMode getModelMode() {
@@ -147,11 +285,17 @@ abstract public class NCSLabModel {
 	}
 
     public JSONArray getBlocksJSON() {
-		return jsonIn.getJSONArray("blocks");
+		if (jsonIn != null) {
+			return jsonIn.getJSONArray("blocks");
+		}
+		return new JSONArray(); // Return empty array for DTO-based parsing
 	}
 
 	public JSONArray getLinesJSON() {
-		return jsonIn.getJSONArray("lines");
+		if (jsonIn != null) {
+			return jsonIn.optJSONArray("lines");
+		}
+		return new JSONArray(); // Return empty array for DTO-based parsing
 	}
 
     protected void addErrorMessage(ErrorMessage message) {
@@ -159,11 +303,14 @@ abstract public class NCSLabModel {
 	}
 
     public void addTerminal(Terminal terminal){
+		System.out.printf("RT Debug: Adding terminal %s to terminalList (size before: %d)%n", 
+			terminal.getName(), terminalList.size());
 		terminalList.add(terminal);
+		System.out.printf("RT Debug: Terminal added, terminalList size now: %d%n", terminalList.size());
 	}
 
     private void addCircuitBlocks(CircuitParser circuitPaser) {
-		Vector<Block> circuitBlockList=circuitPaser.getCircuitModel().getModelBlocks();
+		List<Block> circuitBlockList = circuitPaser.getCircuitModel().getModelBlocks();
 
 		for(Block block:circuitBlockList) {
 			block.setBlockId(blockSeq+1);
@@ -173,7 +320,7 @@ abstract public class NCSLabModel {
 	}
 
 	private void addCircuitLines(CircuitParser circuitPaser) {
-		Vector<Line> circuitLineList=circuitPaser.getCircuitModel().getModelLines();
+		List<Line> circuitLineList = circuitPaser.getCircuitModel().getModelLines();
 
 		for(Line line:circuitLineList) {
 			line.setLineId(lineSeq+1);
@@ -243,7 +390,7 @@ abstract public class NCSLabModel {
 
 
 
-		if(j!=0) {
+		if(j!=0 && circuitParser!=null) {
 			// 解开代数环的代码
 			try {
 				circuitParser.getCircuitModel().loopProcess();
@@ -343,7 +490,7 @@ abstract public class NCSLabModel {
                     //将它设置成FeedThrough
                     block.setFeedThrough(false);
 
-                    Vector<Block> relatedBlockList=electBlock.getRelatedBlockList();
+                    List<Block> relatedBlockList = electBlock.getRelatedBlockList();
 
                     for(Block relatedBlock:relatedBlockList) {
                         if(!relatedBlock.getIsOutputCodeGenerated()) {
@@ -383,7 +530,7 @@ abstract public class NCSLabModel {
 
         //遍历所有的终端模块
         for(Block block:terminalBlockList) {
-            Vector<InputPort> inputPortList=block.getInputPortList();
+            List<InputPort> inputPortList = block.getInputPortList();
             for(InputPort inputPort:inputPortList) {
                 scanInputPort(inputPort);
             }
@@ -398,7 +545,7 @@ abstract public class NCSLabModel {
         while(!scanBlockList.isEmpty()) {
             //取出第一个元素进行遍历
             Block block=scanBlockList.remove(0);
-            Vector<InputPort> inputPortList=block.getInputPortList();
+            List<InputPort> inputPortList = block.getInputPortList();
             for(InputPort inputPort:inputPortList) {
                 scanInputPort(inputPort);
             }
@@ -453,7 +600,7 @@ abstract public class NCSLabModel {
         Block block=outputPort.getBLock();
 
         boolean isFeedThroughBlock=false;
-        Vector<OutputPort> outputPortList=block.getOutputPortList();
+        List<OutputPort> outputPortList = block.getOutputPortList();
         for(OutputPort output:outputPortList) {
             if(output.getFeedThrough()==true) {
                 isFeedThroughBlock=true;
@@ -462,7 +609,7 @@ abstract public class NCSLabModel {
 
         //如果有Feedthrough的模块，则要遍历整个模块的InputPort
         if(isFeedThroughBlock) {
-            Vector<InputPort> InputPortList=block.getInputPortList();
+            List<InputPort> InputPortList = block.getInputPortList();
             for(InputPort input:InputPortList) {
                 //递归调用，实现遍历
                 scanInputPort(input);
@@ -487,7 +634,7 @@ abstract public class NCSLabModel {
         outputPortPathList.remove(outputPortPathList.size()-1);
     }
 
-    /*解析各个Block*/
+    /*解析各个Block - 原有JSONObject方法*/
 	private void parseBlocks() throws ModelException{
 
 		JSONArray blockJSONList=jsonIn.getJSONArray("blocks");
@@ -500,57 +647,231 @@ abstract public class NCSLabModel {
 //			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 
             blockList.add(block);
-
-            if(block instanceof From){
-                fromBlockList.add((From) block);
-            }else if(block instanceof To){
-                gotoBlockList.add((To) block);
-            }else if(block instanceof Subsystem){
-                subsystemBlockList.add((Subsystem) block);
-            }else if(block instanceof In){
-                inBlockList.add((In) block);
-            }else if(block instanceof Out){
-                outBlockList.add((Out) block);
-            }
+            categorizeBlock(block);
         }
+	}
+	
+	/*解析各个Block - REAL DTO-NATIVE方法 (NO MORE CONVERSION!)*/
+	private void parseBlocksFromDto(java.util.List<BlockJson> blockDtos) throws ModelException {
+		if (blockDtos == null || blockDtos.isEmpty()) {
+			System.out.println("No blocks to parse from DTO");
+			return;
+		}
+		
+		System.out.println("DTO-NATIVE: Parsing " + blockDtos.size() + " blocks directly from DTOs (no conversion)");
+		
+		for (BlockJson blockDto : blockDtos) {
+			try {
+				// 验证DTO有效性
+				if (!blockDto.isValid()) {
+					System.err.println("Invalid block DTO: " + blockDto.getValidationError() + ", skipping");
+					continue;
+				}
+				
+				// **REAL DTO-NATIVE**: 直接从DTO创建Block实例，无需转换！
+				Block block = BlockType.createBlockFromDto(blockSeq + 1, blockDto, this);
+				if (block == null) {
+					System.err.println("Failed to create block: " + blockDto.getBlockType() + "/" + blockDto.getBlockName());
+					continue;
+				}
+				
+				System.out.println("DTO-NATIVE SUCCESS: Created " + blockDto.getBlockType() + "/" + blockDto.getBlockName());
+				blockSeq++;
+				blockList.add(block);
+				categorizeBlock(block);
+				
+				System.out.println("Successfully created block: " + block.getBlockType() + "/" + block.getBlockName());
+				
+			} catch (Exception e) {
+				System.err.println("Error parsing block DTO: " + blockDto.getBlockName() + " - " + e.getMessage());
+				// 继续处理其他块，不中断整个解析过程
+			}
+		}
+		
+		System.out.println("Successfully parsed " + blockList.size() + " blocks from DTO");
+	}
+	
+	/**
+	 * 将Block按类型分类到相应的列表中
+	 * 从parseBlocks()方法中提取出来的通用逻辑
+	 */
+	private void categorizeBlock(Block block) {
+		if(block instanceof From){
+			fromBlockList.add((From) block);
+		}else if(block instanceof To){
+			gotoBlockList.add((To) block);
+		}else if(block instanceof Subsystem){
+			subsystemBlockList.add((Subsystem) block);
+		}else if(block instanceof In){
+			inBlockList.add((In) block);
+		}else if(block instanceof Out){
+			outBlockList.add((Out) block);
+		}
 	}
 
     private void refactorSubsystemBlocks() {
         for(Subsystem subsystem:subsystemBlockList){
+            String subsystemPath = subsystem.getBlockPath() + "/" + subsystem.getBlockName();
+            
             // 将子系统和它的端口联系起来
             for(In in:inBlockList){
-                if(in.getBlockPath().equals(subsystem.getBlockPath()+"/"+subsystem.getBlockName())){
+                if(in.getBlockPath().equals(subsystemPath)){
                     subsystem.addIn(in);
                     in.setSubsystem(subsystem);
                 }
             }
             for(Out out:outBlockList){
-                if(out.getBlockPath().equals(subsystem.getBlockPath()+"/"+subsystem.getBlockName())){
+                if(out.getBlockPath().equals(subsystemPath)){
                     subsystem.addOut(out);
                     out.setSubsystem(subsystem);
                 }
             }
+            
+            // 将所有属于该子系统的块添加到containedBlocks中
+            for(Block block:blockList){
+                if(block.getBlockPath().equals(subsystemPath)){
+                    subsystem.addBlock(block);
+                }
+            }
+            
+            // 将所有属于该子系统的连线添加到containedLines中
+            for(Line line:lineList){
+                if(isLineWithinSubsystem(line, subsystemPath)){
+                    subsystem.addLine(line);
+                }
+            }
         }
     }
+    
+    /**
+     * Check if a line belongs to a specific subsystem based on the blocks it connects
+     */
+    private boolean isLineWithinSubsystem(Line line, String subsystemPath) {
+        if (line.getLinkedOutputPort() == null || line.getLinkedInputPort() == null) {
+            return false;
+        }
+        
+        Block fromBlock = line.getLinkedOutputPort().getBLock();
+        Block toBlock = line.getLinkedInputPort().getBLock();
+        
+        // Line belongs to subsystem if both connected blocks are within the subsystem path
+        return fromBlock.getBlockPath().equals(subsystemPath) && 
+               toBlock.getBlockPath().equals(subsystemPath);
+    }
 
+	/*解析各条连线 - 原有JSONObject方法*/
 	private void parseLines() {
 		JSONArray lineJSONList=jsonIn.optJSONArray("lines");
         if(lineJSONList != null) {
             for (int i = 0; i < lineJSONList.length(); i++) {
                 JSONObject lineJSON = lineJSONList.getJSONObject(i);
-                //xiazhiqiang:隐去子系统连线，并将输入连线链接到子系统的In，输出连线链接到子系统的Out
-                replaceInLine(lineJSON);
-                replaceOutLine(lineJSON);
-                //解析各条连线
-                Line line = Line.createLine(lineJSON, this);
-                line.setLineId(lineSeq + 1);
-                lineSeq++;
-
-//			System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
-
-                lineList.add(line);
+                processLineJson(lineJSON);
             }
         }
+	}
+	
+	/*解析各条连线 - 增强的DTO方法*/
+	private void parseLinesFromDto(java.util.List<LineJson> lineDtos) {
+		if (lineDtos == null || lineDtos.isEmpty()) {
+			System.out.println("No lines to parse from DTO");
+			return;
+		}
+		
+		System.out.println("Parsing " + lineDtos.size() + " lines from DTO");
+		
+		for (LineJson lineDto : lineDtos) {
+			try {
+				// 验证DTO有效性
+				if (!lineDto.isValid()) {
+					System.err.println("Invalid line DTO: " + lineDto.getValidationError() + ", skipping");
+					continue;
+				}
+				
+				// 直接处理DTO连线 - 不再需要JSON转换
+				// Process line directly from DTO
+				processLineDto(lineDto);
+				
+				System.out.println("Successfully processed line: " + 
+				                   lineDto.getFromBlockName() + " -> " + lineDto.getToBlockName());
+				
+			} catch (Exception e) {
+				System.err.println("Error parsing line DTO: " + 
+				                   lineDto.getFromBlockName() + " -> " + lineDto.getToBlockName() + 
+				                   " - " + e.getMessage());
+				// 继续处理其他连线，不中断整个解析过程
+			}
+		}
+		
+		System.out.println("Successfully parsed " + lineList.size() + " lines from DTO");
+	}
+	
+	/**
+	 * 处理连线 JSON对象的通用逻辑
+	 * 从parseLines()方法中提取出来的通用逻辑
+	 */
+	private void processLineJson(JSONObject lineJSON) {
+		//xiazhiqiang:隐去子系统连线，并将输入连线链接到子系统的In，输出连线链接到子系统的Out
+		replaceInLine(lineJSON);
+		replaceOutLine(lineJSON);
+		
+		//解析各条连线
+		Line line = Line.createLine(lineJSON, this);
+		line.setLineId(lineSeq + 1);
+		lineSeq++;
+		
+//		System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+		
+		lineList.add(line);
+	}
+
+	/**
+	 * Process line directly from DTO without JSON conversion
+	 */
+	private void processLineDto(LineJson lineDto) {
+		try {
+			// Create a minimal JSONObject from DTO for compatibility with existing Line.createLine method
+			JSONObject lineJSON = new JSONObject();
+			lineJSON.put("fromBlockName", lineDto.getFromBlockName());
+			lineJSON.put("fromPortNo", lineDto.getFromPortNo());
+			lineJSON.put("toBlockName", lineDto.getToBlockName());
+			lineJSON.put("toPortNo", lineDto.getToPortNo());
+			lineJSON.put("linePath", lineDto.getLinePath());
+			lineJSON.put("fromBlockUUID", lineDto.getFromBlockUUID());
+			lineJSON.put("toBlockUUID", lineDto.getToBlockUUID());
+			
+			// Use existing processLineJson method
+			processLineJson(lineJSON);
+		} catch (Exception e) {
+			System.err.println("Failed to process line DTO: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Create JSONObject saveInfo from DTO for compatibility
+	 */
+	private JSONObject createSaveInfoFromDto(SaveInfoJson saveInfoDto) {
+		try {
+			JSONObject json = new JSONObject();
+			if (saveInfoDto.getModelRealName() != null) {
+				json.put("modelRealName", saveInfoDto.getModelRealName());
+			}
+			json.put("copyNum", saveInfoDto.getCopyNum());
+			json.put("modelId", saveInfoDto.getModelId());
+			json.put("publicFlag", saveInfoDto.getPublicFlag());
+			json.put("testRig", saveInfoDto.getTestRig());
+			if (saveInfoDto.getDescription() != null) {
+				json.put("description", saveInfoDto.getDescription());
+			}
+			json.put("packetSize", saveInfoDto.getPacketSize());
+			json.put("stepTime", saveInfoDto.getStepTime());
+			json.put("targetPlatform", saveInfoDto.getTargetPlatform());
+			json.put("uuid", saveInfoDto.getUuid());
+			json.put("userId", saveInfoDto.getUserId());
+			return json;
+		} catch (Exception e) {
+			System.err.println("Failed to create saveInfo from DTO: " + e.getMessage());
+			return new JSONObject();
+		}
 	}
 
 
@@ -565,22 +886,34 @@ abstract public class NCSLabModel {
 	}
 
 	private void findDimTerminalBlocks() {
-//		System.out.println("Looking for terminal blocks");
+		System.out.printf("RT Debug: Looking for terminal blocks in %d total blocks%n", blockList.size());
+		int terminalCount = 0;
+		int scopeCount = 0;
 		for(Block block:blockList) {
+			if(block.getBlockType().equals("Scope")) {
+				scopeCount++;
+				System.out.printf("RT Debug: Found Scope block '%s' with %d outputs (isTerminal=%s)%n", 
+					block.getBlockName(), block.getOutputPortList().size(), block.isTerminalBlock());
+			}
 			if(block.isTerminalBlock()) {
-//				System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
+				terminalCount++;
+				System.out.printf("RT Debug: Found terminal block '%s' (type=%s)%n", 
+					block.getBlockName(), block.getBlockType());
 				dimTerminalBlockList.add(block);
 			}
 		}
+		System.out.printf("RT Debug: Total scope blocks found: %d, terminal blocks found: %d%n", scopeCount, terminalCount);
 	}
 
 	private void checkUnlinkedPorts() throws ModelException{
 
         // 向blockList中添加Block对象
         List<Block> list = new ArrayList<>(blockList);
-        Vector<Block> fullBlockList = new Vector<>(list);
+        List<Block> fullBlockList = new ArrayList<>(list);
 
-		for(Block block:blockList) {
+		// Iterate over a copy to avoid ConcurrentModificationException
+		List<Block> originalBlocks = new ArrayList<>(blockList);
+		for(Block block:originalBlocks) {
 			for(int i=0; i<block.getInputPortList().size();i++) {
                 InputPort input = block.getInputPortList().get(i);
 				if(input.getLinkedLine()==null) {
@@ -602,6 +935,7 @@ abstract public class NCSLabModel {
 					System.out.println("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
 
                     fullBlockList.add(newBlock);
+                    blockList.add(newBlock); // Also add to model's blockList for Line.createLine()
 
                     JSONObject lineJSON = new JSONObject();
                     lineJSON.put("fromBlockName", newBlock.getBlockName());
@@ -613,7 +947,7 @@ abstract public class NCSLabModel {
                     lineJSON.put("toPortNo", i+1);
                     lineJSON.put("linePath", block.getBlockPath());
 
-                    Line line=Line.createLine(lineJSON, fullBlockList);
+                    Line line=Line.createLine(lineJSON, this);
                     line.setLineId(lineSeq+1);
                     lineSeq++;
 
@@ -626,7 +960,7 @@ abstract public class NCSLabModel {
 			}
 		}
 		//空的output连接terminal
-        for(Block block:blockList){
+        for(Block block:originalBlocks){
             for(int i=0; i<block.getOutputPortList().size();i++) {
                 OutputPort output = block.getOutputPortList().get(i);
                 if(output.getLinkedLineList().isEmpty()) {
@@ -647,6 +981,7 @@ abstract public class NCSLabModel {
                     System.out.println("Parsing block (" + newBlock.getBlockId() + "): '" + newBlock.getBlockName() + "'...");
 
                     fullBlockList.add(newBlock);
+                    blockList.add(newBlock); // Also add to model's blockList for Line.createLine()
 
                     JSONObject lineJSON = new JSONObject();
                     lineJSON.put("fromBlockName", block.getBlockName());
@@ -658,7 +993,7 @@ abstract public class NCSLabModel {
                     lineJSON.put("toPortNo", 1);
                     lineJSON.put("linePath", block.getBlockPath());
 
-                    Line line = Line.createLine(lineJSON, fullBlockList);
+                    Line line = Line.createLine(lineJSON, this);
                     line.setLineId(lineSeq + 1);
                     lineSeq++;
 
@@ -697,7 +1032,7 @@ abstract public class NCSLabModel {
 		Block block = outputPort.getBLock();
 
 		boolean isDimThroughBlock = false;
-		Vector<OutputPort> outputPortList = block.getOutputPortList();
+		List<OutputPort> outputPortList = block.getOutputPortList();
 		for (OutputPort output : outputPortList) {
             if (output.getDimThrough()) {
                 isDimThroughBlock = true;
@@ -708,7 +1043,7 @@ abstract public class NCSLabModel {
 		//如果有Feedthrough的模块，则要遍历整个模块的InputPort
 		if(isDimThroughBlock) {
 			block.setIsDimScaned(true);
-			Vector<InputPort> InputPortList=block.getInputPortList();
+			List<InputPort> InputPortList = block.getInputPortList();
 			for(InputPort input:InputPortList) {
 				//递归调用，实现遍历
 				scanDimInputPort(input);
@@ -720,7 +1055,7 @@ abstract public class NCSLabModel {
 		}
 		else {
 			block.setIsDimScaned(true);
-			Vector<InputPort> InputPortList=block.getInputPortList();
+			List<InputPort> InputPortList = block.getInputPortList();
 
 			//如果dimThrough是真的话，说明这是类似Sum和Add的模块，输入的Dimension必须相互配合
 			//扫描第一个输入
@@ -755,7 +1090,7 @@ abstract public class NCSLabModel {
 		//遍历所有的终端模块
 		for(Block block:dimTerminalBlockList) {
 			block.setIsDimScaned(true);
-			Vector<InputPort> inputPortList=block.getInputPortList();
+			List<InputPort> inputPortList = block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
 				scanDimInputPort(inputPort);
 			}
@@ -772,7 +1107,7 @@ abstract public class NCSLabModel {
 				continue;
 			}
 			block.setIsDimScaned(true);
-			Vector<InputPort> inputPortList=block.getInputPortList();
+			List<InputPort> inputPortList = block.getInputPortList();
 			for(InputPort inputPort:inputPortList) {
 				scanDimInputPort(inputPort);
 			}
@@ -790,9 +1125,10 @@ abstract public class NCSLabModel {
 	}
 
 	private void setupDimensionList() {
+		System.out.println("RT Debug: Setting up dimension list...");
 		findDimTerminalBlocks();
 		scanDimChain();
-
+		System.out.printf("RT Debug: Dimension list setup complete - %d blocks in dimensionList%n", dimensionList.size());
 		showDimBlocks();
 	}
 
@@ -829,7 +1165,7 @@ abstract public class NCSLabModel {
 
     private void checkBlocksCId() throws MatDimException{
         if(!blockList.isEmpty()){
-            cidModeEnable = !"null".equals(blockList.elementAt(0).getBlockUUID());
+            cidModeEnable = !"null".equals(blockList.get(0).getBlockUUID());
         }
     }
 
@@ -934,7 +1270,7 @@ abstract public class NCSLabModel {
     private void replaceLogicLines() throws ModelException {
 
         // 1. 替代法
-        Vector<Line> lines = new Vector<>();
+        List<Line> lines = new ArrayList<>();
 
         for (Line line1 : lineList) {
             if (line1.getLinkedOutputPort().getBLock() instanceof From) {

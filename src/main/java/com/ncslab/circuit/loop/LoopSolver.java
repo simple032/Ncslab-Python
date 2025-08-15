@@ -1,6 +1,7 @@
 package com.ncslab.circuit.loop;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -15,20 +16,20 @@ public class LoopSolver {
 
 	private Block outputBlock;
 
-	private Vector<Vector<LinearBlockElement>> forwardList=new Vector<Vector<LinearBlockElement>>();
+	private List<List<LinearBlockElement>> forwardList = new ArrayList<>();
 
-	private Vector<Vector<LinearBlockElement>> loopList=new Vector<Vector<LinearBlockElement>>();
+	private List<List<LinearBlockElement>> loopList = new ArrayList<>();
 
-	private Vector<Block> modelBlockList;
-	private Vector<Line> modelLineist;
+	private List<Block> modelBlockList;
+	private List<Line> modelLineist;
 
-	private Vector<LinearBlockElement> loopPointList=new Vector<LinearBlockElement>();
+	private List<LinearBlockElement> loopPointList = new ArrayList<>();
 
-	private Vector<Vector<LinearBlockElement>> loopForwardList=new Vector<Vector<LinearBlockElement>>();
+	private List<List<LinearBlockElement>> loopForwardList = new ArrayList<>();
 
-	private Vector<ForwardGroup> forwardGroupList=new Vector<ForwardGroup>();
+	private List<ForwardGroup> forwardGroupList = new ArrayList<>();
 
-	private Vector<TargetGroup> targetGroupList=new Vector<TargetGroup>();
+	private List<TargetGroup> targetGroupList = new ArrayList<>();
 
 	public LoopSolver(Block outputBlock,CircuitModel circuitModel) {
 		this.outputBlock=outputBlock;
@@ -37,8 +38,8 @@ public class LoopSolver {
 		modelLineist=circuitModel.getModelLines();
 	}
 
-	public void addForward(Vector<LinearBlockElement> blockPath) {
-		Vector<LinearBlockElement> forward=new Vector<LinearBlockElement>();
+	public void addForward(List<LinearBlockElement> blockPath) {
+		List<LinearBlockElement> forward = new ArrayList<>();
 
 		for(LinearBlockElement element:blockPath) {
 			LinearBlockElement newElement=new LinearBlockElement(element.getBlock(),element.getSign());
@@ -49,8 +50,8 @@ public class LoopSolver {
 	}
 
 	//将发现的环路加入LoopList,并且找到LoopPoint,加入loopPointList
-	public void addLoop(Vector<LinearBlockElement> blockPath,Block block) {
-		Vector<LinearBlockElement> loop=new Vector<LinearBlockElement>();
+	public void addLoop(List<LinearBlockElement> blockPath,Block block) {
+		List<LinearBlockElement> loop = new ArrayList<>();
 		boolean isLoopStarted=false;
 		for(LinearBlockElement element:blockPath) {
 			if(block==element.getBlock()) {
@@ -87,7 +88,7 @@ public class LoopSolver {
 			System.out.println("/****"+targetGroup.getTargetElement().getBlock().getBlockName()+"***/");
 			int i=0;
 			for(ForwardGroup forwardGroup:targetGroup.getForwardGroupList()) {
-				Vector<ForwardLine> forwardLineList=forwardGroup.getForwardLineList();
+				List<ForwardLine> forwardLineList=forwardGroup.getForwardLineList();
 				System.out.println("Group "+i);
 				i++;
 				for(ForwardLine forwardLine:forwardLineList) {
@@ -99,7 +100,7 @@ public class LoopSolver {
 					}
 					System.out.println();
 					System.out.println("Contact Loop:");
-					for(Vector<LinearBlockElement> contactLoopList:forwardLine.getContactLoopList()) {
+					for(List<LinearBlockElement> contactLoopList:forwardLine.getContactLoopList()) {
 						for(LinearBlockElement element:contactLoopList) {
 							System.out.print(element.getBlock().getBlockName()+":"+(element.getSign()?"+":"-")+'\t');
 						}
@@ -107,7 +108,7 @@ public class LoopSolver {
 					}
 
 					System.out.println("Ohter Loop:");
-					for(Vector<LinearBlockElement> otherLoopList:forwardLine.getOtherLoopList()) {
+					for(List<LinearBlockElement> otherLoopList:forwardLine.getOtherLoopList()) {
 						for(LinearBlockElement element:otherLoopList) {
 							System.out.print(element.getBlock().getBlockName()+":"+(element.getSign()?"+":"-")+'\t');
 						}
@@ -122,7 +123,7 @@ public class LoopSolver {
 
 
 		System.out.println("Loop:");
-		for(Vector<LinearBlockElement> loop:loopList) {
+		for(List<LinearBlockElement> loop:loopList) {
 			for(LinearBlockElement element:loop) {
 				System.out.print(element.getBlock().getBlockName()+":"+(element.getSign()?"+":"-")+'\t');
 			}
@@ -131,7 +132,7 @@ public class LoopSolver {
 		System.out.println("+++++++++++++++++++++++++++");
 	}
 
-	private Vector<LinearBlockElement> blockPath;
+	private List<LinearBlockElement> blockPath;
 
 	private boolean isInBlockPath(Block block) {
 		for(LinearBlockElement pathElement:blockPath) {
@@ -149,8 +150,8 @@ public class LoopSolver {
 		System.out.println();
 	}
 
-	private void addLoopForward(Vector<LinearBlockElement> blockPath) {
-		Vector<LinearBlockElement> forward=new Vector<LinearBlockElement>();
+	private void addLoopForward(List<LinearBlockElement> blockPath) {
+		List<LinearBlockElement> forward = new ArrayList<>();
 
 		for(LinearBlockElement element:blockPath) {
 			LinearBlockElement newElement=new LinearBlockElement(element.getBlock(),element.getSign());
@@ -183,7 +184,7 @@ public class LoopSolver {
 
 		// 如果是Add,说明需要动态调整符号
 		if (block.getBlockType().equals("Add")) {
-			Vector<InputPort> inputPortList = block.getInputPortList();
+			List<InputPort> inputPortList = block.getInputPortList();
 
 			int i = 0;
 			for (InputPort input : inputPortList) {
@@ -195,7 +196,7 @@ public class LoopSolver {
 				searchBlock(newBlock);
 			}
 		} else {
-			Vector<InputPort> inputPortList = block.getInputPortList();
+			List<InputPort> inputPortList = block.getInputPortList();
 			InputPort input = inputPortList.get(0);
 			Block newBlock = input.getLinkedLine().getLinkedOutputPort().getBLock();
 			searchBlock(newBlock);
@@ -210,7 +211,7 @@ public class LoopSolver {
 		//寻找面向代数环节点LoopPoint的Forward通道
 		for (LinearBlockElement element : loopPointList) {
 			//System.out.println(element.getBlock().getBlockName());
-			blockPath = new Vector<LinearBlockElement>();
+			blockPath = new ArrayList<>();
 			//根据LoopPoint,重新搜索Forward和Loop节点
 			searchBlock(element.getBlock());
 		}
@@ -250,9 +251,9 @@ public class LoopSolver {
 	//设置ForwardGroup,ForwardGroup是起点和终点一样的前向通道集合
 	private void setupForwardGroupList() {
 		//将起点和终点相同的Forward列表,放入一个ForwardGroup
-		for(Vector<LinearBlockElement> forward:forwardList) {
-			LinearBlockElement startElement=forward.lastElement();
-			LinearBlockElement endElement=forward.firstElement();
+		for(List<LinearBlockElement> forward:forwardList) {
+			LinearBlockElement startElement=forward.get(forward.size() - 1);
+			LinearBlockElement endElement=forward.get(0);
 
 			//如果group存在,就插进去
 			boolean isFound=false;

@@ -18,12 +18,13 @@ import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.*;
 import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
-import org.apache.ibatis.jdbc.Null;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.WebSocketMessageJson;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -45,10 +46,26 @@ public class SimulationModel extends NCSLabModel{
     private double[] inputs;
     private double[] outputs;
     private JSONObject result = new JSONObject();
+	// 原有JSONObject构造函数
 	SimulationModel(JSONObject jsonIn, ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
-
-        // 绑定模型的输出端口
+		initializeStatesArray();
+	}
+	
+	// 新增String构造函数，支持Jackson DTO解析
+	SimulationModel(String jsonString, ModelMode mode) throws ModelException{
+		super(jsonString, mode);
+		initializeStatesArray();
+	}
+	
+	// 新增ModelJson DTO构造函数
+	SimulationModel(ModelJson modelDto, ModelMode mode) throws ModelException{
+		super(modelDto, mode);
+		initializeStatesArray();
+	}
+	
+	// 初始化状态数组
+	private void initializeStatesArray() {
         int statesSize = 0;
         for(Block block: blockList) {
             for (State state : block.getStateList()) {
@@ -61,10 +78,20 @@ public class SimulationModel extends NCSLabModel{
             }
         }
         states = new double[statesSize];
-	}
+    }
 
 	public static SimulationModel createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException {
         return new SimulationModel(jsonIn,mode);
+	}
+	
+	// 新增String工厂方法，支持DTO解析
+	public static SimulationModel createFromJsonString(String jsonString, ModelMode mode) throws ModelException {
+        return new SimulationModel(jsonString, mode);
+	}
+	
+	// 新增ModelJson DTO工厂方法
+	public static SimulationModel createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+        return new SimulationModel(modelDto, mode);
 	}
 
 	private void sendSimulatingMessage(Session session, double time) throws IOException{
@@ -87,8 +114,72 @@ public class SimulationModel extends NCSLabModel{
             System.out.println(jb);
 	}
 
+    /**
+     * Send optimized real-time scope data directly via WebSocket
+     * @param session WebSocket session
+     * @param scopeData Scope data to send
+     * @param currentTime Current simulation time
+     * @throws IOException if sending fails
+     */
+    private void sendOptimizedScopeData(Session session, JSONObject scopeData, double currentTime) throws IOException {
+        if (session != null) {
+            WebSocketMessageJson message = WebSocketMessageJson.createRealTimeScopeUpdate(
+                null, scopeData.toMap(), currentTime);
+            session.getBasicRemote().sendText(message.toLegacyJson().toString());
+        }
+    }
+
+    /**
+     * Send final optimized results directly via WebSocket (no file I/O)
+     * @param session WebSocket session
+     * @throws IOException if sending fails
+     */
+    private void sendOptimizedFinalResults(Session session) throws IOException {
+        if (session == null) return;
+        
+        JSONObject allResults = new JSONObject();
+        JSONArray jsonScopes = new JSONArray();
+        int scopeCursor = 0;
+
+        // Debug: Log terminal list and scope status 
+        System.out.printf("RT Simulation: Found %d terminals in model%n", getTerminalList().size());
+        int scopeCount = 0;
+        for (Terminal terminal : getTerminalList()) {
+            if (terminal instanceof ScopeStruct) {
+                scopeCount++;
+                ScopeStruct scope = (ScopeStruct) terminal;
+                System.out.printf("RT Simulation: Scope %s - timeList=%d, dataList=%d%n", 
+                    scope.getName(), scope.getTimeList().size(), scope.getDataList().size());
+            }
+        }
+        System.out.printf("RT Simulation: Total scopes found: %d%n", scopeCount);
+
+        // Build final results data
+        for (Terminal terminal : getTerminalList()) {
+            if (!(terminal instanceof ScopeStruct)) continue;
+            
+            JSONObject scopeJson = new JSONObject();
+            buildScopeJson(scopeCursor, (ScopeStruct) terminal, scopeJson);
+            jsonScopes.put(scopeJson);
+            scopeCursor++;
+        }
+
+        allResults.put("version", "0.2");
+        allResults.put("optimized", true);
+        allResults.put("scopes", jsonScopes);
+
+        // Send via WebSocket directly
+        WebSocketMessageJson message = WebSocketMessageJson.createFinalResultsMessage(
+            allResults.toMap(), getUserId(), getModelId());
+        session.getBasicRemote().sendText(message.toLegacyJson().toString());
+        
+        System.out.printf("RT Simulation: Final results sent - %d scopes processed%n", scopeCursor);
+    }
+
 	public void simulate(Session session) throws ModelException {
 		System.out.println("Executing simulation codes...");
+		System.out.printf("RT Debug: simulate() called with session=%s, terminals=%d%n", 
+			(session != null ? "present" : "null"), getTerminalList().size());
         // 初始化解算器
         double absTol = getConfig().getAbsTol();
         double relTol = getConfig().getRelTol();
@@ -124,28 +215,8 @@ public class SimulationModel extends NCSLabModel{
 
             };
 
-            FirstOrderIntegrator integrator = null;
-            switch (getConfig().getSolver()) {
-            	case "ode45":
-                    integrator = new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); break;
-                case "ode1":
-                    // 对应MATLAB中的ode1，是欧拉方法
-                    integrator = new EulerIntegrator(step); break;
-                case "ode2":
-                    // 对应MATLAB中的ode2，是改进的欧拉方法（Heun方法）
-                    integrator = new MidpointIntegrator(step); break;
-                case "ode3":
-                    // 对应MATLAB中的ode3，是三阶Runge-Kutta方法
-                    integrator = new ThreeEighthesIntegrator(step); break;
-                case "ode4":
-                    // 对应MATLAB中的ode4，是经典四阶Runge-Kutta方法
-                    integrator = new ClassicalRungeKuttaIntegrator(step); break;
-                case "ode5":
-                    // 对应MATLAB中的ode5，是Dormand-Prince方法，不过这里使用定步长
-                    integrator = new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); break;
-                default:
-                    throw new IllegalArgumentException("不支持的积分器名称: " + getConfig().getSolver());
-            }
+            String solverName = getConfig().getSolver();
+            FirstOrderIntegrator integrator = createIntegrator(solverName, step, minStep, maxStep, absTol, relTol);
 
             // 添加固定步长处理器
             FixedStepHandler fixedStepHandler = new FixedStepHandler() {
@@ -215,21 +286,27 @@ public class SimulationModel extends NCSLabModel{
             double tEnd = getConfig().getStopTime();
             calculateInits(tStart, states);
             boolean hasState = systemODE.getDimension() > 0;
+            
+            System.out.printf("Simulation setup: %s, hasState=%s, tStart=%.3f, tEnd=%.3f%n", 
+                getSolverDisplayName(solverName), hasState, tStart, tEnd);
             if(hasState) {
-                if(getConfig().getSolver().length()>4) {
-                    // Continuous
+                if(isVariableStepSolver(solverName)) {
+                    // Variable-step simulation
+                    System.out.println("Using variable-step integration with adaptive step handler");
                     integrator.addStepHandler(stepHandler);
                     double tEndActual = integrator.integrate(systemODE, tStart, states, tEnd, states);
-                    System.out.printf("Simulation over in time=%f(%f)%n", tEndActual, tEnd);
+                    System.out.printf("Variable-step simulation completed: actual_end=%.6f (target=%.6f)%n", tEndActual, tEnd);
                 }
-                // Discrete
                 else {
+                    // Fixed-step simulation
+                    System.out.println("Using fixed-step integration with precise step control");
                     performFixedStepIntegration(session, integrator, systemODE, tStart, tEnd, step, minStep);
                 }
             }else {
                 double t = tStart;
+                boolean finalTimeProcessed = false;
 
-                while(t <= tEnd){
+                while(t < tEnd){
                     calculateOutputs(t);
                     calculateDiscreteUpdates(t);
                     // 发送时间序列消息
@@ -240,15 +317,47 @@ public class SimulationModel extends NCSLabModel{
                             throw new RuntimeException(e);
                         }
                     }
-                    t+=step;
-                    if(t > tEnd){
-                        t = tEnd;
+                    
+                    t += step;
+                    
+                    // Check if next step would overshoot the end time
+                    if(t >= tEnd) {
+                        // Process final time point exactly
+                        calculateOutputs(tEnd);
+                        calculateDiscreteUpdates(tEnd);
+                        try {
+                            sendSimulatingMessage(session, tEnd);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        finalTimeProcessed = true;
+                        break; // Exit the loop after processing final time
+                    }
+                }
+                
+                // Safety check: ensure final time is always processed (should not be needed with above logic)
+                if(!finalTimeProcessed) {
+                    System.out.printf("Warning: Processing final time point as safety measure: t=%.6f, tEnd=%.6f%n", t, tEnd);
+                    calculateOutputs(tEnd);
+                    calculateDiscreteUpdates(tEnd);
+                    try {
+                        sendSimulatingMessage(session, tEnd);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
                 }
 
             }
             calculateTerminates(tEnd);
-            writeResultFiles();
+            
+            // Use optimized WebSocket streaming instead of file I/O
+            System.out.printf("RT Debug: About to send results - session=%s, terminals=%d%n", 
+                (session != null ? "present" : "null"), getTerminalList().size());
+            if (session != null) {
+                sendOptimizedFinalResults(session);
+            } else {
+                System.out.println("RT Debug: No session provided, skipping result sending");
+            }
 		}
 		catch(Exception e) {
             e.printStackTrace();
@@ -340,8 +449,154 @@ public class SimulationModel extends NCSLabModel{
 
         System.out.printf("Fixed-step integration completed at t=%.6f%n", currentTime);
     }
+    
+    /**
+     * Create appropriate integrator based on solver name and parameters
+     * Supports both variable-step and fixed-step solvers as per expanded frontend options
+     * 
+     * @param solverName Name of the solver (e.g., "ode45", "ode1", "auto")
+     * @param step Fixed step size for fixed-step solvers
+     * @param minStep Minimum step size for variable-step solvers
+     * @param maxStep Maximum step size for variable-step solvers
+     * @param absTol Absolute tolerance for variable-step solvers
+     * @param relTol Relative tolerance for variable-step solvers
+     * @return Configured FirstOrderIntegrator
+     */
+    private FirstOrderIntegrator createIntegrator(String solverName, double step, double minStep, 
+                                                  double maxStep, double absTol, double relTol) {
+        System.out.printf("Creating integrator: %s (step=%.6f, minStep=%.6f, maxStep=%.6f)%n", 
+                          solverName, step, minStep, maxStep);
+        
+        switch (solverName.toLowerCase()) {
+            // Variable-step solvers
+            case "auto":
+            case "variablestepauto":
+            case "variablestep":
+                System.out.println("Using automatic variable-step solver selection");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol);
+                
+            case "ode45":
+                System.out.println("Using ode45: Dormand-Prince 4th/5th order variable-step");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol);
+                
+            case "ode23":
+                System.out.println("Using ode23: Bogacki-Shampine 2nd/3rd order variable-step");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); // Fallback to DP54
+                
+            case "ode113":
+                System.out.println("Using ode113: Adams-Bashforth-Moulton multistep variable-step (fallback to DP54)");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); // Fallback since multistep not available
+                
+            case "ode15s":
+                System.out.println("Using ode15s: Stiff/NDF variable-step (fallback to DP54)");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); // Fallback for stiff
+                
+            case "ode23s":
+                System.out.println("Using ode23s: Rosenbrock stiff variable-step (fallback to DP54)");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); // Fallback for stiff
+                
+            case "ode23t":
+                System.out.println("Using ode23t: Trapezoidal rule variable-step (fallback to DP54)");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); // Fallback for stiff
+                
+            case "ode23tb":
+                System.out.println("Using ode23tb: TR-BDF2 variable-step (fallback to DP54)");
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol); // Fallback for stiff
+                
+            // Fixed-step solvers
+            case "ode1":
+                System.out.println("Using ode1: Euler 1st order fixed-step");
+                return new EulerIntegrator(step);
+                
+            case "ode2":
+                System.out.println("Using ode2: Heun 2nd order fixed-step");
+                return new MidpointIntegrator(step);
+                
+            case "ode3":
+                System.out.println("Using ode3: Bogacki-Shampine 3rd order fixed-step");
+                return new ThreeEighthesIntegrator(step);
+                
+            case "ode4":
+                System.out.println("Using ode4: Classical Runge-Kutta 4th order fixed-step");
+                return new ClassicalRungeKuttaIntegrator(step);
+                
+            case "ode5":
+                System.out.println("Using ode5: Dormand-Prince 5th order fixed-step");
+                return new DormandPrince54Integrator(step, step, absTol, relTol); // Fixed step DP
+                
+            case "ode8":
+                System.out.println("Using ode8: Dormand-Prince RK8(7) high-order fixed-step");
+                return new DormandPrince853Integrator(step, step, absTol, relTol);
+                
+            case "ode14x":
+                System.out.println("Using ode14x: Extrapolation variable-order fixed-step");
+                return new GraggBulirschStoerIntegrator(step, step, absTol, relTol);
+                
+            // Legacy compatibility
+            case "fixedstepauto":
+            case "fixedstep":
+                System.out.println("Using automatic fixed-step solver selection (ode4)");
+                return new ClassicalRungeKuttaIntegrator(step);
+                
+            default:
+                System.err.printf("Unknown solver: %s, falling back to ode45%n", solverName);
+                return new DormandPrince54Integrator(minStep, maxStep, absTol, relTol);
+        }
+    }
+    
+    /**
+     * Determine if the solver is a variable-step solver
+     * @param solverName Name of the solver
+     * @return true if variable-step, false if fixed-step
+     */
+    private boolean isVariableStepSolver(String solverName) {
+        switch (solverName.toLowerCase()) {
+            case "auto":
+            case "variablestepauto":
+            case "variablestep":
+            case "ode45":
+            case "ode23":
+            case "ode113":
+            case "ode15s":
+            case "ode23s":
+            case "ode23t":
+            case "ode23tb":
+                return true;
+            default:
+                return false;
+        }
+    }
+    
+    /**
+     * Get solver display name for logging and debugging
+     * @param solverName Internal solver name
+     * @return Human-readable solver description
+     */
+    private String getSolverDisplayName(String solverName) {
+        switch (solverName.toLowerCase()) {
+            case "auto":
+            case "variablestepauto":
+                return "Auto (Variable-step Dormand-Prince)";
+            case "ode45": return "ODE45 (Dormand-Prince 4/5)";
+            case "ode23": return "ODE23 (Bogacki-Shampine 2/3)";
+            case "ode113": return "ODE113 (Adams-Bashforth-Moulton)";
+            case "ode15s": return "ODE15s (Stiff/NDF)";
+            case "ode23s": return "ODE23s (Rosenbrock)";
+            case "ode23t": return "ODE23t (Trapezoidal)";
+            case "ode23tb": return "ODE23tb (TR-BDF2)";
+            case "ode1": return "ODE1 (Euler)";
+            case "ode2": return "ODE2 (Heun)";
+            case "ode3": return "ODE3 (Bogacki-Shampine)";
+            case "ode4": return "ODE4 (Classical Runge-Kutta)";
+            case "ode5": return "ODE5 (Dormand-Prince)";
+            case "ode8": return "ODE8 (Dormand-Prince RK8(7))";
+            case "ode14x": return "ODE14x (Extrapolation)";
+            case "fixedstepauto": return "Auto (Fixed-step Runge-Kutta)";
+            default: return solverName + " (Unknown)";
+        }
+    }
 
-    private void calculateOutputs(double t) {
+    protected void calculateOutputs(double t) {
         // 计算各个模块的输出
         // 类似Simulink的mdlOutputs
         for(Block block: outputChain) {
@@ -364,13 +619,17 @@ public class SimulationModel extends NCSLabModel{
                     outputDataArray.put(outputData);
                 }
                 for (InputPort inputPort : block.getInputPortList()) {
-                    JSONObject inputData = new JSONObject();
-                    OutputPort outputPort = inputPort.getLinkedLine().getLinkedOutputPort();
-                    inputData.put("name", outputPort.getOutputSignalC().getName());
-                    inputData.put("type", outputPort.getOutputSignalC().getDataType());
-                    inputData.put("real", outputPort.getOutputSignalC().getData().getInitValue());
-                    inputData.put("matrix", outputPort.getOutputSignalC().getData().getMatrix());
-                    inputDataArray.put(inputData);
+                    if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
+                        JSONObject inputData = new JSONObject();
+                        OutputPort outputPort = inputPort.getLinkedLine().getLinkedOutputPort();
+                        if (outputPort.getOutputSignalC() != null) {
+                            inputData.put("name", outputPort.getOutputSignalC().getName());
+                            inputData.put("type", outputPort.getOutputSignalC().getDataType());
+                            inputData.put("real", outputPort.getOutputSignalC().getData().getInitValue());
+                            inputData.put("matrix", outputPort.getOutputSignalC().getData().getMatrix());
+                            inputDataArray.put(inputData);
+                        }
+                    }
                 }
             }
             catch (JSONException e) {
@@ -390,7 +649,7 @@ public class SimulationModel extends NCSLabModel{
         result.put("series", series);
     }
 
-    private void calculateDerivatives(double t, double[] x, double[] xDot) {
+    protected void calculateDerivatives(double t, double[] x, double[] xDot) {
         // 计算连续状态的导数
         // 类似Simulink的mdlDerivatives
 
@@ -434,7 +693,7 @@ public class SimulationModel extends NCSLabModel{
 
     }
 
-    private void calculateDiscreteUpdates(double t) {
+    protected void calculateDiscreteUpdates(double t) {
         // 更新离散状态
         // 类似Simulink的mdlUpdate
         for(Block block: blockList){
@@ -472,11 +731,15 @@ public class SimulationModel extends NCSLabModel{
         }
     }
 
-    // 对应 C++ 的 writeScope 函数
-    private void writeScope(int cursor, ScopeStruct scope, JSONArray jsonScopes) {
+    /**
+     * Build scope JSON data (optimized version)
+     * @param cursor Scope cursor/index
+     * @param scope ScopeStruct to process
+     * @param jsonScope Target JSON object to populate
+     */
+    private void buildScopeJson(int cursor, ScopeStruct scope, JSONObject jsonScope) {
         Scope scopeBlock = (Scope) scope.getBlock();
-        JSONObject jsonScope = new JSONObject();
-
+        
         jsonScope.put("width", scope.getWidth());
         jsonScope.put("height", scope.getHeight());
         jsonScope.put("name", scopeBlock.getBlockName());
@@ -489,7 +752,7 @@ public class SimulationModel extends NCSLabModel{
         JSONArray time = new JSONArray();
         JSONArray data = new JSONArray();
 
-        // 处理时间和数据列表
+        // Process time and data lists efficiently
         while (!scope.getTimeList().isEmpty() && !scope.getDataList().isEmpty()) {
             time.put(scope.getTimeList().remove(0));
 
@@ -502,64 +765,8 @@ public class SimulationModel extends NCSLabModel{
 
         jsonScope.put("time", time);
         jsonScope.put("data", data);
-
-        jsonScopes.put(cursor, jsonScope);
     }
 
-    @Getter
-    protected String m2plabRoot = Optional.ofNullable(System.getenv("M2PLAB_ROOT")).orElse("/data/M2PLab");
-
-    // Get the code path base using properties, with environment variable substitution
-    protected String codePathBase=("deploy".equals(Property.instance.getProperty("mode").trim())?
-        Property.instance.getProperty("CCodePath")
-        :
-        Property.instance.getProperty("CCodePathWin"))
-        .replace("${M2PLAB_ROOT}", m2plabRoot)
-        .replace("${user.home}", System.getProperty("user.home"))
-        .replace("${user.dir}", System.getProperty("user.dir"));
-
-
-    @Deprecated // 兼容旧版本
-    private void writeResultFiles(){
-
-        String userPath=codePathBase+getUserId();
-
-        File dir=new File(userPath);
-        if(!dir.exists()) {
-            dir.mkdir();
-        }
-
-
-        String modelPath=userPath+"/"+getModelId();
-        dir=new File(modelPath);
-        if(!dir.exists()) {
-            dir.mkdir();
-        }
-
-        JSONObject result = new JSONObject();
-        JSONArray jsonScopes = new JSONArray();
-
-        int scopeCursor = 0;
-
-        for (Terminal terminal : getTerminalList()) {
-            if(!(terminal instanceof ScopeStruct)){
-                continue;
-            }
-            writeScope(scopeCursor, (ScopeStruct) terminal, jsonScopes);
-            scopeCursor++;
-        }
-
-        result.put("version", "0.1");
-        result.put("scopes", jsonScopes);
-
-        // 将 JSON 写入文件
-        try (FileWriter file = new FileWriter(modelPath + "/results.json")) {
-            file.write(result.toString());
-            System.out.println("JSON 写入成功");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
 
 

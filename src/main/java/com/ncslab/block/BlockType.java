@@ -3,7 +3,9 @@ package com.ncslab.block;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.ncslab.block.hardware.rasp.GPIO;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,7 @@ import org.json.JSONObject;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.dto.BlockJson;
+import com.ncslab.util.JsonUtils;
 /**
  * Generate corresponding <code>Block</code> according to <code>BlockType</code>.
  * If your block is an instance of <code>Block</code> but not an instance of <code>SoughtedBlock</code>,
@@ -274,15 +277,24 @@ public class BlockType{
 	}
 	
 	/**
-	 * DTO-NATIVE factory method for creating blocks from BlockJson DTOs
-	 * This is the REAL DTO implementation that doesn't convert to JSONObject
+	 * High-performance DTO factory method using OptimizedBlockFactory
 	 * @param id Block ID
 	 * @param blockDto BlockJson DTO
 	 * @param model NCSLabModel instance
-	 * @return Block instance created directly from DTO
+	 * @return Block instance created with optimal performance
 	 * @throws ModelException if block creation fails
 	 */
 	public static Block createBlockFromDto(int id, BlockJson blockDto, NCSLabModel model) throws ModelException {
+		// Use optimized factory for better performance
+		return OptimizedBlockFactory.createOptimizedBlock(id, blockDto, model);
+	}
+	
+	/**
+	 * Legacy DTO factory method for compatibility (deprecated)
+	 * @deprecated Use createBlockFromDto which now uses OptimizedBlockFactory
+	 */
+	@Deprecated
+	public static Block createBlockFromDtoLegacy(int id, BlockJson blockDto, NCSLabModel model) throws ModelException {
 		if (blockDto == null) {
 			throw new ModelException("BlockJson DTO cannot be null");
 		}
@@ -303,23 +315,22 @@ public class BlockType{
 				try {
 					// First try to use DTO constructor (new approach)
 					block = blockClass.getConstructor(BlockJson.class, NCSLabModel.class).newInstance(blockDto, model);
-					System.out.println("Successfully created block: " + blockType + "/" + blockDto.getBlockName());
+					log.debug("Successfully created block: {}/{}", blockType, blockDto.getBlockName());
 				} catch (NoSuchMethodException e) {
 					// Fall back to JSONObject constructor (compatibility mode)
-					System.out.println("Block " + blockType + " doesn't have DTO constructor, converting to JSONObject");
+					log.debug("Block {} doesn't have DTO constructor, converting to JSONObject", blockType);
 					JSONObject blockJSON = convertBlockDtoToJsonObject(blockDto);
 					block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
 				}
 			} else {
-				System.out.println("Could not find block type: " + blockType);
+				log.error("Could not find block type: {}", blockType);
 				throw new ModelException("Unknown block type: " + blockType);
 			}
 		} catch (ModelException e) {
 			// Re-throw ModelException (like unknown block type)
 			throw e;
 		} catch (Exception e) {
-			System.err.println("Error parsing block DTO: " + blockDto.getBlockName() + " - " + e.getMessage());
-			e.printStackTrace(); // Add stack trace for debugging
+			log.error("Error parsing block DTO: {} - {}", blockDto.getBlockName(), e.getMessage());
 			return null; // Return null for construction failures to match caller expectation
 		}
 
@@ -330,24 +341,34 @@ public class BlockType{
 	}
 	
 	/**
-	 * Temporary conversion utility for blocks that haven't been migrated to DTO constructors yet
+	 * Optimized conversion utility using ObjectMapper for blocks that haven't been migrated to DTO constructors yet
 	 * This method will be removed once all blocks have DTO constructors
 	 * @param blockDto BlockJson DTO
 	 * @return JSONObject for legacy compatibility
 	 */
 	private static JSONObject convertBlockDtoToJsonObject(BlockJson blockDto) {
-		JSONObject blockJSON = new JSONObject();
-		blockJSON.put("blockType", blockDto.getBlockType());
-		blockJSON.put("srcBlock", blockDto.getSrcBlock());
-		blockJSON.put("blockName", blockDto.getBlockName());
-		blockJSON.put("blockPath", blockDto.getBlockPath());
-		blockJSON.put("blockUUID", blockDto.getBlockUUID());
-		
-		if (blockDto.getParamValues() != null) {
-			blockJSON.put("paramValues", new JSONObject(blockDto.getParamValues()));
+		try {
+			// Use ObjectMapper to convert DTO to JSON string, then to JSONObject
+			// This is more efficient and consistent than manual field copying
+			String jsonString = JsonUtils.getObjectMapper().writeValueAsString(blockDto);
+			return new JSONObject(jsonString);
+		} catch (Exception e) {
+			log.warn("Failed to convert BlockDto using ObjectMapper, falling back to manual conversion: {}", e.getMessage());
+			
+			// Fallback to manual conversion if ObjectMapper fails
+			JSONObject blockJSON = new JSONObject();
+			blockJSON.put("blockType", blockDto.getBlockType());
+			blockJSON.put("srcBlock", blockDto.getSrcBlock());
+			blockJSON.put("blockName", blockDto.getBlockName());
+			blockJSON.put("blockPath", blockDto.getBlockPath());
+			blockJSON.put("blockUUID", blockDto.getBlockUUID());
+			
+			if (blockDto.getParamValues() != null) {
+				blockJSON.put("paramValues", new JSONObject(blockDto.getParamValues()));
+			}
+			
+			return blockJSON;
 		}
-		
-		return blockJSON;
 	}
 
     public static Set<String> getBlockTypes(){
@@ -376,8 +397,8 @@ public class BlockType{
                 // Fallback to empty set if PARAMETER_DEFAULTS doesn't exist
                 parameterNames = new java.util.HashSet<>();
             }
-            Vector<?> inputNames = (Vector<?>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法
-            Vector<?> outputNames = (Vector<?>) blockClass.getMethod("getOutputNames").invoke(null); // 注意这里是null，因为是静态方法
+            List<?> inputNames = (List<?>) blockClass.getMethod("getInputNames").invoke(null); // 注意这里是null，因为是静态方法
+            List<?> outputNames = (List<?>) blockClass.getMethod("getOutputNames").invoke(null); // 注意这里是null，因为是静态方法
 
             JSONObject jo = new JSONObject();
             jo.put("type", blockType);

@@ -2,7 +2,8 @@ package com.ncslab.block;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.block.io.*;
 import com.ncslab.code.st.CodeStructST;
@@ -49,21 +50,21 @@ public class Block implements MCodeBlock, CCodeBlock{
 
 	//输入与输出端口的列表
     @Getter
-    protected Vector<InputPort> inputPortList = new Vector<>();
+    protected List<InputPort> inputPortList = new ArrayList<>();
     @Getter
-    protected Vector<OutputPort> outputPortList = new Vector<OutputPort>();
+    protected List<OutputPort> outputPortList = new ArrayList<>();
     @Getter
-    protected Vector<Parameter> parameterList = new Vector<Parameter>();
+    protected List<Parameter> parameterList = new ArrayList<>();
     @Getter
-    protected Vector<State> stateList = new Vector<State>();
+    protected List<State> stateList = new ArrayList<>();
     @Getter
-    protected Vector<State> dStateList = new Vector<State>();
+    protected List<State> dStateList = new ArrayList<>();
     @Getter
-    protected Vector<RWork> rworkList = new Vector<>();
+    protected List<RWork> rworkList = new ArrayList<>();
     @Getter
-    protected Vector<GlobalVariable> globalVariableList = new Vector<>(); // global variables
+    protected List<GlobalVariable> globalVariableList = new ArrayList<>(); // global variables
 
-	protected Vector<OutputSignal> outputSignalList = new Vector<OutputSignal>();
+	protected List<OutputSignal> outputSignalList = new ArrayList<>();
 
 	//是否输出的代码已经生成，如果生成，遍历到这个模块的时候，直接引用就行了，就不需要进一步遍历了
 	protected boolean isOutputCodeGenerated = false;
@@ -116,10 +117,10 @@ public class Block implements MCodeBlock, CCodeBlock{
     }
 
     @Getter
-    public static Vector<String> inputNames = new Vector<>();
+    public static List<String> inputNames = new ArrayList<>();
 
     @Getter
-    public static Vector<String> outputNames = new Vector<>();
+    public static List<String> outputNames = new ArrayList<>();
 
     protected VelocityContext context = null;
 
@@ -502,7 +503,7 @@ public class Block implements MCodeBlock, CCodeBlock{
     }
 
 	protected String[] getInputPortVariables(){
-		Vector<String> inputPortVariables = new Vector<>();
+		List<String> inputPortVariables = new ArrayList<>();
 		for(int n=0; n<inputPortList.size();n++){
 			inputPortVariables.add(getInputPortVariable(n));
 		}
@@ -510,7 +511,7 @@ public class Block implements MCodeBlock, CCodeBlock{
 	}
 
 	protected String[] getOutputPortVariables(){
-		Vector<String> outputPortVariables = new Vector<>();
+		List<String> outputPortVariables = new ArrayList<>();
 		for(int n=0; n<outputPortList.size();n++){
 			outputPortVariables.add(getOutputPortVariable(n));
 		}

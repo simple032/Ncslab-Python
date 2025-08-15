@@ -1,6 +1,7 @@
 package com.ncslab.line;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,7 @@ public class Line {
     @Getter
     private int lineId=0;
 
-	Line(JSONObject lineJSON,Vector<Block> blockList){
+	Line(JSONObject lineJSON,List<Block> blockList){
 		String fromBlockName=lineJSON.getString("fromBlockName");
 		String toBlockName=lineJSON.getString("toBlockName");
         String fromBlockUUID=lineJSON.optString("fromBlockUUID", "null");
@@ -61,7 +62,7 @@ public class Line {
 		int fromPortNo=lineJSON.getInt("fromPortNo");
 		OutputPort fromPort=null;
 
-		Vector<OutputPort> outputPortList=fromBlock.getOutputPortList();
+		List<OutputPort> outputPortList=fromBlock.getOutputPortList();
 		//modified by zhou 20240520
 		if(fromBlock.getBlockType().equals("Out")) {
 			fromPort=fromBlock.getOutputPortList().get(0);
@@ -91,7 +92,7 @@ public class Line {
 		int toPortNo=lineJSON.getInt("toPortNo");
 		InputPort toPort=null;
 
-		Vector<InputPort> inputPortList=toBlock.getInputPortList();
+		List<InputPort> inputPortList=toBlock.getInputPortList();
 		//modified by zhou 20240520
 		if(toBlock.getBlockType().equals("In")) {
 			toPort=toBlock.getInputPortList().get(0);
@@ -117,14 +118,14 @@ public class Line {
 	}
 
     public static Line createLine(JSONObject lineJSON,NCSLabModel model) {
-		Vector<Block> blockList=model.getBlockList();
+		List<Block> blockList=model.getBlockList();
 
 		Line line=new Line(lineJSON,blockList);
 
 		return line;
 	}
 
-	public static Line createLine(JSONObject lineJSON,Vector<Block> blockList) {
+	public static Line createLine(JSONObject lineJSON,List<Block> blockList) {
 		Line line=new Line(lineJSON,blockList);
 
 		return line;

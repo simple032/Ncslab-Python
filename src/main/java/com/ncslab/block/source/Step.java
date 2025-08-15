@@ -19,7 +19,8 @@ import com.ncslab.util.TemplateManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Step block with SIMULINK-compatible parameters and type-safe constructors.
@@ -53,9 +54,9 @@ public class Step extends SourceBlock {
         PARAMETER_DEFAULTS = mergeWithCommonDefaults(stepDefaults);
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
     
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // Port names

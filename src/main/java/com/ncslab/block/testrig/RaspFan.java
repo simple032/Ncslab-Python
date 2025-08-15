@@ -12,7 +12,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RaspFan extends Block {
     String hardwareDefineName;
@@ -29,8 +30,8 @@ public class RaspFan extends Block {
 
 
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         outputNames.add("FanSpeed");

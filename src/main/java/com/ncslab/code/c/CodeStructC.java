@@ -3,7 +3,8 @@ package com.ncslab.code.c;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 import java.util.Optional;
 
@@ -176,10 +177,10 @@ abstract public class CodeStructC{
 	private int parameterIndex=1;
 	private int stateIndex=1;
 
-	private Vector<Parameter> parameterList=new Vector<Parameter>();
-	private Vector<State> stateList=new Vector<State>();
-	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
-	private Vector<GlobalVariable> variableList = new Vector<>();
+	private List<Parameter> parameterList = new ArrayList<>();
+	private List<State> stateList = new ArrayList<>();
+	private List<OutputSignal> outputSignalList = new ArrayList<>();
+	private List<GlobalVariable> variableList = new ArrayList<>();
 
 
 	protected CodeModelC model;
@@ -750,6 +751,7 @@ abstract public class CodeStructC{
     }
 	protected void writeNCSLabFile(String fileName, String fileNameOut) {
 		// TODO: writeNCSLabFile(fileName, fileNameOut, false);
+		System.out.println("Writing NCSLab file: " + fileNameOut);
 		writeNCSLabFile(fileName, fileNameOut, false);
 	}
 
@@ -1194,12 +1196,18 @@ abstract public class CodeStructC{
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize inputs for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(InputPort input:block.getInputPortList()) {
-				if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
-					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+				if(input.getLinkedLine() != null && input.getLinkedLine().getLinkedOutputPort() != null) {
+					if(input.getLinkedLine().getLinkedOutputPort().getWidth()==1) {
+						dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+						dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=SINGLE;\n";
+					}else {
+						dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
+						dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=MATRIX;\n";
+					}
+				} else {
+					// Handle unconnected inputs - initialize with null or default values
+					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=NULL;\n";
 					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=SINGLE;\n";
-				}else {
-					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".vp=&"+input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()+";\n";
-					dataStructureInitCode+="inputPort"+block.getBlockId()+"_"+input.getNumber()+".type=MATRIX;\n";
 				}
 			}
 		}

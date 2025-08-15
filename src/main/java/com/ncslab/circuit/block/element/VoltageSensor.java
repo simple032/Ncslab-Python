@@ -1,6 +1,7 @@
 package com.ncslab.circuit.block.element;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -83,14 +84,14 @@ public class VoltageSensor extends CircuitBlock {
 	protected void setupBlockListConnections() {
 		super.setupBlockListConnections();
 		
-		Vector<InputPort> inputPortList=add.getInputPortList();
+		List<InputPort> inputPortList=add.getInputPortList();
 		for(int i=0;i<inputPortList.size();i++) {
 			InputPort input=inputPortList.get(i);
 			OutputPort output=null;
 			BlockVoltage voltage=getVoltageList().get(i);
 			output=voltage.getCircuitBlock().getOutputPort();
 			
-			Vector<Block> blocks=new Vector<Block>();
+			List<Block> blocks = new ArrayList<>();
 			blocks.add(input.getBLock());
 			blocks.add(output.getBLock());
 			

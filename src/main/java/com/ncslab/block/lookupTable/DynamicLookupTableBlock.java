@@ -11,7 +11,6 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 
 public class DynamicLookupTableBlock extends LookupTableBlock{

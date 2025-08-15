@@ -150,7 +150,7 @@ public class OctaveThread extends BaseServerThread<OctaveThread, OctaveServer> {
                         matline2 = matline2 + matline;
                     }
                     System.out.println("matline2 in octaveThread:" + matline2);
-                    this.model.OutputMat = matline2;
+                    model.setOutputMat(matline2);
                     bufferedReader.close();
                     proc.waitFor();
                 } catch (IOException e) {

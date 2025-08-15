@@ -1,6 +1,7 @@
 package com.ncslab.circuit.block;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -33,23 +34,23 @@ abstract public class CircuitBlock {
 	protected BlockMode blockMode;
 	
 	//等价的Block组合
-	protected Vector<Block> blockList=new Vector<>();
+	protected List<Block> blockList = new ArrayList<>();
 	
 	//等价的Line组合
-	protected Vector<Line> lineList=new Vector<>();
+	protected List<Line> lineList = new ArrayList<>();
 
 	// 电气端口的列表
-	protected Vector<CircuitPort> circuitPortList = new Vector<>();
+	protected List<CircuitPort> circuitPortList = new ArrayList<>();
 	
 	//输出与外界连接的等价Block列表
-	protected Vector<Block> outputBlockList=new Vector<>();
+	protected List<Block> outputBlockList = new ArrayList<>();
 	
 	//输入与外界连接的等价Block列表
-	//protected Vector<Block> inputBlockList=new Vector<>();
-	protected Vector<InputPort> inputPortList=new Vector<>();
+	//protected List<Block> inputBlockList = new ArrayList<>();
+	protected List<InputPort> inputPortList = new ArrayList<>();
 	
 	//模块的电压方程
-	private Vector<BlockVoltage> voltageList=new Vector<>();
+	private List<BlockVoltage> voltageList = new ArrayList<>();
 	
 	//与其他的CircuitBlock生成的Block相连的输出Block
 	private Block outputBlock;
@@ -83,11 +84,11 @@ abstract public class CircuitBlock {
 		return this.circuitModel;
 	}
 	
-	public Vector<Block> getOutputBlockList() {
+	public List<Block> getOutputBlockList() {
 		return this.outputBlockList;
 	}
 	
-	public Vector<InputPort> getInputPortList() {
+	public List<InputPort> getInputPortList() {
 		return this.inputPortList;
 	}
 	
@@ -105,7 +106,7 @@ abstract public class CircuitBlock {
 			return;
 		}
 		
-		Vector<InputPort> inputPortList=inputBlock.getInputPortList();
+		List<InputPort> inputPortList=inputBlock.getInputPortList();
 		for(int i=0;i<inputPortList.size();i++) {
 			InputPort input=inputPortList.get(i);
 			OutputPort output=null;
@@ -120,7 +121,7 @@ abstract public class CircuitBlock {
 				break;
 			}
 			
-			Vector<Block> blocks=new Vector<>();
+			List<Block> blocks = new ArrayList<>();
 			blocks.add(input.getBLock());
 			blocks.add(output.getBLock());
 			
@@ -165,7 +166,7 @@ abstract public class CircuitBlock {
 		return outputBlock.getOutputPortList().get(0);
 	}
 	
-	public Vector<Block> getBlockList(){
+	public List<Block> getBlockList(){
 		/*
 		for(Block block:blockList) {
 			System.out.println(block.getBlockName());
@@ -173,15 +174,15 @@ abstract public class CircuitBlock {
 		return this.blockList;
 	}
 	
-	public Vector<Line> getLineList(){
+	public List<Line> getLineList(){
 		return this.lineList;
 	}
 	
-	public void setVoltageList(Vector<BlockVoltage> voltageList) {
+	public void setVoltageList(List<BlockVoltage> voltageList) {
 		this.voltageList=voltageList;
 	}
 	
-	public Vector<BlockVoltage> getVoltageList(){
+	public List<BlockVoltage> getVoltageList(){
 		return this.voltageList;
 	}
 	
@@ -209,7 +210,7 @@ abstract public class CircuitBlock {
 		return this.blockName;
 	}
 	
-	public Vector<CircuitPort> getCurcuitPortList(){
+	public List<CircuitPort> getCurcuitPortList(){
 		return this.circuitPortList;
 	}
 	
@@ -253,7 +254,7 @@ abstract public class CircuitBlock {
 	}
 	
 	/*
-	public void searchBlock(Vector<CircuitBlock> blockPath,CircuitPort port) {
+	public void searchBlock(List<CircuitBlock> blockPath,CircuitPort port) {
 		CircuitNode node=port.getCircuitNode();
 		node.getOtherCircuitPortList(port);
 	}*/
@@ -270,7 +271,7 @@ abstract public class CircuitBlock {
 		lineList.add(line);
 	}
 	
-	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum,Vector<Block> blockList) {
+	protected void createLine(String fromBlockName,int fromBlockNum,String toBlockName,int toBlockNum,List<Block> blockList) {
 		JSONObject lineObject=new JSONObject();
 		lineObject.put("fromBlockName", fromBlockName);
 		lineObject.put("fromPortNo", fromBlockNum);

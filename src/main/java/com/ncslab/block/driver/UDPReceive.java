@@ -13,7 +13,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UDPReceive extends com.ncslab.block.Block{
 
@@ -39,7 +40,7 @@ public class UDPReceive extends com.ncslab.block.Block{
         PARAMETER_DEFAULTS.put("port", "8080");
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
     static {
 
         outputNames.add("out1");

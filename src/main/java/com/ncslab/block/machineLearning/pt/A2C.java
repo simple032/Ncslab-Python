@@ -11,7 +11,6 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 public class A2C extends PTModel {
     private Parameter inputFeatures,

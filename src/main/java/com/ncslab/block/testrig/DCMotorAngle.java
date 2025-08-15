@@ -16,7 +16,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DCMotorAngle extends Block {
 
@@ -32,8 +33,8 @@ public class DCMotorAngle extends Block {
     private double input_min = -1.0;
 
 
-    private static final Vector<String> outputNames = new Vector<>();
-    private static final Vector<String> inputNames = new Vector<>();
+    private static final List<String> outputNames = new ArrayList<>();
+    private static final List<String> inputNames = new ArrayList<>();
 
     
     

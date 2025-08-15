@@ -1,6 +1,7 @@
 package com.ncslab.circuit.loop;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.block.Block;
 import com.ncslab.circuit.block.electblock.ElectBlock;
@@ -8,21 +9,21 @@ import com.ncslab.circuit.block.electblock.ElectBlock;
 import com.ncslab.circuit.loop.CircuitLoopException;
 
 public class ForwardLine {
-	private Vector<LinearBlockElement> forward=new Vector<LinearBlockElement>();
+	private List<LinearBlockElement> forward = new ArrayList<>();
 	
-	private Vector<Vector<LinearBlockElement>> contactLoopList=new Vector<Vector<LinearBlockElement>>();
+	private List<List<LinearBlockElement>> contactLoopList = new ArrayList<>();
 	
-	private Vector<Vector<LinearBlockElement>> otherLoopList=new Vector<Vector<LinearBlockElement>>();
+	private List<List<LinearBlockElement>> otherLoopList = new ArrayList<>();
 	
-	public ForwardLine(Vector<LinearBlockElement> forward) {
+	public ForwardLine(List<LinearBlockElement> forward) {
 		this.forward=forward;
 	}
 	
-	public Vector<LinearBlockElement> getForward(){
+	public List<LinearBlockElement> getForward(){
 		return this.forward;
 	}
 	
-	private boolean isContact(Vector<LinearBlockElement> line1,Vector<LinearBlockElement> line2) {
+	private boolean isContact(List<LinearBlockElement> line1,List<LinearBlockElement> line2) {
 		boolean isFound=false;
 		for(LinearBlockElement element1:line1) {
 			if(isFound) {
@@ -38,9 +39,9 @@ public class ForwardLine {
 	}
 	
 	
-	public void setupLoops(Vector<Vector<LinearBlockElement>> loopList) {
+	public void setupLoops(List<List<LinearBlockElement>> loopList) {
 		//建立与前向通道先接触的LoopList,以及不想连的LoopList
-		for(Vector<LinearBlockElement> loop:loopList) {
+		for(List<LinearBlockElement> loop:loopList) {
 			if(isContact(loop,forward)) {
 				contactLoopList.add(loop);
 			}
@@ -50,16 +51,16 @@ public class ForwardLine {
 		}
 	}
 	
-	public Vector<Vector<LinearBlockElement>> getContactLoopList(){
+	public List<List<LinearBlockElement>> getContactLoopList(){
 		return this.contactLoopList;
 	}
 	
-	public Vector<Vector<LinearBlockElement>> getOtherLoopList(){
+	public List<List<LinearBlockElement>> getOtherLoopList(){
 		return this.otherLoopList;
 	}
 	
 	//生成Forward通道的乘积Code
-	public static String getLineString(Vector<LinearBlockElement> line) throws CircuitLoopException{
+	public static String getLineString(List<LinearBlockElement> line) throws CircuitLoopException{
 		String lineString="";
 		
 		boolean first=true;
@@ -91,7 +92,7 @@ public class ForwardLine {
 		forwardLineString+=getLineString(forward);
 		
 		forwardLineString+="*(1";
-		for(Vector<LinearBlockElement> otherLoop:otherLoopList) {
+		for(List<LinearBlockElement> otherLoop:otherLoopList) {
 			forwardLineString+="-";
 			forwardLineString+=getLineString(otherLoop);
 		}

@@ -1,12 +1,13 @@
 package com.ncslab.code.c.linux.pc.simulation;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 import java.io.File;
 import java.io.IOException;
 // import org.apache.parquet.bytes.LittleEndianDataInputStream;
 import com.google.common.io.LittleEndianDataInputStream;
 import org.json.JSONObject;
+import com.ncslab.dto.ModelJson;
 
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
@@ -17,8 +18,19 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 
 	private CodeStructCLinuxPCSimulation codeRaspberry = new CodeStructCLinuxPCSimulation(this);
 
+	// 原有JSONObject构造函数
 	CodeModelCLinuxPCSimulation(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
+	}
+	
+	// 新增String构造函数，支持Jackson DTO解析
+	CodeModelCLinuxPCSimulation(String jsonString, ModelMode mode) throws ModelException{
+		super(jsonString, mode);
+	}
+	
+	// 新增ModelJson DTO构造函数
+	CodeModelCLinuxPCSimulation(ModelJson modelDto, ModelMode mode) throws ModelException{
+		super(modelDto, mode);
 	}
 
 	@Override
@@ -26,8 +38,21 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 		return codeRaspberry;
 	}
 
+	// 原有JSONObject工厂方法  
 	public static CodeModelCLinuxPCSimulation createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException {
 		CodeModelCLinuxPCSimulation model = new CodeModelCLinuxPCSimulation(jsonIn,mode);
+		return model;
+	}
+	
+	// 新增String工厂方法，支持DTO解析
+	public static CodeModelCLinuxPCSimulation createFromJsonString(String jsonString, ModelMode mode) throws ModelException {
+		CodeModelCLinuxPCSimulation model = new CodeModelCLinuxPCSimulation(jsonString, mode);
+		return model;
+	}
+	
+	// 新增ModelJson DTO工厂方法
+	public static CodeModelCLinuxPCSimulation createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+		CodeModelCLinuxPCSimulation model = new CodeModelCLinuxPCSimulation(modelDto, mode);
 		return model;
 	}
 

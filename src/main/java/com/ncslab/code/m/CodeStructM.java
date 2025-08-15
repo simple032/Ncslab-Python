@@ -2,7 +2,8 @@ package com.ncslab.code.m;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
@@ -33,9 +34,9 @@ public class CodeStructM {
 	//目标文件夹的位置codePathBase/用户id/modelId
 	private String codePath;
 
-	private Vector<Parameter> parameterList=new Vector<Parameter>();
-	private Vector<State> stateList=new Vector<State>();
-	private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
+	private List<Parameter> parameterList = new ArrayList<>();
+	private List<State> stateList = new ArrayList<>();
+	private List<OutputSignal> outputSignalList = new ArrayList<>();
 
 	private String mainCode="";
 

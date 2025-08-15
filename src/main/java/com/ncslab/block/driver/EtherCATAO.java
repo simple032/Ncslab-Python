@@ -8,7 +8,6 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 public class EtherCATAO extends com.ncslab.block.Block {
     private static final String PARAM_SLAVE_ID = "SlaveID";

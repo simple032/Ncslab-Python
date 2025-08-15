@@ -1,6 +1,7 @@
 package com.ncslab.circuit.loop;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.block.Block;
 
@@ -12,9 +13,9 @@ public class TargetGroup {
 	private LinearBlockElement targetElement;
 	
 	//所有前向通道集合
-	private Vector<ForwardGroup> forwardGroupList=new Vector<ForwardGroup>();
+	private List<ForwardGroup> forwardGroupList = new ArrayList<>();
 	
-	private Vector<Block> relatedBlockList;
+	private List<Block> relatedBlockList;
 	
 	public TargetGroup(LinearBlockElement targetElement) {
 		this.targetElement=targetElement;
@@ -28,13 +29,13 @@ public class TargetGroup {
 		return this.targetElement;
 	}
 	
-	public Vector<ForwardGroup> getForwardGroupList(){
+	public List<ForwardGroup> getForwardGroupList(){
 		return this.forwardGroupList;
 	}
 	
 	//寻找与解开loop代码相关的模块
 	public void setupRelatedBlockList(){
-		relatedBlockList=new Vector<Block>();
+		relatedBlockList=new ArrayList<>();
 		for(ForwardGroup forwardGroup:forwardGroupList) {
 			relatedBlockList.add(forwardGroup.getStartElement().getBlock());
 		}	

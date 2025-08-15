@@ -192,7 +192,7 @@ public class PythonThread extends BaseServerThread<PythonThread, PythonServer>  
 		                System.err.println("Python Error: " + errorLine);
 		            }
 		            System.out.println("matline2 in pythonThread:"+matline2);
-		            this.model.OutputMat = matline2;
+		            model.setOutputMat(matline2);
 		            in.close();
 		            proc.waitFor();
 		        } catch (IOException e) {

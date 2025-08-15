@@ -3,14 +3,16 @@ package com.ncslab.websocket;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpoint;
 
 import com.ncslab.code.CodeModelFactory;
 import com.ncslab.code.c.CodeModelC;
-
+import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.util.JsonUtils;
 import com.utils.Property;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -32,29 +34,69 @@ public class CompileWebSocket {
 	}
 
 	private void sendMessage(Session session, String msgString) throws IOException {
-		JSONObject jb = new JSONObject();
-		jb.put("msg", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+		WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage(msgString, null);
+		if(session != null)
+			session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
+		else
+			System.out.println("Send message: " + msgString);
 	}
 
 	private void sendErrorMessage(Session session, String msgString) throws IOException {
-		JSONObject jb = new JSONObject();
-		jb.put("msg", "error");
-		jb.put("error", msgString);
-		session.getBasicRemote().sendText(jb.toString());
+		WebSocketMessageJson message = WebSocketMessageJson.createErrorMessage(msgString);
+		if(session != null)
+			session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
+		else
+			System.out.println("Send error message: " + msgString);
 	}
 
 	@OnMessage
 	public void onMessage(Session session, String msgString) {
 		 System.out.println(msgString);
-		JSONObject msg = new JSONObject(msgString);
-		String com = msg.getString("com");
+		
+        // Try to parse as DTO first, fall back to legacy JSONObject
+        WebSocketMessageJson wsMessage = null;
+        JSONObject msg = null;
+        String com = null;
+        
+        try {
+        	// Try DTO parsing first
+        	JSONObject tempJson = new JSONObject(msgString);
+        	wsMessage = WebSocketMessageJson.fromLegacyJson(tempJson);
+        	if (wsMessage != null && wsMessage.getCom() != null) {
+        		com = wsMessage.getCom();
+        		System.out.println("Using DTO-based Compile WebSocket message parsing for command: " + com);
+        	} else {
+        		throw new Exception("DTO parsing failed or no command");
+        	}
+        } catch (Exception e) {
+        	// Fall back to legacy parsing
+        	System.out.println("DTO Compile WebSocket message parsing failed, using legacy JSONObject: " + e.getMessage());
+        	msg = new JSONObject(msgString);
+        	if(!msg.has("com")) {
+        		try {
+        			sendErrorMessage(session, "Invalid message format: 'com' key is missing.");
+        		} catch (IOException ioException) {
+        			log.error("Error sending error message: ", ioException);
+        		}
+        		return;
+        	}
+        	com = msg.getString("com");
+        }
         CodeModelC modelC = null;
 		if (com.equals("start")) {
 			try {
 				sendMessage(session, "start");
 				// System.out.println("Start");
-				JSONObject mdlData = msg.getJSONObject("mdlData");
+				
+				// Extract mdlData using DTO or legacy approach
+				JSONObject mdlData;
+				if (wsMessage != null && wsMessage.getMdlData() != null) {
+					// Use DTO approach - convert Map back to JSONObject for compatibility
+					mdlData = new JSONObject(wsMessage.getMdlData());
+				} else {
+					// Use legacy approach
+					mdlData = msg.getJSONObject("mdlData");
+				}
                 // host 应为运行Link的操作系统来决定，而不应该由用户来决定
                 String osName = System.getProperty("os.name").toLowerCase();
                 String host;
@@ -121,7 +163,8 @@ public class CompileWebSocket {
 
                 sendMessage(session, "database inserting");
 
-				modelC.saveToDatabase();
+				if(session != null)
+					modelC.saveToDatabase();
 
 				sendMessage(session, "database inserted");
 
@@ -158,7 +201,8 @@ public class CompileWebSocket {
                 if(modelC != null)
                     modelC.postBuild();
 				try {
-					session.close();
+					if(session != null)
+						session.close();
 				} catch (IOException e) {
                     log.error("e: ", e);
 				}

@@ -17,7 +17,6 @@ import com.ncslab.ncslablink.NCSLabModel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
 
 import com.ncslab.util.TemplateManager;
 

@@ -20,7 +20,8 @@ import com.ncslab.block.Block;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Ramp block with SIMULINK-compatible parameters and type-safe constructors.
@@ -54,9 +55,9 @@ public class Ramp extends SourceBlock {
         PARAMETER_DEFAULTS = mergeWithCommonDefaults(rampDefaults);
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
     
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // Port names

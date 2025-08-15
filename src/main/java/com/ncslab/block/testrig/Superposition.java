@@ -15,7 +15,8 @@ import com.ncslab.util.TemplateManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Superposition extends Block {
 
@@ -48,8 +49,8 @@ public class Superposition extends Block {
 
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         outputNames.add("AD1");

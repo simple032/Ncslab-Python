@@ -1,23 +1,27 @@
 package com.ncslab.servlet;
 
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.*;
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
-
+import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.util.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
 /**
  * Servlet implementation class simulate
  */
 @WebServlet("/simulate")
+@Slf4j
 public class simulate extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -32,28 +36,54 @@ public class simulate extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		//response.getWriter().append("Served at: ").append(request.getContextPath());
+		// Enhanced with DTO support for Phase 3 migration
 		
-		//��ȡPost��JSON����
+		// Read POST JSON data
 		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
-        String result = "";
+        String jsonString = "";
         int respInt = insr.read();
         while(respInt!=-1) {
-            result +=(char)respInt;
+            jsonString +=(char)respInt;
             respInt = insr.read();
-        }  
-        JSONObject jsonIn = new JSONObject(result);
-		
+        }
+        
         int code = 2000;
         String errorMsgs="";
         
         try {
-
-        	//����C���Ե�������CodeModelC
-        	//CodeModelCLinuxRaspberry modelC=CodeModelCLinuxRaspberry.createFromJSON(jsonIn,ModelMode.Compilation);
-        	CodeModelCLinuxPCSimulation modelC=CodeModelCLinuxPCSimulation.createFromJSON(jsonIn,ModelMode.Simulation);
-        	//modelC.setSolver(Solver.ode4);
+        	System.out.println("Simulate servlet: Processing request with ObjectMapper-enhanced approach");
+        	
+        	// Validate JSON structure first using ObjectMapper
+        	String validationError = JsonUtils.validateJsonStructure(jsonString);
+        	if (validationError != null) {
+        		throw new ModelException("JSON validation failed: " + validationError);
+        	}
+        	
+        	// Direct DTO parsing with ObjectMapper - no intermediate JSONObject
+        	ModelJson modelDto;
+        	try {
+        		modelDto = JsonUtils.getObjectMapper().readValue(jsonString, ModelJson.class);
+        	} catch (JsonProcessingException e) {
+        		log.error("Failed to parse JSON to ModelJson: {}", e.getMessage());
+        		throw new ModelException("Failed to parse JSON to ModelJson DTO: " + e.getMessage());
+        	}
+        	
+        	// Validate DTO structure
+        	if (!modelDto.isValid()) {
+        		throw new ModelException("Invalid ModelJson DTO structure");
+        	}
+        	
+        	System.out.println("Using DTO-based model creation for: " + modelDto.getModelName());
+        	
+        	// Create model using DTO factory method
+        	CodeModelCLinuxPCSimulation modelC = CodeModelCLinuxPCSimulation.createFromDto(modelDto, ModelMode.Simulation);
+        	
+        	if (modelC == null) {
+        		throw new ModelException("Failed to create simulation model from DTO");
+        	}
+        	
+        	System.out.println("Model created successfully: " + modelC.getModelName() + 
+        	                   " with " + modelC.getBlockList().size() + " blocks");
 
         	modelC.generate();
         	
@@ -73,12 +103,21 @@ public class simulate extends HttpServlet {
         	
         	// modelC.simulate();
         	
-        	JSONObject jb=new JSONObject();
-        	jb.put("code", code);
-        	jb.put("ver", 1);
-        	jb.put("resultsFile", "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json");
+        	// Use ObjectMapper directly for response serialization
+        	ServerResponseJson responseDto = ServerResponseJson.builder()
+        			.status("success")
+        			.code(code)
+        			.result("/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json")
+        			.serverType("simulate")
+        			.build();
         	
-        	response.getWriter().write(jb.toString());
+        	try {
+        		String jsonResponse = JsonUtils.getObjectMapper().writeValueAsString(responseDto);
+        		response.getWriter().write(jsonResponse);
+        	} catch (JsonProcessingException e) {
+        		log.error("Failed to serialize response: {}", e.getMessage());
+        		response.getWriter().write("{\"error\":\"Failed to serialize response\"}");
+        	}
         	/*
         	response.getWriter().write("{\"code\":"+code+","
     	        	+"\"msg\":"+"\""+errorMsgs+"\""
@@ -106,10 +145,17 @@ public class simulate extends HttpServlet {
         	System.err.println(e.getMessage());
         	System.err.println("Code generatrion terminated unsuccessfully������");
         	//response.getWriter().write("{\"code\":\"400\",\"message\":\""+e.getMessage()+"\"}");
-        	JSONObject jb=new JSONObject();
-        	jb.put("code", 400);
-        	jb.put("message",e.getMessage());
-        	response.getWriter().write(jb.toString());
+        	// Use ObjectMapper directly for error response
+        	ServerResponseJson errorResponse = ServerResponseJson.createError(e.getMessage(), "simulate");
+        	errorResponse.setCode(400);
+        	
+        	try {
+        		String jsonResponse = JsonUtils.getObjectMapper().writeValueAsString(errorResponse);
+        		response.getWriter().write(jsonResponse);
+        	} catch (JsonProcessingException jsonE) {
+        		log.error("Failed to serialize error response: {}", jsonE.getMessage());
+        		response.getWriter().write("{\"error\":\"Internal server error\"}");
+        	}
         }
         
         /*

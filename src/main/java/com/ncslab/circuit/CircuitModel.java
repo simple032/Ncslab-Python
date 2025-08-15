@@ -1,6 +1,7 @@
 package com.ncslab.circuit;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.circuit.block.BlockMode;
 import com.ncslab.circuit.block.CircuitBlock;
@@ -26,17 +27,17 @@ import com.ncslab.ncslablink.ModelException;
 
 public class CircuitModel {
 	private NCSLabModel model;
-	private Vector<CircuitBlock> blockList=new Vector<CircuitBlock>();
-	private Vector<CircuitLine> lineList=new Vector<CircuitLine>();
-	private Vector<CircuitNode> nodeList=new Vector<CircuitNode>();
+	private List<CircuitBlock> blockList = new ArrayList<>();
+	private List<CircuitLine> lineList = new ArrayList<>();
+	private List<CircuitNode> nodeList = new ArrayList<>();
 	
-	private Vector<BlockMode> blockModeList=new Vector<BlockMode>();
+	private List<BlockMode> blockModeList = new ArrayList<>();
 	
-	private Vector<Block> terminalBlockList=new Vector<Block>();
+	private List<Block> terminalBlockList = new ArrayList<>();
 	
 	private boolean isTreeFound=false;
 	
-	CircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{
+	CircuitModel(NCSLabModel model,List<CircuitBlock> blockList,List<CircuitLine> lineList) throws ModelException{
 		this.model=model;
 		this.blockList=blockList;
 		this.lineList=lineList;
@@ -61,7 +62,7 @@ public class CircuitModel {
 	}
 	
 	public void clearElectBlockLoop() {
-		Vector<Block> blockList=this.getModelBlocks();
+		List<Block> blockList=this.getModelBlocks();
 		for(Block block:blockList) {
 			if(block instanceof ElectBlock) {
 				ElectBlock electBlock=(ElectBlock)block;
@@ -75,7 +76,7 @@ public class CircuitModel {
 	}
 	
 	//记录生成树的路径
-	private Vector<CircuitNode> nodeListNew=new Vector<CircuitNode>();
+	private List<CircuitNode> nodeListNew = new ArrayList<>();
 	
 	private void getTree() {
 		
@@ -160,12 +161,12 @@ public class CircuitModel {
 		}
 		
 		//这个Node所有相连的Port
-		Vector<CircuitPort> circuitPortList = node.getCircuitPortList();
+		List<CircuitPort> circuitPortList = node.getCircuitPortList();
 
 		// 寻找只能做branch的block
-		Vector<CircuitPort> branchOnlyList = new Vector<CircuitPort>();
+		List<CircuitPort> branchOnlyList = new ArrayList<>();
 		//寻找可以做Branch和link的树枝
-		Vector<CircuitPort> anythingList = new Vector<CircuitPort>();
+		List<CircuitPort> anythingList = new ArrayList<>();
 		for (CircuitPort circuitPort : circuitPortList) {
 			CircuitBlock block = circuitPort.getBlock();
 			// 是否没有折回
@@ -298,8 +299,8 @@ public class CircuitModel {
 		}
 	}
 		
-	private Vector<CircuitBlock> linkBlockList=new Vector<CircuitBlock>();
-	private Vector<BlockVoltage> voltagePath;
+	private List<CircuitBlock> linkBlockList = new ArrayList<>();
+	private List<BlockVoltage> voltagePath;
 	private boolean isLoopFound=false;
 	private CircuitPort refPort;
 	
@@ -315,7 +316,7 @@ public class CircuitModel {
 		
 		//搜索所有做树枝的Block
 		for(CircuitBlock block:linkBlockList) {
-			voltagePath=new Vector<BlockVoltage>();
+			voltagePath=new ArrayList<>();
 			isLoopFound=false;
 			//搜索树枝
 			searchBlock(block,true,null);
@@ -344,7 +345,7 @@ public class CircuitModel {
 		
 		CircuitBlock block=voltagePath.get(0).getCircuitBlock();
 		
-		Vector<BlockVoltage> voltageList=new Vector<BlockVoltage>();
+		List<BlockVoltage> voltageList = new ArrayList<>();
 		
 		for(int i=1;i<voltagePath.size();i++) {
 			BlockVoltage voltage=voltagePath.get(i);
@@ -374,7 +375,7 @@ public class CircuitModel {
 		CircuitNode anotherNode=anotherPort.getCircuitNode();
 		
 		//获得另一边的Node的所有port
-		Vector<CircuitPort> portList=anotherNode.getOtherCircuitPortList(anotherPort);
+		List<CircuitPort> portList=anotherNode.getOtherCircuitPortList(anotherPort);
 		//搜索每一个Port
 		for(CircuitPort port:portList) {
 			//获得Block的Path
@@ -417,8 +418,8 @@ public class CircuitModel {
 		}
 	}
 	
-	public Vector<Block> getModelBlocks() {
-		Vector<Block> modelBlockList=new Vector<Block>();
+	public List<Block> getModelBlocks() {
+		List<Block> modelBlockList = new ArrayList<>();
 		
 		for(CircuitBlock block:blockList) {
 			modelBlockList.addAll(block.getBlockList());
@@ -427,8 +428,8 @@ public class CircuitModel {
 		return modelBlockList;
 	}
 	
-	public Vector<Line> getModelLines(){
-		Vector<Line> modelLineList=new Vector<Line>();
+	public List<Line> getModelLines(){
+		List<Line> modelLineList = new ArrayList<>();
 		
 		for(CircuitBlock block:blockList) {
 			modelLineList.addAll(block.getLineList());
@@ -456,7 +457,7 @@ public class CircuitModel {
 		}
 		
 		//建立了模块之后,需要updateBlock
-		Vector<Block> modelBlocks=getModelBlocks();
+		List<Block> modelBlocks=getModelBlocks();
 		for(Block block:modelBlocks) {
 			block.updateBlock();
 		}
@@ -471,7 +472,7 @@ public class CircuitModel {
 		//showNodes();
 	}
 	
-	private Vector<LinearBlockElement> blockPath;
+	private List<LinearBlockElement> blockPath;
 	
 	private LoopSolver loopSolver;
 	
@@ -524,7 +525,7 @@ public class CircuitModel {
 		
 		//如果是Add,说明需要动态调整符号
 		if(block.getBlockType().equals("Add")){
-			Vector<InputPort> inputPortList=block.getInputPortList();
+			List<InputPort> inputPortList=block.getInputPortList();
 			
 			int i=0;
 			for(InputPort input:inputPortList) {
@@ -538,7 +539,7 @@ public class CircuitModel {
 			}
 		}
 		else {
-			Vector<InputPort> inputPortList=block.getInputPortList();
+			List<InputPort> inputPortList=block.getInputPortList();
 			InputPort input=inputPortList.get(0);
 			
 			//如果和Input有连接,则搜索(Input可能与Circuit之外的模块连接,此时还没有处理,LinkedLine应该是null)
@@ -572,14 +573,14 @@ public class CircuitModel {
 		}
 		
 		//解开代数环的解算器组合,计算每一个终端模块都可能产生代数环
-		Vector<LoopSolver> loopSolverList=new Vector<LoopSolver>();
+		List<LoopSolver> loopSolverList = new ArrayList<>();
 		
 		//搜索每一个模块的解算流程,寻找可能有代数环的输出
 		for(Block terminalBlock:terminalBlockList) {
 			//System.out.println(terminalBlock.getBlockName()+"...");
 			
 			//准备搜索这个接单,建立路径的数据结构
-			blockPath=new Vector<LinearBlockElement>();
+			blockPath=new ArrayList<>();
 			//建立LoopSolver模型
 			loopSolver=new LoopSolver(terminalBlock,this);
 			//搜索这个节点
@@ -600,7 +601,7 @@ public class CircuitModel {
 		}
 	}
 	
-	public static CircuitModel CreateCircuitModel(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{
+	public static CircuitModel CreateCircuitModel(NCSLabModel model,List<CircuitBlock> blockList,List<CircuitLine> lineList) throws ModelException{
 		return new CircuitModel(model,blockList,lineList);
 	}
 }  

@@ -3,17 +3,27 @@ package com.ncslab.servlet;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.util.JsonUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+import java.util.HashMap;
+
 import com.ncslab.code.m.CodeModelM;
 import com.ncslab.code.m.CodeOctaveM;
+import com.ncslab.code.m.MfcalcClient;
+import com.ncslab.code.m.MfcalcClientManager;
 import com.ncslab.server.mfcalcServer.MfcalcServer;
 import com.ncslab.server.mfcalcServer.MfcalcThread;
 import com.ncslab.ncslablink.ModelMode;
@@ -23,6 +33,7 @@ import com.ncslab.server.octaveserver.OctaveThread;
 /**
  * Servlet implementation class octave
  */
+@Slf4j
 @WebServlet("/mfcalc")
 public class mfcalc extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -53,48 +64,101 @@ public class mfcalc extends HttpServlet {
         }
         JSONObject jsonIn = new JSONObject(result);
 
-
         CodeOctaveM model = new CodeOctaveM();
 //    	model.mainCode = jsonIn.getJSONObject("data").toString();//result;
-    	model.setMainCode(jsonIn.getString("data"));
+    	model.setMainCode(jsonIn.getString("data"));		
+		model.setUserId(jsonIn.getInt("userId"));
+		String method = jsonIn.optString("method", "runScript");
 
     	System.out.println(model.getMainCode());
 //    	System.out.println(jsonIn);
 //    	System.out.println(jsonIn.getString("data"));
 
     	try {
-			JSONObject jb=new JSONObject();
-			jb.put("code", 2000);
+			MfcalcClient client = MfcalcClientManager.getClientForUser(String.valueOf(model.getUserId()));
 
-			MfcalcThread thread=MfcalcServer.instance.getVacantMfcalcThread();
-			System.out.println(thread);
+			ServerResponseJson responseDto;
+			
+			if(client != null){
+				String message = "SUCCESS";
+				boolean operationSuccess = true;
+				
+				switch (method) {
+				case "runScript":
+					JSONObject jo = client.runScript(model.getMainCode()+"\n");
+					System.out.println(jo);
+					model.setOutputResult(jo.optString("log",""));
+					model.setFigureResult(jo.optJSONObject("figures"));
+					// Note: Missing break; in original code - maintaining the same behavior
+				case "getVariables":	
+					JSONObject variables = client.getVariables();
+					System.out.println(variables);
+					model.setOutputMat(variables.toString());
+					break;
+				default:
+					message = "Unknown method: " + method;
+					operationSuccess = false;
+					break;
+				}
 
-			if(thread!=null) {
-				thread.startOctave(model);
-				jb.put("message", "SUCCESS");
-				JSONObject data=new JSONObject();
-//				data.put("log", "/home/pi/Prj/octave/mylog.txt");
-				data.put("log", model.getOutputResult());
-                if(model.getFigureResult() != null)
-                    data.put("figures", model.getFigureResult());
-				data.put("BeginFigFileIndex", model.OutputFigBeginIndex);//"/home/pi/Prj/octave/"+
-				data.put("EndFigFileIndex", model.OutputFigEndIndex);//"/home/pi/Prj/octave/"+
-				data.put("figFileUrl", "/mfcalccode/figure");//"/home/pi/NetConTop/NCSLabLink/octavecode/"
-				data.put("dataFileUrl", "/mfcalccode");
-				data.put("mat", model.OutputMat);
-//    		data.put("figFileUrl", "/MCode/"+model.getUserId()+"/"+model.getModelId()+"/scope");
-				jb.put("data", data);
-				System.out.println(jb);
+				if (operationSuccess) {
+					// Create result data using Map instead of JSONObject
+					Map<String, Object> resultData = new HashMap<>();
+					resultData.put("log", model.getOutputResult());
+					if(model.getFigureResult() != null) {
+						// Convert JSONObject to Map for Jackson serialization
+						resultData.put("figures", model.getFigureResult().toMap());
+					}
+					resultData.put("BeginFigFileIndex", model.OutputFigBeginIndex);
+					resultData.put("EndFigFileIndex", model.OutputFigEndIndex);
+					resultData.put("figFileUrl", "/mfcalccode/figure");
+					resultData.put("dataFileUrl", "/mfcalccode");
+					resultData.put("mat", model.getOutputMat());
+					
+					// Create success response using DTO
+					responseDto = ServerResponseJson.builder()
+							.status("success")
+							.message(message)
+							.code(2000)
+							.serverType("mfcalc")
+							.result(resultData)
+							.executionTime(System.currentTimeMillis())
+							.build();
+					
+					System.out.println("MFCalc execution successful");
+				} else {
+					// Create error response for unknown method
+					responseDto = ServerResponseJson.createError(message, "mfcalc");
+					responseDto.setCode(400); // Bad Request
+				}
+			}else{
+				System.out.println("No mfcalc server available...");
+				responseDto = ServerResponseJson.createError("No mfcalc server available...", "mfcalc");
+				responseDto.setCode(503); // Service Unavailable
 			}
-			else {
-				System.out.println("No server available...");
-				jb.put("message", "No server available...");
-			}
 
-			response.getWriter().append(jb.toString());
+			// Use JsonUtils for serialization
+			String jsonResponse = JsonUtils.serializeDto(responseDto);
+			response.getWriter().append(jsonResponse);
+			
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("JSON processing error in mfcalc servlet: {}", e.getMessage());
+			// Create error response using DTO
+			ServerResponseJson errorResponse = ServerResponseJson.createError(
+				"JSON processing error: " + e.getMessage(), "mfcalc");
+			errorResponse.setCode(400);
+			
+			String errorJson = JsonUtils.serializeDto(errorResponse);
+			response.getWriter().append(errorJson);
+		} catch (Exception e) {
+			log.error("Unexpected error in mfcalc servlet: {}", e.getMessage());
+			// Create generic error response
+			ServerResponseJson errorResponse = ServerResponseJson.createError(
+				"Internal server error", "mfcalc");
+			errorResponse.setCode(500);
+			
+			String errorJson = JsonUtils.serializeDto(errorResponse);
+			response.getWriter().append(errorJson);
 		}
 
 
@@ -107,5 +171,6 @@ public class mfcalc extends HttpServlet {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
+
 
 }

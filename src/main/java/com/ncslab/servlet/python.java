@@ -3,14 +3,22 @@ package com.ncslab.servlet;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.util.JsonUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+import java.util.HashMap;
 
 import com.ncslab.code.m.CodeModelM;
 import com.ncslab.code.m.CodeOctaveM;
@@ -25,6 +33,7 @@ import com.ncslab.server.pythonServer.PythonThread;
 /**
  * Servlet implementation class octave
  */
+@Slf4j
 @WebServlet("/python")
 public class python extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -65,36 +74,63 @@ public class python extends HttpServlet {
 //    	System.out.println(jsonIn.getString("data"));
 
     	try {
-			JSONObject jb=new JSONObject();
-			jb.put("code", 2000);
-
 			PythonThread thread=PythonServer.instance.getVacantOctaveThread();
 			System.out.println(thread);
 
+			ServerResponseJson responseDto;
+			
 			if(thread!=null) {
 				thread.startOctave(model);
-				jb.put("message", "SUCCESS");
-				JSONObject data=new JSONObject();
-//				data.put("log", "/home/pi/Prj/octave/mylog.txt");
-				data.put("log", model.getOutputResult());
-				data.put("BeginFigFileIndex", model.OutputFigBeginIndex);//"/home/pi/Prj/octave/"+
-				data.put("EndFigFileIndex", model.OutputFigEndIndex);//"/home/pi/Prj/octave/"+
-				data.put("figFileUrl", "/pythoncode/figure");//"/home/pi/NetConTop/NCSLabLink/octavecode/"
-				data.put("dataFileUrl", "/pythoncode");
-				data.put("mat", model.OutputMat);
-//    		data.put("figFileUrl", "/MCode/"+model.getUserId()+"/"+model.getModelId()+"/scope");
-				jb.put("data", data);
-				System.out.println(jb);
+				
+				// Create result data using Map instead of JSONObject
+				Map<String, Object> resultData = new HashMap<>();
+				resultData.put("log", model.getOutputResult());
+				resultData.put("BeginFigFileIndex", model.OutputFigBeginIndex);
+				resultData.put("EndFigFileIndex", model.OutputFigEndIndex);
+				resultData.put("figFileUrl", "/pythoncode/figure");
+				resultData.put("dataFileUrl", "/pythoncode");
+				resultData.put("mat", model.getOutputMat());
+				
+				// Create success response using DTO
+				responseDto = ServerResponseJson.builder()
+						.status("success")
+						.message("SUCCESS")
+						.code(2000)
+						.serverType("python")
+						.result(resultData)
+						.executionTime(System.currentTimeMillis())
+						.build();
+				
+				System.out.println("Python execution successful");
 			}
 			else {
 				System.out.println("No server available...");
-				jb.put("message", "No server available...");
+				responseDto = ServerResponseJson.createError("No server available...", "python");
+				responseDto.setCode(503); // Service Unavailable
 			}
 
-			response.getWriter().append(jb.toString());
+			// Use JsonUtils for serialization
+			String jsonResponse = JsonUtils.serializeDto(responseDto);
+			response.getWriter().append(jsonResponse);
+			
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("JSON processing error in python servlet: {}", e.getMessage());
+			// Create error response using DTO
+			ServerResponseJson errorResponse = ServerResponseJson.createError(
+				"JSON processing error: " + e.getMessage(), "python");
+			errorResponse.setCode(400);
+			
+			String errorJson = JsonUtils.serializeDto(errorResponse);
+			response.getWriter().append(errorJson);
+		} catch (Exception e) {
+			log.error("Unexpected error in python servlet: {}", e.getMessage());
+			// Create generic error response
+			ServerResponseJson errorResponse = ServerResponseJson.createError(
+				"Internal server error", "python");
+			errorResponse.setCode(500);
+			
+			String errorJson = JsonUtils.serializeDto(errorResponse);
+			response.getWriter().append(errorJson);
 		}
 
 

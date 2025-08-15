@@ -15,7 +15,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GPIO extends Block{
 
@@ -32,7 +33,7 @@ public class GPIO extends Block{
     }
 
 
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
     
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 

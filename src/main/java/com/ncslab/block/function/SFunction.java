@@ -3,7 +3,8 @@ package com.ncslab.block.function;
 import com.ncslab.block.data.DataType;
 import com.ncslab.util.TemplateManager;
 import org.apache.velocity.VelocityContext;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import lombok.Getter;
@@ -123,8 +124,8 @@ public class SFunction extends DiscreteBlock {
         simStructName=blockName.replace("-", "");
     }
 
-    public Vector<InputPort> getInputPortFromSFcn(String filename) {
-        Vector<InputPort> lip = new Vector<InputPort>();
+    public List<InputPort> getInputPortFromSFcn(String filename) {
+        List<InputPort> lip = new ArrayList<>();
         int num = 1;
         for(int i=0; i<num; i++)
         {

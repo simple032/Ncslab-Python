@@ -38,24 +38,27 @@ public static MfcalcServer instance=new MfcalcServer();
             Optional.ofNullable( Property.instance.getProperty("MfcalcServerPort") )
                 .orElse(String.valueOf(ServerDefaultPort))
             );
-			ServerSocket serverSocket = new ServerSocket(server_port);
+			// ServerSocket serverSocket = new ServerSocket(server_port);
 
 			// �����ͻ���socket
-			Socket socket = new Socket();
+			// Socket socket = new Socket();
+			Socket socket = null;
 
 			//ѭ�������ȴ��ͻ��˵�����
 //            while(true){
             	// �����ͻ���
 //            	socket = serverSocket.accept();
-
+				System.out.println("MfcalcServer is running on port: " + server_port);
             	MfcalcThread thread = new MfcalcThread(socket,this);
             	mfcalcThreadList.add(thread);
+				System.out.println("MfcalcThread start");
             	thread.start();
 
 //            	InetAddress address=socket.getInetAddress();
 //                System.out.println("��ǰMfcalc�ͻ��˵�IP��"+address.getHostAddress());
 //                System.out.println("HelloMfcalcServer");
 //            }
+			thread.wait(Long.MAX_VALUE);
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

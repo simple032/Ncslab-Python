@@ -3,7 +3,8 @@ package com.ncslab.code;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 import java.util.Optional;
 
@@ -176,10 +177,10 @@ abstract public class CodeStruct{
     private int parameterIndex=1;
     private int stateIndex=1;
 
-    private Vector<Parameter> parameterList=new Vector<Parameter>();
-    private Vector<State> stateList=new Vector<State>();
-    private Vector<OutputSignal> outputSignalList=new Vector<OutputSignal>();
-    private Vector<GlobalVariable> variableList = new Vector<>();
+    private List<Parameter> parameterList = new ArrayList<>();
+    private List<State> stateList = new ArrayList<>();
+    private List<OutputSignal> outputSignalList = new ArrayList<>();
+    private List<GlobalVariable> variableList = new ArrayList<>();
 
 
     protected CodeModel model;

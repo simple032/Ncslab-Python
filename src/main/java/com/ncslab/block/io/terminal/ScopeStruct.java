@@ -5,7 +5,8 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScopeStruct extends Terminal {
 	@Setter
@@ -16,16 +17,16 @@ public class ScopeStruct extends Terminal {
     private int height=1;
 
     @Getter
-    private Vector<Double> timeList;
+    private List<Double> timeList;
     @Getter
-    private Vector<Double> dataList;
+    private List<Double> dataList;
 
 	public ScopeStruct(Block block,int id,String localName){
 		super(block, id, localName);
 		this.name="Block" + block.getBlockId() + "_Scope_" + localName;
 		this.localName=localName;
-		this.timeList=new Vector<>();
-		this.dataList=new Vector<>();
+		this.timeList=new ArrayList<>();
+		this.dataList=new ArrayList<>();
 	}
 
 	public String getDefineCodeC() {
@@ -81,11 +82,11 @@ public class ScopeStruct extends Terminal {
     	while(timeList.size()>=maxDataLength) {
             this.timeList.remove(0);
             if(this.height==1 && this.width==1) {
-            	this.dataList.removeElementAt(0);
+            	this.dataList.remove(0);
             }else{
                 for (int h=0;h<this.height;h++) {
                     for (int w=0;w<this.width;w++) {
-                        this.dataList.removeElementAt(0);
+                        this.dataList.remove(0);
                     }
                 }
             }

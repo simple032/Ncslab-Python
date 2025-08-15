@@ -11,7 +11,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base class for all source blocks with common SIMULINK-compatible parameters.
@@ -40,9 +41,9 @@ public abstract class SourceBlock extends Block {
         COMMON_PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
-    public static final Vector<String> outputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
     
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // All source blocks have one output port

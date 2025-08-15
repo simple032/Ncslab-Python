@@ -177,7 +177,7 @@ public class SFcnCompileModelC extends SFcnModel{
 		try {
 			System.out.println("Making execute file...");
 			System.out.println(codePath);
-			String exeString="g++ -D_S_COMPILE -IE:/m2pcode/server/cruntime/include -fpermissive -o "+fileName+" "+fileName+".cpp";
+			String exeString="g++ -D_S_COMPILE -I${M2PLAB_ROOT}/server/cruntime/include -fpermissive -o "+fileName+" "+fileName+".cpp";
 			System.out.println(exeString);
 			Process process=Runtime.getRuntime().exec(exeString,null,new File(codePath));
 

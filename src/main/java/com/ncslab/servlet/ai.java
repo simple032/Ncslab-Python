@@ -10,12 +10,14 @@ import com.ncslab.ncslablink.ModelMode;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.util.JsonUtils;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
@@ -79,15 +81,26 @@ public class ai extends HttpServlet {
             log.error("Error:", e);
         }
 		finally {
+			// Enhanced response with DTO pattern
+			ServerResponseJson responseDto = null;
+			if (code == 2000) {
+				responseDto = ServerResponseJson.createSuccess(properties, null, "ai");
+			} else {
+				responseDto = ServerResponseJson.createError(errorMsgs, "ai");
+			}
+			responseDto.setCode(code);
 
-			JSONObject jb=new JSONObject();
-			jb.put("code", code);
-			jb.put("properties", properties);
-			jb.put("message", errorMsgs);
+			// Convert to legacy format for backward compatibility
+			JSONObject jb = responseDto.toLegacyJson();
+			jb.put("properties", properties); // Ensure properties field is included
+			if (!jb.has("message")) {
+				jb.put("message", errorMsgs);
+			}
+			
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
             response.getWriter().print(jb);
-            System.out.println(jb);
+            System.out.println("AI servlet response: " + jb);
 		}
 
 	}

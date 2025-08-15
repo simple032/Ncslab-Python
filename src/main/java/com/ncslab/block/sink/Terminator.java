@@ -11,7 +11,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Terminator extends SinkBlock{
 
@@ -23,7 +24,7 @@ public class Terminator extends SinkBlock{
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
         inputNames.add("in1");

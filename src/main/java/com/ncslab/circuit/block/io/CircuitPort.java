@@ -1,6 +1,7 @@
 package com.ncslab.circuit.block.io;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.circuit.block.io.CircuitNode;
@@ -14,7 +15,7 @@ public class CircuitPort {
 	
 	private boolean isCurrentDecided=false;
 	
-	private Vector<PortCurrent> currentList=new Vector<PortCurrent>();
+	private List<PortCurrent> currentList = new ArrayList<>();
 	
 	private CircuitPortType circuitPortType;
 	
@@ -29,7 +30,7 @@ public class CircuitPort {
 		this.name=name;
 	}
 	
-	public void setCurrentList(Vector<PortCurrent> currentList) {
+	public void setCurrentList(List<PortCurrent> currentList) {
 		this.currentList=currentList;
 		isCurrentDecided=true;
 	}
@@ -46,7 +47,7 @@ public class CircuitPort {
 		return this.circuitNode;
 	}
 	
-	public Vector<PortCurrent> getCurrentList(){
+	public List<PortCurrent> getCurrentList(){
 		return this.currentList;
 	}
 	
@@ -62,8 +63,8 @@ public class CircuitPort {
 		return isCurrentDecided;
 	}
 	
-	public Vector<PortCurrent> getReverseCurrentList() {
-		Vector<PortCurrent> reverseCurrentList=new Vector<PortCurrent>();
+	public List<PortCurrent> getReverseCurrentList() {
+		List<PortCurrent> reverseCurrentList = new ArrayList<>();
 		for(PortCurrent current:currentList) {
 			reverseCurrentList.add(current.getReverseCurrent());
 		}
@@ -81,11 +82,11 @@ public class CircuitPort {
 		isCurrentDecided=true;
 	}
 	
-	public void setupDirectCurrent(Vector<CircuitPort> otherPortList) {
+	public void setupDirectCurrent(List<CircuitPort> otherPortList) {
 		
 		currentList.clear();
 		for(CircuitPort port:otherPortList) {
-			Vector<PortCurrent> currents=port.getCurrentList();
+			List<PortCurrent> currents=port.getCurrentList();
 			for(PortCurrent current:currents) {
 				currentList.add(current.getReverseCurrent());
 			}

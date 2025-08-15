@@ -13,7 +13,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UDPSend extends com.ncslab.block.Block{
 
@@ -42,7 +43,7 @@ public class UDPSend extends com.ncslab.block.Block{
         PARAMETER_DEFAULTS.put("RemoteIPPort", "8081");
         PARAMETER_DEFAULTS.put("LocalIPPort", "8080");
     }
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
 

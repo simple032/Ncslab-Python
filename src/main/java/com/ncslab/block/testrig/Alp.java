@@ -3,7 +3,8 @@ package com.ncslab.block.testrig;
 import com.ncslab.util.TemplateManager;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Getter;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ public class Alp extends Block {
 	String hardwareDefineName;
 	private double num[] = {0.1308,0,0};
 	private double den[]= {1,3.091,1.19,0.2};
-	private Vector<State> xStateList=new Vector<State>();
+	private List<State> xStateList = new ArrayList<>();
 
     
     
@@ -34,8 +35,8 @@ public class Alp extends Block {
 
 
 
-    public static final Vector<String> outputNames = new Vector<>();
-    public static final Vector<String> inputNames = new Vector<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    public static final List<String> inputNames = new ArrayList<>();
 
     static {
 
