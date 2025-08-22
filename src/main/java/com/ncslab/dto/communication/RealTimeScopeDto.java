@@ -1,4 +1,4 @@
-package com.ncslab.dto;
+package com.ncslab.dto.communication;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class RealTimeScopeJson {
+public class RealTimeScopeDto {
     
     /**
      * Scope metadata
@@ -54,15 +54,15 @@ public class RealTimeScopeJson {
     private long updateTimestamp;
     
     /**
-     * Create a RealTimeScopeJson from scope block data
+     * Create a RealTimeScopeDto from scope block data
      * @param scope ScopeStruct containing the scope data
      * @param currentTime Current simulation time
      * @param currentStep Current step count
      * @param stepSize Current step size
      * @param isPaused Whether simulation is paused
-     * @return RealTimeScopeJson instance
+     * @return RealTimeScopeDto instance
      */
-    public static RealTimeScopeJson fromScopeStruct(com.ncslab.block.io.terminal.ScopeStruct scope,
+    public static RealTimeScopeDto fromScopeStruct(com.ncslab.block.io.terminal.ScopeStruct scope,
                                                    double currentTime, int currentStep, 
                                                    double stepSize, boolean isPaused) {
         com.ncslab.block.sink.Scope scopeBlock = (com.ncslab.block.sink.Scope) scope.getBlock();
@@ -99,7 +99,7 @@ public class RealTimeScopeJson {
             }
         }
         
-        return RealTimeScopeJson.builder()
+        return RealTimeScopeDto.builder()
                 .name(scopeBlock.getBlockName())
                 .path(scopeBlock.getBlockPath())
                 .uuid(scopeBlock.getBlockUUID())

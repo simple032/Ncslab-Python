@@ -1,4 +1,4 @@
-package com.ncslab.dto;
+package com.ncslab.dto.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,7 +13,7 @@ import org.json.JSONObject;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class LineJson {
+public class LineDto {
     
     @JsonProperty("fromBlockName")
     private String fromBlockName;
@@ -37,21 +37,21 @@ public class LineJson {
     private String toBlockUUID;
     
     // Default constructor for Jackson
-    public LineJson() {}
+    public LineDto() {}
     
     // Convenience constructor
-    public LineJson(String fromBlockName, String toBlockName, String linePath) {
+    public LineDto(String fromBlockName, String toBlockName, String linePath) {
         this.fromBlockName = fromBlockName;
         this.toBlockName = toBlockName;
         this.linePath = linePath;
     }
     
     // Conversion utility for legacy JSONObject
-    public static LineJson fromLegacyJson(JSONObject jsonObject) {
+    public static LineDto fromLegacyJson(JSONObject jsonObject) {
         if (jsonObject == null) return null;
         
         try {
-            LineJson line = new LineJson();
+            LineDto line = new LineDto();
             line.fromBlockName = jsonObject.optString("fromBlockName");
             line.toBlockName = jsonObject.optString("toBlockName");
             line.linePath = jsonObject.optString("linePath");
@@ -68,7 +68,7 @@ public class LineJson {
             
             return line;
         } catch (Exception e) {
-            System.err.println("Failed to convert JSONObject to LineJson: " + e.getMessage());
+            System.err.println("Failed to convert JSONObject to LineDto: " + e.getMessage());
             return null;
         }
     }
@@ -91,7 +91,7 @@ public class LineJson {
     
     @Override
     public String toString() {
-        return "LineJson{" +
+        return "LineDto{" +
                 "fromBlockName='" + fromBlockName + '\'' +
                 ", fromPortNo='" + fromPortNo + '\'' +
                 ", toBlockName='" + toBlockName + '\'' +

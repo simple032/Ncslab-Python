@@ -1,4 +1,4 @@
-package com.ncslab.dto;
+package com.ncslab.dto.communication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ServerResponseJson {
+public class ServerResponseDto {
     
     @JsonProperty("status")
     private String status; // "success", "error", "timeout"
@@ -57,13 +57,13 @@ public class ServerResponseJson {
     private Integer code; // HTTP-style response code
     
     /**
-     * Create ServerResponseJson from legacy JSONObject
+     * Create ServerResponseDto from legacy JSONObject
      * @param jsonObject Legacy JSONObject
-     * @return ServerResponseJson DTO or null if conversion fails
+     * @return ServerResponseDto DTO or null if conversion fails
      */
-    public static ServerResponseJson fromLegacyJson(JSONObject jsonObject) {
+    public static ServerResponseDto fromLegacyJson(JSONObject jsonObject) {
         try {
-            ServerResponseJson response = new ServerResponseJson();
+            ServerResponseDto response = new ServerResponseDto();
             
             // Map common fields
             response.setStatus(jsonObject.optString("status", "unknown"));
@@ -141,10 +141,10 @@ public class ServerResponseJson {
      * @param result Execution result
      * @param output Console output
      * @param serverType Server type
-     * @return Success ServerResponseJson
+     * @return Success ServerResponseDto
      */
-    public static ServerResponseJson createSuccess(Object result, String output, String serverType) {
-        return ServerResponseJson.builder()
+    public static ServerResponseDto createSuccess(Object result, String output, String serverType) {
+        return ServerResponseDto.builder()
                 .status("success")
                 .result(result)
                 .output(output)
@@ -157,10 +157,10 @@ public class ServerResponseJson {
      * Create error response
      * @param error Error message
      * @param serverType Server type
-     * @return Error ServerResponseJson
+     * @return Error ServerResponseDto
      */
-    public static ServerResponseJson createError(String error, String serverType) {
-        return ServerResponseJson.builder()
+    public static ServerResponseDto createError(String error, String serverType) {
+        return ServerResponseDto.builder()
                 .status("error")
                 .error(error)
                 .message(error)
@@ -172,10 +172,10 @@ public class ServerResponseJson {
     /**
      * Create timeout response
      * @param serverType Server type
-     * @return Timeout ServerResponseJson
+     * @return Timeout ServerResponseDto
      */
-    public static ServerResponseJson createTimeout(String serverType) {
-        return ServerResponseJson.builder()
+    public static ServerResponseDto createTimeout(String serverType) {
+        return ServerResponseDto.builder()
                 .status("timeout")
                 .error("Request timed out")
                 .message("Server request exceeded timeout limit")

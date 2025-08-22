@@ -1,7 +1,10 @@
-package com.ncslab.dto;
+package com.ncslab.dto.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ncslab.dto.model.ConfigDto;
+import com.ncslab.dto.model.LineDto;
+import com.ncslab.dto.model.SaveInfoDto;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
@@ -16,7 +19,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class ModelJson {
+public class ModelDto {
     
     @JsonProperty("userId")
     private int userId;
@@ -43,22 +46,22 @@ public class ModelJson {
     private String templateName;
     
     @JsonProperty("config")
-    private ConfigJson config;
+    private ConfigDto config;
     
     @JsonProperty("blocks")
-    private List<BlockJson> blocks;
+    private List<BlockDto> blocks;
     
     @JsonProperty("lines")
-    private List<LineJson> lines;
+    private List<LineDto> lines;
     
     @JsonProperty("option")
     private Map<String, Object> option;
     
     @JsonProperty("saveInfo")
-    private SaveInfoJson saveInfo;
+    private SaveInfoDto saveInfo;
     
     // Default constructor for Jackson
-    public ModelJson() {}
+    public ModelDto() {}
     
     // Convenience methods
     public boolean hasBlocks() {
@@ -71,7 +74,7 @@ public class ModelJson {
     
     // Builder pattern for complex construction
     public static class Builder {
-        private final ModelJson model = new ModelJson();
+        private final ModelDto model = new ModelDto();
         
         public Builder userId(int userId) {
             model.userId = userId;
@@ -93,22 +96,22 @@ public class ModelJson {
             return this;
         }
         
-        public Builder config(ConfigJson config) {
+        public Builder config(ConfigDto config) {
             model.config = config;
             return this;
         }
         
-        public Builder blocks(List<BlockJson> blocks) {
+        public Builder blocks(List<BlockDto> blocks) {
             model.blocks = blocks;
             return this;
         }
         
-        public Builder lines(List<LineJson> lines) {
+        public Builder lines(List<LineDto> lines) {
             model.lines = lines;
             return this;
         }
         
-        public ModelJson build() {
+        public ModelDto build() {
             return model;
         }
     }
@@ -118,15 +121,15 @@ public class ModelJson {
     }
     
     // Conversion utility for legacy JSONObject
-    public static ModelJson fromLegacyJson(JSONObject jsonObject) {
+    public static ModelDto fromLegacyJson(JSONObject jsonObject) {
         if (jsonObject == null) return null;
         
         try {
             // Use existing JsonUtils to parse from string
-            return com.ncslab.util.JsonUtils.parseModelJson(jsonObject.toString());
+            return com.ncslab.util.JsonUtils.parseModelDto(jsonObject.toString());
         } catch (Exception e) {
             // Log error but don't throw - return null for graceful degradation
-            System.err.println("Failed to convert JSONObject to ModelJson: " + e.getMessage());
+            System.err.println("Failed to convert JSONObject to ModelDto: " + e.getMessage());
             return null;
         }
     }
@@ -148,7 +151,7 @@ public class ModelJson {
     
     @Override
     public String toString() {
-        return "ModelJson{" +
+        return "ModelDto{" +
                 "modelName='" + modelName + '\'' +
                 ", userId=" + userId +
                 ", modelId=" + modelId +

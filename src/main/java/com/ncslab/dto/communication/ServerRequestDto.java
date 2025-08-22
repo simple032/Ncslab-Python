@@ -1,4 +1,4 @@
-package com.ncslab.dto;
+package com.ncslab.dto.communication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ServerRequestJson {
+public class ServerRequestDto {
     
     @JsonProperty("command")
     private String command;
@@ -120,10 +120,10 @@ public class ServerRequestJson {
      * Create MFCalc-specific request
      * @param userId User ID
      * @param script MFCalc script
-     * @return ServerRequestJson for MFCalc
+     * @return ServerRequestDto for MFCalc
      */
-    public static ServerRequestJson createMfcalcRequest(String userId, String script) {
-        return ServerRequestJson.builder()
+    public static ServerRequestDto createMfcalcRequest(String userId, String script) {
+        return ServerRequestDto.builder()
                 .command("execute")
                 .userId(userId)
                 .script(script)
@@ -136,10 +136,10 @@ public class ServerRequestJson {
      * Create Python-specific request
      * @param userId User ID
      * @param script Python script
-     * @return ServerRequestJson for Python
+     * @return ServerRequestDto for Python
      */
-    public static ServerRequestJson createPythonRequest(String userId, String script) {
-        return ServerRequestJson.builder()
+    public static ServerRequestDto createPythonRequest(String userId, String script) {
+        return ServerRequestDto.builder()
                 .command("execute")
                 .userId(userId)
                 .script(script)
@@ -152,10 +152,10 @@ public class ServerRequestJson {
      * Create Octave-specific request
      * @param userId User ID
      * @param script Octave script
-     * @return ServerRequestJson for Octave
+     * @return ServerRequestDto for Octave
      */
-    public static ServerRequestJson createOctaveRequest(String userId, String script) {
-        return ServerRequestJson.builder()
+    public static ServerRequestDto createOctaveRequest(String userId, String script) {
+        return ServerRequestDto.builder()
                 .command("execute")
                 .userId(userId)
                 .script(script)

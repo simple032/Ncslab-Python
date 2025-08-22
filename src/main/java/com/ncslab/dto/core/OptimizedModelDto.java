@@ -1,10 +1,14 @@
-package com.ncslab.dto;
+package com.ncslab.dto.core;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.ncslab.dto.annotations.DtoValidation;
 import com.ncslab.dto.annotations.FlexibleNumber;
 import com.ncslab.dto.deserializers.FlexibleNumberDeserializer;
+import com.ncslab.dto.mapper.validation.ValidationResult;
+import com.ncslab.dto.model.ConfigDto;
+import com.ncslab.dto.model.LineDto;
+import com.ncslab.dto.model.SaveInfoDto;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Builder;
@@ -20,7 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Optimized ModelJson DTO with enhanced Jackson annotations for direct string->DTO conversion.
+ * Optimized ModelDto DTO with enhanced Jackson annotations for direct string->DTO conversion.
  * Eliminates need for intermediate JSONObject processing.
  */
 @DtoValidation(validateRequired = true, strictTypes = false)
@@ -32,7 +36,7 @@ import java.util.Objects;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OptimizedModelJson {
+public class OptimizedModelDto {
     
     @JsonProperty("userId")
     @JsonDeserialize(using = FlexibleNumberDeserializer.class)
@@ -76,17 +80,17 @@ public class OptimizedModelJson {
     
     @JsonProperty("config")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private ConfigJson config;
+    private ConfigDto config;
     
     @JsonProperty("blocks")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     // @NotNull(message = "Blocks list is required")
-    private List<BlockJson> blocks;
+    private List<BlockDto> blocks;
     
     @JsonProperty("lines") 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     // @NotNull(message = "Lines list is required")
-    private List<LineJson> lines;
+    private List<LineDto> lines;
     
     @JsonProperty("option")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -94,7 +98,7 @@ public class OptimizedModelJson {
     
     @JsonProperty("saveInfo")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private SaveInfoJson saveInfo;
+    private SaveInfoDto saveInfo;
     
     // Computed properties with caching
     @JsonIgnore
@@ -146,19 +150,23 @@ public class OptimizedModelJson {
         
         // Validate individual blocks
         for (int i = 0; i < blocks.size(); i++) {
-            BlockJson block = blocks.get(i);
+            BlockDto block = blocks.get(i);
             if (block == null) {
                 return "Block at index " + i + " is null";
             }
-            String blockError = block.getValidationError();
-            if (blockError != null) {
-                return "Block " + i + " validation failed: " + blockError;
+            ValidationResult validation = block.validate();
+            if (!validation.isValid()) {
+                String errorMessages = validation.getErrors().stream()
+                        .map(error -> error.getMessage())
+                        .reduce((a, b) -> a + ", " + b)
+                        .orElse("Unknown validation error");
+                return "Block " + i + " validation failed: " + errorMessages;
             }
         }
         
         // Validate individual lines
         for (int i = 0; i < lines.size(); i++) {
-            LineJson line = lines.get(i);
+            LineDto line = lines.get(i);
             if (line == null) {
                 return "Line at index " + i + " is null";
             }
@@ -183,7 +191,7 @@ public class OptimizedModelJson {
      * Get block by name (optimized lookup)
      */
     @JsonIgnore
-    public BlockJson getBlockByName(String blockName) {
+    public BlockDto getBlockByName(String blockName) {
         if (blockName == null || blocks == null) {
             return null;
         }
@@ -198,7 +206,7 @@ public class OptimizedModelJson {
      * Get blocks by type (optimized filtering)
      */
     @JsonIgnore
-    public List<BlockJson> getBlocksByType(String blockType) {
+    public List<BlockDto> getBlocksByType(String blockType) {
         if (blockType == null || blocks == null) {
             return List.of();
         }
@@ -235,7 +243,7 @@ public class OptimizedModelJson {
     // Custom serialization methods for debugging
     @JsonIgnore
     public String toDebugString() {
-        return String.format("OptimizedModelJson{modelName='%s', userId=%d, blocks=%d, lines=%d, valid=%s}",
+        return String.format("OptimizedModelDto{modelName='%s', userId=%d, blocks=%d, lines=%d, valid=%s}",
                 modelName, userId, 
                 blocks != null ? blocks.size() : 0,
                 lines != null ? lines.size() : 0,
@@ -247,7 +255,7 @@ public class OptimizedModelJson {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        OptimizedModelJson that = (OptimizedModelJson) o;
+        OptimizedModelDto that = (OptimizedModelDto) o;
         return Objects.equals(userId, that.userId) &&
                Objects.equals(modelId, that.modelId) &&
                Objects.equals(modelName, that.modelName) &&

@@ -1,4 +1,4 @@
-package com.ncslab.dto;
+package com.ncslab.dto.communication;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class RealTimeScopeUpdateJson {
+public class RealTimeScopeUpdateDto {
     
     /**
      * Version and streaming metadata
@@ -39,7 +39,7 @@ public class RealTimeScopeUpdateJson {
     /**
      * Scope data
      */
-    private List<RealTimeScopeJson> scopes;
+    private List<RealTimeScopeDto> scopes;
     private int scopeCount;
     
     /**
@@ -54,12 +54,12 @@ public class RealTimeScopeUpdateJson {
      * @param currentStep Current step count
      * @param stepSize Current step size
      * @param isPaused Whether simulation is paused
-     * @return RealTimeScopeUpdateJson instance
+     * @return RealTimeScopeUpdateDto instance
      */
-    public static RealTimeScopeUpdateJson fromTerminalList(List<com.ncslab.block.io.terminal.Terminal> terminals,
+    public static RealTimeScopeUpdateDto fromTerminalList(List<com.ncslab.block.io.terminal.Terminal> terminals,
                                                           double currentTime, int currentStep,
                                                           double stepSize, boolean isPaused) {
-        List<RealTimeScopeJson> scopeList = new java.util.ArrayList<>();
+        List<RealTimeScopeDto> scopeList = new java.util.ArrayList<>();
         
         if (terminals != null) {
             for (com.ncslab.block.io.terminal.Terminal terminal : terminals) {
@@ -67,14 +67,14 @@ public class RealTimeScopeUpdateJson {
                     com.ncslab.block.io.terminal.ScopeStruct scope = 
                         (com.ncslab.block.io.terminal.ScopeStruct) terminal;
                     
-                    RealTimeScopeJson scopeJson = RealTimeScopeJson.fromScopeStruct(
+                    RealTimeScopeDto scopeJson = RealTimeScopeDto.fromScopeStruct(
                         scope, currentTime, currentStep, stepSize, isPaused);
                     scopeList.add(scopeJson);
                 }
             }
         }
         
-        return RealTimeScopeUpdateJson.builder()
+        return RealTimeScopeUpdateDto.builder()
                 .version("0.3")
                 .stepControl(true)
                 .streaming(true)
@@ -95,7 +95,7 @@ public class RealTimeScopeUpdateJson {
      */
     public Map<String, Object> toMap() {
         List<Map<String, Object>> scopeMaps = scopes != null ? 
-            scopes.stream().map(RealTimeScopeJson::toMap).toList() : List.of();
+            scopes.stream().map(RealTimeScopeDto::toMap).toList() : List.of();
         
         Map<String, Object> map = new java.util.HashMap<>();
         map.put("version", version != null ? version : "0.3");

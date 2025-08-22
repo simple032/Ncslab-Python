@@ -1,4 +1,4 @@
-package com.ncslab.dto;
+package com.ncslab.dto.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class SaveInfoJson {
+public class SaveInfoDto {
     
     @JsonProperty("modelRealName")
     private String modelRealName;
@@ -47,11 +47,11 @@ public class SaveInfoJson {
     private int userId;
     
     // Default constructor for Jackson
-    public SaveInfoJson() {}
+    public SaveInfoDto() {}
     
     @Override
     public String toString() {
-        return "SaveInfoJson{" +
+        return "SaveInfoDto{" +
                 "modelRealName='" + modelRealName + '\'' +
                 ", modelId=" + modelId +
                 ", userId=" + userId +

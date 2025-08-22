@@ -1,4 +1,4 @@
-package com.ncslab.dto;
+package com.ncslab.dto.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class ConfigJson {
+public class ConfigDto {
     
     @JsonProperty("Step")
     private String step; // "VariableStep" or "FixedStep"
@@ -53,11 +53,11 @@ public class ConfigJson {
     private String systemTargetFile;
     
     // Default constructor for Jackson
-    public ConfigJson() {}
+    public ConfigDto() {}
     
     @Override
     public String toString() {
-        return "ConfigJson{" +
+        return "ConfigDto{" +
                 "step='" + step + '\'' +
                 ", fixedStep=" + fixedStep +
                 ", solver='" + solver + '\'' +
