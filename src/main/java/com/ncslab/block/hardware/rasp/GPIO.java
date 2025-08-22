@@ -2,7 +2,7 @@ package com.ncslab.block.hardware.rasp;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -25,9 +25,9 @@ public class GPIO extends Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates GPIO block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates GPIO block directly from BlockDto DTO
      */
-    public GPIO(BlockJson blockDto, NCSLabModel model) {
+    public GPIO(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: GPIO block created successfully - " + blockDto.getBlockName());
     }

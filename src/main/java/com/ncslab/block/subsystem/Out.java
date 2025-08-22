@@ -13,7 +13,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,8 +60,6 @@ public class Out extends Block {
     static {
         // Port names - Out block receives from inside subsystem
         inputNames.add("in1");
-        // And provides to outside subsystem
-        outputNames.add("out1");
     }
     // === Private Constructor with Typed Parameters ===
     private Out(Parameter port, Parameter portDimensions, Parameter sampleTime, Parameter outputDataType,
@@ -96,16 +94,20 @@ public class Out extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Out block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Out block directly from BlockDto DTO
      */
-    public Out(BlockJson blockDto, NCSLabModel model) {
+    public Out(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.port = new Parameter(this, 1, "Port", "0");
-        this.portDimensions = new Parameter(this, 2, "Portdimensions", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outputDataType = new Parameter(this, 4, "Outputdatatype", "0");
+        // Create SIMULINK parameters with defaults
+        this.port = new Parameter(this, 1, "No",
+            paramValues.optString("No", paramValues.optString("No", "1")));
+        this.portDimensions = new Parameter(this, 2, "PortDimensions",
+            paramValues.optString("PortDimensions", "-1"));
+        this.sampleTime = new Parameter(this, 3, "SampleTime",
+            paramValues.optString("SampleTime", "-1"));
+        this.outputDataType = new Parameter(this, 4, "OutputDataTypeStr",
+            paramValues.optString("OutputDataTypeStr", "Inherit: auto"));
 
         // Initialize ports
         initializePorts();
@@ -186,7 +188,7 @@ public class Out extends Block {
     }
     public void updateDimension() throws MatDimException {
         // Out block passes dimensions from internal input to subsystem output
-        OutputPort out = outputPortList.get(0);
+        OutputPort out = this.subsystem.getOutputPortList().get(getPortNumber()-1);
         InputPort in = inputPortList.get(0);
 
         if (in.getLinkedLine() != null) {
@@ -207,7 +209,7 @@ public class Out extends Block {
     public void calculateOutput(double t) {
         // Pass data from internal blocks to subsystem output
         InputPort in = inputPortList.get(0);
-        OutputPort out = outputPortList.get(0);
+        OutputPort out = this.subsystem.getOutputPortList().get(getPortNumber()-1);
         out.setData(in.getData());
     }
 
@@ -215,7 +217,7 @@ public class Out extends Block {
     public void calculateInit() {
         // Initialize data passing
         InputPort in = inputPortList.get(0);
-        OutputPort out = outputPortList.get(0);
+        OutputPort out = this.subsystem.getOutputPortList().get(getPortNumber()-1);
         out.setData(in.getData());
     }
 
@@ -278,8 +280,6 @@ public class Out extends Block {
     private void initializePorts() {
         // Out block receives from inside subsystem
         inputPortList.add(new InputPort(this, 1));
-        // And provides to outside subsystem
-        outputPortList.add(new OutputPort(this, 1, true));
     }
 
     // === Accessor Methods ===

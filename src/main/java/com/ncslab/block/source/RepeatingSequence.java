@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -99,9 +99,9 @@ public class RepeatingSequence extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates RepeatingSequence block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates RepeatingSequence block directly from BlockDto DTO
      */
-    public RepeatingSequence(BlockJson blockDto, NCSLabModel model) {
+    public RepeatingSequence(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

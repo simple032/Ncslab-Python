@@ -4,7 +4,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.RWork;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -30,9 +30,9 @@ public class BallPlateSystem extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates BallPlateSystem block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates BallPlateSystem block directly from BlockDto DTO
      */
-    public BallPlateSystem(BlockJson blockDto, NCSLabModel model) {
+    public BallPlateSystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: BallPlateSystem block created successfully - " + blockDto.getBlockName());
     }

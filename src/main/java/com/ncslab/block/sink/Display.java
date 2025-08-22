@@ -11,7 +11,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,9 +24,9 @@ public class Display extends Scope {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Display block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Display block directly from BlockDto DTO
      */
-    public Display(BlockJson blockDto, NCSLabModel model) {
+    public Display(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Display block created successfully - " + blockDto.getBlockName());
     }

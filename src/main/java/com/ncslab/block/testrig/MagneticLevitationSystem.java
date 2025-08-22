@@ -3,7 +3,7 @@ package com.ncslab.block.testrig;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -26,11 +26,26 @@ public class MagneticLevitationSystem extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates MagneticLevitationSystem block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates MagneticLevitationSystem block directly from BlockDto DTO
      */
-    public MagneticLevitationSystem(BlockJson blockDto, NCSLabModel model) {
+    public MagneticLevitationSystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MagneticLevitationSystem block created successfully - " + blockDto.getBlockName());
+
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, "Position", 1, false));
+        outputPortList.add(new OutputPort(this, "Velocity", 2, false));
+
+        position = new State(this, 1, "x0");
+        stateList.add(position);
+        velocity = new State(this, 2, "x1");
+        stateList.add(velocity);
+
+        gravity = new Parameter(this, 1, "gravity", "9.8");
+        x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "0.2");
+        i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "6.105");
+        Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "-4.5871056 ");
+        Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "5.8929");
     }
     
 

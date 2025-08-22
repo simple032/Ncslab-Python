@@ -10,7 +10,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,9 +96,9 @@ public class BandLimitedWhiteNoise extends SourceBlock {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates BandLimitedWhiteNoise block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates BandLimitedWhiteNoise block directly from BlockDto DTO
      */
-    public BandLimitedWhiteNoise(BlockJson blockDto, NCSLabModel model) {
+    public BandLimitedWhiteNoise(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -5,7 +5,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.line.Line;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -34,14 +34,9 @@ public class Subsystem extends Block{
     
     // Static parameter defaults for consistency with other blocks
     
-    
-    /**
-     * DTO-NATIVE Constructor - Creates Subsystem block directly from BlockJson DTO
-     */
-    public Subsystem(BlockJson blockDto, NCSLabModel model) {
-        super(blockDto, model);
-        System.out.println("DTO-NATIVE: Subsystem block created successfully - " + blockDto.getBlockName());
-    }
+    public String getFullPath(){
+        return getBlockPath() + "/" + getBlockName();
+    }    
 
 
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -63,6 +58,17 @@ public class Subsystem extends Block{
         
         // Initialize with empty collections - blocks and lines will be added via management methods
     }
+
+    public Subsystem(BlockDto blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        inBlockList = new ArrayList<>();
+        outBlockList = new ArrayList<>();
+        containedBlocks = new ArrayList<>();
+        containedLines = new ArrayList<>();        
+        
+        // Initialize with empty collections - blocks and lines will be added via management methods
+    }
+
     @Override
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
@@ -107,11 +113,11 @@ public class Subsystem extends Block{
             }
         }
         
-        // Propagate dimensions along internal lines
-        propagateLineDimensions();
+        // // Propagate dimensions along internal lines
+        // propagateLineDimensions();
         
-        // Update subsystem port dimensions based on In/Out blocks
-        updateSubsystemPortDimensions();
+        // // Update subsystem port dimensions based on In/Out blocks
+        // updateSubsystemPortDimensions();
     }
     
     @Override
@@ -148,40 +154,6 @@ public class Subsystem extends Block{
         }
     }
     
-    private void propagateLineDimensions() throws MatDimException {
-        // Propagate dimensions along all internal lines
-        // Note: InputPort gets dimensions from connected OutputPort automatically via getHeight()/getWidth()
-        // This method serves as validation and explicit dimension checking
-        for (Line line : containedLines) {
-            try {
-                if (line.getLinkedOutputPort() != null && line.getLinkedInputPort() != null) {
-                    OutputPort outputPort = line.getLinkedOutputPort();
-                    InputPort inputPort = line.getLinkedInputPort();
-                    
-                    // Validate dimensions are consistent
-                    if (outputPort.getOutputSignalC() != null) {
-                        // InputPort automatically gets dimensions from connected OutputPort
-                        // Just validate they are accessible
-                        int outputHeight = outputPort.getHeight();
-                        int outputWidth = outputPort.getWidth();
-                        int inputHeight = inputPort.getHeight();
-                        int inputWidth = inputPort.getWidth();
-                        
-                        // Basic dimension validation
-                        if (outputHeight != inputHeight || outputWidth != inputWidth) {
-                            System.out.println("Dimension mismatch on line from " + 
-                                outputPort.getBLock().getBlockName() + " to " + 
-                                inputPort.getBLock().getBlockName());
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                throw new MatDimException("Failed to propagate dimensions along line connecting " +
-                    line.getLinkedOutputPort().getBLock().getBlockName() + " to " +
-                    line.getLinkedInputPort().getBLock().getBlockName() + ": " + e.getMessage());
-            }
-        }
-    }
 
     public void addIn(In in) {
         if (in == null) return;
@@ -193,14 +165,10 @@ public class Subsystem extends Block{
         int portNo = in.getPortNumber();
         
         // Ensure we have enough input ports on the subsystem
-        while (inputPortList.size() < portNo) {
-            inputPortList.add(new InputPort(this, inputPortList.size() + 1));
-        }
+        inputPortList.add(new InputPort(this, portNo));        
         
         // Update input names for block properties
-        while (inputNames.size() < portNo) {
-            inputNames.add("in" + (inputNames.size() + 1));
-        }
+        inputNames.add(in.getBlockName());        
     }
     
     public void addOut(Out out) {
@@ -213,14 +181,8 @@ public class Subsystem extends Block{
         int portNo = out.getPortNumber();
         
         // Ensure we have enough output ports on the subsystem
-        while (outputPortList.size() < portNo) {
-            outputPortList.add(new OutputPort(this, outputPortList.size() + 1, true));
-        }
-        
-        // Update output names for block properties
-        while (outputNames.size() < portNo) {
-            outputNames.add("out" + (outputNames.size() + 1));
-        }
+        outputPortList.add(new OutputPort(this, portNo, true));
+        outputNames.add(out.getBlockName());
     }
     
     // Block container management methods
@@ -229,9 +191,9 @@ public class Subsystem extends Block{
         
         // Handle special cases for In/Out blocks - they have their own add methods
         if (block instanceof In) {
-            addIn((In) block);
+            return;
         } else if (block instanceof Out) {
-            addOut((Out) block);
+            return;
         } else {
             // For other blocks, just add to contained blocks
             if (!containedBlocks.contains(block)) {
@@ -287,8 +249,8 @@ public class Subsystem extends Block{
         List<Line> boundaryLines = new ArrayList<>();
         
         for (Line line : containedLines) {
-            Block fromBlock = line.getLinkedOutputPort().getBLock();
-            Block toBlock = line.getLinkedInputPort().getBLock();
+            Block fromBlock = line.getLinkedOutputPort().getBlock();
+            Block toBlock = line.getLinkedInputPort().getBlock();
             
             // Line connects to boundary if either end is an In or Out block
             if ((fromBlock instanceof In) || (fromBlock instanceof Out) || 
@@ -305,8 +267,8 @@ public class Subsystem extends Block{
         List<Line> internalLines = new ArrayList<>();
         
         for (Line line : containedLines) {
-            Block fromBlock = line.getLinkedOutputPort().getBLock();
-            Block toBlock = line.getLinkedInputPort().getBLock();
+            Block fromBlock = line.getLinkedOutputPort().getBlock();
+            Block toBlock = line.getLinkedInputPort().getBlock();
             
             // Line is purely internal if neither end is an In or Out block
             if (!(fromBlock instanceof In) && !(fromBlock instanceof Out) && 
@@ -376,5 +338,15 @@ public class Subsystem extends Block{
             outBlockList.clear();
         }
         
+    }
+
+    public boolean validateLineConsistency() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'validateLineConsistency'");
+    }
+
+    public int repairLineConsistency() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'repairLineConsistency'");
     }
 }

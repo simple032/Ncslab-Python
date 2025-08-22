@@ -2,7 +2,7 @@ package com.ncslab.block.elect;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
@@ -25,9 +25,9 @@ public class LimitingLink extends Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates LimitingLink block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates LimitingLink block directly from BlockDto DTO
      */
-    public LimitingLink(BlockJson blockDto, NCSLabModel model) {
+    public LimitingLink(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LimitingLink block created successfully - " + blockDto.getBlockName());
     }

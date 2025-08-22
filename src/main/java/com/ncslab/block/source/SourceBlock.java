@@ -3,7 +3,7 @@ package com.ncslab.block.source;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -73,9 +73,9 @@ public abstract class SourceBlock extends Block {
     }
 
     /**
-     * DTO-NATIVE Constructor - Creates SourceBlock directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates SourceBlock directly from BlockDto DTO
      */
-    protected SourceBlock(BlockJson blockDto, NCSLabModel model) {
+    protected SourceBlock(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
         // Get common parameters from already-parsed parameterList (from Block constructor)

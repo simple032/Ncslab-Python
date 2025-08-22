@@ -16,6 +16,7 @@ import org.apache.velocity.VelocityContext;
 
 public class OutputPort {
 
+    @Getter
 	private Block block;
 
     // TODO Auto-generated method stub
@@ -95,10 +96,6 @@ public class OutputPort {
 
     public void addLinkedLine(Line linkedLine) {
 		this.linkedLineList.add(linkedLine);
-	}
-
-    public Block getBLock() {
-		return this.block;
 	}
 
 	public boolean getFeedThrough() {

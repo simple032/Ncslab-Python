@@ -3,7 +3,7 @@ package com.ncslab.block.route;
 import com.ncslab.block.Block;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -107,23 +107,62 @@ public class Switch extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Switch block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Switch block directly from BlockDto DTO
      */
-    public Switch(BlockJson blockDto, NCSLabModel model) {
+    public Switch(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.threshold = new Parameter(this, 1, "Threshold", "0");
-        this.criteria = new Parameter(this, 2, "Criteria", ">=");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        // Extract parameters from DTO using same names and defaults as JSON constructor
+        JSONObject paramValues = new JSONObject();
+        if (blockDto.getParamValues() != null) {
+            paramValues = new JSONObject(blockDto.getParamValues());
+        }
+        
+        // Initialize final parameters using exact same logic as JSON constructor
+        this.threshold = new Parameter(this, 1, "Threshold", paramValues.optString("Threshold", "0.0"));
+        this.criteria = new Parameter(this, 2, "Criteria", paramValues.optString("Criteria", ">="));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", paramValues.optString("SampleTime", "-1"));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Inherit via internal rule"));
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
 
         // Initialize ports
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }// === Static Factory Method for JSON Deserialization ===
+    }
+
+    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
+    // This pattern maintains backward compatibility while enabling DTO migration
+
+    /**
+     * Enhanced DTO-based constructor - preferred for new implementations
+     * @param dto The DTO containing block configuration
+     * @param model The parent model
+     */
+    public Switch(com.ncslab.dto.block.specialized.route.SwitchDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Initialize from DTO parameters using new Parameter creation
+        this.threshold = new Parameter(this, 1, "Threshold", String.valueOf(dto.getThresholdValue()));
+        this.criteria = new Parameter(this, 2, "Criteria", dto.getCriteriaValue());
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime()));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        
+        // Execute initialization logic exactly like JSONObject constructor
+        initializePorts();
+        
+        // Complete initialization
+        System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
     public static Switch fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");

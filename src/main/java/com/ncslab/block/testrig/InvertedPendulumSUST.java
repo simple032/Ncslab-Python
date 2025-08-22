@@ -2,7 +2,7 @@ package com.ncslab.block.testrig;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -28,9 +28,9 @@ public class InvertedPendulumSUST extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates InvertedPendulumSUST block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates InvertedPendulumSUST block directly from BlockDto DTO
      */
-    public InvertedPendulumSUST(BlockJson blockDto, NCSLabModel model) {
+    public InvertedPendulumSUST(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: InvertedPendulumSUST block created successfully - " + blockDto.getBlockName());
     }

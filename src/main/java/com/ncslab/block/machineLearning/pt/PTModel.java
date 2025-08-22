@@ -4,7 +4,7 @@ import com.ncslab.block.machineLearning.MachineLearning;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * pytorch-based models.
@@ -20,9 +20,9 @@ public abstract class PTModel extends MachineLearning {
     }
 
     /**
-     * DTO-NATIVE Constructor - Creates A2C block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates A2C block directly from BlockDto DTO
      */
-    public PTModel(BlockJson blockDto, NCSLabModel model) {
+    public PTModel(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: PTModel block created successfully - " + blockDto.getBlockName());
     }

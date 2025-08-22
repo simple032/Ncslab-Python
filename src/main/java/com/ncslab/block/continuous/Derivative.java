@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.io.*;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.TemplateManager;
 import java.util.HashMap;
 
@@ -136,26 +136,67 @@ public class Derivative extends Block {
         output = new OutputPort(this, 1, true); // feedthrough = true for derivative
         outputPortList.add(output);
     }    /**
-     * DTO-NATIVE Constructor - Creates Derivative block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Derivative block directly from BlockDto DTO
      */
-    public Derivative(BlockJson blockDto, NCSLabModel model) {
+    public Derivative(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.filterCoefficient = new Parameter(this, 1, "FilterCoefficient", "100");
-        this.initialCondition = new Parameter(this, 2, "InitialCondition", "0");
-        this.coefficientSource = new Parameter(this, 3, "CoefficientSource", "internal");
-        this.externalReset = new Parameter(this, 4, "ExternalReset", "none");
-        this.conditionSource = new Parameter(this, 5, "InitialConditionSource", "internal");
-        this.showStatePort = new Parameter(this, 6, "ShowStatePort", "off");
-        this.sampleTime = new Parameter(this, 7, "SampleTime", "0");
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", "off");
+        // Extract parameters from DTO using same names and defaults as JSON constructor
+        JSONObject paramValues = new JSONObject();
+        if (blockDto.getParamValues() != null) {
+            paramValues = new JSONObject(blockDto.getParamValues());
+        }
+        
+        // Initialize final parameters using exact same logic as JSON constructor
+        this.filterCoefficient = new Parameter(this, 1, "FilterCoefficient", paramValues.optString("FilterCoefficient", "100"));
+        this.initialCondition = new Parameter(this, 2, "InitialCondition", paramValues.optString("InitialCondition", "0"));
+        this.coefficientSource = new Parameter(this, 3, "CoefficientSource", paramValues.optString("CoefficientSource", "internal"));
+        this.externalReset = new Parameter(this, 4, "ExternalReset", paramValues.optString("ExternalReset", "none"));
+        this.conditionSource = new Parameter(this, 5, "InitialConditionSource", paramValues.optString("InitialConditionSource", "internal"));
+        this.showStatePort = new Parameter(this, 6, "ShowStatePort", paramValues.optString("ShowStatePort", "off"));
+        this.sampleTime = new Parameter(this, 7, "SampleTime", paramValues.optString("SampleTime", "0"));
+        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
+        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
 
         // Initialize ports
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
+    // This pattern maintains backward compatibility while enabling DTO migration
+
+    /**
+     * Enhanced DTO-based constructor - preferred for new implementations
+     * @param dto The DTO containing block configuration
+     * @param model The parent model
+     */
+    public Derivative(com.ncslab.dto.block.specialized.continuous.DerivativeDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Initialize from DTO parameters using new Parameter creation
+        this.filterCoefficient = new Parameter(this, 1, "FilterCoefficient", String.valueOf(dto.getFilterCoefficientValue()));
+        this.initialCondition = new Parameter(this, 2, "InitialCondition", String.valueOf(dto.getInitialConditionValue()));
+        this.coefficientSource = new Parameter(this, 3, "CoefficientSource", dto.getCoefficientSourceValue());
+        this.externalReset = new Parameter(this, 4, "ExternalReset", dto.getExternalResetValue());
+        this.conditionSource = new Parameter(this, 5, "InitialConditionSource", dto.getInitialConditionSourceValue());
+        this.showStatePort = new Parameter(this, 6, "ShowStatePort", dto.getShowStatePortValue() ? "on" : "off");
+        this.sampleTime = new Parameter(this, 7, "SampleTime", String.valueOf(dto.getSampleTime()));
+        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        
+        // Execute initialization logic exactly like JSONObject constructor
+        initializePorts();
+        
+        // Complete initialization
+        System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
 
     // === Static Factory Method for JSON Deserialization ===

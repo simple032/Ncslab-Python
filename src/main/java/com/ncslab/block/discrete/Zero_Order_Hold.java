@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -100,9 +100,9 @@ public class Zero_Order_Hold extends DiscreteBlock {
 
         setSampleTime(sampleTimeParam);
     }    /**
-     * DTO-NATIVE Constructor - Creates Zero_Order_Hold block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Zero_Order_Hold block directly from BlockDto DTO
      */
-    public Zero_Order_Hold(BlockJson blockDto, NCSLabModel model) {
+    public Zero_Order_Hold(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

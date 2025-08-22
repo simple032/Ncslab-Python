@@ -13,7 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.ModelException;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.JsonUtils;
 /**
  * Generate corresponding <code>Block</code> according to <code>BlockType</code>.
@@ -279,12 +279,12 @@ public class BlockType{
 	/**
 	 * High-performance DTO factory method using OptimizedBlockFactory
 	 * @param id Block ID
-	 * @param blockDto BlockJson DTO
+	 * @param blockDto BlockDto DTO
 	 * @param model NCSLabModel instance
 	 * @return Block instance created with optimal performance
 	 * @throws ModelException if block creation fails
 	 */
-	public static Block createBlockFromDto(int id, BlockJson blockDto, NCSLabModel model) throws ModelException {
+	public static Block createBlockFromDto(int id, BlockDto blockDto, NCSLabModel model) throws ModelException {
 		// Use optimized factory for better performance
 		return OptimizedBlockFactory.createOptimizedBlock(id, blockDto, model);
 	}
@@ -294,13 +294,13 @@ public class BlockType{
 	 * @deprecated Use createBlockFromDto which now uses OptimizedBlockFactory
 	 */
 	@Deprecated
-	public static Block createBlockFromDtoLegacy(int id, BlockJson blockDto, NCSLabModel model) throws ModelException {
+	public static Block createBlockFromDtoLegacy(int id, BlockDto blockDto, NCSLabModel model) throws ModelException {
 		if (blockDto == null) {
-			throw new ModelException("BlockJson DTO cannot be null");
+			throw new ModelException("BlockDto DTO cannot be null");
 		}
 		
 		if (!blockDto.isValid()) {
-			throw new ModelException("Invalid BlockJson DTO: " + blockDto.getValidationError());
+			throw new ModelException("Invalid BlockDto DTO: " + blockDto.getValidationError());
 		}
 		
 		String blockType = blockDto.getBlockType()
@@ -314,7 +314,7 @@ public class BlockType{
 			if (blockClass != null) {
 				try {
 					// First try to use DTO constructor (new approach)
-					block = blockClass.getConstructor(BlockJson.class, NCSLabModel.class).newInstance(blockDto, model);
+					block = blockClass.getConstructor(BlockDto.class, NCSLabModel.class).newInstance(blockDto, model);
 					log.debug("Successfully created block: {}/{}", blockType, blockDto.getBlockName());
 				} catch (NoSuchMethodException e) {
 					// Fall back to JSONObject constructor (compatibility mode)
@@ -343,10 +343,10 @@ public class BlockType{
 	/**
 	 * Optimized conversion utility using ObjectMapper for blocks that haven't been migrated to DTO constructors yet
 	 * This method will be removed once all blocks have DTO constructors
-	 * @param blockDto BlockJson DTO
+	 * @param blockDto BlockDto DTO
 	 * @return JSONObject for legacy compatibility
 	 */
-	private static JSONObject convertBlockDtoToJsonObject(BlockJson blockDto) {
+	private static JSONObject convertBlockDtoToJsonObject(BlockDto blockDto) {
 		try {
 			// Use ObjectMapper to convert DTO to JSON string, then to JSONObject
 			// This is more efficient and consistent than manual field copying

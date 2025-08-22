@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -122,9 +122,9 @@ public class LogicOperator extends Block {
             inputPortList.add(new InputPort(this, i + 1));
         }
     }    /**
-     * DTO-NATIVE Constructor - Creates LogicOperator block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates LogicOperator block directly from BlockDto DTO
      */
-    public LogicOperator(BlockJson blockDto, NCSLabModel model) {
+    public LogicOperator(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

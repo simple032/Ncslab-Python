@@ -2,7 +2,7 @@ package com.ncslab.block.hardware.stm32;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -26,9 +26,9 @@ public class ADC extends com.ncslab.block.Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates ADC block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates ADC block directly from BlockDto DTO
      */
-    public ADC(BlockJson blockDto, NCSLabModel model) {
+    public ADC(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ADC block created successfully - " + blockDto.getBlockName());
     }

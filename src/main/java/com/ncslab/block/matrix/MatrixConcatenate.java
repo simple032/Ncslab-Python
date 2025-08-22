@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.Parameter;
@@ -28,9 +28,9 @@ public class MatrixConcatenate extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates MatrixConcatenate block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates MatrixConcatenate block directly from BlockDto DTO
      */
-    public MatrixConcatenate(BlockJson blockDto, NCSLabModel model) {
+    public MatrixConcatenate(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixConcatenate block created successfully - " + blockDto.getBlockName());
     }

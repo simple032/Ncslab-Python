@@ -2,7 +2,7 @@ package com.ncslab.block.math;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.data.Data;
@@ -97,9 +97,9 @@ public class Bias extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Bias block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Bias block directly from BlockDto DTO
      */
-    public Bias(BlockJson blockDto, NCSLabModel model) {
+    public Bias(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

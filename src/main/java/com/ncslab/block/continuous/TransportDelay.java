@@ -6,7 +6,7 @@ import lombok.Getter;
 import com.ncslab.util.TemplateManager;
 import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import Jama.Matrix;
 
@@ -133,9 +133,9 @@ public class TransportDelay extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates TransportDelay block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates TransportDelay block directly from BlockDto DTO
      */
-    public TransportDelay(BlockJson blockDto, NCSLabModel model) {
+    public TransportDelay(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

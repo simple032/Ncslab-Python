@@ -4,7 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -125,9 +125,9 @@ public class SineWave extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates SineWave block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates SineWave block directly from BlockDto DTO
      */
-    public SineWave(BlockJson blockDto, NCSLabModel model) {
+    public SineWave(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

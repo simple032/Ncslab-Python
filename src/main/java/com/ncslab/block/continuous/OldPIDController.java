@@ -1,7 +1,7 @@
 package com.ncslab.block.continuous;
 
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
@@ -34,9 +34,9 @@ public class OldPIDController extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates OldPIDController block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates OldPIDController block directly from BlockDto DTO
      */
-    public OldPIDController(BlockJson blockDto, NCSLabModel model) {
+    public OldPIDController(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: OldPIDController block created successfully - " + blockDto.getBlockName());
     }

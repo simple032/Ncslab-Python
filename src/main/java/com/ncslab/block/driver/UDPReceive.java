@@ -2,7 +2,7 @@ package com.ncslab.block.driver;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -23,9 +23,9 @@ public class UDPReceive extends com.ncslab.block.Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates UDPReceive block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates UDPReceive block directly from BlockDto DTO
      */
-    public UDPReceive(BlockJson blockDto, NCSLabModel model) {
+    public UDPReceive(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: UDPReceive block created successfully - " + blockDto.getBlockName());
     }

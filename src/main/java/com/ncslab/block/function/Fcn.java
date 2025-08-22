@@ -15,7 +15,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.apache.commons.jexl3.*;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.Objects;
 import java.util.ArrayList;
@@ -62,9 +62,9 @@ public class Fcn extends Block{
 	}
 
     /**
-     * DTO-NATIVE Constructor - Creates Fcn block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Fcn block directly from BlockDto DTO
      */
-    public Fcn(BlockJson blockDto, NCSLabModel model) {
+    public Fcn(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         expression = paramValues.getString("Expression");

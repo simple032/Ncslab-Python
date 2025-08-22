@@ -3,7 +3,7 @@ package com.ncslab.block.math;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -125,27 +125,67 @@ public class Product extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Product block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Product block directly from BlockDto DTO
      */
-    public Product(BlockJson blockDto, NCSLabModel model) {
+    public Product(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
-        // Extract input sequence and multiplication mode for backward compatibility
-        this.inputSequence = paramValues.getString("Inputs");
-        this.matrixMultiplication = "Matrix(*)".equals(paramValues.getString("Multiplication"));
-
-        // Initialize final parameters from DTO
-        this.inputs = new Parameter(this, 1, "Inputs", "this.inputSequence");
-        this.multiplication = new Parameter(this, 2, "Multiplication", "Element-wise(.*)");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.inputSameDT = new Parameter(this, 4, "InputSameDT", "on");
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        // Extract parameters from DTO using same names and defaults as JSON constructor
+        JSONObject paramValues = new JSONObject();
+        if (blockDto.getParamValues() != null) {
+            paramValues = new JSONObject(blockDto.getParamValues());
+        }
+        
+        // Initialize final parameters using exact same logic as JSON constructor
+        this.inputs = new Parameter(this, 1, "Inputs", paramValues.optString("Inputs", "**"));
+        this.inputSequence = this.inputs.getInitString(); // Initialize final field from parameter
+        this.multiplication = new Parameter(this, 2, "Multiplication", paramValues.optString("Multiplication", "Element-wise(.*)"));
+        this.matrixMultiplication = "Matrix(*)".equals(this.multiplication.getInitString());
+        this.sampleTime = new Parameter(this, 3, "SampleTime", paramValues.optString("SampleTime", "-1"));
+        this.inputSameDT = new Parameter(this, 4, "InputSameDT", paramValues.optString("InputSameDT", "on"));
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
 
         // Initialize ports
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
+    // This pattern maintains backward compatibility while enabling DTO migration
+
+    /**
+     * Enhanced DTO-based constructor - preferred for new implementations
+     * @param dto The DTO containing block configuration
+     * @param model The parent model
+     */
+    public Product(com.ncslab.dto.block.specialized.math.ProductDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Extract input sequence and multiplication mode from DTO
+        this.inputSequence = dto.getInputsValue();
+        this.matrixMultiplication = "Matrix(*)".equals(dto.getMultiplicationValue());
+        
+        // Initialize from DTO parameters using new Parameter creation  
+        this.inputs = new Parameter(this, 1, "Inputs", dto.getInputsValue());
+        this.multiplication = new Parameter(this, 2, "Multiplication", dto.getMultiplicationValue());
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime()));
+        this.inputSameDT = new Parameter(this, 4, "InputSameDT", dto.getInputSameDTValue() ? "on" : "off");
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        
+        // Execute initialization logic exactly like JSONObject constructor
+        initializePorts();
+        
+        // Complete initialization
+        System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
     // === Static Factory Method for JSON Deserialization ===
     public static Product fromJSON(JSONObject blockJSON, NCSLabModel model) {

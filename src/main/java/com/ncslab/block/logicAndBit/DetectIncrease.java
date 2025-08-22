@@ -4,7 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import Jama.Matrix;
@@ -111,9 +111,9 @@ public class DetectIncrease extends Block {
 
         context.put("block", this);
     }    /**
-     * DTO-NATIVE Constructor - Creates DetectIncrease block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates DetectIncrease block directly from BlockDto DTO
      */
-    public DetectIncrease(BlockJson blockDto, NCSLabModel model) {
+    public DetectIncrease(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

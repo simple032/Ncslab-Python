@@ -4,7 +4,7 @@ import Jama.Matrix;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -114,9 +114,9 @@ public class Mux extends Block {
 		}
 		outputPortList.add(new OutputPort(this, 1, feedThrough));
 	}    /**
-     * DTO-NATIVE Constructor - Creates Mux block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Mux block directly from BlockDto DTO
      */
-    public Mux(BlockJson blockDto, NCSLabModel model) {
+    public Mux(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

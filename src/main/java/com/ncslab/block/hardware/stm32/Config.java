@@ -2,7 +2,7 @@ package com.ncslab.block.hardware.stm32;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -27,9 +27,9 @@ public class Config extends com.ncslab.block.Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Config block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Config block directly from BlockDto DTO
      */
-    public Config(BlockJson blockDto, NCSLabModel model) {
+    public Config(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Config block created successfully - " + blockDto.getBlockName());
     }

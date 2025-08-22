@@ -3,7 +3,7 @@ package com.ncslab.block.source;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -63,9 +63,9 @@ public class Clock extends SourceBlock {
     }
     
     /**
-     * DTO-NATIVE Constructor - Creates Clock block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Clock block directly from BlockDto DTO
      */
-    public Clock(BlockJson blockDto, NCSLabModel model) {
+    public Clock(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Clock block created successfully - " + blockDto.getBlockName());
     }

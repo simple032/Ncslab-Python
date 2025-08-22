@@ -14,7 +14,7 @@ import com.ncslab.util.TemplateManager;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 public class Matrix extends Block {
 
@@ -29,9 +29,9 @@ public class Matrix extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Matrix block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Matrix block directly from BlockDto DTO
      */
-    public Matrix(BlockJson blockDto, NCSLabModel model) {
+    public Matrix(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Matrix block created successfully - " + blockDto.getBlockName());
     }

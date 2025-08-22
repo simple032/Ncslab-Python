@@ -16,6 +16,7 @@ public class InputPort {
 
 	private OutputPort linkedOutputPort;
 
+	@Getter
 	private Block block;
 
     @Getter
@@ -54,10 +55,6 @@ public class InputPort {
 				this.name = "in" + number;
 			}
 		}
-	}
-
-    public Block getBLock() {
-		return this.block;
 	}
 
     public int getWidth() {

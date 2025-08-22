@@ -13,7 +13,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -94,16 +94,21 @@ public class In extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates In block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates In block directly from BlockDto DTO
      */
-    public In(BlockJson blockDto, NCSLabModel model) {
+    public In(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.port = new Parameter(this, 1, "Port", "0");
-        this.portDimensions = new Parameter(this, 2, "Portdimensions", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outputDataType = new Parameter(this, 4, "Outputdatatype", "0");
+        // Create SIMULINK parameters with defaults
+        this.port = new Parameter(this, 1, "No",
+            paramValues.optString("No", paramValues.optString("No", "1")));
+        this.portDimensions = new Parameter(this, 2, "PortDimensions",
+            paramValues.optString("PortDimensions", "-1"));
+        this.sampleTime = new Parameter(this, 3, "SampleTime",
+            paramValues.optString("SampleTime", "-1"));
+        this.outputDataType = new Parameter(this, 4, "OutputDataTypeStr",
+            paramValues.optString("OutputDataTypeStr", "Inherit: auto"));
 
         // Initialize ports
         initializePorts();
@@ -171,7 +176,7 @@ public class In extends Block {
         context.put("subsystem", subsystem);
         
         // Safely handle signal connection chain with null checks
-        InputPort inputPort = inputPortList.get(0);
+        InputPort inputPort = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
         if (inputPort != null && inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
             context.put("inputSignal", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC());
         } else {
@@ -185,7 +190,7 @@ public class In extends Block {
     public void updateDimension() throws MatDimException {
         // In block passes dimensions from subsystem input to internal output
         OutputPort out = outputPortList.get(0);
-        InputPort in = inputPortList.get(0);
+        InputPort in = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
 
         if (in.getLinkedLine() != null) {
             OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -204,7 +209,7 @@ public class In extends Block {
     @Override
     public void calculateOutput(double t) {
         // Pass data from subsystem input to internal blocks
-        InputPort in = inputPortList.get(0);
+        InputPort in = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
         OutputPort out = outputPortList.get(0);
         out.setData(in.getData());
     }
@@ -212,7 +217,7 @@ public class In extends Block {
     @Override
     public void calculateInit() {
         // Initialize data passing
-        InputPort in = inputPortList.get(0);
+        InputPort in = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
         OutputPort out = outputPortList.get(0);
         out.setData(in.getData());
     }
@@ -274,8 +279,6 @@ public class In extends Block {
 
     // === Port Initialization ===
     private void initializePorts() {
-        // In block receives from outside subsystem
-        inputPortList.add(new InputPort(this, 1));
         // And provides to inside subsystem
         outputPortList.add(new OutputPort(this, 1, true));
     }

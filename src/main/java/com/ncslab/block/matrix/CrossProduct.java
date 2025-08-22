@@ -2,7 +2,7 @@ package com.ncslab.block.matrix;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -25,9 +25,9 @@ public class CrossProduct extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates CrossProduct block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates CrossProduct block directly from BlockDto DTO
      */
-    public CrossProduct(BlockJson blockDto, NCSLabModel model) {
+    public CrossProduct(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: CrossProduct block created successfully - " + blockDto.getBlockName());
     }

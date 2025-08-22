@@ -1,7 +1,7 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.data.Data;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -108,9 +108,9 @@ public class Add extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Add block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Add block directly from BlockDto DTO
      */
-    public Add(BlockJson blockDto, NCSLabModel model) {
+    public Add(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
 

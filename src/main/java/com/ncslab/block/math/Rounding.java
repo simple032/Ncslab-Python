@@ -11,7 +11,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +30,9 @@ public class Rounding extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Rounding block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Rounding block directly from BlockDto DTO
      */
-    public Rounding(BlockJson blockDto, NCSLabModel model) {
+    public Rounding(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Rounding block created successfully - " + blockDto.getBlockName());
     }

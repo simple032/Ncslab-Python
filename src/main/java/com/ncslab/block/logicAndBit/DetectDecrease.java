@@ -4,7 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import Jama.Matrix;
@@ -107,9 +107,9 @@ public class DetectDecrease extends Block {
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
     }    /**
-     * DTO-NATIVE Constructor - Creates DetectDecrease block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates DetectDecrease block directly from BlockDto DTO
      */
-    public DetectDecrease(BlockJson blockDto, NCSLabModel model) {
+    public DetectDecrease(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -2,7 +2,7 @@ package com.ncslab.block.continuous;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -122,9 +122,9 @@ public class VariableTransportDelay extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates VariableTransportDelay block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates VariableTransportDelay block directly from BlockDto DTO
      */
-    public VariableTransportDelay(BlockJson blockDto, NCSLabModel model) {
+    public VariableTransportDelay(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

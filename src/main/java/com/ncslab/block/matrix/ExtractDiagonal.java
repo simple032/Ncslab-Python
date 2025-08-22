@@ -3,7 +3,7 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.checkerframework.checker.units.qual.min;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
@@ -25,9 +25,9 @@ public class ExtractDiagonal extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates ExtractDiagonal block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates ExtractDiagonal block directly from BlockDto DTO
      */
-    public ExtractDiagonal(BlockJson blockDto, NCSLabModel model) {
+    public ExtractDiagonal(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ExtractDiagonal block created successfully - " + blockDto.getBlockName());
     }

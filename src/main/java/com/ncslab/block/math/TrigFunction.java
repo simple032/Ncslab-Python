@@ -4,7 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -111,9 +111,9 @@ public class TrigFunction extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates TrigFunction block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates TrigFunction block directly from BlockDto DTO
      */
-    public TrigFunction(BlockJson blockDto, NCSLabModel model) {
+    public TrigFunction(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

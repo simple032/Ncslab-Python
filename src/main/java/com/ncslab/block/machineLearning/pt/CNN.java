@@ -3,7 +3,7 @@ package com.ncslab.block.machineLearning.pt;
 import com.ncslab.block.machineLearning.MachineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -27,9 +27,9 @@ public class CNN extends MachineLearning {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates CNN block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates CNN block directly from BlockDto DTO
      */
-    public CNN(BlockJson blockDto, NCSLabModel model) {
+    public CNN(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: CNN block created successfully - " + blockDto.getBlockName());
     }

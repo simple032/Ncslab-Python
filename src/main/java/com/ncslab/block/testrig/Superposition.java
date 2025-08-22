@@ -2,7 +2,7 @@ package com.ncslab.block.testrig;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -30,9 +30,9 @@ public class Superposition extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Superposition block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Superposition block directly from BlockDto DTO
      */
-    public Superposition(BlockJson blockDto, NCSLabModel model) {
+    public Superposition(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Superposition block created successfully - " + blockDto.getBlockName());
     }

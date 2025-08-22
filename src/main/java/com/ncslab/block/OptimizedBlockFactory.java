@@ -1,6 +1,6 @@
 package com.ncslab.block;
 
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.extern.slf4j.Slf4j;
@@ -43,18 +43,18 @@ public class OptimizedBlockFactory {
     /**
      * Creates a Block instance using DTO with maximum performance optimization
      * @param id Block ID
-     * @param blockDto BlockJson DTO
+     * @param blockDto BlockDto DTO
      * @param model NCSLabModel instance
      * @return Block instance
      * @throws ModelException if block creation fails
      */
-    public static Block createOptimizedBlock(int id, BlockJson blockDto, NCSLabModel model) throws ModelException {
+    public static Block createOptimizedBlock(int id, BlockDto blockDto, NCSLabModel model) throws ModelException {
         if (blockDto == null) {
-            throw new ModelException("BlockJson DTO cannot be null");
+            throw new ModelException("BlockDto DTO cannot be null");
         }
         
         if (!blockDto.isValid()) {
-            throw new ModelException("Invalid BlockJson DTO: " + blockDto.getValidationError());
+            throw new ModelException("Invalid BlockDto DTO: " + blockDto.getValidationError());
         }
         
         // Normalize block type efficiently
@@ -101,7 +101,7 @@ public class OptimizedBlockFactory {
                 Class<? extends Block> blockClass = getBlockClass(type);
                 if (blockClass == null) return null;
                 
-                Constructor<? extends Block> constructor = blockClass.getConstructor(BlockJson.class, NCSLabModel.class);
+                Constructor<? extends Block> constructor = blockClass.getConstructor(BlockDto.class, NCSLabModel.class);
                 return lookup.unreflectConstructor(constructor);
             } catch (Exception e) {
                 // DTO constructor doesn't exist, return null
@@ -154,7 +154,7 @@ public class OptimizedBlockFactory {
     /**
      * Fall back to reflection when method handles are not available
      */
-    private static Block createBlockWithReflection(int id, BlockJson blockDto, NCSLabModel model, String blockType) 
+    private static Block createBlockWithReflection(int id, BlockDto blockDto, NCSLabModel model, String blockType) 
             throws ModelException {
         
         Class<? extends Block> blockClass = getBlockClass(blockType);
@@ -165,7 +165,7 @@ public class OptimizedBlockFactory {
         try {
             // Try DTO constructor
             try {
-                Constructor<? extends Block> constructor = blockClass.getConstructor(BlockJson.class, NCSLabModel.class);
+                Constructor<? extends Block> constructor = blockClass.getConstructor(BlockDto.class, NCSLabModel.class);
                 MethodHandle handle = lookup.unreflectConstructor(constructor);
                 dtoConstructorCache.put(blockType, handle);
                 
@@ -211,7 +211,7 @@ public class OptimizedBlockFactory {
     /**
      * Convert DTO to JSONObject (optimized version)
      */
-    private static JSONObject convertBlockDtoToJsonObject(BlockJson blockDto) {
+    private static JSONObject convertBlockDtoToJsonObject(BlockDto blockDto) {
         JSONObject blockJSON = new JSONObject();
         
         // Core required fields

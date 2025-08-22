@@ -2,7 +2,7 @@ package com.ncslab.block.math;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -25,9 +25,9 @@ public class dq02abc extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates dq02abc block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates dq02abc block directly from BlockDto DTO
      */
-    public dq02abc(BlockJson blockDto, NCSLabModel model) {
+    public dq02abc(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: dq02abc block created successfully - " + blockDto.getBlockName());
     }

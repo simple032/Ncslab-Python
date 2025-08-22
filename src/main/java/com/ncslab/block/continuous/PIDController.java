@@ -18,7 +18,7 @@ import org.apache.velocity.VelocityContext;
 import lombok.Getter;
 
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -188,9 +188,9 @@ public class PIDController extends Block {
         stateList.add(stateIntegral);
         stateList.add(stateFilter);
     }    /**
-     * DTO-NATIVE Constructor - Creates PIDController block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates PIDController block directly from BlockDto DTO
      */
-    public PIDController(BlockJson blockDto, NCSLabModel model) {
+    public PIDController(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -4,7 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -107,9 +107,9 @@ public class Step extends SourceBlock {
         // Set parameter block references for legacy compatibility
         setParameterBlockReference(this, time, initialValue, finalValue);
     }    /**
-     * DTO-NATIVE Constructor - Creates Step block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Step block directly from BlockDto DTO
      */
-    public Step(BlockJson blockDto, NCSLabModel model) {
+    public Step(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

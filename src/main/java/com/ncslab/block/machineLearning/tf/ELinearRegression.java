@@ -3,7 +3,7 @@ package com.ncslab.block.machineLearning.tf;
 import com.ncslab.block.machineLearning.pt.PTModel;
 import com.ncslab.ncslablink.NCSLabModel;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 
 public class ELinearRegression extends PTModel {

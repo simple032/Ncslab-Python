@@ -2,7 +2,7 @@ package com.ncslab.block.source;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -98,21 +98,100 @@ public class Constant extends SourceBlock {
         
         // Initialize ports
         initializePorts();
-    }    /**
-     * DTO-NATIVE Constructor - Creates Constant block directly from BlockJson DTO
+    }    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Constant block directly from BlockDto DTO
      */
-    public Constant(BlockJson blockDto, NCSLabModel model) {
+    public Constant(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.value = new Parameter(this, 1, "Value", "0");
-        this.framePeriod = new Parameter(this, 2, "Frameperiod", "0");
+        // Extract parameters from DTO using same names and defaults as JSON constructor
+        JSONObject paramValues = new JSONObject();
+        if (blockDto.getParamValues() != null) {
+            paramValues = new JSONObject(blockDto.getParamValues());
+        }
+        
+        // Initialize final parameters using exact same logic as JSON constructor
+        this.value = new Parameter(this, 1, "Value", paramValues.optString("Value", "1"));
+        this.framePeriod = new Parameter(this, 2, "FramePeriod", paramValues.optString("FramePeriod", "1"));
 
         // Initialize ports
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
+    // This pattern maintains backward compatibility while enabling DTO migration
+
+    /**
+     * Enhanced DTO-based constructor - preferred for new implementations
+     * @param dto The DTO containing block configuration
+     * @param model The parent model
+     */
+    public Constant(com.ncslab.dto.block.specialized.source.ConstantDto dto, NCSLabModel model) {
+        super("Constant", 
+              createParameterFromDto("SampleTime", dto.getSampleTime(), dto), 
+              createParameterFromDto("OutDataTypeStr", dto.getOutDataTypeStr(), dto),
+              createParameterFromDto("SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflow(), dto),
+              dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID(), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Initialize from DTO parameters
+        this.value = createParameterFromDto("Value", dto.getValue(), dto);
+        this.framePeriod = createParameterFromDto("FramePeriod", dto.getFramePeriod(), dto);
+        
+        // Add parameters to parameter list
+        parameterList.add(value);
+        parameterList.add(framePeriod);
+        
+        // Complete initialization
+        initializePorts();
+        
+        System.out.println("Enhanced DTO: Constant block created successfully - " + dto.getBlockName());
+    }
+
+    /**
+     * Factory method for DTO-based creation
+     */
+    public static Constant fromDto(com.ncslab.dto.block.specialized.source.ConstantDto dto, NCSLabModel model) {
+        return new Constant(dto, model);
+    }
+
+    /**
+     * Helper method to create Parameter from DTO values
+     */
+    private static Parameter createParameterFromDto(String paramName, Object value, com.ncslab.dto.block.specialized.source.ConstantDto dto) {
+        String stringValue;
+        if (value instanceof Boolean) {
+            stringValue = ((Boolean) value) ? "on" : "off";
+        } else {
+            stringValue = String.valueOf(value);
+        }
+        return new Parameter(null, getParameterIndex(paramName), paramName, stringValue);
+    }
+
+    /**
+     * Get parameter index for consistent ordering
+     */
+    private static int getParameterIndex(String paramName) {
+        switch (paramName) {
+            case "Value": return 1;
+            case "FramePeriod": return 2;
+            case "SampleTime": return 3;
+            case "OutDataTypeStr": return 4;
+            case "SaturateOnIntegerOverflow": return 5;
+            default: return 99;
+        }
+    }
+
+    // ===== END DUAL CONSTRUCTOR PATTERN =====
 
     
     // === Static Factory Method for JSON Deserialization ===

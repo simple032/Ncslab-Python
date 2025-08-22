@@ -6,7 +6,7 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -107,9 +107,9 @@ public class Ramp extends SourceBlock {
         // Set parameter block references for legacy compatibility
         setParameterBlockReference(this, slope, start, initialOutput);
     }    /**
-     * DTO-NATIVE Constructor - Creates Ramp block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Ramp block directly from BlockDto DTO
      */
-    public Ramp(BlockJson blockDto, NCSLabModel model) {
+    public Ramp(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

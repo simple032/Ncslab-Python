@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.code.c.CodeStructC;
@@ -125,10 +125,10 @@ public class Block implements MCodeBlock, CCodeBlock{
     protected VelocityContext context = null;
 
     /**
-     * DTO-NATIVE Constructor - Creates Block from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Block from BlockDto DTO
      * This constructor provides the foundation for DTO-native block creation
      */
-    protected Block(BlockJson blockDto, NCSLabModel model) {
+    protected Block(BlockDto blockDto, NCSLabModel model) {
         this.blockType = blockDto.getBlockType();
         this.blockName = blockDto.getBlockName();
         if (blockDto.getParamValues() != null) {

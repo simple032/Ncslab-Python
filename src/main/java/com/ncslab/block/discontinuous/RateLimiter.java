@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
@@ -109,9 +109,9 @@ public class RateLimiter extends Block {
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
     }    /**
-     * DTO-NATIVE Constructor - Creates RateLimiter block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates RateLimiter block directly from BlockDto DTO
      */
-    public RateLimiter(BlockJson blockDto, NCSLabModel model) {
+    public RateLimiter(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

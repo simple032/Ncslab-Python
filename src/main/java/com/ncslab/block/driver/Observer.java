@@ -2,7 +2,7 @@ package com.ncslab.block.driver;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.*;
@@ -18,9 +18,9 @@ public class Observer extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Observer block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Observer block directly from BlockDto DTO
      */
-    public Observer(BlockJson blockDto, NCSLabModel model) {
+    public Observer(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Observer block created successfully - " + blockDto.getBlockName());
     }

@@ -2,7 +2,7 @@ package com.ncslab.block.hardware.rasp;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -25,9 +25,9 @@ public class DA extends Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates DA block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates DA block directly from BlockDto DTO
      */
-    public DA(BlockJson blockDto, NCSLabModel model) {
+    public DA(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DA block created successfully - " + blockDto.getBlockName());
     }

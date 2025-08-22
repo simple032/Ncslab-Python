@@ -3,7 +3,7 @@ package com.ncslab.block.machineLearning.pt;
 import com.ncslab.block.machineLearning.MachineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -24,9 +24,9 @@ public class MultilayerPerceptron extends PTModel {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates MultilayerPerceptron block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates MultilayerPerceptron block directly from BlockDto DTO
      */
-    public MultilayerPerceptron(BlockJson blockDto, NCSLabModel model) {
+    public MultilayerPerceptron(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MultilayerPerceptron block created successfully - " + blockDto.getBlockName());
     }

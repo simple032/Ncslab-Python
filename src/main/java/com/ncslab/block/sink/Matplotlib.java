@@ -2,7 +2,7 @@ package com.ncslab.block.sink;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -31,9 +31,9 @@ public class Matplotlib extends SinkBlock{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Matplotlib block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Matplotlib block directly from BlockDto DTO
      */
-    public Matplotlib(BlockJson blockDto, NCSLabModel model) {
+    public Matplotlib(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Matplotlib block created successfully - " + blockDto.getBlockName());
     }
@@ -67,7 +67,7 @@ public class Matplotlib extends SinkBlock{
 		String outputCode="";
 		outputCode+="if storeEnable>0\n";
 		outputCode+=getBlockName()+"=["+getBlockName()
-				+" Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
+				+" Block"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBlock().getBlockId()
 				+"_Output"+getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
 				+"]"
 				+";\n";
@@ -144,7 +144,7 @@ public class Matplotlib extends SinkBlock{
 			case REAL:
 				//如果是离散模块,就画出阶梯图
 				if(sampleTime>0) {
-					outputCode+="if(block"+out.getBLock().getBlockId()+".discreteUpdated){\n";
+					outputCode+="if(block"+out.getBlock().getBlockId()+".discreteUpdated){\n";
 					//画当前时间的点
 					outputCode+=scopeStruct.getName()+".timeList.push_back(sfcnGetT());\n";
 					outputCode+=scopeStruct.getName()+".dataList.push_back("+signal.getName()+");\n";
@@ -198,7 +198,7 @@ public class Matplotlib extends SinkBlock{
 			code.addSinkOutputCode(outputCode);
 
 			String sinkStatusClearCode="";
-			sinkStatusClearCode+="block"+this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()+".discreteUpdated=0;\n";
+			sinkStatusClearCode+="block"+this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBlock().getBlockId()+".discreteUpdated=0;\n";
 			code.addSinkStatusClearCode(sinkStatusClearCode);
 		}
 	}

@@ -7,7 +7,7 @@ import java.util.List;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
@@ -28,9 +28,9 @@ public abstract class MachineLearning extends Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates MachineLearning block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates MachineLearning block directly from BlockDto DTO
      */
-    public MachineLearning(BlockJson blockDto, NCSLabModel model) {
+    public MachineLearning(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MachineLearning block created successfully - " + blockDto.getBlockName());
     }

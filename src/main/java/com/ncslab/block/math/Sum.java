@@ -1,7 +1,7 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.data.Data;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -112,25 +112,100 @@ public class Sum extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Sum block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Sum block directly from BlockDto DTO
      */
-    public Sum(BlockJson blockDto, NCSLabModel model) {
+    public Sum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.inputs = new Parameter(this, 1, "Inputs", "++");
-        this.inputSequence = "++"; // Initialize final field
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.inputSameDT = new Parameter(this, 3, "Inputsamedt", "0");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-        this.icon = new Parameter(this, 6, "Icon", "round");
+        // Extract parameters from DTO using same names and defaults as JSON constructor
+        JSONObject paramValues = new JSONObject();
+        if (blockDto.getParamValues() != null) {
+            paramValues = new JSONObject(blockDto.getParamValues());
+        }
+        
+        // Initialize final parameters using exact same logic as JSON constructor
+        this.inputs = new Parameter(this, 1, "Inputs", paramValues.optString("Inputs", "++"));
+        this.inputSequence = this.inputs.getInitString(); // Initialize final field from parameter
+        this.sampleTime = new Parameter(this, 2, "SampleTime", paramValues.optString("SampleTime", "-1"));
+        this.inputSameDT = new Parameter(this, 3, "InputSameDT", paramValues.optString("InputSameDT", "on"));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
+        this.icon = new Parameter(this, 6, "Icon", paramValues.optString("Icon", "rectangular"));
 
         // Initialize ports
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
+    // This pattern maintains backward compatibility while enabling DTO migration
+
+    /**
+     * Enhanced DTO-based constructor - preferred for new implementations
+     * @param dto The DTO containing block configuration
+     * @param model The parent model
+     */
+    public Sum(com.ncslab.dto.block.specialized.math.SumDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Initialize from DTO parameters using TypedParameter value extraction
+        this.inputs = createParameterFromDto("Inputs", dto.getInputsValue(), dto);
+        this.inputSequence = dto.getInputsValue(); // Initialize final field
+        this.sampleTime = createParameterFromDto("SampleTime", dto.getSampleTime(), dto);
+        this.inputSameDT = createParameterFromDto("InputSameDT", dto.getInputSameDTValue(), dto);
+        this.outDataType = createParameterFromDto("OutDataTypeStr", dto.getOutDataTypeStrValue(), dto);
+        this.saturateOnIntegerOverflow = createParameterFromDto("SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue(), dto);
+        this.icon = createParameterFromDto("Icon", dto.getIconValue(), dto);
+        
+        // Complete initialization
+        initializePorts();
+        
+        System.out.println("Enhanced DTO: Sum block created successfully - " + dto.getBlockName());
+    }
+
+    /**
+     * Factory method for DTO-based creation
+     */
+    public static Sum fromDto(com.ncslab.dto.block.specialized.math.SumDto dto, NCSLabModel model) {
+        return new Sum(dto, model);
+    }
+
+    /**
+     * Helper method to create Parameter from DTO values
+     */
+    private static Parameter createParameterFromDto(String paramName, Object value, com.ncslab.dto.block.specialized.math.SumDto dto) {
+        String stringValue;
+        if (value instanceof Boolean) {
+            stringValue = ((Boolean) value) ? "on" : "off";
+        } else {
+            stringValue = String.valueOf(value);
+        }
+        return new Parameter(null, getParameterIndex(paramName), paramName, stringValue);
+    }
+
+    /**
+     * Get parameter index for consistent ordering
+     */
+    private static int getParameterIndex(String paramName) {
+        switch (paramName) {
+            case "Inputs": return 1;
+            case "SampleTime": return 2;
+            case "InputSameDT": return 3;
+            case "OutDataTypeStr": return 4;
+            case "SaturateOnIntegerOverflow": return 5;
+            case "Icon": return 6;
+            default: return 99;
+        }
+    }
+
+    // ===== END DUAL CONSTRUCTOR PATTERN =====
     
     // === Static Factory Method for JSON Deserialization ===
     public static Sum fromJSON(JSONObject blockJSON, NCSLabModel model) {

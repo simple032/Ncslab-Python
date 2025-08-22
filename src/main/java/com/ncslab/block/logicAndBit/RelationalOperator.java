@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -129,9 +129,9 @@ public class RelationalOperator extends Block {
         OutputPort output = new OutputPort(this, 1, true);
         outputPortList.add(output);
     }    /**
-     * DTO-NATIVE Constructor - Creates RelationalOperator block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates RelationalOperator block directly from BlockDto DTO
      */
-    public RelationalOperator(BlockJson blockDto, NCSLabModel model) {
+    public RelationalOperator(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

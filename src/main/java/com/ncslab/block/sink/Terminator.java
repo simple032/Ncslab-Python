@@ -1,7 +1,7 @@
 package com.ncslab.block.sink;
 
 import com.ncslab.ncslablink.MatDimException;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -37,9 +37,9 @@ public class Terminator extends SinkBlock{
 	}
 	
 	/**
-	 * DTO-NATIVE Constructor - Creates Terminator block directly from BlockJson DTO
+	 * DTO-NATIVE Constructor - Creates Terminator block directly from BlockDto DTO
 	 */
-	public Terminator(BlockJson blockDto, NCSLabModel model) {
+	public Terminator(BlockDto blockDto, NCSLabModel model) {
 		super(blockDto, model);
 		inputPortList.add(new InputPort(this,1));
 		System.out.println("DTO-NATIVE: Terminator block created successfully - " + blockDto.getBlockName());

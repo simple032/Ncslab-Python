@@ -3,7 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import com.ncslab.block.io.RWork;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -26,9 +26,9 @@ public class LoongarchPLC extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates LoongarchPLC block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates LoongarchPLC block directly from BlockDto DTO
      */
-    public LoongarchPLC(BlockJson blockDto, NCSLabModel model) {
+    public LoongarchPLC(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LoongarchPLC block created successfully - " + blockDto.getBlockName());
     }

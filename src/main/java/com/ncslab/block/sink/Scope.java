@@ -1,7 +1,7 @@
 package com.ncslab.block.sink;
 
 import com.ncslab.block.data.Data;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import lombok.Getter;
 import com.ncslab.util.TemplateManager;
 import org.json.JSONObject;
@@ -123,17 +123,29 @@ public class Scope extends SinkBlock {
             scopeStructs[i] = new ScopeStruct(this, i+1, "in"+(i+1));
         }
     }    /**
-     * DTO-NATIVE Constructor - Creates Scope block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Scope block directly from BlockDto DTO
      */
-    public Scope(BlockJson blockDto, NCSLabModel model) {
+    public Scope(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO with proper defaults
-        this.numberOfInputs = new Parameter(this, 1, "NumberOfInputs", "1");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.saveName = new Parameter(this, 3, "SaveName", "ScopeData");
-        this.saveFormat = new Parameter(this, 4, "SaveFormat", "Array");
-        this.bufferSize = new Parameter(this, 5, "BufferSize", "100000");
+        // Extract parameters from DTO using same names and defaults as JSON constructor
+        JSONObject paramValues = new JSONObject();
+        if (blockDto.getParamValues() != null) {
+            paramValues = new JSONObject(blockDto.getParamValues());
+        }
+        
+        // Initialize final parameters using exact same logic as JSON constructor
+        int inputCount;
+        if(paramValues.has("Inputs")) {
+            inputCount = Integer.parseInt(paramValues.getString("Number"));
+        } else {
+            inputCount = 1;
+        }
+        this.numberOfInputs = new Parameter(this, 1, "NumberOfInputs", String.valueOf(inputCount));
+        this.sampleTime = new Parameter(this, 2, "SampleTime", paramValues.optString("SampleTime", "-1"));
+        this.saveName = new Parameter(this, 3, "SaveName", paramValues.optString("SaveName", "ScopeData"));
+        this.saveFormat = new Parameter(this, 4, "SaveFormat", paramValues.optString("SaveFormat", "Array"));
+        this.bufferSize = new Parameter(this, 5, "BufferSize", paramValues.optString("BufferSize", "100000"));
 
         // Initialize scope arrays and ports
         this.inportNum = Integer.parseInt(numberOfInputs.getInitString());
@@ -146,6 +158,44 @@ public class Scope extends SinkBlock {
         }
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
+    // This pattern maintains backward compatibility while enabling DTO migration
+
+    /**
+     * Enhanced DTO-based constructor - preferred for new implementations
+     * @param dto The DTO containing block configuration
+     * @param model The parent model
+     */
+    public Scope(com.ncslab.dto.block.specialized.sink.ScopeDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Initialize from DTO parameters using new Parameter creation
+        this.numberOfInputs = new Parameter(this, 1, "NumberOfInputs", String.valueOf(dto.getNumberOfInputsValue()));
+        this.sampleTime = new Parameter(this, 2, "SampleTime", String.valueOf(dto.getSampleTime()));
+        this.saveName = new Parameter(this, 3, "SaveName", dto.getSaveNameValue());
+        this.saveFormat = new Parameter(this, 4, "SaveFormat", dto.getSaveFormatValue());
+        this.bufferSize = new Parameter(this, 5, "BufferSize", String.valueOf(dto.getBufferSizeValue()));
+        
+        // Execute initialization logic exactly like JSONObject constructor
+        this.inportNum = dto.getNumberOfInputsValue();
+        this.scopeStructs = new ScopeStruct[inportNum];
+        
+        // Add input ports and create scope structures (same as legacy constructor)
+        for(int i = 0; i < inportNum; i++) {
+            inputPortList.add(new InputPort(this, i+1));
+            scopeStructs[i] = new ScopeStruct(this, i+1, "in"+(i+1));
+        }
+        
+        // Complete initialization
+        System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }        
 
     // === Static Factory Method for JSON Deserialization ===
@@ -268,7 +318,7 @@ public class Scope extends SinkBlock {
         String outputCode = "";
         outputCode += "if storeEnable>0\n";
         outputCode += getBlockName() + "=[" + getBlockName()
-            + " Block" + getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId()
+            + " Block" + getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBlock().getBlockId()
             + "_Output" + getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getNumber()
             + "]"
             + ";\n";
@@ -337,7 +387,7 @@ public class Scope extends SinkBlock {
             String outputCode = TemplateManager.renderTemplate("c/sink/Scope/output.vm", context);
             code.addSinkOutputCode(outputCode);
 
-            context.put("linkedBlockId", this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId());
+            context.put("linkedBlockId", this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBlock().getBlockId());
             String sinkStatusClearCode = TemplateManager.renderTemplate("c/sink/Scope/status_clear.vm", context);
             code.addSinkStatusClearCode(sinkStatusClearCode);
         }
@@ -373,7 +423,7 @@ public class Scope extends SinkBlock {
             String outputCode = TemplateManager.renderTemplate("c/sink/Scope/output.vm", context);
             code.addSinkOutputCode(outputCode);
 
-            context.put("linkedBlockId", this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock().getBlockId());
+            context.put("linkedBlockId", this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBlock().getBlockId());
             String sinkStatusClearCode = TemplateManager.renderTemplate("c/sink/Scope/status_clear.vm", context);
             code.addSinkStatusClearCode(sinkStatusClearCode);
         }
@@ -395,6 +445,10 @@ public class Scope extends SinkBlock {
 
         OutputSignal signal = this.inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         for(int i = 0; i < inportNum; i++) {
+            // FIXME:one-time fix 
+            // if(scopeStructs[i] != null) {
+            //     continue;
+            // }
             scopeStructs[i] = new ScopeStruct(this, 1, this.blockName);
             scopeStructs[i].setDimension(signal.getWidth(), signal.getHeight());
             scopeStructs[i].setMaxDataLength(Integer.parseInt(bufferSize.getInitString()));

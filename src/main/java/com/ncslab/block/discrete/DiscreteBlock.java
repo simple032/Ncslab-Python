@@ -9,7 +9,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.TemplateManager;
 import org.apache.velocity.VelocityContext;
 
@@ -28,9 +28,9 @@ abstract public class DiscreteBlock extends Block {
     }
 
     /**
-     * DTO-NATIVE Constructor - Creates DiscreteBlock block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates DiscreteBlock block directly from BlockDto DTO
      */
-    public DiscreteBlock(BlockJson blockDto, NCSLabModel model) {
+    public DiscreteBlock(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DiscreteBlock block created successfully - " + blockDto.getBlockName());
     }
@@ -95,7 +95,7 @@ abstract public class DiscreteBlock extends Block {
     public void updateDimension() throws MatDimException{
         if (sampleTime < 0) {
             if (sampleTime == -1) {
-                Block linkedBlock = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBLock();
+                Block linkedBlock = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBlock();
                 if (linkedBlock instanceof DiscreteBlock) {
                     sampleTime = ((DiscreteBlock) linkedBlock).getSampleTime();
                 } else {

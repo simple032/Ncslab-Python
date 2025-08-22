@@ -2,7 +2,7 @@ package com.ncslab.block.hardware.rasp;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -23,9 +23,9 @@ public class PWM extends com.ncslab.block.Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates PWM block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates PWM block directly from BlockDto DTO
      */
-    public PWM(BlockJson blockDto, NCSLabModel model) {
+    public PWM(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: PWM block created successfully - " + blockDto.getBlockName());
     }

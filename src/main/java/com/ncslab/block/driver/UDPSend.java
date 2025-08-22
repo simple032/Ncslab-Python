@@ -2,7 +2,7 @@ package com.ncslab.block.driver;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -27,9 +27,9 @@ public class UDPSend extends com.ncslab.block.Block{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates UDPSend block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates UDPSend block directly from BlockDto DTO
      */
-    public UDPSend(BlockJson blockDto, NCSLabModel model) {
+    public UDPSend(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: UDPSend block created successfully - " + blockDto.getBlockName());
     }

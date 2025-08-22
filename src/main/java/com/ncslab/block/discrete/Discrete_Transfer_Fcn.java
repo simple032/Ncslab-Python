@@ -8,7 +8,7 @@ import java.util.List;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -137,9 +137,9 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
 
         setSampleTime(sampleTimeParam);
     }    /**
-     * DTO-NATIVE Constructor - Creates Discrete_Transfer_Fcn block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates Discrete_Transfer_Fcn block directly from BlockDto DTO
      */
-    public Discrete_Transfer_Fcn(BlockJson blockDto, NCSLabModel model) {
+    public Discrete_Transfer_Fcn(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

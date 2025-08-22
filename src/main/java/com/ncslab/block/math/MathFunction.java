@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -117,9 +117,9 @@ public class MathFunction extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates MathFunction block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates MathFunction block directly from BlockDto DTO
      */
-    public MathFunction(BlockJson blockDto, NCSLabModel model) {
+    public MathFunction(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Extract legacy operator

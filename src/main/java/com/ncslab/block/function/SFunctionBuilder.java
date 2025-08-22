@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 
 import com.utils.Property;
 import org.json.JSONObject;
-import com.ncslab.dto.BlockJson;
+import com.ncslab.dto.core.BlockDto;
 import lombok.Getter;
 
 import com.ncslab.block.Block;
@@ -37,9 +37,9 @@ public class SFunctionBuilder extends Block {
 	
     
     /**
-     * DTO-NATIVE Constructor - Creates SFunctionBuilder block directly from BlockJson DTO
+     * DTO-NATIVE Constructor - Creates SFunctionBuilder block directly from BlockDto DTO
      */
-    public SFunctionBuilder(BlockJson blockDto, NCSLabModel model) {
+    public SFunctionBuilder(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SFunctionBuilder block created successfully - " + blockDto.getBlockName());
     }
