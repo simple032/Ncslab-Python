@@ -2,7 +2,7 @@ package com.ncslab.database;
 
 import lombok.Getter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 
 @Entity

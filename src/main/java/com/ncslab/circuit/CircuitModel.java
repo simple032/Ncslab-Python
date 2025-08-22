@@ -532,8 +532,8 @@ public class CircuitModel {
 				Add add=(Add)block; 
 				element.setSign(add.getSign(i));
 				i++;
-				Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
-				//System.out.println(input.getLinkedLine().getLinkedOutputPort().getBLock().getBlockName());
+				Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBlock();
+				//System.out.println(input.getLinkedLine().getLinkedOutputPort().getBlock().getBlockName());
 				//向前递归搜索
 				searchBlock(newBlock);
 			}
@@ -544,7 +544,7 @@ public class CircuitModel {
 			
 			//如果和Input有连接,则搜索(Input可能与Circuit之外的模块连接,此时还没有处理,LinkedLine应该是null)
 			if(input.getLinkedLine()!=null) {
-				Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
+				Block newBlock=input.getLinkedLine().getLinkedOutputPort().getBlock();
 				//向前递归搜索
 				searchBlock(newBlock);
 			}
@@ -567,7 +567,7 @@ public class CircuitModel {
 			else
 			if(block.getOutputPortList().get(0).getFeedThrough()==false&&block.getInputPortList().size()!=0)
 			{
-				terminalBlockList.add(block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBLock());
+				terminalBlockList.add(block.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBlock());
 				//terminalBlockList.add(block);
 			}
 		}

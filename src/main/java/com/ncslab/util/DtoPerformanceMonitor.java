@@ -132,7 +132,7 @@ public class DtoPerformanceMonitor {
     
     /**
      * Start monitoring a DTO operation
-     * @param operationName Name of the operation (e.g., "ModelJson.parse", "BlockJson.validate")
+     * @param operationName Name of the operation (e.g., "ModelDto.parse", "BlockDto.validate")
      * @return Performance context for automatic timing
      */
     public static PerformanceContext startOperation(String operationName) {
@@ -150,7 +150,7 @@ public class DtoPerformanceMonitor {
     
     /**
      * Record a DTO parsing operation
-     * @param dtoType DTO type (e.g., "ModelJson", "BlockJson")
+     * @param dtoType DTO type (e.g., "ModelDto", "BlockDto")
      * @param executionTime Execution time in milliseconds
      * @param success Whether the operation was successful
      */

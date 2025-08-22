@@ -1,6 +1,9 @@
 package com.ncslab.util;
 
-import com.ncslab.dto.*;
+import com.ncslab.dto.core.*;
+import com.ncslab.dto.block.*;
+import com.ncslab.dto.communication.*;
+import com.ncslab.dto.model.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -54,16 +57,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate ModelJson DTO with comprehensive checks
-     * @param modelDto ModelJson to validate
+     * Validate ModelDto DTO with comprehensive checks
+     * @param modelDto ModelDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateModel(ModelJson modelDto) {
+    public static ValidationResult validateModel(ModelDto modelDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (modelDto == null) {
-            errors.add("ModelJson is null");
+            errors.add("ModelDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -84,7 +87,7 @@ public class DtoValidationUtils {
         if (modelDto.getBlocks() != null) {
             Set<String> blockNames = new HashSet<>();
             for (int i = 0; i < modelDto.getBlocks().size(); i++) {
-                BlockJson block = modelDto.getBlocks().get(i);
+                BlockDto block = modelDto.getBlocks().get(i);
                 ValidationResult blockResult = validateBlock(block);
                 if (!blockResult.isValid()) {
                     errors.add("Block " + i + ": " + blockResult.getErrorSummary());
@@ -107,7 +110,7 @@ public class DtoValidationUtils {
         // Line validation
         if (modelDto.getLines() != null) {
             for (int i = 0; i < modelDto.getLines().size(); i++) {
-                LineJson line = modelDto.getLines().get(i);
+                LineDto line = modelDto.getLines().get(i);
                 ValidationResult lineResult = validateLine(line);
                 if (!lineResult.isValid()) {
                     errors.add("Line " + i + ": " + lineResult.getErrorSummary());
@@ -137,16 +140,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate BlockJson DTO
-     * @param blockDto BlockJson to validate
+     * Validate BlockDto DTO
+     * @param blockDto BlockDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateBlock(BlockJson blockDto) {
+    public static ValidationResult validateBlock(BlockDto blockDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (blockDto == null) {
-            errors.add("BlockJson is null");
+            errors.add("BlockDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -163,8 +166,8 @@ public class DtoValidationUtils {
         }
         
         // Circuit block specific validation
-        if (blockDto instanceof CircuitBlockJson) {
-            CircuitBlockJson circuitBlock = (CircuitBlockJson) blockDto;
+        if (blockDto instanceof CircuitBlockDto) {
+            CircuitBlockDto circuitBlock = (CircuitBlockDto) blockDto;
             ValidationResult circuitResult = validateCircuitBlock(circuitBlock);
             if (!circuitResult.isValid()) {
                 errors.addAll(circuitResult.getErrors());
@@ -185,16 +188,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate CircuitBlockJson DTO
-     * @param circuitBlockDto CircuitBlockJson to validate
+     * Validate CircuitBlockDto DTO
+     * @param circuitBlockDto CircuitBlockDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateCircuitBlock(CircuitBlockJson circuitBlockDto) {
+    public static ValidationResult validateCircuitBlock(CircuitBlockDto circuitBlockDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (circuitBlockDto == null) {
-            errors.add("CircuitBlockJson is null");
+            errors.add("CircuitBlockDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -218,16 +221,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate LineJson DTO
-     * @param lineDto LineJson to validate
+     * Validate LineDto DTO
+     * @param lineDto LineDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateLine(LineJson lineDto) {
+    public static ValidationResult validateLine(LineDto lineDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (lineDto == null) {
-            errors.add("LineJson is null");
+            errors.add("LineDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -248,16 +251,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate ConfigJson DTO
-     * @param configDto ConfigJson to validate
+     * Validate ConfigDto DTO
+     * @param configDto ConfigDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateConfig(ConfigJson configDto) {
+    public static ValidationResult validateConfig(ConfigDto configDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (configDto == null) {
-            errors.add("ConfigJson is null");
+            errors.add("ConfigDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -298,16 +301,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate ServerRequestJson DTO
-     * @param requestDto ServerRequestJson to validate
+     * Validate ServerRequestDto DTO
+     * @param requestDto ServerRequestDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateServerRequest(ServerRequestJson requestDto) {
+    public static ValidationResult validateServerRequest(ServerRequestDto requestDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (requestDto == null) {
-            errors.add("ServerRequestJson is null");
+            errors.add("ServerRequestDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -328,16 +331,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate ServerResponseJson DTO
-     * @param responseDto ServerResponseJson to validate
+     * Validate ServerResponseDto DTO
+     * @param responseDto ServerResponseDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateServerResponse(ServerResponseJson responseDto) {
+    public static ValidationResult validateServerResponse(ServerResponseDto responseDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (responseDto == null) {
-            errors.add("ServerResponseJson is null");
+            errors.add("ServerResponseDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -363,16 +366,16 @@ public class DtoValidationUtils {
     }
     
     /**
-     * Validate WebSocketMessageJson DTO
-     * @param messageDto WebSocketMessageJson to validate
+     * Validate WebSocketMessageDto DTO
+     * @param messageDto WebSocketMessageDto to validate
      * @return ValidationResult
      */
-    public static ValidationResult validateWebSocketMessage(WebSocketMessageJson messageDto) {
+    public static ValidationResult validateWebSocketMessage(WebSocketMessageDto messageDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
         if (messageDto == null) {
-            errors.add("WebSocketMessageJson is null");
+            errors.add("WebSocketMessageDto is null");
             return new ValidationResult(false, errors, warnings);
         }
         
@@ -399,10 +402,10 @@ public class DtoValidationUtils {
     
     /**
      * Perform comprehensive validation of all DTOs in a model
-     * @param modelDto ModelJson to validate
+     * @param modelDto ModelDto to validate
      * @return ValidationResult with comprehensive analysis
      */
-    public static ValidationResult validateModelComprehensive(ModelJson modelDto) {
+    public static ValidationResult validateModelComprehensive(ModelDto modelDto) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         
@@ -414,13 +417,13 @@ public class DtoValidationUtils {
         // Cross-validation: ensure line references valid blocks
         if (modelDto.getBlocks() != null && modelDto.getLines() != null) {
             Set<String> blockNames = new HashSet<>();
-            for (BlockJson block : modelDto.getBlocks()) {
+            for (BlockDto block : modelDto.getBlocks()) {
                 if (block != null && block.getBlockName() != null) {
                     blockNames.add(block.getBlockName());
                 }
             }
             
-            for (LineJson line : modelDto.getLines()) {
+            for (LineDto line : modelDto.getLines()) {
                 if (line != null) {
                     if (line.getFromBlockName() != null && !blockNames.contains(line.getFromBlockName())) {
                         errors.add("Line references non-existent from block: " + line.getFromBlockName());
@@ -447,8 +450,8 @@ public class DtoValidationUtils {
         Map<String, Object> metrics = new HashMap<>();
         
         metrics.put("supportedDTOs", List.of(
-            "ModelJson", "BlockJson", "CircuitBlockJson", "LineJson", "ConfigJson",
-            "ServerRequestJson", "ServerResponseJson", "WebSocketMessageJson"
+            "ModelDto", "BlockDto", "CircuitBlockDto", "LineDto", "ConfigDto",
+            "ServerRequestDto", "ServerResponseDto", "WebSocketMessageDto"
         ));
         
         metrics.put("validationFeatures", List.of(

@@ -1,9 +1,9 @@
 package com.ncslab.util;
 
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.BlockJson;
-import com.ncslab.dto.LineJson;
-import com.ncslab.dto.OptimizedModelJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.model.LineDto;
+import com.ncslab.dto.core.OptimizedModelDto;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -68,12 +68,12 @@ public class SerializationMigrationUtils {
      * Pattern 1: Direct Migration with Fallback
      * Try optimized direct parsing first, fall back to legacy if needed
      */
-    public static MigrationResult<ModelJson> parseModelWithFallback(String jsonString) {
+    public static MigrationResult<ModelDto> parseModelWithFallback(String jsonString) {
         long startTime = System.nanoTime();
         
         // Try optimized direct parsing first
         try {
-            ModelJson result = EnhancedJsonUtils.parseModelJsonOptimized(jsonString);
+            ModelDto result = EnhancedJsonUtils.parseModelDtoOptimized(jsonString);
             if (result != null && result.isValid()) {
                 long duration = (System.nanoTime() - startTime) / 1_000_000;
                 log.debug("Direct parsing successful in {}ms", duration);
@@ -86,7 +86,7 @@ public class SerializationMigrationUtils {
         // Fallback to legacy JSONObject approach
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            ModelJson result = ModelJson.fromLegacyJson(jsonObject);
+            ModelDto result = ModelDto.fromLegacyJson(jsonObject);
             if (result != null && result.isValid()) {
                 long duration = (System.nanoTime() - startTime) / 1_000_000;
                 log.info("Legacy parsing successful in {}ms after direct failure", duration);
@@ -106,7 +106,7 @@ public class SerializationMigrationUtils {
      * Pattern 2: Async Migration for Non-Critical Operations
      * Process using both methods asynchronously and compare results
      */
-    public static CompletableFuture<MigrationResult<ModelJson>> parseModelAsync(String jsonString) {
+    public static CompletableFuture<MigrationResult<ModelDto>> parseModelAsync(String jsonString) {
         return CompletableFuture.supplyAsync(() -> {
             return parseModelWithFallback(jsonString);
         }, migrationExecutor);
@@ -116,8 +116,8 @@ public class SerializationMigrationUtils {
      * Pattern 3: Batch Migration for Multiple Objects
      * Process lists of JSON strings efficiently
      */
-    public static List<MigrationResult<ModelJson>> parseModelsBatch(List<String> jsonStrings) {
-        List<MigrationResult<ModelJson>> results = new ArrayList<>();
+    public static List<MigrationResult<ModelDto>> parseModelsBatch(List<String> jsonStrings) {
+        List<MigrationResult<ModelDto>> results = new ArrayList<>();
         
         for (String jsonString : jsonStrings) {
             results.add(parseModelWithFallback(jsonString));
@@ -137,7 +137,7 @@ public class SerializationMigrationUtils {
      * Pattern 4: Smart Migration Based on JSON Structure
      * Analyze JSON structure to choose optimal parsing method
      */
-    public static MigrationResult<ModelJson> parseModelSmart(String jsonString) {
+    public static MigrationResult<ModelDto> parseModelSmart(String jsonString) {
         long startTime = System.nanoTime();
         
         // Quick structure analysis
@@ -146,7 +146,7 @@ public class SerializationMigrationUtils {
         if (structureInfo.isOptimalForDirect()) {
             // Use direct parsing for well-structured JSON
             try {
-                ModelJson result = EnhancedJsonUtils.parseModelJsonOptimized(jsonString);
+                ModelDto result = EnhancedJsonUtils.parseModelDtoOptimized(jsonString);
                 if (result != null && result.isValid()) {
                     long duration = (System.nanoTime() - startTime) / 1_000_000;
                     return MigrationResult.success(result, "smart-direct", duration);
@@ -159,7 +159,7 @@ public class SerializationMigrationUtils {
         // Use legacy parsing for complex or problematic JSON
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            ModelJson result = ModelJson.fromLegacyJson(jsonObject);
+            ModelDto result = ModelDto.fromLegacyJson(jsonObject);
             if (result != null && result.isValid()) {
                 long duration = (System.nanoTime() - startTime) / 1_000_000;
                 return MigrationResult.success(result, "smart-legacy", duration);
@@ -177,10 +177,10 @@ public class SerializationMigrationUtils {
      * Pattern 5: Progressive Migration with Metrics
      * Gradually migrate while collecting performance data
      */
-    public static MigrationResult<ModelJson> parseModelProgressive(String jsonString, boolean preferDirect) {
+    public static MigrationResult<ModelDto> parseModelProgressive(String jsonString, boolean preferDirect) {
         if (preferDirect) {
             // Try direct first, measure performance
-            MigrationResult<ModelJson> directResult = tryDirectParsing(jsonString);
+            MigrationResult<ModelDto> directResult = tryDirectParsing(jsonString);
             if (directResult.isSuccess()) {
                 return directResult;
             }
@@ -190,12 +190,12 @@ public class SerializationMigrationUtils {
             return tryLegacyParsing(jsonString);
         } else {
             // Use legacy by default, but measure direct parsing in background for comparison
-            MigrationResult<ModelJson> legacyResult = tryLegacyParsing(jsonString);
+            MigrationResult<ModelDto> legacyResult = tryLegacyParsing(jsonString);
             
             // Async comparison for metrics (don't block main thread)
             CompletableFuture.runAsync(() -> {
                 try {
-                    MigrationResult<ModelJson> directResult = tryDirectParsing(jsonString);
+                    MigrationResult<ModelDto> directResult = tryDirectParsing(jsonString);
                     compareMigrationResults(legacyResult, directResult);
                 } catch (Exception e) {
                     log.debug("Background direct parsing comparison failed", e);
@@ -209,10 +209,10 @@ public class SerializationMigrationUtils {
     /**
      * Helper: Try direct parsing only
      */
-    private static MigrationResult<ModelJson> tryDirectParsing(String jsonString) {
+    private static MigrationResult<ModelDto> tryDirectParsing(String jsonString) {
         long startTime = System.nanoTime();
         try {
-            ModelJson result = EnhancedJsonUtils.parseModelJsonOptimized(jsonString);
+            ModelDto result = EnhancedJsonUtils.parseModelDtoOptimized(jsonString);
             long duration = (System.nanoTime() - startTime) / 1_000_000;
             if (result != null && result.isValid()) {
                 return MigrationResult.success(result, "direct", duration);
@@ -228,11 +228,11 @@ public class SerializationMigrationUtils {
     /**
      * Helper: Try legacy parsing only
      */
-    private static MigrationResult<ModelJson> tryLegacyParsing(String jsonString) {
+    private static MigrationResult<ModelDto> tryLegacyParsing(String jsonString) {
         long startTime = System.nanoTime();
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            ModelJson result = ModelJson.fromLegacyJson(jsonObject);
+            ModelDto result = ModelDto.fromLegacyJson(jsonObject);
             long duration = (System.nanoTime() - startTime) / 1_000_000;
             if (result != null && result.isValid()) {
                 return MigrationResult.success(result, "legacy", duration);
@@ -248,7 +248,7 @@ public class SerializationMigrationUtils {
     /**
      * Compare migration results for performance analysis
      */
-    private static void compareMigrationResults(MigrationResult<ModelJson> legacy, MigrationResult<ModelJson> direct) {
+    private static void compareMigrationResults(MigrationResult<ModelDto> legacy, MigrationResult<ModelDto> direct) {
         if (legacy.isSuccess() && direct.isSuccess()) {
             double speedupRatio = (double) legacy.getProcessingTime() / direct.getProcessingTime();
             log.info("Migration comparison: Direct {}ms vs Legacy {}ms ({}x speedup)", 

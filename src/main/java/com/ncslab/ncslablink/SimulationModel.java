@@ -12,7 +12,10 @@ import com.ncslab.block.io.terminal.Terminal;
 import com.ncslab.block.sink.Scope;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
+import com.ncslab.util.JsonUtils;
 import com.utils.Property;
+
+import lombok.Data;
 import lombok.Getter;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.*;
@@ -21,8 +24,8 @@ import org.apache.commons.math3.ode.sampling.StepInterpolator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.WebSocketMessageDto;
 
 import jakarta.websocket.Session;
 
@@ -41,6 +44,7 @@ import org.apache.commons.math3.ode.sampling.StepNormalizer;
 public class SimulationModel extends NCSLabModel{
 
     // 系统状态和参数
+    @Getter
     private double[] states;
     private double[] parameters;
     private double[] inputs;
@@ -52,14 +56,8 @@ public class SimulationModel extends NCSLabModel{
 		initializeStatesArray();
 	}
 	
-	// 新增String构造函数，支持Jackson DTO解析
-	SimulationModel(String jsonString, ModelMode mode) throws ModelException{
-		super(jsonString, mode);
-		initializeStatesArray();
-	}
-	
-	// 新增ModelJson DTO构造函数
-	SimulationModel(ModelJson modelDto, ModelMode mode) throws ModelException{
+	// 新增ModelDto DTO构造函数
+	SimulationModel(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 		initializeStatesArray();
 	}
@@ -67,7 +65,7 @@ public class SimulationModel extends NCSLabModel{
 	// 初始化状态数组
 	private void initializeStatesArray() {
         int statesSize = 0;
-        for(Block block: blockList) {
+        for(Block block: getBlockList()) {
             for (State state : block.getStateList()) {
                 if (state.getDataType() == DataType.REAL) {
                     statesSize++;
@@ -84,17 +82,12 @@ public class SimulationModel extends NCSLabModel{
         return new SimulationModel(jsonIn,mode);
 	}
 	
-	// 新增String工厂方法，支持DTO解析
-	public static SimulationModel createFromJsonString(String jsonString, ModelMode mode) throws ModelException {
-        return new SimulationModel(jsonString, mode);
-	}
-	
-	// 新增ModelJson DTO工厂方法
-	public static SimulationModel createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+	// 新增ModelDto DTO工厂方法
+	public static SimulationModel createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
         return new SimulationModel(modelDto, mode);
 	}
 
-	private void sendSimulatingMessage(Session session, double time) throws IOException{
+	public void sendSimulatingMessage(Session session, double time) throws IOException{
 		JSONObject jb = new JSONObject();
 		jb.put("msg", "simulating");
 		jb.put("time", time);
@@ -123,9 +116,9 @@ public class SimulationModel extends NCSLabModel{
      */
     private void sendOptimizedScopeData(Session session, JSONObject scopeData, double currentTime) throws IOException {
         if (session != null) {
-            WebSocketMessageJson message = WebSocketMessageJson.createRealTimeScopeUpdate(
+            WebSocketMessageDto message = WebSocketMessageDto.createRealTimeScopeUpdate(
                 null, scopeData.toMap(), currentTime);
-            session.getBasicRemote().sendText(message.toLegacyJson().toString());
+            session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
         }
     }
 
@@ -169,9 +162,9 @@ public class SimulationModel extends NCSLabModel{
         allResults.put("scopes", jsonScopes);
 
         // Send via WebSocket directly
-        WebSocketMessageJson message = WebSocketMessageJson.createFinalResultsMessage(
+        WebSocketMessageDto message = WebSocketMessageDto.createFinalResultsMessage(
             allResults.toMap(), getUserId(), getModelId());
-        session.getBasicRemote().sendText(message.toLegacyJson().toString());
+        session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
         
         System.out.printf("RT Simulation: Final results sent - %d scopes processed%n", scopeCursor);
     }
@@ -604,7 +597,7 @@ public class SimulationModel extends NCSLabModel{
         }
 
         JSONArray series = new JSONArray();
-        for (Block block : blockList) {
+        for (Block block : getBlockList()) {
             JSONObject blockData = new JSONObject();
             JSONArray outputDataArray = new JSONArray();
             JSONArray inputDataArray = new JSONArray();
@@ -654,7 +647,7 @@ public class SimulationModel extends NCSLabModel{
         // 类似Simulink的mdlDerivatives
 
         int index = 0;
-        for(Block block: blockList) {
+        for(Block block: getBlockList()) {
             for (State state : block.getStateList()) {
                 if (state.getDataType() == DataType.REAL) {
                     state.getData().setInitValue(x[index++]);
@@ -671,12 +664,12 @@ public class SimulationModel extends NCSLabModel{
 
         calculateOutputs(t);
 
-        for (Block block: blockList) {
+        for (Block block: getBlockList()) {
             block.calculateDerivative(t);
         }
 
         index = 0;
-        for (Block block: blockList) {
+        for (Block block: getBlockList()) {
             for(State state: block.getStateList()){
                 if(state.getDataType() == DataType.REAL){
                     xDot[index++] = state.getDerivateData().getInitValue();
@@ -696,7 +689,7 @@ public class SimulationModel extends NCSLabModel{
     protected void calculateDiscreteUpdates(double t) {
         // 更新离散状态
         // 类似Simulink的mdlUpdate
-        for(Block block: blockList){
+        for(Block block: getBlockList()){
             block.calculateDiscreteUpdate(t);
         }
     }
@@ -704,12 +697,12 @@ public class SimulationModel extends NCSLabModel{
     private void calculateInits(double t, double[] x){
         // 计算各个模块的初始值
         // 类似Simulink的mdlInitialize
-        for(Block block: blockList){
+        for(Block block: getBlockList()){
             block.calculateInit();
         }
 
         int index = 0;
-        for(Block block: blockList) {
+        for(Block block: getBlockList()) {
             for (State state : block.getStateList()) {
                 if (state.getDataType() == DataType.REAL) {
                     x[index++] = state.getData().getInitValue();
@@ -725,8 +718,8 @@ public class SimulationModel extends NCSLabModel{
         }
     }
 
-    private void calculateTerminates(double t){
-        for(Block block: blockList){
+    public void calculateTerminates(double t){
+        for(Block block: getBlockList()){
             block.calculateTerminate(t);
         }
     }
@@ -765,6 +758,29 @@ public class SimulationModel extends NCSLabModel{
 
         jsonScope.put("time", time);
         jsonScope.put("data", data);
+    }
+
+    @Data
+    @Getter
+    public class SimulationContext {
+
+        double tStart;
+        double tEnd;
+        double step;
+        String solverName;
+        double minStep;
+
+        double states[];
+
+        boolean isVariableStep(){
+            // FIXME: Implement variable step logic
+            return step > 0;
+        }
+
+        boolean hasStates(){
+            // FIXME: Implement hasStates logic
+            return states != null && states.length > 0;
+        }
     }
 
 }

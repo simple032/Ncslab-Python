@@ -2,7 +2,7 @@ package com.ncslab.ncslablink;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.ConfigJson;
+import com.ncslab.dto.model.ConfigDto;
 
 @Getter
 public class Config {
@@ -58,11 +58,11 @@ public class Config {
 	}
 
 	/**
-	 * Create Config from ConfigJson DTO
+	 * Create Config from ConfigDto DTO
 	 */
-	public static Config createFromConfigJson(ConfigJson configDto, ModelMode mode) {
+	public static Config createFromConfigDto(ConfigDto configDto, ModelMode mode) {
 		try {
-			// Convert ConfigJson DTO to JSONObject for compatibility with existing constructor
+			// Convert ConfigDto DTO to JSONObject for compatibility with existing constructor
 			JSONObject configJson = new JSONObject();
 			if (configDto.getFixedStep() != null) {
 				configJson.put("FixedStep", configDto.getFixedStep());

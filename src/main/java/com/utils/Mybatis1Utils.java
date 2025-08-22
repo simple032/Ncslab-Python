@@ -32,8 +32,7 @@ public class Mybatis1Utils {
             InputStream inputStream = Resources.getResourceAsStream(resource);
 
             // 加载环境变量
-            Properties properties = new Properties();
-            properties.putAll(System.getenv());
+            Properties properties = DatabaseConfig.getDatabaseProperties();
 
             // 使用指定的环境 id 构建 SqlSessionFactory
             SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();

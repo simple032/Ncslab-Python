@@ -8,14 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.BlockJson;
-import com.ncslab.dto.LineJson;
-import com.ncslab.dto.ConfigJson;
-import com.ncslab.dto.SaveInfoJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.model.LineDto;
+import com.ncslab.dto.model.ConfigDto;
+import com.ncslab.dto.model.SaveInfoDto;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -128,21 +127,21 @@ public class EnhancedJsonUtils {
     /**
      * High-performance model parsing with automatic fallback
      * @param jsonString JSON string to parse
-     * @return ModelJson DTO or null if parsing fails
+     * @return ModelDto DTO or null if parsing fails
      */
-    public static ModelJson parseModelJsonOptimized(String jsonString) {
+    public static ModelDto parseModelDtoOptimized(String jsonString) {
         if (jsonString == null || jsonString.trim().isEmpty()) {
-            log.warn("Empty or null JSON string provided for ModelJson parsing");
+            log.warn("Empty or null JSON string provided for ModelDto parsing");
             return null;
         }
         
         try (DtoPerformanceMonitor.PerformanceContext context = 
-             DtoPerformanceMonitor.startOperation("ModelJson.parseOptimized")) {
+             DtoPerformanceMonitor.startOperation("ModelDto.parseOptimized")) {
             
             try {
                 // Try optimized mapper first
-                ModelJson result = optimizedMapper.readValue(jsonString, ModelJson.class);
-                log.debug("Optimized ModelJson parsing successful");
+                ModelDto result = optimizedMapper.readValue(jsonString, ModelDto.class);
+                log.debug("Optimized ModelDto parsing successful");
                 return result;
                 
             } catch (Exception primaryException) {
@@ -151,13 +150,13 @@ public class EnhancedJsonUtils {
                 
                 try {
                     // Fallback to more lenient mapper
-                    ModelJson result = fallbackMapper.readValue(jsonString, ModelJson.class);
-                    log.info("Fallback ModelJson parsing successful after optimized failure");
+                    ModelDto result = fallbackMapper.readValue(jsonString, ModelDto.class);
+                    log.info("Fallback ModelDto parsing successful after optimized failure");
                     return result;
                     
                 } catch (Exception fallbackException) {
                     context.markError("Fallback parsing also failed: " + fallbackException.getMessage());
-                    log.error("Both optimized and fallback ModelJson parsing failed", fallbackException);
+                    log.error("Both optimized and fallback ModelDto parsing failed", fallbackException);
                     return null;
                 }
             }
@@ -410,14 +409,14 @@ public class EnhancedJsonUtils {
      * @return Validation error message or null if valid
      */
     private static String validateParsedDto(Object dto) {
-        if (dto instanceof ModelJson) {
-            ModelJson model = (ModelJson) dto;
+        if (dto instanceof ModelDto) {
+            ModelDto model = (ModelDto) dto;
             return model.getValidationError();
-        } else if (dto instanceof BlockJson) {
-            BlockJson block = (BlockJson) dto;
+        } else if (dto instanceof BlockDto) {
+            BlockDto block = (BlockDto) dto;
             return block.getValidationError();
-        } else if (dto instanceof LineJson) {
-            LineJson line = (LineJson) dto;
+        } else if (dto instanceof LineDto) {
+            LineDto line = (LineDto) dto;
             return line.getValidationError();
         }
         return null;

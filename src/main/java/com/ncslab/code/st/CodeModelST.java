@@ -50,7 +50,7 @@ public class CodeModelST extends CodeModel {
 		System.out.println("Generating update mainCodes......");
 
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			System.out.println("Generating update mainCodes for ("+block.getBlockId()+")"+block.getBlockName());
 			block.generateBlockUpdateCodeST(code);
 		}
@@ -59,7 +59,7 @@ public class CodeModelST extends CodeModel {
 	protected void generateInitCode(CodeGenerationOption option) {
 		System.out.println("Generating init mainCodes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			System.out.println("Generating init mainCodes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			block.generateBlockInitCodeST(code);

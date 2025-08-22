@@ -3,11 +3,11 @@ package com.ncslab.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.BlockJson;
-import com.ncslab.dto.LineJson;
-import com.ncslab.dto.ConfigJson;
-import com.ncslab.dto.SaveInfoJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.model.LineDto;
+import com.ncslab.dto.model.ConfigDto;
+import com.ncslab.dto.model.SaveInfoDto;
 import lombok.extern.slf4j.Slf4j;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -56,15 +56,15 @@ public class JsonUtils {
     }
     
     /**
-     * Parse JSON string to ModelJson DTO
+     * Parse JSON string to ModelDto DTO
      * @param jsonString JSON string to parse
-     * @return ModelJson DTO or null if parsing fails
+     * @return ModelDto DTO or null if parsing fails
      */
-    public static ModelJson parseModelJson(String jsonString) {
+    public static ModelDto parseModelDto(String jsonString) {
         try {
-            return objectMapper.readValue(jsonString, ModelJson.class);
+            return objectMapper.readValue(jsonString, ModelDto.class);
         } catch (IOException e) {
-            log.error("Failed to parse ModelJson from string: {}", e.getMessage());
+            log.error("Failed to parse ModelDto from string: {}", e.getMessage());
             return null;
         }
     }
@@ -162,9 +162,7 @@ public class JsonUtils {
             
         } catch (JsonProcessingException e) {
             return "Invalid JSON format: " + e.getMessage();
-        } catch (IOException e) {
-            return "IO error while parsing JSON: " + e.getMessage();
-        }
+        } 
     }
     
     /**

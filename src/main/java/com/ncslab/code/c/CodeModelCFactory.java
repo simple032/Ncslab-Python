@@ -9,9 +9,9 @@ import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
 import org.json.JSONArray;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.BlockJson;
-import com.ncslab.dto.LineJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.model.LineDto;
 import com.ncslab.util.JsonUtils;
 
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class CodeModelCFactory {
     }
     
     // New DTO-based factory method
-    public static CodeModelC createInstanceFromDto(String type, ModelJson modelDto, ModelMode mode) throws ModelException {
+    public static CodeModelC createInstanceFromDto(String type, ModelDto modelDto, ModelMode mode) throws ModelException {
         System.out.println("Creating CodeModelC from DTO for platform: " + type);
         
         switch (type.toLowerCase()) {
@@ -62,29 +62,5 @@ public class CodeModelCFactory {
                 throw new IllegalArgumentException("Invalid type for DTO creation: " + type);
         }
     }
-    
-    // New string-based factory method with DTO parsing
-    public static CodeModelC createInstanceFromString(String type, String jsonString, ModelMode mode) throws ModelException {
-        System.out.println("Creating CodeModelC from JSON string for platform: " + type);
-        
-        switch (type.toLowerCase()) {
-            case "raspberry":
-                // Fallback to legacy method since createFromJsonString may not exist yet
-                JSONObject jsonObject = new JSONObject(jsonString);
-                return CodeModelCLinuxRaspberry.createFromJSON(jsonObject, mode);
-            case "loong":
-                // Fallback to legacy method since createFromJsonString may not exist yet
-                jsonObject = new JSONObject(jsonString);
-                return CodeModelCLinuxLoong.createFromJSON(jsonObject, mode);
-            case "windows":
-                // Fallback to legacy method since createFromJsonString may not exist yet
-                jsonObject = new JSONObject(jsonString);
-                return CodeModelCWindowsPC.createFromJSON(jsonObject, mode);
-            case "linux":
-            case "pc":
-                return CodeModelCLinuxPCSimulation.createFromJsonString(jsonString, mode);
-            default:
-                throw new IllegalArgumentException("Invalid type for string creation: " + type);
-        }
-    }
+
 }

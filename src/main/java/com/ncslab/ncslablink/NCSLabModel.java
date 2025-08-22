@@ -7,11 +7,12 @@ import com.ncslab.circuit.block.electblock.ElectBlock;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
+import org.checkerframework.checker.units.qual.s;
 import org.json.JSONArray;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.BlockJson;
-import com.ncslab.dto.LineJson;
-import com.ncslab.dto.SaveInfoJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.model.LineDto;
+import com.ncslab.dto.model.SaveInfoDto;
 import com.ncslab.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +20,14 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.Generated;
+
+import com.greenpineyu.fel.function.operator.Sub;
 import com.ncslab.block.Block;
 import com.ncslab.block.BlockType;
 
 import com.ncslab.line.Line;
+import com.ncslab.system.NCSLabSystem;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.terminal.Terminal;
@@ -75,9 +80,7 @@ abstract public class NCSLabModel {
 
     private boolean cidModeEnable=false;
 
-	// all blocks in the model
-	@Getter
-    protected List<Block> blockList = new CopyOnWriteArrayList<>();
+	// all blocks in the model	
     protected List<From> fromBlockList = new ArrayList<>();
     protected List<To> gotoBlockList = new ArrayList<>();
     protected List<Subsystem> subsystemBlockList = new ArrayList<>();
@@ -101,7 +104,7 @@ abstract public class NCSLabModel {
 
 
     // all lines
-	protected List<Line> lineList = new ArrayList<>();
+	// protected List<Line> lineList = new ArrayList<>();
     protected List<Line> fromLineList = new ArrayList<>();
     protected List<Line> gotoLineList = new ArrayList<>();
 
@@ -133,42 +136,22 @@ abstract public class NCSLabModel {
     @Getter
     protected int outputNum=0;
 
+	@Getter
+	private NCSLabSystem rootSystem = new NCSLabSystem();
+
 	//解析model，变成数据结构 - 原有JSONObject构造函数
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		initFromJsonObject(jsonIn, mode);
-	}
-	
-	// 新增：String-based构造函数，支持Jackson DTO解析  
-	protected NCSLabModel(String jsonString, ModelMode mode) throws ModelException {
-		try {
-			// 验证JSON结构
-			String validationError = JsonUtils.validateJsonStructure(jsonString);
-			if (validationError != null) {
-				throw new ModelException("Invalid JSON structure: " + validationError);
-			}
-			
-			// Use Jackson DTO parsing only - no fallback
-			ModelJson modelDto = JsonUtils.parseModelJson(jsonString);
-			if (modelDto == null || !modelDto.isValid()) {
-				String error = (modelDto != null) ? modelDto.getValidationError() : "Failed to parse JSON to DTO";
-				throw new ModelException("DTO parsing failed: " + error);
-			}
-			
-			System.out.println("Using DTO parsing for model: " + modelDto.getModelName());
-			initFromDto(modelDto, mode);
-		} catch (Exception e) {
-			throw new ModelException("Failed to parse model JSON: " + e.getMessage());
-		}
-	}
-	
+	}	
+
 	// 新增：直接从DTO构造函数
-	protected NCSLabModel(ModelJson modelDto, ModelMode mode) throws ModelException {
+	protected NCSLabModel(ModelDto modelDto, ModelMode mode) throws ModelException {
 		if (modelDto == null) {
-			throw new ModelException("ModelJson cannot be null");
+			throw new ModelException("ModelDto cannot be null");
 		}
 		
 		if (!modelDto.isValid()) {
-			throw new ModelException("Invalid ModelJson: " + modelDto.getValidationError());
+			throw new ModelException("Invalid ModelDto: " + modelDto.getValidationError());
 		}
 		
 		initFromDto(modelDto, mode);
@@ -192,8 +175,8 @@ abstract public class NCSLabModel {
 		modelSeqCount++;
 	}
 	
-	// 从ModelJson DTO初始化的新方法
-	private void initFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+	// 从ModelDto DTO初始化的新方法
+	private void initFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
 		this.mode = mode;
 		
 		// 从DTO设置基本属性
@@ -215,7 +198,7 @@ abstract public class NCSLabModel {
 		try {
 			if (modelDto.getConfig() != null) {
 				// Using direct DTO config - create Config from DTO
-				config = Config.createFromConfigJson(modelDto.getConfig(), mode);
+				config = Config.createFromConfigDto(modelDto.getConfig(), mode);
 			}
 		} catch (Exception e) {
 			System.err.println("Failed to parse config from DTO, skipping: " + e.getMessage());
@@ -240,20 +223,22 @@ abstract public class NCSLabModel {
 		// 使用增强的DTO解析blocks和lines
 		try {
 			parseBlocksFromDto(modelDto.getBlocks());
+			handleSubsystemRelationships();
 			parseLinesFromDto(modelDto.getLines());
+			moveSubsystemBlockLine();
 		} catch (Exception e) {
 			throw new ModelException("Failed to parse blocks/lines from DTO: " + e.getMessage());
 		}
 		
 		// 继续现有工作流程
-		parseContext();
+		rootSystem.calculateSystemState();
 		
 		// IMPORTANT: Add missing connection auto-generation for DTO path
 		// This ensures DTO parsing has the same auto-generation behavior as JSON parsing
 		System.out.println("Checking for unlinked ports and auto-generating missing connections...");
-		int blockCountBefore = blockList.size();
+		int blockCountBefore = getBlockList().size();
 		checkUnlinkedPorts();
-		int blockCountAfter = blockList.size();
+		int blockCountAfter = getBlockList().size();
 		if (blockCountAfter > blockCountBefore) {
 			System.out.printf("Auto-generated %d blocks for unconnected ports%n", blockCountAfter - blockCountBefore);
 		} else {
@@ -263,21 +248,44 @@ abstract public class NCSLabModel {
 		// CRITICAL FIX: Add missing dimension processing for DTO path
 		// This was causing RT simulation to have empty scope results
 		System.out.println("DTO Fix: Setting up dimension processing...");
-		setupDimensionList();
+		rootSystem.setupDimensionList();
 		try {
-			updateDimensions();
+			rootSystem.updateDimensions();
 		} catch (Exception e) {
 			System.err.println("DTO Fix: Error during dimension processing: " + e.getMessage());
 			e.printStackTrace();
 		}
 		
-		setupOuputChain();
+		rootSystem.setupOutputChain();
 		
 		modelSeq = modelSeqCount;
 		modelSeqCount++;
 		
 		System.out.println("Successfully initialized model from DTO: " + modelName + 
-		                   " with " + blockList.size() + " blocks and " + lineList.size() + " lines");
+		                   " with " + getBlockList().size() + " blocks and " + getLineList().size() + " lines");
+	}
+
+	private void handleSubsystemRelationships() {
+		for(Subsystem subSystem : subsystemBlockList) {
+			String subSystemPath = subSystem.getFullPath();
+
+			// Handle subsystem relationships
+			for(In in : inBlockList) {
+				if(Objects.equals(in.getBlockPath(), subSystemPath)) {
+					System.out.println("Adding " + in.getBlockName() + " to subsystem: " + subSystem.getBlockName());
+					subSystem.addIn(in);
+				}
+			}
+
+			for(Out out : outBlockList) {
+				if(Objects.equals(out.getBlockPath(), subSystemPath)) {
+					System.out.println("Adding " + out.getBlockName() + " to subsystem: " + subSystem.getBlockName());
+					subSystem.addOut(out);
+				}
+			}
+			//Manual update due to the dynamic allocation of new ports
+			subSystem.updateBlock();
+		}
 	}
 
 	public ModelMode getModelMode() {
@@ -315,7 +323,7 @@ abstract public class NCSLabModel {
 		for(Block block:circuitBlockList) {
 			block.setBlockId(blockSeq+1);
 			blockSeq++;
-			blockList.add(block);
+			rootSystem.addBlock(block);
 		}
 	}
 
@@ -325,7 +333,7 @@ abstract public class NCSLabModel {
 		for(Line line:circuitLineList) {
 			line.setLineId(lineSeq+1);
 			lineSeq++;
-			lineList.add(line);
+			getLineList().add(line);
 		}
 	}
 
@@ -442,7 +450,7 @@ abstract public class NCSLabModel {
     }
 
     private void showBlocks() {
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			System.out.println("+++++++++++++++++++++++++++");
 			System.out.println("ID: "+block.getBlockId());
 			System.out.println("Name: "+block.getBlockName());
@@ -481,7 +489,7 @@ abstract public class NCSLabModel {
     //将电路系统有代数环模块设置好
     private void setupElectBlocks() {
         System.out.println("Looking for elect blocks");
-        for(Block block:blockList) {
+        for(Block block:getBlockList()) {
             if(block instanceof ElectBlock) {
                 ElectBlock electBlock=(ElectBlock)block;
                 //如果是loopPoint
@@ -516,7 +524,7 @@ abstract public class NCSLabModel {
     // TODO: this method is duplicated with the one in NCSLabModel
     private void findTerminalBlocks() {
         System.out.println("Looking for terminal blocks");
-        for(Block block:blockList) {
+        for(Block block:getBlockList()) {
             if(block.isTerminalBlock()) {
                 System.out.println("Found ("+block.getBlockId()+"): "+block.getBlockName());
                 terminalBlockList.add(block);
@@ -579,11 +587,11 @@ abstract public class NCSLabModel {
                 }
 
                 if(isDisp) {
-                    errorString+=output.getBLock().getBlockName()+"->";
+                    errorString+=output.getBlock().getBlockName()+"->";
                 }
             }
 
-            errorString+=outputPort.getBLock().getBlockName();
+            errorString+=outputPort.getBlock().getBlockName();
 
             System.err.println(errorString);
             ErrorMessage errorMessage=new ErrorMessage(ErrorMessage.AlgebraicLoop,errorString+"\n");
@@ -597,7 +605,7 @@ abstract public class NCSLabModel {
         outputPortPathList.add(outputPort);
 
         //如果没有生成，那就遍历block，生成这个block的代码
-        Block block=outputPort.getBLock();
+        Block block=outputPort.getBlock();
 
         boolean isFeedThroughBlock=false;
         List<OutputPort> outputPortList = block.getOutputPortList();
@@ -646,13 +654,13 @@ abstract public class NCSLabModel {
 
 //			System.out.println("Parsing block ("+block.getBlockId()+"): '"+block.getBlockName()+"'...");
 
-            blockList.add(block);
+            rootSystem.addBlock(block);
             categorizeBlock(block);
         }
 	}
 	
 	/*解析各个Block - REAL DTO-NATIVE方法 (NO MORE CONVERSION!)*/
-	private void parseBlocksFromDto(java.util.List<BlockJson> blockDtos) throws ModelException {
+	private void parseBlocksFromDto(java.util.List<BlockDto> blockDtos) throws ModelException {
 		if (blockDtos == null || blockDtos.isEmpty()) {
 			System.out.println("No blocks to parse from DTO");
 			return;
@@ -660,13 +668,8 @@ abstract public class NCSLabModel {
 		
 		System.out.println("DTO-NATIVE: Parsing " + blockDtos.size() + " blocks directly from DTOs (no conversion)");
 		
-		for (BlockJson blockDto : blockDtos) {
+		for (BlockDto blockDto : blockDtos) {
 			try {
-				// 验证DTO有效性
-				if (!blockDto.isValid()) {
-					System.err.println("Invalid block DTO: " + blockDto.getValidationError() + ", skipping");
-					continue;
-				}
 				
 				// **REAL DTO-NATIVE**: 直接从DTO创建Block实例，无需转换！
 				Block block = BlockType.createBlockFromDto(blockSeq + 1, blockDto, this);
@@ -675,9 +678,8 @@ abstract public class NCSLabModel {
 					continue;
 				}
 				
-				System.out.println("DTO-NATIVE SUCCESS: Created " + blockDto.getBlockType() + "/" + blockDto.getBlockName());
 				blockSeq++;
-				blockList.add(block);
+				rootSystem.addBlock(block);
 				categorizeBlock(block);
 				
 				System.out.println("Successfully created block: " + block.getBlockType() + "/" + block.getBlockName());
@@ -688,7 +690,7 @@ abstract public class NCSLabModel {
 			}
 		}
 		
-		System.out.println("Successfully parsed " + blockList.size() + " blocks from DTO");
+		System.out.println("Successfully parsed " + getBlockList().size() + " blocks from DTO");
 	}
 	
 	/**
@@ -711,7 +713,7 @@ abstract public class NCSLabModel {
 
     private void refactorSubsystemBlocks() {
         for(Subsystem subsystem:subsystemBlockList){
-            String subsystemPath = subsystem.getBlockPath() + "/" + subsystem.getBlockName();
+            String subsystemPath = subsystem.getFullPath();
             
             // 将子系统和它的端口联系起来
             for(In in:inBlockList){
@@ -728,18 +730,51 @@ abstract public class NCSLabModel {
             }
             
             // 将所有属于该子系统的块添加到containedBlocks中
-            for(Block block:blockList){
+            for(Block block:getBlockList()){
                 if(block.getBlockPath().equals(subsystemPath)){
                     subsystem.addBlock(block);
                 }
             }
             
             // 将所有属于该子系统的连线添加到containedLines中
-            for(Line line:lineList){
+            for(Line line:getLineList()){
                 if(isLineWithinSubsystem(line, subsystemPath)){
                     subsystem.addLine(line);
                 }
             }
+        }
+    }
+
+	private void moveSubsystemBlockLine() {
+        for(Subsystem subsystem:subsystemBlockList){
+            String subsystemPath = subsystem.getFullPath();
+
+			List<Block> blocksToRemove = new ArrayList<>();
+			List<Line> linesToRemove = new ArrayList<>();
+
+            // 将子系统和它的端口联系起来
+            // 将所有属于该子系统的块添加到containedBlocks中
+            for(Block block:getBlockList()){
+                if(block.getBlockPath().equals(subsystemPath)){
+                    blocksToRemove.add(block);
+                }
+            }
+            
+            // 将所有属于该子系统的连线添加到containedLines中
+            for(Line line:getLineList()){
+                if(isLineWithinSubsystem(line, subsystemPath)){
+                    linesToRemove.add(line);
+                }
+            }
+
+			for(Block block : blocksToRemove) {
+				rootSystem.removeBlock(block);
+				subsystem.addBlock(block);
+			}
+			for(Line line : linesToRemove) {
+				rootSystem.removeLine(line);
+				subsystem.addLine(line);
+			}
         }
     }
     
@@ -751,8 +786,8 @@ abstract public class NCSLabModel {
             return false;
         }
         
-        Block fromBlock = line.getLinkedOutputPort().getBLock();
-        Block toBlock = line.getLinkedInputPort().getBLock();
+        Block fromBlock = line.getLinkedOutputPort().getBlock();
+        Block toBlock = line.getLinkedInputPort().getBlock();
         
         // Line belongs to subsystem if both connected blocks are within the subsystem path
         return fromBlock.getBlockPath().equals(subsystemPath) && 
@@ -765,13 +800,13 @@ abstract public class NCSLabModel {
         if(lineJSONList != null) {
             for (int i = 0; i < lineJSONList.length(); i++) {
                 JSONObject lineJSON = lineJSONList.getJSONObject(i);
-                processLineJson(lineJSON);
+                processLineDto(lineJSON);
             }
         }
 	}
 	
 	/*解析各条连线 - 增强的DTO方法*/
-	private void parseLinesFromDto(java.util.List<LineJson> lineDtos) {
+	private void parseLinesFromDto(java.util.List<LineDto> lineDtos) {
 		if (lineDtos == null || lineDtos.isEmpty()) {
 			System.out.println("No lines to parse from DTO");
 			return;
@@ -779,7 +814,7 @@ abstract public class NCSLabModel {
 		
 		System.out.println("Parsing " + lineDtos.size() + " lines from DTO");
 		
-		for (LineJson lineDto : lineDtos) {
+		for (LineDto lineDto : lineDtos) {
 			try {
 				// 验证DTO有效性
 				if (!lineDto.isValid()) {
@@ -802,45 +837,39 @@ abstract public class NCSLabModel {
 			}
 		}
 		
-		System.out.println("Successfully parsed " + lineList.size() + " lines from DTO");
+		System.out.println("Successfully parsed " + getLineList().size() + " lines from DTO");
 	}
 	
 	/**
 	 * 处理连线 JSON对象的通用逻辑
 	 * 从parseLines()方法中提取出来的通用逻辑
 	 */
-	private void processLineJson(JSONObject lineJSON) {
+	private void processLineDto(JSONObject lineJSON) {
 		//xiazhiqiang:隐去子系统连线，并将输入连线链接到子系统的In，输出连线链接到子系统的Out
 		replaceInLine(lineJSON);
 		replaceOutLine(lineJSON);
 		
 		//解析各条连线
-		Line line = Line.createLine(lineJSON, this);
+		Line line = Line.createLine(lineJSON, this.getBlockList());
 		line.setLineId(lineSeq + 1);
 		lineSeq++;
 		
-//		System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+//		System.out.println("Parsing line ("+line.getLineId()+"): '"+line.getLinkedOutputPort().getBlock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")-->"+line.getLinkedInputPort().getBlock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
 		
-		lineList.add(line);
+		getLineList().add(line);
 	}
 
 	/**
 	 * Process line directly from DTO without JSON conversion
 	 */
-	private void processLineDto(LineJson lineDto) {
+	private void processLineDto(LineDto lineDto) {
 		try {
-			// Create a minimal JSONObject from DTO for compatibility with existing Line.createLine method
-			JSONObject lineJSON = new JSONObject();
-			lineJSON.put("fromBlockName", lineDto.getFromBlockName());
-			lineJSON.put("fromPortNo", lineDto.getFromPortNo());
-			lineJSON.put("toBlockName", lineDto.getToBlockName());
-			lineJSON.put("toPortNo", lineDto.getToPortNo());
-			lineJSON.put("linePath", lineDto.getLinePath());
-			lineJSON.put("fromBlockUUID", lineDto.getFromBlockUUID());
-			lineJSON.put("toBlockUUID", lineDto.getToBlockUUID());
-			
-			// Use existing processLineJson method
-			processLineJson(lineJSON);
+
+			//解析各条连线
+			Line line = Line.createLine(lineDto, this.getBlockList());
+			line.setLineId(lineSeq + 1);
+			lineSeq++;
+			rootSystem.addLine(line);
 		} catch (Exception e) {
 			System.err.println("Failed to process line DTO: " + e.getMessage());
 		}
@@ -849,7 +878,7 @@ abstract public class NCSLabModel {
 	/**
 	 * Create JSONObject saveInfo from DTO for compatibility
 	 */
-	private JSONObject createSaveInfoFromDto(SaveInfoJson saveInfoDto) {
+	private JSONObject createSaveInfoFromDto(SaveInfoDto saveInfoDto) {
 		try {
 			JSONObject json = new JSONObject();
 			if (saveInfoDto.getModelRealName() != null) {
@@ -886,10 +915,10 @@ abstract public class NCSLabModel {
 	}
 
 	private void findDimTerminalBlocks() {
-		System.out.printf("RT Debug: Looking for terminal blocks in %d total blocks%n", blockList.size());
+		System.out.printf("RT Debug: Looking for terminal blocks in %d total blocks%n", getBlockList().size());
 		int terminalCount = 0;
 		int scopeCount = 0;
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			if(block.getBlockType().equals("Scope")) {
 				scopeCount++;
 				System.out.printf("RT Debug: Found Scope block '%s' with %d outputs (isTerminal=%s)%n", 
@@ -908,15 +937,16 @@ abstract public class NCSLabModel {
 	private void checkUnlinkedPorts() throws ModelException{
 
         // 向blockList中添加Block对象
-        List<Block> list = new ArrayList<>(blockList);
+        List<Block> list = new ArrayList<>(getBlockList());
         List<Block> fullBlockList = new ArrayList<>(list);
 
 		// Iterate over a copy to avoid ConcurrentModificationException
-		List<Block> originalBlocks = new ArrayList<>(blockList);
+		List<Block> originalBlocks = new ArrayList<>(getBlockList());
 		for(Block block:originalBlocks) {
 			for(int i=0; i<block.getInputPortList().size();i++) {
                 InputPort input = block.getInputPortList().get(i);
 				if(input.getLinkedLine()==null) {
+					System.err.println("RT Debug: Input port '"+input.getBlock().getBlockName()+"("+input.getNumber()+")' is not linked");
 					//如果输入端口没有连接，则连接到constant
 					// {"blockType": "Constant", "blockName": "Constant1", "position": [100, 400, 160, 460], "paramValues": {"Value": "10"}}
 					JSONObject blockJSON = new JSONObject();
@@ -935,7 +965,7 @@ abstract public class NCSLabModel {
 					System.out.println("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
 
                     fullBlockList.add(newBlock);
-                    blockList.add(newBlock); // Also add to model's blockList for Line.createLine()
+                    rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()
 
                     JSONObject lineJSON = new JSONObject();
                     lineJSON.put("fromBlockName", newBlock.getBlockName());
@@ -945,17 +975,19 @@ abstract public class NCSLabModel {
                     lineJSON.put("toBlockName", block.getBlockName());
                     lineJSON.put("toBlockUUID", block.getBlockUUID());
                     lineJSON.put("toPortNo", i+1);
-                    lineJSON.put("linePath", block.getBlockPath());
+                    lineJSON.put("linePath", block.getBlockPath());					
 
-                    Line line=Line.createLine(lineJSON, this);
+                    Line line=Line.createLine(lineJSON, getBlockList());
                     line.setLineId(lineSeq+1);
                     lineSeq++;
 
-                    System.out.println("Parsing line ("+line.getLineId()+"): " + block.getBlockPath() + " '"
-                        +line.getLinkedOutputPort().getBLock().getBlockPath()+"/"+ line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")+" +
-                        "-->"+line.getLinkedInputPort().getBLock().getBlockPath() +"/"+ line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+					OutputPort outputPort = line.getLinkedOutputPort();					
 
-                    lineList.add(line);
+                    System.out.println("Parsing line ("+line.getLineId()+"): " + block.getBlockPath() + " '"
+                        +outputPort.getBlock().getBlockPath()+"/"+ outputPort.getBlock().getBlockName()+"("+outputPort.getNumber()+")" +
+                        "-->"+input.getBlock().getBlockPath() +"/"+ input.getBlock().getBlockName()+"("+input.getNumber()+")");
+
+                    getLineList().add(line);
 				}
 			}
 		}
@@ -981,7 +1013,7 @@ abstract public class NCSLabModel {
                     System.out.println("Parsing block (" + newBlock.getBlockId() + "): '" + newBlock.getBlockName() + "'...");
 
                     fullBlockList.add(newBlock);
-                    blockList.add(newBlock); // Also add to model's blockList for Line.createLine()
+                    rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()
 
                     JSONObject lineJSON = new JSONObject();
                     lineJSON.put("fromBlockName", block.getBlockName());
@@ -993,21 +1025,23 @@ abstract public class NCSLabModel {
                     lineJSON.put("toPortNo", 1);
                     lineJSON.put("linePath", block.getBlockPath());
 
-                    Line line = Line.createLine(lineJSON, this);
+                    Line line = Line.createLine(lineJSON, getBlockList());
                     line.setLineId(lineSeq + 1);
                     lineSeq++;
 
                     System.out.println("Parsing line ("+line.getLineId()+"): '"
-                        +line.getLinkedOutputPort().getBLock().getBlockPath()+"/"+ line.getLinkedOutputPort().getBLock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")+" +
-                        "-->"+line.getLinkedInputPort().getBLock().getBlockPath() +"/"+ line.getLinkedInputPort().getBLock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
+                        +line.getLinkedOutputPort().getBlock().getBlockPath()+"/"+ line.getLinkedOutputPort().getBlock().getBlockName()+"("+line.getLinkedOutputPort().getNumber()+")+" +
+                        "-->"+line.getLinkedInputPort().getBlock().getBlockPath() +"/"+ line.getLinkedInputPort().getBlock().getBlockName()+"("+line.getLinkedInputPort().getNumber()+")");
 
-                    lineList.add(line);
+                    rootSystem.addLine(line);
                 }
 
             }
         }
-        if(blockList.size() != fullBlockList.size())
-            blockList = fullBlockList;
+        // FIXME:
+		// if(getBlockList().size() != fullBlockList.size())
+        //     getBlockList() = fullBlockList;
+		
 	}
 
 	private void scanDimInputPort(InputPort inputPort) {
@@ -1029,7 +1063,7 @@ abstract public class NCSLabModel {
 		dimOutputPortPathList.add(outputPort);
 
 		//如果没有生成，那就遍历block，生成这个block的代码
-		Block block = outputPort.getBLock();
+		Block block = outputPort.getBlock();
 
 		boolean isDimThroughBlock = false;
 		List<OutputPort> outputPortList = block.getOutputPortList();
@@ -1066,7 +1100,7 @@ abstract public class NCSLabModel {
 			if(InputPortList.size()>1) {
 				for(int i=1;i<InputPortList.size();i++) {
 					InputPort input=InputPortList.get(i);
-					Block linkedBlock=input.getLinkedLine().getLinkedOutputPort().getBLock();
+					Block linkedBlock=input.getLinkedLine().getLinkedOutputPort().getBlock();
 					if(linkedBlock.getIsDimScaned()==false) {
 						scanDimList.add(linkedBlock);
 					}
@@ -1134,10 +1168,10 @@ abstract public class NCSLabModel {
 
     //xiazhiqiang:检查前端模块是否存在命名相同的情况
 	private void checkBlocksName() throws MatDimException{
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			int i=0;
 			String name=block.getBlockName();
-			for(Block block1:blockList) {
+			for(Block block1:getBlockList()) {
 				if(name.equals(block1.getBlockName())) {
 					i=i+1;
 				}
@@ -1149,10 +1183,10 @@ abstract public class NCSLabModel {
 	}
 
     private void checkBlocksPath() throws MatDimException{
-        for(Block block:blockList) {
+        for(Block block:getBlockList()) {
             int i=0;
             String path=block.getBlockPath();
-            for(Block block1:blockList) {
+            for(Block block1:getBlockList()) {
                 if(path.equals(block1.getBlockPath())) {
                     i=i+1;
                 }
@@ -1164,8 +1198,8 @@ abstract public class NCSLabModel {
     }
 
     private void checkBlocksCId() throws MatDimException{
-        if(!blockList.isEmpty()){
-            cidModeEnable = !"null".equals(blockList.get(0).getBlockUUID());
+        if(!getBlockList().isEmpty()){
+            cidModeEnable = !"null".equals(getBlockList().get(0).getBlockUUID());
         }
     }
 
@@ -1173,13 +1207,13 @@ abstract public class NCSLabModel {
     private void replaceInLineBack(JSONObject lineJSON) {
         String toBlockName=lineJSON.getString("toBlockName");
         String blockPath=null;
-        for(Block block:blockList) {
+        for(Block block:getBlockList()) {
             if(block.getBlockName().equals(toBlockName)&&block.getBlockType().equals("Subsystem")) {
                 blockPath=block.getBlockPath()+"/"+toBlockName;
                 break;
             }
         }
-        for(Block block1:blockList) {
+        for(Block block1:getBlockList()) {
             System.out.println("block1's getBlockPath: "+block1.getBlockPath()+
                 "  getBlockType: "+block1.getBlockType());
             if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("In")){
@@ -1193,7 +1227,7 @@ abstract public class NCSLabModel {
         String toBlockUUID = lineJSON.optString("toBlockUUID","null");
         String blockPath=null;
         String toPortNo=lineJSON.getString("toPortNo");
-        for(Block block:blockList) {
+        for(Block block:getBlockList()) {
             if( (!cidModeEnable && block.getBlockName().equals(toBlockName))
                 || (cidModeEnable && block.getBlockUUID().equals(toBlockUUID)) )
                 if(block instanceof Subsystem) {
@@ -1222,13 +1256,13 @@ abstract public class NCSLabModel {
     private void replaceOutLineBack(JSONObject lineJSON) {
         String fromBlockName=lineJSON.getString("fromBlockName");
         String blockPath=null;
-        for(Block block:blockList) {
+        for(Block block:getBlockList()) {
             if(block.getBlockName().equals(fromBlockName)&&block.getBlockType().equals("Subsystem")) {
                 blockPath=block.getBlockPath()+"/"+fromBlockName;
                 break;
             }
         }
-        for(Block block1:blockList) {
+        for(Block block1:getBlockList()) {
             if(block1.getBlockPath().equals(blockPath)&&block1.getBlockType().equals("Out")){
                 lineJSON.put("fromBlockName", block1.getBlockName());
                 break;
@@ -1241,7 +1275,7 @@ abstract public class NCSLabModel {
         String fromBlockUUID=lineJSON.optString("fromBlockUUID","null");
         String blockPath=null;
         String fromPortNo=lineJSON.getString("fromPortNo");
-        for(Block block:blockList) {
+        for(Block block:getBlockList()) {
             if( (cidModeEnable && block.getBlockUUID().equals(fromBlockUUID))
              || (!cidModeEnable && block.getBlockName().equals(fromBlockName)) ){
                 if(block instanceof Subsystem) {
@@ -1272,23 +1306,23 @@ abstract public class NCSLabModel {
         // 1. 替代法
         List<Line> lines = new ArrayList<>();
 
-        for (Line line1 : lineList) {
-            if (line1.getLinkedOutputPort().getBLock() instanceof From) {
-                From from = (From) line1.getLinkedOutputPort().getBLock();
+        for (Line line1 : getLineList()) {
+            if (line1.getLinkedOutputPort().getBlock() instanceof From) {
+                From from = (From) line1.getLinkedOutputPort().getBlock();
                 boolean not_found = true;
                 for (To to : gotoBlockList) {
                     if (Objects.equals(to.getTagName(), from.getTagName())) {
-                        for (Line line2 : lineList) {
-                            if (line2.getLinkedInputPort().getBLock() == to) {
+                        for (Line line2 : getLineList()) {
+                            if (line2.getLinkedInputPort().getBlock() == to) {
                                 JSONObject lineJSON = new JSONObject();
-                                lineJSON.put("toBlockName", line1.getLinkedInputPort().getBLock().getBlockName());
-                                lineJSON.put("toBlockUUID", line1.getLinkedInputPort().getBLock().getBlockUUID());
+                                lineJSON.put("toBlockName", line1.getLinkedInputPort().getBlock().getBlockName());
+                                lineJSON.put("toBlockUUID", line1.getLinkedInputPort().getBlock().getBlockUUID());
                                 lineJSON.put("toPortNo", line1.getLinkedInputPort().getNumber());
-                                lineJSON.put("fromBlockName", line2.getLinkedOutputPort().getBLock().getBlockName());
-                                lineJSON.put("fromBlockUUID", line2.getLinkedOutputPort().getBLock().getBlockUUID());
+                                lineJSON.put("fromBlockName", line2.getLinkedOutputPort().getBlock().getBlockName());
+                                lineJSON.put("fromBlockUUID", line2.getLinkedOutputPort().getBlock().getBlockUUID());
                                 lineJSON.put("fromPortNo", line2.getLinkedOutputPort().getNumber());
                                 lineJSON.put("linePath", to.getBlockPath());
-                                Line line = Line.createLine(lineJSON, this);
+                                Line line = Line.createLine(lineJSON, getBlockList());
                                 lines.add(line);
                                 not_found = false;
                                 break;
@@ -1306,7 +1340,7 @@ abstract public class NCSLabModel {
                 lines.add(line1);
             }
         }
-        lineList = lines;
+        //getLineList() = lines;
     }
 
     private void addLogicLines() throws ModelException {
@@ -1324,8 +1358,8 @@ abstract public class NCSLabModel {
                     lineJSON.put("fromBlockUUID", to.getBlockUUID());
 
                     lineJSON.put("linePath", to.getBlockPath());
-                    Line line = Line.createLine(lineJSON, this);
-                    lineList.add(line);
+                    Line line = Line.createLine(lineJSON, getBlockList());
+                    getLineList().add(line);
                     not_found = false;
                     break;
                 }
@@ -1336,4 +1370,33 @@ abstract public class NCSLabModel {
         }
     }
 
+
+	public List<Block> getBlockList() {
+		List<Block> blockList = new ArrayList<>();
+		blockList.addAll(rootSystem.getBlocks());
+		for(Subsystem subsystem:subsystemBlockList){
+			blockList.addAll(subsystem.getContainedBlocks());
+		}
+		return blockList;
+	}
+
+    public List<Line> getLineList() {
+		List<Line> lineList = new ArrayList<>();
+		lineList.addAll(rootSystem.getLines());
+		for(Subsystem subsystem:subsystemBlockList){
+			lineList.addAll(subsystem.getContainedLines());
+		}
+        return lineList;
+    }
+
+	public Integer assignNextBlockSequence() {
+		blockSeq++;
+		return blockSeq;
+	}
+
+    public Integer assignNextLineSequence() {
+        lineSeq++;
+        return lineSeq;
+    }
+    
 }

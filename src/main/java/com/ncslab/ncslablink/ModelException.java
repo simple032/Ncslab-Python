@@ -11,7 +11,11 @@ public class ModelException extends Exception {
 		super(msg);
 	}
 	
-	protected void setMessage(String msg) {
+	public ModelException(String string, Exception e) {
+		super(string, e);
+    }
+
+    protected void setMessage(String msg) {
 		this.msg=msg;
 	}
 }

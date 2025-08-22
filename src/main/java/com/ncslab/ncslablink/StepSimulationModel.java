@@ -1,9 +1,10 @@
 package com.ncslab.ncslablink;
 
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.WebSocketMessageJson;
-import com.ncslab.dto.RealTimeScopeJson;
-import com.ncslab.dto.RealTimeScopeUpdateJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.WebSocketMessageDto;
+import com.ncslab.dto.communication.RealTimeScopeDto;
+import com.ncslab.dto.communication.RealTimeScopeUpdateDto;
+import com.ncslab.util.JsonUtils;
 import jakarta.websocket.Session;
 
 import org.json.JSONArray;
@@ -43,12 +44,7 @@ public class StepSimulationModel extends SimulationModel {
         initializeStepControl();
     }
     
-    StepSimulationModel(String jsonString, ModelMode mode) throws ModelException {
-        super(jsonString, mode);
-        initializeStepControl();
-    }
-    
-    StepSimulationModel(ModelJson modelDto, ModelMode mode) throws ModelException {
+    StepSimulationModel(ModelDto modelDto, ModelMode mode) throws ModelException {
         super(modelDto, mode);
         initializeStepControl();
     }
@@ -65,12 +61,8 @@ public class StepSimulationModel extends SimulationModel {
     public static StepSimulationModel createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException {
         return new StepSimulationModel(jsonIn, mode);
     }
-    
-    public static StepSimulationModel createFromJsonString(String jsonString, ModelMode mode) throws ModelException {
-        return new StepSimulationModel(jsonString, mode);
-    }
-    
-    public static StepSimulationModel createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+
+    public static StepSimulationModel createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
         return new StepSimulationModel(modelDto, mode);
     }
     
@@ -280,8 +272,8 @@ public class StepSimulationModel extends SimulationModel {
     private void sendStepMessage(Session session, String message) {
         if (session != null) {
             try {
-                WebSocketMessageJson msg = WebSocketMessageJson.createStatusMessage(message, null);
-                session.getBasicRemote().sendText(msg.toLegacyJson().toString());
+                WebSocketMessageDto msg = WebSocketMessageDto.createStatusMessage(message, null);
+                session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(msg));
             } catch (IOException e) {
                 System.err.println("Failed to send step message: " + e.getMessage());
             }
@@ -294,7 +286,7 @@ public class StepSimulationModel extends SimulationModel {
     private void sendStepProgressMessage(Session session, int currentStep, int totalSteps, double time) {
         if (session != null) {
             try {
-                WebSocketMessageJson progressMsg = WebSocketMessageJson.builder()
+                WebSocketMessageDto progressMsg = WebSocketMessageDto.builder()
                     .msg("step_progress")
                     .status("in_progress")
                     .data(java.util.Map.of(
@@ -307,7 +299,7 @@ public class StepSimulationModel extends SimulationModel {
                     .timestamp(System.currentTimeMillis())
                     .build();
                     
-                session.getBasicRemote().sendText(progressMsg.toLegacyJson().toString());
+                session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(progressMsg));
             } catch (IOException e) {
                 System.err.println("Failed to send step progress: " + e.getMessage());
             }
@@ -333,14 +325,14 @@ public class StepSimulationModel extends SimulationModel {
                 }
                 
                 // Create comprehensive real-time scope data using DTO
-                RealTimeScopeUpdateJson scopeUpdate = RealTimeScopeUpdateJson.fromTerminalList(
+                RealTimeScopeUpdateDto scopeUpdate = RealTimeScopeUpdateDto.fromTerminalList(
                     getTerminalList(), currentTime, currentStepCount, stepSize, isPaused);
                 
                 System.out.printf("Step Simulation Debug: Created scope update with %d scopes%n", 
                     scopeUpdate.getScopeCount());
                 
                 // Send as scope_update message using DTO structure
-                WebSocketMessageJson resultMsg = WebSocketMessageJson.builder()
+                WebSocketMessageDto resultMsg = WebSocketMessageDto.builder()
                     .msg("scope_update")
                     .status("streaming")
                     .data(java.util.Map.of(
@@ -353,10 +345,10 @@ public class StepSimulationModel extends SimulationModel {
                     .build();
                     
                 if (session != null) {
-                    session.getBasicRemote().sendText(resultMsg.toLegacyJson().toString());
+                    session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(resultMsg));
                 } else {
                     // Redirect to console when session is null (for testing)
-                    System.out.println("Step Simulation scope_update (null session): " + resultMsg.toLegacyJson().toString());
+                    System.out.println("Step Simulation scope_update (null session): " + JsonUtils.getObjectMapper().writeValueAsString(resultMsg));
                 }
                 
                 System.out.printf("Step Simulation: Streamed %d scopes at time %.6f, step %d%n", 

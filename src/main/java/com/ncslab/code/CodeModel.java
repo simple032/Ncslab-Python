@@ -4,7 +4,7 @@ package com.ncslab.code;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
-import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.core.ModelDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -38,28 +38,15 @@ abstract public class CodeModel extends NCSLabModel {
 		this.solver=solver;
 	}
 	
-	// 新增String构造函数，支持Jackson DTO解析
-	protected CodeModel(String jsonString, ModelMode mode) throws ModelException{
-		super(jsonString, mode);
-		setupSolver();
-		System.out.println(this.solver);
-	}
-	
-	// 新增String构造函数带solver参数
-	protected CodeModel(String jsonString, ModelMode mode, Solver solver) throws ModelException{
-		super(jsonString, mode);
-		this.solver = solver;
-	}
-	
-	// 新增ModelJson DTO构造函数
-	protected CodeModel(ModelJson modelDto, ModelMode mode) throws ModelException{
+	// 新增ModelDto DTO构造函数
+	protected CodeModel(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 		setupSolver();
 		System.out.println(this.solver);
 	}
 	
-	// 新增ModelJson DTO构造函数带solver参数
-	protected CodeModel(ModelJson modelDto, ModelMode mode, Solver solver) throws ModelException{
+	// 新增ModelDto DTO构造函数带solver参数
+	protected CodeModel(ModelDto modelDto, ModelMode mode, Solver solver) throws ModelException{
 		super(modelDto, mode);
 		this.solver = solver;
 	}

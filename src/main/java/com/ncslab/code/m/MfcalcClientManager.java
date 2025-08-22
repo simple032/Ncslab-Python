@@ -2,8 +2,8 @@ package com.ncslab.code.m;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.ncslab.dto.ServerRequestJson;
-import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.dto.communication.ServerRequestDto;
+import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 
 import java.io.IOException;
@@ -121,13 +121,13 @@ public class MfcalcClientManager {
      * @param request Server request DTO
      * @return Server response DTO
      */
-    public ServerResponseJson executeScript(ServerRequestJson request) {
+    public ServerResponseDto executeScript(ServerRequestDto request) {
         if (!request.isValid()) {
-            return ServerResponseJson.createError("Invalid request: " + request.getValidationError(), "mfcalc");
+            return ServerResponseDto.createError("Invalid request: " + request.getValidationError(), "mfcalc");
         }
         
         if (!"mfcalc".equals(request.getServerType())) {
-            return ServerResponseJson.createError("Invalid server type for MFCalc: " + request.getServerType(), "mfcalc");
+            return ServerResponseDto.createError("Invalid server type for MFCalc: " + request.getServerType(), "mfcalc");
         }
         
         long startTime = System.currentTimeMillis();
@@ -135,7 +135,7 @@ public class MfcalcClientManager {
         try {
             MfcalcClient client = getClientForUser(request.getUserId());
             if (client == null) {
-                return ServerResponseJson.createError("Failed to create MFCalc client for user: " + request.getUserId(), "mfcalc");
+                return ServerResponseDto.createError("Failed to create MFCalc client for user: " + request.getUserId(), "mfcalc");
             }
             
             JSONObject legacyResult = null;
@@ -153,25 +153,25 @@ public class MfcalcClientManager {
             } else if ("command".equals(request.getCommand())) {
                 legacyResult = client.runCommand(request.getScript()); // Use script field for command
             } else {
-                return ServerResponseJson.createError("Unsupported command: " + request.getCommand(), "mfcalc");
+                return ServerResponseDto.createError("Unsupported command: " + request.getCommand(), "mfcalc");
             }
             
             long executionTime = System.currentTimeMillis() - startTime;
             
             // Convert legacy JSONObject response to DTO
-            ServerResponseJson response = ServerResponseJson.fromLegacyJson(legacyResult);
+            ServerResponseDto response = ServerResponseDto.fromLegacyJson(legacyResult);
             if (response != null) {
                 response.setServerType("mfcalc");
                 response.setExecutionTime(executionTime);
                 response.setSessionId(request.getSessionId());
                 return response;
             } else {
-                return ServerResponseJson.createError("Failed to process MFCalc response", "mfcalc");
+                return ServerResponseDto.createError("Failed to process MFCalc response", "mfcalc");
             }
             
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            ServerResponseJson errorResponse = ServerResponseJson.createError("MFCalc execution error: " + e.getMessage(), "mfcalc");
+            ServerResponseDto errorResponse = ServerResponseDto.createError("MFCalc execution error: " + e.getMessage(), "mfcalc");
             errorResponse.setExecutionTime(executionTime);
             return errorResponse;
         }
@@ -181,10 +181,10 @@ public class MfcalcClientManager {
      * Enhanced run script method with DTO support and fallback
      * @param userId User ID
      * @param script Script to execute
-     * @return ServerResponseJson (DTO) or null if DTO creation fails
+     * @return ServerResponseDto (DTO) or null if DTO creation fails
      */
-    public ServerResponseJson runScriptEnhanced(String userId, String script) {
-        ServerRequestJson request = ServerRequestJson.createMfcalcRequest(userId, script);
+    public ServerResponseDto runScriptEnhanced(String userId, String script) {
+        ServerRequestDto request = ServerRequestDto.createMfcalcRequest(userId, script);
         return executeScript(request);
     }
     
@@ -193,11 +193,11 @@ public class MfcalcClientManager {
      * @param userId User ID
      * @param script Script to execute
      * @return JSONObject (legacy format)
-     * @deprecated Use executeScript(ServerRequestJson) or runScriptEnhanced() instead
+     * @deprecated Use executeScript(ServerRequestDto) or runScriptEnhanced() instead
      */
     @Deprecated
     public JSONObject runScriptLegacyCompat(String userId, String script) {
-        ServerResponseJson response = runScriptEnhanced(userId, script);
+        ServerResponseDto response = runScriptEnhanced(userId, script);
         return response != null ? response.toLegacyJson() : null;
     }
     

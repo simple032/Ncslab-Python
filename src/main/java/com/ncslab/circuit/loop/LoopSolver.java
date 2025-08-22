@@ -191,14 +191,14 @@ public class LoopSolver {
 				Add add = (Add) block;
 				element.setSign(add.getSign(i));
 				i++;
-				Block newBlock = input.getLinkedLine().getLinkedOutputPort().getBLock();
-				// System.out.println(input.getLinkedLine().getLinkedOutputPort().getBLock().getBlockName());
+				Block newBlock = input.getLinkedLine().getLinkedOutputPort().getBlock();
+				// System.out.println(input.getLinkedLine().getLinkedOutputPort().getBlock().getBlockName());
 				searchBlock(newBlock);
 			}
 		} else {
 			List<InputPort> inputPortList = block.getInputPortList();
 			InputPort input = inputPortList.get(0);
-			Block newBlock = input.getLinkedLine().getLinkedOutputPort().getBLock();
+			Block newBlock = input.getLinkedLine().getLinkedOutputPort().getBlock();
 			searchBlock(newBlock);
 		}
 

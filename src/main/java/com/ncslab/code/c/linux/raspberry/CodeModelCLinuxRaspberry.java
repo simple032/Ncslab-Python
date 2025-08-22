@@ -6,7 +6,7 @@ import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.core.ModelDto;
 
 public class CodeModelCLinuxRaspberry extends CodeModelC {
 	
@@ -17,7 +17,7 @@ public class CodeModelCLinuxRaspberry extends CodeModelC {
 	}
 	
 	// DTO-native constructor
-	CodeModelCLinuxRaspberry(ModelJson modelDto, ModelMode mode) throws ModelException{
+	CodeModelCLinuxRaspberry(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 	}
 	
@@ -32,7 +32,7 @@ public class CodeModelCLinuxRaspberry extends CodeModelC {
 	}
 	
 	// DTO-native factory method
-	public static CodeModelCLinuxRaspberry createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+	public static CodeModelCLinuxRaspberry createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
 		CodeModelCLinuxRaspberry model = new CodeModelCLinuxRaspberry(modelDto, mode);
 		
 		return model;

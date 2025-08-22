@@ -11,6 +11,8 @@ import com.ncslab.block.Block;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.subsystem.Out;
+import com.ncslab.dto.model.LineDto;
 
 public class Line {
 
@@ -117,10 +119,83 @@ public class Line {
 
 	}
 
-    public static Line createLine(JSONObject lineJSON,NCSLabModel model) {
-		List<Block> blockList=model.getBlockList();
+	Line(LineDto lineDto,List<Block> blockList) {
+		String fromBlockName=lineDto.getFromBlockName();
+		String toBlockName=lineDto.getToBlockName();
+		String fromBlockUUID=lineDto.getFromBlockUUID();
+        String toBlockUUID=lineDto.getToBlockUUID();
 
-		Line line=new Line(lineJSON,blockList);
+
+		int fromPortNo=lineDto.getFromPortNo() instanceof String ? Integer.parseInt((String)lineDto.getFromPortNo()) : (Integer)lineDto.getFromPortNo();
+		int toPortNo=lineDto.getToPortNo() instanceof String ? Integer.parseInt((String)lineDto.getToPortNo()) : (Integer)lineDto.getToPortNo();
+
+		//Ѱ��Line���˵�Block
+		Block fromBlock=null;
+		Block toBlock=null;
+		for(Block block:blockList) {
+			if(fromBlockUUID.equals("null")||toBlockUUID.equals("null")) {
+				if(block.getBlockName().equals(fromBlockName)) {
+					fromBlock=block;
+				}
+				if(block.getBlockName().equals(toBlockName)) {
+					toBlock=block;
+				}
+			}else{
+				if(fromBlockUUID.equals(block.getBlockUUID())){
+					fromBlock=block;
+				}
+				if(block.getBlockUUID().equals(toBlockUUID)){
+					toBlock=block;
+				}
+			}
+		}
+
+		if(fromBlock==null||toBlock==null) {
+			return;
+		}
+
+		//Ѱ��from�˵������
+			
+
+		List<OutputPort> outputPortList=fromBlock.getOutputPortList();
+		//modified by zhou 20240520
+		OutputPort fromPort=outputPortList.stream()
+				.filter(outputPort -> outputPort.getNumber() == fromPortNo)
+				.findFirst()
+				.orElse(null);
+
+		if(fromPort==null) {
+			System.err.println("Failed to find output port " + fromBlockName + "/"+ fromPortNo);
+			return;
+		}
+
+		this.linkedOutputPort=fromPort;
+		fromPort.addLinkedLine(this);
+
+		//Ѱ��to�������
+		
+
+		List<InputPort> inputPortList=toBlock.getInputPortList();
+		//modified by zhou 20240520
+		InputPort toPort=inputPortList.stream()
+				.filter(inputPort -> inputPort.getNumber() == toPortNo)
+				.findFirst()
+				.orElse(null);
+
+		if(toPort==null) {
+			System.err.println("Failed to find input port " + toBlockName + "/"+ toPortNo);
+			return;
+		}
+
+		//toPort.setWidth(fromPort.getWidth());
+
+		this.linkedInputPort=toPort;
+		toPort.setLinkedLine(this);
+
+	}
+
+	public static Line createLine(LineDto lineDto,List<Block> blockList) {
+		Line line=new Line(lineDto,blockList);
 
 		return line;
 	}

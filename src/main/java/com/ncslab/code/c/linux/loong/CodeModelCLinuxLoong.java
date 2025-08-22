@@ -2,7 +2,7 @@ package com.ncslab.code.c.linux.loong;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.core.ModelDto;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import org.json.JSONObject;
@@ -16,7 +16,7 @@ public class CodeModelCLinuxLoong extends CodeModelC{
 	}
 	
 	// DTO-native constructor
-	CodeModelCLinuxLoong(ModelJson modelDto, ModelMode mode) throws ModelException{
+	CodeModelCLinuxLoong(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 	}
 
@@ -31,7 +31,7 @@ public class CodeModelCLinuxLoong extends CodeModelC{
 	}
 	
 	// DTO-native factory method
-	public static CodeModelCLinuxLoong createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+	public static CodeModelCLinuxLoong createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
 		CodeModelCLinuxLoong model = new CodeModelCLinuxLoong(modelDto, mode);
 		
 		return model;

@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
-import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.core.ModelDto;
 
 public class CodeModelCWindowsPC extends CodeModelC {
 	private CodeStructCWindowsPC codeStruct=new CodeStructCWindowsPC(this);
@@ -15,7 +15,7 @@ public class CodeModelCWindowsPC extends CodeModelC {
 	}
 	
 	// DTO-native constructor
-	CodeModelCWindowsPC(ModelJson modelDto, ModelMode mode) throws ModelException{
+	CodeModelCWindowsPC(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 	}
 
@@ -31,7 +31,7 @@ public class CodeModelCWindowsPC extends CodeModelC {
 	}
 	
 	// DTO-native factory method
-	public static CodeModelCWindowsPC createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+	public static CodeModelCWindowsPC createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
 		CodeModelCWindowsPC model = new CodeModelCWindowsPC(modelDto, mode);
 		
 		return model;

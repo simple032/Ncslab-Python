@@ -47,7 +47,7 @@ public class CodeModelM extends CodeModel{
 		System.out.println("Generating update mainCodes......");
 
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			System.out.println("Generating update mainCodes for ("+block.getBlockId()+")"+block.getBlockName());
 			block.generateBlockUpdateCodeM(code);
 		}
@@ -56,7 +56,7 @@ public class CodeModelM extends CodeModel{
 	protected void generateInitCode(CodeGenerationOption option) {
 		System.out.println("Generating init mainCodes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			System.out.println("Generating init mainCodes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			block.generateBlockInitCodeM(code);
@@ -76,7 +76,7 @@ public class CodeModelM extends CodeModel{
 	protected void generateDerivativeCode(CodeGenerationOption option) {
 		System.out.println("Generating derivative mainCodes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			System.out.println("Generating derivative mainCodes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			block.generateBlockDerivativeCodeM(code);

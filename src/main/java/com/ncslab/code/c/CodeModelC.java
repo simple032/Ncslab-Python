@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
-import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.core.ModelDto;
 
 import com.utils.AlgorithmsMapper;
 import com.utils.Mybatis1Utils;
@@ -41,13 +41,8 @@ abstract public class CodeModelC extends CodeModel {
 		super(jsonIn,mode);
 	}
 	
-	// 新增String构造函数，支持Jackson DTO解析
-	protected CodeModelC(String jsonString, ModelMode mode) throws ModelException{
-		super(jsonString, mode);
-	}
-	
-	// 新增ModelJson DTO构造函数
-	protected CodeModelC(ModelJson modelDto, ModelMode mode) throws ModelException{
+	// 新增ModelDto DTO构造函数
+	protected CodeModelC(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 	}
 
@@ -101,7 +96,7 @@ abstract public class CodeModelC extends CodeModel {
 
 	protected void generateInitCode(CodeGenerationOption option) {
 //		System.out.println("Generating init codes......");
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 //			System.out.println("Generating init codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			block.generateBlockInitCodeC(getCodeStructC());
@@ -140,7 +135,7 @@ abstract public class CodeModelC extends CodeModel {
 	protected void generateArraysCode(CodeGenerationOption option) {
 //		System.out.println("Generating arrays codes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 //			System.out.println("Generating arrays codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			generateBlockArraysCode(block);
@@ -156,7 +151,7 @@ abstract public class CodeModelC extends CodeModel {
 	protected void generateUpdateCode(CodeGenerationOption option) throws MatDimException {
 //		System.out.println("Generating update codes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 //			System.out.println("Generating update codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			generateBlockUpdateCode(block);
@@ -166,7 +161,7 @@ abstract public class CodeModelC extends CodeModel {
 	protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException {
 //		System.out.println("Generating discrete update codes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 //			System.out.println("Generating discrete update codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			generateDiscreteBlockUpdateCode(block);
@@ -185,7 +180,7 @@ abstract public class CodeModelC extends CodeModel {
 	protected void generateTerminateCode(CodeGenerationOption option) {
 //		System.out.println("Generating terminate codes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 			generateBlockTerminateCode(block);
 		}
 	}
@@ -198,7 +193,7 @@ abstract public class CodeModelC extends CodeModel {
 	protected void generateStatementCode(CodeGenerationOption option) {
 //		System.out.println("Generating statement codes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 
 //			System.out.println("Generating statement codes for ("+block.getBlockId()+")"+block.getBlockName());
 
@@ -229,7 +224,7 @@ abstract public class CodeModelC extends CodeModel {
 	protected void generateDerivativeCode(CodeGenerationOption option) {
 //		System.out.println("Generating derivative codes......");
 
-		for(Block block:blockList) {
+		for(Block block:getBlockList()) {
 //			System.out.println("Generating derivative codes for ("+block.getBlockId()+")"+block.getBlockName());
 
 			block.generateBlockDerivativeCodeC(getCodeStructC());

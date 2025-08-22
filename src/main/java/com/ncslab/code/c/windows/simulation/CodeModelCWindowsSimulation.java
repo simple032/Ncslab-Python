@@ -3,7 +3,7 @@ package com.ncslab.code.c.windows.simulation;
 import com.google.common.io.LittleEndianDataInputStream;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
-import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.core.ModelDto;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.utils.Property;
@@ -25,13 +25,8 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		super(jsonIn,mode);
 	}
 	
-	// 新增String构造函数，支持Jackson DTO解析
-	CodeModelCWindowsSimulation(String jsonString, ModelMode mode) throws ModelException{
-		super(jsonString, mode);
-	}
-	
 	// DTO构造函数 - 现代化直接DTO支持
-	CodeModelCWindowsSimulation(ModelJson modelDto, ModelMode mode) throws ModelException{
+	CodeModelCWindowsSimulation(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 	}
 
@@ -45,13 +40,8 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
         return new CodeModelCWindowsSimulation(jsonIn,mode);
 	}
 	
-	// 新增String工厂方法
-	public static CodeModelCWindowsSimulation createFromString(String jsonString, ModelMode mode) throws ModelException {
-        return new CodeModelCWindowsSimulation(jsonString, mode);
-	}
-	
 	// DTO工厂方法 - 现代化直接DTO支持
-	public static CodeModelCWindowsSimulation createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+	public static CodeModelCWindowsSimulation createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
         return new CodeModelCWindowsSimulation(modelDto, mode);
 	}
 

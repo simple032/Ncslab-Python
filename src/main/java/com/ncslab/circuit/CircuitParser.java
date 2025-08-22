@@ -16,9 +16,9 @@ import com.ncslab.circuit.CircuitModel;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
-import com.ncslab.dto.CircuitBlockJson;
-import com.ncslab.dto.BlockJson;
-import com.ncslab.dto.LineJson;
+import com.ncslab.dto.communication.CircuitBlockDto;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.model.LineDto;
 
 import com.ncslab.ncslablink.ModelException;
 
@@ -47,7 +47,7 @@ public class CircuitParser {
 	 * @param blockDto Block DTO
 	 * @return true if circuit block
 	 */
-	private static boolean isCircuitBlock(BlockJson blockDto) {
+	private static boolean isCircuitBlock(BlockDto blockDto) {
 		String srcBlock = blockDto.getSrcBlock();
 		return srcBlock != null && (srcBlock.startsWith("fl_lib") || srcBlock.startsWith("elec_lib"));
 	}
@@ -58,7 +58,7 @@ public class CircuitParser {
 	 * @param blockJSON Block JSONObject (fallback)
 	 * @return true if circuit block
 	 */
-	private static boolean isCircuitBlockEnhanced(BlockJson blockDto, JSONObject blockJSON) {
+	private static boolean isCircuitBlockEnhanced(BlockDto blockDto, JSONObject blockJSON) {
 		if (blockDto != null) {
 			return isCircuitBlock(blockDto);
 		} else if (blockJSON != null) {
@@ -101,7 +101,7 @@ public class CircuitParser {
 	 * @param lineDto Line DTO
 	 * @return true if circuit line
 	 */
-	private boolean isCircuitLine(LineJson lineDto) {
+	private boolean isCircuitLine(LineDto lineDto) {
 		String fromBlockName = lineDto.getFromBlockName();
 		String toBlockName = lineDto.getToBlockName();
 
@@ -127,7 +127,7 @@ public class CircuitParser {
 	 * @param lineJSON Line JSONObject (fallback)
 	 * @return true if circuit line
 	 */
-	private boolean isCircuitLineEnhanced(LineJson lineDto, JSONObject lineJSON) {
+	private boolean isCircuitLineEnhanced(LineDto lineDto, JSONObject lineJSON) {
 		if (lineDto != null) {
 			return isCircuitLine(lineDto);
 		} else if (lineJSON != null) {
@@ -221,7 +221,7 @@ public class CircuitParser {
 
 			//改变连接线
 			InputPort toPort=toCircuitBlock.getInputPortList().get(0);
-			Block toBlock=toPort.getBLock();
+			Block toBlock=toPort.getBlock();
 			//System.out.println(fromBlock.getBlockName()+":"+fromBlock.getOutputPortList().get(0).getNumber());
 			lineJSON.put("toBlockName", toBlock.getBlockName());
             lineJSON.put("toBlockUUID", toBlock.getBlockUUID());

@@ -7,7 +7,7 @@ import java.io.IOException;
 // import org.apache.parquet.bytes.LittleEndianDataInputStream;
 import com.google.common.io.LittleEndianDataInputStream;
 import org.json.JSONObject;
-import com.ncslab.dto.ModelJson;
+import com.ncslab.dto.core.ModelDto;
 
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
@@ -23,13 +23,8 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 		super(jsonIn,mode);
 	}
 	
-	// 新增String构造函数，支持Jackson DTO解析
-	CodeModelCLinuxPCSimulation(String jsonString, ModelMode mode) throws ModelException{
-		super(jsonString, mode);
-	}
-	
-	// 新增ModelJson DTO构造函数
-	CodeModelCLinuxPCSimulation(ModelJson modelDto, ModelMode mode) throws ModelException{
+	// 新增ModelDto DTO构造函数
+	CodeModelCLinuxPCSimulation(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 	}
 
@@ -43,15 +38,10 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 		CodeModelCLinuxPCSimulation model = new CodeModelCLinuxPCSimulation(jsonIn,mode);
 		return model;
 	}
+
 	
-	// 新增String工厂方法，支持DTO解析
-	public static CodeModelCLinuxPCSimulation createFromJsonString(String jsonString, ModelMode mode) throws ModelException {
-		CodeModelCLinuxPCSimulation model = new CodeModelCLinuxPCSimulation(jsonString, mode);
-		return model;
-	}
-	
-	// 新增ModelJson DTO工厂方法
-	public static CodeModelCLinuxPCSimulation createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+	// 新增ModelDto DTO工厂方法
+	public static CodeModelCLinuxPCSimulation createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
 		CodeModelCLinuxPCSimulation model = new CodeModelCLinuxPCSimulation(modelDto, mode);
 		return model;
 	}

@@ -92,10 +92,10 @@ public class VoltageSensor extends CircuitBlock {
 			output=voltage.getCircuitBlock().getOutputPort();
 			
 			List<Block> blocks = new ArrayList<>();
-			blocks.add(input.getBLock());
-			blocks.add(output.getBLock());
+			blocks.add(input.getBlock());
+			blocks.add(output.getBlock());
 			
-			createLine(output.getBLock().getBlockName(), 1, input.getBLock().getBlockName(), i+1,blocks);
+			createLine(output.getBlock().getBlockName(), 1, input.getBlock().getBlockName(), i+1,blocks);
 		}
 		
 		this.getCircuitModel().addTerminalBlocks(add);

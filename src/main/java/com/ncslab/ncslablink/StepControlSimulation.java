@@ -4,8 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 import org.json.JSONArray;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.WebSocketMessageDto;
+import com.ncslab.util.JsonUtils;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.State;
 import com.ncslab.block.data.DataType;
@@ -57,12 +58,7 @@ public class StepControlSimulation extends SimulationModel {
         logConfigurationParameters();
     }
     
-    public StepControlSimulation(String jsonString, ModelMode mode) throws ModelException {
-        super(jsonString, mode);
-        logConfigurationParameters();
-    }
-    
-    public StepControlSimulation(ModelJson modelDto, ModelMode mode) throws ModelException {
+    public StepControlSimulation(ModelDto modelDto, ModelMode mode) throws ModelException {
         super(modelDto, mode);
         logConfigurationParameters();
     }
@@ -93,12 +89,8 @@ public class StepControlSimulation extends SimulationModel {
     public static StepControlSimulation createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException {
         return new StepControlSimulation(jsonIn, mode);
     }
-    
-    public static StepControlSimulation createFromJsonString(String jsonString, ModelMode mode) throws ModelException {
-        return new StepControlSimulation(jsonString, mode);
-    }
-    
-    public static StepControlSimulation createFromDto(ModelJson modelDto, ModelMode mode) throws ModelException {
+
+    public static StepControlSimulation createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
         return new StepControlSimulation(modelDto, mode);
     }
     
@@ -513,10 +505,10 @@ public class StepControlSimulation extends SimulationModel {
             sendCheckpointMessage(session, checkpoint);
         }
         
-        WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage("paused", 
+        WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage("paused", 
             "Simulation paused at time " + String.format("%.6f", currentTime));
         if (session != null) {
-            session.getBasicRemote().sendText(message.toLegacyJson().toString());
+            session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
         }
         
         System.out.printf("Simulation paused at time %.6f%n", currentTime);
@@ -537,10 +529,10 @@ public class StepControlSimulation extends SimulationModel {
         
         this.isPaused = false;
         
-        WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage("resumed", 
+        WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage("resumed", 
             "Simulation resumed at time " + String.format("%.6f", currentTime));
         if (session != null) {
-            session.getBasicRemote().sendText(message.toLegacyJson().toString());
+            session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
         }
         
         System.out.printf("Simulation resumed at time %.6f%n", currentTime);
@@ -575,9 +567,9 @@ public class StepControlSimulation extends SimulationModel {
             capabilities = new String[]{"pause", "resume"};
         }
         
-        WebSocketMessageJson message = WebSocketMessageJson.createModeChangedMessage(mode, capabilities);
+        WebSocketMessageDto message = WebSocketMessageDto.createModeChangedMessage(mode, capabilities);
         if (session != null) {
-            session.getBasicRemote().sendText(message.toLegacyJson().toString());
+            session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
         }
         
         System.out.printf("Simulation mode changed to: %s%n", mode);
@@ -707,10 +699,10 @@ public class StepControlSimulation extends SimulationModel {
                 configInfo.put("solver", getConfig().getSolver());
                 scopeData.put("config", configInfo);
                 
-                WebSocketMessageJson message = WebSocketMessageJson.createStepResultMessage(
+                WebSocketMessageDto message = WebSocketMessageDto.createStepResultMessage(
                     currentTime, step, totalSteps, direction, scopeData.toMap());
                 
-                session.getBasicRemote().sendText(message.toLegacyJson().toString());
+                session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
                 
                 // Also send real-time scope updates for debug visualization
                 sendRealTimeScopeUpdate(session, scopeData, currentTime);
@@ -787,10 +779,10 @@ public class StepControlSimulation extends SimulationModel {
     private void sendRealTimeScopeUpdate(Session session, JSONObject scopeData, double currentTime) {
         try {
             if (session != null) {
-                WebSocketMessageJson message = WebSocketMessageJson.createRealTimeScopeUpdate(
+                WebSocketMessageDto message = WebSocketMessageDto.createRealTimeScopeUpdate(
                     null, scopeData.toMap(), currentTime);
                 
-                session.getBasicRemote().sendText(message.toLegacyJson().toString());
+                session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
             }
         } catch (IOException e) {
             System.err.printf("Failed to send real-time scope update: %s%n", e.getMessage());
@@ -805,12 +797,12 @@ public class StepControlSimulation extends SimulationModel {
     private void sendCheckpointMessage(Session session, SimulationCheckpoint checkpoint) {
         try {
             if (session != null) {
-                WebSocketMessageJson message = WebSocketMessageJson.createCheckpointSavedMessage(
+                WebSocketMessageDto message = WebSocketMessageDto.createCheckpointSavedMessage(
                     checkpoint.getSimulationTime(), 
                     checkpoint.getCheckpointId(),
                     checkpoint.getMemoryUsageString());
                 
-                session.getBasicRemote().sendText(message.toLegacyJson().toString());
+                session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
             }
         } catch (IOException e) {
             System.err.printf("Failed to send checkpoint message: %s%n", e.getMessage());
