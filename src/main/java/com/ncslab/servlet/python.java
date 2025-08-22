@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +77,7 @@ public class python extends HttpServlet {
 			PythonThread thread=PythonServer.instance.getVacantOctaveThread();
 			System.out.println(thread);
 
-			ServerResponseJson responseDto;
+			ServerResponseDto responseDto;
 			
 			if(thread!=null) {
 				thread.startOctave(model);
@@ -92,7 +92,7 @@ public class python extends HttpServlet {
 				resultData.put("mat", model.getOutputMat());
 				
 				// Create success response using DTO
-				responseDto = ServerResponseJson.builder()
+				responseDto = ServerResponseDto.builder()
 						.status("success")
 						.message("SUCCESS")
 						.code(2000)
@@ -105,7 +105,7 @@ public class python extends HttpServlet {
 			}
 			else {
 				System.out.println("No server available...");
-				responseDto = ServerResponseJson.createError("No server available...", "python");
+				responseDto = ServerResponseDto.createError("No server available...", "python");
 				responseDto.setCode(503); // Service Unavailable
 			}
 
@@ -116,7 +116,7 @@ public class python extends HttpServlet {
 		} catch (JSONException e) {
 			log.error("JSON processing error in python servlet: {}", e.getMessage());
 			// Create error response using DTO
-			ServerResponseJson errorResponse = ServerResponseJson.createError(
+			ServerResponseDto errorResponse = ServerResponseDto.createError(
 				"JSON processing error: " + e.getMessage(), "python");
 			errorResponse.setCode(400);
 			
@@ -125,7 +125,7 @@ public class python extends HttpServlet {
 		} catch (Exception e) {
 			log.error("Unexpected error in python servlet: {}", e.getMessage());
 			// Create generic error response
-			ServerResponseJson errorResponse = ServerResponseJson.createError(
+			ServerResponseDto errorResponse = ServerResponseDto.createError(
 				"Internal server error", "python");
 			errorResponse.setCode(500);
 			

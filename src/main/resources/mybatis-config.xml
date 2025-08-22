@@ -8,13 +8,13 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
   </settings>
 
 	<environments default="windows">
-		<environment id="ncslab">
-			<transactionManager type="JDBC"></transactionManager>
-			<dataSource type="POOLED">
-				<property name="driver" value="org.sqlite.JDBC"/>
-				<property name="url" value="jdbc:sqlite:E:/m2pcode/data/m2plab.db"/>
-			</dataSource>
-		</environment>
+<!--		<environment id="ncslab">-->
+<!--			<transactionManager type="JDBC"></transactionManager>-->
+<!--			<dataSource type="POOLED">-->
+<!--				<property name="driver" value="org.sqlite.JDBC"/>-->
+<!--				<property name="url" value="jdbc:sqlite:E:/m2pcode/data/m2plab.db"/>-->
+<!--			</dataSource>-->
+<!--		</environment>-->
 <!--		<environment id="linux">-->
 <!--			<transactionManager type="JDBC"></transactionManager>-->
 <!--			<dataSource type="POOLED">-->
@@ -22,15 +22,24 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 <!--				<property name="url" value="jdbc:sqlite:/data/M2PLab/data/m2plab.db"/>-->
 <!--			</dataSource>-->
 <!--		</environment>-->
-<!--		<environment id="ncslab">-->
-<!--			<transactionManager type="JDBC"></transactionManager>-->
-<!--			<dataSource type="POOLED">-->
-<!--				<property name="driver" value="com.mysql.jdbc.Driver"/>-->
-<!--				<property name="url" value="jdbc:mysql://localhost:3306/m2plab?useSSL=false"/>-->
-<!--				<property name="username" value="root"/>-->
-<!--				<property name="password" value="1234"/>-->
-<!--			</dataSource>-->
-<!--		</environment>-->
+		<environment id="ncslab">
+			<transactionManager type="JDBC"></transactionManager>
+			<dataSource type="POOLED">
+				<property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+				<property name="url" value="${NCSLAB_DB_URL}"/>
+				<property name="username" value="${NCSLAB_DB_USERNAME}"/>
+				<property name="password" value="${NCSLAB_DB_PASSWORD}"/>
+				<!-- Connection pool settings for better performance and security -->
+				<property name="poolMaximumActiveConnections" value="20"/>
+				<property name="poolMaximumIdleConnections" value="5"/>
+				<property name="poolMaximumCheckoutTime" value="20000"/>
+				<property name="poolTimeToWait" value="10000"/>
+				<property name="poolMaximumLocalBadConnectionTolerance" value="3"/>
+				<property name="poolPingQuery" value="SELECT 1"/>
+				<property name="poolPingEnabled" value="true"/>
+				<property name="poolPingConnectionsNotUsedFor" value="10000"/>
+			</dataSource>
+		</environment>
 	</environments>
 
 

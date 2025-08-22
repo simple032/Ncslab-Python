@@ -12,8 +12,8 @@ import jakarta.websocket.server.ServerEndpoint;
 import org.json.JSONObject;
 
 import com.ncslab.code.c.SFcnCompileModelC;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.WebSocketMessageDto;
 import com.ncslab.util.JsonUtils;
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
 import com.ncslab.ncslablink.ErrorMessage;
@@ -34,17 +34,17 @@ public class SFcnCompileWebSocket {
 	}
 	
 	private void sendMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage(msgString, null);
+		WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage(msgString, null);
 		session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
 	}
 	
 	private void sendErrorMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createErrorMessage(msgString);
+		WebSocketMessageDto message = WebSocketMessageDto.createErrorMessage(msgString);
 		session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
 	}
 	
 	private void sendResultMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.builder()
+		WebSocketMessageDto message = WebSocketMessageDto.builder()
 			.msg("result")
 			.status("success")
 			.data(msgString)
@@ -59,17 +59,16 @@ public class SFcnCompileWebSocket {
 		System.out.println(msgString);
 		
         // Try to parse as DTO first, fall back to legacy JSONObject
-        WebSocketMessageJson wsMessage = null;
+        WebSocketMessageDto wsMessage = null;
         JSONObject msg = null;
         String com = null;
         
         try {
-        	// Try DTO parsing first
-        	JSONObject tempJson = new JSONObject(msgString);
-        	wsMessage = WebSocketMessageJson.fromLegacyJson(tempJson);
+        	// Use Jackson ObjectMapper for direct deserialization
+        	wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
         	if (wsMessage != null && wsMessage.getCom() != null) {
         		com = wsMessage.getCom();
-        		System.out.println("Using DTO-based SFcn Compile WebSocket message parsing for command: " + com);
+        		System.out.println("Using Jackson DTO-based SFcn Compile WebSocket message parsing for command: " + com);
         	} else {
         		throw new Exception("DTO parsing failed or no command");
         	}

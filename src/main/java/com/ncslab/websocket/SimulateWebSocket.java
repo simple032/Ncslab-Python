@@ -14,8 +14,9 @@ import jakarta.websocket.server.ServerEndpoint;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.windows.simulation.CodeModelCWindowsSimulation;
 import com.utils.Property;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.WebSocketMessageDto;
+import com.ncslab.dto.model.MdlDataDto;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
@@ -41,7 +42,7 @@ public class SimulateWebSocket {
 	}
 
 	private void sendMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage(msgString, null);
+		WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage(msgString, null);
         if(session!=null) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
@@ -51,7 +52,7 @@ public class SimulateWebSocket {
 
 	private void sendResultMessage(Session session, CodeModelC modelC) throws IOException{
 		String resultsPath = "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json";
-		WebSocketMessageJson message = WebSocketMessageJson.createResultMessage(
+		WebSocketMessageDto message = WebSocketMessageDto.createResultMessage(
 			resultsPath, modelC.getUserId(), modelC.getModelId());
         if(session!=null) {
         	// Use JsonUtils helper for direct DTO serialization
@@ -67,7 +68,7 @@ public class SimulateWebSocket {
 	 * @throws IOException if sending fails
 	 */
 	private void sendOptimizedResultNotification(Session session, CodeModelC modelC) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage(
+		WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage(
 			"simulation_complete", "Results streamed in real-time during simulation");
 		message.setUserId(modelC.getUserId());
 		message.setModelId(modelC.getModelId());
@@ -82,7 +83,7 @@ public class SimulateWebSocket {
 	}
 
 	private void sendErrorMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createErrorMessage(msgString);
+		WebSocketMessageDto message = WebSocketMessageDto.createErrorMessage(msgString);
         if(session!=null) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
@@ -91,7 +92,7 @@ public class SimulateWebSocket {
 	}
 
 	private void sendSimulatingMessage(Session session, double endTime) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createSimulationProgress(0.0, endTime);
+		WebSocketMessageDto message = WebSocketMessageDto.createSimulationProgress(0.0, endTime);
         if(session!=null) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
@@ -114,7 +115,7 @@ public class SimulateWebSocket {
 		CodeModelC modelC = null;
 		try {
 			// Secure validation and parsing of the message
-			WebSocketMessageJson wsMessage = WebSocketSecurity.validateAndParseMessage(session, msgString);
+			WebSocketMessageDto wsMessage = WebSocketSecurity.validateAndParseMessage(session, msgString);
 			
 			String com = wsMessage.getCom();
 			logger.info("Processing secure WebSocket command: " + com + " for session: " + session.getId());
@@ -123,11 +124,12 @@ public class SimulateWebSocket {
 				sendMessage(session,"start");
 				//System.out.println("Start");
 				
-				// Extract mdlData using DTO only
-				if (wsMessage.getMdlData() == null) {
+				// Extract mdlData using DTO approach
+				MdlDataDto mdlData = wsMessage.getMdlData();
+				if (mdlData == null) {
 					throw new ModelException("No mdlData found in WebSocket message");
 				}
-				String jsonDataString = (String) wsMessage.getMdlData().get("jsonData");
+				String jsonDataString = mdlData.getJsonDataString();
 				if (jsonDataString == null) {
 					throw new ModelException("No jsonData found in mdlData");
 				}
@@ -161,17 +163,17 @@ public class SimulateWebSocket {
                 }
                 
                 // Parse JSON string directly to DTO using ObjectMapper
-                ModelJson modelDto;
+                ModelDto modelDto;
                 try {
-                	modelDto = JsonUtils.getObjectMapper().readValue(jsonDataString, ModelJson.class);
+                	modelDto = JsonUtils.getObjectMapper().readValue(jsonDataString, ModelDto.class);
                 } catch (JsonProcessingException e) {
-                	logger.severe("Failed to parse JSON to ModelJson: " + e.getMessage());
-                	throw new ModelException("Failed to parse JSON to ModelJson DTO: " + e.getMessage());
+                	logger.severe("Failed to parse JSON to ModelDto: " + e.getMessage());
+                	throw new ModelException("Failed to parse JSON to ModelDto DTO: " + e.getMessage());
                 }
                 
                 // Validate DTO structure
                 if (!modelDto.isValid()) {
-                	throw new ModelException("Invalid ModelJson DTO structure");
+                	throw new ModelException("Invalid ModelDto DTO structure");
                 }
                 
                 System.out.println("Using DTO-based WebSocket model creation for: " + modelDto.getModelName());

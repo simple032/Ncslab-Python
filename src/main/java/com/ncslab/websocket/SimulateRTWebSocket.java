@@ -9,8 +9,9 @@ import jakarta.websocket.server.ServerEndpoint;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.ncslablink.*;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.WebSocketMessageDto;
+import com.ncslab.dto.model.MdlDataDto;
 import com.ncslab.util.JsonUtils;
 import com.utils.Property;
 import org.json.JSONObject;
@@ -28,7 +29,7 @@ public class SimulateRTWebSocket {
 	}
 
 	private void sendMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage(msgString, null);
+		WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage(msgString, null);
         if(session!=null) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
@@ -38,7 +39,7 @@ public class SimulateRTWebSocket {
 
 
 	private void sendErrorMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createErrorMessage(msgString);
+		WebSocketMessageDto message = WebSocketMessageDto.createErrorMessage(msgString);
         if(session!=null) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
@@ -51,14 +52,14 @@ public class SimulateRTWebSocket {
 		System.out.println(msgString);
 
         // Try to parse as DTO first, fall back to legacy JSONObject
-        WebSocketMessageJson wsMessage = null;
+        WebSocketMessageDto wsMessage = null;
         JSONObject msg = null;
         String com = null;
         
         try {
         	// Direct ObjectMapper parsing
         	try {
-        		wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageJson.class);
+        		wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
         		if (wsMessage != null && wsMessage.getCom() != null) {
         			com = wsMessage.getCom();
         			System.out.println("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);
@@ -66,11 +67,14 @@ public class SimulateRTWebSocket {
         			throw new Exception("Parsed message or command is null");
         		}
         	} catch (JsonProcessingException e) {
-        		// Fall back to legacy JSONObject if ObjectMapper fails
-        		System.out.println("ObjectMapper parsing failed, using legacy JSONObject: " + e.getMessage());
-        		JSONObject tempJson = new JSONObject(msgString);
-        		wsMessage = WebSocketMessageJson.fromLegacyJson(tempJson);
-        		com = wsMessage != null ? wsMessage.getCom() : null;
+        		// If Jackson parsing fails, log error and return
+        		System.err.println("Failed to parse WebSocket message with Jackson: " + e.getMessage());
+        		try {
+        			sendMessage(session, "error");
+        		} catch (IOException ioEx) {
+        			System.err.println("Failed to send error message: " + ioEx.getMessage());
+        		}
+        		return;
         	}
         } catch (Exception e) {
         	// Final fall back to direct JSONObject parsing
@@ -87,7 +91,8 @@ public class SimulateRTWebSocket {
 				String jsonDataString;
 				if (wsMessage != null && wsMessage.getMdlData() != null) {
 					// Use DTO approach
-					jsonDataString = (String) wsMessage.getMdlData().get("jsonData");
+					MdlDataDto mdlData = wsMessage.getMdlData();
+					jsonDataString = mdlData.getJsonDataString();
 				} else {
 					// Use legacy approach
 					JSONObject mdlData = msg.getJSONObject("mdlData");
@@ -105,17 +110,17 @@ public class SimulateRTWebSocket {
                 }
                 
                 // Parse JSON string directly to DTO using ObjectMapper
-                ModelJson modelDto;
+                ModelDto modelDto;
                 try {
-                	modelDto = JsonUtils.getObjectMapper().readValue(jsonDataString, ModelJson.class);
+                	modelDto = JsonUtils.getObjectMapper().readValue(jsonDataString, ModelDto.class);
                 } catch (JsonProcessingException e) {
-                	System.err.println("Failed to parse JSON to ModelJson: " + e.getMessage());
-                	throw new ModelException("Failed to parse JSON to ModelJson DTO: " + e.getMessage());
+                	System.err.println("Failed to parse JSON to ModelDto: " + e.getMessage());
+                	throw new ModelException("Failed to parse JSON to ModelDto DTO: " + e.getMessage());
                 }
                 
                 // Validate DTO structure
                 if (!modelDto.isValid()) {
-                	throw new ModelException("Invalid ModelJson DTO structure");
+                	throw new ModelException("Invalid ModelDto DTO structure");
                 }
                 
                 System.out.println("Using DTO-based RT WebSocket model creation for: " + modelDto.getModelName());

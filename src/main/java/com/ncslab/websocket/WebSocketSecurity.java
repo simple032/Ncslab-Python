@@ -3,7 +3,7 @@ package com.ncslab.websocket;
 import jakarta.websocket.Session;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.dto.communication.WebSocketMessageDto;
 import com.ncslab.util.JsonUtils;
 
 import java.util.Set;
@@ -44,10 +44,10 @@ public class WebSocketSecurity {
      * Validates and sanitizes incoming WebSocket message
      * @param session WebSocket session
      * @param messageString Raw message string
-     * @return Validated WebSocketMessageJson or null if invalid
+     * @return Validated WebSocketMessageDto or null if invalid
      * @throws SecurityException if message is malicious
      */
-    public static WebSocketMessageJson validateAndParseMessage(Session session, String messageString) 
+    public static WebSocketMessageDto validateAndParseMessage(Session session, String messageString) 
             throws SecurityException {
         
         // Basic security checks
@@ -78,11 +78,16 @@ public class WebSocketSecurity {
                 throw new SecurityException("JSON structure too deep");
             }
             
-            // Parse to DTO with validation
-            WebSocketMessageJson wsMessage = WebSocketMessageJson.fromLegacyJson(tempJson);
+            // Parse to DTO with Jackson validation
+            WebSocketMessageDto wsMessage;
+            try {
+                wsMessage = JsonUtils.getObjectMapper().readValue(messageString, WebSocketMessageDto.class);
+            } catch (Exception e) {
+                throw new SecurityException("Failed to parse message as valid DTO: " + e.getMessage());
+            }
             
             if (wsMessage == null) {
-                throw new SecurityException("Failed to parse message as valid DTO");
+                throw new SecurityException("Parsed message is null");
             }
             
             // Validate command

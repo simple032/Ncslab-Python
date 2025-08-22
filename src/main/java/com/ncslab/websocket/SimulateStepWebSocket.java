@@ -11,8 +11,9 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 
 import com.ncslab.ncslablink.*;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.WebSocketMessageJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.WebSocketMessageDto;
+import com.ncslab.dto.model.MdlDataDto;
 import com.ncslab.util.JsonUtils;
 import com.utils.Property;
 import org.json.JSONObject;
@@ -31,7 +32,7 @@ public class SimulateStepWebSocket {
 		
 		// Send initial connection status for RT mode
 		try {
-			WebSocketMessageJson welcome = WebSocketMessageJson.builder()
+			WebSocketMessageDto welcome = WebSocketMessageDto.builder()
 				.msg("rt_connection_established")
 				.status("connected")
 				.data(java.util.Map.of(
@@ -55,7 +56,7 @@ public class SimulateStepWebSocket {
 	}
 
 	private void sendMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createStatusMessage(msgString, null);
+		WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage(msgString, null);
         if(session!=null) {
 		    session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
         } else {
@@ -68,7 +69,7 @@ public class SimulateStepWebSocket {
 	 * Send real-time status message with enhanced data
 	 */
 	private void sendRealTimeStatus(Session session, String status, String message, java.util.Map<String, Object> data) throws IOException {
-		WebSocketMessageJson rtMessage = WebSocketMessageJson.builder()
+		WebSocketMessageDto rtMessage = WebSocketMessageDto.builder()
 			.msg(status)
 			.status("rt_update")
 			.data(data != null ? data : java.util.Map.of("message", message))
@@ -86,7 +87,7 @@ public class SimulateStepWebSocket {
 
 
 	private void sendErrorMessage(Session session, String msgString) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createErrorMessage(msgString);
+		WebSocketMessageDto message = WebSocketMessageDto.createErrorMessage(msgString);
         if(session!=null) {
             session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
         } else {
@@ -96,7 +97,7 @@ public class SimulateStepWebSocket {
 	}
 
 	private void sendSimulatingMessage(Session session, double endTime) throws IOException{
-		WebSocketMessageJson message = WebSocketMessageJson.createSimulationProgress(0.0, endTime);
+		WebSocketMessageDto message = WebSocketMessageDto.createSimulationProgress(0.0, endTime);
         if(session!=null) {
 		    session.getBasicRemote().sendText(JsonUtils.serializeWebSocketMessage(message));
         } else {
@@ -110,14 +111,24 @@ public class SimulateStepWebSocket {
 		System.out.println("RT Step Control: " + msgString);
 
         // Try to parse as DTO first, fall back to legacy JSONObject (RT pattern)
-        WebSocketMessageJson wsMessage = null;
+        WebSocketMessageDto wsMessage = null;
         JSONObject msg = null;
         String com = null;        
         
-		JSONObject tempJson = new JSONObject(msgString);
-		wsMessage = WebSocketMessageJson.fromLegacyJson(tempJson);
-		com = wsMessage.getCom();
-		System.out.println("Using DTO-based RT Step Control WebSocket message parsing for command: " + com);
+		// Use Jackson ObjectMapper for direct deserialization
+		try {
+			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
+			com = wsMessage.getCom();
+			System.out.println("Using Jackson DTO-based RT Step Control WebSocket message parsing for command: " + com);
+		} catch (Exception e) {
+			System.err.println("Failed to parse WebSocket message with Jackson: " + e.getMessage());
+			try {
+				sendMessage(session, "error");
+			} catch (IOException ioEx) {
+				System.err.println("Failed to send error message: " + ioEx.getMessage());
+			}
+			return;
+		}
 
         // Route to appropriate handler for commands
         switch (com) {
@@ -166,14 +177,19 @@ public class SimulateStepWebSocket {
         }
 	}
 
-	private void handleStartCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleStartCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try 
 		{
 			sendMessage(session,"start");
 			
-			// Extract mdlData using DTO or legacy approach (RT pattern)
+			// Extract mdlData using DTO approach
 			String jsonDataString;
-			jsonDataString = (String) wsMessage.getMdlData().get("jsonData");
+			MdlDataDto mdlData = wsMessage.getMdlData();
+			if (mdlData != null) {
+				jsonDataString = mdlData.getJsonDataString();
+			} else {
+				jsonDataString = null;
+			}
 
 			String errorMsgs="";
 
@@ -188,7 +204,7 @@ public class SimulateStepWebSocket {
 			}
 			
 			// Try DTO parsing first (most efficient path)
-			ModelJson modelDto = JsonUtils.parseModelJson(jsonDataString);
+			ModelDto modelDto = JsonUtils.parseModelDto(jsonDataString);
 			
 			System.out.println("Using DTO-based RT Step Control WebSocket model creation for: " + modelDto.getModelName());
 			stepSimulationModel = StepSimulationModel.createFromDto(modelDto, ModelMode.Simulation);                	
@@ -245,7 +261,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'ping' command for WebSocket connectivity check
 	 */
-	private void handlePingCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handlePingCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			// Extract timestamp from ping request
 			long requestTimestamp = 0;
@@ -256,7 +272,7 @@ public class SimulateStepWebSocket {
 			}
 			
 			// Create pong response with original and current timestamps
-			WebSocketMessageJson pongResponse = WebSocketMessageJson.builder()
+			WebSocketMessageDto pongResponse = WebSocketMessageDto.builder()
 				.msg("pong")
 				.status("success")
 				.data(java.util.Map.of(
@@ -293,7 +309,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'step_forward' command with precise StepSimulationModel control
 	 */
-	private void handleStepForwardCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleStepForwardCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel == null) {
 				sendErrorMessage(session, "No active step simulation model. Please start a simulation first.");
@@ -339,7 +355,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'step_backward' command with precise StepSimulationModel control  
 	 */
-	private void handleStepBackwardCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleStepBackwardCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel == null) {
 				sendErrorMessage(session, "No active step simulation model. Please start a simulation first.");
@@ -388,7 +404,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'pause' command with StepSimulationModel control
 	 */
-	private void handlePauseCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handlePauseCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel != null) {
 				stepSimulationModel.pauseSimulation(session);
@@ -408,7 +424,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'resume' command with StepSimulationModel control
 	 */
-	private void handleResumeCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleResumeCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel != null) {
 				stepSimulationModel.resumeSimulation(session);
@@ -428,7 +444,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'goto_time' command with precise time control
 	 */
-	private void handleGotoTimeCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleGotoTimeCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel == null) {
 				sendErrorMessage(session, "No active step simulation model. Please start a simulation first.");
@@ -473,7 +489,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'set_mode' command
 	 */
-	private void handleSetModeCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleSetModeCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			sendMessage(session, "set_mode_acknowledged");
 			System.out.println("RT simulation set mode requested");
@@ -489,7 +505,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'get_results' command
 	 */
-	private void handleGetResultsCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleGetResultsCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel == null) {
 				sendErrorMessage(session, "No step simulation model available for streaming results.");
@@ -497,7 +513,7 @@ public class SimulateStepWebSocket {
 			}
 			
 			// Send current simulation state and results
-			WebSocketMessageJson resultMsg = WebSocketMessageJson.builder()
+			WebSocketMessageDto resultMsg = WebSocketMessageDto.builder()
 				.msg("simulation_results")
 				.status("success")
 				.data(java.util.Map.of(
@@ -529,7 +545,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'get_checkpoint_stats' command
 	 */
-	private void handleGetCheckpointStatsCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleGetCheckpointStatsCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel == null) {
 				sendErrorMessage(session, "No active step simulation model.");
@@ -545,7 +561,7 @@ public class SimulateStepWebSocket {
 				"checkpoint_time", System.currentTimeMillis()
 			);
 			
-			WebSocketMessageJson message = WebSocketMessageJson.builder()
+			WebSocketMessageDto message = WebSocketMessageDto.builder()
 					.msg("checkpoint_stats")
 					.status("success")
 					.data(stats)
@@ -571,7 +587,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'stream_current_state' command
 	 */
-	private void handleStreamCurrentStateCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleStreamCurrentStateCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel == null) {
 				sendErrorMessage(session, "No active step simulation model.");
@@ -579,7 +595,7 @@ public class SimulateStepWebSocket {
 			}
 			
 			// Stream current simulation state
-			WebSocketMessageJson stateMsg = WebSocketMessageJson.builder()
+			WebSocketMessageDto stateMsg = WebSocketMessageDto.builder()
 				.msg("current_state")
 				.status("streaming")
 				.data(java.util.Map.of(
@@ -613,7 +629,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'enable_realtime_streaming' command
 	 */
-	private void handleEnableRealtimeStreamingCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleEnableRealtimeStreamingCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			sendMessage(session, "realtime_streaming_enabled");
 			System.out.println("Real-time streaming enabled for step control simulation");
@@ -630,7 +646,7 @@ public class SimulateStepWebSocket {
 	/**
 	 * Handle the 'run_to_end' command to run simulation from current time to configured end time
 	 */
-	private void handleRunToEndCommand(Session session, WebSocketMessageJson wsMessage, JSONObject msg) {
+	private void handleRunToEndCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {
 		try {
 			if (stepSimulationModel == null) {
 				sendErrorMessage(session, "No active step simulation model. Please start a simulation first.");

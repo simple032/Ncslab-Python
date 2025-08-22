@@ -10,7 +10,7 @@ import com.ncslab.ncslablink.ModelMode;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 
 import jakarta.servlet.ServletException;
@@ -82,11 +82,11 @@ public class ai extends HttpServlet {
         }
 		finally {
 			// Enhanced response with DTO pattern
-			ServerResponseJson responseDto = null;
+			ServerResponseDto responseDto = null;
 			if (code == 2000) {
-				responseDto = ServerResponseJson.createSuccess(properties, null, "ai");
+				responseDto = ServerResponseDto.createSuccess(properties, null, "ai");
 			} else {
-				responseDto = ServerResponseJson.createError(errorMsgs, "ai");
+				responseDto = ServerResponseDto.createError(errorMsgs, "ai");
 			}
 			responseDto.setCode(code);
 

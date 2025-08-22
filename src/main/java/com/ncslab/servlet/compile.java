@@ -18,8 +18,8 @@ import com.ncslab.code.c.CodeModelCFactory;
 import com.ncslab.code.c.CodeStructC;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONObject;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 import com.ncslab.code.Solver;
 import lombok.extern.slf4j.Slf4j;
@@ -133,17 +133,17 @@ public class compile extends HttpServlet {
 			}
 			
 			// Direct DTO parsing with ObjectMapper - no intermediate JSONObject
-			ModelJson modelDto;
+			ModelDto modelDto;
 			try {
-				modelDto = JsonUtils.getObjectMapper().readValue(jsonString, ModelJson.class);
+				modelDto = JsonUtils.getObjectMapper().readValue(jsonString, ModelDto.class);
 			} catch (JsonProcessingException e) {
-				log.error("Failed to parse JSON to ModelJson: {}", e.getMessage());
-				throw new ModelException("Failed to parse JSON to ModelJson DTO: " + e.getMessage());
+				log.error("Failed to parse JSON to ModelDto: {}", e.getMessage());
+				throw new ModelException("Failed to parse JSON to ModelDto DTO: " + e.getMessage());
 			}
 			
 			// Validate DTO structure
 			if (!modelDto.isValid()) {
-				throw new ModelException("Invalid ModelJson DTO structure");
+				throw new ModelException("Invalid ModelDto DTO structure");
 			}
 			
 			System.out.println("Using DTO-based model creation for: " + modelDto.getModelName());
@@ -166,7 +166,7 @@ public class compile extends HttpServlet {
         	System.err.println("Code generatrion terminated unsuccessfully������");
         	//response.getWriter().write("{\"code\":\"400\",\"message\":\""+e.getMessage()+"\"}");
         	// Use ObjectMapper directly for error response
-        	ServerResponseJson errorResponse = ServerResponseJson.createError(e.getMessage(), "compile");
+        	ServerResponseDto errorResponse = ServerResponseDto.createError(e.getMessage(), "compile");
         	errorResponse.setCode(400);
         	
         	try {
@@ -187,11 +187,11 @@ public class compile extends HttpServlet {
 		}
 		finally {
 			// Use ObjectMapper directly for final response
-			ServerResponseJson finalResponse;
+			ServerResponseDto finalResponse;
 			if (code == 2000) {
-				finalResponse = ServerResponseJson.createSuccess(null, errorMsgs, "compile");
+				finalResponse = ServerResponseDto.createSuccess(null, errorMsgs, "compile");
 			} else {
-				finalResponse = ServerResponseJson.createError(errorMsgs, "compile");
+				finalResponse = ServerResponseDto.createError(errorMsgs, "compile");
 			}
 			finalResponse.setCode(code);
 			finalResponse.setMessage(errorMsgs);

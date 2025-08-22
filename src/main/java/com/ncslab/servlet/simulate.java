@@ -13,8 +13,8 @@ import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
-import com.ncslab.dto.ModelJson;
-import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 /**
@@ -60,17 +60,17 @@ public class simulate extends HttpServlet {
         	}
         	
         	// Direct DTO parsing with ObjectMapper - no intermediate JSONObject
-        	ModelJson modelDto;
+        	ModelDto modelDto;
         	try {
-        		modelDto = JsonUtils.getObjectMapper().readValue(jsonString, ModelJson.class);
+        		modelDto = JsonUtils.getObjectMapper().readValue(jsonString, ModelDto.class);
         	} catch (JsonProcessingException e) {
-        		log.error("Failed to parse JSON to ModelJson: {}", e.getMessage());
-        		throw new ModelException("Failed to parse JSON to ModelJson DTO: " + e.getMessage());
+        		log.error("Failed to parse JSON to ModelDto: {}", e.getMessage());
+        		throw new ModelException("Failed to parse JSON to ModelDto DTO: " + e.getMessage());
         	}
         	
         	// Validate DTO structure
         	if (!modelDto.isValid()) {
-        		throw new ModelException("Invalid ModelJson DTO structure");
+        		throw new ModelException("Invalid ModelDto DTO structure");
         	}
         	
         	System.out.println("Using DTO-based model creation for: " + modelDto.getModelName());
@@ -104,7 +104,7 @@ public class simulate extends HttpServlet {
         	// modelC.simulate();
         	
         	// Use ObjectMapper directly for response serialization
-        	ServerResponseJson responseDto = ServerResponseJson.builder()
+        	ServerResponseDto responseDto = ServerResponseDto.builder()
         			.status("success")
         			.code(code)
         			.result("/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json")
@@ -146,7 +146,7 @@ public class simulate extends HttpServlet {
         	System.err.println("Code generatrion terminated unsuccessfully������");
         	//response.getWriter().write("{\"code\":\"400\",\"message\":\""+e.getMessage()+"\"}");
         	// Use ObjectMapper directly for error response
-        	ServerResponseJson errorResponse = ServerResponseJson.createError(e.getMessage(), "simulate");
+        	ServerResponseDto errorResponse = ServerResponseDto.createError(e.getMessage(), "simulate");
         	errorResponse.setCode(400);
         	
         	try {

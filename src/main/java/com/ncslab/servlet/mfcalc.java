@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +77,7 @@ public class mfcalc extends HttpServlet {
     	try {
 			MfcalcClient client = MfcalcClientManager.getClientForUser(String.valueOf(model.getUserId()));
 
-			ServerResponseJson responseDto;
+			ServerResponseDto responseDto;
 			
 			if(client != null){
 				String message = "SUCCESS";
@@ -116,7 +116,7 @@ public class mfcalc extends HttpServlet {
 					resultData.put("mat", model.getOutputMat());
 					
 					// Create success response using DTO
-					responseDto = ServerResponseJson.builder()
+					responseDto = ServerResponseDto.builder()
 							.status("success")
 							.message(message)
 							.code(2000)
@@ -128,12 +128,12 @@ public class mfcalc extends HttpServlet {
 					System.out.println("MFCalc execution successful");
 				} else {
 					// Create error response for unknown method
-					responseDto = ServerResponseJson.createError(message, "mfcalc");
+					responseDto = ServerResponseDto.createError(message, "mfcalc");
 					responseDto.setCode(400); // Bad Request
 				}
 			}else{
 				System.out.println("No mfcalc server available...");
-				responseDto = ServerResponseJson.createError("No mfcalc server available...", "mfcalc");
+				responseDto = ServerResponseDto.createError("No mfcalc server available...", "mfcalc");
 				responseDto.setCode(503); // Service Unavailable
 			}
 
@@ -144,7 +144,7 @@ public class mfcalc extends HttpServlet {
 		} catch (JSONException e) {
 			log.error("JSON processing error in mfcalc servlet: {}", e.getMessage());
 			// Create error response using DTO
-			ServerResponseJson errorResponse = ServerResponseJson.createError(
+			ServerResponseDto errorResponse = ServerResponseDto.createError(
 				"JSON processing error: " + e.getMessage(), "mfcalc");
 			errorResponse.setCode(400);
 			
@@ -153,7 +153,7 @@ public class mfcalc extends HttpServlet {
 		} catch (Exception e) {
 			log.error("Unexpected error in mfcalc servlet: {}", e.getMessage());
 			// Create generic error response
-			ServerResponseJson errorResponse = ServerResponseJson.createError(
+			ServerResponseDto errorResponse = ServerResponseDto.createError(
 				"Internal server error", "mfcalc");
 			errorResponse.setCode(500);
 			

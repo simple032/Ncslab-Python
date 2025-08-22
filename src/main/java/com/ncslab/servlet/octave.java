@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.ncslab.dto.ServerResponseJson;
+import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +73,7 @@ public class octave extends HttpServlet {
 			OctaveThread thread=OctaveServer.instance.getVacantOctaveThread();
 			System.out.println(thread);
 
-			ServerResponseJson responseDto;
+			ServerResponseDto responseDto;
 			
 			if(thread!=null) {
 				thread.startOctave(model);
@@ -88,7 +88,7 @@ public class octave extends HttpServlet {
 				resultData.put("mat", model.getOutputMat());
 				
 				// Create success response using DTO
-				responseDto = ServerResponseJson.builder()
+				responseDto = ServerResponseDto.builder()
 						.status("success")
 						.message("SUCCESS")
 						.code(2000)
@@ -101,7 +101,7 @@ public class octave extends HttpServlet {
 			}
 			else {
 				System.out.println("No server available...");
-				responseDto = ServerResponseJson.createError("No server available...", "octave");
+				responseDto = ServerResponseDto.createError("No server available...", "octave");
 				responseDto.setCode(503); // Service Unavailable
 			}
 
@@ -112,7 +112,7 @@ public class octave extends HttpServlet {
 		} catch (JSONException e) {
 			log.error("JSON processing error in octave servlet: {}", e.getMessage());
 			// Create error response using DTO
-			ServerResponseJson errorResponse = ServerResponseJson.createError(
+			ServerResponseDto errorResponse = ServerResponseDto.createError(
 				"JSON processing error: " + e.getMessage(), "octave");
 			errorResponse.setCode(400);
 			
@@ -121,7 +121,7 @@ public class octave extends HttpServlet {
 		} catch (Exception e) {
 			log.error("Unexpected error in octave servlet: {}", e.getMessage());
 			// Create generic error response
-			ServerResponseJson errorResponse = ServerResponseJson.createError(
+			ServerResponseDto errorResponse = ServerResponseDto.createError(
 				"Internal server error", "octave");
 			errorResponse.setCode(500);
 			

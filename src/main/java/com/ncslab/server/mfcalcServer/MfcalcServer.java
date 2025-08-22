@@ -58,7 +58,9 @@ public static MfcalcServer instance=new MfcalcServer();
 //                System.out.println("��ǰMfcalc�ͻ��˵�IP��"+address.getHostAddress());
 //                System.out.println("HelloMfcalcServer");
 //            }
-			thread.wait(Long.MAX_VALUE);
+			synchronized(thread) {
+				thread.wait(Long.MAX_VALUE);
+			}
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
