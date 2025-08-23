@@ -529,9 +529,7 @@ public class JsonUtils {
             
         } catch (JsonProcessingException e) {
             return JsonValidationResult.invalid("Invalid JSON format: " + e.getMessage());
-        } catch (IOException e) {
-            return JsonValidationResult.invalid("IO error during validation: " + e.getMessage());
-        }
+        } 
     }
     
     /**
