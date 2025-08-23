@@ -117,20 +117,25 @@ public class Sum extends Block {
     public Sum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Extract parameters from DTO using same names and defaults as JSON constructor
-        JSONObject paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null) {
-            paramValues = new JSONObject(blockDto.getParamValues());
-        }
+        // Extract parameters directly from DTO map - avoid JSONObject conversion
+        Map<String, Object> paramValuesMap = blockDto.getParamValues();
         
-        // Initialize final parameters using exact same logic as JSON constructor
-        this.inputs = new Parameter(this, 1, "Inputs", paramValues.optString("Inputs", "++"));
+        // Parse parameters directly or use defaults
+        String inputsStr = getParameterValue(paramValuesMap, "Inputs", "++");
+        String sampleTimeStr = getParameterValue(paramValuesMap, "SampleTime", "-1");
+        String inputSameDTStr = getParameterValue(paramValuesMap, "InputSameDT", "on");
+        String outDataTypeStr = getParameterValue(paramValuesMap, "OutDataTypeStr", "Inherit: Same as input");
+        String saturateStr = getParameterValue(paramValuesMap, "SaturateOnIntegerOverflow", "off");
+        String iconStr = getParameterValue(paramValuesMap, "Icon", "rectangular");
+        
+        // Initialize final parameters directly from DTO
+        this.inputs = new Parameter(this, 1, "Inputs", inputsStr);
         this.inputSequence = this.inputs.getInitString(); // Initialize final field from parameter
-        this.sampleTime = new Parameter(this, 2, "SampleTime", paramValues.optString("SampleTime", "-1"));
-        this.inputSameDT = new Parameter(this, 3, "InputSameDT", paramValues.optString("InputSameDT", "on"));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
-        this.icon = new Parameter(this, 6, "Icon", paramValues.optString("Icon", "rectangular"));
+        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeStr);
+        this.inputSameDT = new Parameter(this, 3, "InputSameDT", inputSameDTStr);
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeStr);
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateStr);
+        this.icon = new Parameter(this, 6, "Icon", iconStr);
 
         // Initialize ports
         initializePorts();
@@ -206,6 +211,17 @@ public class Sum extends Block {
     }
 
     // ===== END DUAL CONSTRUCTOR PATTERN =====
+    
+    /**
+     * Helper method to extract parameter value from Map - avoiding JSONObject conversion
+     */
+    private static String getParameterValue(Map<String, Object> paramValues, String paramName, String defaultValue) {
+        if (paramValues == null) {
+            return defaultValue;
+        }
+        Object value = paramValues.get(paramName);
+        return value != null ? value.toString() : defaultValue;
+    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Sum fromJSON(JSONObject blockJSON, NCSLabModel model) {

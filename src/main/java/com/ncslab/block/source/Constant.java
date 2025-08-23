@@ -106,15 +106,16 @@ public class Constant extends SourceBlock {
     public Constant(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Extract parameters from DTO using same names and defaults as JSON constructor
-        JSONObject paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null) {
-            paramValues = new JSONObject(blockDto.getParamValues());
-        }
+        // Extract parameters directly from DTO map - avoid JSONObject conversion
+        Map<String, Object> paramValuesMap = blockDto.getParamValues();
         
-        // Initialize final parameters using exact same logic as JSON constructor
-        this.value = new Parameter(this, 1, "Value", paramValues.optString("Value", "1"));
-        this.framePeriod = new Parameter(this, 2, "FramePeriod", paramValues.optString("FramePeriod", "1"));
+        // Parse parameters directly or use defaults
+        String valueStr = getParameterValue(paramValuesMap, "Value", "1");
+        String framePeriodStr = getParameterValue(paramValuesMap, "FramePeriod", "1");
+        
+        // Initialize final parameters directly from DTO
+        this.value = new Parameter(this, 1, "Value", valueStr);
+        this.framePeriod = new Parameter(this, 2, "FramePeriod", framePeriodStr);
 
         // Initialize ports
         initializePorts();
@@ -193,6 +194,16 @@ public class Constant extends SourceBlock {
 
     // ===== END DUAL CONSTRUCTOR PATTERN =====
 
+    /**
+     * Helper method to extract parameter value from Map - avoiding JSONObject conversion
+     */
+    private static String getParameterValue(Map<String, Object> paramValues, String paramName, String defaultValue) {
+        if (paramValues == null) {
+            return defaultValue;
+        }
+        Object value = paramValues.get(paramName);
+        return value != null ? value.toString() : defaultValue;
+    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Constant fromJSON(JSONObject blockJSON, NCSLabModel model) {

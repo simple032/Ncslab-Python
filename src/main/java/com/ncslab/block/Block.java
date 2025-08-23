@@ -131,12 +131,18 @@ public class Block implements MCodeBlock, CCodeBlock{
     protected Block(BlockDto blockDto, NCSLabModel model) {
         this.blockType = blockDto.getBlockType();
         this.blockName = blockDto.getBlockName();
-        if (blockDto.getParamValues() != null) {
-            this.paramValues = new JSONObject(blockDto.getParamValues());
-        }
+        // Direct DTO processing - avoid unnecessary JSONObject conversion
         this.model = model;
         this.blockPath = blockDto.getBlockPath();
         this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";
+        
+        // Initialize paramValues only if needed for legacy compatibility
+        if (blockDto.getParamValues() != null && !blockDto.getParamValues().isEmpty()) {
+            this.paramValues = new JSONObject(blockDto.getParamValues());
+        } else {
+            this.paramValues = new JSONObject();
+        }
+        
         parseParameterList();
         context = new VelocityContext();
         

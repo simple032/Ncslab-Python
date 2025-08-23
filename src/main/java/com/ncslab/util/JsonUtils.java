@@ -560,4 +560,69 @@ public class JsonUtils {
             return errorMessage;
         }
     }
+    
+    /**
+     * Extract parameter value directly from JSON string without creating JSONObject.
+     * This utility method provides efficient parameter extraction for DTO processing,
+     * avoiding the overhead of creating intermediate JSONObject instances.
+     * 
+     * @param jsonStr The JSON string containing parameters
+     * @param paramName The parameter name to extract
+     * @param defaultValue The default value if parameter is not found
+     * @return The parameter value or default if not found
+     */
+    public static String extractParameterFromJsonString(String jsonStr, String paramName, String defaultValue) {
+        if (jsonStr == null || jsonStr.isEmpty()) {
+            return defaultValue;
+        }
+        
+        // Simple string-based parameter extraction to avoid JSONObject creation
+        String searchPattern = "\"" + paramName + "\"";
+        int paramIndex = jsonStr.indexOf(searchPattern);
+        if (paramIndex == -1) {
+            return defaultValue;
+        }
+        
+        // Find the value after the parameter name
+        int colonIndex = jsonStr.indexOf(":", paramIndex);
+        if (colonIndex == -1) {
+            return defaultValue;
+        }
+        
+        // Skip whitespace and find the start of the value
+        int valueStart = colonIndex + 1;
+        while (valueStart < jsonStr.length() && Character.isWhitespace(jsonStr.charAt(valueStart))) {
+            valueStart++;
+        }
+        
+        if (valueStart >= jsonStr.length()) {
+            return defaultValue;
+        }
+        
+        // Determine if it's a string value (starts with quote) or numeric
+        int valueEnd;
+        if (jsonStr.charAt(valueStart) == '"') {
+            // String value - find closing quote
+            valueStart++; // Skip opening quote
+            valueEnd = jsonStr.indexOf('"', valueStart);
+            if (valueEnd == -1) {
+                return defaultValue;
+            }
+        } else {
+            // Numeric value - find next comma or closing brace
+            valueEnd = valueStart;
+            while (valueEnd < jsonStr.length() && 
+                   jsonStr.charAt(valueEnd) != ',' && 
+                   jsonStr.charAt(valueEnd) != '}' && 
+                   !Character.isWhitespace(jsonStr.charAt(valueEnd))) {
+                valueEnd++;
+            }
+        }
+        
+        if (valueEnd > valueStart) {
+            return jsonStr.substring(valueStart, valueEnd);
+        }
+        
+        return defaultValue;
+    }
 }

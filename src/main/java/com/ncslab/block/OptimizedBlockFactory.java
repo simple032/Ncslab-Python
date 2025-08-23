@@ -225,6 +225,7 @@ public class OptimizedBlockFactory {
             blockJSON.put("blockUUID", blockDto.getBlockUUID());
         }
         if (blockDto.getParamValues() != null && !blockDto.getParamValues().isEmpty()) {
+            // Only convert to JSONObject if absolutely necessary for legacy compatibility
             blockJSON.put("paramValues", new JSONObject(blockDto.getParamValues()));
         }
         

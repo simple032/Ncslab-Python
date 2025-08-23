@@ -110,17 +110,20 @@ public class Gain extends Block {
     public Gain(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Extract parameters from DTO using same names and defaults as JSON constructor
-        JSONObject paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null) {
-            paramValues = new JSONObject(blockDto.getParamValues());
-        }
+        // Extract parameters directly from DTO map - avoid JSONObject conversion
+        Map<String, Object> paramValuesMap = blockDto.getParamValues();
         
-        // Initialize final parameters using exact same logic as JSON constructor
-        this.gain = new Parameter(this, 1, "Gain", paramValues.optString("Gain", "1"));
-        this.sampleTime = new Parameter(this, 2, "SampleTime", paramValues.optString("SampleTime", "-1"));
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
+        // Parse parameters directly or use defaults
+        String gainStr = getParameterValue(paramValuesMap, "Gain", "1");
+        String sampleTimeStr = getParameterValue(paramValuesMap, "SampleTime", "-1");
+        String outDataTypeStr = getParameterValue(paramValuesMap, "OutDataTypeStr", "Inherit: Same as input");
+        String saturateStr = getParameterValue(paramValuesMap, "SaturateOnIntegerOverflow", "off");
+        
+        // Initialize final parameters directly from DTO
+        this.gain = new Parameter(this, 1, "Gain", gainStr);
+        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeStr);
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeStr);
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateStr);
         this.matrixMultiplication = false; // Default to element-wise multiplication
 
         // Initialize ports
@@ -194,6 +197,17 @@ public class Gain extends Block {
     }
 
     // ===== END DUAL CONSTRUCTOR PATTERN =====
+
+    /**
+     * Helper method to extract parameter value from Map - avoiding JSONObject conversion
+     */
+    private static String getParameterValue(Map<String, Object> paramValues, String paramName, String defaultValue) {
+        if (paramValues == null) {
+            return defaultValue;
+        }
+        Object value = paramValues.get(paramName);
+        return value != null ? value.toString() : defaultValue;
+    }
 
     // === Static Factory Method for JSON Deserialization ===
     public static Gain fromJSON(JSONObject blockJSON, NCSLabModel model) {
