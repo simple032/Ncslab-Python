@@ -9,6 +9,7 @@ import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -115,150 +116,46 @@ public class IntegratorDto extends BlockDto {
     
     // ===== FACTORY METHODS =====
     
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static IntegratorDto fromLegacyParameters(java.util.Map<String, String> params) {
-        IntegratorDto.IntegratorDtoBuilder builder = IntegratorDto.builder()
-                .blockName(params.getOrDefault("blockName", "Integrator"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Integrator");
-        
-        IntegratorDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("InitialCondition")) {
-            try {
-                dto.initialCondition = TypedParameter.of(Double.parseDouble(params.get("InitialCondition")));
-            } catch (NumberFormatException e) {
-                dto.initialCondition = TypedParameter.of(params.get("InitialCondition")); // Keep as string if not numeric
-            }
-        }
-        
-        if (params.containsKey("ExternalReset")) {
-            dto.externalReset = TypedParameter.of(params.get("ExternalReset"));
-        }
-        
-        if (params.containsKey("InitialConditionSource")) {
-            dto.initialConditionSource = TypedParameter.of(params.get("InitialConditionSource"));
-        }
-        
-        if (params.containsKey("LimitOutput")) {
-            dto.limitOutput = TypedParameter.of("on".equals(params.get("LimitOutput")));
-        }
-        
-        if (params.containsKey("UpperSaturationLimit")) {
-            String upperStr = params.get("UpperSaturationLimit");
-            Double upperVal = "inf".equals(upperStr) ? Double.POSITIVE_INFINITY : Double.parseDouble(upperStr);
-            dto.upperSaturationLimit = TypedParameter.of(upperVal);
-        }
-        
-        if (params.containsKey("LowerSaturationLimit")) {
-            String lowerStr = params.get("LowerSaturationLimit");
-            Double lowerVal = "-inf".equals(lowerStr) ? Double.NEGATIVE_INFINITY : Double.parseDouble(lowerStr);
-            dto.lowerSaturationLimit = TypedParameter.of(lowerVal);
-        }
-        
-        if (params.containsKey("ShowSaturationPort")) {
-            dto.showSaturationPort = TypedParameter.of("on".equals(params.get("ShowSaturationPort")));
-        }
-        
-        if (params.containsKey("ShowStatePort")) {
-            dto.showStatePort = TypedParameter.of("on".equals(params.get("ShowStatePort")));
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static IntegratorDtoBuilder builderWithDefaults() {
-        IntegratorDto dto = IntegratorDto.builder()
-                .blockType("Integrator")
-                .sampleTime(0.0)
-                .build();
-        
-        // Set default typed parameters
-        dto.initialCondition = TypedParameter.of(0.0);
-        dto.externalReset = TypedParameter.of("none");
-        dto.initialConditionSource = TypedParameter.of("internal");
-        dto.limitOutput = TypedParameter.of(false);
-        dto.upperSaturationLimit = TypedParameter.of(Double.POSITIVE_INFINITY);
-        dto.lowerSaturationLimit = TypedParameter.of(Double.NEGATIVE_INFINITY);
-        dto.showSaturationPort = TypedParameter.of(false);
-        dto.showStatePort = TypedParameter.of(false);
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return IntegratorDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .initialCondition(dto.initialCondition)
-                .externalReset(dto.externalReset)
-                .initialConditionSource(dto.initialConditionSource)
-                .limitOutput(dto.limitOutput)
-                .upperSaturationLimit(dto.upperSaturationLimit)
-                .lowerSaturationLimit(dto.lowerSaturationLimit)
-                .showSaturationPort(dto.showSaturationPort)
-                .showStatePort(dto.showStatePort)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
-    
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Double getInitialConditionAsDouble() {
-        return initialCondition != null ? initialCondition.getValue(Double.class) : 0.0;
+        return initialCondition != null ? initialCondition.getAsDouble() : 0.0;
     }
     
     public String getExternalResetValue() {
-        return externalReset != null ? externalReset.getValue(String.class) : "none";
+        return externalReset != null ? externalReset.getAsString() : "none";
     }
     
     public String getInitialConditionSourceValue() {
-        return initialConditionSource != null ? initialConditionSource.getValue(String.class) : "internal";
+        return initialConditionSource != null ? initialConditionSource.getAsString() : "internal";
     }
     
     public Boolean getLimitOutputValue() {
-        return limitOutput != null ? limitOutput.getValue(Boolean.class) : false;
+        return limitOutput != null ? limitOutput.getAsBoolean() : false;
     }
     
     public Double getUpperSaturationLimitValue() {
-        return upperSaturationLimit != null ? upperSaturationLimit.getValue(Double.class) : Double.POSITIVE_INFINITY;
+        return upperSaturationLimit != null ? upperSaturationLimit.getAsDouble() : Double.POSITIVE_INFINITY;
     }
     
     public Double getLowerSaturationLimitValue() {
-        return lowerSaturationLimit != null ? lowerSaturationLimit.getValue(Double.class) : Double.NEGATIVE_INFINITY;
+        return lowerSaturationLimit != null ? lowerSaturationLimit.getAsDouble() : Double.NEGATIVE_INFINITY;
     }
     
     public Boolean getShowSaturationPortValue() {
-        return showSaturationPort != null ? showSaturationPort.getValue(Boolean.class) : false;
+        return showSaturationPort != null ? showSaturationPort.getAsBoolean() : false;
     }
     
     public Boolean getShowStatePortValue() {
-        return showStatePort != null ? showStatePort.getValue(Boolean.class) : false;
+        return showStatePort != null ? showStatePort.getAsBoolean() : false;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
     // ===== VALIDATION =====
@@ -280,7 +177,7 @@ public class IntegratorDto extends BlockDto {
         
         // Validate external reset mode
         if (externalReset != null) {
-            String resetMode = externalReset.getValue(String.class);
+            String resetMode = externalReset.getAsString();
             if (resetMode != null) {
                 List<String> validResetModes = List.of("none", "rising", "falling", "either", "level", "sampled level");
                 if (!validResetModes.contains(resetMode)) {
@@ -291,7 +188,7 @@ public class IntegratorDto extends BlockDto {
         
         // Validate initial condition source
         if (initialConditionSource != null) {
-            String icSource = initialConditionSource.getValue(String.class);
+            String icSource = initialConditionSource.getAsString();
             if (icSource != null && !icSource.equals("internal") && !icSource.equals("external")) {
                 result.addError("Initial condition source must be 'internal' or 'external'");
             }
@@ -359,7 +256,6 @@ public class IntegratorDto extends BlockDto {
     public IntegratorDto copy() {
         return IntegratorDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
@@ -393,23 +289,23 @@ public class IntegratorDto extends BlockDto {
             params.put("InitialConditionSource", String.valueOf(initialConditionSource.getValue()));
         }
         if (limitOutput != null) {
-            Boolean limitVal = limitOutput.getValue(Boolean.class);
+            Boolean limitVal = limitOutput.getAsBoolean();
             params.put("LimitOutput", Boolean.TRUE.equals(limitVal) ? "on" : "off");
         }
         if (upperSaturationLimit != null) {
-            Double upperVal = upperSaturationLimit.getValue(Double.class);
+            Double upperVal = upperSaturationLimit.getAsDouble();
             params.put("UpperSaturationLimit", (upperVal != null && Double.isInfinite(upperVal)) ? "inf" : String.valueOf(upperVal));
         }
         if (lowerSaturationLimit != null) {
-            Double lowerVal = lowerSaturationLimit.getValue(Double.class);
+            Double lowerVal = lowerSaturationLimit.getAsDouble();
             params.put("LowerSaturationLimit", (lowerVal != null && Double.isInfinite(lowerVal)) ? "-inf" : String.valueOf(lowerVal));
         }
         if (showSaturationPort != null) {
-            Boolean showSatVal = showSaturationPort.getValue(Boolean.class);
+            Boolean showSatVal = showSaturationPort.getAsBoolean();
             params.put("ShowSaturationPort", Boolean.TRUE.equals(showSatVal) ? "on" : "off");
         }
         if (showStatePort != null) {
-            Boolean showStateVal = showStatePort.getValue(Boolean.class);
+            Boolean showStateVal = showStatePort.getAsBoolean();
             params.put("ShowStatePort", Boolean.TRUE.equals(showStateVal) ? "on" : "off");
         }
         if (getSampleTime() != null) {
@@ -419,7 +315,7 @@ public class IntegratorDto extends BlockDto {
             params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
         }
         if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
+            Boolean satVal = saturateOnIntegerOverflow.getAsBoolean();
             params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
         }
         

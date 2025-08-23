@@ -408,4 +408,8 @@ public class TypedParameter implements BaseDto {
         return String.format("TypedParameter{value=%s, type='%s', valid=%s}", 
                            value, type, isValid());
     }
+
+    public TypedParameter orElse(TypedParameter defaultValue) {
+        return defaultValue;
+    }
 }

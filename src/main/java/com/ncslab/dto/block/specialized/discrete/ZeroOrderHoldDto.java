@@ -7,6 +7,7 @@ import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -59,73 +60,15 @@ public class ZeroOrderHoldDto extends BlockDto {
      */
     private TypedParameter saturateOnIntegerOverflow;
     
-    // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static ZeroOrderHoldDto fromLegacyParameters(Map<String, String> params) {
-        ZeroOrderHoldDto.ZeroOrderHoldDtoBuilder builder = ZeroOrderHoldDto.builder()
-                .blockName(params.getOrDefault("blockName", "ZeroOrderHold"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Zero_Order_Hold");
-        
-        ZeroOrderHoldDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("SampleTime")) {
-            try {
-                double st = Double.parseDouble(params.get("SampleTime"));
-                dto.setSampleTime(st);
-            } catch (NumberFormatException e) {
-                // Keep as string for special values like "auto"
-            }
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static ZeroOrderHoldDtoBuilder builderWithDefaults() {
-        ZeroOrderHoldDto dto = ZeroOrderHoldDto.builder()
-                .blockType("Zero_Order_Hold")
-                .sampleTime(-1.0) // Inherited by default
-                .build();
-        
-        // Set default typed parameters
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return ZeroOrderHoldDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
-    
+    // ===== FACTORY METHODS =====    
     // ===== PARAMETER ACCESS HELPERS =====
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
     // ===== DISCRETE-TIME VALIDATION =====
@@ -136,7 +79,7 @@ public class ZeroOrderHoldDto extends BlockDto {
         
         // Validate discrete sample time
         if (getSampleTime() != null) {
-            double sampleTime = getSampleTime();
+            double sampleTime = getSampleTime().getAsDouble();
             if (sampleTime != -1.0 && sampleTime <= 0.0) {
                 result.addError("Sample time must be positive or -1 (inherited)");
             }
@@ -154,14 +97,14 @@ public class ZeroOrderHoldDto extends BlockDto {
      * Check if sample time is inherited (-1)
      */
     public boolean isInheritedSampleTime() {
-        return getSampleTime() != null && getSampleTime() == -1.0;
+        return getSampleTime() != null && getSampleTime().getAsDouble() == -1.0;
     }
     
     /**
      * Check if sample time is discrete (positive value)
      */
     public boolean isDiscreteSampleTime() {
-        return getSampleTime() != null && getSampleTime() > 0.0;
+        return getSampleTime() != null && getSampleTime().getAsDouble() > 0.0;
     }
     
     /**
@@ -169,7 +112,7 @@ public class ZeroOrderHoldDto extends BlockDto {
      */
     public double getHoldDuration() {
         if (isDiscreteSampleTime()) {
-            return getSampleTime(); // Hold for one sample period
+            return getSampleTime().getAsDouble(); // Hold for one sample period
         }
         return Double.NaN; // Cannot determine without knowing inherited sample time
     }
@@ -179,7 +122,7 @@ public class ZeroOrderHoldDto extends BlockDto {
      */
     public double getNyquistFrequency() {
         if (isDiscreteSampleTime()) {
-            return 1.0 / (2.0 * getSampleTime()); // f_nyquist = 1/(2*T)
+            return 1.0 / (2.0 * getSampleTime().getAsDouble()); // f_nyquist = 1/(2*T)
         }
         return Double.NaN;
     }
@@ -191,8 +134,7 @@ public class ZeroOrderHoldDto extends BlockDto {
         ZeroOrderHoldDto dto = new ZeroOrderHoldDto();
         dto.setBlockName(name);
         dto.setBlockPath(path);
-        dto.setBlockType("Zero_Order_Hold");
-        dto.setSampleTime(sampleTime);
+        dto.setSampleTime(TypedParameter.of(sampleTime));
         
         // Set default parameters
         dto.setOutDataTypeStr(TypedParameter.of("Inherit: Same as input"));
@@ -221,7 +163,6 @@ public class ZeroOrderHoldDto extends BlockDto {
     public ZeroOrderHoldDto copy() {
         return ZeroOrderHoldDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
@@ -244,7 +185,7 @@ public class ZeroOrderHoldDto extends BlockDto {
             params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
         }
         if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
+            Boolean satVal = saturateOnIntegerOverflow.getAsBoolean();
             params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
         }
         

@@ -1,217 +1,129 @@
 package com.ncslab.dto.block.specialized.discrete;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
+import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 
 /**
- * DTO representation of Discrete_Time_Integrator block with SIMULINK-compatible parameters.
+ * DTO representation of Discrete Time Integrator block.
  * 
- * This DTO provides a modern, type-safe interface for the Discrete_Time_Integrator block
- * and supports migration from the legacy JSONObject-based approach.
+ * The Discrete Time Integrator block performs discrete-time integration
+ * of the input signal. It supports various integration methods including
+ * Forward Euler, Backward Euler, and Trapezoidal rule.
  * 
- * SIMULINK Parameters:
- * - Gain: Gain value for integration (default: 1)
- * - InitialCondition: Initial condition of the integrator (default: 0)
- * - IntegratorMethod: Integration method ("Forward Euler", "Backward Euler", "Trapezoidal")
- * - SampleTime: Sample time for discrete operation (must be positive or -1 for inherited)
- * - OutDataTypeStr: Output data type specification
- * - SaturateOnIntegerOverflow: Handle integer overflow
+ * The integration is performed as: y[n] = y[n-1] + K*T*u[n]
+ * where K is the gain, T is the sample time, and u is the input.
  * 
- * Discrete Integration Methods:
- * - Forward Euler: y[k] = y[k-1] + T*K*u[k-1]
- * - Backward Euler: y[k] = y[k-1] + T*K*u[k]
- * - Trapezoidal: y[k] = y[k-1] + T*K*(u[k] + u[k-1])/2
- * 
- * where T is sample time, K is gain, u is input, y is output
- * 
- * @author BlockMigrationAutomation
+ * @author NCSLab DTO Migration
  * @version 1.0
- * @since DTO Migration Week 8
+ * @since 2025
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("DiscreteIntegrator")
 @MigrationCompatible(originalClass = "com.ncslab.block.discrete.Discrete_Time_Integrator")
 public class DiscreteIntegratorDto extends BlockDto {
     
-    // ===== DISCRETE INTEGRATOR SPECIFIC PARAMETERS =====
+    // Integration method constants
+    public static final String FORWARD_EULER = "Forward Euler";
+    public static final String BACKWARD_EULER = "Backward Euler";
+    public static final String TRAPEZOIDAL = "Trapezoidal";
+    
+    // Valid integration methods
+    private static final List<String> VALID_METHODS = Arrays.asList(FORWARD_EULER, BACKWARD_EULER, TRAPEZOIDAL);
     
     /**
      * Gain value for integration
-     * Default: 1
-     * Validation: Must be finite number
+     * Default: 1.0
      */
-    private TypedParameter gain;
+    @Builder.Default
+    private TypedParameter gain = TypedParameter.of(1.0);
     
     /**
      * Initial condition of the integrator
-     * Default: 0
-     * Validation: Must be finite number
+     * Default: 0.0
      */
-    private TypedParameter initialCondition;
+    @Builder.Default
+    private TypedParameter initialCondition = TypedParameter.of(0.0);
     
     /**
      * Integration method
      * Default: "Forward Euler"
      * Options: "Forward Euler", "Backward Euler", "Trapezoidal"
      */
-    private TypedParameter integratorMethod;
+    @Builder.Default
+    private TypedParameter integratorMethod = TypedParameter.of(FORWARD_EULER);
+    
+    /**
+     * Sample time for discrete operation
+     * Default: -1 (inherited)
+     */
+    @Builder.Default
+    private TypedParameter sampleTime = TypedParameter.of(-1.0);
     
     /**
      * Output data type specification
      * Default: "Inherit: Same as input"
      */
-    private TypedParameter outDataTypeStr;
+    @Builder.Default
+    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
     
     /**
-     * Handle integer overflow
+     * Handle integer overflow by saturation
      * Default: false (off)
      */
-    private TypedParameter saturateOnIntegerOverflow;
-    
-    // ===== INTEGRATION METHOD CONSTANTS =====
-    
-    public static final String FORWARD_EULER = "Forward Euler";
-    public static final String BACKWARD_EULER = "Backward Euler";
-    public static final String TRAPEZOIDAL = "Trapezoidal";
-    
-    private static final List<String> VALID_METHODS = Arrays.asList(
-        FORWARD_EULER, BACKWARD_EULER, TRAPEZOIDAL
-    );
-    
-    // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static DiscreteIntegratorDto fromLegacyParameters(Map<String, String> params) {
-        DiscreteIntegratorDto.DiscreteIntegratorDtoBuilder builder = DiscreteIntegratorDto.builder()
-                .blockName(params.getOrDefault("blockName", "DiscreteIntegrator"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Discrete_Time_Integrator");
-        
-        DiscreteIntegratorDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("Gain")) {
-            try {
-                double gainVal = Double.parseDouble(params.get("Gain"));
-                dto.gain = TypedParameter.of(gainVal);
-            } catch (NumberFormatException e) {
-                dto.gain = TypedParameter.of(params.get("Gain"));
-            }
-        }
-        
-        if (params.containsKey("InitialCondition")) {
-            try {
-                double ic = Double.parseDouble(params.get("InitialCondition"));
-                dto.initialCondition = TypedParameter.of(ic);
-            } catch (NumberFormatException e) {
-                dto.initialCondition = TypedParameter.of(params.get("InitialCondition"));
-            }
-        }
-        
-        if (params.containsKey("IntegratorMethod")) {
-            dto.integratorMethod = TypedParameter.of(params.get("IntegratorMethod"));
-        }
-        
-        if (params.containsKey("SampleTime")) {
-            try {
-                double st = Double.parseDouble(params.get("SampleTime"));
-                dto.setSampleTime(st);
-            } catch (NumberFormatException e) {
-                // Keep as string for special values like "auto"
-            }
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static DiscreteIntegratorDtoBuilder builderWithDefaults() {
-        DiscreteIntegratorDto dto = DiscreteIntegratorDto.builder()
-                .blockType("Discrete_Time_Integrator")
-                .sampleTime(-1.0) // Inherited by default
-                .build();
-        
-        // Set default typed parameters
-        dto.gain = TypedParameter.of(1.0);
-        dto.initialCondition = TypedParameter.of(0.0);
-        dto.integratorMethod = TypedParameter.of(FORWARD_EULER);
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return DiscreteIntegratorDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .gain(dto.gain)
-                .initialCondition(dto.initialCondition)
-                .integratorMethod(dto.integratorMethod)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
+    @Builder.Default
+    private TypedParameter saturateOnIntegerOverflow = TypedParameter.of(false);
     
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Double getGainValue() {
-        return gain != null ? gain.getValue(Double.class) : 1.0;
+        return gain != null ? gain.getAsDouble() : 1.0;
     }
     
     public Double getInitialConditionValue() {
-        return initialCondition != null ? initialCondition.getValue(Double.class) : 0.0;
+        return initialCondition != null ? initialCondition.getAsDouble() : 0.0;
     }
     
     public String getIntegratorMethodValue() {
-        return integratorMethod != null ? integratorMethod.getValue(String.class) : FORWARD_EULER;
+        return integratorMethod != null ? integratorMethod.getAsString() : FORWARD_EULER;
+    }
+    
+    public Double getSampleTimeValue() {
+        return sampleTime != null ? sampleTime.getAsDouble() : -1.0;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
-    // ===== DISCRETE-TIME VALIDATION =====
+    // ===== VALIDATION =====
     
     @Override
     public ValidationResult validate() {
-        ValidationResult result = super.validate(); // Call parent validation
+        ValidationResult result = super.validate();
         
         // Validate gain
         if (gain != null) {
             try {
-                Double gainVal = gain.getValue(Double.class);
+                Double gainVal = gain.getAsDouble();
                 if (gainVal != null && (Double.isNaN(gainVal) || Double.isInfinite(gainVal))) {
                     result.addError("Gain must be finite");
                 }
@@ -223,7 +135,7 @@ public class DiscreteIntegratorDto extends BlockDto {
         // Validate initial condition
         if (initialCondition != null) {
             try {
-                Double icVal = initialCondition.getValue(Double.class);
+                Double icVal = initialCondition.getAsDouble();
                 if (icVal != null && (Double.isNaN(icVal) || Double.isInfinite(icVal))) {
                     result.addError("Initial condition must be finite");
                 }
@@ -234,20 +146,22 @@ public class DiscreteIntegratorDto extends BlockDto {
         
         // Validate integration method
         if (integratorMethod != null) {
-            String method = integratorMethod.getValue(String.class);
+            String method = integratorMethod.getAsString();
             if (method != null && !VALID_METHODS.contains(method)) {
                 result.addError("Integration method must be one of: " + VALID_METHODS);
             }
         }
         
         // Validate discrete sample time
-        if (getSampleTime() != null) {
-            double sampleTime = getSampleTime();
-            if (sampleTime != -1.0 && sampleTime <= 0.0) {
-                result.addError("Sample time must be positive or -1 (inherited)");
-            }
-            if (Double.isNaN(sampleTime) || Double.isInfinite(sampleTime)) {
-                result.addError("Sample time must be finite");
+        if (sampleTime != null) {
+            Double st = sampleTime.getAsDouble();
+            if (st != null) {
+                if (st != -1.0 && st <= 0.0) {
+                    result.addError("Sample time must be positive or -1 (inherited)");
+                }
+                if (Double.isNaN(st) || Double.isInfinite(st)) {
+                    result.addError("Sample time must be finite");
+                }
             }
         }
         
@@ -260,14 +174,14 @@ public class DiscreteIntegratorDto extends BlockDto {
      * Check if sample time is inherited (-1)
      */
     public boolean isInheritedSampleTime() {
-        return getSampleTime() != null && getSampleTime() == -1.0;
+        return getSampleTimeValue() == -1.0;
     }
     
     /**
      * Check if sample time is discrete (positive value)
      */
     public boolean isDiscreteSampleTime() {
-        return getSampleTime() != null && getSampleTime() > 0.0;
+        return getSampleTimeValue() > 0.0;
     }
     
     /**
@@ -296,9 +210,23 @@ public class DiscreteIntegratorDto extends BlockDto {
      */
     public double getIntegrationCoefficient() {
         if (isDiscreteSampleTime()) {
-            return getSampleTime() * getGainValue();
+            return getSampleTimeValue() * getGainValue();
         }
         return Double.NaN; // Cannot determine without knowing inherited sample time
+    }
+    
+    /**
+     * Check if gain is unity (no scaling)
+     */
+    public boolean isUnityGain() {
+        return Math.abs(getGainValue() - 1.0) < 1e-15;
+    }
+    
+    /**
+     * Check if initial condition is zero
+     */
+    public boolean isZeroInitialCondition() {
+        return Math.abs(getInitialConditionValue()) < 1e-15;
     }
     
     /**
@@ -306,22 +234,16 @@ public class DiscreteIntegratorDto extends BlockDto {
      */
     public static DiscreteIntegratorDto create(String name, String path, double gain, 
                                              double initialCondition, String method, double sampleTime) {
-        DiscreteIntegratorDto dto = new DiscreteIntegratorDto();
-        dto.setBlockName(name);
-        dto.setBlockPath(path);
-        dto.setBlockType("Discrete_Time_Integrator");
-        dto.setSampleTime(sampleTime);
-        
-        // Set default parameters
-        dto.setOutDataTypeStr(TypedParameter.of("Inherit: Same as input"));
-        dto.setSaturateOnIntegerOverflow(TypedParameter.of(false));
-        
-        // Set specific parameters
-        dto.setGain(TypedParameter.of(gain));
-        dto.setInitialCondition(TypedParameter.of(initialCondition));
-        dto.setIntegratorMethod(TypedParameter.of(method));
-        
-        return dto;
+        return DiscreteIntegratorDto.builder()
+                .blockName(name)
+                .blockPath(path)
+                .gain(TypedParameter.of(gain))
+                .initialCondition(TypedParameter.of(initialCondition))
+                .integratorMethod(TypedParameter.of(method))
+                .sampleTime(TypedParameter.of(sampleTime))
+                .outDataTypeStr(TypedParameter.of("Inherit: Same as input"))
+                .saturateOnIntegerOverflow(TypedParameter.of(false))
+                .build();
     }
     
     /**
@@ -352,46 +274,28 @@ public class DiscreteIntegratorDto extends BlockDto {
     public DiscreteIntegratorDto copy() {
         return DiscreteIntegratorDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
-                .sampleTime(getSampleTime())
                 .gain(gain != null ? gain.copy() : null)
                 .initialCondition(initialCondition != null ? initialCondition.copy() : null)
                 .integratorMethod(integratorMethod != null ? integratorMethod.copy() : null)
+                .sampleTime(sampleTime != null ? sampleTime.copy() : null)
                 .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
                 .build();
     }
     
-    /**
-     * Convert to legacy parameters format for backward compatibility
-     */
-    public Map<String, String> toLegacyParameters() {
-        Map<String, String> params = new HashMap<>();
-        
-        if (gain != null) {
-            params.put("Gain", String.valueOf(gain.getValue()));
-        }
-        if (initialCondition != null) {
-            params.put("InitialCondition", String.valueOf(initialCondition.getValue()));
-        }
-        if (integratorMethod != null) {
-            params.put("IntegratorMethod", String.valueOf(integratorMethod.getValue()));
-        }
-        if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
-        }
-        if (outDataTypeStr != null) {
-            params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
-        }
-        if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
-            params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
-        }
-        
-        return params;
+    @Override
+    public TypedParameterMap toParameterMap() {
+        return TypedParameterMap.builder()
+                .put("Gain", gain)
+                .put("InitialCondition", initialCondition)
+                .put("IntegratorMethod", integratorMethod)
+                .put("SampleTime", sampleTime)
+                .put("OutDataTypeStr", outDataTypeStr)
+                .put("SaturateOnIntegerOverflow", saturateOnIntegerOverflow)
+                .build();
     }
     
     @Override
@@ -402,6 +306,6 @@ public class DiscreteIntegratorDto extends BlockDto {
                            getBlockType(),
                            getGainValue(),
                            getIntegratorMethodValue(),
-                           getSampleTime());
+                           getSampleTimeValue());
     }
 }

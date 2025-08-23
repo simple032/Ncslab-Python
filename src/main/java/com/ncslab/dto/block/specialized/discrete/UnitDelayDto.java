@@ -7,10 +7,14 @@ import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Map;
+
+import org.apache.commons.lang3.reflect.Typed;
+
 import java.util.HashMap;
 
 /**
@@ -65,75 +69,6 @@ public class UnitDelayDto extends BlockDto {
     private TypedParameter saturateOnIntegerOverflow;
     
     // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static UnitDelayDto fromLegacyParameters(Map<String, String> params) {
-        UnitDelayDto.UnitDelayDtoBuilder builder = UnitDelayDto.builder()
-                .blockName(params.getOrDefault("blockName", "UnitDelay"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("UnitDelay");
-        
-        UnitDelayDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("InitialCondition")) {
-            try {
-                double ic = Double.parseDouble(params.get("InitialCondition"));
-                dto.initialCondition = TypedParameter.of(ic);
-            } catch (NumberFormatException e) {
-                dto.initialCondition = TypedParameter.of(params.get("InitialCondition"));
-            }
-        }
-        
-        if (params.containsKey("SampleTime")) {
-            try {
-                double st = Double.parseDouble(params.get("SampleTime"));
-                dto.setSampleTime(st);
-            } catch (NumberFormatException e) {
-                // Keep as string for special values like "auto"
-            }
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static UnitDelayDtoBuilder builderWithDefaults() {
-        UnitDelayDto dto = UnitDelayDto.builder()
-                .blockType("UnitDelay")
-                .sampleTime(-1.0) // Inherited by default
-                .build();
-        
-        // Set default typed parameters
-        dto.initialCondition = TypedParameter.of(0.0);
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return UnitDelayDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .initialCondition(dto.initialCondition)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
-    
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Double getInitialConditionValue() {
@@ -168,7 +103,7 @@ public class UnitDelayDto extends BlockDto {
         
         // Validate discrete sample time
         if (getSampleTime() != null) {
-            double sampleTime = getSampleTime();
+            double sampleTime = getSampleTime().getAsDouble();
             if (sampleTime != -1.0 && sampleTime <= 0.0) {
                 result.addError("Sample time must be positive or -1 (inherited)");
             }
@@ -180,31 +115,7 @@ public class UnitDelayDto extends BlockDto {
         return result;
     }
     
-    // ===== UTILITY METHODS =====
-    
-    /**
-     * Check if sample time is inherited (-1)
-     */
-    public boolean isInheritedSampleTime() {
-        return getSampleTime() != null && getSampleTime() == -1.0;
-    }
-    
-    /**
-     * Check if sample time is discrete (positive value)
-     */
-    public boolean isDiscreteSampleTime() {
-        return getSampleTime() != null && getSampleTime() > 0.0;
-    }
-    
-    /**
-     * Get the delay value in seconds based on sample time
-     */
-    public double getDelayInSeconds() {
-        if (isDiscreteSampleTime()) {
-            return getSampleTime(); // One sample delay
-        }
-        return Double.NaN; // Cannot determine without knowing inherited sample time
-    }
+    // ===== UTILITY METHODS =====    
     
     /**
      * Create unit delay with specific initial condition and sample time
@@ -213,8 +124,7 @@ public class UnitDelayDto extends BlockDto {
         UnitDelayDto dto = new UnitDelayDto();
         dto.setBlockName(name);
         dto.setBlockPath(path);
-        dto.setBlockType("UnitDelay");
-        dto.setSampleTime(sampleTime);
+        dto.setSampleTime(TypedParameter.of(sampleTime));
         
         // Set default parameters
         dto.setOutDataTypeStr(TypedParameter.of("Inherit: Same as input"));
@@ -237,7 +147,6 @@ public class UnitDelayDto extends BlockDto {
     public UnitDelayDto copy() {
         return UnitDelayDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())

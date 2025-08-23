@@ -7,6 +7,7 @@ import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -102,125 +103,40 @@ public class DerivativeDto extends BlockDto {
     
     // ===== FACTORY METHODS =====
     
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static DerivativeDto fromLegacyParameters(Map<String, String> params) {
-        DerivativeDto.DerivativeDtoBuilder builder = DerivativeDto.builder()
-                .blockName(params.getOrDefault("blockName", "Derivative"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Derivative");
-        
-        DerivativeDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("FilterCoefficient")) {
-            dto.filterCoefficient = TypedParameter.of(Double.parseDouble(params.get("FilterCoefficient")));
-        } else if (params.containsKey("c")) {
-            // Legacy compatibility - 'c' parameter
-            dto.filterCoefficient = TypedParameter.of(Double.parseDouble(params.get("c")));
-        }
-        
-        if (params.containsKey("InitialCondition")) {
-            dto.initialCondition = TypedParameter.of(Double.parseDouble(params.get("InitialCondition")));
-        }
-        
-        if (params.containsKey("CoefficientSource")) {
-            dto.coefficientSource = TypedParameter.of(params.get("CoefficientSource"));
-        }
-        
-        if (params.containsKey("ExternalReset")) {
-            dto.externalReset = TypedParameter.of(params.get("ExternalReset"));
-        }
-        
-        if (params.containsKey("InitialConditionSource")) {
-            dto.initialConditionSource = TypedParameter.of(params.get("InitialConditionSource"));
-        }
-        
-        if (params.containsKey("ShowStatePort")) {
-            dto.showStatePort = TypedParameter.of("on".equals(params.get("ShowStatePort")));
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
     
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static DerivativeDtoBuilder builderWithDefaults() {
-        DerivativeDto dto = DerivativeDto.builder()
-                .blockType("Derivative")
-                .sampleTime(0.0) // Continuous
-                .build();
-        
-        // Set default typed parameters
-        dto.filterCoefficient = TypedParameter.of(1.0);
-        dto.initialCondition = TypedParameter.of(0.0);
-        dto.coefficientSource = TypedParameter.of("internal");
-        dto.externalReset = TypedParameter.of("none");
-        dto.initialConditionSource = TypedParameter.of("internal");
-        dto.showStatePort = TypedParameter.of(false);
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return DerivativeDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .filterCoefficient(dto.filterCoefficient)
-                .initialCondition(dto.initialCondition)
-                .coefficientSource(dto.coefficientSource)
-                .externalReset(dto.externalReset)
-                .initialConditionSource(dto.initialConditionSource)
-                .showStatePort(dto.showStatePort)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
     
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Double getFilterCoefficientValue() {
-        return filterCoefficient != null ? filterCoefficient.getValue(Double.class) : 1.0;
+        return filterCoefficient != null ? filterCoefficient.getAsDouble() : 1.0;
     }
     
     public Double getInitialConditionValue() {
-        return initialCondition != null ? initialCondition.getValue(Double.class) : 0.0;
+        return initialCondition != null ? initialCondition.getAsDouble() : 0.0;
     }
     
     public String getCoefficientSourceValue() {
-        return coefficientSource != null ? coefficientSource.getValue(String.class) : "internal";
+        return coefficientSource != null ? coefficientSource.getAsString() : "internal";
     }
     
     public String getExternalResetValue() {
-        return externalReset != null ? externalReset.getValue(String.class) : "none";
+        return externalReset != null ? externalReset.getAsString() : "none";
     }
     
     public String getInitialConditionSourceValue() {
-        return initialConditionSource != null ? initialConditionSource.getValue(String.class) : "internal";
+        return initialConditionSource != null ? initialConditionSource.getAsString() : "internal";
     }
     
     public Boolean getShowStatePortValue() {
-        return showStatePort != null ? showStatePort.getValue(Boolean.class) : false;
+        return showStatePort != null ? showStatePort.getAsBoolean() : false;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
     // ===== VALIDATION =====
@@ -231,7 +147,7 @@ public class DerivativeDto extends BlockDto {
         
         // Validate filter coefficient
         if (filterCoefficient != null) {
-            Double coeff = filterCoefficient.getValue(Double.class);
+            Double coeff = filterCoefficient.getAsDouble();
             if (coeff == null || coeff <= 0 || Double.isNaN(coeff) || Double.isInfinite(coeff)) {
                 result.addError("Filter coefficient must be a positive finite number");
             }
@@ -239,7 +155,7 @@ public class DerivativeDto extends BlockDto {
         
         // Validate initial condition
         if (initialCondition != null) {
-            Double ic = initialCondition.getValue(Double.class);
+            Double ic = initialCondition.getAsDouble();
             if (ic != null && (Double.isNaN(ic) || Double.isInfinite(ic))) {
                 result.addError("Initial condition must be finite");
             }
@@ -247,7 +163,7 @@ public class DerivativeDto extends BlockDto {
         
         // Validate coefficient source
         if (coefficientSource != null) {
-            String source = coefficientSource.getValue(String.class);
+            String source = coefficientSource.getAsString();
             if (source != null && !source.equals("internal") && !source.equals("external")) {
                 result.addError("Coefficient source must be 'internal' or 'external'");
             }
@@ -255,7 +171,7 @@ public class DerivativeDto extends BlockDto {
         
         // Validate external reset mode
         if (externalReset != null) {
-            String resetMode = externalReset.getValue(String.class);
+            String resetMode = externalReset.getAsString();
             if (resetMode != null) {
                 List<String> validResetModes = List.of("none", "rising", "falling", "either", "level");
                 if (!validResetModes.contains(resetMode)) {
@@ -266,7 +182,7 @@ public class DerivativeDto extends BlockDto {
         
         // Validate initial condition source
         if (initialConditionSource != null) {
-            String icSource = initialConditionSource.getValue(String.class);
+            String icSource = initialConditionSource.getAsString();
             if (icSource != null && !icSource.equals("internal") && !icSource.equals("external")) {
                 result.addError("Initial condition source must be 'internal' or 'external'");
             }
@@ -323,7 +239,6 @@ public class DerivativeDto extends BlockDto {
     public DerivativeDto copy() {
         return DerivativeDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
@@ -362,7 +277,7 @@ public class DerivativeDto extends BlockDto {
             params.put("InitialConditionSource", String.valueOf(initialConditionSource.getValue()));
         }
         if (showStatePort != null) {
-            Boolean showVal = showStatePort.getValue(Boolean.class);
+            Boolean showVal = showStatePort.getAsBoolean();
             params.put("ShowStatePort", Boolean.TRUE.equals(showVal) ? "on" : "off");
         }
         if (getSampleTime() != null) {
@@ -372,7 +287,7 @@ public class DerivativeDto extends BlockDto {
             params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
         }
         if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
+            Boolean satVal = saturateOnIntegerOverflow.getAsBoolean();
             params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
         }
         

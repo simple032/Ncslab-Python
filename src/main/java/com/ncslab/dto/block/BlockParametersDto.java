@@ -47,7 +47,7 @@ public class BlockParametersDto implements BaseDto {
     
     public Object getParameterValue(String name) {
         TypedParameter param = getParameter(name);
-        return param != null ? param.getValue() : null;
+        return param != null ? param.getAsString() : null;
     }
     
     public String getParameterType(String name) {

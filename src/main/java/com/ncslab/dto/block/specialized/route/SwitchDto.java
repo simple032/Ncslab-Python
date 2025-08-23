@@ -1,170 +1,121 @@
 package com.ncslab.dto.block.specialized.route;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
+import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Arrays;
 
 /**
- * DTO representation of Switch block with SIMULINK-compatible parameters.
+ * DTO representation of Switch route block.
  * 
- * This DTO provides a modern, type-safe interface for the Switch block
- * and supports migration from the legacy JSONObject-based approach.
+ * The Switch block passes through one of two inputs based on the value of a
+ * third control input. The control input is compared to a threshold using
+ * the specified criteria. If the condition is true, the first input is passed
+ * through; otherwise, the third input is passed through.
  * 
- * SIMULINK Parameters:
- * - Threshold: Threshold value for switching condition
- * - Criteria: Switching criteria (>=, >, ~=)
- * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
- * - OutDataTypeStr: Output data type specification
- * - SaturateOnIntegerOverflow: Handle integer overflow
- * 
- * Block Logic:
- * - Input 1: First data input (used when condition is false)
+ * Port Configuration:
+ * - Input 1: First data input (passed when condition is true)
  * - Input 2: Control signal (compared against threshold)
- * - Input 3: Second data input (used when condition is true)
- * - Output: Input 1 or Input 3 based on (Input 2 criteria Threshold)
+ * - Input 3: Second data input (passed when condition is false)
+ * - Output: Selected input signal
  * 
- * @author BlockMigrationAutomation
+ * @author NCSLab DTO Migration
  * @version 1.0
- * @since DTO Migration Week 6
+ * @since 2025
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Switch")
 @MigrationCompatible(originalClass = "com.ncslab.block.route.Switch")
 public class SwitchDto extends BlockDto {
     
-    // ===== SWITCH BLOCK SPECIFIC PARAMETERS =====
-    
     /**
      * Threshold value for switching condition
-     * Default: 0
-     * Validation: Must be finite
+     * Default: 0.0
      */
-    private TypedParameter threshold;
+    @Builder.Default
+    private TypedParameter threshold = TypedParameter.of(0.0);
     
     /**
      * Switching criteria
      * Default: ">="
-     * Options: ">=", ">", "~="
+     * Options: ">=", ">", "~=" (not equal)
      */
-    private TypedParameter criteria;
+    @Builder.Default
+    private TypedParameter criteria = TypedParameter.of(">=");
+    
+    /**
+     * Sample time for the block operation
+     * Default: -1 (inherited)
+     */
+    @Builder.Default
+    private TypedParameter sampleTime = TypedParameter.of(-1.0);
     
     /**
      * Output data type specification
      * Default: "Inherit: Same as input"
      */
-    private TypedParameter outDataTypeStr;
+    @Builder.Default
+    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
     
     /**
-     * Handle integer overflow
+     * Handle integer overflow by saturation
      * Default: false (off)
      */
-    private TypedParameter saturateOnIntegerOverflow;
+    @Builder.Default
+    private TypedParameter saturateOnIntegerOverflow = TypedParameter.of(false);
     
-    // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static SwitchDto fromLegacyParameters(Map<String, String> params) {
-        SwitchDto.SwitchDtoBuilder builder = SwitchDto.builder()
-                .blockName(params.getOrDefault("blockName", "Switch"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Switch");
-        
-        SwitchDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("Threshold")) {
-            dto.threshold = TypedParameter.of(Double.parseDouble(params.get("Threshold")));
-        }
-        
-        if (params.containsKey("Criteria")) {
-            dto.criteria = TypedParameter.of(params.get("Criteria"));
-        } else if (params.containsKey("Relop")) {
-            // Legacy compatibility - 'Relop' parameter
-            dto.criteria = TypedParameter.of(params.get("Relop"));
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static SwitchDtoBuilder builderWithDefaults() {
-        SwitchDto dto = SwitchDto.builder()
-                .blockType("Switch")
-                .sampleTime(-1.0)
-                .build();
-        
-        // Set default typed parameters
-        dto.threshold = TypedParameter.of(0.0);
-        dto.criteria = TypedParameter.of(">=");
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return SwitchDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .threshold(dto.threshold)
-                .criteria(dto.criteria)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
+    // Valid switching criteria
+    private static final List<String> VALID_CRITERIA = Arrays.asList(">=", ">", "~=");
     
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Double getThresholdValue() {
-        return threshold != null ? threshold.getValue(Double.class) : 0.0;
+        return threshold != null ? threshold.getAsDouble() : 0.0;
     }
     
     public String getCriteriaValue() {
-        return criteria != null ? criteria.getValue(String.class) : ">=";
+        return criteria != null ? criteria.getAsString() : ">=";
+    }
+    
+    public Double getSampleTimeValue() {
+        return sampleTime != null ? sampleTime.getAsDouble() : -1.0;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
+    }
+    
+    // Legacy compatibility method
+    public String getRelopValue() {
+        return getCriteriaValue();
     }
     
     // ===== VALIDATION =====
     
     @Override
     public ValidationResult validate() {
-        ValidationResult result = super.validate(); // Call parent validation
+        ValidationResult result = super.validate();
         
         // Validate threshold
         if (threshold != null) {
-            Double threshVal = threshold.getValue(Double.class);
+            Double threshVal = threshold.getAsDouble();
             if (threshVal != null && (Double.isNaN(threshVal) || Double.isInfinite(threshVal))) {
                 result.addError("Threshold value must be finite");
             }
@@ -172,12 +123,17 @@ public class SwitchDto extends BlockDto {
         
         // Validate criteria
         if (criteria != null) {
-            String criteriaStr = criteria.getValue(String.class);
-            if (criteriaStr != null) {
-                List<String> validCriteria = List.of(">=", ">", "~=");
-                if (!validCriteria.contains(criteriaStr)) {
-                    result.addError("Switching criteria must be one of: " + validCriteria);
-                }
+            String criteriaStr = criteria.getAsString();
+            if (criteriaStr != null && !VALID_CRITERIA.contains(criteriaStr)) {
+                result.addError("Switching criteria must be one of: " + VALID_CRITERIA);
+            }
+        }
+        
+        // Validate sample time
+        if (sampleTime != null) {
+            Double st = sampleTime.getAsDouble();
+            if (st != null && st < -1.0) {
+                result.addError("Sample time must be >= -1.0");
             }
         }
         
@@ -185,6 +141,20 @@ public class SwitchDto extends BlockDto {
     }
     
     // ===== UTILITY METHODS =====
+    
+    /**
+     * Check if this block operates in continuous time
+     */
+    public boolean isContinuous() {
+        return getSampleTimeValue() == 0.0;
+    }
+    
+    /**
+     * Check if this block inherits its sample time
+     */
+    public boolean isInherited() {
+        return getSampleTimeValue() == -1.0;
+    }
     
     /**
      * Get the number of input ports (always 3 for Switch block)
@@ -240,47 +210,38 @@ public class SwitchDto extends BlockDto {
         }
     }
     
+    /**
+     * Determine which input should be selected for given control value
+     * @return 1 if first input should be selected, 3 if third input should be selected
+     */
+    public int getSelectedInputPort(double controlValue) {
+        return evaluateCondition(controlValue) ? 1 : 3;
+    }
+    
     @Override
     public SwitchDto copy() {
         return SwitchDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
-                .sampleTime(getSampleTime())
                 .threshold(threshold != null ? threshold.copy() : null)
                 .criteria(criteria != null ? criteria.copy() : null)
+                .sampleTime(sampleTime != null ? sampleTime.copy() : null)
                 .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
                 .build();
     }
     
-    /**
-     * Convert to legacy parameters format for backward compatibility
-     */
-    public Map<String, String> toLegacyParameters() {
-        Map<String, String> params = new HashMap<>();
-        
-        if (threshold != null) {
-            params.put("Threshold", String.valueOf(threshold.getValue()));
-        }
-        if (criteria != null) {
-            params.put("Criteria", String.valueOf(criteria.getValue()));
-            params.put("Relop", String.valueOf(criteria.getValue())); // Legacy compatibility
-        }
-        if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
-        }
-        if (outDataTypeStr != null) {
-            params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
-        }
-        if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
-            params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
-        }
-        
-        return params;
+    @Override
+    public TypedParameterMap toParameterMap() {
+        return TypedParameterMap.builder()
+                .put("Threshold", threshold)
+                .put("Criteria", criteria)
+                .put("SampleTime", sampleTime)
+                .put("OutDataTypeStr", outDataTypeStr)
+                .put("SaturateOnIntegerOverflow", saturateOnIntegerOverflow)
+                .build();
     }
     
     @Override

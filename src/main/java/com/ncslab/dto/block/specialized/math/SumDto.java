@@ -9,11 +9,9 @@ import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -79,92 +77,28 @@ public class SumDto extends BlockDto {
     
     // ===== FACTORY METHODS =====
     
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static SumDto fromLegacyParameters(java.util.Map<String, String> params) {
-        SumDto.SumDtoBuilder builder = SumDto.builder()
-                .blockName(params.getOrDefault("blockName", "Sum"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Sum");
-        
-        SumDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("Inputs")) {
-            dto.inputs = TypedParameter.of(params.get("Inputs"));
-        }
-        
-        if (params.containsKey("InputSameDT")) {
-            dto.inputSameDT = TypedParameter.of("on".equals(params.get("InputSameDT")));
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        if (params.containsKey("Icon")) {
-            dto.icon = TypedParameter.of(params.get("Icon"));
-        }
-        
-        return dto;
-    }
     
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static SumDtoBuilder builderWithDefaults() {
-        SumDto dto = SumDto.builder()
-                .blockType("Sum")
-                .sampleTime(-1.0)
-                .build();
-        
-        // Set default typed parameters
-        dto.inputs = TypedParameter.of("++++");
-        dto.inputSameDT = TypedParameter.of(true);
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as first input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        dto.icon = TypedParameter.of("round");
-        
-        return SumDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .inputs(dto.inputs)
-                .inputSameDT(dto.inputSameDT)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow)
-                .icon(dto.icon);
-    }
     
     // ===== PARAMETER ACCESS HELPERS =====
     
     public String getInputsValue() {
-        return inputs != null ? inputs.getValue(String.class) : "++";
+        return inputs != null ? inputs.getAsString() : "++";
     }
     
     public Boolean getInputSameDTValue() {
-        return inputSameDT != null ? inputSameDT.getValue(Boolean.class) : true;
+        return inputSameDT != null ? inputSameDT.getAsBoolean() : true;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as first input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as first input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
     public String getIconValue() {
-        return icon != null ? icon.getValue(String.class) : "round";
+        return icon != null ? icon.getAsString() : "round";
     }
     
     // ===== VALIDATION =====
@@ -177,7 +111,7 @@ public class SumDto extends BlockDto {
         if (inputs == null) {
             result.addError("Input sequence parameter is required");
         } else {
-            String inputSeq = inputs.getValue(String.class);
+            String inputSeq = inputs.getAsString();
             if (inputSeq == null || inputSeq.trim().isEmpty()) {
                 result.addError("Input sequence cannot be empty");
             } else {
@@ -197,7 +131,7 @@ public class SumDto extends BlockDto {
         
         // Validate icon shape
         if (icon != null) {
-            String iconValue = icon.getValue(String.class);
+            String iconValue = icon.getAsString();
             if (iconValue != null && !iconValue.equals("round") && !iconValue.equals("rectangular")) {
                 result.addError("Icon must be 'round' or 'rectangular'");
             }
@@ -245,7 +179,6 @@ public class SumDto extends BlockDto {
     public SumDto copy() {
         return SumDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
@@ -258,35 +191,6 @@ public class SumDto extends BlockDto {
                 .build();
     }
     
-    /**
-     * Convert to legacy parameters format for backward compatibility
-     */
-    public Map<String, String> toLegacyParameters() {
-        Map<String, String> params = new HashMap<>();
-        
-        if (inputs != null) {
-            params.put("Inputs", String.valueOf(inputs.getValue()));
-        }
-        if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
-        }
-        if (inputSameDT != null) {
-            Boolean sameDT = inputSameDT.getValue(Boolean.class);
-            params.put("InputSameDT", Boolean.TRUE.equals(sameDT) ? "on" : "off");
-        }
-        if (outDataTypeStr != null) {
-            params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
-        }
-        if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
-            params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
-        }
-        if (icon != null) {
-            params.put("Icon", String.valueOf(icon.getValue()));
-        }
-        
-        return params;
-    }
     
     @Override
     public String toString() {

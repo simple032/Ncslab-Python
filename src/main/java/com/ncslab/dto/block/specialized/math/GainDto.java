@@ -1,189 +1,130 @@
 package com.ncslab.dto.block.specialized.math;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
+import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-
-import java.util.Map;
-import java.util.HashMap;
+import lombok.NoArgsConstructor;
 
 /**
- * DTO representation of Gain block with SIMULINK-compatible parameters.
+ * DTO representation of Gain math block.
  * 
- * This DTO provides a modern, type-safe interface for the Gain block
- * and supports migration from the legacy JSONObject-based approach.
+ * The Gain block multiplies the input by a scalar or matrix gain value.
+ * It supports both element-wise and matrix multiplication modes.
  * 
- * SIMULINK Parameters:
- * - Gain: Gain value (scalar or matrix)
- * - Multiplication: Element-wise or Matrix multiplication mode
- * - SampleTime: Sample time for discrete operation (-1 for inherited)
- * - OutDataTypeStr: Output data type specification
- * - SaturateOnIntegerOverflow: Handle integer overflow
- * 
- * @author BlockMigrationAutomation
+ * @author NCSLab DTO Migration
  * @version 1.0
- * @since DTO Migration Week 5
+ * @since 2025
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Gain")
 @MigrationCompatible(originalClass = "com.ncslab.block.math.Gain")
 public class GainDto extends BlockDto {
     
-    // ===== GAIN BLOCK SPECIFIC PARAMETERS =====
-    
     /**
      * Gain value (scalar or matrix)
-     * Default: 1
-     * Validation: Must be finite
+     * Default: 1.0
      */
-    private TypedParameter gain;
+    @Builder.Default
+    private TypedParameter gain = TypedParameter.of(1.0);
     
     /**
-     * Element-wise or Matrix multiplication mode
+     * Multiplication mode
      * Default: "Element-wise(K.*u)"
      * Options: "Element-wise(K.*u)", "Matrix(K*u)"
      */
-    private TypedParameter multiplication;
+    @Builder.Default
+    private TypedParameter multiplication = TypedParameter.of("Element-wise(K.*u)");
+    
+    /**
+     * Sample time for the block operation
+     * Default: -1 (inherited)
+     */
+    @Builder.Default
+    private TypedParameter sampleTime = TypedParameter.of(-1.0);
     
     /**
      * Output data type specification
      * Default: "Inherit: Same as input"
      */
-    private TypedParameter outDataTypeStr;
+    @Builder.Default
+    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
     
     /**
-     * Handle integer overflow
+     * Handle integer overflow by saturation
      * Default: false (off)
      */
-    private TypedParameter saturateOnIntegerOverflow;
-    
-    // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static GainDto fromLegacyParameters(java.util.Map<String, String> params) {
-        GainDto.GainDtoBuilder builder = GainDto.builder()
-                .blockName(params.getOrDefault("blockName", "Gain"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Gain");
-        
-        GainDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("Gain")) {
-            try {
-                dto.gain = TypedParameter.of(Double.parseDouble(params.get("Gain")));
-            } catch (NumberFormatException e) {
-                dto.gain = TypedParameter.of(params.get("Gain")); // Keep as string if not numeric
-            }
-        }
-        
-        if (params.containsKey("Multiplication")) {
-            dto.multiplication = TypedParameter.of(params.get("Multiplication"));
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static GainDtoBuilder builderWithDefaults() {
-        GainDto dto = GainDto.builder()
-                .blockType("Gain")
-                .sampleTime(-1.0)
-                .build();
-        
-        // Set default typed parameters
-        dto.gain = TypedParameter.of(1.0);
-        dto.multiplication = TypedParameter.of("Element-wise(K.*u)");
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return GainDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .gain(dto.gain)
-                .multiplication(dto.multiplication)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
+    @Builder.Default
+    private TypedParameter saturateOnIntegerOverflow = TypedParameter.of(false);
     
     // ===== PARAMETER ACCESS HELPERS =====
     
-    public Double getGainAsDouble() {
-        return gain != null ? gain.getValue(Double.class) : null;
+    public Double getGainValue() {
+        return gain != null ? gain.getAsDouble() : 1.0;
     }
     
-    public String getGainAsString() {
-        return gain != null ? gain.getValue(String.class) : null;
-    }
-    
-    public Object getGainAsObject() {
-        return gain != null ? gain.getValue() : null;
+    public String getGainValueAsString() {
+        return gain != null ? gain.getAsString() : "1";
     }
     
     public String getMultiplicationValue() {
-        return multiplication != null ? multiplication.getValue(String.class) : "Element-wise(K.*u)";
+        return multiplication != null ? multiplication.getAsString() : "Element-wise(K.*u)";
+    }
+    
+    public Double getSampleTimeValue() {
+        return sampleTime != null ? sampleTime.getAsDouble() : -1.0;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
     // ===== VALIDATION =====
     
     @Override
     public ValidationResult validate() {
-        ValidationResult result = super.validate(); // Call parent validation
+        ValidationResult result = super.validate();
         
         // Validate gain parameter
-        if (gain == null) {
-            result.addError("Gain parameter is required");
-        } else {
-            Object val = gain.getValue();
-            if (val instanceof Number) {
-                double gainValue = ((Number) val).doubleValue();
-                if (Double.isNaN(gainValue) || Double.isInfinite(gainValue)) {
+        if (gain != null) {
+            try {
+                Double gainVal = gain.getAsDouble();
+                if (gainVal != null && (gainVal.isNaN() || gainVal.isInfinite())) {
                     result.addError("Gain value must be finite");
                 }
+            } catch (Exception e) {
+                // Gain might be a string/matrix, which is valid
             }
         }
         
         // Validate multiplication mode
         if (multiplication != null) {
-            String multValue = multiplication.getValue(String.class);
-            if (multValue != null && !multValue.equals("Element-wise(K.*u)") && !multValue.equals("Matrix(K*u)")) {
+            String multValue = multiplication.getAsString();
+            if (multValue != null && 
+                !multValue.equals("Element-wise(K.*u)") && 
+                !multValue.equals("Matrix(K*u)")) {
                 result.addError("Multiplication mode must be 'Element-wise(K.*u)' or 'Matrix(K*u)'");
+            }
+        }
+        
+        // Validate sample time
+        if (sampleTime != null) {
+            Double st = sampleTime.getAsDouble();
+            if (st != null && st < -1.0) {
+                result.addError("Sample time must be >= -1.0");
             }
         }
         
@@ -193,52 +134,74 @@ public class GainDto extends BlockDto {
     // ===== UTILITY METHODS =====
     
     /**
+     * Check if this block operates in continuous time
+     */
+    public boolean isContinuous() {
+        return getSampleTimeValue() == 0.0;
+    }
+    
+    /**
+     * Check if this block inherits its sample time
+     */
+    public boolean isInherited() {
+        return getSampleTimeValue() == -1.0;
+    }
+    
+    /**
      * Check if matrix multiplication is enabled
      */
     public boolean isMatrixMultiplication() {
         return "Matrix(K*u)".equals(getMultiplicationValue());
     }
     
+    /**
+     * Check if gain is unity (no scaling)
+     */
+    public boolean isUnityGain() {
+        try {
+            Double gainVal = getGainValue();
+            return gainVal != null && Math.abs(gainVal - 1.0) < 1e-15;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Check if gain is zero
+     */
+    public boolean isZeroGain() {
+        try {
+            Double gainVal = getGainValue();
+            return gainVal != null && Math.abs(gainVal) < 1e-15;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
     @Override
     public GainDto copy() {
         return GainDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
-                .sampleTime(getSampleTime())
                 .gain(gain != null ? gain.copy() : null)
                 .multiplication(multiplication != null ? multiplication.copy() : null)
+                .sampleTime(sampleTime != null ? sampleTime.copy() : null)
                 .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
                 .build();
     }
     
-    /**
-     * Convert to legacy parameters format for backward compatibility
-     */
-    public Map<String, String> toLegacyParameters() {
-        Map<String, String> params = new HashMap<>();
-        
-        if (gain != null) {
-            params.put("Gain", String.valueOf(gain.getValue()));
-        }
-        if (multiplication != null) {
-            params.put("Multiplication", String.valueOf(multiplication.getValue()));
-        }
-        if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
-        }
-        if (outDataTypeStr != null) {
-            params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
-        }
-        if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
-            params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
-        }
-        
-        return params;
+    @Override
+    public TypedParameterMap toParameterMap() {
+        return TypedParameterMap.builder()
+                .put("Gain", gain)
+                .put("Multiplication", multiplication)
+                .put("SampleTime", sampleTime)
+                .put("OutDataTypeStr", outDataTypeStr)
+                .put("SaturateOnIntegerOverflow", saturateOnIntegerOverflow)
+                .build();
     }
     
     @Override
@@ -247,7 +210,7 @@ public class GainDto extends BlockDto {
                            getBlockId(), 
                            getBlockName(), 
                            getBlockType(),
-                           getGainAsObject(), 
+                           getGainValueAsString(), 
                            getMultiplicationValue());
     }
 }

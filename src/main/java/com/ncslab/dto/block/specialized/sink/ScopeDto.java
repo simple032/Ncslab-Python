@@ -7,10 +7,14 @@ import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Map;
+
+import org.apache.commons.lang3.reflect.Typed;
+
 import java.util.HashMap;
 
 /**
@@ -77,8 +81,7 @@ public class ScopeDto extends BlockDto {
         ScopeDto.ScopeDtoBuilder builder = ScopeDto.builder()
                 .blockName(params.getOrDefault("blockName", "Scope"))
                 .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Scope");
+                .blockUUID(params.getOrDefault("blockUUID", ""));
         
         ScopeDto dto = builder.build();
         
@@ -110,8 +113,7 @@ public class ScopeDto extends BlockDto {
      */
     public static ScopeDtoBuilder builderWithDefaults() {
         ScopeDto dto = ScopeDto.builder()
-                .blockType("Scope")
-                .sampleTime(-1.0)
+                .sampleTime(TypedParameter.of(-1.0))
                 .build();
         
         // Set default typed parameters
@@ -122,7 +124,6 @@ public class ScopeDto extends BlockDto {
         
         return ScopeDto.builder()
                 .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
                 .blockName(dto.getBlockName())
                 .blockPath(dto.getBlockPath())
                 .blockUUID(dto.getBlockUUID())
@@ -136,19 +137,19 @@ public class ScopeDto extends BlockDto {
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Integer getNumberOfInputsValue() {
-        return numberOfInputs != null ? numberOfInputs.getValue(Integer.class) : 1;
+        return numberOfInputs != null ? numberOfInputs.getAsInteger() : 1;
     }
     
     public String getSaveNameValue() {
-        return saveName != null ? saveName.getValue(String.class) : "ScopeData";
+        return saveName != null ? saveName.getAsString() : "ScopeData";
     }
     
     public String getSaveFormatValue() {
-        return saveFormat != null ? saveFormat.getValue(String.class) : "Array";
+        return saveFormat != null ? saveFormat.getAsString() : "Array";
     }
     
     public Integer getBufferSizeValue() {
-        return bufferSize != null ? bufferSize.getValue(Integer.class) : 100000;
+        return bufferSize != null ? bufferSize.getAsInteger() : 100000;
     }
     
     // ===== VALIDATION =====
@@ -159,7 +160,7 @@ public class ScopeDto extends BlockDto {
         
         // Validate number of inputs
         if (numberOfInputs != null) {
-            Integer inputCount = numberOfInputs.getValue(Integer.class);
+            Integer inputCount = numberOfInputs.getAsInteger();
             if (inputCount == null || inputCount <= 0) {
                 result.addError("Number of inputs must be a positive integer");
             } else if (inputCount > 10) {
@@ -169,7 +170,7 @@ public class ScopeDto extends BlockDto {
         
         // Validate save name
         if (saveName != null) {
-            String saveNameStr = saveName.getValue(String.class);
+            String saveNameStr = saveName.getAsString();
             if (saveNameStr != null && !saveNameStr.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
                 result.addError("Save name must be a valid identifier (letters, numbers, underscore, starting with letter or underscore)");
             }
@@ -177,7 +178,7 @@ public class ScopeDto extends BlockDto {
         
         // Validate save format
         if (saveFormat != null) {
-            String formatStr = saveFormat.getValue(String.class);
+            String formatStr = saveFormat.getAsString();
             if (formatStr != null && !formatStr.equals("Array") && 
                 !formatStr.equals("Structure") && !formatStr.equals("Structure with time")) {
                 result.addError("Save format must be 'Array', 'Structure', or 'Structure with time'");
@@ -186,7 +187,7 @@ public class ScopeDto extends BlockDto {
         
         // Validate buffer size
         if (bufferSize != null) {
-            Integer bufferSizeVal = bufferSize.getValue(Integer.class);
+            Integer bufferSizeVal = bufferSize.getAsInteger();
             if (bufferSizeVal == null || bufferSizeVal <= 0) {
                 result.addError("Buffer size must be a positive integer");
             } else if (bufferSizeVal > 10000000) {
@@ -226,7 +227,6 @@ public class ScopeDto extends BlockDto {
     public ScopeDto copy() {
         return ScopeDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())

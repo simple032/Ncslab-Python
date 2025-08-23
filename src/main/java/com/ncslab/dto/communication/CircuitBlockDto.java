@@ -89,7 +89,6 @@ public class CircuitBlockDto extends BlockDto {
             // Use BlockDto for legacy JSON conversion
             BlockDto baseBlock = BlockDto.fromLegacyJson(jsonObject);
             if (baseBlock != null) {
-                circuitBlock.setBlockType(baseBlock.getBlockType());
                 circuitBlock.setSrcBlock(baseBlock.getSrcBlock());
                 circuitBlock.setBlockName(baseBlock.getBlockName());
                 circuitBlock.setBlockPath(baseBlock.getBlockPath());
@@ -216,7 +215,7 @@ public class CircuitBlockDto extends BlockDto {
         // Add base parameters if they exist
         if (getParameters() != null) {
             for (Map.Entry<String, TypedParameter> entry : getParameters().entrySet()) {
-                Object value = entry.getValue().getValue();
+                Object value = entry.getValue().getAsString();
                 if (value != null) {
                     params.put(entry.getKey(), value);
                 }
@@ -290,7 +289,6 @@ public class CircuitBlockDto extends BlockDto {
     @Override
     public BlockDto copy() {
         return CircuitBlockDto.builder()
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
@@ -338,7 +336,6 @@ public class CircuitBlockDto extends BlockDto {
         CircuitBlockDto circuitBlock = new CircuitBlockDto();
         
         // Copy base fields
-        circuitBlock.setBlockType(blockParsingDto.getBlockType());
         circuitBlock.setSrcBlock(blockParsingDto.getSrcBlock());
         circuitBlock.setBlockName(blockParsingDto.getBlockName());
         circuitBlock.setBlockPath(blockParsingDto.getBlockPath());

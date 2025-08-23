@@ -7,6 +7,7 @@ import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -64,50 +65,15 @@ public class ConstantDto extends BlockDto {
     private TypedParameter saturateOnIntegerOverflow;
     
     // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy Constant block
-     * TODO: Fix method signature after examining actual Constant block API
-     */
-    /*
-    public static ConstantDto fromLegacyBlock(com.ncslab.block.source.Constant block) {
-        ConstantDto dto = ConstantDto.builder()
-                .blockId(block.getBlockId())
-                .blockType("Constant")
-                .blockName(block.getBlockName())
-                .blockPath(block.getBlockPath())
-                .blockUUID(block.getBlockUUID())
-                .sampleTime(block.getSampleTime())
-                .build();
-        
-        // Map block-specific parameters
-        dto.value = TypedParameter.of(block.getValue());
-        dto.framePeriod = TypedParameter.of(1.0); // Default
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as parameter");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return dto;
-    }
-    */
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static ConstantDtoBuilder builderWithDefaults() {
-        return ConstantDto.builder()
-                .blockType("Constant")
-                .sampleTime(0.0); // Continuous
-                // TODO: Add default typed parameters after fixing builder
-    }
-    
+   
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Double getValueAsDouble() {
-        return value != null ? value.getValue(Double.class) : null;
+        return value != null ? value.getAsDouble() : null;
     }
     
     public String getValueAsString() {
-        return value != null ? value.getValue(String.class) : null;
+        return value != null ? value.getAsString() : null;
     }
     
     public Object getValueAsObject() {
@@ -115,15 +81,15 @@ public class ConstantDto extends BlockDto {
     }
     
     public Double getFramePeriodValue() {
-        return framePeriod != null ? framePeriod.getValue(Double.class) : 1.0;
+        return framePeriod != null ? framePeriod.getAsDouble() : 1.0;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as parameter";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as parameter";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
     // ===== VALIDATION =====
@@ -147,7 +113,7 @@ public class ConstantDto extends BlockDto {
         
         // Validate frame period
         if (framePeriod != null) {
-            Double fpVal = framePeriod.getValue(Double.class);
+            Double fpVal = framePeriod.getAsDouble();
             if (fpVal != null && (fpVal <= 0.0 || Double.isNaN(fpVal) || Double.isInfinite(fpVal))) {
                 result.addError("Frame period must be positive");
             }
@@ -162,7 +128,6 @@ public class ConstantDto extends BlockDto {
     public ConstantDto copy() {
         return ConstantDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
@@ -193,7 +158,7 @@ public class ConstantDto extends BlockDto {
             params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
         }
         if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
+            Boolean satVal = saturateOnIntegerOverflow.getAsBoolean();
             params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
         }
         

@@ -1,181 +1,122 @@
 package com.ncslab.dto.block.specialized.math;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
+import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 
 /**
- * DTO representation of Product block with SIMULINK-compatible parameters.
+ * DTO representation of Product math block.
  * 
- * This DTO provides a modern, type-safe interface for the Product block
- * and supports migration from the legacy JSONObject-based approach.
+ * The Product block performs element-wise or matrix multiplication/division
+ * operations on multiple inputs based on the input sequence specification.
+ * The input sequence defines which operations to perform: '*' for multiplication
+ * and '/' for division.
  * 
- * SIMULINK Parameters:
- * - Inputs: String sequence defining input operations (e.g., "**", "*", "/")
- * - Multiplication: Element-wise or Matrix multiplication mode
- * - SampleTime: Sample time for discrete operation (-1 for inherited)
- * - InputSameDT: Require inputs to have same data type
- * - OutDataTypeStr: Output data type specification
- * - SaturateOnIntegerOverflow: Handle integer overflow
- * 
- * @author BlockMigrationAutomation
+ * @author NCSLab DTO Migration
  * @version 1.0
- * @since DTO Migration Week 6
+ * @since 2025
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Product")
 @MigrationCompatible(originalClass = "com.ncslab.block.math.Product")
 public class ProductDto extends BlockDto {
     
-    // ===== PRODUCT BLOCK SPECIFIC PARAMETERS =====
-    
     /**
-     * String sequence defining input operations (e.g., "**", "*", "/")
-     * Default: "**"
-     * Validation: Must contain only '*' and '/' characters, at least one character
+     * Input sequence defining operations
+     * Default: "**" (two multiplication inputs)
+     * Format: String of '*' and '/' characters
+     * Each character represents one input port's operation
      */
-    private TypedParameter inputs;
+    @Builder.Default
+    private TypedParameter inputs = TypedParameter.of("**");
     
     /**
-     * Element-wise or Matrix multiplication mode
+     * Multiplication mode
      * Default: "Element-wise(.*)"
      * Options: "Element-wise(.*)", "Matrix(*)"
      */
-    private TypedParameter multiplication;
+    @Builder.Default
+    private TypedParameter multiplication = TypedParameter.of("Element-wise(.*)");
     
     /**
      * Require inputs to have same data type
-     * Default: true (on)
+     * Default: true
      */
-    private TypedParameter inputSameDT;
+    @Builder.Default
+    private TypedParameter inputSameDT = TypedParameter.of(true);
+    
+    /**
+     * Sample time for the block operation
+     * Default: -1 (inherited)
+     */
+    @Builder.Default
+    private TypedParameter sampleTime = TypedParameter.of(-1.0);
     
     /**
      * Output data type specification
      * Default: "Inherit: Same as first input"
      */
-    private TypedParameter outDataTypeStr;
+    @Builder.Default
+    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as first input");
     
     /**
-     * Handle integer overflow
+     * Handle integer overflow by saturation
      * Default: false (off)
      */
-    private TypedParameter saturateOnIntegerOverflow;
-    
-    // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static ProductDto fromLegacyParameters(Map<String, String> params) {
-        ProductDto.ProductDtoBuilder builder = ProductDto.builder()
-                .blockName(params.getOrDefault("blockName", "Product"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""))
-                .blockType("Product");
-        
-        ProductDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("Inputs")) {
-            dto.inputs = TypedParameter.of(params.get("Inputs"));
-        }
-        
-        if (params.containsKey("Multiplication")) {
-            dto.multiplication = TypedParameter.of(params.get("Multiplication"));
-        }
-        
-        if (params.containsKey("InputSameDT")) {
-            dto.inputSameDT = TypedParameter.of("on".equals(params.get("InputSameDT")));
-        }
-        
-        if (params.containsKey("OutDataTypeStr")) {
-            dto.outDataTypeStr = TypedParameter.of(params.get("OutDataTypeStr"));
-        }
-        
-        if (params.containsKey("SaturateOnIntegerOverflow")) {
-            dto.saturateOnIntegerOverflow = TypedParameter.of("on".equals(params.get("SaturateOnIntegerOverflow")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static ProductDtoBuilder builderWithDefaults() {
-        ProductDto dto = ProductDto.builder()
-                .blockType("Product")
-                .sampleTime(-1.0)
-                .build();
-        
-        // Set default typed parameters
-        dto.inputs = TypedParameter.of("**");
-        dto.multiplication = TypedParameter.of("Element-wise(.*)");
-        dto.inputSameDT = TypedParameter.of(true);
-        dto.outDataTypeStr = TypedParameter.of("Inherit: Same as first input");
-        dto.saturateOnIntegerOverflow = TypedParameter.of(false);
-        
-        return ProductDto.builder()
-                .blockId(dto.getBlockId())
-                .blockType(dto.getBlockType())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .inputs(dto.inputs)
-                .multiplication(dto.multiplication)
-                .inputSameDT(dto.inputSameDT)
-                .outDataTypeStr(dto.outDataTypeStr)
-                .saturateOnIntegerOverflow(dto.saturateOnIntegerOverflow);
-    }
+    @Builder.Default
+    private TypedParameter saturateOnIntegerOverflow = TypedParameter.of(false);
     
     // ===== PARAMETER ACCESS HELPERS =====
     
     public String getInputsValue() {
-        return inputs != null ? inputs.getValue(String.class) : "**";
+        return inputs != null ? inputs.getAsString() : "**";
     }
     
     public String getMultiplicationValue() {
-        return multiplication != null ? multiplication.getValue(String.class) : "Element-wise(.*)";
+        return multiplication != null ? multiplication.getAsString() : "Element-wise(.*)";
     }
     
     public Boolean getInputSameDTValue() {
-        return inputSameDT != null ? inputSameDT.getValue(Boolean.class) : true;
+        return inputSameDT != null ? inputSameDT.getAsBoolean() : true;
+    }
+    
+    public Double getSampleTimeValue() {
+        return sampleTime != null ? sampleTime.getAsDouble() : -1.0;
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as first input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as first input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
-        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getValue(Boolean.class) : false;
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
     // ===== VALIDATION =====
     
     @Override
     public ValidationResult validate() {
-        ValidationResult result = super.validate(); // Call parent validation
+        ValidationResult result = super.validate();
         
         // Validate inputs parameter
         if (inputs == null) {
             result.addError("Input sequence parameter is required");
         } else {
-            String inputSeq = inputs.getValue(String.class);
+            String inputSeq = inputs.getAsString();
             if (inputSeq == null || inputSeq.trim().isEmpty()) {
                 result.addError("Input sequence cannot be empty");
             } else {
@@ -195,9 +136,19 @@ public class ProductDto extends BlockDto {
         
         // Validate multiplication mode
         if (multiplication != null) {
-            String multValue = multiplication.getValue(String.class);
-            if (multValue != null && !multValue.equals("Element-wise(.*)") && !multValue.equals("Matrix(*)")) {
+            String multValue = multiplication.getAsString();
+            if (multValue != null && 
+                !multValue.equals("Element-wise(.*)") && 
+                !multValue.equals("Matrix(*)")) {
                 result.addError("Multiplication mode must be 'Element-wise(.*)' or 'Matrix(*)'");
+            }
+        }
+        
+        // Validate sample time
+        if (sampleTime != null) {
+            Double st = sampleTime.getAsDouble();
+            if (st != null && st < -1.0) {
+                result.addError("Sample time must be >= -1.0");
             }
         }
         
@@ -205,6 +156,20 @@ public class ProductDto extends BlockDto {
     }
     
     // ===== UTILITY METHODS =====
+    
+    /**
+     * Check if this block operates in continuous time
+     */
+    public boolean isContinuous() {
+        return getSampleTimeValue() == 0.0;
+    }
+    
+    /**
+     * Check if this block inherits its sample time
+     */
+    public boolean isInherited() {
+        return getSampleTimeValue() == -1.0;
+    }
     
     /**
      * Get the number of input ports based on input sequence
@@ -257,51 +222,81 @@ public class ProductDto extends BlockDto {
         return "Matrix(*)".equals(getMultiplicationValue());
     }
     
+    /**
+     * Check if all operations are multiplication
+     */
+    public boolean isAllMultiplication() {
+        String inputSeq = getInputsValue();
+        if (inputSeq == null || inputSeq.isEmpty()) {
+            return false;
+        }
+        for (char c : inputSeq.toCharArray()) {
+            if (c != '*') {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Check if any operations are division
+     */
+    public boolean hasAnyDivision() {
+        String inputSeq = getInputsValue();
+        if (inputSeq == null) {
+            return false;
+        }
+        return inputSeq.contains("/");
+    }
+    
+    /**
+     * Count number of multiplication operations
+     */
+    public int getMultiplicationCount() {
+        String inputSeq = getInputsValue();
+        if (inputSeq == null) {
+            return 0;
+        }
+        return (int) inputSeq.chars().filter(c -> c == '*').count();
+    }
+    
+    /**
+     * Count number of division operations
+     */
+    public int getDivisionCount() {
+        String inputSeq = getInputsValue();
+        if (inputSeq == null) {
+            return 0;
+        }
+        return (int) inputSeq.chars().filter(c -> c == '/').count();
+    }
+    
     @Override
     public ProductDto copy() {
         return ProductDto.builder()
                 .blockId(getBlockId())
-                .blockType(getBlockType())
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
-                .sampleTime(getSampleTime())
                 .inputs(inputs != null ? inputs.copy() : null)
                 .multiplication(multiplication != null ? multiplication.copy() : null)
                 .inputSameDT(inputSameDT != null ? inputSameDT.copy() : null)
+                .sampleTime(sampleTime != null ? sampleTime.copy() : null)
                 .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
                 .build();
     }
     
-    /**
-     * Convert to legacy parameters format for backward compatibility
-     */
-    public Map<String, String> toLegacyParameters() {
-        Map<String, String> params = new HashMap<>();
-        
-        if (inputs != null) {
-            params.put("Inputs", String.valueOf(inputs.getValue()));
-        }
-        if (multiplication != null) {
-            params.put("Multiplication", String.valueOf(multiplication.getValue()));
-        }
-        if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
-        }
-        if (inputSameDT != null) {
-            Boolean sameDT = inputSameDT.getValue(Boolean.class);
-            params.put("InputSameDT", Boolean.TRUE.equals(sameDT) ? "on" : "off");
-        }
-        if (outDataTypeStr != null) {
-            params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
-        }
-        if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getValue(Boolean.class);
-            params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
-        }
-        
-        return params;
+    @Override
+    public TypedParameterMap toParameterMap() {
+        return TypedParameterMap.builder()
+                .put("Inputs", inputs)
+                .put("Multiplication", multiplication)
+                .put("InputSameDT", inputSameDT)
+                .put("SampleTime", sampleTime)
+                .put("OutDataTypeStr", outDataTypeStr)
+                .put("SaturateOnIntegerOverflow", saturateOnIntegerOverflow)
+                .build();
     }
     
     @Override

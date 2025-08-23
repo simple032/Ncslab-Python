@@ -69,6 +69,17 @@ public class TypedParameterMap extends HashMap<String, TypedParameter> {
         TypedParameter param = get(name);
         return param != null ? param.getType() : null;
     }
+
+
+    public <T> TypedParameter getTypedParameter(String name, Class<T> type) {
+        TypedParameter param = get(name);
+        return param != null && param.getType().equals(type.getSimpleName()) ? param : null;
+    }
+
+    public <T> TypedParameter getTypedParameter(String name, Class<T> type, Object defaultValue) {
+        TypedParameter param = get(name);
+        return param != null && param.getType().equals(type.getSimpleName()) ? param : TypedParameter.of(defaultValue);
+    }
     
     /**
      * Get parameter value as string
@@ -228,6 +239,70 @@ public class TypedParameterMap extends HashMap<String, TypedParameter> {
             copy.put(entry.getKey(), copied);
         }
         return copy;
+    }
+    
+    // ===== BUILDER PATTERN =====
+    
+    /**
+     * Create a new builder for TypedParameterMap.
+     * 
+     * @return TypedParameterMapBuilder instance
+     */
+    public static TypedParameterMapBuilder builder() {
+        return new TypedParameterMapBuilder();
+    }
+    
+    /**
+     * Builder class for TypedParameterMap.
+     */
+    public static class TypedParameterMapBuilder {
+        private final TypedParameterMap map = new TypedParameterMap();
+        
+        /**
+         * Add a typed parameter to the map.
+         * 
+         * @param key Parameter name
+         * @param parameter TypedParameter value
+         * @return This builder instance
+         */
+        public TypedParameterMapBuilder put(String key, TypedParameter parameter) {
+            map.put(key, parameter);
+            return this;
+        }
+        
+        /**
+         * Add a parameter with automatic type inference.
+         * 
+         * @param key Parameter name
+         * @param value Parameter value
+         * @return This builder instance
+         */
+        public TypedParameterMapBuilder put(String key, Object value) {
+            map.put(key, TypedParameter.of(value));
+            return this;
+        }
+        
+        /**
+         * Add a parameter with specified type.
+         * 
+         * @param key Parameter name
+         * @param value Parameter value
+         * @param type Parameter type
+         * @return This builder instance
+         */
+        public TypedParameterMapBuilder put(String key, Object value, String type) {
+            map.put(key, TypedParameter.of(value, type));
+            return this;
+        }
+        
+        /**
+         * Build the TypedParameterMap.
+         * 
+         * @return Configured TypedParameterMap instance
+         */
+        public TypedParameterMap build() {
+            return map;
+        }
     }
     
     @Override
