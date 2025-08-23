@@ -94,6 +94,25 @@ public class Modulo extends Block {
         // One output port with feedthrough
         outputPortList.add(new com.ncslab.block.io.OutputPort(this, 1, true));
     }
+
+    /**
+     * DTO-NATIVE Constructor - Creates Modulo block directly from ModuloDto DTO
+     */
+    public Modulo(com.ncslab.dto.block.specialized.math.ModuloDto moduloDto, NCSLabModel model) {
+        this(
+            createParameterFromTyped(moduloDto.getModuloType(), 1, "ModuloType"),
+            createParameterFromTyped(moduloDto.getDivisorSource(), 2, "DivisorSource"),
+            createParameterFromTyped(moduloDto.getDivisor(), 3, "Divisor"),
+            createParameterFromTyped(moduloDto.getSampleTime(), 4, "SampleTime"),
+            createParameterFromTyped(moduloDto.getOutDataTypeStr(), 5, "OutDataTypeStr"),
+            createParameterFromTyped(moduloDto.getSaturateOnIntegerOverflow(), 6, "SaturateOnIntegerOverflow"),
+            moduloDto.getBlockName(),
+            moduloDto.getBlockPath(),
+            moduloDto.getBlockUUID() != null ? moduloDto.getBlockUUID() : "null",
+            model
+        );
+        System.out.println("DTO-NATIVE: Modulo block created successfully from ModuloDto - " + moduloDto.getBlockName());
+    }
     
     // === Static Factory Methods ===
     public static Modulo fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -178,6 +197,22 @@ public class Modulo extends Block {
                 // Fallback: parameter will work for basic operations
             }
         }
+    }
+
+    // === DTO Helper Methods ===
+    private static Parameter createParameterFromTyped(com.ncslab.dto.common.TypedParameter typedParam, int number, String name) {
+        if (typedParam == null || typedParam.getValue() == null) {
+            throw new IllegalArgumentException("TypedParameter " + name + " cannot be null");
+        }
+        
+        String stringValue;
+        if (typedParam.getValue() instanceof Boolean) {
+            stringValue = ((Boolean) typedParam.getValue()) ? "on" : "off";
+        } else {
+            stringValue = typedParam.getValue().toString();
+        }
+        
+        return new Parameter(null, number, name, stringValue);
     }
     
     // === Getter Methods ===

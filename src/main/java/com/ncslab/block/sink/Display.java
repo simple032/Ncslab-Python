@@ -24,11 +24,36 @@ public class Display extends Scope {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Display block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Display block directly from DisplayDto DTO
+     */
+    public Display(com.ncslab.dto.block.specialized.sink.DisplayDto displayDto, NCSLabModel model) {
+        super(createDisplayJSON(displayDto), model);
+        scopeStructs[0].setMaxDataLength(1);
+        System.out.println("DTO-NATIVE: Display block created successfully from DisplayDto - " + displayDto.getBlockName());
+    }
+
+    /**
+     * Legacy DTO Constructor - Creates Display block from generic BlockDto (fallback)
      */
     public Display(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
-        System.out.println("DTO-NATIVE: Display block created successfully - " + blockDto.getBlockName());
+        System.out.println("DTO-GENERIC: Display block created from generic BlockDto - " + blockDto.getBlockName());
+    }
+
+    // === DTO Helper Methods ===
+    private static JSONObject createDisplayJSON(com.ncslab.dto.block.specialized.sink.DisplayDto displayDto) {
+        JSONObject json = new JSONObject();
+        json.put("blockType", "Display");
+        json.put("blockName", displayDto.getBlockName());
+        json.put("blockPath", displayDto.getBlockPath());
+        json.put("blockUUID", displayDto.getBlockUUID() != null ? displayDto.getBlockUUID() : "null");
+        
+        JSONObject paramValues = new JSONObject();
+        paramValues.put("SampleTime", displayDto.getSampleTimeValue());
+        paramValues.put("OutDataTypeStr", displayDto.getOutDataTypeString());
+        json.put("paramValues", paramValues);
+        
+        return json;
     }
 
 

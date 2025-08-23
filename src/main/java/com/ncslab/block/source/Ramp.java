@@ -7,6 +7,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.RampDto;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -107,18 +108,53 @@ public class Ramp extends SourceBlock {
         // Set parameter block references for legacy compatibility
         setParameterBlockReference(this, slope, start, initialOutput);
     }    /**
-     * DTO-NATIVE Constructor - Creates Ramp block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Ramp block directly from RampDto
+     */
+    public Ramp(RampDto dto, NCSLabModel model) {
+        super("Ramp",
+              dto.getSampleTime() != null ? new Parameter(null, 4, "SampleTime", String.valueOf(dto.getSampleTime())) : new Parameter(null, 4, "SampleTime", "0.0"),
+              dto.getOutDataTypeStr() != null ? new Parameter(null, 5, "OutDataTypeStr", dto.getOutDataTypeStr().getAsString()) : new Parameter(null, 5, "OutDataTypeStr", "Inherit: Same as parameter"),
+              dto.getSaturateOnIntegerOverflow() != null ? new Parameter(null, 6, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflow().getAsBoolean() ? "on" : "off") : new Parameter(null, 6, "SaturateOnIntegerOverflow", "off"),
+              dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID(), model);
+
+        // Initialize Ramp-specific parameters from DTO with null safety
+        this.slope = new Parameter(this, 1, "Slope",
+            String.valueOf(dto.getSlope() != null ? dto.getSlope().getAsDouble() : 1.0));
+        this.start = new Parameter(this, 2, "Start",
+            String.valueOf(dto.getStart() != null ? dto.getStart().getAsDouble() : 0.0));
+        this.initialOutput = new Parameter(this, 3, "InitialOutput",
+            String.valueOf(dto.getInitialOutput() != null ? dto.getInitialOutput().getAsDouble() : 0.0));
+
+        // Add Ramp-specific parameters to parameter list
+        parameterList.add(slope);
+        parameterList.add(start);
+        parameterList.add(initialOutput);
+
+        // Set port dimensions based on slope parameter
+        if (!outputPortList.isEmpty()) {
+            outputPortList.get(0).setHeight(slope.getHeight());
+            outputPortList.get(0).setWidth(slope.getWidth());
+        }
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
+    }
+
+    /**
+     * Generic DTO Constructor - Creates Ramp block from generic BlockDto
      */
     public Ramp(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.slope = new Parameter(this, 1, "Slope", "0");
-        this.start = new Parameter(this, 2, "Start", "0");
-        this.initialOutput = new Parameter(this, 3, "Initialoutput", "0");
+        // Initialize final parameters with defaults
+        this.slope = new Parameter(this, 1, "Slope", "1.0");
+        this.start = new Parameter(this, 2, "Start", "0.0");
+        this.initialOutput = new Parameter(this, 3, "InitialOutput", "0.0");
 
-        // Initialize ports
-        initializePorts();
+        // Initialize ports with defaults
+        if (!outputPortList.isEmpty()) {
+            outputPortList.get(0).setHeight(1);
+            outputPortList.get(0).setWidth(1);
+        }
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }

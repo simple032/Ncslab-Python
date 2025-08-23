@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.logic.RelationalOperatorDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -129,27 +130,65 @@ public class RelationalOperator extends Block {
         OutputPort output = new OutputPort(this, 1, true);
         outputPortList.add(output);
     }    /**
-     * DTO-NATIVE Constructor - Creates RelationalOperator block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates RelationalOperator block directly from RelationalOperatorDto
+     */
+    public RelationalOperator(RelationalOperatorDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Initialize parameters from DTO with null safety
+        String operatorValue = dto.getOperator() != null ? dto.getOperator().getAsString() : "==";
+        this.operator = new Parameter(this, 1, "Operator", operatorValue);
+        
+        String logicDataTypeValue = dto.getLogicDataType() != null ? dto.getLogicDataType().getAsString() : "boolean";
+        this.logicDataType = new Parameter(this, 2, "LogicDataType", logicDataTypeValue);
+        
+        double sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().getAsDouble() : -1.0;
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(sampleTimeValue));
+        
+        String outDataTypeValue = dto.getOutDataTypeStr() != null ? dto.getOutDataTypeStr().getAsString() : "Inherit: Logical (see Configuration Parameters: Optimization)";
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeValue);
+        
+        String saturateValue = dto.getSaturateOnIntegerOverflow() != null ? dto.getSaturateOnIntegerOverflow().getAsString() : "off";
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateValue);
+
+        // Store legacy relop for backward compatibility (normalize ~= to !=)
+        this.relop = operatorValue;
+        if("~=".equals(this.relop)) {
+            this.relop = "!=";
+        }
+        
+        // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        inputPortList.add(new InputPort(this, 2));
+        OutputPort output = new OutputPort(this, 1, true);
+        outputPortList.add(output);
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
+    }
+
+    /**
+     * Generic DTO Constructor - Creates RelationalOperator block from generic BlockDto
      */
     public RelationalOperator(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
+        // Initialize final parameters with defaults
         this.operator = new Parameter(this, 1, "Operator", "==");
-        this.logicDataType = new Parameter(this, 2, "Logicdatatype", "0");
+        this.logicDataType = new Parameter(this, 2, "LogicDataType", "boolean");
         this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
         this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
 
-        // Initialize ports
-        initializePorts();
+        // Store legacy relop for backward compatibility
+        this.relop = "==";
 
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }    
-    private void initializePorts() {
+        // Create ports
         inputPortList.add(new InputPort(this, 1));
         inputPortList.add(new InputPort(this, 2));
-        outputPortList.add(new OutputPort(this, 1, true));
+        OutputPort output = new OutputPort(this, 1, true);
+        outputPortList.add(output);
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
 

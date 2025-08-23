@@ -53,10 +53,6 @@ public class OptimizedBlockFactory {
             throw new ModelException("BlockDto DTO cannot be null");
         }
         
-        if (!blockDto.isValid()) {
-            throw new ModelException("Invalid BlockDto DTO: " + blockDto.getValidationError());
-        }
-        
         // Normalize block type efficiently
         String blockType = normalizeBlockType(blockDto.getBlockType());
         

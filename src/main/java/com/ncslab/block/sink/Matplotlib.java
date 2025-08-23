@@ -31,11 +31,20 @@ public class Matplotlib extends SinkBlock{
     
     
     /**
-     * DTO-NATIVE Constructor - Creates Matplotlib block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Matplotlib block directly from MatplotlibDto DTO
+     */
+    public Matplotlib(com.ncslab.dto.block.specialized.sink.MatplotlibDto matplotlibDto, NCSLabModel model) {
+        super(matplotlibDto, model);
+        inputPortList.add(new InputPort(this, 1));
+        System.out.println("DTO-NATIVE: Matplotlib block created successfully from MatplotlibDto - " + matplotlibDto.getBlockName());
+    }
+
+    /**
+     * Legacy DTO Constructor - Creates Matplotlib block from generic BlockDto (fallback)
      */
     public Matplotlib(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
-        System.out.println("DTO-NATIVE: Matplotlib block created successfully - " + blockDto.getBlockName());
+        System.out.println("DTO-GENERIC: Matplotlib block created from generic BlockDto - " + blockDto.getBlockName());
     }
 
 

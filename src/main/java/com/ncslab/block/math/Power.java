@@ -75,6 +75,23 @@ public class Power extends Block {
         // One output port with feedthrough
         outputPortList.add(new com.ncslab.block.io.OutputPort(this, 1, true));
     }
+
+    /**
+     * DTO-NATIVE Constructor - Creates Power block directly from PowerDto DTO
+     */
+    public Power(com.ncslab.dto.block.specialized.math.PowerDto powerDto, NCSLabModel model) {
+        this(
+            createParameterFromTyped(powerDto.getPowerMethod(), 1, "PowerMethod"),
+            createParameterFromTyped(powerDto.getSampleTime(), 2, "SampleTime"),
+            createParameterFromTyped(powerDto.getOutDataTypeStr(), 3, "OutDataTypeStr"),
+            createParameterFromTyped(powerDto.getSaturateOnIntegerOverflow(), 4, "SaturateOnIntegerOverflow"),
+            powerDto.getBlockName(),
+            powerDto.getBlockPath(),
+            powerDto.getBlockUUID() != null ? powerDto.getBlockUUID() : "null",
+            model
+        );
+        System.out.println("DTO-NATIVE: Power block created successfully from PowerDto - " + powerDto.getBlockName());
+    }
     
     // === Static Factory Methods ===
     public static Power fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -153,6 +170,22 @@ public class Power extends Block {
                 // Fallback: parameter will work for basic operations
             }
         }
+    }
+
+    // === DTO Helper Methods ===
+    private static Parameter createParameterFromTyped(com.ncslab.dto.common.TypedParameter typedParam, int number, String name) {
+        if (typedParam == null || typedParam.getValue() == null) {
+            throw new IllegalArgumentException("TypedParameter " + name + " cannot be null");
+        }
+        
+        String stringValue;
+        if (typedParam.getValue() instanceof Boolean) {
+            stringValue = ((Boolean) typedParam.getValue()) ? "on" : "off";
+        } else {
+            stringValue = typedParam.getValue().toString();
+        }
+        
+        return new Parameter(null, number, name, stringValue);
     }
     
     // === Getter Methods ===

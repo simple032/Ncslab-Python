@@ -134,6 +134,32 @@ public class CompareToZero extends Block{
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * DTO Constructor - Creates CompareToZero block from CompareToZeroDto with proper parameter mapping
+     */
+    public CompareToZero(com.ncslab.dto.block.specialized.logic.CompareToZeroDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract parameters from DTO
+        this.relationalOperator = new Parameter(this, 1, "RelationalOperator", dto.getRelationalOperatorValue());
+        this.logicDataType = new Parameter(this, 2, "LogicDataType", dto.getLogicDataTypeValue());
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+
+        // Store legacy relop for backward compatibility
+        this.relop = dto.getRelationalOperatorValue();
+        if("~=".equals(this.relop)) {
+            this.relop = "!=";
+        }
+
+        // Initialize ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+
+        System.out.println("DTO: " + getClass().getSimpleName() + " block created from CompareToZeroDto - " + dto.getBlockName());
     }    
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));

@@ -72,6 +72,22 @@ public class Fcn extends Block{
         System.out.println("DTO-NATIVE: Fcn block created successfully - " + blockDto.getBlockName());
     }
 
+    /**
+     * DTO Constructor - Creates Fcn block from FcnDto with proper parameter mapping
+     */
+    public Fcn(com.ncslab.dto.block.specialized.math.FcnDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract expression from DTO
+        expression = dto.getExpressionValue();
+
+        // Create ports
+        outputPortList.add(new OutputPort(this, 1, true));
+        inputPortList.add(new InputPort(this, 1));
+
+        System.out.println("DTO: " + getClass().getSimpleName() + " block created from FcnDto - " + dto.getBlockName());
+    }
+
 
 	public void generateOutputCodeM(CodeStructM code) {
 		super.generateOutputCodeM(code);

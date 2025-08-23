@@ -2,6 +2,7 @@ package com.ncslab.block.math;
 
 import com.ncslab.block.data.Data;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.AddDto;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.block.Block;
@@ -128,6 +129,37 @@ public class Add extends Block {
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * AddDto-specific Constructor - Creates Add block from AddDto with type-safe parameter extraction
+     */
+    public Add(AddDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract parameters from AddDto with proper type safety and defaults
+        String inputsValue = dto.getInputsValue();
+        String sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().toString() : "-1";
+        String inputSameDTValue = "on";
+        String outDataTypeValue = dto.getOutDataTypeStrValue();
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+
+        // Initialize final parameters from DTO
+        this.inputs = new Parameter(this, 1, "Inputs", inputsValue);
+        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
+        this.inputSameDT = new Parameter(this, 3, "InputSameDT", inputSameDTValue);
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateValue);
+
+        this.inputSequence = this.inputs.getInitString();
+        
+        // Validate parameters
+        validateParameters(this.inputs, this.sampleTime);
+        
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("AddDto-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
 
     // === Static Factory Method for JSON Deserialization ===

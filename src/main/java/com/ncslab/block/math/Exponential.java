@@ -83,6 +83,25 @@ public class Exponential extends Block {
         // One output port with feedthrough
         outputPortList.add(new com.ncslab.block.io.OutputPort(this, 1, true));
     }
+
+    /**
+     * DTO-NATIVE Constructor - Creates Exponential block directly from ExponentialDto DTO
+     */
+    public Exponential(com.ncslab.dto.block.specialized.math.ExponentialDto exponentialDto, NCSLabModel model) {
+        this(
+            createParameterFromTyped(exponentialDto.getExpType(), 1, "ExpType"),
+            createParameterFromTyped(exponentialDto.getCustomBase(), 2, "CustomBase"),
+            createParameterFromTyped(exponentialDto.getZeroCrossing(), 3, "ZeroCrossing"),
+            createParameterFromTyped(exponentialDto.getSampleTime(), 4, "SampleTime"),
+            createParameterFromTyped(exponentialDto.getOutDataTypeStr(), 5, "OutDataTypeStr"),
+            createParameterFromTyped(exponentialDto.getSaturateOnIntegerOverflow(), 6, "SaturateOnIntegerOverflow"),
+            exponentialDto.getBlockName(),
+            exponentialDto.getBlockPath(),
+            exponentialDto.getBlockUUID() != null ? exponentialDto.getBlockUUID() : "null",
+            model
+        );
+        System.out.println("DTO-NATIVE: Exponential block created successfully from ExponentialDto - " + exponentialDto.getBlockName());
+    }
     
     // === Static Factory Methods ===
     public static Exponential fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -168,6 +187,22 @@ public class Exponential extends Block {
                 // Fallback: parameter will work for basic operations
             }
         }
+    }
+
+    // === DTO Helper Methods ===
+    private static Parameter createParameterFromTyped(com.ncslab.dto.common.TypedParameter typedParam, int number, String name) {
+        if (typedParam == null || typedParam.getValue() == null) {
+            throw new IllegalArgumentException("TypedParameter " + name + " cannot be null");
+        }
+        
+        String stringValue;
+        if (typedParam.getValue() instanceof Boolean) {
+            stringValue = ((Boolean) typedParam.getValue()) ? "on" : "off";
+        } else {
+            stringValue = typedParam.getValue().toString();
+        }
+        
+        return new Parameter(null, number, name, stringValue);
     }
     
     // === Getter Methods ===

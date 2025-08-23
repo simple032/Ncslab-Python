@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discrete.DelayDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -119,17 +120,42 @@ public class Delay extends DiscreteBlock {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Delay block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Delay block directly from DelayDto DTO
+     */
+    public Delay(DelayDto delayDto, NCSLabModel model) {
+        super(delayDto, model);
+
+        // Initialize final parameters from DelayDto
+        this.delayLength = new Parameter(this, 1, "DelayLength", String.valueOf(delayDto.getDelayLengthValue()));
+        this.initialCondition = new Parameter(this, 2, "InitialCondition", String.valueOf(delayDto.getInitialConditionValue()));
+        this.sampleTimeParam = new Parameter(this, 3, "SampleTime", String.valueOf(delayDto.getSampleTimeValue()));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", delayDto.getOutDataTypeStr().getValue(String.class));
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", delayDto.getSaturateOnIntegerOverflow().getValue(String.class));
+
+        // Set discrete sample time
+        setSampleTime(this.sampleTimeParam);
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + delayDto.getBlockName());
+    }
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Delay block directly from generic BlockDto DTO
      */
     public Delay(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.delayLength = new Parameter(this, 1, "Delaylength", "0");
-        this.initialCondition = new Parameter(this, 2, "Initialcondition", "0");
-        this.sampleTimeParam = new Parameter(this, 3, "Sampletimeparam", "0");
+        // Initialize final parameters from DTO with defaults
+        this.delayLength = new Parameter(this, 1, "DelayLength", "1");
+        this.initialCondition = new Parameter(this, 2, "InitialCondition", "0");
+        this.sampleTimeParam = new Parameter(this, 3, "SampleTime", "-1");
         this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
         this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+
+        // Set discrete sample time
+        setSampleTime(this.sampleTimeParam);
 
         // Initialize ports
         initializePorts();

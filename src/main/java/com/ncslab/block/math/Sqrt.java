@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.SqrtDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -101,14 +102,47 @@ public class Sqrt extends Block {
         
         // Initialize ports
         initializePorts();
-    }    /**
-     * DTO-NATIVE Constructor - Creates Sqrt block directly from BlockDto DTO
+    }
+    
+    /**
+     * DTO Constructor - Creates Sqrt block directly from SqrtDto
+     * @param dto The SqrtDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
      */
+    public Sqrt(SqrtDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Extract and validate DTO parameters
+        String functionValue = dto.getFunctionValue();
+        String sampleTimeStr = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String outDataTypeValue = dto.getOutDataTypeStrValue();
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+        
+        // Create parameters from DTO values
+        this.function = new Parameter(this, 1, "Function", functionValue);
+        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeStr);
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        
+        // Validate parameters
+        validateParameters(this.function, this.sampleTime);
+        
+        // Initialize ports
+        initializePorts();
+        
+        System.out.println("DTO-NATIVE: Sqrt block created successfully from SqrtDto - " + dto.getBlockName());
+    }
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Sqrt block directly from BlockDto DTO
+     * @deprecated Use specific SqrtDto constructor instead
+     */
+    @Deprecated
     public Sqrt(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.function = new Parameter(this, 1, "Function", "functionValue");
+        // Initialize final parameters with defaults
+        this.function = new Parameter(this, 1, "Function", "sqrt");
         this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
         this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
         this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");

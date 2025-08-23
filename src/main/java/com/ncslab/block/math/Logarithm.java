@@ -2,9 +2,12 @@ package com.ncslab.block.math;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
 import lombok.Getter;
+
+import org.apache.commons.lang3.reflect.Typed;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -82,6 +85,25 @@ public class Logarithm extends Block {
         
         // One output port with feedthrough
         outputPortList.add(new com.ncslab.block.io.OutputPort(this, 1, true));
+    }
+
+    /**
+     * DTO-NATIVE Constructor - Creates Logarithm block directly from LogarithmDto DTO
+     */
+    public Logarithm(com.ncslab.dto.block.specialized.math.LogarithmDto logarithmDto, NCSLabModel model) {
+        this(
+            createParameterFromTyped(logarithmDto.getLogType(), 1, "LogType"),
+            createParameterFromTyped(TypedParameter.of(logarithmDto.getCustomBase()), 2, "CustomBase"),
+            createParameterFromTyped(TypedParameter.of(logarithmDto.getZeroCrossing()), 3, "ZeroCrossing"),
+            createParameterFromTyped(logarithmDto.getSampleTime(), 4, "SampleTime"),
+            createParameterFromTyped(logarithmDto.getOutDataTypeStr(), 5, "OutDataTypeStr"),
+            createParameterFromTyped(logarithmDto.getSaturateOnIntegerOverflow(), 6, "SaturateOnIntegerOverflow"),
+            logarithmDto.getBlockName(),
+            logarithmDto.getBlockPath(),
+            logarithmDto.getBlockUUID() != null ? logarithmDto.getBlockUUID() : "null",
+            model
+        );
+        System.out.println("DTO-NATIVE: Logarithm block created successfully from LogarithmDto - " + logarithmDto.getBlockName());
     }
     
     // === Static Factory Methods ===
@@ -167,6 +189,22 @@ public class Logarithm extends Block {
                 // Fallback: parameter will work for basic operations
             }
         }
+    }
+
+    // === DTO Helper Methods ===
+    private static Parameter createParameterFromTyped(com.ncslab.dto.common.TypedParameter typedParam, int number, String name) {
+        if (typedParam == null || typedParam.getValue() == null) {
+            throw new IllegalArgumentException("TypedParameter " + name + " cannot be null");
+        }
+        
+        String stringValue;
+        if (typedParam.getValue() instanceof Boolean) {
+            stringValue = ((Boolean) typedParam.getValue()) ? "on" : "off";
+        } else {
+            stringValue = typedParam.getValue().toString();
+        }
+        
+        return new Parameter(null, number, name, stringValue);
     }
     
     // === Getter Methods ===

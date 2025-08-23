@@ -5,6 +5,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.PulseDto;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -109,18 +110,39 @@ public class Pulse extends Block {
         // Initialize ports
         initializePorts();
     }    /**
-     * DTO-NATIVE Constructor - Creates Pulse block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Pulse block directly from PulseDto DTO
+     */
+    public Pulse(PulseDto pulseDto, NCSLabModel model) {
+        super(pulseDto, model);
+
+        // Initialize final parameters from PulseDto
+        this.amplitude = new Parameter(this, 1, "Amplitude", String.valueOf(pulseDto.getAmplitudeValue()));
+        this.period = new Parameter(this, 2, "Period", String.valueOf(pulseDto.getPeriodValue()));
+        this.pulseWidth = new Parameter(this, 3, "PulseWidth", String.valueOf(pulseDto.getPulseWidthValue()));
+        this.phaseDelay = new Parameter(this, 4, "PhaseDelay", String.valueOf(pulseDto.getPhaseDelayValue()));
+        this.sampleTime = new Parameter(this, 5, "SampleTime", String.valueOf(pulseDto.getSampleTimeValue()));
+        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", pulseDto.getOutDataTypeStr() != null ? pulseDto.getOutDataTypeStr().getAsString() : "Inherit: Same as parameter");
+        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", pulseDto.getSaturateOnIntegerOverflow() != null ? (pulseDto.getSaturateOnIntegerOverflow().getAsBoolean() ? "on" : "off") : "off");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + pulseDto.getBlockName());
+    }
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Pulse block directly from generic BlockDto DTO
      */
     public Pulse(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
+        // Initialize final parameters from DTO with defaults
         this.amplitude = new Parameter(this, 1, "Amplitude", "1");
         this.period = new Parameter(this, 2, "Period", "1");
-        this.pulseWidth = new Parameter(this, 3, "Pulsewidth", "0");
-        this.phaseDelay = new Parameter(this, 4, "Phasedelay", "0");
+        this.pulseWidth = new Parameter(this, 3, "PulseWidth", "50");
+        this.phaseDelay = new Parameter(this, 4, "PhaseDelay", "0");
         this.sampleTime = new Parameter(this, 5, "SampleTime", "0");
-        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "Inherit: Same as parameter");
+        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "double");
         this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
 
         // Initialize ports

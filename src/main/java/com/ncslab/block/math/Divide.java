@@ -76,6 +76,36 @@ public class Divide extends Block {
         outputPortList.add(new com.ncslab.block.io.OutputPort(this, 1, true));
     }
     
+    /**
+     * DivideDto Constructor - Creates Divide block directly from DivideDto
+     */
+    public Divide(com.ncslab.dto.block.specialized.math.DivideDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Extract parameter values from DTO
+        String divideMethodValue = dto.getDivideMethodValue() != null ? dto.getDivideMethodValue() : "Element-wise(./.)";
+        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String outDataTypeValue = dto.getOutDataTypeStrValue() != null ? dto.getOutDataTypeStrValue() : "Inherit: Same as input";
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() != null && dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+        
+        // Initialize parameters with extracted values
+        this.divideMethod = new Parameter(this, 1, "DivideMethod", divideMethodValue);
+        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        
+        // Add parameters to parameter list
+        parameterList.add(this.divideMethod);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+        
+        // Initialize ports
+        initializePorts();
+        
+        System.out.println("DivideDto: " + getClass().getSimpleName() + " block created successfully from DivideDto - " + dto.getBlockName());
+    }
+    
     // === Static Factory Methods ===
     public static Divide fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

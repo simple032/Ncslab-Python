@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.route.MuxDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -114,16 +115,44 @@ public class Mux extends Block {
 		}
 		outputPortList.add(new OutputPort(this, 1, feedThrough));
 	}    /**
-     * DTO-NATIVE Constructor - Creates Mux block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Mux block directly from MuxDto DTO
+     */
+    public Mux(MuxDto muxDto, NCSLabModel model) {
+        super(muxDto, model);
+
+        // Initialize final parameters from MuxDto
+        this.inputs = new Parameter(this, 1, "Inputs", String.valueOf(muxDto.getInputsValue()));
+        this.displayOrder = new Parameter(this, 2, "DisplayOrder", muxDto.getDisplayOrderValue());
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(muxDto.getSampleTimeValue()));
+        String outDataTypeValue = muxDto.getOutDataTypeStr() != null ? muxDto.getOutDataTypeStr().getAsString() : "Inherit: Same as input";
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeValue);
+        
+        String saturateValue = muxDto.getSaturateOnIntegerOverflow() != null ? muxDto.getSaturateOnIntegerOverflow().getAsString() : "off";
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateValue);
+        
+        // Parse number of inputs and create ports
+        this.num = muxDto.getInputsValue();
+        
+        // Create input ports based on parameter
+        for(int i=0; i<num; i++) {
+            inputPortList.add(new InputPort(this, i+1));
+        }
+        outputPortList.add(new OutputPort(this, 1, feedThrough));
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + muxDto.getBlockName());
+    }
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Mux block directly from generic BlockDto DTO
      */
     public Mux(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
+        // Initialize final parameters from DTO with defaults
         this.inputs = new Parameter(this, 1, "Inputs", "2");
         this.displayOrder = new Parameter(this, 2, "DisplayOrder", "1:N");
         this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
         this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
 
         // Initialize ports

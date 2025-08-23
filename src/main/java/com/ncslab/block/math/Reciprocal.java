@@ -151,6 +151,119 @@ public class Reciprocal extends Block {
         return block;
     }
     
+    /**
+     * Create Reciprocal block from DTO (modern approach)
+     */
+    public static Reciprocal fromDTO(com.ncslab.dto.block.specialized.math.ReciprocalDto dto, NCSLabModel model) {
+        try {
+            // Extract typed parameters with defaults
+            String enableSaturationValue = dto.getEnableSaturationValue() ? "on" : "off";
+            
+            String upperLimitValue;
+            Double upperDouble = dto.getUpperLimitValue();
+            if (upperDouble == null || Double.isInfinite(upperDouble) && upperDouble > 0) {
+                upperLimitValue = "inf";
+            } else {
+                upperLimitValue = String.valueOf(upperDouble);
+            }
+            
+            String lowerLimitValue;
+            Double lowerDouble = dto.getLowerLimitValue();
+            if (lowerDouble == null || Double.isInfinite(lowerDouble) && lowerDouble < 0) {
+                lowerLimitValue = "-inf";
+            } else {
+                lowerLimitValue = String.valueOf(lowerDouble);
+            }
+            
+            String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+            String outDataTypeValue = dto.getOutDataTypeStrValue();
+            String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+            
+            // Create parameter objects
+            Parameter enableSaturationParam = new Parameter(null, 1, "EnableSaturation", enableSaturationValue);
+            Parameter upperLimitParam = new Parameter(null, 2, "UpperLimit", upperLimitValue);
+            Parameter lowerLimitParam = new Parameter(null, 3, "LowerLimit", lowerLimitValue);
+            Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", sampleTimeValue);
+            Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataTypeValue);
+            Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateValue);
+            
+            // Create block
+            Reciprocal block = new Reciprocal(enableSaturationParam, upperLimitParam, lowerLimitParam,
+                                             sampleTimeParam, outDataTypeParam, saturateParam,
+                                             dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID(), model);
+            
+            setParameterBlockReference(block, enableSaturationParam, upperLimitParam, lowerLimitParam,
+                                     sampleTimeParam, outDataTypeParam, saturateParam);
+            
+            return block;
+            
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Reciprocal block from DTO: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Constructor for DTO-based creation (dual constructor pattern)
+     */
+    public Reciprocal(com.ncslab.dto.block.specialized.math.ReciprocalDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Initialize from DTO parameters using TypedParameter value extraction
+        this.enableSaturation = createParameterFromDto("EnableSaturation", dto.getEnableSaturationValue(), 1);
+        this.upperLimit = createParameterFromDto("UpperLimit", dto.getUpperLimitValue(), 2);
+        this.lowerLimit = createParameterFromDto("LowerLimit", dto.getLowerLimitValue(), 3);
+        this.sampleTime = createParameterFromDto("SampleTime", dto.getSampleTime(), 4);
+        this.outDataType = createParameterFromDto("OutDataTypeStr", dto.getOutDataTypeStrValue(), 5);
+        this.saturateOnIntegerOverflow = createParameterFromDto("SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue(), 6);
+        
+        // Add parameters to parameter list
+        parameterList.add(enableSaturation);
+        parameterList.add(upperLimit);
+        parameterList.add(lowerLimit);
+        parameterList.add(sampleTime);
+        parameterList.add(outDataType);
+        parameterList.add(saturateOnIntegerOverflow);
+        
+        initializePorts();
+        
+        setParameterBlockReference(this, enableSaturation, upperLimit, lowerLimit,
+                                 sampleTime, outDataType, saturateOnIntegerOverflow);
+    }
+    
+    /**
+     * Static factory method for DTO creation
+     */
+    public static Reciprocal fromDto(com.ncslab.dto.block.specialized.math.ReciprocalDto dto, NCSLabModel model) {
+        return new Reciprocal(dto, model);
+    }
+    
+    /**
+     * Helper method to create Parameter from DTO values
+     */
+    private static Parameter createParameterFromDto(String paramName, Object value, int index) {
+        String stringValue;
+        if (value instanceof Boolean) {
+            stringValue = ((Boolean) value) ? "on" : "off";
+        } else if (value instanceof Double) {
+            Double doubleValue = (Double) value;
+            if (Double.isInfinite(doubleValue)) {
+                // Use Java's infinity representation that Data class can parse
+                stringValue = doubleValue > 0 ? "Infinity" : "-Infinity";
+            } else {
+                stringValue = String.valueOf(doubleValue);
+            }
+        } else {
+            stringValue = String.valueOf(value);
+        }
+        return new Parameter(null, index, paramName, stringValue);
+    }
+    
     // === Utility Methods ===
     private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
         JSONObject identity = new JSONObject();
@@ -158,6 +271,7 @@ public class Reciprocal extends Block {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to avoid JSONException
         return identity;
     }
     

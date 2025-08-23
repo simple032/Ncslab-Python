@@ -162,6 +162,34 @@ public class Relay extends Block {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    /**
+     * DTO Constructor - Creates Relay block from RelayDto with proper parameter mapping
+     */
+    public Relay(com.ncslab.dto.block.specialized.discontinuous.RelayDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract parameters from DTO
+        this.switchOnPoint = new Parameter(this, 1, "OnSwitchValue", String.valueOf(dto.getSwitchOnPointValue()));
+        this.switchOffPoint = new Parameter(this, 2, "OffSwitchValue", String.valueOf(dto.getSwitchOffPointValue()));
+        this.outputWhenOn = new Parameter(this, 3, "OnOutputValue", String.valueOf(dto.getOutputWhenOnValue()));
+        this.outputWhenOff = new Parameter(this, 4, "OffOutputValue", String.valueOf(dto.getOutputWhenOffValue()));
+        this.sampleTime = new Parameter(this, 5, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
+        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+
+        // Legacy field mapping for backward compatibility
+        this.onSwitchValue = this.switchOnPoint;
+        this.offSwitchValue = this.switchOffPoint;
+        this.onOutputValue = this.outputWhenOn;
+        this.offOutputValue = this.outputWhenOff;
+
+        // Initialize ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+
+        System.out.println("DTO: " + getClass().getSimpleName() + " block created from RelayDto - " + dto.getBlockName());
+    }
     
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));

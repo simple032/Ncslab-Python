@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.route.DemuxDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -110,16 +111,42 @@ public class Demux extends Block {
 		}
 		inputPortList.add(new InputPort(this, 1));
 	}    /**
-     * DTO-NATIVE Constructor - Creates Demux block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Demux block directly from DemuxDto DTO
+     */
+    public Demux(DemuxDto demuxDto, NCSLabModel model) {
+        super(demuxDto, model);
+
+        // Initialize final parameters from DemuxDto
+        this.outputs = new Parameter(this, 1, "Outputs", String.valueOf(demuxDto.getOutputsValue()));
+        this.displayOrder = new Parameter(this, 2, "DisplayOrder", demuxDto.getDisplayOrderValue());
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(demuxDto.getSampleTimeValue()));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", demuxDto.getOutDataTypeStr() != null ? demuxDto.getOutDataTypeStr().getAsString() : "Inherit: Inherit via internal rule");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", demuxDto.getSaturateOnIntegerOverflow() != null ? (demuxDto.getSaturateOnIntegerOverflow().getAsBoolean() ? "on" : "off") : "off");
+        
+        // Parse number of outputs and create ports
+        this.feedThrough = true;
+        this.num = demuxDto.getOutputsValue();
+        
+        // Create output ports based on parameter
+        for(int i=0; i<num; i++) {
+            outputPortList.add(new OutputPort(this, i+1, feedThrough));
+        }
+        inputPortList.add(new InputPort(this, 1));
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + demuxDto.getBlockName());
+    }
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Demux block directly from generic BlockDto DTO
      */
     public Demux(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
+        // Initialize final parameters from DTO with defaults
         this.outputs = new Parameter(this, 1, "Outputs", "2");
         this.displayOrder = new Parameter(this, 2, "DisplayOrder", "1:N");
         this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
         this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
 
         // Initialize ports

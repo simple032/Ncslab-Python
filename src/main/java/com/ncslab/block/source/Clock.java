@@ -63,11 +63,27 @@ public class Clock extends SourceBlock {
     }
     
     /**
-     * DTO-NATIVE Constructor - Creates Clock block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates Clock block directly from ClockDto DTO
+     */
+    public Clock(com.ncslab.dto.block.specialized.source.ClockDto clockDto, NCSLabModel model) {
+        this(
+            createParameterFromTyped(clockDto.getSampleTime(), 1, "SampleTime"),
+            createParameterFromTyped(clockDto.getOutDataTypeStr(), 2, "OutDataTypeStr"),
+            createParameterFromTyped(clockDto.getSaturateOnIntegerOverflow(), 3, "SaturateOnIntegerOverflow"),
+            clockDto.getBlockName(),
+            clockDto.getBlockPath(),
+            clockDto.getBlockUUID() != null ? clockDto.getBlockUUID() : "null",
+            model
+        );
+        System.out.println("DTO-NATIVE: Clock block created successfully from ClockDto - " + clockDto.getBlockName());
+    }
+
+    /**
+     * Legacy DTO Constructor - Creates Clock block from generic BlockDto (fallback)
      */
     public Clock(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
-        System.out.println("DTO-NATIVE: Clock block created successfully - " + blockDto.getBlockName());
+        System.out.println("DTO-GENERIC: Clock block created from generic BlockDto - " + blockDto.getBlockName());
     }
     
     // === Static Factory Method for JSON Deserialization ===
@@ -173,6 +189,22 @@ public class Clock extends SourceBlock {
         }
         String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
         return new Parameter(null, 3, "SaturateOnIntegerOverflow", saturateValue);
+    }
+
+    // === DTO Helper Methods ===
+    private static Parameter createParameterFromTyped(com.ncslab.dto.common.TypedParameter typedParam, int number, String name) {
+        if (typedParam == null || typedParam.getValue() == null) {
+            throw new IllegalArgumentException("TypedParameter " + name + " cannot be null");
+        }
+        
+        String stringValue;
+        if (typedParam.getValue() instanceof Boolean) {
+            stringValue = ((Boolean) typedParam.getValue()) ? "on" : "off";
+        } else {
+            stringValue = typedParam.getValue().toString();
+        }
+        
+        return new Parameter(null, number, name, stringValue);
     }
 
 

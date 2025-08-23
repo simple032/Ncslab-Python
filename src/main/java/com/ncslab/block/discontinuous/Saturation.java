@@ -131,6 +131,30 @@ public class Saturation extends Block {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    /**
+     * DTO Constructor - Creates Saturation block from SaturationDto with proper parameter mapping
+     */
+    public Saturation(com.ncslab.dto.block.specialized.discontinuous.SaturationDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract parameters from DTO
+        this.upperSaturationLimit = new Parameter(this, 1, "UpperLimit", String.valueOf(dto.getUpperSaturationLimitValue()));
+        this.lowerSaturationLimit = new Parameter(this, 2, "LowerLimit", String.valueOf(dto.getLowerSaturationLimitValue()));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+
+        // Legacy field mapping for backward compatibility
+        this.upperLimit = this.upperSaturationLimit;
+        this.lowerLimit = this.lowerSaturationLimit;
+
+        // Initialize ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+
+        System.out.println("DTO: " + getClass().getSimpleName() + " block created from SaturationDto - " + dto.getBlockName());
+    }
     
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));

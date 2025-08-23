@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.SineWaveDto;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -124,13 +125,39 @@ public class SineWave extends Block {
         
         // Initialize ports
         initializePorts();
-    }    /**
-     * DTO-NATIVE Constructor - Creates SineWave block directly from BlockDto DTO
+    }    
+    
+    /**
+     * DTO-NATIVE Constructor - Creates SineWave block directly from SineWaveDto
+     */
+    public SineWave(SineWaveDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+
+        // Initialize parameters from DTO with null safety and validation
+        this.amplitude = new Parameter(this, 1, "Amplitude", String.valueOf(dto.getAmplitudeValue()));
+        this.bias = new Parameter(this, 2, "Bias", String.valueOf(dto.getBiasValue()));
+        this.frequency = new Parameter(this, 3, "Frequency", String.valueOf(dto.getFrequencyValue()));
+        this.phase = new Parameter(this, 4, "Phase", String.valueOf(dto.getPhaseValue()));
+        this.sampleTime = new Parameter(this, 5, "SampleTime", String.valueOf(dto.getSampleTimeValue()));
+        this.samples = new Parameter(this, 6, "Samples", String.valueOf(dto.getSamplesValue()));
+        this.timeSource = new Parameter(this, 7, "TimeSource", dto.getTimeSourceValue());
+        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow",
+            dto.getSaturateOnIntegerOverflow() != null ?
+                java.util.Objects.toString(dto.getSaturateOnIntegerOverflow().getValue(String.class), "off") :
+                "off");
+
+        initializePorts();
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
+    }
+
+    /**
+     * Generic DTO Constructor - Creates SineWave block from generic BlockDto
      */
     public SineWave(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
+        // Initialize final parameters with defaults
         this.amplitude = new Parameter(this, 1, "Amplitude", "1");
         this.bias = new Parameter(this, 2, "Bias", "0");
         this.frequency = new Parameter(this, 3, "Frequency", "1");
@@ -138,13 +165,20 @@ public class SineWave extends Block {
         this.sampleTime = new Parameter(this, 5, "SampleTime", "0");
         this.samples = new Parameter(this, 6, "Samples", "1");
         this.timeSource = new Parameter(this, 7, "TimeSource", "Use simulation time");
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "Inherit: Same as parameter");
+        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "double");
         this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", "off");
 
-        // Initialize ports
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    void initializePorts(){
+        // Initialize ports
+        outputPortList.add(new OutputPort(this, 1, false));
+        outputPortList.get(0).setHeight(amplitude.getHeight());
+        outputPortList.get(0).setWidth(amplitude.getWidth());
+
     }
     
     // === Static Factory Method for JSON Deserialization ===
@@ -311,13 +345,6 @@ public class SineWave extends Block {
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
         return identity;
-    }
-    // === Port Initialization ===
-    private void initializePorts() {
-        // Create output port (sine wave blocks have no input unless external time source)
-        outputPortList.add(new OutputPort(this, 1, false));
-        outputPortList.get(0).setHeight(amplitude.getHeight());
-        outputPortList.get(0).setWidth(amplitude.getWidth());
     }
     // === Code Generation Methods (preserved from original) ===
     public void generateInitCodeM(CodeStructM code) {

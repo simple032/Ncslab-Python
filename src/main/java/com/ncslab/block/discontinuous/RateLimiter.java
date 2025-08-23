@@ -130,6 +130,30 @@ public class RateLimiter extends Block {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    /**
+     * DTO Constructor - Creates RateLimiter block from RateLimiterDto with proper parameter mapping
+     */
+    public RateLimiter(com.ncslab.dto.block.specialized.discontinuous.RateLimiterDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract parameters from DTO
+        this.risingSlew = new Parameter(this, 1, "UpperLimit", String.valueOf(dto.getRisingSlewValue()));
+        this.fallingSlew = new Parameter(this, 2, "LowerLimit", String.valueOf(dto.getFallingSlewValue()));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+
+        // Legacy field mapping for backward compatibility
+        this.upperLimit = this.risingSlew;
+        this.lowerLimit = this.fallingSlew;
+
+        // Initialize ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+
+        System.out.println("DTO: " + getClass().getSimpleName() + " block created from RateLimiterDto - " + dto.getBlockName());
+    }
     
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));

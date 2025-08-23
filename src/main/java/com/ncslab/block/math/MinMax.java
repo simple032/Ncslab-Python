@@ -72,6 +72,28 @@ public class MinMax extends Block {
         initializePorts();
     }
     
+    // === DTO Constructor ===
+    public MinMax(com.ncslab.dto.block.specialized.math.MinMaxDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Create parameters from DTO
+        this.function = new Parameter(this, 1, "Function", dto.getFunctionValue());
+        this.numInputs = new Parameter(this, 2, "NumInputs", String.valueOf(dto.getNumInputsValue()));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", 
+            dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        
+        // Add parameters to parameter list
+        parameterList.add(function);
+        parameterList.add(numInputs);
+        parameterList.add(sampleTime);
+        parameterList.add(outDataType);
+        parameterList.add(saturateOnIntegerOverflow);
+        
+        initializePorts();
+    }
+    
     private void initializePorts() {
         // Create input ports based on NumInputs parameter
         int numInputsValue = (int) numInputs.getData().getInitValue();

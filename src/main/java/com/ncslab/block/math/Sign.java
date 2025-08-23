@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.SignDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -96,7 +97,39 @@ public class Sign extends Block {
         
         // Initialize ports
         initializePorts();
-    }    /**
+    }
+    
+    /**
+     * DTO-SPECIFIC Constructor - Creates Sign block directly from SignDto DTO
+     */
+    public Sign(SignDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Extract parameters from DTO with defaults
+        String zeroCrossingValue = dto.getZeroCrossingValue();
+        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String outDataTypeValue = dto.getOutDataTypeStrValue();
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+        
+        // Validate sample time
+        double sampleTimeDouble = Double.parseDouble(sampleTimeValue);
+        if (sampleTimeDouble != -1.0 && sampleTimeDouble <= 0.0) {
+            throw new IllegalArgumentException("Sample time must be positive or -1 (inherited)");
+        }
+        
+        // Initialize parameters
+        this.zeroCrossing = new Parameter(this, 1, "ZeroCrossing", zeroCrossingValue);
+        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        
+        // Initialize ports
+        initializePorts();
+        
+        System.out.println("DTO-SPECIFIC: Sign block created successfully from SignDto - " + dto.getBlockName());
+    }
+    
+    /**
      * DTO-NATIVE Constructor - Creates Sign block directly from BlockDto DTO
      */
     public Sign(BlockDto blockDto, NCSLabModel model) {

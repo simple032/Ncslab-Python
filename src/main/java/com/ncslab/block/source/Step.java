@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.StepDto;
 
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -106,21 +107,45 @@ public class Step extends SourceBlock {
         
         // Set parameter block references for legacy compatibility
         setParameterBlockReference(this, time, initialValue, finalValue);
-    }    /**
-     * DTO-NATIVE Constructor - Creates Step block directly from BlockDto DTO
+    }
+
+    /**
+     * DTO Constructor - Creates Step block from StepDto
      */
-    public Step(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters from DTO
-        this.time = new Parameter(this, 1, "Time", "0");
-        this.initialValue = new Parameter(this, 2, "Initialvalue", "0");
-        this.finalValue = new Parameter(this, 3, "Finalvalue", "0");
-
-        // Initialize ports
+    public Step(StepDto dto, NCSLabModel model) {
+        super("Step", 
+              createParameterFromDto("SampleTime", dto.getSampleTime(), dto), 
+              createParameterFromDto("OutDataTypeStr", dto.getOutDataTypeStr(), dto),
+              createParameterFromDto("SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflow(), dto),
+              dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID(), model);
+        
+        // Validate DTO before initialization
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+        
+        // Initialize from DTO parameters
+        this.time = createParameterFromDto("Time", dto.getTime(), dto);
+        this.initialValue = createParameterFromDto("InitialValue", dto.getInitialValue(), dto);
+        this.finalValue = createParameterFromDto("FinalValue", dto.getFinalValue(), dto);
+        
+        // Add parameters to parameter list
+        parameterList.add(time);
+        parameterList.add(initialValue);
+        parameterList.add(finalValue);
+        
+        // Complete initialization
         initializePorts();
+        
+        System.out.println("Enhanced DTO: Step block created successfully - " + dto.getBlockName());
+    }
 
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    /**
+     * Factory method for DTO-based creation
+     */
+    public static Step fromDto(StepDto dto, NCSLabModel model) {
+        return new Step(dto, model);
     }
 
     // === Static Factory Method for JSON Deserialization ===
@@ -241,6 +266,36 @@ public class Step extends SourceBlock {
             } catch (Exception e) {
                 // Fallback: parameter block reference will be null, but should work for basic operations
             }
+        }
+    }
+    
+    // === DTO Helper Methods ===
+    
+    /**
+     * Helper method to create Parameter from DTO TypedParameter
+     */
+    private static Parameter createParameterFromDto(String paramName, Object value, StepDto dto) {
+        String stringValue;
+        if (value instanceof Boolean) {
+            stringValue = ((Boolean) value) ? "on" : "off";
+        } else {
+            stringValue = String.valueOf(value);
+        }
+        return new Parameter(null, getParameterIndex(paramName), paramName, stringValue);
+    }
+
+    /**
+     * Get parameter index for consistent ordering
+     */
+    private static int getParameterIndex(String paramName) {
+        switch (paramName) {
+            case "Time": return 1;
+            case "InitialValue": return 2;
+            case "FinalValue": return 3;
+            case "SampleTime": return 4;
+            case "OutDataTypeStr": return 5;
+            case "SaturateOnIntegerOverflow": return 6;
+            default: return 999; // Unknown parameters get high index
         }
     }
     

@@ -113,6 +113,33 @@ public class Bias extends Block {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    /**
+     * BiasDto Constructor - Creates Bias block directly from BiasDto
+     */
+    public Bias(com.ncslab.dto.block.specialized.math.BiasDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Extract parameter values from DTO
+        String biasValue = dto.getBias() != null ? String.valueOf(dto.getBias()) : "0";
+        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String outDataTypeValue = dto.getOutDataTypeStrValue() != null ? dto.getOutDataTypeStrValue() : "Inherit: Same as input";
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() != null && dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+        
+        // Initialize parameters with extracted values
+        this.bias = new Parameter(this, 1, "Bias", biasValue);
+        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
+        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        
+        // Validate parameters
+        validateParameters(this.bias, this.sampleTime);
+        
+        // Initialize ports
+        initializePorts();
+        
+        System.out.println("BiasDto: " + getClass().getSimpleName() + " block created successfully from BiasDto - " + dto.getBlockName());
+    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Bias fromJSON(JSONObject blockJSON, NCSLabModel model) {

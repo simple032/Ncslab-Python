@@ -3,6 +3,7 @@ package com.ncslab.block.math;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.AbsDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -105,6 +106,34 @@ public class Abs extends Block {
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * DTO Constructor - Creates Abs block directly from AbsDto DTO
+     */
+    public Abs(AbsDto dto, NCSLabModel model) {
+        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        
+        // Extract parameters from DTO with defaults
+        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String outDataTypeValue = dto.getOutDataTypeStrValue();
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+        
+        // Validate sample time
+        double sampleTimeDouble = Double.parseDouble(sampleTimeValue);
+        if (sampleTimeDouble != -1.0 && sampleTimeDouble <= 0.0) {
+            throw new IllegalArgumentException("Sample time must be positive or -1 (inherited)");
+        }
+        
+        // Initialize parameters
+        this.sampleTime = new Parameter(this, 1, "SampleTime", sampleTimeValue);
+        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", saturateValue);
+        
+        // Initialize ports
+        initializePorts();
+        
+        System.out.println("DTO-SPECIFIC: Abs block created successfully from AbsDto - " + dto.getBlockName());
     }
 
 // === Static Factory Method for JSON Deserialization ===

@@ -132,6 +132,30 @@ public class Backlash extends Block {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    /**
+     * DTO Constructor - Creates Backlash block from BacklashDto with proper parameter mapping
+     */
+    public Backlash(com.ncslab.dto.block.specialized.discontinuous.BacklashDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract parameters from DTO
+        this.backlashWidthParam = new Parameter(this, 1, "BacklashWidth", String.valueOf(dto.getBacklashWidthValue()));
+        this.initialOutputParam = new Parameter(this, 2, "InitialOutput", String.valueOf(dto.getInitialOutputValue()));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+
+        // Legacy field mapping for backward compatibility
+        this.backlashWidth = this.backlashWidthParam;
+        this.initialOutput = this.initialOutputParam;
+
+        // Initialize ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+
+        System.out.println("DTO: " + getClass().getSimpleName() + " block created from BacklashDto - " + dto.getBlockName());
+    }
     
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));
