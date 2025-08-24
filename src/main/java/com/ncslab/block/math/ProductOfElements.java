@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.ProductOfElementsDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -36,7 +37,7 @@ public class ProductOfElements extends Block {
     /**
      * DTO-NATIVE Constructor - Creates ProductOfElements block directly from BlockDto DTO
      */
-    public ProductOfElements(BlockDto blockDto, NCSLabModel model) {
+    public ProductOfElements(ProductOfElementsDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ProductOfElements block created successfully - " + blockDto.getBlockName());
     }

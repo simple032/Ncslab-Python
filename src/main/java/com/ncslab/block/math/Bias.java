@@ -3,6 +3,7 @@ package com.ncslab.block.math;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.BiasDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.data.Data;
@@ -96,33 +97,16 @@ public class Bias extends Block {
         
         // Initialize ports
         initializePorts();
-    }    /**
-     * DTO-NATIVE Constructor - Creates Bias block directly from BlockDto DTO
-     */
-    public Bias(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters from DTO
-        this.bias = new Parameter(this, 1, "Bias", "0");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-
     /**
      * BiasDto Constructor - Creates Bias block directly from BiasDto
      */
-    public Bias(com.ncslab.dto.block.specialized.math.BiasDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+    public Bias(BiasDto dto, NCSLabModel model) {
+        super(dto, model);
         
         // Extract parameter values from DTO
-        String biasValue = dto.getBias() != null ? String.valueOf(dto.getBias()) : "0";
-        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String biasValue = dto.getBias() != null ? dto.getBias().getAsString() : "0";
+        String sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().getAsString() : "-1";
         String outDataTypeValue = dto.getOutDataTypeStrValue() != null ? dto.getOutDataTypeStrValue() : "Inherit: Same as input";
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() != null && dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         

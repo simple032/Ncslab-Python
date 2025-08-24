@@ -39,7 +39,7 @@ public class ShiftArithmeticDto extends BlockDto {
     private TypedParameter arithmeticShift;
     
     public ShiftArithmeticDto(String blockName, String blockPath) {
-        super("ShiftArithmetic", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

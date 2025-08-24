@@ -2,6 +2,7 @@ package com.ncslab.block.continuous;
 
 import com.ncslab.block.data.Data;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.continuous.IntegratorDto;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.util.TemplateManager;
@@ -554,7 +555,7 @@ public class Integrator extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates Integrator block directly from BlockDto DTO
      */
-    public Integrator(BlockDto blockDto, NCSLabModel model) {
+    public Integrator(IntegratorDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Extract parameters from DTO using same names and defaults as JSON constructor
@@ -582,93 +583,7 @@ public class Integrator extends Block {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
-    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
-    // This pattern maintains backward compatibility while enabling DTO migration
-
-    /**
-     * Enhanced DTO-based constructor - preferred for new implementations
-     * @param dto The DTO containing block configuration
-     * @param model The parent model
-     */
-    public Integrator(com.ncslab.dto.block.specialized.continuous.IntegratorDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
-        
-        // Validate DTO before initialization
-        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
-        if (!validation.isValid()) {
-            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
-        }
-        
-        // Initialize from DTO parameters
-        this.initialCondition = createParameterFromDto("InitialCondition", dto.getInitialCondition(), dto);
-        this.externalReset = createParameterFromDto("ExternalReset", dto.getExternalReset(), dto);
-        this.conditionSource = createParameterFromDto("InitialConditionSource", dto.getInitialConditionSource(), dto);
-        this.limitOutput = createParameterFromDto("LimitOutput", dto.getLimitOutput(), dto);
-        this.upperSaturationLimit = createParameterFromDto("UpperSaturationLimit", dto.getUpperSaturationLimit(), dto);
-        this.lowerSaturationLimit = createParameterFromDto("LowerSaturationLimit", dto.getLowerSaturationLimit(), dto);
-        this.showSaturationPort = createParameterFromDto("ShowSaturationPort", dto.getShowSaturationPort(), dto);
-        this.showStatePort = createParameterFromDto("ShowStatePort", dto.getShowStatePort(), dto);
-        this.sampleTime = createParameterFromDto("SampleTime", dto.getSampleTime(), dto);
-        this.outDataType = createParameterFromDto("OutDataTypeStr", dto.getOutDataTypeStr(), dto);
-        this.saturateOnIntegerOverflow = createParameterFromDto("SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflow(), dto);
-        
-        // Complete initialization
-        initializePorts();
-        updateSaturationSettings();
-        
-        System.out.println("Enhanced DTO: Integrator block created successfully - " + dto.getBlockName());
-    }
-
-    /**
-     * Factory method for DTO-based creation
-     */
-    public static Integrator fromDto(com.ncslab.dto.block.specialized.continuous.IntegratorDto dto, NCSLabModel model) {
-        return new Integrator(dto, model);
-    }
-
-    /**
-     * Helper method to create Parameter from DTO values
-     */
-    private static Parameter createParameterFromDto(String paramName, Object value, com.ncslab.dto.block.specialized.continuous.IntegratorDto dto) {
-        String stringValue;
-        if (value instanceof Boolean) {
-            stringValue = ((Boolean) value) ? "on" : "off";
-        } else if (value instanceof Double && (Double.isInfinite((Double) value))) {
-            // Handle infinity values
-            if (((Double) value) == Double.POSITIVE_INFINITY) {
-                stringValue = "inf";
-            } else if (((Double) value) == Double.NEGATIVE_INFINITY) {
-                stringValue = "-inf";
-            } else {
-                stringValue = String.valueOf(value);
-            }
-        } else {
-            stringValue = String.valueOf(value);
-        }
-        return new Parameter(null, getParameterIndex(paramName), paramName, stringValue);
-    }
-
-    /**
-     * Get parameter index for consistent ordering
-     */
-    private static int getParameterIndex(String paramName) {
-        switch (paramName) {
-            case "InitialCondition": return 1;
-            case "ExternalReset": return 2;
-            case "InitialConditionSource": return 3;
-            case "LimitOutput": return 4;
-            case "UpperSaturationLimit": return 5;
-            case "LowerSaturationLimit": return 6;
-            case "ShowSaturationPort": return 7;
-            case "ShowStatePort": return 8;
-            case "SampleTime": return 9;
-            case "OutDataTypeStr": return 10;
-            case "SaturateOnIntegerOverflow": return 11;
-            default: return 99;
-        }
-    }
-
-    // ===== END DUAL CONSTRUCTOR PATTERN ===== 
+     
 
     public void checkDimension() throws MatDimException {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();

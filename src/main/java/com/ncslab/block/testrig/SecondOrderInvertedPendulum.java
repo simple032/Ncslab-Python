@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.SecondOrderInvertedPendulumDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -28,11 +29,27 @@ public class SecondOrderInvertedPendulum extends Block {
     
     
     /**
-     * DTO-NATIVE Constructor - Creates SecondOrderInvertedPendulum block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates SecondOrderInvertedPendulum block directly from SecondOrderInvertedPendulumDto DTO
+     */
+    public SecondOrderInvertedPendulum(SecondOrderInvertedPendulumDto blockDto, NCSLabModel model) {
+        super(blockDto, model);
+        
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, "Angle", 1, false));
+        outputPortList.add(new OutputPort(this, "Set_X", 2, false));
+        outputPortList.add(new OutputPort(this, "Real_X", 3, false));
+
+        spState = new State(this, 1, "SerialPortState");
+        stateList.add(spState);
+        
+        System.out.println("DTO-NATIVE: SecondOrderInvertedPendulum block created successfully - " + blockDto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
      */
     public SecondOrderInvertedPendulum(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-        System.out.println("DTO-NATIVE: SecondOrderInvertedPendulum block created successfully - " + blockDto.getBlockName());
+        this((SecondOrderInvertedPendulumDto) blockDto, model);
     }
 
 

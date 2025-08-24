@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.Optional;
 
 import com.utils.Property;
+import com.ncslab.dto.communication.MfcalcResponseDto;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -66,54 +67,61 @@ public class MfcalcClient {
         }
     }
 
-    public JSONObject runScript(String script) {
+    public MfcalcResponseDto runScript(String script) {
         JSONObject request = new JSONObject();
         request.put("message_type", "run_script");
         request.put("message_id", generateMessageId());
         request.put("data", new JSONObject().put("script", script));
-        return sendRequest(request);
+        JSONObject jsonResponse = sendRequest(request);
+        return MfcalcResponseDto.fromJsonObject(jsonResponse);
     }
 
-    public JSONObject debugScript(String script, int[] breakpoints) {
+    public MfcalcResponseDto debugScript(String script, int[] breakpoints) {
         JSONObject request = new JSONObject();
         request.put("message_type", "debug_script");
         request.put("message_id", generateMessageId());
         request.put("data", new JSONObject().put("script", script).put("breakpoints", breakpoints));
-        return sendRequest(request);
+        JSONObject jsonResponse = sendRequest(request);
+        return MfcalcResponseDto.fromJsonObject(jsonResponse);
     }
 
-    public JSONObject runCommand(String command) {
+    public MfcalcResponseDto runCommand(String command) {
         JSONObject request = new JSONObject();
         request.put("message_type", "run_command");
         request.put("message_id", generateMessageId());
         request.put("data", new JSONObject().put("command", command));
-        return sendRequest(request);
+        JSONObject jsonResponse = sendRequest(request);
+        return MfcalcResponseDto.fromJsonObject(jsonResponse);
     }
 
-    public JSONObject getVariables() {
+    public MfcalcResponseDto getVariables() {
         JSONObject request = new JSONObject();
         request.put("message_type", "get_variables");
         request.put("message_id", generateMessageId());
         request.put("data", new JSONObject());
-        JSONObject jo = sendRequest(request);
-        localVariables = jo.getJSONArray("data");
-        return jo;
+        JSONObject jsonResponse = sendRequest(request);
+        if (jsonResponse != null && jsonResponse.has("data")) {
+            localVariables = jsonResponse.getJSONArray("data");
+        }
+        return MfcalcResponseDto.fromJsonObject(jsonResponse);
     }
 
-    public JSONObject getVariable(String variableName) {
+    public MfcalcResponseDto getVariable(String variableName) {
         JSONObject request = new JSONObject();
         request.put("message_type", "get_variable");
         request.put("message_id", generateMessageId());
         request.put("data", new JSONObject().put("variable_name", variableName));
-        return sendRequest(request);
+        JSONObject jsonResponse = sendRequest(request);
+        return MfcalcResponseDto.fromJsonObject(jsonResponse);
     }
 
-    public JSONObject setVariable(String variableName, JSONObject variableValue) {
+    public MfcalcResponseDto setVariable(String variableName, JSONObject variableValue) {
         JSONObject request = new JSONObject();
         request.put("message_type", "set_variables");
         request.put("message_id", generateMessageId());
         request.put("data", new JSONObject().put("variable_name", variableName).put("value", variableValue));
-        return sendRequest(request);
+        JSONObject jsonResponse = sendRequest(request);
+        return MfcalcResponseDto.fromJsonObject(jsonResponse);
     }
 
     private String generateMessageId() {

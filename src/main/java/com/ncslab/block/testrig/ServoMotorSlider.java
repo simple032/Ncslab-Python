@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.ServoMotorSliderDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -27,7 +28,7 @@ public class ServoMotorSlider extends Block {
     /**
      * DTO-NATIVE Constructor - Creates ServoMotorSlider block directly from BlockDto DTO
      */
-    public ServoMotorSlider(BlockDto blockDto, NCSLabModel model) {
+    public ServoMotorSlider(ServoMotorSliderDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ServoMotorSlider block created successfully - " + blockDto.getBlockName());
     }

@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.DoubleTankDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -28,7 +29,7 @@ public class DoubleTank extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DoubleTank block directly from BlockDto DTO
      */
-    public DoubleTank(BlockDto blockDto, NCSLabModel model) {
+    public DoubleTank(DoubleTankDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DoubleTank block created successfully - " + blockDto.getBlockName());
     }

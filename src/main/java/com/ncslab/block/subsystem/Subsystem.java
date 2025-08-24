@@ -6,6 +6,7 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.line.Line;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.subsystem.SubsystemDto;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -59,7 +60,7 @@ public class Subsystem extends Block{
         // Initialize with empty collections - blocks and lines will be added via management methods
     }
 
-    public Subsystem(BlockDto blockDto, NCSLabModel model) {
+    public Subsystem(SubsystemDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inBlockList = new ArrayList<>();
         outBlockList = new ArrayList<>();

@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discrete.Discrete_Time_IntegratorDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -121,7 +122,7 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Discrete_Time_Integrator block directly from BlockDto DTO
      */
-    public Discrete_Time_Integrator(BlockDto blockDto, NCSLabModel model) {
+    public Discrete_Time_Integrator(Discrete_Time_IntegratorDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -136,7 +137,16 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }// === Static Factory Method for JSON Deserialization ===
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public Discrete_Time_Integrator(BlockDto blockDto, NCSLabModel model) {
+        this((Discrete_Time_IntegratorDto) blockDto, model);
+    }
+    
+    // === Static Factory Method for JSON Deserialization ===
     public static Discrete_Time_Integrator fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");

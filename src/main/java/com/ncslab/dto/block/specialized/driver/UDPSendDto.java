@@ -44,7 +44,7 @@ public class UDPSendDto extends BlockDto {
     private TypedParameter sampleTime;
     
     public UDPSendDto(String blockName, String blockPath) {
-        super("UDPSend", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

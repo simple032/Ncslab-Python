@@ -3,6 +3,7 @@ package com.ncslab.block.machineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.machineLearning.DataCollectorDto;
 
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
@@ -30,7 +31,7 @@ public class DataCollector extends Block{
     /**
      * DTO-NATIVE Constructor - Creates DataCollector block directly from BlockDto DTO
      */
-    public DataCollector(BlockDto blockDto, NCSLabModel model) {
+    public DataCollector(DataCollectorDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DataCollector block created successfully - " + blockDto.getBlockName());
     }

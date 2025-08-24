@@ -103,7 +103,7 @@ public class AnalogReadDto extends BlockDto {
                         TypedParameter sampleTime,
                         TypedParameter outDataTypeStr,
                         TypedParameter scaling) {
-        super("AnalogRead", blockName, blockPath);
+        super(blockName,blockPath);
         this.pin = pin;
         this.voltageRange = voltageRange;
         this.resolution = resolution;
@@ -120,7 +120,7 @@ public class AnalogReadDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public AnalogReadDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("AnalogRead", blockName, blockPath);
+        super(blockName,blockPath);
         this.pin = parameters.getTypedParameter("Pin", Integer.class, 0);
         this.voltageRange = parameters.getTypedParameter("VoltageRange", Double.class, 3.3);
         this.resolution = parameters.getTypedParameter("Resolution", Integer.class, 10);
@@ -139,7 +139,7 @@ public class AnalogReadDto extends BlockDto {
      * @param pin Analog input pin number
      */
     public AnalogReadDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension, int pin) {
-        super("AnalogRead", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.pin = TypedParameter.of(pin);
         this.voltageRange = TypedParameter.of(3.3);
         this.resolution = TypedParameter.of(10);

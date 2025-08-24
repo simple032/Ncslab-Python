@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("OldPIDController")
+@JsonTypeName("PIDController")
 @MigrationCompatible(originalClass = "com.ncslab.block.continuous.OldPIDController")
 public class OldPIDControllerDto extends BlockDto {
     
@@ -27,7 +27,7 @@ public class OldPIDControllerDto extends BlockDto {
     @Builder.Default
     private TypedParameter integralGain = TypedParameter.of(1.0);
     @Builder.Default
-    private TypedParameter derivativeGain = TypedParameter.of(0.0);
+    private TypedParameter derivativeGain = TypedParameter.of(0.0);    
     
     public Double getProportionalGainValue() {
         return proportionalGain != null ? proportionalGain.getAsDouble() : 1.0;

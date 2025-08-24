@@ -1,12 +1,17 @@
 package com.ncslab.dto.block.specialized.machineLearning.pt;
 
+import org.checkerframework.checker.units.qual.N;
+
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.annotations.MigrationCompatible;
+import com.ncslab.dto.block.specialized.machineLearning.MachineLearningDto;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import lombok.Builder;
 
@@ -15,10 +20,11 @@ import lombok.Builder;
  */
 @Data
 @SuperBuilder
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("PTModel")
 @MigrationCompatible(originalClass = "com.ncslab.block.machineLearning.pt.PTModel")
-public class PTModelDto extends BlockDto {
+public class PTModelDto extends MachineLearningDto {
     
     @Builder.Default
     private TypedParameter loadPath = TypedParameter.of("None");

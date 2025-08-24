@@ -31,12 +31,12 @@ import lombok.NoArgsConstructor;
 public class AddDto extends BlockDto {
     
     /**
-     * Number of inputs to the add block
-     * Default: 2
-     * Validation: Must be >= 1
+     * Input sequence defining signs (e.g., "++", "+-", "++--")
+     * Default: "++" (two positive inputs)
+     * Validation: Must contain only '+' and '-' characters
      */
     @Builder.Default
-    private TypedParameter numInputs = TypedParameter.of(2);
+    private TypedParameter inputs = TypedParameter.of("++");
     
     /**
      * Sample time for the block operation
@@ -61,11 +61,15 @@ public class AddDto extends BlockDto {
     
     // ===== PARAMETER ACCESS HELPERS =====
     public boolean getSign(int inputIndex) {
-        return false; // Placeholder for future extension
+        String sequence = getInputsValue();
+        if (sequence != null && inputIndex >= 0 && inputIndex < sequence.length()) {
+            return sequence.charAt(inputIndex) == '+';
+        }
+        return true; // Default to positive if invalid index
     }
 
-    public Integer getNumInputsValue() {
-        return numInputs != null ? numInputs.getAsInteger() : 2;
+    public String getInputsValue() {
+        return inputs != null ? inputs.getAsString() : "++";
     }
     
     public Double getSampleTimeValue() {
@@ -86,11 +90,22 @@ public class AddDto extends BlockDto {
     public ValidationResult validate() {
         ValidationResult result = super.validate();
         
-        // Validate number of inputs
-        if (numInputs != null) {
-            Integer inputs = numInputs.getAsInteger();
-            if (inputs == null || inputs < 1) {
-                result.addError("Number of inputs must be at least 1");
+        // Validate input sequence
+        if (inputs != null) {
+            String sequence = inputs.getAsString();
+            if (sequence == null || sequence.trim().isEmpty()) {
+                result.addError("Input sequence cannot be empty");
+            } else {
+                // Validate sequence contains only + and - characters
+                for (char c : sequence.toCharArray()) {
+                    if (c != '+' && c != '-') {
+                        result.addError("Input sequence must contain only '+' and '-' characters");
+                        break;
+                    }
+                }
+                if (sequence.length() < 1) {
+                    result.addError("Input sequence must have at least one input");
+                }
             }
         }
         
@@ -107,8 +122,9 @@ public class AddDto extends BlockDto {
     
     // ===== UTILITY METHODS =====
 
-    public String getInputsValue() {
-        return numInputs != null ? numInputs.getAsString() : "++";
+    public int getNumInputsValue() {
+        String sequence = getInputsValue();
+        return sequence != null ? sequence.length() : 2;
     }
     
     /**
@@ -139,7 +155,7 @@ public class AddDto extends BlockDto {
                 .blockName(getBlockName())
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
-                .numInputs(numInputs != null ? numInputs.copy() : null)
+                .inputs(inputs != null ? inputs.copy() : null)
                 .sampleTime(sampleTime != null ? sampleTime.copy() : null)
                 .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
@@ -149,7 +165,7 @@ public class AddDto extends BlockDto {
     @Override
     public TypedParameterMap toParameterMap() {
         return TypedParameterMap.builder()
-                .put("NumInputs", numInputs)
+                .put("Inputs", inputs)
                 .put("SampleTime", sampleTime)
                 .put("OutDataTypeStr", outDataTypeStr)
                 .put("SaturateOnIntegerOverflow", saturateOnIntegerOverflow)

@@ -113,7 +113,7 @@ public class SubsystemDto extends BlockDto {
                        TypedParameter showPortLabels,
                        TypedParameter readOnly,
                        TypedParameter sampleTime) {
-        super("Subsystem", blockName, blockPath);
+        super(blockName,blockPath);
         this.subsystemDescription = subsystemDescription;
         this.showPortLabels = showPortLabels;
         this.readOnly = readOnly;
@@ -130,7 +130,7 @@ public class SubsystemDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public SubsystemDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("Subsystem", blockName, blockPath);
+        super(blockName,blockPath);
         this.subsystemDescription = parameters.getTypedParameter("Description", String.class, "");
         this.showPortLabels = parameters.getTypedParameter("ShowPortLabels", Boolean.class, true);
         this.readOnly = parameters.getTypedParameter("ReadOnly", Boolean.class, false);
@@ -149,7 +149,7 @@ public class SubsystemDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public SubsystemDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("Subsystem", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.subsystemDescription = TypedParameter.of("");
         this.showPortLabels = TypedParameter.of(true);
         this.readOnly = TypedParameter.of(false);

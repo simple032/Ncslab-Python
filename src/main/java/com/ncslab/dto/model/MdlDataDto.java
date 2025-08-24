@@ -119,27 +119,6 @@ public class MdlDataDto {
     }
     
     /**
-     * Create MdlDataDto from legacy JSONObject
-     * @param jsonObject Legacy JSONObject
-     * @return MdlDataDto or null if conversion fails
-     */
-    public static MdlDataDto fromLegacyJson(JSONObject jsonObject) {
-        if (jsonObject == null) {
-            return null;
-        }
-        
-        try {
-            // Convert JSONObject to Map first
-            java.util.Map<String, Object> mdlDataMap = jsonObject.toMap();
-            return fromLegacyMap(mdlDataMap);
-            
-        } catch (Exception e) {
-            System.err.println("Failed to convert legacy MdlData JSON: " + e.getMessage());
-            return null;
-        }
-    }
-    
-    /**
      * Convert to legacy Map format for backward compatibility
      * @return Map<String, Object> representation
      */

@@ -46,7 +46,7 @@ public class OneDimensionLookupTableDto extends BlockDto {
     private TypedParameter extrapolationMethod;
     
     public OneDimensionLookupTableDto(String blockName, String blockPath) {
-        super("OneDimensionLookupTable", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

@@ -309,7 +309,7 @@ public class IntegratorDto extends BlockDto {
             params.put("ShowStatePort", Boolean.TRUE.equals(showStateVal) ? "on" : "off");
         }
         if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
+            params.put("SampleTime", getSampleTime().getAsString());
         }
         if (outDataTypeStr != null) {
             params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));

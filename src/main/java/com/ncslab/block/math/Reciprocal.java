@@ -175,7 +175,7 @@ public class Reciprocal extends Block {
                 lowerLimitValue = String.valueOf(lowerDouble);
             }
             
-            String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+            String sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().getAsString() : "-1";
             String outDataTypeValue = dto.getOutDataTypeStrValue();
             String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
             

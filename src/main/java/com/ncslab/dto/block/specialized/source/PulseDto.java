@@ -109,7 +109,7 @@ public class PulseDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public PulseDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("Pulse", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
     }
 
     /**
@@ -126,7 +126,7 @@ public class PulseDto extends BlockDto {
      */
     public PulseDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension,
                    double amplitude, double period, double pulseWidth, double phaseDelay) {
-        super("Pulse", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.amplitude = TypedParameter.of(amplitude);
         this.period = TypedParameter.of(period);
         this.pulseWidth = TypedParameter.of(pulseWidth);

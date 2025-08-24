@@ -3,6 +3,7 @@ package com.ncslab.block.continuous;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.continuous.VariableTransportDelayDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -124,7 +125,7 @@ public class VariableTransportDelay extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates VariableTransportDelay block directly from BlockDto DTO
      */
-    public VariableTransportDelay(BlockDto blockDto, NCSLabModel model) {
+    public VariableTransportDelay(VariableTransportDelayDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

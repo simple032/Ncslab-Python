@@ -2,6 +2,7 @@ package com.ncslab.block.matrix;
 
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.matrix.IsHermitianDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -27,7 +28,7 @@ public class IsHermitian extends Block {
     /**
      * DTO-NATIVE Constructor - Creates IsHermitian block directly from BlockDto DTO
      */
-    public IsHermitian(BlockDto blockDto, NCSLabModel model) {
+    public IsHermitian(IsHermitianDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IsHermitian block created successfully - " + blockDto.getBlockName());
     }

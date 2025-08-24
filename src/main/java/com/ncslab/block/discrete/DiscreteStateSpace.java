@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discrete.DiscreteStateSpaceDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -149,7 +150,7 @@ public class DiscreteStateSpace extends DiscreteBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates DiscreteStateSpace block directly from BlockDto DTO
      */
-    public DiscreteStateSpace(BlockDto blockDto, NCSLabModel model) {
+    public DiscreteStateSpace(DiscreteStateSpaceDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -5,6 +5,8 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.annotations.MigrationCompatible;
+import com.ncslab.dto.block.specialized.machineLearning.MachineLearningDto;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
@@ -20,7 +22,7 @@ import lombok.Builder;
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("MultilayerPerceptron")
 @MigrationCompatible(originalClass = "com.ncslab.block.machineLearning.pt.MultilayerPerceptron")
-public class MultilayerPerceptronDto extends BlockDto {
+public class MultilayerPerceptronDto extends PTModelDto {
     
     @Builder.Default
     private TypedParameter inputFeatures = TypedParameter.of(1);
@@ -33,7 +35,7 @@ public class MultilayerPerceptronDto extends BlockDto {
     @Builder.Default
     private TypedParameter loadPath = TypedParameter.of("None");
     @Builder.Default
-    private TypedParameter savePath = TypedParameter.of("None");
+    private TypedParameter savePath = TypedParameter.of("None");    
     
     public Integer getInputFeaturesValue() {
         return inputFeatures != null ? inputFeatures.getAsInteger() : 1;

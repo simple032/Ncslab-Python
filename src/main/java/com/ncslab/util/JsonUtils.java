@@ -341,7 +341,7 @@ public class JsonUtils {
     
     /**
      * Serialize DTO to JSON string with error handling
-     * Replaces the pattern: dto.toLegacyJson().toString()
+     * Uses Jackson ObjectMapper for modern JSON serialization
      * @param dto DTO object to serialize
      * @return JSON string or error message if serialization fails
      */
@@ -449,7 +449,7 @@ public class JsonUtils {
     
     /**
      * WebSocket message serialization helper
-     * Handles the common pattern: message.toLegacyJson().toString()
+     * Uses Jackson ObjectMapper for WebSocket message serialization
      * @param message WebSocket message DTO
      * @return JSON string for WebSocket transmission
      */
@@ -470,40 +470,6 @@ public class JsonUtils {
         }
     }
     
-    /**
-     * Safe DTO serialization with fallback to legacy method
-     * Provides backwards compatibility during migration
-     * @param dto DTO object with potential toLegacyJson() method
-     * @return JSON string using Jackson or legacy method as fallback
-     */
-    public static String serializeDtoWithFallback(Object dto) {
-        if (dto == null) {
-            return "{\"error\":\"DTO object is null\"}";
-        }
-        
-        // Try Jackson serialization first
-        try {
-            return objectMapper.writeValueAsString(dto);
-        } catch (JsonProcessingException e) {
-            log.warn("Jackson serialization failed for {}, attempting legacy fallback: {}", 
-                    dto.getClass().getSimpleName(), e.getMessage());
-            
-            // Attempt legacy method via reflection
-            try {
-                java.lang.reflect.Method legacyMethod = dto.getClass().getMethod("toLegacyJson");
-                Object jsonObject = legacyMethod.invoke(dto);
-                if (jsonObject != null) {
-                    return jsonObject.toString();
-                }
-            } catch (Exception reflectionException) {
-                log.debug("Legacy method fallback also failed: {}", reflectionException.getMessage());
-            }
-            
-            // Final fallback to error response
-            return "{\"error\":\"Both Jackson and legacy serialization failed\",\"objectType\":\"" 
-                + dto.getClass().getSimpleName() + "\"}";
-        }
-    }
     
     /**
      * Enhanced JSON validation with detailed error information

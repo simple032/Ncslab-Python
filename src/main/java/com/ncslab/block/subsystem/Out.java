@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.subsystem.OutportDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class Out extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates Out block directly from BlockDto DTO
      */
-    public Out(BlockDto blockDto, NCSLabModel model) {
+    public Out(OutportDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Create SIMULINK parameters with defaults
@@ -188,6 +189,7 @@ public class Out extends Block {
     }
     public void updateDimension() throws MatDimException {
         // Out block passes dimensions from internal input to subsystem output
+        if(this.subsystem == null) return;
         OutputPort out = this.subsystem.getOutputPortList().get(getPortNumber()-1);
         InputPort in = inputPortList.get(0);
 
@@ -209,6 +211,8 @@ public class Out extends Block {
     public void calculateOutput(double t) {
         // Pass data from internal blocks to subsystem output
         InputPort in = inputPortList.get(0);
+        // Check if subsystem is initialized
+        if(this.subsystem == null) return;
         OutputPort out = this.subsystem.getOutputPortList().get(getPortNumber()-1);
         out.setData(in.getData());
     }
@@ -217,6 +221,8 @@ public class Out extends Block {
     public void calculateInit() {
         // Initialize data passing
         InputPort in = inputPortList.get(0);
+        // Check if subsystem is initialized
+        if(this.subsystem == null) return;
         OutputPort out = this.subsystem.getOutputPortList().get(getPortNumber()-1);
         out.setData(in.getData());
     }

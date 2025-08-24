@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.ncslab.dto.communication.ServerResponseDto;
+import com.ncslab.dto.communication.MfcalcResponseDto;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -85,15 +86,27 @@ public class mfcalc extends HttpServlet {
 				
 				switch (method) {
 				case "runScript":
-					JSONObject jo = client.runScript(model.getMainCode()+"\n");
-					System.out.println(jo);
-					model.setOutputResult(jo.optString("log",""));
-					model.setFigureResult(jo.optJSONObject("figures"));
+					MfcalcResponseDto scriptResponse = client.runScript(model.getMainCode()+"\n");
+					System.out.println(scriptResponse);
+					if (scriptResponse != null && scriptResponse.getData() != null) {
+						// Handle data object - could be JSONObject from legacy response
+						Object data = scriptResponse.getData();
+						if (data instanceof JSONObject) {
+							JSONObject jo = (JSONObject) data;
+							model.setOutputResult(jo.optString("log",""));
+							model.setFigureResult(jo.optJSONObject("figures"));
+						}
+					}
+					if (scriptResponse != null && scriptResponse.getOutput() != null) {
+						model.setOutputResult(scriptResponse.getOutput());
+					}
 					// Note: Missing break; in original code - maintaining the same behavior
 				case "getVariables":	
-					JSONObject variables = client.getVariables();
-					System.out.println(variables);
-					model.setOutputMat(variables.toString());
+					MfcalcResponseDto variablesResponse = client.getVariables();
+					System.out.println(variablesResponse);
+					if (variablesResponse != null && variablesResponse.getData() != null) {
+						model.setOutputMat(variablesResponse.getData().toString());
+					}
 					break;
 				default:
 					message = "Unknown method: " + method;

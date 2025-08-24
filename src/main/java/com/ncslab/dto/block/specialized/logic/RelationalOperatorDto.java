@@ -86,7 +86,7 @@ public class RelationalOperatorDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public RelationalOperatorDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("RelationalOperator", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         initializeWithDefaults();
     }
 
@@ -101,7 +101,7 @@ public class RelationalOperatorDto extends BlockDto {
      */
     public RelationalOperatorDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension,
                                 String operator) {
-        super("RelationalOperator", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.operator = TypedParameter.of(normalizeOperator(operator));
         this.logicDataType = TypedParameter.of("boolean");
         this.sampleTime = TypedParameter.of(-1.0);

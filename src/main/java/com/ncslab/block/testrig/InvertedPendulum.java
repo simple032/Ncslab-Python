@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.InvertedPendulumDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -27,7 +28,7 @@ public class InvertedPendulum extends Block {
     /**
      * DTO-NATIVE Constructor - Creates InvertedPendulum block directly from BlockDto DTO
      */
-    public InvertedPendulum(BlockDto blockDto, NCSLabModel model) {
+    public InvertedPendulum(InvertedPendulumDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: InvertedPendulum block created successfully - " + blockDto.getBlockName());
     }

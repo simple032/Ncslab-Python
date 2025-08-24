@@ -6,6 +6,8 @@ import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
+import com.ncslab.dto.block.discrete.DiscreteBlockDto;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
@@ -29,7 +31,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Discrete_Transfer_Fcn")
 @MigrationCompatible(originalClass = "com.ncslab.block.discrete.Discrete_Transfer_Fcn")
-public class DiscreteTransferFcnDto extends BlockDto {
+public class DiscreteTransferFcnDto extends DiscreteBlockDto {
     
     /**
      * Numerator coefficients in descending powers of z

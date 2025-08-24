@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.ClockDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -76,14 +77,6 @@ public class Clock extends SourceBlock {
             model
         );
         System.out.println("DTO-NATIVE: Clock block created successfully from ClockDto - " + clockDto.getBlockName());
-    }
-
-    /**
-     * Legacy DTO Constructor - Creates Clock block from generic BlockDto (fallback)
-     */
-    public Clock(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-        System.out.println("DTO-GENERIC: Clock block created from generic BlockDto - " + blockDto.getBlockName());
     }
     
     // === Static Factory Method for JSON Deserialization ===

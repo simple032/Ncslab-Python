@@ -1,9 +1,9 @@
 package com.ncslab.code.m;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.dto.communication.ServerRequestDto;
 import com.ncslab.dto.communication.ServerResponseDto;
+import com.ncslab.dto.communication.MfcalcResponseDto;
 import com.ncslab.util.JsonUtils;
 
 import java.io.IOException;
@@ -55,55 +55,39 @@ public class MfcalcClientManager {
     }
 
     // 运行用户脚本
-    public JSONObject runScriptForUser(String userId, String script) {
+    public MfcalcResponseDto runScriptForUser(String userId, String script) {
         MfcalcClient client = getClientForUser(userId);
-        JSONObject result = client.runScript(script);
-        // Track request
-        String status = result != null && result.has("status") && "success".equals(result.getString("status")) ? "SUCCESS" : "FAILED";
-        return result;
+        return client.runScript(script);
     }
 
     // 调试用户脚本
-    public JSONObject debugScriptForUser(String userId, String script, int[] breakpoints) {
+    public MfcalcResponseDto debugScriptForUser(String userId, String script, int[] breakpoints) {
         MfcalcClient client = getClientForUser(userId);
-        JSONObject result = client.debugScript(script, breakpoints);
-        // Track request
-        String status = result != null && result.has("status") && "success".equals(result.getString("status")) ? "SUCCESS" : "FAILED";
-        return result;
+        return client.debugScript(script, breakpoints);
     }
 
     // 执行用户命令
-    public JSONObject runCommandForUser(String userId, String command) {
+    public MfcalcResponseDto runCommandForUser(String userId, String command) {
         MfcalcClient client = getClientForUser(userId);
-        JSONObject result = client.runCommand(command);
-        // Track request
-        String status = result != null && result.has("status") && "success".equals(result.getString("status")) ? "SUCCESS" : "FAILED";
-        return result;
+        return client.runCommand(command);
     }
 
     // 获取所有变量
-    public JSONArray getVariablesForUser(String userId) {
+    public MfcalcResponseDto getVariablesForUser(String userId) {
         MfcalcClient client = getClientForUser(userId);
-        JSONObject jo = client.getVariables();
-        return jo.getJSONArray("data");
+        return client.getVariables();
     }
 
     // 获取指定变量
-    public JSONObject getVariableForUser(String userId, String variableName) {
+    public MfcalcResponseDto getVariableForUser(String userId, String variableName) {
         MfcalcClient client = getClientForUser(userId);
-        JSONObject result = client.getVariable(variableName);
-        // Track request
-        String status = result != null && result.has("status") && "success".equals(result.getString("status")) ? "SUCCESS" : "FAILED";
-        return result;
+        return client.getVariable(variableName);
     }
 
     // 设置变量
-    public JSONObject setVariableForUser(String userId, String variableName, JSONObject value) {
+    public MfcalcResponseDto setVariableForUser(String userId, String variableName, JSONObject value) {
         MfcalcClient client = getClientForUser(userId);
-        JSONObject result = client.setVariable(variableName, value);
-        // Track request
-        String status = result != null && result.has("status") && "success".equals(result.getString("status")) ? "SUCCESS" : "FAILED";
-        return result;
+        return client.setVariable(variableName, value);
     }
 
     // 关闭所有客户端连接
@@ -138,10 +122,10 @@ public class MfcalcClientManager {
                 return ServerResponseDto.createError("Failed to create MFCalc client for user: " + request.getUserId(), "mfcalc");
             }
             
-            JSONObject legacyResult = null;
+            MfcalcResponseDto mfcalcResult = null;
             
             if ("execute".equals(request.getCommand())) {
-                legacyResult = client.runScript(request.getScript());
+                mfcalcResult = client.runScript(request.getScript());
             } else if ("debug".equals(request.getCommand())) {
                 // Handle debug command (would need breakpoints in parameters)
                 Object breakpointsObj = request.getParameters() != null ? request.getParameters().get("breakpoints") : null;
@@ -149,22 +133,45 @@ public class MfcalcClientManager {
                 if (breakpointsObj instanceof int[]) {
                     breakpoints = (int[]) breakpointsObj;
                 }
-                legacyResult = client.debugScript(request.getScript(), breakpoints);
+                mfcalcResult = client.debugScript(request.getScript(), breakpoints);
             } else if ("command".equals(request.getCommand())) {
-                legacyResult = client.runCommand(request.getScript()); // Use script field for command
+                mfcalcResult = client.runCommand(request.getScript()); // Use script field for command
             } else {
                 return ServerResponseDto.createError("Unsupported command: " + request.getCommand(), "mfcalc");
             }
             
             long executionTime = System.currentTimeMillis() - startTime;
             
-            // Convert legacy JSONObject response to DTO
-            ServerResponseDto response = ServerResponseDto.fromLegacyJson(legacyResult);
-            if (response != null) {
-                response.setServerType("mfcalc");
-                response.setExecutionTime(executionTime);
-                response.setSessionId(request.getSessionId());
-                return response;
+            // Convert MfcalcResponseDto to ServerResponseDto
+            if (mfcalcResult != null) {
+                ServerResponseDto.ServerResponseDtoBuilder responseBuilder = ServerResponseDto.builder()
+                        .serverType("mfcalc")
+                        .executionTime(executionTime)
+                        .sessionId(request.getSessionId());
+                
+                // Map status from MfcalcResponseDto
+                String status = mfcalcResult.getStatus();
+                if (status == null) {
+                    status = mfcalcResult.isError() ? "error" : "success";
+                }
+                responseBuilder.status(status);
+                
+                // Map other fields
+                if (mfcalcResult.getData() != null) {
+                    responseBuilder.result(mfcalcResult.getData());
+                }
+                if (mfcalcResult.getOutput() != null) {
+                    responseBuilder.output(mfcalcResult.getOutput());
+                }
+                if (mfcalcResult.getError() != null) {
+                    responseBuilder.error(mfcalcResult.getError());
+                    responseBuilder.message(mfcalcResult.getError());
+                }
+                
+                // Set HTTP-style response code
+                responseBuilder.code(mfcalcResult.isError() ? 400 : 200);
+                
+                return responseBuilder.build();
             } else {
                 return ServerResponseDto.createError("Failed to process MFCalc response", "mfcalc");
             }
@@ -177,29 +184,6 @@ public class MfcalcClientManager {
         }
     }
     
-    /**
-     * Enhanced run script method with DTO support and fallback
-     * @param userId User ID
-     * @param script Script to execute
-     * @return ServerResponseDto (DTO) or null if DTO creation fails
-     */
-    public ServerResponseDto runScriptEnhanced(String userId, String script) {
-        ServerRequestDto request = ServerRequestDto.createMfcalcRequest(userId, script);
-        return executeScript(request);
-    }
-    
-    /**
-     * Legacy compatibility method that returns JSONObject
-     * @param userId User ID
-     * @param script Script to execute
-     * @return JSONObject (legacy format)
-     * @deprecated Use executeScript(ServerRequestDto) or runScriptEnhanced() instead
-     */
-    @Deprecated
-    public JSONObject runScriptLegacyCompat(String userId, String script) {
-        ServerResponseDto response = runScriptEnhanced(userId, script);
-        return response != null ? response.toLegacyJson() : null;
-    }
     
     /**
      * Get server statistics and metrics

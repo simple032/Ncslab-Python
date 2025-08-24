@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.logic.DetectDecreaseDto;
 
 import com.ncslab.block.Block;
 import Jama.Matrix;
@@ -109,7 +110,7 @@ public class DetectDecrease extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates DetectDecrease block directly from BlockDto DTO
      */
-    public DetectDecrease(BlockDto blockDto, NCSLabModel model) {
+    public DetectDecrease(DetectDecreaseDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

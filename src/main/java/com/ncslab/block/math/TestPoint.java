@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.TestPointDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -27,25 +28,9 @@ public class TestPoint extends Block {
     /**
      * DTO-NATIVE Constructor - Creates TestPoint block directly from BlockDto DTO
      */
-    public TestPoint(BlockDto blockDto, NCSLabModel model) {
+    public TestPoint(TestPointDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: TestPoint block created successfully - " + blockDto.getBlockName());
-    }
-
-    /**
-     * DTO Constructor - Creates TestPoint block from TestPointDto with proper parameter mapping
-     */
-    public TestPoint(com.ncslab.dto.block.specialized.math.TestPointDto dto, NCSLabModel model) {
-        super(dto, model);
-
-        // Create ports
-        OutputPort out = new OutputPort(this, 1, true);
-        InputPort in = new InputPort(this, 1);
-
-        outputPortList.add(out);
-        inputPortList.add(in);
-
-        System.out.println("DTO: " + getClass().getSimpleName() + " block created from TestPointDto - " + dto.getBlockName());
     }
 
 

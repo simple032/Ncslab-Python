@@ -32,18 +32,18 @@ public class LogarithmDto extends BlockDto {
     
     /**
      * Type of logarithm operation
-     * Default: "natural" (ln)
-     * Options: "natural", "common" (base 10), "custom"
+     * Default: "ln" (natural logarithm)
+     * Options: "ln" (natural), "log10" (base 10), "log2" (base 2), "logn" (custom base)
      */
     @Builder.Default
-    private TypedParameter logType = TypedParameter.of("natural");
+    private TypedParameter logType = TypedParameter.of("ln");
     
     /**
-     * Base for custom logarithm (only used when logType is "custom")
-     * Default: 2.0
+     * Base for custom logarithm (only used when logType is "logn")
+     * Default: 10.0
      */
     @Builder.Default
-    private TypedParameter logBase = TypedParameter.of(2.0);
+    private TypedParameter customBase = TypedParameter.of(10.0);
     
     /**
      * Sample time for the block operation
@@ -68,19 +68,19 @@ public class LogarithmDto extends BlockDto {
     
     /**
      * Zero crossing detection
-     * Default: "use all"
+     * Default: true (on)
      */
     @Builder.Default
-    private TypedParameter zeroCrossing = TypedParameter.of("use all");
+    private TypedParameter zeroCrossing = TypedParameter.of(true);
     
     // ===== PARAMETER ACCESS HELPERS =====
     
     public String getLogTypeValue() {
-        return logType != null ? logType.getAsString() : "natural";
+        return logType != null ? logType.getAsString() : "ln";
     }
     
-    public Double getLogBaseValue() {
-        return logBase != null ? logBase.getAsDouble() : 2.0;
+    public Double getCustomBaseValue() {
+        return customBase != null ? customBase.getAsDouble() : 10.0;
     }
     
     public Double getSampleTimeValue() {
@@ -95,13 +95,17 @@ public class LogarithmDto extends BlockDto {
         return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
     
-    public String getZeroCrossing() {
-        return zeroCrossing != null ? zeroCrossing.getAsString() : "use all";
+    public Boolean getZeroCrossingValue() {
+        return zeroCrossing != null ? zeroCrossing.getAsBoolean() : true;
     }
     
-    // Legacy compatibility method
+    // Legacy compatibility methods  
     public Double getCustomBase() {
-        return getLogBaseValue();
+        return getCustomBaseValue();
+    }
+    
+    public String getZeroCrossing() {
+        return getZeroCrossingValue() ? "on" : "off";
     }
     
     // ===== VALIDATION =====
@@ -113,16 +117,16 @@ public class LogarithmDto extends BlockDto {
         // Validate log type
         if (logType != null) {
             String type = logType.getAsString();
-            if (type != null && !type.equals("natural") && !type.equals("common") && !type.equals("custom")) {
-                result.addError("Log type must be 'natural', 'common', or 'custom'");
+            if (type != null && !type.equals("ln") && !type.equals("log10") && !type.equals("log2") && !type.equals("logn")) {
+                result.addError("Log type must be 'ln', 'log10', 'log2', or 'logn'");
             }
         }
         
-        // Validate log base (only for custom type)
-        if ("custom".equals(getLogTypeValue()) && logBase != null) {
-            Double base = logBase.getAsDouble();
+        // Validate custom base (only for logn type)
+        if ("logn".equals(getLogTypeValue()) && customBase != null) {
+            Double base = customBase.getAsDouble();
             if (base == null || base <= 0.0 || base == 1.0) {
-                result.addError("Log base must be positive and not equal to 1");
+                result.addError("Custom base must be positive and not equal to 1");
             }
         }
         
@@ -157,21 +161,28 @@ public class LogarithmDto extends BlockDto {
      * Check if using natural logarithm
      */
     public boolean isNaturalLog() {
-        return "natural".equals(getLogTypeValue());
+        return "ln".equals(getLogTypeValue());
     }
     
     /**
      * Check if using common logarithm (base 10)
      */
     public boolean isCommonLog() {
-        return "common".equals(getLogTypeValue());
+        return "log10".equals(getLogTypeValue());
+    }
+    
+    /**
+     * Check if using base-2 logarithm
+     */
+    public boolean isLog2() {
+        return "log2".equals(getLogTypeValue());
     }
     
     /**
      * Check if using custom base logarithm
      */
     public boolean isCustomLog() {
-        return "custom".equals(getLogTypeValue());
+        return "logn".equals(getLogTypeValue());
     }
     
     @Override
@@ -182,7 +193,7 @@ public class LogarithmDto extends BlockDto {
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
                 .logType(logType != null ? logType.copy() : null)
-                .logBase(logBase != null ? logBase.copy() : null)
+                .customBase(customBase != null ? customBase.copy() : null)
                 .sampleTime(sampleTime != null ? sampleTime.copy() : null)
                 .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
@@ -194,7 +205,7 @@ public class LogarithmDto extends BlockDto {
     public TypedParameterMap toParameterMap() {
         return TypedParameterMap.builder()
                 .put("LogType", logType)
-                .put("LogBase", logBase)
+                .put("CustomBase", customBase)
                 .put("SampleTime", sampleTime)
                 .put("OutDataTypeStr", outDataTypeStr)
                 .put("SaturateOnIntegerOverflow", saturateOnIntegerOverflow)

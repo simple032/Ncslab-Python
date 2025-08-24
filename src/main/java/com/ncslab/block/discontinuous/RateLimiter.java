@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discontinuous.RateLimiterDto;
 import java.util.HashMap;
 
 import com.ncslab.block.io.InputPort;
@@ -111,7 +112,7 @@ public class RateLimiter extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates RateLimiter block directly from BlockDto DTO
      */
-    public RateLimiter(BlockDto blockDto, NCSLabModel model) {
+    public RateLimiter(RateLimiterDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -129,30 +130,6 @@ public class RateLimiter extends Block {
         this.lowerLimit = this.fallingSlew;
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
-
-    /**
-     * DTO Constructor - Creates RateLimiter block from RateLimiterDto with proper parameter mapping
-     */
-    public RateLimiter(com.ncslab.dto.block.specialized.discontinuous.RateLimiterDto dto, NCSLabModel model) {
-        super(dto, model);
-
-        // Extract parameters from DTO
-        this.risingSlew = new Parameter(this, 1, "UpperLimit", String.valueOf(dto.getRisingSlewValue()));
-        this.fallingSlew = new Parameter(this, 2, "LowerLimit", String.valueOf(dto.getFallingSlewValue()));
-        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
-
-        // Legacy field mapping for backward compatibility
-        this.upperLimit = this.risingSlew;
-        this.lowerLimit = this.fallingSlew;
-
-        // Initialize ports
-        inputPortList.add(new InputPort(this, 1));
-        outputPortList.add(new OutputPort(this, 1, true));
-
-        System.out.println("DTO: " + getClass().getSimpleName() + " block created from RateLimiterDto - " + dto.getBlockName());
     }
     
     private void initializePorts() {

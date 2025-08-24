@@ -5,6 +5,8 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.block.BlockPositionDto;
+import com.ncslab.dto.block.discrete.DiscreteBlockDto;
+import com.ncslab.dto.annotations.MigrationCompatible;
 import com.ncslab.dto.block.BlockDimensionDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -43,7 +45,8 @@ import java.util.Map;
 @SuperBuilder
 @Jacksonized
 @JsonTypeName("Delay")
-public class DelayDto extends BlockDto {
+@MigrationCompatible(originalClass = "com.ncslab.block.discrete.Delay")
+public class DelayDto extends DiscreteBlockDto {
 
     /**
      * Number of samples to delay.
@@ -56,12 +59,6 @@ public class DelayDto extends BlockDto {
      * This value fills the delay buffer at initialization.
      */
     private TypedParameter initialCondition;
-
-    /**
-     * Sample time for discrete operation.
-     * Must be positive for discrete-time operation or -1 for inherited.
-     */
-    private TypedParameter sampleTime;
 
     /**
      * Output data type specification.
@@ -88,7 +85,7 @@ public class DelayDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public DelayDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("Delay", blockName, blockPath, position, dimension);
+        super(blockName, blockPath, position, dimension);
         initializeWithDefaults();
     }
 
@@ -105,7 +102,7 @@ public class DelayDto extends BlockDto {
      */
     public DelayDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension,
                    int delayLength, double initialCondition, double sampleTime) {
-        super("Delay", blockName, blockPath, position, dimension);
+        super(blockName, blockPath, position, dimension);
         this.delayLength = TypedParameter.of(delayLength);
         this.initialCondition = TypedParameter.of(initialCondition);
         this.sampleTime = TypedParameter.of(sampleTime);
@@ -172,15 +169,7 @@ public class DelayDto extends BlockDto {
             if (Double.isNaN(icValue) || Double.isInfinite(icValue)) {
                 errors.add("Initial condition must be finite");
             }
-        }
-        
-        // Validate sample time
-        if (sampleTime != null && sampleTime.getAsDouble() != null) {
-            Double stValue = sampleTime.getAsDouble();
-            if (stValue < -1.0 || Double.isNaN(stValue) || Double.isInfinite(stValue)) {
-                errors.add("Sample time must be positive or -1 (inherited)");
-            }
-        }
+        }      
         
         return errors;
     }
@@ -211,24 +200,6 @@ public class DelayDto extends BlockDto {
      */
     public double getInitialConditionValue() {
         return initialCondition != null ? initialCondition.getAsDouble() : 0.0;
-    }
-
-    /**
-     * Gets the sample time value.
-     *
-     * @return Sample time for discrete operation
-     */
-    public double getSampleTimeValue() {
-        return sampleTime != null ? sampleTime.getAsDouble() : -1.0;
-    }
-
-    /**
-     * Checks if the delay operates in discrete time mode.
-     *
-     * @return true if sample time is positive (discrete), false if inherited
-     */
-    public boolean isDiscreteTime() {
-        return getSampleTimeValue() > 0.0;
     }
 
     /**

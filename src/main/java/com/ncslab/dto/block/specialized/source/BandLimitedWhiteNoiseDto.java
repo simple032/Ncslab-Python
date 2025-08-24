@@ -38,7 +38,7 @@ public class BandLimitedWhiteNoiseDto extends BlockDto {
     private TypedParameter seed;
     
     public BandLimitedWhiteNoiseDto(String blockName, String blockPath) {
-        super("Band-LimitedWhiteNoise", blockName, blockPath);
+        super(blockName, blockPath);
         initializeDefaults();
     }
     

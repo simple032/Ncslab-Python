@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.sink.SinkDto;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
@@ -28,23 +29,12 @@ import lombok.Builder;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Display")
-public class DisplayDto extends BlockDto {
+public class DisplayDto extends SinkDto {
     
     // Constructor to set blockType for Jackson deserialization
 
-    /**
-     * Sample time for the display block.
-     * Typically -1 for inherited timing from input signal
-     */
-    @Builder.Default
-    private TypedParameter sampleTime = TypedParameter.of(-1.0);
-
-    /**
-     * Output data type specification.
-     * Usually "Inherit: Same as input" for display blocks
-     */
-    @Builder.Default
-    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
+    // Display blocks inherit sampleTime from BlockDto (via SinkDto)
+    // No additional parameters needed - displays just show input values
 
     /**
      * Constructs DisplayDto with individual parameters.
@@ -52,16 +42,12 @@ public class DisplayDto extends BlockDto {
      * @param blockName      Name of the block
      * @param blockPath      Path of the block in the model hierarchy
      * @param sampleTime     Sample time parameter
-     * @param outDataTypeStr Output data type parameter
      */
-    public DisplayDto(String blockName, String blockPath,
-                      TypedParameter sampleTime,
-                      TypedParameter outDataTypeStr) {
+    public DisplayDto(String blockName, String blockPath, TypedParameter sampleTime) {
         super();
         this.blockName = blockName;
         this.blockPath = blockPath;
         this.sampleTime = sampleTime;
-        this.outDataTypeStr = outDataTypeStr;
     }
 
     /**
@@ -76,7 +62,7 @@ public class DisplayDto extends BlockDto {
         this.blockName = blockName;
         this.blockPath = blockPath;
         this.sampleTime = parameters.get("SampleTime");
-        this.outDataTypeStr = parameters.get("OutDataTypeStr");
+        // Display blocks don't need outDataTypeStr - they just display input values
     }
 
     // === Validation Methods ===
@@ -95,51 +81,12 @@ public class DisplayDto extends BlockDto {
             }
         }
 
-        // Validate output data type
-        if (outDataTypeStr == null || outDataTypeStr.getAsString() == null) {
-            result.addError("outDataTypeStr", "Output data type cannot be null");
-        } else if (outDataTypeStr.getAsString().trim().isEmpty()) {
-            result.addError("outDataTypeStr", "Output data type cannot be empty");
-        }
+        // Display blocks don't have outputs, so no outDataTypeStr validation needed
 
         return result;
     }
 
     // === Helper Methods ===
-
-    /**
-     * Gets the sample time value with validation.
-     *
-     * @return Sample time value
-     * @throws IllegalStateException if sample time is invalid
-     */
-    public double getSampleTimeValue() {
-        if (sampleTime == null || sampleTime.getAsDouble() == null) {
-            throw new IllegalStateException("Sample time is not properly initialized");
-        }
-        Double value = sampleTime.getAsDouble();
-        if (value == null) {
-            throw new IllegalStateException("Sample time is not properly initialized or cannot be converted to double");
-        }
-        return value;
-    }
-
-    /**
-     * Gets the output data type string with validation.
-     *
-     * @return Output data type string
-     * @throws IllegalStateException if output data type is invalid
-     */
-    public String getOutDataTypeString() {
-        if (outDataTypeStr == null || outDataTypeStr.getAsString() == null) {
-            throw new IllegalStateException("Output data type is not properly initialized");
-        }
-        String value = outDataTypeStr.getAsString();
-        if (value == null) {
-            throw new IllegalStateException("Output data type is not properly initialized or cannot be converted to string");
-        }
-        return value;
-    }
 
     /**
      * Checks if the display inherits its sample time from the input signal.
@@ -168,24 +115,13 @@ public class DisplayDto extends BlockDto {
         return getSampleTimeValue() > 0.0;
     }
 
-    /**
-     * Checks if the display inherits data type from input.
-     *
-     * @return true if data type is inherited, false otherwise
-     */
-    public boolean isDataTypeInherited() {
-        String dataType = getOutDataTypeString();
-        return dataType.toLowerCase().contains("inherit") || dataType.toLowerCase().contains("same as input");
-    }
-
     // === Factory Methods ===
 
     @Override
     public String toString() {
-        return String.format("DisplayDto{blockName='%s', blockPath='%s', sampleTime=%s, outDataType='%s'}",
+        return String.format("DisplayDto{blockName='%s', blockPath='%s', sampleTime=%s}",
                 getBlockName(), getBlockPath(),
-                sampleTime != null ? sampleTime.getAsDouble() : "null",
-                outDataTypeStr != null ? outDataTypeStr.getAsString() : "null");
+                sampleTime != null ? sampleTime.getAsDouble() : "null");
     }
 
     @Override
@@ -202,7 +138,6 @@ public class DisplayDto extends BlockDto {
         copy.parameters = this.parameters != null ? new HashMap<>(this.parameters) : null;
         copy.paramValues = this.paramValues != null ? new HashMap<>(this.paramValues) : null;
         copy.sampleTime = this.sampleTime != null ? this.sampleTime.copy() : null;
-        copy.outDataTypeStr = this.outDataTypeStr != null ? this.outDataTypeStr.copy() : null;
         copy.priority = this.priority;
         copy.description = this.description;
         copy.tags = this.tags != null ? new HashSet<>(this.tags) : null;

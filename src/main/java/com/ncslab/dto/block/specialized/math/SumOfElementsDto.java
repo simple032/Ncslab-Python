@@ -35,7 +35,7 @@ public class SumOfElementsDto extends BlockDto {
     private TypedParameter specifiedDimension;
     
     public SumOfElementsDto(String blockName, String blockPath) {
-        super("SumOfElements", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

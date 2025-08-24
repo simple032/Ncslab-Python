@@ -4,6 +4,7 @@ import com.ncslab.block.machineLearning.MachineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.machineLearning.pt.LinearRegressionDto;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -29,7 +30,7 @@ public class LinearRegression extends PTModel{
     /**
      * DTO-NATIVE Constructor - Creates LinearRegression block directly from BlockDto DTO
      */
-    public LinearRegression(BlockDto blockDto, NCSLabModel model) {
+    public LinearRegression(LinearRegressionDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LinearRegression block created successfully - " + blockDto.getBlockName());
     }

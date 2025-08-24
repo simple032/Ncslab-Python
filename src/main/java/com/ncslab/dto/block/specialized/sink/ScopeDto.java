@@ -1,6 +1,7 @@
 package com.ncslab.dto.block.specialized.sink;
 
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.sink.SinkDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
@@ -40,7 +41,7 @@ import java.util.HashMap;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @MigrationCompatible(originalClass = "com.ncslab.block.sink.Scope")
-public class ScopeDto extends BlockDto {
+public class ScopeDto extends SinkDto {
     
     // ===== SCOPE BLOCK SPECIFIC PARAMETERS =====
     
@@ -71,68 +72,6 @@ public class ScopeDto extends BlockDto {
      * Validation: Must be positive integer
      */
     private TypedParameter bufferSize;
-    
-    // ===== FACTORY METHODS =====
-    
-    /**
-     * Create DTO from legacy parameters map (for migration support)
-     */
-    public static ScopeDto fromLegacyParameters(Map<String, String> params) {
-        ScopeDto.ScopeDtoBuilder builder = ScopeDto.builder()
-                .blockName(params.getOrDefault("blockName", "Scope"))
-                .blockPath(params.getOrDefault("blockPath", ""))
-                .blockUUID(params.getOrDefault("blockUUID", ""));
-        
-        ScopeDto dto = builder.build();
-        
-        // Map parameters to TypedParameter
-        if (params.containsKey("NumberOfInputs")) {
-            dto.numberOfInputs = TypedParameter.of(Integer.parseInt(params.get("NumberOfInputs")));
-        } else if (params.containsKey("Inputs")) {
-            // Legacy compatibility
-            dto.numberOfInputs = TypedParameter.of(Integer.parseInt(params.get("Inputs")));
-        }
-        
-        if (params.containsKey("SaveName")) {
-            dto.saveName = TypedParameter.of(params.get("SaveName"));
-        }
-        
-        if (params.containsKey("SaveFormat")) {
-            dto.saveFormat = TypedParameter.of(params.get("SaveFormat"));
-        }
-        
-        if (params.containsKey("BufferSize")) {
-            dto.bufferSize = TypedParameter.of(Integer.parseInt(params.get("BufferSize")));
-        }
-        
-        return dto;
-    }
-    
-    /**
-     * Create builder with SIMULINK-compatible defaults
-     */
-    public static ScopeDtoBuilder builderWithDefaults() {
-        ScopeDto dto = ScopeDto.builder()
-                .sampleTime(TypedParameter.of(-1.0))
-                .build();
-        
-        // Set default typed parameters
-        dto.numberOfInputs = TypedParameter.of(1);
-        dto.saveName = TypedParameter.of("ScopeData");
-        dto.saveFormat = TypedParameter.of("Array");
-        dto.bufferSize = TypedParameter.of(100000);
-        
-        return ScopeDto.builder()
-                .blockId(dto.getBlockId())
-                .blockName(dto.getBlockName())
-                .blockPath(dto.getBlockPath())
-                .blockUUID(dto.getBlockUUID())
-                .sampleTime(dto.getSampleTime())
-                .numberOfInputs(dto.numberOfInputs)
-                .saveName(dto.saveName)
-                .saveFormat(dto.saveFormat)
-                .bufferSize(dto.bufferSize);
-    }
     
     // ===== PARAMETER ACCESS HELPERS =====
     
@@ -249,7 +188,7 @@ public class ScopeDto extends BlockDto {
             params.put("Inputs", String.valueOf(numberOfInputs.getValue())); // Legacy compatibility
         }
         if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
+            params.put("SampleTime", getSampleTime().getAsString());
         }
         if (saveName != null) {
             params.put("SaveName", String.valueOf(saveName.getValue()));

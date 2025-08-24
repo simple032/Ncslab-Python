@@ -7,6 +7,7 @@ import com.ncslab.util.TemplateManager;
 import org.apache.velocity.VelocityContext;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.continuous.TransportDelayDto;
 
 import Jama.Matrix;
 
@@ -135,7 +136,7 @@ public class TransportDelay extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates TransportDelay block directly from BlockDto DTO
      */
-    public TransportDelay(BlockDto blockDto, NCSLabModel model) {
+    public TransportDelay(TransportDelayDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

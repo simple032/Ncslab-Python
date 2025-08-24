@@ -9,6 +9,7 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.dto.block.discrete.DiscreteBlockDto;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.TemplateManager;
 import org.apache.velocity.VelocityContext;
@@ -30,7 +31,7 @@ abstract public class DiscreteBlock extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DiscreteBlock block directly from BlockDto DTO
      */
-    public DiscreteBlock(BlockDto blockDto, NCSLabModel model) {
+    public DiscreteBlock(DiscreteBlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DiscreteBlock block created successfully - " + blockDto.getBlockName());
     }

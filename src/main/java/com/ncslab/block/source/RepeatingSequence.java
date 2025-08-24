@@ -6,6 +6,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.RepeatingSequenceDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -101,12 +102,15 @@ public class RepeatingSequence extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates RepeatingSequence block directly from BlockDto DTO
      */
-    public RepeatingSequence(BlockDto blockDto, NCSLabModel model) {
+    public RepeatingSequence(RepeatingSequenceDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.timeValues = new Parameter(this, 1, "Timevalues", "0");
-        this.outputValues = new Parameter(this, 2, "Outputvalues", "0");
+        // Initialize final parameters from DTO with proper values
+        String timeValuesStr = blockDto.getTimeValues() != null ? blockDto.getTimeValues().getValue(String.class) : "[0 1]";
+        String outputValuesStr = blockDto.getOutputValues() != null ? blockDto.getOutputValues().getValue(String.class) : "[0 1]";
+        
+        this.timeValues = new Parameter(this, 1, "TimeValues", timeValuesStr);
+        this.outputValues = new Parameter(this, 2, "OutputValues", outputValuesStr);
         this.sampleTime = new Parameter(this, 3, "SampleTime", "0");
         this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as parameter");
         this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
@@ -114,7 +118,8 @@ public class RepeatingSequence extends Block {
         // Initialize ports
         initializePorts();
 
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName() + 
+                          " with timeValues=" + timeValuesStr + " outputValues=" + outputValuesStr);
     }
 
 // === Static Factory Method for JSON Deserialization ===
@@ -288,8 +293,10 @@ public class RepeatingSequence extends Block {
             MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions must be 1*n!");
             throw(e);
         }
-        if (timeValues.getDataType() == DataType.REAL || outputValues.getDataType() == DataType.REAL) {
-            MatDimException e = new MatDimException("Block " + this.blockName + " input dimensions must be 1*n!");
+        // Allow row vectors (1×n matrices) but reject multi-row matrices
+        if ((timeValues.getDataType() == DataType.MATRIX && timeValues.getHeight() != 1) || 
+            (outputValues.getDataType() == DataType.MATRIX && outputValues.getHeight() != 1)) {
+            MatDimException e = new MatDimException("Block " + this.blockName + " input must be row vectors (1×n), not multi-dimensional matrices!");
             throw(e);
         }
     }

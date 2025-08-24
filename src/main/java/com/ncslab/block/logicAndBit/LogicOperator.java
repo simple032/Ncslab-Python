@@ -130,7 +130,7 @@ public class LogicOperator extends Block {
 
         // Initialize parameters from DTO with null safety
         this.operator = new Parameter(this, 1, "Operator", 
-            dto.getOperator() != null ? dto.getOperator().getValue(String.class) : "AND");
+            dto.getOperator() != null ? dto.getOperator().getAsString() : "AND");
         int inputsValue = dto.getInputs() != null ? dto.getInputs().getAsInteger() : 2;
         this.inputs = new Parameter(this, 2, "Inputs", String.valueOf(inputsValue));
         
@@ -140,9 +140,9 @@ public class LogicOperator extends Block {
         double sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().getAsDouble() : -1.0;
         this.sampleTime = new Parameter(this, 4, "SampleTime", String.valueOf(sampleTimeValue));
         this.outDataType = new Parameter(this, 5, "OutDataTypeStr", 
-            dto.getOutDataTypeStr() != null ? dto.getOutDataTypeStr().getValue(String.class) : "boolean");
+            dto.getOutDataTypeStr() != null ? dto.getOutDataTypeStr().getAsString() : "boolean");
         this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", 
-            dto.getSaturateOnIntegerOverflow() != null ? dto.getSaturateOnIntegerOverflow().getValue(String.class) : "off");
+            dto.getSaturateOnIntegerOverflow() != null ? dto.getSaturateOnIntegerOverflow().getAsString() : "off");
 
         // Parse number of inputs and create ports
         this.num = dto.getInputsValue();
@@ -159,32 +159,6 @@ public class LogicOperator extends Block {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
 
-    /**
-     * Generic DTO Constructor - Creates LogicOperator block from generic BlockDto
-     */
-    public LogicOperator(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters with defaults
-        this.operator = new Parameter(this, 1, "Operator", "AND");
-        this.inputs = new Parameter(this, 2, "Inputs", "2");
-        this.allPortsSameDT = new Parameter(this, 3, "AllPortsSameDT", "on");
-        this.sampleTime = new Parameter(this, 4, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "boolean");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports with defaults
-        this.num = 2;
-        OutputPort output = new OutputPort(this, 1, true);
-        output.setDimThrough(false);
-        outputPortList.add(output);
-        
-        for (int i = 0; i < num; i++) {
-            inputPortList.add(new InputPort(this, i + 1));
-        }
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
 
     // === Static Factory Method for JSON Deserialization ===
     public static LogicOperator fromJSON(JSONObject blockJSON, NCSLabModel model) {

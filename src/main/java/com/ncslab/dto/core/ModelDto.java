@@ -120,20 +120,6 @@ public class ModelDto {
         return new Builder();
     }
     
-    // Conversion utility for legacy JSONObject
-    public static ModelDto fromLegacyJson(JSONObject jsonObject) {
-        if (jsonObject == null) return null;
-        
-        try {
-            // Use existing JsonUtils to parse from string
-            return com.ncslab.util.JsonUtils.parseModelDto(jsonObject.toString());
-        } catch (Exception e) {
-            // Log error but don't throw - return null for graceful degradation
-            System.err.println("Failed to convert JSONObject to ModelDto: " + e.getMessage());
-            return null;
-        }
-    }
-    
     // Validation methods
     public boolean isValid() {
         return modelName != null && !modelName.trim().isEmpty();

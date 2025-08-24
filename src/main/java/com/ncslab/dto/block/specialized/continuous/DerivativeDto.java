@@ -254,46 +254,6 @@ public class DerivativeDto extends BlockDto {
                 .build();
     }
     
-    /**
-     * Convert to legacy parameters format for backward compatibility
-     */
-    public Map<String, String> toLegacyParameters() {
-        Map<String, String> params = new HashMap<>();
-        
-        if (filterCoefficient != null) {
-            params.put("FilterCoefficient", String.valueOf(filterCoefficient.getValue()));
-            params.put("c", String.valueOf(filterCoefficient.getValue())); // Legacy compatibility
-        }
-        if (initialCondition != null) {
-            params.put("InitialCondition", String.valueOf(initialCondition.getValue()));
-        }
-        if (coefficientSource != null) {
-            params.put("CoefficientSource", String.valueOf(coefficientSource.getValue()));
-        }
-        if (externalReset != null) {
-            params.put("ExternalReset", String.valueOf(externalReset.getValue()));
-        }
-        if (initialConditionSource != null) {
-            params.put("InitialConditionSource", String.valueOf(initialConditionSource.getValue()));
-        }
-        if (showStatePort != null) {
-            Boolean showVal = showStatePort.getAsBoolean();
-            params.put("ShowStatePort", Boolean.TRUE.equals(showVal) ? "on" : "off");
-        }
-        if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
-        }
-        if (outDataTypeStr != null) {
-            params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
-        }
-        if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getAsBoolean();
-            params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
-        }
-        
-        return params;
-    }
-    
     @Override
     public String toString() {
         return String.format("DerivativeDto{id=%d, name='%s', type='%s', filterCoeff=%s, inPorts=%d, outPorts=%d}", 

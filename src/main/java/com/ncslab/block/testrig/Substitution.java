@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.SubstitutionDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -36,7 +37,7 @@ public class Substitution extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Substitution block directly from BlockDto DTO
      */
-    public Substitution(BlockDto blockDto, NCSLabModel model) {
+    public Substitution(SubstitutionDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Substitution block created successfully - " + blockDto.getBlockName());
     }

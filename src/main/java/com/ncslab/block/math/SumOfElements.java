@@ -4,6 +4,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.SumOfElementsDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -32,7 +33,7 @@ public class SumOfElements extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SumOfElements block directly from BlockDto DTO
      */
-    public SumOfElements(BlockDto blockDto, NCSLabModel model) {
+    public SumOfElements(SumOfElementsDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SumOfElements block created successfully - " + blockDto.getBlockName());
     }

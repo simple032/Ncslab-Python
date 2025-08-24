@@ -93,7 +93,7 @@ public class LogicalOperatorDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public LogicalOperatorDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("LogicalOperator", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         initializeWithDefaults();
     }
 
@@ -109,7 +109,7 @@ public class LogicalOperatorDto extends BlockDto {
      */
     public LogicalOperatorDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension,
                              String operator, int inputs) {
-        super("LogicalOperator", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.operator = TypedParameter.of(operator);
         this.inputs = TypedParameter.of(inputs);
         this.allPortsSameDT = TypedParameter.of("on");

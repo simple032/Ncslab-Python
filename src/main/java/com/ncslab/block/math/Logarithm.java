@@ -2,7 +2,7 @@ package com.ncslab.block.math;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.Parameter;
-import com.ncslab.dto.common.TypedParameter;
+import com.ncslab.dto.block.specialized.math.LogarithmDto;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
 import lombok.Getter;
@@ -29,12 +29,12 @@ import java.util.List;
 public class Logarithm extends Block {
     
     // === Parameters ===
-    private final Parameter logType;
-    private final Parameter customBase;
-    private final Parameter zeroCrossing;
-    private final Parameter sampleTime;
-    private final Parameter outDataType;
-    private final Parameter saturateOnIntegerOverflow;
+    private Parameter logType;
+    private Parameter customBase;
+    private Parameter zeroCrossing;
+    private Parameter sampleTime;
+    private Parameter outDataType;
+    private Parameter saturateOnIntegerOverflow;
     
     // === Static Definitions ===
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -55,26 +55,50 @@ public class Logarithm extends Block {
         inputNames.add("in1");
     }
     
-    // === Constructor ===
-    private Logarithm(Parameter logType, Parameter customBase, Parameter zeroCrossing,
-                      Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
-                      String blockName, String blockPath, String blockUUID, NCSLabModel model) {
-        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+    @Deprecated
+    public Logarithm(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+        initializeBlock();
+    }
+    
+    
+    public Logarithm(LogarithmDto dto, NCSLabModel model) {
+        super(dto, model);
         
-        this.logType = logType;
-        this.customBase = customBase;
-        this.zeroCrossing = zeroCrossing;
-        this.sampleTime = sampleTime;
-        this.outDataType = outDataType;
-        this.saturateOnIntegerOverflow = saturateOnIntegerOverflow;
+        // Validate DTO
+        dto.validate();
         
-        // Add parameters to parameter list
-        parameterList.add(logType);
-        parameterList.add(customBase);
-        parameterList.add(zeroCrossing);
-        parameterList.add(sampleTime);
-        parameterList.add(outDataType);
-        parameterList.add(saturateOnIntegerOverflow);
+        // Extract parameters from LogarithmDto (relying on @Builder.Default for defaults)
+        String logTypeValue = dto.getLogTypeValue();
+        String customBaseValue = dto.getCustomBaseValue().toString();
+        String zeroCrossingValue = dto.getZeroCrossingValue() ? "on" : "off";
+        String sampleTimeValue = dto.getSampleTimeValue().toString();
+        String outDataTypeValue = dto.getOutDataTypeStrValue();
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+        
+        // Initialize final parameters from DTO
+        this.logType = new Parameter(this, 1, "LogType", logTypeValue);
+        this.customBase = new Parameter(this, 2, "CustomBase", customBaseValue);
+        this.zeroCrossing = new Parameter(this, 3, "ZeroCrossing", zeroCrossingValue);
+        this.sampleTime = new Parameter(this, 4, "SampleTime", sampleTimeValue);
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", saturateValue);
+        
+        initializePorts();
+    }
+    
+    public static Logarithm fromDto(LogarithmDto dto, NCSLabModel model) {
+        return new Logarithm(dto, model);
+    }
+    
+    private void initializeBlock() {
+        // Legacy JSONObject initialization
+        this.logType = getParameterByName("LogType");
+        this.customBase = getParameterByName("CustomBase");
+        this.zeroCrossing = getParameterByName("ZeroCrossing");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         initializePorts();
     }
@@ -85,25 +109,6 @@ public class Logarithm extends Block {
         
         // One output port with feedthrough
         outputPortList.add(new com.ncslab.block.io.OutputPort(this, 1, true));
-    }
-
-    /**
-     * DTO-NATIVE Constructor - Creates Logarithm block directly from LogarithmDto DTO
-     */
-    public Logarithm(com.ncslab.dto.block.specialized.math.LogarithmDto logarithmDto, NCSLabModel model) {
-        this(
-            createParameterFromTyped(logarithmDto.getLogType(), 1, "LogType"),
-            createParameterFromTyped(TypedParameter.of(logarithmDto.getCustomBase()), 2, "CustomBase"),
-            createParameterFromTyped(TypedParameter.of(logarithmDto.getZeroCrossing()), 3, "ZeroCrossing"),
-            createParameterFromTyped(logarithmDto.getSampleTime(), 4, "SampleTime"),
-            createParameterFromTyped(logarithmDto.getOutDataTypeStr(), 5, "OutDataTypeStr"),
-            createParameterFromTyped(logarithmDto.getSaturateOnIntegerOverflow(), 6, "SaturateOnIntegerOverflow"),
-            logarithmDto.getBlockName(),
-            logarithmDto.getBlockPath(),
-            logarithmDto.getBlockUUID() != null ? logarithmDto.getBlockUUID() : "null",
-            model
-        );
-        System.out.println("DTO-NATIVE: Logarithm block created successfully from LogarithmDto - " + logarithmDto.getBlockName());
     }
     
     // === Static Factory Methods ===
@@ -131,9 +136,16 @@ public class Logarithm extends Block {
             Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", 
                 paramValues.optString("SaturateOnIntegerOverflow", "off"));
             
-            Logarithm block = new Logarithm(logTypeParam, customBaseParam, zeroCrossingParam,
-                                           sampleTimeParam, outDataTypeParam, saturateParam,
-                                           blockName, blockPath, blockUUID, model);
+            // Create block using existing constructor
+            JSONObject blockIdentity = createBlockIdentity(blockName, blockPath, blockUUID);
+            blockIdentity.getJSONObject("paramValues").put("LogType", logTypeParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("CustomBase", customBaseParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("ZeroCrossing", zeroCrossingParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("SampleTime", sampleTimeParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("OutDataTypeStr", outDataTypeParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("SaturateOnIntegerOverflow", saturateParam.getInitString());
+            
+            Logarithm block = new Logarithm(blockIdentity, model);
             
             setParameterBlockReference(block, logTypeParam, customBaseParam, zeroCrossingParam,
                                      sampleTimeParam, outDataTypeParam, saturateParam);
@@ -159,9 +171,16 @@ public class Logarithm extends Block {
         Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
         Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
         
-        Logarithm block = new Logarithm(logTypeParam, customBaseParam, zeroCrossingParam,
-                                       sampleTimeParam, outDataTypeParam, saturateParam,
-                                       name, path, "null", model);
+        // Create block using existing constructor
+        JSONObject blockIdentity = createBlockIdentity(name, path, "null");
+        blockIdentity.getJSONObject("paramValues").put("LogType", logTypeParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("CustomBase", customBaseParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("ZeroCrossing", zeroCrossingParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("SampleTime", sampleTimeParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("OutDataTypeStr", outDataTypeParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("SaturateOnIntegerOverflow", saturateParam.getInitString());
+        
+        Logarithm block = new Logarithm(blockIdentity, model);
         
         setParameterBlockReference(block, logTypeParam, customBaseParam, zeroCrossingParam,
                                  sampleTimeParam, outDataTypeParam, saturateParam);
@@ -176,6 +195,7 @@ public class Logarithm extends Block {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to satisfy base constructor
         return identity;
     }
     

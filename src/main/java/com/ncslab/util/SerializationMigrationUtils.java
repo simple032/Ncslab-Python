@@ -83,19 +83,19 @@ public class SerializationMigrationUtils {
             log.debug("Direct parsing failed, trying legacy: {}", e.getMessage());
         }
         
-        // Fallback to legacy JSONObject approach
+        // Fallback to JSONObject-based Jackson parsing approach
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            ModelDto result = ModelDto.fromLegacyJson(jsonObject);
+            ModelDto result = JsonUtils.getObjectMapper().readValue(jsonObject.toString(), ModelDto.class);
             if (result != null && result.isValid()) {
                 long duration = (System.nanoTime() - startTime) / 1_000_000;
-                log.info("Legacy parsing successful in {}ms after direct failure", duration);
+                log.info("JSONObject-based parsing successful in {}ms after direct failure", duration);
                 return MigrationResult.success(result, "legacy", duration);
             }
         } catch (Exception e) {
             long duration = (System.nanoTime() - startTime) / 1_000_000;
-            log.error("Both direct and legacy parsing failed", e);
-            return MigrationResult.failure("both", duration, "Direct and legacy parsing failed: " + e.getMessage());
+            log.error("Both direct and JSONObject-based parsing failed", e);
+            return MigrationResult.failure("both", duration, "Direct and JSONObject parsing failed: " + e.getMessage());
         }
         
         long duration = (System.nanoTime() - startTime) / 1_000_000;
@@ -156,10 +156,10 @@ public class SerializationMigrationUtils {
             }
         }
         
-        // Use legacy parsing for complex or problematic JSON
+        // Use JSONObject-based Jackson parsing for complex or problematic JSON
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            ModelDto result = ModelDto.fromLegacyJson(jsonObject);
+            ModelDto result = JsonUtils.getObjectMapper().readValue(jsonObject.toString(), ModelDto.class);
             if (result != null && result.isValid()) {
                 long duration = (System.nanoTime() - startTime) / 1_000_000;
                 return MigrationResult.success(result, "smart-legacy", duration);
@@ -226,13 +226,13 @@ public class SerializationMigrationUtils {
     }
     
     /**
-     * Helper: Try legacy parsing only
+     * Helper: Try JSONObject-based Jackson parsing only
      */
     private static MigrationResult<ModelDto> tryLegacyParsing(String jsonString) {
         long startTime = System.nanoTime();
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            ModelDto result = ModelDto.fromLegacyJson(jsonObject);
+            ModelDto result = JsonUtils.getObjectMapper().readValue(jsonObject.toString(), ModelDto.class);
             long duration = (System.nanoTime() - startTime) / 1_000_000;
             if (result != null && result.isValid()) {
                 return MigrationResult.success(result, "legacy", duration);

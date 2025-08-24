@@ -5,6 +5,7 @@ import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.TrigFunctionDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -113,7 +114,7 @@ public class TrigFunction extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates TrigFunction block directly from BlockDto DTO
      */
-    public TrigFunction(BlockDto blockDto, NCSLabModel model) {
+    public TrigFunction(TrigFunctionDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

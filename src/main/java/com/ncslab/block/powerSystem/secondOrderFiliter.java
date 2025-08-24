@@ -13,6 +13,7 @@ import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.powerSystem.SecondOrderFiliterDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -39,7 +40,7 @@ public class secondOrderFiliter extends Block{
     /**
      * DTO-NATIVE Constructor - Creates secondOrderFiliter block directly from BlockDto DTO
      */
-    public secondOrderFiliter(BlockDto blockDto, NCSLabModel model) {
+    public secondOrderFiliter(SecondOrderFiliterDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: secondOrderFiliter block created successfully - " + blockDto.getBlockName());
     }

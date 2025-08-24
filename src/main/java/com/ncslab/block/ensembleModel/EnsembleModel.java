@@ -5,6 +5,7 @@ import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.ensembleModel.EnsembleModelDto;
 
 import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.InputPort;
@@ -38,7 +39,7 @@ public class EnsembleModel extends Block{
     /**
      * DTO-NATIVE Constructor - Creates EnsembleModel block directly from BlockDto DTO
      */
-    public EnsembleModel(BlockDto blockDto, NCSLabModel model) {
+    public EnsembleModel(EnsembleModelDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EnsembleModel block created successfully - " + blockDto.getBlockName());
     }

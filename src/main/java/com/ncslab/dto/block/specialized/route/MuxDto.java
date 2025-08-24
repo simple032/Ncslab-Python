@@ -91,7 +91,7 @@ public class MuxDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public MuxDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("Mux", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
     }
 
     /**
@@ -105,7 +105,7 @@ public class MuxDto extends BlockDto {
      */
     public MuxDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension,
                  int numberOfInputs) {
-        super("Mux", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.inputs = TypedParameter.of(numberOfInputs);
         this.displayOrder = TypedParameter.of("1:N");
         this.sampleTime = TypedParameter.of(-1.0); // Inherited

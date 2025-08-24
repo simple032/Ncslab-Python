@@ -3,6 +3,7 @@ package com.ncslab.block.sink;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.sink.MatplotlibDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -39,13 +40,6 @@ public class Matplotlib extends SinkBlock{
         System.out.println("DTO-NATIVE: Matplotlib block created successfully from MatplotlibDto - " + matplotlibDto.getBlockName());
     }
 
-    /**
-     * Legacy DTO Constructor - Creates Matplotlib block from generic BlockDto (fallback)
-     */
-    public Matplotlib(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-        System.out.println("DTO-GENERIC: Matplotlib block created from generic BlockDto - " + blockDto.getBlockName());
-    }
 
 
     public static final List<String> inputNames = new ArrayList<>();

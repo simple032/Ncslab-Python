@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discrete.ZeroOrderHoldDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -99,23 +100,32 @@ public class Zero_Order_Hold extends DiscreteBlock {
         outputPortList.add(new OutputPort(this, 1, feedthrough));
 
         setSampleTime(sampleTimeParam);
-    }    /**
-     * DTO-NATIVE Constructor - Creates Zero_Order_Hold block directly from BlockDto DTO
+    }
+    
+    /**
+     * DTO-NATIVE Constructor - Creates Zero_Order_Hold block directly from ZeroOrderHoldDto DTO
      */
-    public Zero_Order_Hold(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters from DTO
-        this.sampleTimeParam = new Parameter(this, 1, "Sampletimeparam", "0");
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports
-        initializePorts();
+    public Zero_Order_Hold(ZeroOrderHoldDto dto, NCSLabModel model) {
+        super(dto, model);
+        
+        // Create parameters from DTO
+        this.sampleTimeParam = new Parameter(this, 1, "SampleTime", dto.getSampleTime() != null ? dto.getSampleTime().getValue().toString() : "-1");
+        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", dto.getOutDataTypeStrValue());
+        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        
+        // Create ports
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, feedthrough));
         
         setSampleTime(sampleTimeParam);
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+        System.out.println("DTO-NATIVE: Zero_Order_Hold block created successfully - " + dto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public Zero_Order_Hold(BlockDto blockDto, NCSLabModel model) {
+        this((ZeroOrderHoldDto) blockDto, model);
     }
     
     private void initializePorts() {

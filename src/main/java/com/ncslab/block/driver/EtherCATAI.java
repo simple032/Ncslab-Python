@@ -2,6 +2,7 @@ package com.ncslab.block.driver;
 
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.driver.EtherCATAIDto;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -19,7 +20,7 @@ public class EtherCATAI extends com.ncslab.block.Block {
     /**
      * DTO-NATIVE Constructor - Creates EtherCATAI block directly from BlockDto DTO
      */
-    public EtherCATAI(BlockDto blockDto, NCSLabModel model) {
+    public EtherCATAI(EtherCATAIDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EtherCATAI block created successfully - " + blockDto.getBlockName());
     }

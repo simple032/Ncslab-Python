@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.continuous.StateSpaceDto;
 
 import java.util.Objects;
 import java.util.ArrayList;
@@ -160,7 +161,7 @@ public class StateSpace extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates StateSpace block directly from BlockDto DTO
      */
-    public StateSpace(BlockDto blockDto, NCSLabModel model) {
+    public StateSpace(StateSpaceDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Extract parameters from DTO using same names and defaults as JSON constructor
@@ -197,38 +198,6 @@ public class StateSpace extends Block {
      * @param dto The DTO containing block configuration
      * @param model The parent model
      */
-    public StateSpace(com.ncslab.dto.block.specialized.continuous.StateSpaceDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
-        
-        // Validate DTO before initialization
-        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
-        if (!validation.isValid()) {
-            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
-        }
-        
-        // Initialize from DTO parameters using new Parameter creation
-        this.stateMatrix = new Parameter(this, 1, "A", dto.getStateMatrixValue());
-        this.inputMatrix = new Parameter(this, 2, "B", dto.getInputMatrixValue());
-        this.outputMatrix = new Parameter(this, 3, "C", dto.getOutputMatrixValue());
-        this.feedthroughMatrix = new Parameter(this, 4, "D", dto.getFeedthroughMatrixValue());
-        this.initialState = new Parameter(this, 5, "X0", dto.getInitialStateValue());
-        this.absoluteTolerance = new Parameter(this, 6, "AbsoluteTolerance", dto.getAbsoluteToleranceValue());
-        this.continuousStateAttributes = new Parameter(this, 7, "ContinuousStateAttributes", dto.getContinuousStateAttributesValue());
-        this.sampleTime = new Parameter(this, 8, "SampleTime", String.valueOf(dto.getSampleTime()));
-        this.outDataType = new Parameter(this, 9, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 10, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
-        
-        // Execute initialization logic exactly like JSONObject constructor
-        // Determine feedthrough
-        this.feedThrough = !feedthroughMatrix.isZero();
-        
-        // Initialize states and ports (same as legacy constructor)
-        initializeStates();
-        initializePorts();
-        
-        // Complete initialization
-        System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
-    }
 
     
     // === Static Factory Method for JSON Deserialization ===

@@ -32,7 +32,7 @@ public class Abc2dq0Dto extends BlockDto {
     private TypedParameter includeZeroSequence;
     
     public Abc2dq0Dto(String blockName, String blockPath) {
-        super("abc2dq", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

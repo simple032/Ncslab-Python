@@ -77,7 +77,7 @@ public class ModuloDto extends BlockDto {
                      TypedParameter sampleTime,
                      TypedParameter outDataTypeStr,
                      TypedParameter saturateOnIntegerOverflow) {
-        super("Modulo", blockName, blockPath);
+        super(blockName,blockPath);
         this.moduloType = moduloType;
         this.divisorSource = divisorSource;
         this.divisor = divisor;
@@ -94,7 +94,7 @@ public class ModuloDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public ModuloDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("Modulo", blockName, blockPath);
+        super(blockName,blockPath);
         this.moduloType = parameters.getTypedParameter("ModuloType", String.class, "fmod");
         this.divisorSource = parameters.getTypedParameter("DivisorSource", String.class, "Internal");
         this.divisor = parameters.getTypedParameter("Divisor", Double.class, 2.0);

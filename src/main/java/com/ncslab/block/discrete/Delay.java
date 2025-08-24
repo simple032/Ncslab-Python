@@ -129,8 +129,10 @@ public class Delay extends DiscreteBlock {
         this.delayLength = new Parameter(this, 1, "DelayLength", String.valueOf(delayDto.getDelayLengthValue()));
         this.initialCondition = new Parameter(this, 2, "InitialCondition", String.valueOf(delayDto.getInitialConditionValue()));
         this.sampleTimeParam = new Parameter(this, 3, "SampleTime", String.valueOf(delayDto.getSampleTimeValue()));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", delayDto.getOutDataTypeStr().getValue(String.class));
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", delayDto.getSaturateOnIntegerOverflow().getValue(String.class));
+        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", 
+            delayDto.getOutDataTypeStr() != null ? delayDto.getOutDataTypeStr().getAsString() : "Inherit: Same as input");
+        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", 
+            delayDto.getSaturateOnIntegerOverflow() != null ? delayDto.getSaturateOnIntegerOverflow().getAsString() : "off");
 
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);
@@ -140,28 +142,7 @@ public class Delay extends DiscreteBlock {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + delayDto.getBlockName());
     }
-    
-    /**
-     * DTO-NATIVE Constructor - Creates Delay block directly from generic BlockDto DTO
-     */
-    public Delay(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
 
-        // Initialize final parameters from DTO with defaults
-        this.delayLength = new Parameter(this, 1, "DelayLength", "1");
-        this.initialCondition = new Parameter(this, 2, "InitialCondition", "0");
-        this.sampleTimeParam = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-
-        // Set discrete sample time
-        setSampleTime(this.sampleTimeParam);
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Delay fromJSON(JSONObject blockJSON, NCSLabModel model) {

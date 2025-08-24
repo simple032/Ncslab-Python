@@ -12,6 +12,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.sink.DisplayDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +33,6 @@ public class Display extends Scope {
         System.out.println("DTO-NATIVE: Display block created successfully from DisplayDto - " + displayDto.getBlockName());
     }
 
-    /**
-     * Legacy DTO Constructor - Creates Display block from generic BlockDto (fallback)
-     */
-    public Display(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-        System.out.println("DTO-GENERIC: Display block created from generic BlockDto - " + blockDto.getBlockName());
-    }
 
     // === DTO Helper Methods ===
     private static JSONObject createDisplayJSON(com.ncslab.dto.block.specialized.sink.DisplayDto displayDto) {
@@ -49,8 +43,7 @@ public class Display extends Scope {
         json.put("blockUUID", displayDto.getBlockUUID() != null ? displayDto.getBlockUUID() : "null");
         
         JSONObject paramValues = new JSONObject();
-        paramValues.put("SampleTime", displayDto.getSampleTimeValue());
-        paramValues.put("OutDataTypeStr", displayDto.getOutDataTypeString());
+        paramValues.put("SampleTime", displayDto.getSampleTimeValue());        
         json.put("paramValues", paramValues);
         
         return json;
@@ -61,7 +54,6 @@ public class Display extends Scope {
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     public static final List<String> inputNames = new ArrayList<>();

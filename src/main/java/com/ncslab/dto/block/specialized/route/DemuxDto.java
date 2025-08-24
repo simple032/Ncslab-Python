@@ -85,7 +85,7 @@ public class DemuxDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public DemuxDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("Demux", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         initializeWithDefaults();
     }
 
@@ -100,7 +100,7 @@ public class DemuxDto extends BlockDto {
      */
     public DemuxDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension,
                    int numberOfOutputs) {
-        super("Demux", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.outputs = TypedParameter.of(numberOfOutputs);
         this.displayOrder = TypedParameter.of("1:N");
         this.sampleTime = TypedParameter.of(-1.0); // Inherited

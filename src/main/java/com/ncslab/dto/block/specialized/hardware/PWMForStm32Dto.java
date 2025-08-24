@@ -50,7 +50,7 @@ public class PWMForStm32Dto extends BlockDto {
     private TypedParameter sampleTime;
     
     public PWMForStm32Dto(String blockName, String blockPath) {
-        super("PWMForStm32", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

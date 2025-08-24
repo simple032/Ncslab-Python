@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.DCMotorAngleDirectDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -38,7 +39,7 @@ public class DCMotorAngleDirect extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DCMotorAngleDirect block directly from BlockDto DTO
      */
-    public DCMotorAngleDirect(BlockDto blockDto, NCSLabModel model) {
+    public DCMotorAngleDirect(DCMotorAngleDirectDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DCMotorAngleDirect block created successfully - " + blockDto.getBlockName());
     }

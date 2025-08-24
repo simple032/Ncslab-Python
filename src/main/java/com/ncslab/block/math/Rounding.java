@@ -12,6 +12,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.RoundingDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,8 +33,8 @@ public class Rounding extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Rounding block directly from RoundingDto DTO
      */
-    public Rounding(com.ncslab.dto.block.specialized.math.RoundingDto roundingDto, NCSLabModel model) {
-        super(createRoundingJSON(roundingDto), model);
+    public Rounding(RoundingDto roundingDto, NCSLabModel model) {
+        super(roundingDto, model);
         
         outputPortList.add(new OutputPort(this, 1, true));
         inputPortList.add(new InputPort(this, 1));
@@ -47,31 +48,6 @@ public class Rounding extends Block {
         }
         
         System.out.println("DTO-NATIVE: Rounding block created successfully from RoundingDto - " + roundingDto.getBlockName());
-    }
-
-    /**
-     * Legacy DTO Constructor - Creates Rounding block from generic BlockDto (fallback)
-     */
-    public Rounding(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-        System.out.println("DTO-GENERIC: Rounding block created from generic BlockDto - " + blockDto.getBlockName());
-    }
-
-    // === DTO Helper Methods ===
-    private static JSONObject createRoundingJSON(com.ncslab.dto.block.specialized.math.RoundingDto roundingDto) {
-        JSONObject json = new JSONObject();
-        json.put("blockType", "Rounding");
-        json.put("blockName", roundingDto.getBlockName());
-        json.put("blockPath", roundingDto.getBlockPath());
-        json.put("blockUUID", roundingDto.getBlockUUID() != null ? roundingDto.getBlockUUID() : "null");
-        
-        JSONObject paramValues = new JSONObject();
-        paramValues.put("Operator", roundingDto.getOperatorValue());
-        paramValues.put("SampleTime", roundingDto.getSampleTimeValue());
-        paramValues.put("OutDataTypeStr", roundingDto.getOutDataTypeString());
-        json.put("paramValues", paramValues);
-        
-        return json;
     }
 
 

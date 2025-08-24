@@ -35,7 +35,7 @@ public class ProductOfElementsDto extends BlockDto {
     private TypedParameter specifiedDimension;
     
     public ProductOfElementsDto(String blockName, String blockPath) {
-        super("ProductOfElements", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

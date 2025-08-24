@@ -2,6 +2,7 @@ package com.ncslab.block.driver;
 
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.driver.EtherCATServoDto;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -22,7 +23,7 @@ public class EtherCATservo extends com.ncslab.block.Block {
     /**
      * DTO-NATIVE Constructor - Creates EtherCATservo block directly from BlockDto DTO
      */
-    public EtherCATservo(BlockDto blockDto, NCSLabModel model) {
+    public EtherCATservo(EtherCATServoDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EtherCATservo block created successfully - " + blockDto.getBlockName());
     }

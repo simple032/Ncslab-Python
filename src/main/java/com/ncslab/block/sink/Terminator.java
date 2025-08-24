@@ -22,7 +22,6 @@ public class Terminator extends SinkBlock{
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     public static final List<String> inputNames = new ArrayList<>();
@@ -37,14 +36,6 @@ public class Terminator extends SinkBlock{
 		inputPortList.add(new InputPort(this,1));
 	}
 	
-	/**
-	 * DTO-NATIVE Constructor - Creates Terminator block directly from BlockDto DTO
-	 */
-	public Terminator(BlockDto blockDto, NCSLabModel model) {
-		super(blockDto, model);
-		inputPortList.add(new InputPort(this,1));
-		System.out.println("DTO-NATIVE: Terminator block created successfully - " + blockDto.getBlockName());
-	}
 	
 	/**
 	 * Specialized DTO Constructor - Creates Terminator block from TerminatorDto
@@ -56,14 +47,10 @@ public class Terminator extends SinkBlock{
 		// Initialize single input port
 		inputPortList.add(new InputPort(this, 1));
 		
-		// Extract Terminator-specific parameters from DTO
-		String outDataTypeStr = dto.getOutDataTypeStrValue();
 		// Note: Terminator blocks are simple sink blocks that just terminate signals
-		// The OutDataTypeStr parameter is mainly for documentation/validation purposes
-		// and doesn't affect the actual termination functionality
+		// No additional parameters needed since they have no outputs
 		
-		System.out.println("DTO-SPECIALIZED: Terminator block created from TerminatorDto - " + dto.getBlockName() + 
-		                   " (DataType: " + outDataTypeStr + ")");
+		System.out.println("DTO-SPECIALIZED: Terminator block created from TerminatorDto - " + dto.getBlockName() );
 	}
 
 	public void generateOutputCodeM(CodeStructM code) {

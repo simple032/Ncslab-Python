@@ -3,6 +3,7 @@ package com.ncslab.block.hardware.stm32;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.hardware.stm32.DACDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class DAC extends com.ncslab.block.Block{
     /**
      * DTO-NATIVE Constructor - Creates DAC block directly from BlockDto DTO
      */
-    public DAC(BlockDto blockDto, NCSLabModel model) {
+    public DAC(DACDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DAC block created successfully - " + blockDto.getBlockName());
     }

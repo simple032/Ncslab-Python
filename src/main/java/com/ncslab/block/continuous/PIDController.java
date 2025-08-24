@@ -19,6 +19,7 @@ import lombok.Getter;
 
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.continuous.PIDControllerDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -190,7 +191,7 @@ public class PIDController extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates PIDController block directly from BlockDto DTO
      */
-    public PIDController(BlockDto blockDto, NCSLabModel model) {
+    public PIDController(PIDControllerDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -224,6 +225,13 @@ public class PIDController extends Block {
         }
         
         System.out.println("DTO-NATIVE: PIDController block created successfully - " + blockDto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public PIDController(BlockDto blockDto, NCSLabModel model) {
+        this((PIDControllerDto) blockDto, model);
     }
 
 

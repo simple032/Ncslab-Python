@@ -5,6 +5,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discrete.UnitDelayDto;
 
 import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.block.io.InputPort;
@@ -114,7 +115,7 @@ public class UnitDelay extends DiscreteBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates UnitDelay block directly from BlockDto DTO
      */
-    public UnitDelay(BlockDto blockDto, NCSLabModel model) {
+    public UnitDelay(UnitDelayDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

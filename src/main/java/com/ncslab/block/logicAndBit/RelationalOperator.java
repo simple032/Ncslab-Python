@@ -166,30 +166,6 @@ public class RelationalOperator extends Block {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
 
-    /**
-     * Generic DTO Constructor - Creates RelationalOperator block from generic BlockDto
-     */
-    public RelationalOperator(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters with defaults
-        this.operator = new Parameter(this, 1, "Operator", "==");
-        this.logicDataType = new Parameter(this, 2, "LogicDataType", "boolean");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-
-        // Store legacy relop for backward compatibility
-        this.relop = "==";
-
-        // Create ports
-        inputPortList.add(new InputPort(this, 1));
-        inputPortList.add(new InputPort(this, 2));
-        OutputPort output = new OutputPort(this, 1, true);
-        outputPortList.add(output);
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
 
 
 

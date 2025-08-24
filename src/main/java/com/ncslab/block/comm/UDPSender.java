@@ -3,6 +3,7 @@ package com.ncslab.block.comm;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.comm.UDPSenderDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.code.c.CodeStructC;
@@ -28,7 +29,7 @@ public class UDPSender extends Block {
     /**
      * DTO-NATIVE Constructor - Creates UDPSender block directly from BlockDto DTO
      */
-    public UDPSender(BlockDto blockDto, NCSLabModel model) {
+    public UDPSender(UDPSenderDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: UDPSender block created successfully - " + blockDto.getBlockName());
     }

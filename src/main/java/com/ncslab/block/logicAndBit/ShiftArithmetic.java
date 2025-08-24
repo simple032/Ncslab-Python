@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.logic.ShiftArithmeticDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -107,7 +108,7 @@ public class ShiftArithmetic extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates ShiftArithmetic block directly from BlockDto DTO
      */
-    public ShiftArithmetic(BlockDto blockDto, NCSLabModel model) {
+    public ShiftArithmetic(ShiftArithmeticDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

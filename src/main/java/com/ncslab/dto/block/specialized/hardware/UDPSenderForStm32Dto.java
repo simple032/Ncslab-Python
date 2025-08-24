@@ -50,7 +50,7 @@ public class UDPSenderForStm32Dto extends BlockDto {
     private TypedParameter maxPacketSize;
     
     public UDPSenderForStm32Dto(String blockName, String blockPath) {
-        super("UDPSenderForStm32", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

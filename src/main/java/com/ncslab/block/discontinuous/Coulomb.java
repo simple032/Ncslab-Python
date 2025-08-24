@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discontinuous.CoulombDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -111,7 +112,7 @@ public class Coulomb extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates Coulomb block directly from BlockDto DTO
      */
-    public Coulomb(BlockDto blockDto, NCSLabModel model) {
+    public Coulomb(CoulombDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

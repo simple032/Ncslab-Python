@@ -33,7 +33,7 @@ public class FromDto extends BlockDto {
     private TypedParameter tagVisibility;
     
     public FromDto(String blockName, String blockPath) {
-        super("From", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

@@ -3,6 +3,7 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.matrix.PermuteMatrixDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -25,7 +26,7 @@ public class PermuteMatrix extends Block {
     /**
      * DTO-NATIVE Constructor - Creates PermuteMatrix block directly from BlockDto DTO
      */
-    public PermuteMatrix(BlockDto blockDto, NCSLabModel model) {
+    public PermuteMatrix(PermuteMatrixDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: PermuteMatrix block created successfully - " + blockDto.getBlockName());
     }

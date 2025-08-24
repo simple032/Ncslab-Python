@@ -4,7 +4,6 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.NCSLabModel;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -29,6 +28,7 @@ public class OptimizedBlockFactory {
     private static final ConcurrentHashMap<String, MethodHandle> dtoConstructorCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, MethodHandle> jsonConstructorCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Class<? extends Block>> classCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Constructor<? extends Block>> constructorCache = new ConcurrentHashMap<>();
     
     // Pattern for cleaning block type names
     private static final Pattern BLOCK_TYPE_CLEANUP = Pattern.compile("Block|\\s+|\\n");
@@ -52,76 +52,199 @@ public class OptimizedBlockFactory {
         if (blockDto == null) {
             throw new ModelException("BlockDto DTO cannot be null");
         }
+        if (model == null) {
+            throw new ModelException("NCSLabModel cannot be null");
+        }
         
         // Normalize block type efficiently
         String blockType = normalizeBlockType(blockDto.getBlockType());
+        if (blockType.isEmpty()) {
+            throw new ModelException("Block type cannot be empty");
+        }
         
         try {
-            // Try DTO constructor first (fastest path)
-            MethodHandle dtoConstructor = getDtoConstructor(blockType);
+            // Try DTO constructor with specific type awareness (fastest path)
+            MethodHandle dtoConstructor = getDtoConstructor(blockType, blockDto.getClass());
             if (dtoConstructor != null) {
                 Block block = (Block) dtoConstructor.invoke(blockDto, model);
                 finalizeBlock(block, id);
                 incrementCacheHit();
+                log.debug("Created optimized block: {} (type: {}, DTO: {})", 
+                         blockDto.getBlockName(), blockType, blockDto.getClass().getSimpleName());
                 return block;
+            } else {
+                // Fallback to generic BlockDto constructor
+                dtoConstructor = getDtoConstructor(blockType);
+                if (dtoConstructor != null) {
+                    Block block = (Block) dtoConstructor.invoke(blockDto, model);
+                    finalizeBlock(block, id);
+                    incrementCacheHit();
+                    log.debug("Created block using generic constructor: {} (type: {})", 
+                             blockDto.getBlockName(), blockType);
+                    return block;
+                }
             }
             
-            // Fall back to JSON constructor with conversion
-            MethodHandle jsonConstructor = getJsonConstructor(blockType);
-            if (jsonConstructor != null) {
-                JSONObject blockJSON = convertBlockDtoToJsonObject(blockDto);
-                Block block = (Block) jsonConstructor.invoke(blockJSON, model);
-                finalizeBlock(block, id);
-                incrementCacheHit();
-                return block;
-            }
-            
-            // Constructor not cached, create new handle
+            // No suitable constructor found
             incrementCacheMiss();
-            return createBlockWithReflection(id, blockDto, model, blockType);
+            throw new ModelException(String.format(
+                "No suitable DTO constructor found for block type '%s' with DTO type '%s'", 
+                blockType, blockDto.getClass().getSimpleName()));
             
         } catch (ModelException e) {
             throw e;
+        } catch (ClassCastException e) {
+            throw new ModelException(String.format(
+                "DTO type mismatch for block type '%s': cannot cast %s to expected type", 
+                blockType, blockDto.getClass().getSimpleName()), e);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            throw new ModelException(String.format(
+                "Invalid arguments for block creation (type: %s, DTO: %s): %s", 
+                blockType, blockDto.getClass().getSimpleName(), e.getMessage()), e);
+        } catch (Exception e) {
+            log.error("Unexpected error creating optimized block of type '{}' with DTO '{}': {}", 
+                     blockType, blockDto.getClass().getSimpleName(), e.getMessage(), e);
+            throw new ModelException(String.format(
+                "Failed to create block: %s (DTO: %s) - %s", 
+                blockType, blockDto.getClass().getSimpleName(), e.getMessage()), e);
         } catch (Throwable t) {
-            log.error("Error creating optimized block of type '{}': {}", blockType, t.getMessage());
-            throw new ModelException("Failed to create block: " + blockType);
+            log.error("Critical error creating optimized block of type '{}' with DTO '{}': {}", 
+                     blockType, blockDto.getClass().getSimpleName(), t.getMessage(), t);
+            throw new ModelException(String.format(
+                "Failed to create block: %s (DTO: %s) - %s", 
+                blockType, blockDto.getClass().getSimpleName(), t.getMessage()));
         }
     }
     
     /**
-     * Gets or creates a DTO constructor method handle
+     * Dynamically finds a constructor that accepts any BlockDto subclass and NCSLabModel
      */
-    private static MethodHandle getDtoConstructor(String blockType) {
-        return dtoConstructorCache.computeIfAbsent(blockType, type -> {
-            try {
-                Class<? extends Block> blockClass = getBlockClass(type);
-                if (blockClass == null) return null;
+    public static Constructor<? extends Block> findConstructor(Class<? extends Block> blockClass) {
+        // Check cache first
+        String cacheKey = blockClass.getName();
+        Constructor<? extends Block> cachedConstructor = constructorCache.get(cacheKey);
+        if (cachedConstructor != null) {
+            return cachedConstructor;
+        }
+        
+        // Get all constructors
+        Constructor<?>[] constructors = blockClass.getConstructors();
+        
+        for (Constructor<?> constructor : constructors) {
+            // Get constructor parameter types
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            
+            // Check if parameter count is 2
+            if (parameterTypes.length != 2) {
+                continue;
+            }
+            
+            // Check if first parameter is BlockDto subclass, second is NCSLabModel
+            if (BlockDto.class.isAssignableFrom(parameterTypes[0]) && 
+                parameterTypes[1].equals(NCSLabModel.class)) {
                 
-                Constructor<? extends Block> constructor = blockClass.getConstructor(BlockDto.class, NCSLabModel.class);
-                return lookup.unreflectConstructor(constructor);
+                // Cache and return found constructor
+                @SuppressWarnings("unchecked")
+                Constructor<? extends Block> typedConstructor = (Constructor<? extends Block>) constructor;
+                constructorCache.put(cacheKey, typedConstructor);
+                return typedConstructor;
+            }
+        }
+        
+        // Cache null result to avoid repeated searches
+        constructorCache.put(cacheKey, null);
+        return null;
+    }
+    
+    /**
+     * Enhanced constructor finder with best match selection for specific DTO types
+     */
+    public static Constructor<? extends Block> findBestConstructor(Class<? extends Block> blockClass, Class<? extends BlockDto> dtoType) {
+        String cacheKey = blockClass.getName() + "_" + dtoType.getName();
+        Constructor<? extends Block> cachedConstructor = constructorCache.get(cacheKey);
+        if (cachedConstructor != null) {
+            return cachedConstructor;
+        }
+        
+        Constructor<?>[] constructors = blockClass.getConstructors();
+        Constructor<? extends Block> bestMatch = null;
+        int bestScore = -1;
+        
+        for (Constructor<?> constructor : constructors) {
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            
+            if (parameterTypes.length != 2 || !parameterTypes[1].equals(NCSLabModel.class)) {
+                continue;
+            }
+            
+            if (BlockDto.class.isAssignableFrom(parameterTypes[0])) {
+                int score = calculateTypeScore(parameterTypes[0], dtoType);
+                if (score > bestScore) {
+                    bestScore = score;
+                    @SuppressWarnings("unchecked")
+                    Constructor<? extends Block> typedConstructor = (Constructor<? extends Block>) constructor;
+                    bestMatch = typedConstructor;
+                }
+            }
+        }
+        
+        // Cache result (even if null)
+        constructorCache.put(cacheKey, bestMatch);
+        return bestMatch;
+    }
+    
+    /**
+     * Calculate compatibility score between constructor parameter type and actual DTO type
+     */
+    private static int calculateTypeScore(Class<?> constructorParamType, Class<? extends BlockDto> actualDtoType) {
+        if (constructorParamType.equals(actualDtoType)) {
+            return 100; // Exact match - highest score
+        } else if (constructorParamType.isAssignableFrom(actualDtoType)) {
+            return 50;  // Compatible through inheritance
+        }
+        return 0; // Not compatible
+    }
+    
+    /**
+     * Gets or creates a DTO constructor method handle using dynamic discovery
+     */
+    private static MethodHandle getDtoConstructor(String blockType, Class<? extends BlockDto> dtoType) {
+        String cacheKey = blockType + "_" + (dtoType != null ? dtoType.getSimpleName() : "BlockDto");
+        return dtoConstructorCache.computeIfAbsent(cacheKey, key -> {
+            try {
+                Class<? extends Block> blockClass = getBlockClass(blockType);
+                if (blockClass == null) {
+                    incrementCacheMiss();
+                    return null;
+                }
+                
+                // Use enhanced constructor discovery
+                Constructor<? extends Block> constructor = dtoType != null ? 
+                    findBestConstructor(blockClass, dtoType) : 
+                    findConstructor(blockClass);
+                
+                if (constructor != null) {
+                    return lookup.unreflectConstructor(constructor);
+                } else {
+                    log.debug("No suitable DTO constructor found for block type: {} with DTO type: {}", 
+                             blockType, dtoType != null ? dtoType.getSimpleName() : "BlockDto");
+                    incrementCacheMiss();
+                    return null;
+                }
             } catch (Exception e) {
-                // DTO constructor doesn't exist, return null
+                log.debug("Could not create DTO constructor for {}: {}", blockType, e.getMessage());
+                incrementCacheMiss();
                 return null;
             }
         });
     }
     
     /**
-     * Gets or creates a JSON constructor method handle
+     * Backward compatibility method - uses generic BlockDto type
      */
-    private static MethodHandle getJsonConstructor(String blockType) {
-        return jsonConstructorCache.computeIfAbsent(blockType, type -> {
-            try {
-                Class<? extends Block> blockClass = getBlockClass(type);
-                if (blockClass == null) return null;
-                
-                Constructor<? extends Block> constructor = blockClass.getConstructor(JSONObject.class, NCSLabModel.class);
-                return lookup.unreflectConstructor(constructor);
-            } catch (Exception e) {
-                log.debug("No JSON constructor found for block type: {}", type);
-                return null;
-            }
-        });
+    private static MethodHandle getDtoConstructor(String blockType) {
+        return getDtoConstructor(blockType, null);
     }
     
     /**
@@ -148,46 +271,6 @@ public class OptimizedBlockFactory {
     }
     
     /**
-     * Fall back to reflection when method handles are not available
-     */
-    private static Block createBlockWithReflection(int id, BlockDto blockDto, NCSLabModel model, String blockType) 
-            throws ModelException {
-        
-        Class<? extends Block> blockClass = getBlockClass(blockType);
-        if (blockClass == null) {
-            throw new ModelException("Unknown block type: " + blockType);
-        }
-        
-        try {
-            // Try DTO constructor
-            try {
-                Constructor<? extends Block> constructor = blockClass.getConstructor(BlockDto.class, NCSLabModel.class);
-                MethodHandle handle = lookup.unreflectConstructor(constructor);
-                dtoConstructorCache.put(blockType, handle);
-                
-                Block block = (Block) handle.invoke(blockDto, model);
-                finalizeBlock(block, id);
-                return block;
-            } catch (NoSuchMethodException e) {
-                // Try JSON constructor
-                Constructor<? extends Block> constructor = blockClass.getConstructor(JSONObject.class, NCSLabModel.class);
-                MethodHandle handle = lookup.unreflectConstructor(constructor);
-                jsonConstructorCache.put(blockType, handle);
-                
-                JSONObject blockJSON = convertBlockDtoToJsonObject(blockDto);
-                Block block = (Block) handle.invoke(blockJSON, model);
-                finalizeBlock(block, id);
-                return block;
-            }
-        } catch (ModelException e) {
-            throw e;
-        } catch (Throwable t) {
-            log.error("Reflection-based block creation failed for type '{}': {}", blockType, t.getMessage());
-            throw new ModelException("Failed to create block via reflection: " + blockType + " - " + t.getMessage());
-        }
-    }
-    
-    /**
      * Efficiently normalize block type name
      */
     private static String normalizeBlockType(String blockType) {
@@ -203,35 +286,7 @@ public class OptimizedBlockFactory {
         block.updateBlock();
         totalBlocksCreated.incrementAndGet();
     }
-    
-    /**
-     * Convert DTO to JSONObject (optimized version)
-     */
-    private static JSONObject convertBlockDtoToJsonObject(BlockDto blockDto) {
-        JSONObject blockJSON = new JSONObject();
-        
-        // Core required fields
-        blockJSON.put("blockType", blockDto.getBlockType());
-        blockJSON.put("blockName", blockDto.getBlockName());
-        
-        // Optional fields (avoid null checks where possible)
-        if (blockDto.getSrcBlock() != null) {
-            blockJSON.put("srcBlock", blockDto.getSrcBlock());
-        }
-        if (blockDto.getBlockPath() != null) {
-            blockJSON.put("blockPath", blockDto.getBlockPath());
-        }
-        if (blockDto.getBlockUUID() != null) {
-            blockJSON.put("blockUUID", blockDto.getBlockUUID());
-        }
-        if (blockDto.getParamValues() != null && !blockDto.getParamValues().isEmpty()) {
-            // Only convert to JSONObject if absolutely necessary for legacy compatibility
-            blockJSON.put("paramValues", new JSONObject(blockDto.getParamValues()));
-        }
-        
-        return blockJSON;
-    }
-    
+
     // Performance tracking methods
     private static void incrementCacheHit() {
         cacheHits.incrementAndGet();
@@ -252,9 +307,9 @@ public class OptimizedBlockFactory {
         
         return String.format(
             "OptimizedBlockFactory Stats: Total=%d, Cache Hits=%d, Misses=%d, Hit Rate=%.2f%%, " +
-            "DTO Cache Size=%d, JSON Cache Size=%d",
+            "DTO Cache Size=%d, JSON Cache Size=%d, Constructor Cache Size=%d",
             totalCreated, hits, misses, hitRate, 
-            dtoConstructorCache.size(), jsonConstructorCache.size()
+            dtoConstructorCache.size(), jsonConstructorCache.size(), constructorCache.size()
         );
     }
     
@@ -265,6 +320,7 @@ public class OptimizedBlockFactory {
         dtoConstructorCache.clear();
         jsonConstructorCache.clear();
         classCache.clear();
+        constructorCache.clear();
         log.info("OptimizedBlockFactory caches cleared");
     }
     
@@ -282,8 +338,12 @@ public class OptimizedBlockFactory {
         };
         
         for (String blockType : commonBlocks) {
-            getDtoConstructor(blockType);
-            getJsonConstructor(blockType);
+            // Pre-warm both generic and specific constructor caches
+            Class<? extends Block> blockClass = getBlockClass(blockType);
+            if (blockClass != null) {
+                findConstructor(blockClass);
+                getDtoConstructor(blockType);
+            }
         }
         
         log.info("OptimizedBlockFactory cache warmed up with {} common block types", commonBlocks.length);

@@ -4,6 +4,7 @@ import com.ncslab.block.Block;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.route.SwitchDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -106,30 +107,7 @@ public class Switch extends Block {
 
         // Initialize ports
         initializePorts();
-    }    /**
-     * DTO-NATIVE Constructor - Creates Switch block directly from BlockDto DTO
-     */
-    public Switch(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Extract parameters from DTO using same names and defaults as JSON constructor
-        JSONObject paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null) {
-            paramValues = new JSONObject(blockDto.getParamValues());
-        }
-        
-        // Initialize final parameters using exact same logic as JSON constructor
-        this.threshold = new Parameter(this, 1, "Threshold", paramValues.optString("Threshold", "0.0"));
-        this.criteria = new Parameter(this, 2, "Criteria", paramValues.optString("Criteria", ">="));
-        this.sampleTime = new Parameter(this, 3, "SampleTime", paramValues.optString("SampleTime", "-1"));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Inherit via internal rule"));
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
+    }    
 
     // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
     // This pattern maintains backward compatibility while enabling DTO migration
@@ -139,8 +117,8 @@ public class Switch extends Block {
      * @param dto The DTO containing block configuration
      * @param model The parent model
      */
-    public Switch(com.ncslab.dto.block.specialized.route.SwitchDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+    public Switch(SwitchDto dto, NCSLabModel model) {
+        super(dto, model);
         
         // Validate DTO before initialization
         com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
@@ -151,7 +129,7 @@ public class Switch extends Block {
         // Initialize from DTO parameters using new Parameter creation
         this.threshold = new Parameter(this, 1, "Threshold", String.valueOf(dto.getThresholdValue()));
         this.criteria = new Parameter(this, 2, "Criteria", dto.getCriteriaValue());
-        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime()));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", dto.getSampleTime().getAsString());
         this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
         this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
         
@@ -160,6 +138,13 @@ public class Switch extends Block {
         
         // Complete initialization
         System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public Switch(BlockDto blockDto, NCSLabModel model) {
+        this((SwitchDto) blockDto, model);
     }
 
     // === Static Factory Method for JSON Deserialization ===

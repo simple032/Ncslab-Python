@@ -2,6 +2,7 @@ package com.ncslab.block.sink;
 
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.sink.SinkDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -14,7 +15,7 @@ public class SinkBlock extends Block {
 	/**
 	 * DTO-NATIVE Constructor for SinkBlock - Uses DTO directly without conversion
 	 */
-	public SinkBlock(BlockDto blockDto, NCSLabModel model) {
+	public SinkBlock(SinkDto blockDto, NCSLabModel model) {
 		super(blockDto, model);
 	}
 }

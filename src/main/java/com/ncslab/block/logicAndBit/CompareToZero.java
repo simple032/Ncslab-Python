@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.logic.CompareToZeroDto;
 
 import com.ncslab.block.Block;
 import Jama.Matrix;
@@ -117,25 +118,7 @@ public class CompareToZero extends Block{
         // Create ports
 		inputPortList.add(new InputPort(this, 1));
 		outputPortList.add(new OutputPort(this, 1, true));
-    }    /**
-     * DTO-NATIVE Constructor - Creates CompareToZero block directly from BlockDto DTO
-     */
-    public CompareToZero(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters from DTO
-        this.relationalOperator = new Parameter(this, 1, "Relationaloperator", "0");
-        this.logicDataType = new Parameter(this, 2, "Logicdatatype", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-
     /**
      * DTO Constructor - Creates CompareToZero block from CompareToZeroDto with proper parameter mapping
      */

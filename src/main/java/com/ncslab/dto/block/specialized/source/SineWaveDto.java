@@ -134,7 +134,7 @@ public class SineWaveDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public SineWaveDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("SineWave", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
     }
 
     /**
@@ -151,7 +151,7 @@ public class SineWaveDto extends BlockDto {
      */
     public SineWaveDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension,
                        double amplitude, double frequency, double phase, double bias) {
-        super("SineWave", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.amplitude = TypedParameter.of(amplitude);
         this.bias = TypedParameter.of(bias);
         this.frequency = TypedParameter.of(frequency);

@@ -84,7 +84,7 @@ public class Divide extends Block {
         
         // Extract parameter values from DTO
         String divideMethodValue = dto.getDivideMethodValue() != null ? dto.getDivideMethodValue() : "Element-wise(./.)";
-        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().getAsString() : "-1";
         String outDataTypeValue = dto.getOutDataTypeStrValue() != null ? dto.getOutDataTypeStrValue() : "Inherit: Same as input";
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() != null && dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         

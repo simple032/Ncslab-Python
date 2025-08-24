@@ -5,6 +5,8 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.annotations.MigrationCompatible;
+import com.ncslab.dto.block.specialized.machineLearning.MachineLearningDto;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
@@ -18,7 +20,7 @@ import lombok.Builder;
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("LogisticRegression")
 @MigrationCompatible(originalClass = "com.ncslab.block.machineLearning.pt.LogisticRegression")
-public class LogisticRegressionDto extends BlockDto {
+public class LogisticRegressionDto extends PTModelDto {
     
     @Builder.Default
     private TypedParameter inputFeatures = TypedParameter.of(1);

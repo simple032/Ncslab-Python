@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import com.utils.Property;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.function.SFunctionBuilderDto;
 import lombok.Getter;
 
 import com.ncslab.block.Block;
@@ -39,7 +40,7 @@ public class SFunctionBuilder extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SFunctionBuilder block directly from BlockDto DTO
      */
-    public SFunctionBuilder(BlockDto blockDto, NCSLabModel model) {
+    public SFunctionBuilder(SFunctionBuilderDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SFunctionBuilder block created successfully - " + blockDto.getBlockName());
     }

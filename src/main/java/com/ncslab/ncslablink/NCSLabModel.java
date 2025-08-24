@@ -946,7 +946,6 @@ abstract public class NCSLabModel {
 			for(int i=0; i<block.getInputPortList().size();i++) {
                 InputPort input = block.getInputPortList().get(i);
 				if(input.getLinkedLine()==null) {
-					System.err.println("RT Debug: Input port '"+input.getBlock().getBlockName()+"("+input.getNumber()+")' is not linked");
 					//如果输入端口没有连接，则连接到constant
 					// {"blockType": "Constant", "blockName": "Constant1", "position": [100, 400, 160, 460], "paramValues": {"Value": "10"}}
 					JSONObject blockJSON = new JSONObject();

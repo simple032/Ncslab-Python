@@ -33,7 +33,7 @@ public class GotoDto extends BlockDto {
     private TypedParameter tagVisibility;
     
     public GotoDto(String blockName, String blockPath) {
-        super("Goto", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

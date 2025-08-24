@@ -1,7 +1,6 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.data.Data;
-import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.AddDto;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -37,15 +36,15 @@ import java.util.List;
 public class Add extends Block {
 
     // === SIMULINK-Compatible Parameters ===
-    private final Parameter inputs;
-    private final Parameter sampleTime;
-    private final Parameter inputSameDT;
-    private final Parameter outDataType;
-    private final Parameter saturateOnIntegerOverflow;
+    private Parameter inputs;
+    private Parameter sampleTime;
+    private Parameter inputSameDT;
+    private Parameter outDataType;
+    private Parameter saturateOnIntegerOverflow;
 
     // === Operational Settings ===
     @Getter
-    private final String inputSequence;
+    private String inputSequence;
 
     // === Static Parameter Definitions ===
 
@@ -93,54 +92,23 @@ public class Add extends Block {
         initializePorts();
     }
 
-    // === Legacy Constructor (Deprecated) ===
     @Deprecated
     public Add(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
-
-        // Use name-based parameter access instead of index-based
-        this.inputs = getParameterByName("Inputs");
-        this.inputSequence = this.inputs.getInitString();
-        this.sampleTime = getParameterByName("SampleTime");
-        this.inputSameDT = getParameterByName("InputSameDT");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Initialize ports
-        initializePorts();
-    }    /**
-     * DTO-NATIVE Constructor - Creates Add block directly from BlockDto DTO
-     */
-    public Add(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-
-
-        // Initialize final parameters from DTO
-        this.inputs = new Parameter(this, 1, "Inputs", "++");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.inputSameDT = new Parameter(this, 3, "Inputsamedt", "0");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-
-        this.inputSequence = this.inputs.getInitString();
-        
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+        initializeBlock();
     }
 
-    /**
-     * AddDto-specific Constructor - Creates Add block from AddDto with type-safe parameter extraction
-     */
+
     public Add(AddDto dto, NCSLabModel model) {
         super(dto, model);
-
-        // Extract parameters from AddDto with proper type safety and defaults
+        
+        // Validate DTO
+        dto.validate();
+        
+        // Extract parameters from AddDto (relying on @Builder.Default for defaults)
         String inputsValue = dto.getInputsValue();
-        String sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().toString() : "-1";
-        String inputSameDTValue = "on";
+        String sampleTimeValue = dto.getSampleTimeValue().toString();
+        String inputSameDTValue = "on"; // Fixed parameter for Add block
         String outDataTypeValue = dto.getOutDataTypeStrValue();
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
 
@@ -158,8 +126,27 @@ public class Add extends Block {
         
         // Initialize ports
         initializePorts();
+    }
 
-        System.out.println("AddDto-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
+    public static Add fromDto(AddDto dto, NCSLabModel model) {
+        return new Add(dto, model);
+    }
+
+    private void initializeBlock() {
+        // Legacy JSONObject initialization
+        this.inputs = getParameterByName("Inputs");
+        if (this.inputs != null) {
+            this.inputSequence = this.inputs.getInitString();
+        } else {
+            this.inputSequence = "++"; // Default value
+        }
+        this.sampleTime = getParameterByName("SampleTime");
+        this.inputSameDT = getParameterByName("InputSameDT");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Initialize ports
+        initializePorts();
     }
 
     // === Static Factory Method for JSON Deserialization ===

@@ -131,6 +131,9 @@ public class BlockType{
         blockClassTree.put("R2IP", com.ncslab.block.testrig.SecondOrderRotaryInvertedPendulum.class);
         blockClassTree.put("BallPlateSystem", com.ncslab.block.testrig.BallPlateSystem.class);
         blockClassTree.put("FanRasp", com.ncslab.block.testrig.RaspFan.class);
+        blockClassTree.put("RaspFan", com.ncslab.block.testrig.RaspFan.class);  // DTO compatibility
+        blockClassTree.put("SecondOrderInvertedPendulum", com.ncslab.block.testrig.SecondOrderInvertedPendulum.class);  // DTO compatibility  
+        blockClassTree.put("SecondOrderRotaryInvertedPendulum", com.ncslab.block.testrig.SecondOrderRotaryInvertedPendulum.class);  // DTO compatibility
         blockClassTree.put("NetWaterLevel", com.ncslab.block.testrig.WaterLevel.class);
 
         blockClassTree.put("BallPlateSystemSUST", com.ncslab.block.testrig.BallPlateSUST.class);
@@ -184,6 +187,20 @@ public class BlockType{
 
         // PowerSystem
         blockClassTree.put("SecondOrderFilter", com.ncslab.block.powerSystem.secondOrderFiliter.class);
+        
+        // Additional alias mappings for database compatibility
+        // These map database block type names to existing registry entries
+        blockClassTree.put("StateSpace", com.ncslab.block.continuous.StateSpace.class);  // maps to "State-Space"
+        blockClassTree.put("Coulomb", com.ncslab.block.discontinuous.Coulomb.class);  // maps to "CoulombViscousFriction"
+        blockClassTree.put("ZeroOrderHold", com.ncslab.block.discrete.Zero_Order_Hold.class);  // maps to "Zero-OrderHold"
+        blockClassTree.put("DiscreteTimeIntegrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);  // maps to "Discrete-TimeIntegrator"
+        blockClassTree.put("DiscreteTransferFcnz", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);  // maps to "DiscreteTransferFcn(z)"
+        blockClassTree.put("TrigFunction", com.ncslab.block.math.TrigFunction.class);  // maps to "TrigonometricFunction"
+        blockClassTree.put("Pulse", com.ncslab.block.source.Pulse.class);  // maps to "PulseGenerator"
+        blockClassTree.put("BandLimitedWhiteNoise", com.ncslab.block.source.BandLimitedWhiteNoise.class);  // maps to "Band-LimitedWhiteNoise"
+        blockClassTree.put("RotaryInvertedPendulum", com.ncslab.block.testrig.RotaryInvertedPendulum.class);  // maps to "R1IP"
+        blockClassTree.put("Alp", com.ncslab.block.testrig.Alp.class);  // maps to "ALP"
+        blockClassTree.put("DCMotorAngleDirect", com.ncslab.block.testrig.DCMotorAngleDirect.class);  // maps to "DCMotorAngleNew"
 
         // LogicAndBit
         blockClassTree.put("CompareToConstant", com.ncslab.block.logicAndBit.CompareToConstant.class);

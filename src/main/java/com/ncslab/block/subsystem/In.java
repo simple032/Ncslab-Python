@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.subsystem.InportDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class In extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates In block directly from BlockDto DTO
      */
-    public In(BlockDto blockDto, NCSLabModel model) {
+    public In(InportDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -190,6 +191,7 @@ public class In extends Block {
     public void updateDimension() throws MatDimException {
         // In block passes dimensions from subsystem input to internal output
         OutputPort out = outputPortList.get(0);
+        if(this.subsystem == null) return;
         InputPort in = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
 
         if (in.getLinkedLine() != null) {
@@ -209,6 +211,7 @@ public class In extends Block {
     @Override
     public void calculateOutput(double t) {
         // Pass data from subsystem input to internal blocks
+        if(this.subsystem == null) return;
         InputPort in = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
         OutputPort out = outputPortList.get(0);
         out.setData(in.getData());
@@ -217,6 +220,7 @@ public class In extends Block {
     @Override
     public void calculateInit() {
         // Initialize data passing
+        if(this.subsystem == null) return;
         InputPort in = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
         OutputPort out = outputPortList.get(0);
         out.setData(in.getData());

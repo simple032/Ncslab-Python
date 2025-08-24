@@ -57,6 +57,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.StateSpaceDto.class, name = "StateSpace"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.ZeroOrderHoldDto.class, name = "ZeroOrderHold"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.UnitDelayDto.class, name = "UnitDelay"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.UnitDelayDto.class, name = "Unit Delay"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteIntegratorDto.class, name = "DiscreteIntegrator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.ScopeDto.class, name = "Scope"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.TerminatorDto.class, name = "Terminator"),
@@ -73,13 +74,16 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.RoundingDto.class, name = "Rounding"),
     // Additional Week 6 DTOs - Recently fixed imports
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.LogicalOperatorDto.class, name = "LogicalOperator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.LogicalOperatorDto.class, name = "Logical Operator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.RelationalOperatorDto.class, name = "RelationalOperator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.RelationalOperatorDto.class, name = "Relational Operator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.SineWaveDto.class, name = "SineWave"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.SineWaveDto.class, name = "Sin"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DelayDto.class, name = "Delay"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.DemuxDto.class, name = "Demux"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.MuxDto.class, name = "Mux"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.PulseDto.class, name = "PulseGenerator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.PulseDto.class, name = "Pulse Generator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.PulseDto.class, name = "DiscretePulseGenerator"),
     // New DTOs for missing test blocks
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.MagneticLevitationSystemDto.class, name = "MagneticLevitationSystem"),
@@ -88,6 +92,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.OutportDto.class, name = "Outport"),
     // Additional block types from BlockType.java
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller (s)"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.OldPIDControllerDto.class, name = "PIDController"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.SaturationDto.class, name = "Saturate"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.SaturationDto.class, name = "Saturation"),
@@ -100,8 +105,11 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.CoulombDto.class, name = "Coulomb Viscous Friction"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.RampDto.class, name = "Ramp"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.BandLimitedWhiteNoiseDto.class, name = "Band-LimitedWhiteNoise"),
+     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.BandLimitedWhiteNoiseDto.class, name = "Band-LimitedWhite Noise"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.RepeatingSequenceDto.class, name = "RepeatingSequence"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.RepeatingSequenceDto.class, name = "Repeating Sequence"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.TrigFunctionDto.class, name = "TrigonometricFunction"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.   math.TrigFunctionDto.class, name = "Trigonometric Function"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.MathFunctionDto.class, name = "MathFunction"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.MathFunctionDto.class, name = "Math"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.TestPointDto.class, name = "TestPoint"),
@@ -115,19 +123,24 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteStateSpaceDto.class, name = "DiscreteStateSpace"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.ZeroOrderHoldDto.class, name = "Zero-OrderHold"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.ZeroOrderHoldDto.class, name = "Zero-Order Hold"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteTimeIntegratorDto.class, name = "Discrete-TimeIntegrator"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteTimeIntegratorDto.class, name = "Discrete-Time Integrator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.Discrete_Time_IntegratorDto.class, name = "Discrete_Time_Integrator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.Discrete_Time_IntegratorDto.class, name = "Discrete-TimeIntegrator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.Discrete_Time_IntegratorDto.class, name = "Discrete-Time Integrator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteTransferFcnDto.class, name = "DiscreteTransferFcn"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteTransferFcnDto.class, name = "Discrete Transfer Fcn"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteTransferFcnzDto.class, name = "DiscreteTransferFcn(z)"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.Discrete_Transfer_FcnzDto.class, name = "DiscreteTransferFcn(z)"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.Discrete_Transfer_FcnzDto.class, name = "Discrete Transfer Fcn (z)"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.FromDto.class, name = "From"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.GotoDto.class, name = "Goto"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.lookupTable.OneDimensionLookupTableDto.class, name = "OneDimensionLookupTable"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.lookupTable.TwoDimensionLookupTableDto.class, name = "TwoDimensionLookupTable"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.powerSystem.SecondOrderFilterDto.class, name = "SecondOrderFilter"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.CompareToConstantDto.class, name = "CompareToConstant"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.CompareToConstantDto.class, name = "Compare To Constant"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.ShiftArithmeticDto.class, name = "ShiftArithmetic"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.ShiftArithmeticDto.class, name = "Shift Arithmetic"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.CompareToZeroDto.class, name = "CompareToZero"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.CompareToZeroDto.class, name = "Compare To Zero"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.TransposeDto.class, name = "Transpose"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.CreateDiagonalMatrixDto.class, name = "CreateDiagonalMatrix"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.CrossProductDto.class, name = "CrossProduct"),
@@ -176,8 +189,10 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.NewMotorDto.class, name = "NewMotor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.DCMotorAngleDto.class, name = "DCMotorAngle"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.DCMotorAngleDirectDto.class, name = "DCMotorAngleNew"),
+     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.DCMotorAngleDirectDto.class, name = "DCMotorAngleDirect"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ServoMotorSliderDto.class, name = "ServoMotorSlider"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.AlpDto.class, name = "ALP"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.AlpDto.class, name = "Alp"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.RaspFanDto.class, name = "Fans"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.RaspFanDto.class, name = "Fan"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.RaspFanDto.class, name = "FanRasp"),
@@ -308,8 +323,10 @@ public class BlockDto implements BaseDto {
     protected Map<String, Object> paramValues;
     
     /**
-     * Sample time for discrete-time blocks.
-     * -1 indicates inherited sample time.
+     * Sample time for data collection/processing
+     * -1: Inherited from connected block or model fixed step
+     * 0: Continuous time (use model fixed step for data collection)
+     * >0: Explicit discrete sample time
      */
     protected TypedParameter sampleTime;
     
@@ -363,14 +380,14 @@ public class BlockDto implements BaseDto {
     
     // ===== INITIALIZATION =====
 
-    protected BlockDto(String blockType, String blockName, String blockPath) {
+    protected BlockDto(String blockName, String blockPath) {
         // blockType is now handled by Jackson @JsonTypeInfo - no field assignment needed
         this.blockName = blockName;
         this.blockPath = blockPath;
         initializeCollections();
     }
 
-    protected BlockDto(String blockType, String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimensions) {
+    protected BlockDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimensions) {
         // blockType is now handled by Jackson @JsonTypeInfo - no field assignment needed
         this.blockName = blockName;
         this.blockPath = blockPath;
@@ -456,74 +473,7 @@ public class BlockDto implements BaseDto {
     public int getOutputPortCount() {
         return outputPorts != null ? outputPorts.size() : 0;
     }
-    
-    // ===== CONVERSION UTILITIES =====
-    
-    
-    // ===== LEGACY JSON CONVERSION METHODS =====
-    
-    /**
-     * Create BlockDto from legacy JSONObject
-     * @param jsonObject Legacy JSONObject
-     * @return BlockDto or null if conversion fails
-     */
-    public static BlockDto fromLegacyJson(JSONObject jsonObject) {
-        // This should be implemented by concrete subclasses based on blockType
-        // For now, we provide basic field extraction
-        throw new UnsupportedOperationException(
-            "Subclasses must implement fromLegacyJson() method");
-    }
-    
-    /**
-     * Convert to legacy JSONObject format
-     * @deprecated Use Jackson serialization with JsonUtils.serializeDto() instead
-     * @return JSONObject representation
-     */
-    @Deprecated
-    public JSONObject toLegacyJson() {
-        try {
-            JSONObject jsonObject = new JSONObject();
-            
-            // Set basic fields  
-            jsonObject.put("blockType", getBlockType());
-            if (blockName != null) jsonObject.put("blockName", blockName);
-            if (blockPath != null) jsonObject.put("blockPath", blockPath);
-            if (blockUUID != null) jsonObject.put("blockUUID", blockUUID);
-            if (srcBlock != null) jsonObject.put("srcBlock", srcBlock);
-            
-            // Handle paramValues mapping - always include this field, even if empty
-            JSONObject paramValuesJson = new JSONObject();
-            
-            // Add legacy paramValues if present
-            if (paramValues != null && !paramValues.isEmpty()) {
-                for (Map.Entry<String, Object> entry : paramValues.entrySet()) {
-                    if (entry.getKey() != null && entry.getValue() != null) {
-                        paramValuesJson.put(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-            
-            // Convert typed parameters to legacy format
-            if (parameters != null && !parameters.isEmpty()) {
-                for (Map.Entry<String, TypedParameter> entry : parameters.entrySet()) {
-                    Object value = entry.getValue().getAsString();
-                    if (value != null) {
-                        paramValuesJson.put(entry.getKey(), value);
-                    }
-                }
-            }
-            
-            jsonObject.put("paramValues", paramValuesJson);
-            
-            return jsonObject;
-        } catch (Exception e) {
-            System.err.println("Failed to convert BlockDto to JSONObject for block: " + blockName);
-            System.err.println("Error details: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
+
     // ===== LEGACY PARAMETER ACCESS HELPERS =====
     
     /**
@@ -588,6 +538,12 @@ public class BlockDto implements BaseDto {
                (parameters != null && parameters.containsKey(key));
     }
 
+    /**
+     * Get the sample time parameter for this block
+     */
+    public TypedParameter getSampleTime() {
+        return sampleTime;
+    }
     
     /**
      * Check if sample time is inherited (-1)

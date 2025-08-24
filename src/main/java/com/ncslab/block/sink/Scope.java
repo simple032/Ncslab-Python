@@ -2,6 +2,7 @@ package com.ncslab.block.sink;
 
 import com.ncslab.block.data.Data;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.sink.ScopeDto;
 import lombok.Getter;
 import com.ncslab.util.TemplateManager;
 import org.json.JSONObject;
@@ -125,7 +126,7 @@ public class Scope extends SinkBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Scope block directly from BlockDto DTO
      */
-    public Scope(BlockDto blockDto, NCSLabModel model) {
+    public Scope(ScopeDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Extract parameters from DTO using same names and defaults as JSON constructor
@@ -159,44 +160,6 @@ public class Scope extends SinkBlock {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-
-    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
-    // This pattern maintains backward compatibility while enabling DTO migration
-
-    /**
-     * Enhanced DTO-based constructor - preferred for new implementations
-     * @param dto The DTO containing block configuration
-     * @param model The parent model
-     */
-    public Scope(com.ncslab.dto.block.specialized.sink.ScopeDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
-        
-        // Validate DTO before initialization
-        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
-        if (!validation.isValid()) {
-            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
-        }
-        
-        // Initialize from DTO parameters using new Parameter creation
-        this.numberOfInputs = new Parameter(this, 1, "NumberOfInputs", String.valueOf(dto.getNumberOfInputsValue()));
-        this.sampleTime = new Parameter(this, 2, "SampleTime", String.valueOf(dto.getSampleTime()));
-        this.saveName = new Parameter(this, 3, "SaveName", dto.getSaveNameValue());
-        this.saveFormat = new Parameter(this, 4, "SaveFormat", dto.getSaveFormatValue());
-        this.bufferSize = new Parameter(this, 5, "BufferSize", String.valueOf(dto.getBufferSizeValue()));
-        
-        // Execute initialization logic exactly like JSONObject constructor
-        this.inportNum = dto.getNumberOfInputsValue();
-        this.scopeStructs = new ScopeStruct[inportNum];
-        
-        // Add input ports and create scope structures (same as legacy constructor)
-        for(int i = 0; i < inportNum; i++) {
-            inputPortList.add(new InputPort(this, i+1));
-            scopeStructs[i] = new ScopeStruct(this, i+1, "in"+(i+1));
-        }
-        
-        // Complete initialization
-        System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
-    }        
 
     // === Static Factory Method for JSON Deserialization ===
     public static Scope fromJSON(JSONObject blockJSON, NCSLabModel model) {

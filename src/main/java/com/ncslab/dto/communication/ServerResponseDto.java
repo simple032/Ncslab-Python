@@ -57,39 +57,6 @@ public class ServerResponseDto {
     private Integer code; // HTTP-style response code
     
     /**
-     * Create ServerResponseDto from legacy JSONObject
-     * @param jsonObject Legacy JSONObject
-     * @return ServerResponseDto DTO or null if conversion fails
-     */
-    public static ServerResponseDto fromLegacyJson(JSONObject jsonObject) {
-        try {
-            ServerResponseDto response = new ServerResponseDto();
-            
-            // Map common fields
-            response.setStatus(jsonObject.optString("status", "unknown"));
-            response.setMessage(jsonObject.optString("message", ""));
-            response.setOutput(jsonObject.optString("output", ""));
-            response.setError(jsonObject.optString("error", ""));
-            response.setCode(jsonObject.optInt("code", 200));
-            
-            // Handle result field (can be various types)
-            if (jsonObject.has("result")) {
-                response.setResult(jsonObject.get("result"));
-            }
-            
-            // Handle execution time
-            if (jsonObject.has("executionTime")) {
-                response.setExecutionTime(jsonObject.optLong("executionTime", 0L));
-            }
-            
-            return response;
-            
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    
-    /**
      * Check if response indicates success
      * @return true if successful
      */
@@ -184,24 +151,4 @@ public class ServerResponseDto {
                 .build();
     }
     
-    /**
-     * Convert to legacy JSONObject format
-     * @deprecated Use Jackson serialization with JsonUtils.serializeDto() instead
-     * @return JSONObject representation
-     */
-    @Deprecated
-    public JSONObject toLegacyJson() {
-        JSONObject json = new JSONObject();
-        
-        json.put("status", status != null ? status : "unknown");
-        json.put("code", code != null ? code : 200);
-        
-        if (message != null) json.put("message", message);
-        if (result != null) json.put("result", result);
-        if (output != null) json.put("output", output);
-        if (error != null) json.put("error", error);
-        if (executionTime != null) json.put("executionTime", executionTime);
-        
-        return json;
-    }
 }

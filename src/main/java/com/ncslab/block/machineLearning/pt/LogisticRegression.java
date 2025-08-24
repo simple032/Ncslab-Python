@@ -4,6 +4,7 @@ import com.ncslab.block.machineLearning.MachineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.machineLearning.pt.LogisticRegressionDto;
 
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
@@ -29,7 +30,7 @@ public class LogisticRegression extends PTModel {
     /**
      * DTO-NATIVE Constructor - Creates LogisticRegression block directly from BlockDto DTO
      */
-    public LogisticRegression(BlockDto blockDto, NCSLabModel model) {
+    public LogisticRegression(LogisticRegressionDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LogisticRegression block created successfully - " + blockDto.getBlockName());
     }

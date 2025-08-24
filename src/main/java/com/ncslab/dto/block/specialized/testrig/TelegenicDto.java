@@ -7,6 +7,7 @@ import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -14,6 +15,7 @@ import lombok.experimental.SuperBuilder;
  */
 @Data
 @SuperBuilder
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Telegenic")
 @MigrationCompatible(originalClass = "com.ncslab.block.testrig.Telegenic")

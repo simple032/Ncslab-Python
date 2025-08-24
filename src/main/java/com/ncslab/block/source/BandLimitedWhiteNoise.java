@@ -11,6 +11,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.BandLimitedWhiteNoiseDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,7 +99,7 @@ public class BandLimitedWhiteNoise extends SourceBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates BandLimitedWhiteNoise block directly from BlockDto DTO
      */
-    public BandLimitedWhiteNoise(BlockDto blockDto, NCSLabModel model) {
+    public BandLimitedWhiteNoise(BandLimitedWhiteNoiseDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

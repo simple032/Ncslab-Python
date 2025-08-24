@@ -4,6 +4,7 @@ import com.ncslab.block.machineLearning.MachineLearning;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.machineLearning.pt.CNNDto;
 
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -29,7 +30,7 @@ public class CNN extends MachineLearning {
     /**
      * DTO-NATIVE Constructor - Creates CNN block directly from BlockDto DTO
      */
-    public CNN(BlockDto blockDto, NCSLabModel model) {
+    public CNN(CNNDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: CNN block created successfully - " + blockDto.getBlockName());
     }

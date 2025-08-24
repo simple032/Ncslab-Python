@@ -2,6 +2,7 @@ package com.ncslab.dto.block.specialized.sink;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.sink.SinkDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -28,14 +29,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Matplotlib")
 @MigrationCompatible(originalClass = "com.ncslab.block.sink.Matplotlib")
-public class MatplotlibDto extends BlockDto {
+public class MatplotlibDto extends SinkDto {
     
-    /**
-     * Sample time for the matplotlib block
-     * Default: -1 (inherited)
-     */
-    @Builder.Default
-    private TypedParameter sampleTime = TypedParameter.of(-1.0);
+    // sampleTime inherited from SinkDto
     
     /**
      * Save name for plot files
@@ -44,12 +40,6 @@ public class MatplotlibDto extends BlockDto {
     @Builder.Default
     private TypedParameter saveName = TypedParameter.of("plot");
     
-    /**
-     * Output data type specification
-     * Default: "Inherit: Same as input"
-     */
-    @Builder.Default
-    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
     
     /**
      * Plot title
@@ -82,9 +72,6 @@ public class MatplotlibDto extends BlockDto {
         return saveName != null ? saveName.getAsString() : "plot";
     }
     
-    public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
-    }
     
     public String getTitleValue() {
         return title != null ? title.getAsString() : "Plot";
@@ -145,7 +132,6 @@ public class MatplotlibDto extends BlockDto {
                 .blockUUID(getBlockUUID())
                 .sampleTime(sampleTime != null ? sampleTime.copy() : null)
                 .saveName(saveName != null ? saveName.copy() : null)
-                .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .title(title != null ? title.copy() : null)
                 .xLabel(xLabel != null ? xLabel.copy() : null)
                 .yLabel(yLabel != null ? yLabel.copy() : null)
@@ -157,7 +143,6 @@ public class MatplotlibDto extends BlockDto {
         return TypedParameterMap.builder()
                 .put("SampleTime", sampleTime)
                 .put("SaveName", saveName)
-                .put("OutDataTypeStr", outDataTypeStr)
                 .put("Title", title)
                 .put("XLabel", xLabel)
                 .put("YLabel", yLabel)

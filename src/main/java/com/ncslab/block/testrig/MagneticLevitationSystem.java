@@ -4,6 +4,7 @@ import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.MagneticLevitationSystemDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -28,7 +29,7 @@ public class MagneticLevitationSystem extends Block {
     /**
      * DTO-NATIVE Constructor - Creates MagneticLevitationSystem block directly from BlockDto DTO
      */
-    public MagneticLevitationSystem(BlockDto blockDto, NCSLabModel model) {
+    public MagneticLevitationSystem(MagneticLevitationSystemDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MagneticLevitationSystem block created successfully - " + blockDto.getBlockName());
 

@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @SuperBuilder
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("RaspFan")
 @MigrationCompatible(originalClass = "com.ncslab.block.testrig.RaspFan")

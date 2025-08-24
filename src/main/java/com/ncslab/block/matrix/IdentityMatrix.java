@@ -3,6 +3,7 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.matrix.IdentityMatrixDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class IdentityMatrix extends Block {
     /**
      * DTO-NATIVE Constructor - Creates IdentityMatrix block directly from BlockDto DTO
      */
-    public IdentityMatrix(BlockDto blockDto, NCSLabModel model) {
+    public IdentityMatrix(IdentityMatrixDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IdentityMatrix block created successfully - " + blockDto.getBlockName());
     }

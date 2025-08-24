@@ -32,7 +32,7 @@ public class RepeatingSequenceDto extends BlockDto {
     private TypedParameter outputValues;
     
     public RepeatingSequenceDto(String blockName, String blockPath) {
-        super("RepeatingSequence", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

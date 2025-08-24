@@ -46,33 +46,6 @@ public class LineDto {
         this.linePath = linePath;
     }
     
-    // Conversion utility for legacy JSONObject
-    public static LineDto fromLegacyJson(JSONObject jsonObject) {
-        if (jsonObject == null) return null;
-        
-        try {
-            LineDto line = new LineDto();
-            line.fromBlockName = jsonObject.optString("fromBlockName");
-            line.toBlockName = jsonObject.optString("toBlockName");
-            line.linePath = jsonObject.optString("linePath");
-            line.fromBlockUUID = jsonObject.optString("fromBlockUUID");
-            line.toBlockUUID = jsonObject.optString("toBlockUUID");
-            
-            // Handle port numbers - they can be strings or integers
-            if (jsonObject.has("fromPortNo")) {
-                line.fromPortNo = jsonObject.get("fromPortNo");
-            }
-            if (jsonObject.has("toPortNo")) {
-                line.toPortNo = jsonObject.get("toPortNo");
-            }
-            
-            return line;
-        } catch (Exception e) {
-            System.err.println("Failed to convert JSONObject to LineDto: " + e.getMessage());
-            return null;
-        }
-    }
-    
     // Validation methods
     public boolean isValid() {
         return fromBlockName != null && !fromBlockName.trim().isEmpty() &&

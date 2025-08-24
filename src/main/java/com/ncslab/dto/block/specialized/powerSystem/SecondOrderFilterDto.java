@@ -44,7 +44,7 @@ public class SecondOrderFilterDto extends BlockDto {
     private TypedParameter initialCondition2;
     
     public SecondOrderFilterDto(String blockName, String blockPath) {
-        super("SecondOrderFilter", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

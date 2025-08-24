@@ -98,7 +98,7 @@ public class SwitchDto extends BlockDto {
                      TypedParameter activeLow,
                      TypedParameter sampleTime,
                      TypedParameter outDataTypeStr) {
-        super("Switch", blockName, blockPath);
+        super(blockName, blockPath);
         this.pin = pin;
         this.pullUp = pullUp;
         this.activeLow = activeLow;
@@ -114,7 +114,7 @@ public class SwitchDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public SwitchDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("Switch", blockName, blockPath);
+        super(blockName, blockPath);
         this.pin = parameters.getTypedParameter("Pin", Integer.class, 2);
         this.pullUp = parameters.getTypedParameter("PullUp", Boolean.class, true);
         this.activeLow = parameters.getTypedParameter("ActiveLow", Boolean.class, false);
@@ -132,7 +132,7 @@ public class SwitchDto extends BlockDto {
      * @param pin Digital input pin number
      */
     public SwitchDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension, int pin) {
-        super("Switch", blockName, blockPath, position, dimension);
+        super(blockName, blockPath, position, dimension);
         this.pin = TypedParameter.of(pin);
         this.pullUp = TypedParameter.of(true);
         this.activeLow = TypedParameter.of(false);

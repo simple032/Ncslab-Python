@@ -2,6 +2,7 @@ package com.ncslab.block.math;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.dto.block.specialized.math.ExponentialDto;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
 import lombok.Getter;
@@ -26,12 +27,12 @@ import java.util.List;
 public class Exponential extends Block {
     
     // === Parameters ===
-    private final Parameter expType;
-    private final Parameter customBase;
-    private final Parameter zeroCrossing;
-    private final Parameter sampleTime;
-    private final Parameter outDataType;
-    private final Parameter saturateOnIntegerOverflow;
+    private Parameter expType;
+    private Parameter customBase;
+    private Parameter zeroCrossing;
+    private Parameter sampleTime;
+    private Parameter outDataType;
+    private Parameter saturateOnIntegerOverflow;
     
     // === Static Definitions ===
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
@@ -52,26 +53,50 @@ public class Exponential extends Block {
         inputNames.add("in1");
     }
     
-    // === Constructor ===
-    private Exponential(Parameter expType, Parameter customBase, Parameter zeroCrossing,
-                        Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
-                        String blockName, String blockPath, String blockUUID, NCSLabModel model) {
-        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+    @Deprecated
+    public Exponential(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+        initializeBlock();
+    }
+    
+    
+    public Exponential(ExponentialDto dto, NCSLabModel model) {
+        super(dto, model);
         
-        this.expType = expType;
-        this.customBase = customBase;
-        this.zeroCrossing = zeroCrossing;
-        this.sampleTime = sampleTime;
-        this.outDataType = outDataType;
-        this.saturateOnIntegerOverflow = saturateOnIntegerOverflow;
+        // Validate DTO
+        dto.validate();
         
-        // Add parameters to parameter list
-        parameterList.add(expType);
-        parameterList.add(customBase);
-        parameterList.add(zeroCrossing);
-        parameterList.add(sampleTime);
-        parameterList.add(outDataType);
-        parameterList.add(saturateOnIntegerOverflow);
+        // Extract parameters from ExponentialDto (relying on @Builder.Default for defaults)
+        String expTypeValue = dto.getExpTypeValue();
+        String customBaseValue = dto.getCustomBaseValue().toString();
+        String zeroCrossingValue = dto.getZeroCrossingValue() ? "on" : "off";
+        String sampleTimeValue = dto.getSampleTimeValue().toString();
+        String outDataTypeValue = dto.getOutDataTypeStrValue();
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+        
+        // Initialize final parameters from DTO
+        this.expType = new Parameter(this, 1, "ExpType", expTypeValue);
+        this.customBase = new Parameter(this, 2, "CustomBase", customBaseValue);
+        this.zeroCrossing = new Parameter(this, 3, "ZeroCrossing", zeroCrossingValue);
+        this.sampleTime = new Parameter(this, 4, "SampleTime", sampleTimeValue);
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", outDataTypeValue);
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", saturateValue);
+        
+        initializePorts();
+    }
+    
+    public static Exponential fromDto(ExponentialDto dto, NCSLabModel model) {
+        return new Exponential(dto, model);
+    }
+    
+    private void initializeBlock() {
+        // Legacy JSONObject initialization
+        this.expType = getParameterByName("ExpType");
+        this.customBase = getParameterByName("CustomBase");
+        this.zeroCrossing = getParameterByName("ZeroCrossing");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         initializePorts();
     }
@@ -82,25 +107,6 @@ public class Exponential extends Block {
         
         // One output port with feedthrough
         outputPortList.add(new com.ncslab.block.io.OutputPort(this, 1, true));
-    }
-
-    /**
-     * DTO-NATIVE Constructor - Creates Exponential block directly from ExponentialDto DTO
-     */
-    public Exponential(com.ncslab.dto.block.specialized.math.ExponentialDto exponentialDto, NCSLabModel model) {
-        this(
-            createParameterFromTyped(exponentialDto.getExpType(), 1, "ExpType"),
-            createParameterFromTyped(exponentialDto.getCustomBase(), 2, "CustomBase"),
-            createParameterFromTyped(exponentialDto.getZeroCrossing(), 3, "ZeroCrossing"),
-            createParameterFromTyped(exponentialDto.getSampleTime(), 4, "SampleTime"),
-            createParameterFromTyped(exponentialDto.getOutDataTypeStr(), 5, "OutDataTypeStr"),
-            createParameterFromTyped(exponentialDto.getSaturateOnIntegerOverflow(), 6, "SaturateOnIntegerOverflow"),
-            exponentialDto.getBlockName(),
-            exponentialDto.getBlockPath(),
-            exponentialDto.getBlockUUID() != null ? exponentialDto.getBlockUUID() : "null",
-            model
-        );
-        System.out.println("DTO-NATIVE: Exponential block created successfully from ExponentialDto - " + exponentialDto.getBlockName());
     }
     
     // === Static Factory Methods ===
@@ -128,9 +134,16 @@ public class Exponential extends Block {
             Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", 
                 paramValues.optString("SaturateOnIntegerOverflow", "off"));
             
-            Exponential block = new Exponential(expTypeParam, customBaseParam, zeroCrossingParam,
-                                               sampleTimeParam, outDataTypeParam, saturateParam,
-                                               blockName, blockPath, blockUUID, model);
+            // Create block using existing constructor
+            JSONObject blockIdentity = createBlockIdentity(blockName, blockPath, blockUUID);
+            blockIdentity.getJSONObject("paramValues").put("ExpType", expTypeParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("CustomBase", customBaseParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("ZeroCrossing", zeroCrossingParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("SampleTime", sampleTimeParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("OutDataTypeStr", outDataTypeParam.getInitString());
+            blockIdentity.getJSONObject("paramValues").put("SaturateOnIntegerOverflow", saturateParam.getInitString());
+            
+            Exponential block = new Exponential(blockIdentity, model);
             
             setParameterBlockReference(block, expTypeParam, customBaseParam, zeroCrossingParam,
                                      sampleTimeParam, outDataTypeParam, saturateParam);
@@ -156,9 +169,16 @@ public class Exponential extends Block {
         Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
         Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
         
-        Exponential block = new Exponential(expTypeParam, customBaseParam, zeroCrossingParam,
-                                           sampleTimeParam, outDataTypeParam, saturateParam,
-                                           name, path, "null", model);
+        // Create block using existing constructor
+        JSONObject blockIdentity = createBlockIdentity(name, path, "null");
+        blockIdentity.getJSONObject("paramValues").put("ExpType", expTypeParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("CustomBase", customBaseParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("ZeroCrossing", zeroCrossingParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("SampleTime", sampleTimeParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("OutDataTypeStr", outDataTypeParam.getInitString());
+        blockIdentity.getJSONObject("paramValues").put("SaturateOnIntegerOverflow", saturateParam.getInitString());
+        
+        Exponential block = new Exponential(blockIdentity, model);
         
         setParameterBlockReference(block, expTypeParam, customBaseParam, zeroCrossingParam,
                                  sampleTimeParam, outDataTypeParam, saturateParam);

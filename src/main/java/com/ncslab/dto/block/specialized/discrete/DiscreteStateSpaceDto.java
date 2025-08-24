@@ -6,6 +6,7 @@ import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
+import com.ncslab.dto.block.discrete.DiscreteBlockDto;
 import com.ncslab.dto.versioning.VersionedDto;
 import com.ncslab.dto.versioning.VersionInfo;
 import lombok.Data;
@@ -44,7 +45,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("DiscreteStateSpace")
 @MigrationCompatible(originalClass = "com.ncslab.block.discrete.DiscreteStateSpace")
-public class DiscreteStateSpaceDto extends BlockDto implements VersionedDto {
+public class DiscreteStateSpaceDto extends DiscreteBlockDto implements VersionedDto {
     
     // Constructor for Jackson deserialization
     

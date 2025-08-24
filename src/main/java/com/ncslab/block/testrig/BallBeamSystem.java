@@ -5,6 +5,7 @@ import com.ncslab.block.io.RWork;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.BallBeamSystemDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -32,7 +33,7 @@ public class BallBeamSystem extends Block {
     /**
      * DTO-NATIVE Constructor - Creates BallBeamSystem block directly from BlockDto DTO
      */
-    public BallBeamSystem(BlockDto blockDto, NCSLabModel model) {
+    public BallBeamSystem(BallBeamSystemDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: BallBeamSystem block created successfully - " + blockDto.getBlockName());
     }

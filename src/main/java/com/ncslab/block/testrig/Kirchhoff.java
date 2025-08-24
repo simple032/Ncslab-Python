@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.KirchhoffDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -36,7 +37,7 @@ public class Kirchhoff extends Block {
     private static final List<String> outputNames = new ArrayList<>();
     private static final List<String> inputNames = new ArrayList<>();
 
-    private static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
 
@@ -61,13 +62,47 @@ public class Kirchhoff extends Block {
 
     }
 
+	@Deprecated
 	public Kirchhoff(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON, model);
+		initializeKirchhoff();
+	}
 
-		// 一个输入
+	public Kirchhoff(KirchhoffDto dto, NCSLabModel model) {
+		super(dto, model);
+		
+		// Validate DTO
+		dto.validate();
+		
+		// Initialize ports and parameters with DTO values (defaults handled by @Builder.Default)
+		inputPortList.add(new InputPort(this, 1));
+		BCM = new Parameter(this, 1, "BCM", dto.getBcm());
+		
+		outputPortList.add(new OutputPort(this, "AD1", 1, false));
+		AD1 = new Parameter(this, 2, "AD1", dto.getAd1());
+		outputPortList.add(new OutputPort(this, "AD2", 2, false));
+		AD2 = new Parameter(this, 3, "AD2", dto.getAd2());
+		outputPortList.add(new OutputPort(this, "AD3", 3, false));
+		AD3 = new Parameter(this, 4, "AD3", dto.getAd3());
+		outputPortList.add(new OutputPort(this, "AD4", 4, false));
+		AD4 = new Parameter(this, 5, "AD4", dto.getAd4());
+		outputPortList.add(new OutputPort(this, "AD5", 5, false));
+		AD5 = new Parameter(this, 6, "AD5", dto.getAd5());
+		outputPortList.add(new OutputPort(this, "AD6", 6, false));
+		AD6 = new Parameter(this, 7, "AD6", dto.getAd6());
+		outputPortList.add(new OutputPort(this, "AD7", 7, false));
+		AD7 = new Parameter(this, 8, "AD7", dto.getAd7());
+	}
+
+	public static Kirchhoff fromDto(KirchhoffDto dto, NCSLabModel model) {
+		return new Kirchhoff(dto, model);
+	}
+
+	private void initializeKirchhoff() {
+		// Legacy JSONObject initialization
 		inputPortList.add(new InputPort(this, 1));
 		BCM = new Parameter(this, 1, "BCM", paramValues.getString("BCM"));
-		// 七个输出
+		
 		outputPortList.add(new OutputPort(this, "AD1", 1, false));
 		AD1 = new Parameter(this, 2, "AD1", paramValues.getString("AD1"));
 		outputPortList.add(new OutputPort(this, "AD2", 2, false));
@@ -82,7 +117,6 @@ public class Kirchhoff extends Block {
 		AD6 = new Parameter(this, 7, "AD6", paramValues.getString("AD6"));
 		outputPortList.add(new OutputPort(this, "AD7", 7, false));
 		AD7 = new Parameter(this, 8, "AD7", paramValues.getString("AD7"));
-
 	}
 
 	public void generateInitCodeM(CodeStructM code) {

@@ -112,7 +112,7 @@ public class Ramp extends SourceBlock {
      */
     public Ramp(RampDto dto, NCSLabModel model) {
         super("Ramp",
-              dto.getSampleTime() != null ? new Parameter(null, 4, "SampleTime", String.valueOf(dto.getSampleTime())) : new Parameter(null, 4, "SampleTime", "0.0"),
+              dto.getSampleTime() != null ? new Parameter(null, 4, "SampleTime", dto.getSampleTime().getAsString()) : new Parameter(null, 4, "SampleTime", "0.0"),
               dto.getOutDataTypeStr() != null ? new Parameter(null, 5, "OutDataTypeStr", dto.getOutDataTypeStr().getAsString()) : new Parameter(null, 5, "OutDataTypeStr", "Inherit: Same as parameter"),
               dto.getSaturateOnIntegerOverflow() != null ? new Parameter(null, 6, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflow().getAsBoolean() ? "on" : "off") : new Parameter(null, 6, "SaturateOnIntegerOverflow", "off"),
               dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID(), model);
@@ -139,25 +139,6 @@ public class Ramp extends SourceBlock {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
 
-    /**
-     * Generic DTO Constructor - Creates Ramp block from generic BlockDto
-     */
-    public Ramp(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters with defaults
-        this.slope = new Parameter(this, 1, "Slope", "1.0");
-        this.start = new Parameter(this, 2, "Start", "0.0");
-        this.initialOutput = new Parameter(this, 3, "InitialOutput", "0.0");
-
-        // Initialize ports with defaults
-        if (!outputPortList.isEmpty()) {
-            outputPortList.get(0).setHeight(1);
-            outputPortList.get(0).setWidth(1);
-        }
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Ramp fromJSON(JSONObject blockJSON, NCSLabModel model) {

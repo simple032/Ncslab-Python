@@ -135,35 +135,7 @@ public class Derivative extends Block {
         inputPortList.add(input);
         output = new OutputPort(this, 1, true); // feedthrough = true for derivative
         outputPortList.add(output);
-    }    /**
-     * DTO-NATIVE Constructor - Creates Derivative block directly from BlockDto DTO
-     */
-    public Derivative(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Extract parameters from DTO using same names and defaults as JSON constructor
-        JSONObject paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null) {
-            paramValues = new JSONObject(blockDto.getParamValues());
-        }
-        
-        // Initialize final parameters using exact same logic as JSON constructor
-        this.filterCoefficient = new Parameter(this, 1, "FilterCoefficient", paramValues.optString("FilterCoefficient", "100"));
-        this.initialCondition = new Parameter(this, 2, "InitialCondition", paramValues.optString("InitialCondition", "0"));
-        this.coefficientSource = new Parameter(this, 3, "CoefficientSource", paramValues.optString("CoefficientSource", "internal"));
-        this.externalReset = new Parameter(this, 4, "ExternalReset", paramValues.optString("ExternalReset", "none"));
-        this.conditionSource = new Parameter(this, 5, "InitialConditionSource", paramValues.optString("InitialConditionSource", "internal"));
-        this.showStatePort = new Parameter(this, 6, "ShowStatePort", paramValues.optString("ShowStatePort", "off"));
-        this.sampleTime = new Parameter(this, 7, "SampleTime", paramValues.optString("SampleTime", "0"));
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
-        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
-
+    }    
     // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
     // This pattern maintains backward compatibility while enabling DTO migration
 
@@ -188,7 +160,8 @@ public class Derivative extends Block {
         this.externalReset = new Parameter(this, 4, "ExternalReset", dto.getExternalResetValue());
         this.conditionSource = new Parameter(this, 5, "InitialConditionSource", dto.getInitialConditionSourceValue());
         this.showStatePort = new Parameter(this, 6, "ShowStatePort", dto.getShowStatePortValue() ? "on" : "off");
-        this.sampleTime = new Parameter(this, 7, "SampleTime", String.valueOf(dto.getSampleTime()));
+        this.sampleTime = new Parameter(this, 7, "SampleTime", 
+            dto.getSampleTime() != null ? dto.getSampleTime().getAsString() : "0");
         this.outDataType = new Parameter(this, 8, "OutDataTypeStr", dto.getOutDataTypeStrValue());
         this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
         

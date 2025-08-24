@@ -5,6 +5,7 @@ import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.logic.IntervalTestDto;
 
 import com.ncslab.block.Block;
 import Jama.Matrix;
@@ -113,7 +114,7 @@ public class IntervalTest extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates IntervalTest block directly from BlockDto DTO
      */
-    public IntervalTest(BlockDto blockDto, NCSLabModel model) {
+    public IntervalTest(IntervalTestDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

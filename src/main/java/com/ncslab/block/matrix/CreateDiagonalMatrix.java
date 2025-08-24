@@ -3,6 +3,7 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.matrix.CreateDiagonalMatrixDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
@@ -25,7 +26,7 @@ public class CreateDiagonalMatrix extends Block{
     /**
      * DTO-NATIVE Constructor - Creates CreateDiagonalMatrix block directly from BlockDto DTO
      */
-    public CreateDiagonalMatrix(BlockDto blockDto, NCSLabModel model) {
+    public CreateDiagonalMatrix(CreateDiagonalMatrixDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: CreateDiagonalMatrix block created successfully - " + blockDto.getBlockName());
     }

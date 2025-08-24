@@ -110,11 +110,11 @@ public class Sqrt extends Block {
      * @param model The NCSLabModel this block belongs to
      */
     public Sqrt(SqrtDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        super(dto, model);
         
         // Extract and validate DTO parameters
         String functionValue = dto.getFunctionValue();
-        String sampleTimeStr = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String sampleTimeStr = dto.getSampleTime() != null ? dto.getSampleTime().getAsString() : "-1";
         String outDataTypeValue = dto.getOutDataTypeStrValue();
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         
@@ -138,20 +138,6 @@ public class Sqrt extends Block {
      * @deprecated Use specific SqrtDto constructor instead
      */
     @Deprecated
-    public Sqrt(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters with defaults
-        this.function = new Parameter(this, 1, "Function", "sqrt");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Sqrt fromJSON(JSONObject blockJSON, NCSLabModel model) {

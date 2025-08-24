@@ -4,9 +4,13 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
+import com.ncslab.dto.mapper.validation.ValidationResult;
+import com.ncslab.dto.annotations.MigrationCompatible;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 /**
  * Data Transfer Object for Power math block.
@@ -17,117 +21,79 @@ import lombok.NoArgsConstructor;
  * @since 2025
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Power")
+@MigrationCompatible(originalClass = "com.ncslab.block.math.Power")
 public class PowerDto extends BlockDto {
 
     /**
      * Method for power operation.
+     * Default: "Element-wise(.^)" 
      * Valid values: "Element-wise(.^)" (element-wise power), "Matrix(^)" (matrix power)
      */
-    private TypedParameter powerMethod;
+    @Builder.Default
+    private TypedParameter powerMethod = TypedParameter.of("Element-wise(.^)");
 
     /**
      * Sample time for the power block.
+     * Default: -1 (inherited)
      * -1 for inherited, 0 for continuous, >0 for discrete
      */
-    private TypedParameter sampleTime;
+    @Builder.Default
+    private TypedParameter sampleTime = TypedParameter.of(-1.0);
 
     /**
      * Output data type specification.
+     * Default: "Inherit: Same as input"
      * Common values: "Inherit: Same as input", "double", "single"
      */
-    private TypedParameter outDataTypeStr;
+    @Builder.Default
+    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
 
     /**
      * Whether to saturate on integer overflow.
+     * Default: false (off)
      * When enabled, prevents integer overflow by clamping to max/min values
      */
-    private TypedParameter saturateOnIntegerOverflow;
+    @Builder.Default
+    private TypedParameter saturateOnIntegerOverflow = TypedParameter.of(false);
 
-    /**
-     * Constructs PowerDto with individual parameters.
-     *
-     * @param blockName                     Name of the block
-     * @param blockPath                     Path of the block in the model hierarchy
-     * @param powerMethod                   Power method parameter
-     * @param sampleTime                    Sample time parameter
-     * @param outDataTypeStr                Output data type parameter
-     * @param saturateOnIntegerOverflow     Saturation parameter
-     */
-    public PowerDto(String blockName, String blockPath,
-                    TypedParameter powerMethod,
-                    TypedParameter sampleTime,
-                    TypedParameter outDataTypeStr,
-                    TypedParameter saturateOnIntegerOverflow) {
-        super("Power", blockName, blockPath);
-        this.powerMethod = powerMethod;
-        this.sampleTime = sampleTime;
-        this.outDataTypeStr = outDataTypeStr;
-        this.saturateOnIntegerOverflow = saturateOnIntegerOverflow;
-    }
 
-    /**
-     * Constructs PowerDto with typed parameter map.
-     *
-     * @param blockName  Name of the block
-     * @param blockPath  Path of the block in the model hierarchy
-     * @param parameters Map of typed parameters
-     */
-    public PowerDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("Power", blockName, blockPath);
-        this.powerMethod = parameters.getTypedParameter("PowerMethod", String.class, "Element-wise(.^)");
-        this.sampleTime = parameters.getTypedParameter("SampleTime", Double.class, -1.0);
-        this.outDataTypeStr = parameters.getTypedParameter("OutDataTypeStr", String.class, "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = parameters.getTypedParameter("SaturateOnIntegerOverflow", Boolean.class, false);
-    }
-
-    // === Validation Methods ===
-
+    // ===== VALIDATION =====
+    
     @Override
-    public boolean isValid() {
-        if (!super.isValid()) {
-            return false;
-        }
-
+    public ValidationResult validate() {
+        ValidationResult result = super.validate();
+        
         // Validate power method
-        if (powerMethod == null || powerMethod.getAsString() == null || powerMethod.getAsString().trim().isEmpty()) {
-            addValidationError("Power method cannot be null or empty");
-            return false;
+        if (powerMethod != null) {
+            String method = powerMethod.getAsString();
+            if (method == null || method.trim().isEmpty()) {
+                result.addError("Power method cannot be empty");
+            } else if (!isValidPowerMethod(method.trim())) {
+                result.addError("Power method must be one of: Element-wise(.^), Matrix(^)");
+            }
         }
-
-        String powerMethodValue = powerMethod.getAsString().trim();
-        if (!isValidPowerMethod(powerMethodValue)) {
-            addValidationError("Power method must be one of: Element-wise(.^), Matrix(^)");
-            return false;
-        }
-
+        
         // Validate sample time
-        if (sampleTime == null || sampleTime.getAsDouble() == null) {
-            addValidationError("Sample time cannot be null");
-            return false;
+        if (sampleTime != null) {
+            Double st = sampleTime.getAsDouble();
+            if (st != null && st < -1.0) {
+                result.addError("Sample time must be >= -1.0");
+            }
         }
-
-        Double sampleTimeValue = sampleTime.getAsDouble();
-        if (sampleTimeValue < -1.0 || sampleTimeValue.isNaN() || sampleTimeValue.isInfinite()) {
-            addValidationError("Sample time must be >= -1.0 and finite");
-            return false;
-        }
-
+        
         // Validate output data type
-        if (outDataTypeStr == null || outDataTypeStr.getAsString() == null || outDataTypeStr.getAsString().trim().isEmpty()) {
-            addValidationError("Output data type cannot be null or empty");
-            return false;
+        if (outDataTypeStr != null) {
+            String outType = outDataTypeStr.getAsString();
+            if (outType == null || outType.trim().isEmpty()) {
+                result.addError("Output data type cannot be empty");
+            }
         }
-
-        // Validate saturation parameter
-        if (saturateOnIntegerOverflow == null || saturateOnIntegerOverflow.getAsBoolean() == null) {
-            addValidationError("Saturate on integer overflow cannot be null");
-            return false;
-        }
-
-        return true;
+        
+        return result;
     }
 
     private boolean isValidPowerMethod(String method) {
@@ -136,62 +102,28 @@ public class PowerDto extends BlockDto {
 
     // === Helper Methods ===
 
-    /**
-     * Gets the power method with validation.
-     *
-     * @return Power method
-     * @throws IllegalStateException if power method is invalid
-     */
+    // ===== PARAMETER ACCESS HELPERS =====
+    
     public String getPowerMethodValue() {
-        if (powerMethod == null || powerMethod.getAsString() == null) {
-            throw new IllegalStateException("Power method is not properly initialized");
-        }
-        return powerMethod.getAsString().trim();
+        return powerMethod != null ? powerMethod.getAsString() : "Element-wise(.^)";
+    }
+    
+    public Double getSampleTimeValue() {
+        return sampleTime != null ? sampleTime.getAsDouble() : -1.0;
+    }
+    
+    public String getOutDataTypeStrValue() {
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
+    }
+    
+    public Boolean getSaturateOnIntegerOverflowValue() {
+        return saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : false;
     }
 
-    /**
-     * Gets the sample time value with validation.
-     *
-     * @return Sample time value
-     * @throws IllegalStateException if sample time is invalid
-     */
-    public double getSampleTimeValue() {
-        if (sampleTime == null || sampleTime.getAsDouble() == null) {
-            throw new IllegalStateException("Sample time is not properly initialized");
-        }
-        return sampleTime.getAsDouble();
-    }
-
-    /**
-     * Gets the output data type string with validation.
-     *
-     * @return Output data type string
-     * @throws IllegalStateException if output data type is invalid
-     */
-    public String getOutDataTypeString() {
-        if (outDataTypeStr == null || outDataTypeStr.getAsString() == null) {
-            throw new IllegalStateException("Output data type is not properly initialized");
-        }
-        return outDataTypeStr.getAsString();
-    }
-
-    /**
-     * Gets the saturation setting with validation.
-     *
-     * @return Saturation setting
-     * @throws IllegalStateException if saturation setting is invalid
-     */
-    public boolean getSaturateOnIntegerOverflowValue() {
-        if (saturateOnIntegerOverflow == null || saturateOnIntegerOverflow.getAsBoolean() == null) {
-            throw new IllegalStateException("Saturate on integer overflow is not properly initialized");
-        }
-        return saturateOnIntegerOverflow.getAsBoolean();
-    }
-
+    // ===== UTILITY METHODS =====
+    
     /**
      * Checks if this is element-wise power operation (.^).
-     *
-     * @return true if power method is "Element-wise(.^)", false otherwise
      */
     public boolean isElementWise() {
         return "Element-wise(.^)".equals(getPowerMethodValue());
@@ -199,8 +131,6 @@ public class PowerDto extends BlockDto {
 
     /**
      * Checks if this is matrix power operation (^).
-     *
-     * @return true if power method is "Matrix(^)", false otherwise
      */
     public boolean isMatrixPower() {
         return "Matrix(^)".equals(getPowerMethodValue());
@@ -208,21 +138,42 @@ public class PowerDto extends BlockDto {
 
     /**
      * Gets the number of input ports (always 2 for power operation).
-     *
-     * @return 2 (base and exponent inputs)
      */
     public int getInputPortCount() {
         return 2;
     }
 
-    // === Factory Methods ===
+    @Override
+    public PowerDto copy() {
+        return PowerDto.builder()
+                .blockId(getBlockId())
+                .blockName(getBlockName())
+                .blockPath(getBlockPath())
+                .blockUUID(getBlockUUID())
+                .powerMethod(powerMethod != null ? powerMethod.copy() : null)
+                .sampleTime(sampleTime != null ? sampleTime.copy() : null)
+                .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
+                .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
+                .build();
+    }
+    
+    @Override
+    public TypedParameterMap toParameterMap() {
+        return TypedParameterMap.builder()
+                .put("PowerMethod", powerMethod)
+                .put("SampleTime", sampleTime)
+                .put("OutDataTypeStr", outDataTypeStr)
+                .put("SaturateOnIntegerOverflow", saturateOnIntegerOverflow)
+                .build();
+    }
 
     @Override
     public String toString() {
-        return String.format("PowerDto{blockName='%s', blockPath='%s', powerMethod='%s', sampleTime=%s, saturate=%s}",
-                getBlockName(), getBlockPath(),
-                powerMethod != null ? powerMethod.getAsString() : "null",
-                sampleTime != null ? sampleTime.getAsDouble() : "null",
-                saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.getAsBoolean() : "null");
+        return String.format("PowerDto{id=%d, name='%s', type='%s', method='%s', sampleTime=%s}",
+                           getBlockId(), 
+                           getBlockName(), 
+                           getBlockType(),
+                           getPowerMethodValue(),
+                           getSampleTimeValue());
     }
 }

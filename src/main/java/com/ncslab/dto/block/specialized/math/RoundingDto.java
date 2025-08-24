@@ -53,7 +53,7 @@ public class RoundingDto extends BlockDto {
                        TypedParameter operator,
                        TypedParameter sampleTime,
                        TypedParameter outDataTypeStr) {
-        super("Rounding", blockName, blockPath);
+        super(blockName,blockPath);
         this.operator = operator;
         this.sampleTime = sampleTime;
         this.outDataTypeStr = outDataTypeStr;
@@ -67,7 +67,7 @@ public class RoundingDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public RoundingDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("Rounding", blockName, blockPath);
+        super(blockName,blockPath);
         this.operator = parameters.getTypedParameter("Operator", String.class, "floor");
         this.sampleTime = parameters.getTypedParameter("SampleTime", Double.class, -1.0);
         this.outDataTypeStr = parameters.getTypedParameter("OutDataTypeStr", String.class, "Inherit: Same as input");

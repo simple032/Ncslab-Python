@@ -1,9 +1,13 @@
 package com.ncslab.dto.block.specialized.discrete;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
+import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.dto.annotations.MigrationCompatible;
+import com.ncslab.dto.block.discrete.DiscreteBlockDto;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
@@ -42,10 +46,11 @@ import java.util.HashMap;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper=false)
+@JsonTypeName("ZeroOrderHold")
 @MigrationCompatible(originalClass = "com.ncslab.block.discrete.Zero_Order_Hold")
-public class ZeroOrderHoldDto extends BlockDto {
-    
+public class ZeroOrderHoldDto extends DiscreteBlockDto {
+
     // ===== ZERO ORDER HOLD SPECIFIC PARAMETERS =====
     
     /**
@@ -73,46 +78,15 @@ public class ZeroOrderHoldDto extends BlockDto {
     
     // ===== DISCRETE-TIME VALIDATION =====
     
-    @Override
-    public ValidationResult validate() {
-        ValidationResult result = super.validate(); // Call parent validation
-        
-        // Validate discrete sample time
-        if (getSampleTime() != null) {
-            double sampleTime = getSampleTime().getAsDouble();
-            if (sampleTime != -1.0 && sampleTime <= 0.0) {
-                result.addError("Sample time must be positive or -1 (inherited)");
-            }
-            if (Double.isNaN(sampleTime) || Double.isInfinite(sampleTime)) {
-                result.addError("Sample time must be finite");
-            }
-        }
-        
-        return result;
-    }
     
     // ===== UTILITY METHODS =====
-    
-    /**
-     * Check if sample time is inherited (-1)
-     */
-    public boolean isInheritedSampleTime() {
-        return getSampleTime() != null && getSampleTime().getAsDouble() == -1.0;
-    }
-    
-    /**
-     * Check if sample time is discrete (positive value)
-     */
-    public boolean isDiscreteSampleTime() {
-        return getSampleTime() != null && getSampleTime().getAsDouble() > 0.0;
-    }
-    
+
     /**
      * Get the hold duration in seconds
      */
     public double getHoldDuration() {
         if (isDiscreteSampleTime()) {
-            return getSampleTime().getAsDouble(); // Hold for one sample period
+            return sampleTime.getAsDouble(); // Hold for one sample period
         }
         return Double.NaN; // Cannot determine without knowing inherited sample time
     }
@@ -170,26 +144,6 @@ public class ZeroOrderHoldDto extends BlockDto {
                 .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .saturateOnIntegerOverflow(saturateOnIntegerOverflow != null ? saturateOnIntegerOverflow.copy() : null)
                 .build();
-    }
-    
-    /**
-     * Convert to legacy parameters format for backward compatibility
-     */
-    public Map<String, String> toLegacyParameters() {
-        Map<String, String> params = new HashMap<>();
-        
-        if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
-        }
-        if (outDataTypeStr != null) {
-            params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));
-        }
-        if (saturateOnIntegerOverflow != null) {
-            Boolean satVal = saturateOnIntegerOverflow.getAsBoolean();
-            params.put("SaturateOnIntegerOverflow", Boolean.TRUE.equals(satVal) ? "on" : "off");
-        }
-        
-        return params;
     }
     
     @Override

@@ -18,7 +18,7 @@ import lombok.Builder;
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("A2C")
 @MigrationCompatible(originalClass = "com.ncslab.block.machineLearning.pt.A2C")
-public class A2CDto extends BlockDto {
+public class A2CDto extends PTModelDto {
     
     @Builder.Default
     private TypedParameter inputFeatures = TypedParameter.of(1);

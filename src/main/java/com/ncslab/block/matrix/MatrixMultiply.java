@@ -3,6 +3,7 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.matrix.MatrixMultiplyDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class MatrixMultiply extends Block {
     /**
      * DTO-NATIVE Constructor - Creates MatrixMultiply block directly from BlockDto DTO
      */
-    public MatrixMultiply(BlockDto blockDto, NCSLabModel model) {
+    public MatrixMultiply(MatrixMultiplyDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixMultiply block created successfully - " + blockDto.getBlockName());
     }

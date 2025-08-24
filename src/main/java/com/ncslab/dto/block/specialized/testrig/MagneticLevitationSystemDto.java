@@ -110,7 +110,7 @@ public class MagneticLevitationSystemDto extends BlockDto {
                                       TypedParameter inputResistance,
                                       TypedParameter sampleTime,
                                       TypedParameter outDataTypeStr) {
-        super("MagneticLevitationSystem", blockName, blockPath);
+        super(blockName,blockPath);
         this.gravity = gravity;
         this.equilibriumPointX0 = equilibriumPointX0;
         this.equilibriumPointI0 = equilibriumPointI0;
@@ -128,7 +128,7 @@ public class MagneticLevitationSystemDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public MagneticLevitationSystemDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("MagneticLevitationSystem", blockName, blockPath);
+        super(blockName,blockPath);
         this.gravity = parameters.getTypedParameter("gravity", Double.class, 9.8);
         this.equilibriumPointX0 = parameters.getTypedParameter("EQUILIBRIUM_POINT_x0", Double.class, 0.2);
         this.equilibriumPointI0 = parameters.getTypedParameter("EQUILIBRIUM_POINT_i0", Double.class, 6.105);
@@ -147,7 +147,7 @@ public class MagneticLevitationSystemDto extends BlockDto {
      * @param dimension Block visual dimensions
      */
     public MagneticLevitationSystemDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super("MagneticLevitationSystem", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.gravity = TypedParameter.of(9.8);
         this.equilibriumPointX0 = TypedParameter.of(0.2);
         this.equilibriumPointI0 = TypedParameter.of(6.105);

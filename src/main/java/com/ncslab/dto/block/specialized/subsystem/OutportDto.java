@@ -91,7 +91,7 @@ public class OutportDto extends BlockDto {
                      TypedParameter portDimensions,
                      TypedParameter sampleTime,
                      TypedParameter outputDataTypeStr) {
-        super("Outport", blockName, blockPath);
+        super(blockName,blockPath);
         this.port = port;
         this.portDimensions = portDimensions;
         this.sampleTime = sampleTime;
@@ -106,7 +106,7 @@ public class OutportDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public OutportDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("Outport", blockName, blockPath);
+        super(blockName,blockPath);
         this.port = parameters.getTypedParameter("Port", Integer.class, 1);
         this.portDimensions = parameters.getTypedParameter("PortDimensions", String.class, "-1");
         this.sampleTime = parameters.getTypedParameter("SampleTime", Double.class, -1.0);
@@ -123,7 +123,7 @@ public class OutportDto extends BlockDto {
      * @param portNumber Port number for this output
      */
     public OutportDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension, int portNumber) {
-        super("Outport", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.port = TypedParameter.of(portNumber);
         this.portDimensions = TypedParameter.of("-1");
         this.sampleTime = TypedParameter.of(-1.0);

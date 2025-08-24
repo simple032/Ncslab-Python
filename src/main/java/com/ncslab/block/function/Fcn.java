@@ -16,6 +16,7 @@ import lombok.Getter;
 import org.apache.commons.jexl3.*;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.FcnDto;
 
 import java.util.Objects;
 import java.util.ArrayList;
@@ -64,28 +65,12 @@ public class Fcn extends Block{
     /**
      * DTO-NATIVE Constructor - Creates Fcn block directly from BlockDto DTO
      */
-    public Fcn(BlockDto blockDto, NCSLabModel model) {
+    public Fcn(FcnDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         expression = paramValues.getString("Expression");
         
         System.out.println("DTO-NATIVE: Fcn block created successfully - " + blockDto.getBlockName());
-    }
-
-    /**
-     * DTO Constructor - Creates Fcn block from FcnDto with proper parameter mapping
-     */
-    public Fcn(com.ncslab.dto.block.specialized.math.FcnDto dto, NCSLabModel model) {
-        super(dto, model);
-
-        // Extract expression from DTO
-        expression = dto.getExpressionValue();
-
-        // Create ports
-        outputPortList.add(new OutputPort(this, 1, true));
-        inputPortList.add(new InputPort(this, 1));
-
-        System.out.println("DTO: " + getClass().getSimpleName() + " block created from FcnDto - " + dto.getBlockName());
     }
 
 

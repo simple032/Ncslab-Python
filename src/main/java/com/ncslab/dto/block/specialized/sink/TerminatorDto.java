@@ -2,6 +2,7 @@ package com.ncslab.dto.block.specialized.sink;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.sink.SinkDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -29,31 +30,13 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Terminator")
 @MigrationCompatible(originalClass = "com.ncslab.block.sink.Terminator")
-public class TerminatorDto extends BlockDto {
+public class TerminatorDto extends SinkDto {
     
-    /**
-     * Sample time for the terminator block
-     * Default: -1 (inherited)
-     */
-    @Builder.Default
-    private TypedParameter sampleTime = TypedParameter.of(-1.0);
-    
-    /**
-     * Output data type specification
-     * Default: "Inherit: Same as input"
-     */
-    @Builder.Default
-    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
+    // Terminator blocks only terminate signals - no additional parameters needed
+    // sampleTime is inherited from BlockDto (via SinkDto)
     
     // ===== PARAMETER ACCESS HELPERS =====
-    
-    public Double getSampleTimeValue() {
-        return sampleTime != null ? sampleTime.getAsDouble() : -1.0;
-    }
-    
-    public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
-    }
+    // All parameter access methods are inherited from SinkDto
     
     // ===== VALIDATION =====
     
@@ -96,7 +79,6 @@ public class TerminatorDto extends BlockDto {
                 .blockPath(getBlockPath())
                 .blockUUID(getBlockUUID())
                 .sampleTime(sampleTime != null ? sampleTime.copy() : null)
-                .outDataTypeStr(outDataTypeStr != null ? outDataTypeStr.copy() : null)
                 .build();
     }
     
@@ -104,7 +86,6 @@ public class TerminatorDto extends BlockDto {
     public TypedParameterMap toParameterMap() {
         return TypedParameterMap.builder()
                 .put("SampleTime", sampleTime)
-                .put("OutDataTypeStr", outDataTypeStr)
                 .build();
     }
     

@@ -4,6 +4,8 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
 import com.ncslab.dto.annotations.MigrationCompatible;
+import com.ncslab.dto.block.discrete.DiscreteBlockDto;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
@@ -45,7 +47,7 @@ import java.util.HashMap;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @MigrationCompatible(originalClass = "com.ncslab.block.discrete.UnitDelay")
-public class UnitDelayDto extends BlockDto {
+public class UnitDelayDto extends DiscreteBlockDto {
     
     // ===== UNIT DELAY SPECIFIC PARAMETERS =====
     
@@ -76,7 +78,7 @@ public class UnitDelayDto extends BlockDto {
     }
     
     public String getOutDataTypeStrValue() {
-        return outDataTypeStr != null ? outDataTypeStr.getValue(String.class) : "Inherit: Same as input";
+        return outDataTypeStr != null ? outDataTypeStr.getAsString() : "Inherit: Same as input";
     }
     
     public Boolean getSaturateOnIntegerOverflowValue() {
@@ -167,7 +169,7 @@ public class UnitDelayDto extends BlockDto {
             params.put("InitialCondition", String.valueOf(initialCondition.getValue()));
         }
         if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
+            params.put("SampleTime", getSampleTime().getAsString());
         }
         if (outDataTypeStr != null) {
             params.put("OutDataTypeStr", String.valueOf(outDataTypeStr.getValue()));

@@ -90,17 +90,13 @@ public class ai extends HttpServlet {
 			}
 			responseDto.setCode(code);
 
-			// Convert to legacy format for backward compatibility
-			JSONObject jb = responseDto.toLegacyJson();
-			jb.put("properties", properties); // Ensure properties field is included
-			if (!jb.has("message")) {
-				jb.put("message", errorMsgs);
-			}
+			// Use direct DTO serialization instead of legacy JSON conversion
+			String jsonResponse = JsonUtils.serializeDto(responseDto);
 			
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
-            response.getWriter().print(jb);
-            System.out.println("AI servlet response: " + jb);
+            response.getWriter().print(jsonResponse);
+            System.out.println("AI servlet response: " + jsonResponse);
 		}
 
 	}

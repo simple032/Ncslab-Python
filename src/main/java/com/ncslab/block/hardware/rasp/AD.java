@@ -3,6 +3,7 @@ package com.ncslab.block.hardware.rasp;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.hardware.rasp.ADDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class AD extends Block{
     /**
      * DTO-NATIVE Constructor - Creates AD block directly from BlockDto DTO
      */
-    public AD(BlockDto blockDto, NCSLabModel model) {
+    public AD(ADDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: AD block created successfully - " + blockDto.getBlockName());
     }

@@ -6,6 +6,7 @@ import com.ncslab.block.io.OutputSignal;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.logic.CompareToConstantDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -124,7 +125,7 @@ public class CompareToConstant extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates CompareToConstant block directly from BlockDto DTO
      */
-    public CompareToConstant(BlockDto blockDto, NCSLabModel model) {
+    public CompareToConstant(CompareToConstantDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

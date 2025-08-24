@@ -31,10 +31,7 @@ public class Matrix extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Matrix block directly from BlockDto DTO
      */
-    public Matrix(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-        System.out.println("DTO-NATIVE: Matrix block created successfully - " + blockDto.getBlockName());
-    }
+    
 
 
     public static final Map<String, String> PARAMETER_DEFAULTS;

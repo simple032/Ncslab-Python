@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @SuperBuilder
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("SecondOrderRotaryInvertedPendulum")
 @MigrationCompatible(originalClass = "com.ncslab.block.testrig.SecondOrderRotaryInvertedPendulum")

@@ -4,11 +4,14 @@ import com.ncslab.util.TemplateManager;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.AlpDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -28,7 +31,7 @@ public class Alp extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Alp block directly from BlockDto DTO
      */
-    public Alp(BlockDto blockDto, NCSLabModel model) {
+    public Alp(AlpDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Alp block created successfully - " + blockDto.getBlockName());
     }
@@ -37,13 +40,15 @@ public class Alp extends Block {
 
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-
         outputNames.add("FanSpeed");
         outputNames.add("Position");
         inputNames.add("in1");
-
+        
+        // Alp block doesn't use configurable parameters - uses hardcoded transfer function coefficients
+        // Empty defaults to satisfy Block.java reflection requirement
     }
 	public Alp(JSONObject blockJSON,NCSLabModel model) {
         super(blockJSON,model);

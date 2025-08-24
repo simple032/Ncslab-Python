@@ -13,6 +13,7 @@ import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.powerSystem.PLL3phDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
@@ -38,7 +39,7 @@ public class pll3ph extends Block{
     /**
      * DTO-NATIVE Constructor - Creates pll3ph block directly from BlockDto DTO
      */
-    public pll3ph(BlockDto blockDto, NCSLabModel model) {
+    public pll3ph(PLL3phDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: pll3ph block created successfully - " + blockDto.getBlockName());
     }

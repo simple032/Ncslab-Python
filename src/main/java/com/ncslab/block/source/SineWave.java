@@ -131,7 +131,7 @@ public class SineWave extends Block {
      * DTO-NATIVE Constructor - Creates SineWave block directly from SineWaveDto
      */
     public SineWave(SineWaveDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        super(dto, model);
 
         // Initialize parameters from DTO with null safety and validation
         this.amplitude = new Parameter(this, 1, "Amplitude", String.valueOf(dto.getAmplitudeValue()));
@@ -144,34 +144,13 @@ public class SineWave extends Block {
         this.outDataType = new Parameter(this, 8, "OutDataTypeStr", dto.getOutDataTypeStrValue());
         this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow",
             dto.getSaturateOnIntegerOverflow() != null ?
-                java.util.Objects.toString(dto.getSaturateOnIntegerOverflow().getValue(String.class), "off") :
+                java.util.Objects.toString(dto.getSaturateOnIntegerOverflow().getAsString(), "off") :
                 "off");
 
         initializePorts();
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
 
-    /**
-     * Generic DTO Constructor - Creates SineWave block from generic BlockDto
-     */
-    public SineWave(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters with defaults
-        this.amplitude = new Parameter(this, 1, "Amplitude", "1");
-        this.bias = new Parameter(this, 2, "Bias", "0");
-        this.frequency = new Parameter(this, 3, "Frequency", "1");
-        this.phase = new Parameter(this, 4, "Phase", "0");
-        this.sampleTime = new Parameter(this, 5, "SampleTime", "0");
-        this.samples = new Parameter(this, 6, "Samples", "1");
-        this.timeSource = new Parameter(this, 7, "TimeSource", "Use simulation time");
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "double");
-        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", "off");
-
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
 
     void initializePorts(){
         // Initialize ports

@@ -6,6 +6,7 @@ import com.ncslab.block.io.Parameter;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.continuous.TransferFcnDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +152,7 @@ public class TransferFcn extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates TransferFcn block directly from BlockDto DTO
      */
-    public TransferFcn(BlockDto blockDto, NCSLabModel model) {
+    public TransferFcn(TransferFcnDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Extract parameters from DTO using same names and defaults as JSON constructor
@@ -174,42 +175,6 @@ public class TransferFcn extends Block {
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
-
-    // ===== DUAL CONSTRUCTOR PATTERN - MIGRATION SUPPORT =====
-    // This pattern maintains backward compatibility while enabling DTO migration
-
-    /**
-     * Enhanced DTO-based constructor - preferred for new implementations
-     * @param dto The DTO containing block configuration
-     * @param model The parent model
-     */
-    public TransferFcn(com.ncslab.dto.block.specialized.continuous.TransferFcnDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
-        
-        // Validate DTO before initialization
-        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
-        if (!validation.isValid()) {
-            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
-        }
-        
-        // Initialize from DTO parameters using new Parameter creation
-        this.numerator = new Parameter(this, 1, "Numerator", dto.getNumeratorValue());
-        this.denominator = new Parameter(this, 2, "Denominator", dto.getDenominatorValue());
-        this.absoluteTolerance = new Parameter(this, 3, "AbsoluteTolerance", dto.getAbsoluteToleranceValue());
-        this.continuousStateAttributes = new Parameter(this, 4, "ContinuousStateAttributes", dto.getContinuousStateAttributesValue());
-        this.realizeZeroPoleGain = new Parameter(this, 5, "RealizeZeroPoleGain", dto.getRealizeZeroPoleGainValue());
-        this.sampleTime = new Parameter(this, 6, "SampleTime", String.valueOf(dto.getSampleTime()));
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
-        
-        // Execute initialization logic exactly like JSONObject constructor
-        parseTransferFunction();
-        initializeStates();
-        initializePorts();
-        
-        // Complete initialization
-        System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
 
     

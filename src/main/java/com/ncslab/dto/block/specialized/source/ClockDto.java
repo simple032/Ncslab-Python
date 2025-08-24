@@ -39,6 +39,48 @@ public class ClockDto extends BlockDto {
      * When enabled, prevents integer overflow by clamping to max/min values.
      */
     private TypedParameter saturateOnIntegerOverflow;
+    
+    // Override getters to provide defaults if null
+    public TypedParameter getSampleTime() {
+        if (sampleTime == null) {
+            sampleTime = TypedParameter.of(0.0);  // Continuous time by default
+        }
+        return sampleTime;
+    }
+    
+    public TypedParameter getOutDataTypeStr() {
+        if (outDataTypeStr == null) {
+            outDataTypeStr = TypedParameter.of("Inherit: Same as Simulink");
+        }
+        return outDataTypeStr;
+    }
+    
+    public TypedParameter getSaturateOnIntegerOverflow() {
+        if (saturateOnIntegerOverflow == null) {
+            saturateOnIntegerOverflow = TypedParameter.of("off");
+        }
+        return saturateOnIntegerOverflow;
+    }
+
+    /**
+     * Initialize default values for parameters
+     */
+    public ClockDto(String blockName, String blockPath) {
+        super(blockName, blockPath);
+        initializeDefaults();
+    }
+    
+    private void initializeDefaults() {
+        if (sampleTime == null) {
+            sampleTime = TypedParameter.of(0.0);  // Continuous time by default
+        }
+        if (outDataTypeStr == null) {
+            outDataTypeStr = TypedParameter.of("Inherit: Same as Simulink");
+        }
+        if (saturateOnIntegerOverflow == null) {
+            saturateOnIntegerOverflow = TypedParameter.of("off");
+        }
+    }
 
     /**
      * Constructs ClockDto with individual parameters.
@@ -53,7 +95,7 @@ public class ClockDto extends BlockDto {
                     TypedParameter sampleTime,
                     TypedParameter outDataTypeStr,
                     TypedParameter saturateOnIntegerOverflow) {
-        super("Clock", blockName, blockPath);
+        super(blockName,blockPath);
         this.sampleTime = sampleTime;
         this.outDataTypeStr = outDataTypeStr;
         this.saturateOnIntegerOverflow = saturateOnIntegerOverflow;
@@ -67,7 +109,7 @@ public class ClockDto extends BlockDto {
      * @param parameters    Map of typed parameters
      */
     public ClockDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("Clock", blockName, blockPath);
+        super(blockName,blockPath);
         this.sampleTime = parameters.getTypedParameter("SampleTime", Double.class, 0.0);
         this.outDataTypeStr = parameters.getTypedParameter("OutDataTypeStr", String.class, "double");
         this.saturateOnIntegerOverflow = parameters.getTypedParameter("SaturateOnIntegerOverflow", Boolean.class, false);

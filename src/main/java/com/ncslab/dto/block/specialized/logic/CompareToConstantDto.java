@@ -33,7 +33,7 @@ public class CompareToConstantDto extends BlockDto {
     private TypedParameter constantValue;
     
     public CompareToConstantDto(String blockName, String blockPath) {
-        super("CompareToConstant", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

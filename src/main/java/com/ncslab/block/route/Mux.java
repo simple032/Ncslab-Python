@@ -142,24 +142,7 @@ public class Mux extends Block {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + muxDto.getBlockName());
     }
     
-    /**
-     * DTO-NATIVE Constructor - Creates Mux block directly from generic BlockDto DTO
-     */
-    public Mux(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters from DTO with defaults
-        this.inputs = new Parameter(this, 1, "Inputs", "2");
-        this.displayOrder = new Parameter(this, 2, "DisplayOrder", "1:N");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }    
+    
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));
         inputPortList.add(new InputPort(this, 2));

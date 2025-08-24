@@ -130,26 +130,6 @@ public class Pulse extends Block {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + pulseDto.getBlockName());
     }
     
-    /**
-     * DTO-NATIVE Constructor - Creates Pulse block directly from generic BlockDto DTO
-     */
-    public Pulse(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters from DTO with defaults
-        this.amplitude = new Parameter(this, 1, "Amplitude", "1");
-        this.period = new Parameter(this, 2, "Period", "1");
-        this.pulseWidth = new Parameter(this, 3, "PulseWidth", "50");
-        this.phaseDelay = new Parameter(this, 4, "PhaseDelay", "0");
-        this.sampleTime = new Parameter(this, 5, "SampleTime", "0");
-        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "double");
-        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Pulse fromJSON(JSONObject blockJSON, NCSLabModel model) {

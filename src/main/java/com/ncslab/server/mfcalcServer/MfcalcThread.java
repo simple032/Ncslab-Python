@@ -4,6 +4,7 @@ import java.net.*;
 
 import com.ncslab.code.m.MfcalcClient;
 import com.ncslab.code.m.MfcalcClientManager;
+import com.ncslab.dto.communication.MfcalcResponseDto;
 import com.utils.Property;
 import org.json.JSONObject;
 
@@ -125,13 +126,24 @@ public class MfcalcThread extends Thread {
 			MfcalcClient client = MfcalcClientManager.getClientForUser(String.valueOf(model.getUserId()));
 			String mainCode=model.getMainCode();
 
-			JSONObject jo = client.runScript(mainCode+"\n");
-			System.out.println(jo);
-			model.setOutputResult(jo.optString("log",""));
-			model.setFigureResult(jo.optJSONObject("figures"));
-			JSONObject variables = client.getVariables();
-			System.out.println(variables);
-			model.setOutputMat(variables.toString());
+			MfcalcResponseDto scriptResponse = client.runScript(mainCode+"\n");
+			System.out.println(scriptResponse);
+			if (scriptResponse != null && scriptResponse.getData() != null) {
+				Object data = scriptResponse.getData();
+				if (data instanceof JSONObject) {
+					JSONObject jo = (JSONObject) data;
+					model.setOutputResult(jo.optString("log",""));
+					model.setFigureResult(jo.optJSONObject("figures"));
+				}
+			}
+			if (scriptResponse != null && scriptResponse.getOutput() != null) {
+				model.setOutputResult(scriptResponse.getOutput());
+			}
+			MfcalcResponseDto variablesResponse = client.getVariables();
+			System.out.println(variablesResponse);
+			if (variablesResponse != null && variablesResponse.getData() != null) {
+				model.setOutputMat(variablesResponse.getData().toString());
+			}
 
 			System.out.println("Done...");
 

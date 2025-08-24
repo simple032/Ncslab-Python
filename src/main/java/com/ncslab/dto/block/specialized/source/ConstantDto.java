@@ -149,7 +149,7 @@ public class ConstantDto extends BlockDto {
             params.put("Value", String.valueOf(value.getValue()));
         }
         if (getSampleTime() != null) {
-            params.put("SampleTime", String.valueOf(getSampleTime()));
+            params.put("SampleTime", getSampleTime().getAsString());
         }
         if (framePeriod != null) {
             params.put("FramePeriod", String.valueOf(framePeriod.getValue()));

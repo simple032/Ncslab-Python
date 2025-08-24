@@ -100,39 +100,9 @@ public class Sign extends Block {
     }
     
     /**
-     * DTO-SPECIFIC Constructor - Creates Sign block directly from SignDto DTO
-     */
-    public Sign(SignDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
-        
-        // Extract parameters from DTO with defaults
-        String zeroCrossingValue = dto.getZeroCrossingValue();
-        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
-        String outDataTypeValue = dto.getOutDataTypeStrValue();
-        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
-        
-        // Validate sample time
-        double sampleTimeDouble = Double.parseDouble(sampleTimeValue);
-        if (sampleTimeDouble != -1.0 && sampleTimeDouble <= 0.0) {
-            throw new IllegalArgumentException("Sample time must be positive or -1 (inherited)");
-        }
-        
-        // Initialize parameters
-        this.zeroCrossing = new Parameter(this, 1, "ZeroCrossing", zeroCrossingValue);
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
-        
-        // Initialize ports
-        initializePorts();
-        
-        System.out.println("DTO-SPECIFIC: Sign block created successfully from SignDto - " + dto.getBlockName());
-    }
-    
-    /**
      * DTO-NATIVE Constructor - Creates Sign block directly from BlockDto DTO
      */
-    public Sign(BlockDto blockDto, NCSLabModel model) {
+    public Sign(SignDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -145,7 +115,9 @@ public class Sign extends Block {
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
-    }// === Static Factory Method for JSON Deserialization ===
+    }
+    
+    // === Static Factory Method for JSON Deserialization ===
     public static Sign fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");

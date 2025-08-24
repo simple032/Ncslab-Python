@@ -3,6 +3,7 @@ package com.ncslab.block.hardware.stm32;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.hardware.stm32.ConfigDto;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class Config extends com.ncslab.block.Block{
     /**
      * DTO-NATIVE Constructor - Creates Config block directly from BlockDto DTO
      */
-    public Config(BlockDto blockDto, NCSLabModel model) {
+    public Config(ConfigDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Config block created successfully - " + blockDto.getBlockName());
     }

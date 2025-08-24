@@ -9,6 +9,7 @@ import com.ncslab.ncslablink.MatDimException;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.route.GotoDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -107,7 +108,7 @@ public class To extends Block {
 	}    /**
      * DTO-NATIVE Constructor - Creates To block directly from BlockDto DTO
      */
-    public To(BlockDto blockDto, NCSLabModel model) {
+    public To(GotoDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -5,6 +5,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discrete.Discrete_Transfer_FcnzDto;
 
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -105,7 +106,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     }    /**
      * DTO-NATIVE Constructor - Creates Discrete_Transfer_Fcnz block directly from BlockDto DTO
      */
-    public Discrete_Transfer_Fcnz(BlockDto blockDto, NCSLabModel model) {
+    public Discrete_Transfer_Fcnz(Discrete_Transfer_FcnzDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -119,6 +120,13 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         setSampleTime(sampleTimeParam);
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public Discrete_Transfer_Fcnz(BlockDto blockDto, NCSLabModel model) {
+        this((Discrete_Transfer_FcnzDto) blockDto, model);
     }
     
     private void initializePorts() {

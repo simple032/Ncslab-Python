@@ -4,6 +4,7 @@ import Jama.Matrix;
 //import com.greenpineyu.fel.*;
 import com.ncslab.code.m.MfcalcClient;
 import com.ncslab.code.m.MfcalcClientManager;
+import com.ncslab.dto.communication.MfcalcResponseDto;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -124,14 +125,17 @@ public class Data {
             }
             if(!founded) {
                 String variableName = generateRandomVariableName();
-                JSONObject jo = client.runCommand(variableName + "=" + dataString + ";\n");
+                MfcalcResponseDto commandResponse = client.runCommand(variableName + "=" + dataString + ";\n");
 
-                if (jo != null && jo.getString("status").equals("success")) {
-                    JSONObject variable = client.getVariable(variableName).getJSONObject("data");
-                    if (variable.getString("name").equals(variableName)) {
-                        result = variable.getString("value");
+                if (commandResponse != null && commandResponse.isSuccess()) {
+                    MfcalcResponseDto variableResponse = client.getVariable(variableName);
+                    if (variableResponse != null && variableResponse.getData() instanceof JSONObject) {
+                        JSONObject variable = (JSONObject) variableResponse.getData();
+                        if (variable.getString("name").equals(variableName)) {
+                            result = variable.getString("value");
+                        }
                     }
-                }else{
+                } else {
                     result = dataString;
                 }
                 client.runCommand("clear " + variableName + "\n");

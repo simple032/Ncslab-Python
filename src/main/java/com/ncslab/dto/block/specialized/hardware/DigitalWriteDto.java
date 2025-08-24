@@ -90,7 +90,7 @@ public class DigitalWriteDto extends BlockDto {
                           TypedParameter initialValue,
                           TypedParameter activeLow,
                           TypedParameter sampleTime) {
-        super("DigitalWrite", blockName, blockPath);
+        super(blockName,blockPath);
         this.pin = pin;
         this.initialValue = initialValue;
         this.activeLow = activeLow;
@@ -105,7 +105,7 @@ public class DigitalWriteDto extends BlockDto {
      * @param parameters Map of typed parameters
      */
     public DigitalWriteDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super("DigitalWrite", blockName, blockPath);
+        super(blockName,blockPath);
         this.pin = parameters.getTypedParameter("Pin", Integer.class, 13);
         this.initialValue = parameters.getTypedParameter("InitialValue", Boolean.class, false);
         this.activeLow = parameters.getTypedParameter("ActiveLow", Boolean.class, false);
@@ -122,7 +122,7 @@ public class DigitalWriteDto extends BlockDto {
      * @param pin Digital output pin number
      */
     public DigitalWriteDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension, int pin) {
-        super("DigitalWrite", blockName, blockPath, position, dimension);
+        super(blockName,blockPath, position, dimension);
         this.pin = TypedParameter.of(pin);
         this.initialValue = TypedParameter.of(false);
         this.activeLow = TypedParameter.of(false);

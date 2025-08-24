@@ -14,13 +14,14 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelException;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.function.SFunctionDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
 
-public class SFunction extends DiscreteBlock {
+public class SFunction extends Block {
 
     private String name = "S-Function";
 
@@ -51,7 +52,7 @@ public class SFunction extends DiscreteBlock {
     /**
      * DTO-NATIVE Constructor - Creates SFunction block directly from BlockDto DTO
      */
-    public SFunction(BlockDto blockDto, NCSLabModel model) throws ModelException{
+    public SFunction(SFunctionDto blockDto, NCSLabModel model) throws ModelException{
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SFunction block created successfully - " + blockDto.getBlockName());
     }
@@ -119,7 +120,6 @@ public class SFunction extends DiscreteBlock {
         sampleTimes = paramValues.getString("SampleTimes").split(",");
         offsetTimes = paramValues.getString("OffsetTimes").split(",");
         sampleTime = new Parameter(this, 1+parameterNum, "sampleTime", sampleTimes[0]);
-        setSampleTime(sampleTime);
 
         simStructName=blockName.replace("-", "");
     }

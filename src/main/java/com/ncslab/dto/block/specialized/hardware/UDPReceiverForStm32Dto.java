@@ -44,7 +44,7 @@ public class UDPReceiverForStm32Dto extends BlockDto {
     private TypedParameter receiveTimeout;
     
     public UDPReceiverForStm32Dto(String blockName, String blockPath) {
-        super("UDPReceiverForStm32", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

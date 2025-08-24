@@ -62,7 +62,7 @@ public class SFunctionBuilderDto extends BlockDto {
     private TypedParameter sourceCode;
     
     public SFunctionBuilderDto(String blockName, String blockPath) {
-        super("S-FunctionBuilder", blockName, blockPath);
+        super(blockName, blockPath);
         initializeDefaults();
     }
     

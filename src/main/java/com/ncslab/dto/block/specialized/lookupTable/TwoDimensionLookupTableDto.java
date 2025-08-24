@@ -52,7 +52,7 @@ public class TwoDimensionLookupTableDto extends BlockDto {
     private TypedParameter extrapolationMethod;
     
     public TwoDimensionLookupTableDto(String blockName, String blockPath) {
-        super("TwoDimensionLookupTable", blockName, blockPath);
+        super(blockName,blockPath);
         initializeDefaults();
     }
     

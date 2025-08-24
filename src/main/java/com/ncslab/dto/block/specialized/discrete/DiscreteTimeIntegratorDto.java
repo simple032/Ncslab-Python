@@ -63,7 +63,7 @@ public class DiscreteTimeIntegratorDto extends BlockDto {
     private TypedParameter lowerSaturationLimit;
     
     public DiscreteTimeIntegratorDto(String blockName, String blockPath) {
-        super("Discrete-TimeIntegrator", blockName, blockPath);
+        super(blockName, blockPath);
         initializeDefaults();
     }
     

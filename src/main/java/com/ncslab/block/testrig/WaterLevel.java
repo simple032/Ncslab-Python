@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.WaterLevelDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -14,7 +15,9 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WaterLevel extends Block {
     private final double pumpK = 1;
@@ -33,7 +36,7 @@ public class WaterLevel extends Block {
     /**
      * DTO-NATIVE Constructor - Creates WaterLevel block directly from BlockDto DTO
      */
-    public WaterLevel(BlockDto blockDto, NCSLabModel model) {
+    public WaterLevel(WaterLevelDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: WaterLevel block created successfully - " + blockDto.getBlockName());
     }
@@ -42,11 +45,15 @@ public class WaterLevel extends Block {
 
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
+    public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
         outputNames.add("Pump_Speed");
         outputNames.add("Water_Level");
         inputNames.add("in1");
+        
+        // WaterLevel block doesn't use configurable parameters - uses hardcoded values
+        // Empty defaults to satisfy Block.java reflection requirement
     }
 
     public WaterLevel(JSONObject blockJSON, NCSLabModel model) {

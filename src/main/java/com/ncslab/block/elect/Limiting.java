@@ -3,6 +3,7 @@ package com.ncslab.block.elect;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.elect.LimitingDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
@@ -28,7 +29,7 @@ public class Limiting extends Block{
     /**
      * DTO-NATIVE Constructor - Creates Limiting block directly from BlockDto DTO
      */
-    public Limiting(BlockDto blockDto, NCSLabModel model) {
+    public Limiting(LimitingDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Limiting block created successfully - " + blockDto.getBlockName());
     }

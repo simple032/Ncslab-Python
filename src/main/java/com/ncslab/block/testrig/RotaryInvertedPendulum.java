@@ -3,6 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.testrig.RotaryInvertedPendulumDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
@@ -30,7 +31,7 @@ public class RotaryInvertedPendulum extends Block {
     /**
      * DTO-NATIVE Constructor - Creates RotaryInvertedPendulum block directly from BlockDto DTO
      */
-    public RotaryInvertedPendulum(BlockDto blockDto, NCSLabModel model) {
+    public RotaryInvertedPendulum(RotaryInvertedPendulumDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: RotaryInvertedPendulum block created successfully - " + blockDto.getBlockName());
     }

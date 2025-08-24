@@ -91,31 +91,16 @@ public class Abs extends Block {
         
         // Initialize ports
         initializePorts();
-    }    /**
-     * DTO-NATIVE Constructor - Creates Abs block directly from BlockDto DTO
-     */
-    public Abs(BlockDto blockDto, NCSLabModel model) {
-        super(blockDto, model);
-
-        // Initialize final parameters from DTO
-        this.sampleTime = new Parameter(this, 1, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
-
-        // Initialize ports
-        initializePorts();
-
-        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
     /**
      * DTO Constructor - Creates Abs block directly from AbsDto DTO
      */
     public Abs(AbsDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
+        super(dto, model);
         
         // Extract parameters from DTO with defaults
-        String sampleTimeValue = dto.getSampleTime() != null ? String.valueOf(dto.getSampleTime()) : "-1";
+        String sampleTimeValue = dto.getSampleTime() != null ? (dto.getSampleTime().getAsString()) : "-1";
         String outDataTypeValue = dto.getOutDataTypeStrValue();
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         

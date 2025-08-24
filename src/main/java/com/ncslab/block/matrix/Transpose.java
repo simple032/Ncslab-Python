@@ -3,6 +3,7 @@ package com.ncslab.block.matrix;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.matrix.TransposeDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
@@ -26,7 +27,7 @@ public class Transpose extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Transpose block directly from BlockDto DTO
      */
-    public Transpose(BlockDto blockDto, NCSLabModel model) {
+    public Transpose(TransposeDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Transpose block created successfully - " + blockDto.getBlockName());
     }

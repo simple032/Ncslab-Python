@@ -3,6 +3,7 @@ package com.ncslab.block.elect;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.elect.DiodeCurrentDto;
 
 import com.ncslab.block.Block;
 import com.ncslab.util.TemplateManager;
@@ -30,7 +31,7 @@ public class DiodeCurrent extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DiodeCurrent block directly from BlockDto DTO
      */
-    public DiodeCurrent(BlockDto blockDto, NCSLabModel model) {
+    public DiodeCurrent(DiodeCurrentDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DiodeCurrent block created successfully - " + blockDto.getBlockName());
     }
