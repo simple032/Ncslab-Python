@@ -107,11 +107,11 @@ public class Scope extends SinkBlock {
         }
 
         // Create legacy parameters for backward compatibility
-        this.numberOfInputs = new Parameter(this, 1, "NumberOfInputs", String.valueOf(inputCount));
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1"); // -1 for inherited
-        this.saveName = new Parameter(this, 3, "SaveName", "ScopeData");
-        this.saveFormat = new Parameter(this, 4, "SaveFormat", "Array");
-        this.bufferSize = new Parameter(this, 5, "BufferSize", "100000");
+        this.numberOfInputs = getParameterByName("NumberOfInputs");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.saveName = getParameterByName("SaveName");
+        this.saveFormat = getParameterByName("SaveFormat");
+        this.bufferSize = getParameterByName("BufferSize");
         
         // Add all parameters to parameter list
 
@@ -129,26 +129,12 @@ public class Scope extends SinkBlock {
     public Scope(ScopeDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Use modern DTO parameter access - type-safe with defaults
-        int inputCount;
-        if (blockDto.hasParameter("Inputs")) {
-            String numberStr = blockDto.getParameterValue("Number", String.class, "1");
-            inputCount = Integer.parseInt(numberStr);
-        } else {
-            inputCount = 1;
-        }
-        
-        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "-1");
-        String saveNameStr = blockDto.getParameterValue("SaveName", String.class, "ScopeData");
-        String saveFormatStr = blockDto.getParameterValue("SaveFormat", String.class, "Array");
-        String bufferSizeStr = blockDto.getParameterValue("BufferSize", String.class, "100000");
-        
-        // Initialize final parameters directly from DTO
-        this.numberOfInputs = new Parameter(this, 1, "NumberOfInputs", String.valueOf(inputCount));
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeStr);
-        this.saveName = new Parameter(this, 3, "SaveName", saveNameStr);
-        this.saveFormat = new Parameter(this, 4, "SaveFormat", saveFormatStr);
-        this.bufferSize = new Parameter(this, 5, "BufferSize", bufferSizeStr);
+        // Use centralized parameter management via getParameterByName
+        this.numberOfInputs = getParameterByName("NumberOfInputs");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.saveName = getParameterByName("SaveName");
+        this.saveFormat = getParameterByName("SaveFormat");
+        this.bufferSize = getParameterByName("BufferSize");
 
         // Initialize scope arrays and ports
         this.inportNum = Integer.parseInt(numberOfInputs.getInitString());

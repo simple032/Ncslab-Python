@@ -119,10 +119,10 @@ public class UnitDelay extends DiscreteBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.initialCondition = new Parameter(this, 1, "Initialcondition", "0");
-        this.sampleTimeParam = new Parameter(this, 2, "Sampletimeparam", "0");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.initialCondition = getParameterByName("Initialcondition");
+        this.sampleTimeParam = getParameterByName("Sampletimeparam");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

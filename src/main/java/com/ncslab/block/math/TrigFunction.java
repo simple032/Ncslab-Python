@@ -100,12 +100,12 @@ public class TrigFunction extends MathBlock {
         this.trigFunction = trigFuncString;
         
         // Create legacy function parameter
-        this.function = new Parameter(this, 1, "Function", trigFuncString);
+        this.function = getParameterByName("Function");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -118,11 +118,11 @@ public class TrigFunction extends MathBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.function = new Parameter(this, 1, "Function", "sin");
+        this.function = getParameterByName("Function");
         this.trigFunction = "sin"; // Initialize final field
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

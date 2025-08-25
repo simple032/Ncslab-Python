@@ -69,9 +69,9 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
         outputPortList.add(new OutputPort(this, "AccOutput", 1, false));
         outputPortList.add(new OutputPort(this, "SpeedOutput", 2, false));
 
-        InnerFactor = new Parameter(this, parameterList.size() + 1, "InnerFactor", paramValues.getString("InnerFactor"));
+        InnerFactor = getParameterByName("InnerFactor");
 
-        InitSpeed = new Parameter(this, parameterList.size() + 1, "InitSpeed", paramValues.getString("InitSpeed"));
+        InitSpeed = getParameterByName("InitSpeed");
     }
 
     public void generateIncludeCodeC(CodeStructC code) {

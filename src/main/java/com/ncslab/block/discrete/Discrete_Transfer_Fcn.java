@@ -110,14 +110,14 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.numerator = new Parameter(this, 1, "Numerator", paramValues.getString("Numerator"));
-        this.denominator = new Parameter(this, 2, "Denominator", paramValues.getString("Denominator"));
-        this.initialStates = new Parameter(this, 3, "InitialStates", paramValues.getString("InitialStates"));
-        this.sampleTimeParam = new Parameter(this, 4, "SampleTime", paramValues.getString("SampleTime"));
+        this.numerator = getParameterByName("Numerator");
+        this.denominator = getParameterByName("Denominator");
+        this.initialStates = getParameterByName("InitialStates");
+        this.sampleTimeParam = getParameterByName("SampleTime");
 
         // Create missing SIMULINK parameters with defaults
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -145,12 +145,12 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.numerator = new Parameter(this, 1, "Numerator", "[1]");
-        this.denominator = new Parameter(this, 2, "Denominator", "[1 -1]");
-        this.initialStates = new Parameter(this, 3, "Initialstates", "0");
-        this.sampleTimeParam = new Parameter(this, 4, "Sampletimeparam", "0");
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.numerator = getParameterByName("Numerator");
+        this.denominator = getParameterByName("Denominator");
+        this.initialStates = getParameterByName("Initialstates");
+        this.sampleTimeParam = getParameterByName("Sampletimeparam");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

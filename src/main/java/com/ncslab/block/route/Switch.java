@@ -95,13 +95,13 @@ public class Switch extends RouteBlock {
         super(blockJSON, model);
 
         // Create legacy parameters for backward compatibility
-        this.threshold = new Parameter(this, 1, "Threshold", paramValues.getString("Threshold"));
-        this.criteria = new Parameter(this, 2, "Criteria", paramValues.optString("Relop", ">="));
+        this.threshold = getParameterByName("Threshold");
+        this.criteria = getParameterByName("Criteria");
 
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -127,11 +127,11 @@ public class Switch extends RouteBlock {
         }
         
         // Initialize from DTO parameters using new Parameter creation
-        this.threshold = new Parameter(this, 1, "Threshold", String.valueOf(dto.getThresholdValue()));
-        this.criteria = new Parameter(this, 2, "Criteria", dto.getCriteriaValue());
-        this.sampleTime = new Parameter(this, 3, "SampleTime", dto.getSampleTime().getAsString());
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        this.threshold = getParameterByName("Threshold");
+        this.criteria = getParameterByName("Criteria");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Execute initialization logic exactly like JSONObject constructor
         initializePorts();

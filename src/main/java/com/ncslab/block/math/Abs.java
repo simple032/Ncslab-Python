@@ -111,9 +111,9 @@ public class Abs extends MathBlock {
         }
         
         // Initialize parameters
-        this.sampleTime = new Parameter(this, 1, "SampleTime", sampleTimeValue);
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", saturateValue);
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Initialize ports
         initializePorts();

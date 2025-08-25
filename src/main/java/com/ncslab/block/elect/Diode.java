@@ -62,9 +62,9 @@ public class Diode extends Block {
 		outputPortList.add(out);
 		inputPortList.add(in);
 
-		vf=new Parameter(this,1,"Vf",paramValues.getString("Vf"));
-		ron=new Parameter(this,2,"Ron",paramValues.getString("Ron"));
-		goff=new Parameter(this,3,"Goff",paramValues.getString("Goff"));
+		vf=getParameterByName("Vf");
+		ron=getParameterByName("Ron");
+		goff=getParameterByName("Goff");
 		System.out.println(paramValues);
 	}
 

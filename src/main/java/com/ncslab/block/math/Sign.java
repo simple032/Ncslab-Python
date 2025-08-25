@@ -88,10 +88,10 @@ public class Sign extends MathBlock {
         super(blockJSON, model);
         
         // Create missing SIMULINK parameters with defaults
-        this.zeroCrossing = new Parameter(this, 1, "ZeroCrossing", "on");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.zeroCrossing = getParameterByName("ZeroCrossing");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -106,10 +106,10 @@ public class Sign extends MathBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.zeroCrossing = new Parameter(this, 1, "ZeroCrossing", "on");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.zeroCrossing = getParameterByName("ZeroCrossing");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

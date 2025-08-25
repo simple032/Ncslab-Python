@@ -51,7 +51,7 @@ public class IdentityMatrix extends Block {
     public IdentityMatrix(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
-        outputDimensions = new Parameter(this, 1, "outputDimensions", paramValues.getString("outputDimensions"));
+        outputDimensions = getParameterByName("outputDimensions");
 
         outputPortList.add(new OutputPort(this, 1, false));
     }

@@ -68,10 +68,10 @@ public class Power extends MathBlock {
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         
         // Initialize final parameters from DTO
-        this.powerMethod = new Parameter(this, 1, "PowerMethod", powerMethodValue);
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        this.powerMethod = getParameterByName("PowerMethod");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         initializePorts();
     }

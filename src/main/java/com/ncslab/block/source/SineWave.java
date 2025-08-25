@@ -109,17 +109,17 @@ public class SineWave extends SourceBlock {
         super(blockJSON, model);
 
         // Create legacy parameters for backward compatibility
-        this.amplitude = new Parameter(this, 1, "Amplitude", paramValues.getString("Amplitude"));
-        this.bias = new Parameter(this, 2, "Bias", paramValues.getString("Bias"));
-        this.frequency = new Parameter(this, 3, "Frequency", paramValues.getString("Frequency"));
-        this.phase = new Parameter(this, 4, "Phase", paramValues.getString("Phase"));
+        this.amplitude = getParameterByName("Amplitude");
+        this.bias = getParameterByName("Bias");
+        this.frequency = getParameterByName("Frequency");
+        this.phase = getParameterByName("Phase");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 5, "SampleTime", "0"); // 0 for continuous
-        this.samples = new Parameter(this, 6, "Samples", "1");
-        this.timeSource = new Parameter(this, 7, "TimeSource", "Use simulation time");
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "Inherit: Same as parameter");
-        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous
+        this.samples = getParameterByName("Samples");
+        this.timeSource = getParameterByName("TimeSource");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -134,18 +134,15 @@ public class SineWave extends SourceBlock {
         super(dto, model);
 
         // Initialize parameters from DTO with null safety and validation
-        this.amplitude = new Parameter(this, 1, "Amplitude", String.valueOf(dto.getAmplitudeValue()));
-        this.bias = new Parameter(this, 2, "Bias", String.valueOf(dto.getBiasValue()));
-        this.frequency = new Parameter(this, 3, "Frequency", String.valueOf(dto.getFrequencyValue()));
-        this.phase = new Parameter(this, 4, "Phase", String.valueOf(dto.getPhaseValue()));
-        this.sampleTime = new Parameter(this, 5, "SampleTime", String.valueOf(dto.getSampleTimeValue()));
-        this.samples = new Parameter(this, 6, "Samples", String.valueOf(dto.getSamplesValue()));
-        this.timeSource = new Parameter(this, 7, "TimeSource", dto.getTimeSourceValue());
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow",
-            dto.getSaturateOnIntegerOverflow() != null ?
-                java.util.Objects.toString(dto.getSaturateOnIntegerOverflow().getAsString(), "off") :
-                "off");
+        this.amplitude = getParameterByName("Amplitude");
+        this.bias = getParameterByName("Bias");
+        this.frequency = getParameterByName("Frequency");
+        this.phase = getParameterByName("Phase");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.samples = getParameterByName("Samples");
+        this.timeSource = getParameterByName("TimeSource");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName( "SaturateOnIntegerOverflow");
 
         initializePorts();
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());

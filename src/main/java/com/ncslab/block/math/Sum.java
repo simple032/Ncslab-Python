@@ -118,22 +118,14 @@ public class Sum extends MathBlock {
     public Sum(SumDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Use modern DTO parameter access - type-safe with defaults
-        String inputsStr = blockDto.getParameterValue("Inputs", String.class, "++");
-        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "-1");
-        String inputSameDTStr = blockDto.getParameterValue("InputSameDT", String.class, "on");
-        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
-        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
-        String iconStr = blockDto.getParameterValue("Icon", String.class, "rectangular");
-        
-        // Initialize final parameters directly from DTO
-        this.inputs = new Parameter(this, 1, "Inputs", inputsStr);
+        // Use centralized parameter management via getParameterByName
+        this.inputs = getParameterByName("Inputs");
         this.inputSequence = this.inputs.getInitString(); // Initialize final field from parameter
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeStr);
-        this.inputSameDT = new Parameter(this, 3, "InputSameDT", inputSameDTStr);
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeStr);
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateStr);
-        this.icon = new Parameter(this, 6, "Icon", iconStr);
+        this.sampleTime = getParameterByName("SampleTime");
+        this.inputSameDT = getParameterByName("InputSameDT");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        this.icon = getParameterByName("Icon");
 
         // Initialize ports
         initializePorts();

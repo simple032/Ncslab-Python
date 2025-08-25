@@ -106,12 +106,12 @@ public class MathFunction extends MathBlock {
         this.mathOperator = operatorValue;
         
         // Create legacy operator parameter
-        this.operator = new Parameter(this, 1, "Operator", operatorValue);
+        this.operator = getParameterByName("Operator");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -132,10 +132,10 @@ public class MathFunction extends MathBlock {
         this.mathOperator = operatorValue;
 
         // Initialize final parameters from DTO
-        this.operator = new Parameter(this, 1, "Operator", "operatorValue");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.operator = getParameterByName("Operator");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

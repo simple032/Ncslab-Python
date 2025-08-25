@@ -112,14 +112,14 @@ public class Product extends MathBlock {
         this.matrixMultiplication = "Matrix(*)".equals(paramValues.getString("Multiplication"));
 
         // Create legacy parameters
-        this.inputs = new Parameter(this, 1, "Inputs", this.inputSequence);
-        this.multiplication = new Parameter(this, 2, "Multiplication", paramValues.getString("Multiplication"));
+        this.inputs = getParameterByName("Inputs");
+        this.multiplication = getParameterByName("Multiplication");
 
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.inputSameDT = new Parameter(this, 4, "InputSameDT", "on");
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.inputSameDT = getParameterByName("InputSameDT");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -131,23 +131,15 @@ public class Product extends MathBlock {
     public Product(ProductDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
-        // Use modern DTO parameter access - type-safe with defaults
-        String inputsStr = blockDto.getParameterValue("Inputs", String.class, "**");
-        String multiplicationStr = blockDto.getParameterValue("Multiplication", String.class, "Element-wise(.*)");
-        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "-1");
-        String inputSameDTStr = blockDto.getParameterValue("InputSameDT", String.class, "on");
-        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
-        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
-        
-        // Initialize final parameters directly from DTO
-        this.inputs = new Parameter(this, 1, "Inputs", inputsStr);
+        // Use centralized parameter management via getParameterByName
+        this.inputs = getParameterByName("Inputs");
         this.inputSequence = this.inputs.getInitString(); // Initialize final field from parameter
-        this.multiplication = new Parameter(this, 2, "Multiplication", multiplicationStr);
+        this.multiplication = getParameterByName("Multiplication");
         this.matrixMultiplication = "Matrix(*)".equals(this.multiplication.getInitString());
-        this.sampleTime = new Parameter(this, 3, "SampleTime", sampleTimeStr);
-        this.inputSameDT = new Parameter(this, 4, "InputSameDT", inputSameDTStr);
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", outDataTypeStr);
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", saturateStr);
+        this.sampleTime = getParameterByName("SampleTime");
+        this.inputSameDT = getParameterByName("InputSameDT");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

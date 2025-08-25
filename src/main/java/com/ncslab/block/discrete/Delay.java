@@ -104,13 +104,13 @@ public class Delay extends DiscreteBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.sampleTimeParam = new Parameter(this, 1, "SampleTime", paramValues.getString("SampleTime"));
-        this.initialCondition = new Parameter(this, 2, "InitialCondition", paramValues.getString("InitialCondition"));
-        this.delayLength = new Parameter(this, 3, "DelayLength", paramValues.getString("DelayLength"));
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.delayLength = getParameterByName("DelayLength");
 
         // Create missing SIMULINK parameters with defaults
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -126,13 +126,11 @@ public class Delay extends DiscreteBlock {
         super(delayDto, model);
 
         // Initialize final parameters from DelayDto
-        this.delayLength = new Parameter(this, 1, "DelayLength", String.valueOf(delayDto.getDelayLengthValue()));
-        this.initialCondition = new Parameter(this, 2, "InitialCondition", String.valueOf(delayDto.getInitialConditionValue()));
-        this.sampleTimeParam = new Parameter(this, 3, "SampleTime", String.valueOf(delayDto.getSampleTimeValue()));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", 
-            delayDto.getOutDataTypeStr() != null ? delayDto.getOutDataTypeStr().getAsString() : "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", 
-            delayDto.getSaturateOnIntegerOverflow() != null ? delayDto.getSaturateOnIntegerOverflow().getAsString() : "off");
+        this.delayLength = getParameterByName("DelayLength");
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);

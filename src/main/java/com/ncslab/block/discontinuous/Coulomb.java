@@ -94,11 +94,11 @@ public class Coulomb extends DiscontinuousBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.offsetParam = new Parameter(this, 1, "Offset", paramValues.getString("offset"));
-        this.gainParam = new Parameter(this, 2, "Gain", paramValues.getString("gain"));
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.offsetParam = getParameterByName("Offset");
+        this.gainParam = getParameterByName("Gain");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -116,11 +116,11 @@ public class Coulomb extends DiscontinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.offsetParam = new Parameter(this, 1, "Offsetparam", "0");
-        this.gainParam = new Parameter(this, 2, "Gainparam", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.offsetParam = getParameterByName("Offsetparam");
+        this.gainParam = getParameterByName("Gainparam");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

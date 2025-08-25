@@ -88,9 +88,9 @@ public class BandLimitedWhiteNoise extends SourceBlock {
         super(blockJSON, model);
 
         // Create legacy parameters for backward compatibility  
-        this.seed = new Parameter(this, 1, "Seed", String.valueOf(paramValues.getInt("Seed")));
-        this.cov = new Parameter(this, 2, "Cov", String.valueOf(paramValues.getDouble("Cov")));
-        this.samplePeriod = new Parameter(this, 3, "Ts", String.valueOf(paramValues.getDouble("Ts")));
+        this.seed = getParameterByName("Seed");
+        this.cov = getParameterByName("Cov");
+        this.samplePeriod = getParameterByName("Ts");
         
         // Add all parameters to parameter list
         
@@ -103,9 +103,9 @@ public class BandLimitedWhiteNoise extends SourceBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.seed = new Parameter(this, 1, "Seed", "0");
-        this.cov = new Parameter(this, 2, "Cov", "0");
-        this.samplePeriod = new Parameter(this, 3, "Sampleperiod", "0");
+        this.seed = getParameterByName("Seed");
+        this.cov = getParameterByName("Cov");
+        this.samplePeriod = getParameterByName("Sampleperiod");
 
         // Initialize ports
         initializePorts();

@@ -57,8 +57,8 @@ public class DataCollector extends MLBlock{
 
     public DataCollector(JSONObject jsonObject, NCSLabModel model){
         super(jsonObject, model);
-        this.inputFeatures = new Parameter(this, 1, "inputFeatures", paramValues.getString("inputFeatures"));
-        this.outputFeatures = new Parameter(this, 2, "outputFeatures", paramValues.getString("outputFeatures"));
+        this.inputFeatures = getParameterByName("inputFeatures");
+        this.outputFeatures = getParameterByName("outputFeatures");
         this.path = paramValues.getString("savePath");
 
         this._inputs = new InputPort(this, 1);

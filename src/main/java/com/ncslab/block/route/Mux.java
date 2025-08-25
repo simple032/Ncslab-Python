@@ -99,11 +99,11 @@ public class Mux extends RouteBlock {
 		super(blockIn, model);
 
 		// Create legacy parameters for backward compatibility
-		this.inputs = new Parameter(this, 1, "Inputs", paramValues.getString("Inputs"));
-		this.displayOrder = new Parameter(this, 2, "DisplayOrder", "1:N");
-		this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-		this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
-		this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+		this.inputs = getParameterByName("Inputs");
+		this.displayOrder = getParameterByName("DisplayOrder");
+		this.sampleTime = getParameterByName("SampleTime");
+		this.outDataType = getParameterByName("OutDataTypeStr");
+		this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 		
 		// Add all parameters to parameter list
 
@@ -121,14 +121,14 @@ public class Mux extends RouteBlock {
         super(muxDto, model);
 
         // Initialize final parameters from MuxDto
-        this.inputs = new Parameter(this, 1, "Inputs", String.valueOf(muxDto.getInputsValue()));
-        this.displayOrder = new Parameter(this, 2, "DisplayOrder", muxDto.getDisplayOrderValue());
-        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(muxDto.getSampleTimeValue()));
+        this.inputs = getParameterByName("Inputs");
+        this.displayOrder = getParameterByName("DisplayOrder");
+        this.sampleTime = getParameterByName("SampleTime");
         String outDataTypeValue = muxDto.getOutDataTypeStr() != null ? muxDto.getOutDataTypeStr().getAsString() : "Inherit: Same as input";
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeValue);
+        this.outDataType = getParameterByName("OutDataTypeStr");
         
         String saturateValue = muxDto.getSaturateOnIntegerOverflow() != null ? muxDto.getSaturateOnIntegerOverflow().getAsString() : "off";
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateValue);
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Parse number of inputs and create ports
         this.num = muxDto.getInputsValue();

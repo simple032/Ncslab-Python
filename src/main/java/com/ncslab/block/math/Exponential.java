@@ -75,12 +75,12 @@ public class Exponential extends MathBlock {
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         
         // Initialize final parameters from DTO
-        this.expType = new Parameter(this, 1, "ExpType", expTypeValue);
-        this.customBase = new Parameter(this, 2, "CustomBase", customBaseValue);
-        this.zeroCrossing = new Parameter(this, 3, "ZeroCrossing", zeroCrossingValue);
-        this.sampleTime = new Parameter(this, 4, "SampleTime", sampleTimeValue);
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", saturateValue);
+        this.expType = getParameterByName("ExpType");
+        this.customBase = getParameterByName("CustomBase");
+        this.zeroCrossing = getParameterByName("ZeroCrossing");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         initializePorts();
     }

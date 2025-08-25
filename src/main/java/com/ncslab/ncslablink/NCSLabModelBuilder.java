@@ -140,11 +140,6 @@ public class NCSLabModelBuilder {
             return convertJsonStringToDto();
         }
         
-        if (jsonObject != null) {
-            // Convert JSONObject to DTO
-            return convertJsonObjectToDto();
-        }
-        
         throw new ModelException("No valid input data available");
     }
     
@@ -185,13 +180,7 @@ public class NCSLabModelBuilder {
             throw new ModelException("Failed to convert JSON string to DTO: " + e.getMessage(), e);
         }
     }
-    
-    /**
-     * Convert JSONObject to DTO
-     */
-    private ModelDto convertJsonObjectToDto() throws ModelException {
-        return convertJsonObjectToDto(this.jsonObject);
-    }
+
     
     /**
      * Convert JSONObject to DTO (helper method)

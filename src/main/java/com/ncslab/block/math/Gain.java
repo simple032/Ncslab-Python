@@ -111,18 +111,15 @@ public class Gain extends MathBlock {
     public Gain(GainDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Use modern DTO parameter access - type-safe with defaults
-        String gainStr = blockDto.getParameterValue("Gain", String.class, "1");
-        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "-1");
-        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
-        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
+        // Use centralized parameter management via getParameterByName
+        this.gain = getParameterByName("Gain");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
-        // Initialize final parameters directly from DTO
-        this.gain = new Parameter(this, 1, "Gain", gainStr);
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeStr);
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeStr);
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateStr);
-        this.matrixMultiplication = false; // Default to element-wise multiplication
+        // Extract multiplication mode for backward compatibility
+        Parameter multiplicationParam = getParameterByName("Multiplication");
+        this.matrixMultiplication = multiplicationParam != null && "Matrix(*)".equals(multiplicationParam.getInitString());
 
         // Initialize ports
         initializePorts();

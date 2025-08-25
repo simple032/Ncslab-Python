@@ -116,11 +116,11 @@ public class RateLimiter extends DiscontinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.risingSlew = new Parameter(this, 1, "Risingslew", "0");
-        this.fallingSlew = new Parameter(this, 2, "Fallingslew", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.risingSlew = getParameterByName("Risingslew");
+        this.fallingSlew = getParameterByName("Fallingslew");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

@@ -125,18 +125,18 @@ public class StateSpace extends ContinuousBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.stateMatrix = new Parameter(this, 1, "A", paramValues.getString("A"));
-        this.inputMatrix = new Parameter(this, 2, "B", paramValues.getString("B"));
-        this.outputMatrix = new Parameter(this, 3, "C", paramValues.getString("C"));
-        this.feedthroughMatrix = new Parameter(this, 4, "D", paramValues.getString("D"));
-        this.initialState = new Parameter(this, 5, "X0", paramValues.getString("X0"));
+        this.stateMatrix = getParameterByName("A");
+        this.inputMatrix = getParameterByName("B");
+        this.outputMatrix = getParameterByName("C");
+        this.feedthroughMatrix = getParameterByName("D");
+        this.initialState = getParameterByName("X0");
         
         // Create missing SIMULINK parameters with defaults
-        this.absoluteTolerance = new Parameter(this, 6, "AbsoluteTolerance", "auto");
-        this.continuousStateAttributes = new Parameter(this, 7, "ContinuousStateAttributes", "'''");
-        this.sampleTime = new Parameter(this, 8, "SampleTime", "0"); // 0 for continuous state space
-        this.outDataType = new Parameter(this, 9, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 10, "SaturateOnIntegerOverflow", "off");
+        this.absoluteTolerance = getParameterByName("AbsoluteTolerance");
+        this.continuousStateAttributes = getParameterByName("ContinuousStateAttributes");
+        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous state space
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -164,29 +164,17 @@ public class StateSpace extends ContinuousBlock {
     public StateSpace(StateSpaceDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Use modern DTO parameter access - type-safe with defaults
-        String aStr = blockDto.getParameterValue("A", String.class, "1");
-        String bStr = blockDto.getParameterValue("B", String.class, "1");
-        String cStr = blockDto.getParameterValue("C", String.class, "1");
-        String dStr = blockDto.getParameterValue("D", String.class, "0");
-        String x0Str = blockDto.getParameterValue("X0", String.class, "0");
-        String absoluteToleranceStr = blockDto.getParameterValue("AbsoluteTolerance", String.class, "auto");
-        String continuousStateAttributesStr = blockDto.getParameterValue("ContinuousStateAttributes", String.class, "'''");
-        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "-1");
-        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
-        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
-        
-        // Initialize final parameters directly from DTO
-        this.stateMatrix = new Parameter(this, 1, "A", aStr);
-        this.inputMatrix = new Parameter(this, 2, "B", bStr);
-        this.outputMatrix = new Parameter(this, 3, "C", cStr);
-        this.feedthroughMatrix = new Parameter(this, 4, "D", dStr);
-        this.initialState = new Parameter(this, 5, "X0", x0Str);
-        this.absoluteTolerance = new Parameter(this, 6, "AbsoluteTolerance", absoluteToleranceStr);
-        this.continuousStateAttributes = new Parameter(this, 7, "ContinuousStateAttributes", continuousStateAttributesStr);
-        this.sampleTime = new Parameter(this, 8, "SampleTime", sampleTimeStr);
-        this.outDataType = new Parameter(this, 9, "OutDataTypeStr", outDataTypeStr);
-        this.saturateOnIntegerOverflow = new Parameter(this, 10, "SaturateOnIntegerOverflow", saturateStr);
+        // Use centralized parameter management via getParameterByName
+        this.stateMatrix = getParameterByName("A");
+        this.inputMatrix = getParameterByName("B");
+        this.outputMatrix = getParameterByName("C");
+        this.feedthroughMatrix = getParameterByName("D");
+        this.initialState = getParameterByName("X0");
+        this.absoluteTolerance = getParameterByName("AbsoluteTolerance");
+        this.continuousStateAttributes = getParameterByName("ContinuousStateAttributes");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         
         // Initialize states and ports

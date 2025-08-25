@@ -53,12 +53,12 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
     }
 
     protected void parseParameters(){
-        breakpointsForDimension1 = new Parameter(this, 1, "breakpointsForDimension1", paramValues.getString("BreakpointsForDimension1"));
-//        breakpointsForDimension2 = new Parameter(this, 1, "breakpointsForDimension2", paramValues.optString("BreakpointsForDimension2"));
-//        breakpointsForDimension3 = new Parameter(this, 1, "breakpointsForDimension3", paramValues.optString("BreakpointsForDimension3"));
-//        breakpointsForDimension4 = new Parameter(this, 1, "breakpointsForDimension4", paramValues.optString("BreakpointsForDimension4"));
+        breakpointsForDimension1 = getParameterByName("breakpointsForDimension1");
+//        breakpointsForDimension2 = getParameterByName("breakpointsForDimension2");
+//        breakpointsForDimension3 = getParameterByName("breakpointsForDimension3");
+//        breakpointsForDimension4 = getParameterByName("breakpointsForDimension4");
 
-        table = new Parameter(this, 1, "table", paramValues.getString("Table"));
+        table = getParameterByName("table");
 
         x_dat = parseMatlabVector(breakpointsForDimension1.getDataString());
         y_dat = parseMatlabVector(table.getDataString());

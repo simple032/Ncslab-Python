@@ -30,6 +30,7 @@ public class TestPoint extends MathBlock {
      */
     public TestPoint(TestPointDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+        initializePorts();
         System.out.println("DTO-NATIVE: TestPoint block created successfully - " + blockDto.getBlockName());
     }
 
@@ -55,6 +56,10 @@ public class TestPoint extends MathBlock {
     public TestPoint(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
+        initializePorts();
+    }
+
+    private void initializePorts(){
         OutputPort out = new OutputPort(this, 1, true);
         InputPort in = new InputPort(this, 1);
 

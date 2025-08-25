@@ -80,11 +80,11 @@ public class pll3ph extends Block{
 		inputPortList.add(new InputPort(this,3));
 		outputPortList.add(new OutputPort(this,1,true));
 		outputPortList.add(new OutputPort(this,2,true));
-		MinimumFreq=new Parameter(this,parameterList.size()+1,"MinimumFreq",paramValues.getString("MinimumFreq"));
-		timeDerivative=new Parameter(this,parameterList.size()+1,"timeDerivative",paramValues.getString("timeDerivative"));
-		maxFrequency=new Parameter(this,parameterList.size()+1,"maxFrequency",paramValues.getString("maxFrequency"));
-		filterFrequency=new Parameter(this,parameterList.size()+1,"filterFrequency",paramValues.getString("filterFrequency"));
-		sampleTime=new Parameter(this,parameterList.size()+1,"sampleTime",paramValues.getString("sampleTime"));
+		MinimumFreq=getParameterByName("MinimumFreq");
+		timeDerivative=getParameterByName("timeDerivative");
+		maxFrequency=getParameterByName("maxFrequency");
+		filterFrequency=getParameterByName("filterFrequency");
+		sampleTime=getParameterByName("sampleTime");
 	}
 
 	public void generateInitCodeC(CodeStructC code) {

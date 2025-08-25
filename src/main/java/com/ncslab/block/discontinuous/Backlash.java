@@ -96,11 +96,11 @@ public class Backlash extends DiscontinuousBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.backlashWidthParam = new Parameter(this, 1, "BacklashWidth", paramValues.getString("BacklashWidth"));
-        this.initialOutputParam = new Parameter(this, 2, "InitialOutput", paramValues.getString("InitialOutput"));
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.backlashWidthParam = getParameterByName("BacklashWidth");
+        this.initialOutputParam = getParameterByName("InitialOutput");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -118,11 +118,11 @@ public class Backlash extends DiscontinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.backlashWidthParam = new Parameter(this, 1, "Backlashwidthparam", "0");
-        this.initialOutputParam = new Parameter(this, 2, "Initialoutputparam", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.backlashWidthParam = getParameterByName("Backlashwidthparam");
+        this.initialOutputParam = getParameterByName("Initialoutputparam");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

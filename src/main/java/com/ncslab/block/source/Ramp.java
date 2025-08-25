@@ -111,19 +111,12 @@ public class Ramp extends SourceBlock {
      * DTO-NATIVE Constructor - Creates Ramp block directly from RampDto
      */
     public Ramp(RampDto dto, NCSLabModel model) {
-        super("Ramp",
-              dto.getSampleTime() != null ? new Parameter(null, 4, "SampleTime", dto.getSampleTime().getAsString()) : new Parameter(null, 4, "SampleTime", "0.0"),
-              dto.getOutDataTypeStr() != null ? new Parameter(null, 5, "OutDataTypeStr", dto.getOutDataTypeStr().getAsString()) : new Parameter(null, 5, "OutDataTypeStr", "Inherit: Same as parameter"),
-              dto.getSaturateOnIntegerOverflow() != null ? new Parameter(null, 6, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflow().getAsBoolean() ? "on" : "off") : new Parameter(null, 6, "SaturateOnIntegerOverflow", "off"),
-              dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID(), model);
+        super(dto, model);
 
         // Initialize Ramp-specific parameters from DTO with null safety
-        this.slope = new Parameter(this, 1, "Slope",
-            String.valueOf(dto.getSlope() != null ? dto.getSlope().getAsDouble() : 1.0));
-        this.start = new Parameter(this, 2, "Start",
-            String.valueOf(dto.getStart() != null ? dto.getStart().getAsDouble() : 0.0));
-        this.initialOutput = new Parameter(this, 3, "InitialOutput",
-            String.valueOf(dto.getInitialOutput() != null ? dto.getInitialOutput().getAsDouble() : 0.0));
+        this.slope = getParameterByName("Slope");
+        this.start = getParameterByName("Start");
+        this.initialOutput = getParameterByName("InitialOutput");
 
         // Add Ramp-specific parameters to parameter list
         parameterList.add(slope);

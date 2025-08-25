@@ -74,9 +74,9 @@ public class xzInvertedPendulumSUST extends Block {
 
 //		spState=new State(this,1,"SerialPortState");
 //		stateList.add(spState);
-		Vspeed=new Parameter(this,parameterList.size()+1,"Vspeed",paramValues.getString("Vspeed"));
-		ENAOrDIS=new Parameter(this,parameterList.size()+1,"ENAOrDIS",paramValues.getString("ENAOrDIS"));
-		POS0Flag=new Parameter(this,parameterList.size()+1,"POS0Flag",paramValues.getString("POS0Flag"));
+		Vspeed=getParameterByName("Vspeed");
+		ENAOrDIS=getParameterByName("ENAOrDIS");
+		POS0Flag=getParameterByName("POS0Flag");
 		//pumpState=new State(this,1,"pumpState");
 		//stateList.add(pumpState);
 		//levelState=new State(this,2,"levelState");

@@ -96,11 +96,11 @@ public class IntervalTest extends LogicBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.lowerLimit = new Parameter(this, 1, "LowerLimit", paramValues.getString("lowlimit"));
-        this.upperLimit = new Parameter(this, 2, "UpperLimit", paramValues.getString("uplimit"));
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.lowerLimit = getParameterByName("LowerLimit");
+        this.upperLimit = getParameterByName("UpperLimit");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -118,11 +118,11 @@ public class IntervalTest extends LogicBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.upperLimit = new Parameter(this, 1, "Upperlimit", "0");
-        this.lowerLimit = new Parameter(this, 2, "Lowerlimit", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.upperLimit = getParameterByName("Upperlimit");
+        this.lowerLimit = getParameterByName("Lowerlimit");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

@@ -144,13 +144,13 @@ public class Relay extends DiscontinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.switchOnPoint = new Parameter(this, 1, "Switchonpoint", "0");
-        this.switchOffPoint = new Parameter(this, 2, "Switchoffpoint", "0");
-        this.outputWhenOn = new Parameter(this, 3, "Outputwhenon", "0");
-        this.outputWhenOff = new Parameter(this, 4, "Outputwhenoff", "0");
-        this.sampleTime = new Parameter(this, 5, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
+        this.switchOnPoint = getParameterByName("Switchonpoint");
+        this.switchOffPoint = getParameterByName("Switchoffpoint");
+        this.outputWhenOn = getParameterByName("Outputwhenon");
+        this.outputWhenOff = getParameterByName("Outputwhenoff");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

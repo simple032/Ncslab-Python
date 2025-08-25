@@ -63,8 +63,8 @@ public class InvertedPendulumSUST extends Block {
         outputPortList.add(new OutputPort(this, "Real_X", 1, false));
         outputPortList.add(new OutputPort(this, "Angle", 2, false));
 
-        Vspeed = new Parameter(this, parameterList.size() + 1, "Vspeed", paramValues.getString("Vspeed"));
-        ENAOrDIS = new Parameter(this, parameterList.size() + 1, "ENAOrDIS", paramValues.getString("ENAOrDIS"));
+        Vspeed = getParameterByName("Vspeed");
+        ENAOrDIS = getParameterByName("ENAOrDIS");
     }
 
     public void generateInitCodeM(CodeStructM code) {

@@ -117,11 +117,11 @@ public class Saturation extends DiscontinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.upperSaturationLimit = new Parameter(this, 1, "Uppersaturationlimit", "0");
-        this.lowerSaturationLimit = new Parameter(this, 2, "Lowersaturationlimit", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.upperSaturationLimit = getParameterByName("Uppersaturationlimit");
+        this.lowerSaturationLimit = getParameterByName("Lowersaturationlimit");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

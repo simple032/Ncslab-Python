@@ -121,16 +121,16 @@ public class DiscreteStateSpace extends DiscreteBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.A = new Parameter(this, 1, "A", paramValues.getString("A"));
-        this.B = new Parameter(this, 2, "B", paramValues.getString("B"));
-        this.C = new Parameter(this, 3, "C", paramValues.getString("C"));
-        this.D = new Parameter(this, 4, "D", paramValues.getString("D"));
-        this.initialCondition = new Parameter(this, 5, "InitialCondition", paramValues.getString("InitialCondition"));
+        this.A = getParameterByName("A");
+        this.B = getParameterByName("B");
+        this.C = getParameterByName("C");
+        this.D = getParameterByName("D");
+        this.initialCondition = getParameterByName("InitialCondition");
 
         // Create missing SIMULINK parameters with defaults
-        this.sampleTimeParam = new Parameter(this, 6, "SampleTime", "1.0");
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -154,14 +154,14 @@ public class DiscreteStateSpace extends DiscreteBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.A = new Parameter(this, 1, "A", "[1]");
-        this.B = new Parameter(this, 2, "B", "[1]");
-        this.C = new Parameter(this, 3, "C", "[1]");
-        this.D = new Parameter(this, 4, "D", "[0]");
-        this.initialCondition = new Parameter(this, 5, "Initialcondition", "0");
-        this.sampleTimeParam = new Parameter(this, 6, "SampleTime", "1.0");
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+        this.A = getParameterByName("A");
+        this.B = getParameterByName("B");
+        this.C = getParameterByName("C");
+        this.D = getParameterByName("D");
+        this.initialCondition = getParameterByName("Initialcondition");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

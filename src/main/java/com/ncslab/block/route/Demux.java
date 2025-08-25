@@ -94,11 +94,11 @@ public class Demux extends RouteBlock {
 		super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.outputs = new Parameter(this, 1, "Outputs", String.valueOf(paramValues.getInt("Outputs")));
-        this.displayOrder = new Parameter(this, 2, "DisplayOrder", "1:N");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Inherit via internal rule");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.outputs = getParameterByName("Outputs");
+        this.displayOrder = getParameterByName("DisplayOrder");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -117,11 +117,11 @@ public class Demux extends RouteBlock {
         super(demuxDto, model);
 
         // Initialize final parameters from DemuxDto
-        this.outputs = new Parameter(this, 1, "Outputs", String.valueOf(demuxDto.getOutputsValue()));
-        this.displayOrder = new Parameter(this, 2, "DisplayOrder", demuxDto.getDisplayOrderValue());
-        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(demuxDto.getSampleTimeValue()));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", demuxDto.getOutDataTypeStr() != null ? demuxDto.getOutDataTypeStr().getAsString() : "Inherit: Inherit via internal rule");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", demuxDto.getSaturateOnIntegerOverflow() != null ? (demuxDto.getSaturateOnIntegerOverflow().getAsBoolean() ? "on" : "off") : "off");
+        this.outputs = getParameterByName("Outputs");
+        this.displayOrder = getParameterByName("DisplayOrder");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Parse number of outputs and create ports
         this.feedThrough = true;

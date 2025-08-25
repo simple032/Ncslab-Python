@@ -57,10 +57,10 @@ public class LQRController extends Block {
     public LQRController(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model);
 
-        A = new Parameter(this, 1, "A", paramValues.getString("A"));
-        B = new Parameter(this, 2, "B", paramValues.getString("B"));
-        Q = new Parameter(this, 3, "Q", paramValues.getString("Q"));
-        R = new Parameter(this, 4, "R", paramValues.getString("R"));
+        A = getParameterByName("A");
+        B = getParameterByName("B");
+        Q = getParameterByName("Q");
+        R = getParameterByName("R");
         this.LQR_K = new LQRVariable(this, 1, "LQR_K", "[]");
         this.globalVariableList.add(this.LQR_K);
 

@@ -66,16 +66,16 @@ public class Superposition extends Block {
 
         // 三个输入
         inputPortList.add(new InputPort(this, 1));
-        BCM1 = new Parameter(this, 1, "BCM1", paramValues.getString("BCM1"));
+        BCM1 = getParameterByName("BCM1");
         inputPortList.add(new InputPort(this, 2));
-        BCM2 = new Parameter(this, 2, "BCM2", paramValues.getString("BCM2"));
+        BCM2 = getParameterByName("BCM2");
         inputPortList.add(new InputPort(this, 3));
-        BCM3 = new Parameter(this, 3, "BCM3", paramValues.getString("BCM3"));
+        BCM3 = getParameterByName("BCM3");
         // 七个输出
         outputPortList.add(new OutputPort(this, "AD1", 1, false));
-        AD1 = new Parameter(this, 4, "AD1", paramValues.getString("AD1"));
+        AD1 = getParameterByName("AD1");
         outputPortList.add(new OutputPort(this, "AD2", 2, false));
-        AD2 = new Parameter(this, 5, "AD2", paramValues.getString("AD2"));
+        AD2 = getParameterByName("AD2");
     }
 
     public void generateInitCodeM(CodeStructM code) {

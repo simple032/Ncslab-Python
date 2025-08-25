@@ -110,11 +110,11 @@ public class RelationalOperator extends LogicBlock {
         }
         
         // Create legacy parameters for backward compatibility
-        this.operator = new Parameter(this, 1, "Operator", operatorValue);
-        this.logicDataType = new Parameter(this, 2, "LogicDataType", "boolean");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.operator = getParameterByName("Operator");
+        this.logicDataType = getParameterByName("LogicDataType");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -137,19 +137,19 @@ public class RelationalOperator extends LogicBlock {
 
         // Initialize parameters from DTO with null safety
         String operatorValue = dto.getOperator() != null ? dto.getOperator().getAsString() : "==";
-        this.operator = new Parameter(this, 1, "Operator", operatorValue);
+        this.operator = getParameterByName("Operator");
         
         String logicDataTypeValue = dto.getLogicDataType() != null ? dto.getLogicDataType().getAsString() : "boolean";
-        this.logicDataType = new Parameter(this, 2, "LogicDataType", logicDataTypeValue);
+        this.logicDataType = getParameterByName("LogicDataType");
         
         double sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().getAsDouble() : -1.0;
-        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(sampleTimeValue));
+        this.sampleTime = getParameterByName("SampleTime");
         
         String outDataTypeValue = dto.getOutDataTypeStr() != null ? dto.getOutDataTypeStr().getAsString() : "Inherit: Logical (see Configuration Parameters: Optimization)";
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeValue);
+        this.outDataType = getParameterByName("OutDataTypeStr");
         
         String saturateValue = dto.getSaturateOnIntegerOverflow() != null ? dto.getSaturateOnIntegerOverflow().getAsString() : "off";
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateValue);
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Store legacy relop for backward compatibility (normalize ~= to !=)
         this.relop = operatorValue;

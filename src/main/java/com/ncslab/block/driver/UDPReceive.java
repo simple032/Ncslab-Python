@@ -59,7 +59,7 @@ public class UDPReceive extends com.ncslab.block.Block{
             ipPort = paramValues.getString("address") + ":" + paramValues.getInt("port");
         }
 
-        LocalIPPort=new Parameter(this,parameterList.size()+1,"LocalIPPort", ipPort);
+        LocalIPPort=getParameterByName("LocalIPPort");
 
 	}
 

@@ -558,31 +558,18 @@ public class Integrator extends ContinuousBlock {
     public Integrator(IntegratorDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Use modern DTO parameter access - type-safe with defaults
-        String initialConditionStr = blockDto.getParameterValue("InitialCondition", String.class, "0");
-        String externalResetStr = blockDto.getParameterValue("IntegratorExternalReset", String.class, "none");
-        String conditionSourceStr = blockDto.getParameterValue("InitialConditionSource", String.class, "internal");
-        String limitOutputStr = blockDto.getParameterValue("LimitOutput", String.class, "off");
-        String upperSaturationLimitStr = blockDto.getParameterValue("UpperSaturationLimit", String.class, "inf");
-        String lowerSaturationLimitStr = blockDto.getParameterValue("LowerSaturationLimit", String.class, "-inf");
-        String showSaturationPortStr = blockDto.getParameterValue("ShowSaturationPort", String.class, "off");
-        String showStatePortStr = blockDto.getParameterValue("ShowStatePort", String.class, "off");
-        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "0");
-        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
-        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
-        
-        // Initialize final parameters directly from DTO
-        this.initialCondition = new Parameter(this, 1, "InitialCondition", initialConditionStr);
-        this.externalReset = new Parameter(this, 2, "ExternalReset", externalResetStr);
-        this.conditionSource = new Parameter(this, 3, "InitialConditionSource", conditionSourceStr);
-        this.limitOutput = new Parameter(this, 4, "LimitOutput", limitOutputStr);
-        this.upperSaturationLimit = new Parameter(this, 5, "UpperSaturationLimit", upperSaturationLimitStr);
-        this.lowerSaturationLimit = new Parameter(this, 6, "LowerSaturationLimit", lowerSaturationLimitStr);
-        this.showSaturationPort = new Parameter(this, 7, "ShowSaturationPort", showSaturationPortStr);
-        this.showStatePort = new Parameter(this, 8, "ShowStatePort", showStatePortStr);
-        this.sampleTime = new Parameter(this, 9, "SampleTime", sampleTimeStr);
-        this.outDataType = new Parameter(this, 10, "OutDataTypeStr", outDataTypeStr);
-        this.saturateOnIntegerOverflow = new Parameter(this, 11, "SaturateOnIntegerOverflow", saturateStr);
+        // Use centralized parameter management via getParameterByName
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.externalReset = getParameterByName("ExternalReset");
+        this.conditionSource = getParameterByName("InitialConditionSource");
+        this.limitOutput = getParameterByName("LimitOutput");
+        this.upperSaturationLimit = getParameterByName("UpperSaturationLimit");
+        this.lowerSaturationLimit = getParameterByName("LowerSaturationLimit");
+        this.showSaturationPort = getParameterByName("ShowSaturationPort");
+        this.showStatePort = getParameterByName("ShowStatePort");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

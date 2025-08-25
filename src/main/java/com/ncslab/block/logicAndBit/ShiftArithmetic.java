@@ -92,10 +92,10 @@ public class ShiftArithmetic extends LogicBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.bitShiftNumber = new Parameter(this, 1, "BitShiftNumber", paramValues.getString("BitShiftNumber"));
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.bitShiftNumber = getParameterByName("BitShiftNumber");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -112,10 +112,10 @@ public class ShiftArithmetic extends LogicBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.bitShiftNumber = new Parameter(this, 1, "Bitshiftnumber", "0");
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.bitShiftNumber = getParameterByName("Bitshiftnumber");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

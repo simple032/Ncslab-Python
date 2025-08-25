@@ -69,10 +69,10 @@ public class OldPIDController extends ContinuousBlock {
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
 
-        cparaP = new Parameter(this, parameterList.size() + 1, "P", paramValues.getString("P"));
-        cparaI = new Parameter(this, parameterList.size() + 1, "I", paramValues.getString("I"));
-        cparaD = new Parameter(this, parameterList.size() + 1, "D", paramValues.getString("D"));
-        cparaN = new Parameter(this, parameterList.size() + 1, "N", paramValues.getString("N"));
+        cparaP = getParameterByName("P");
+        cparaI = getParameterByName("I");
+        cparaD = getParameterByName("D");
+        cparaN = getParameterByName("N");
     }
 
     @Override

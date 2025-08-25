@@ -91,11 +91,11 @@ public class To extends RouteBlock {
 		super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.gotoTag = new Parameter(this, 1, "GotoTag", paramValues.getString("GotoTag"));
-        this.iconDisplay = new Parameter(this, 2, "IconDisplay", "Tag");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: auto");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.gotoTag = getParameterByName("GotoTag");
+        this.iconDisplay = getParameterByName("IconDisplay");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -112,11 +112,11 @@ public class To extends RouteBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.gotoTag = new Parameter(this, 1, "Gototag", "0");
-        this.iconDisplay = new Parameter(this, 2, "IconDisplay", "Tag");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: auto");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.gotoTag = getParameterByName("Gototag");
+        this.iconDisplay = getParameterByName("IconDisplay");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();
@@ -250,29 +250,15 @@ public class To extends RouteBlock {
     }
 
     public void updateDimension() throws MatDimException {
-        OutputPort out  = outputPortList.get(0);
-        InputPort in  = inputPortList.get(0);
-        OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        out.setHeight(signal.getHeight());
-        out.setWidth(signal.getWidth());
-        out.getOutputSignalC().setHeight(signal.getHeight());
-        out.getOutputSignalC().setWidth(signal.getWidth());
-        out.getOutputSignalC().setDataType(signal.getDataType());
     }
     public void checkDimension() throws MatDimException{
     }
 
     @Override
     public void calculateOutput(double t) {
-        InputPort in = inputPortList.get(0);
-        OutputPort out = outputPortList.get(0);
-        out.setData(in.getData());
     }
 
     @Override
     public void calculateInit() {
-        InputPort in = inputPortList.get(0);
-        OutputPort out = outputPortList.get(0);
-        out.setData(in.getData());
     }
 }

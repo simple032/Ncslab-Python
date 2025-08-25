@@ -107,13 +107,9 @@ public class Constant extends SourceBlock {
     public Constant(ConstantDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Use modern DTO parameter access - type-safe with defaults
-        String valueStr = blockDto.getParameterValue("Value", String.class, "1");
-        String framePeriodStr = blockDto.getParameterValue("FramePeriod", String.class, "1");
-        
-        // Initialize final parameters directly from DTO
-        this.value = new Parameter(this, 1, "Value", valueStr);
-        this.framePeriod = new Parameter(this, 2, "FramePeriod", framePeriodStr);
+        // Use centralized parameter management via getParameterByName
+        this.value = getParameterByName("Value");
+        this.framePeriod = getParameterByName("FramePeriod");
 
         // Initialize ports
         initializePorts();

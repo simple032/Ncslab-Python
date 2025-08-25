@@ -67,10 +67,10 @@ public class EnsembleModel extends Block{
     public EnsembleModel(JSONObject jsonObject, NCSLabModel model) {
         super(jsonObject, model);
 
-        this.m0 = new Parameter(this, 1, "m0", paramValues.getString("m0"));
-        this.m1 = new Parameter(this, 2, "m1", paramValues.getString("m1"));
-        this.l = new Parameter(this, 3, "l", paramValues.getString("l"));
-        this.initState = new Parameter(this, 4, "initState", paramValues.getString("initState"));
+        this.m0 = getParameterByName("m0");
+        this.m1 = getParameterByName("m1");
+        this.l = getParameterByName("l");
+        this.initState = getParameterByName("initState");
 
         this.modelVariable = new ENVariable(this, 1, "invertedPendulum", "233");
 

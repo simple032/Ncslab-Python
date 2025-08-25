@@ -157,6 +157,7 @@ public class NCSLabSystem {
     public void addBlock(Block block) {
         if (block != null && !blocks.contains(block)) {
             blocks.add(block);
+            block.setParent(this);
         }
     }
     

@@ -87,11 +87,11 @@ public class Zero_Order_Hold extends DiscreteBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.sampleTimeParam = new Parameter(this, 1, "SampleTime", paramValues.getString("SampleTime"));
+        this.sampleTimeParam = getParameterByName("SampleTime");
         
         // Create missing SIMULINK parameters with defaults
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -109,9 +109,9 @@ public class Zero_Order_Hold extends DiscreteBlock {
         super(dto, model);
         
         // Create parameters from DTO
-        this.sampleTimeParam = new Parameter(this, 1, "SampleTime", dto.getSampleTime() != null ? dto.getSampleTime().getValue().toString() : "-1");
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Create ports
         inputPortList.add(new InputPort(this, 1));

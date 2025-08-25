@@ -116,17 +116,17 @@ public class Derivative extends ContinuousBlock {
 
         // Create legacy parameters for backward compatibility
         // Legacy implementation used 'c' parameter with default value 100
-        this.filterCoefficient = new Parameter(this, 1, "FilterCoefficient", "100");
-        this.initialCondition = new Parameter(this, 2, "InitialCondition", "0");
+        this.filterCoefficient = getParameterByName("FilterCoefficient");
+        this.initialCondition = getParameterByName("InitialCondition");
 
         // Create missing SIMULINK parameters with defaults
-        this.coefficientSource = new Parameter(this, 3, "CoefficientSource", "internal");
-        this.externalReset = new Parameter(this, 4, "ExternalReset", "none");
-        this.conditionSource = new Parameter(this, 5, "InitialConditionSource", "internal");
-        this.showStatePort = new Parameter(this, 6, "ShowStatePort", "off");
-        this.sampleTime = new Parameter(this, 7, "SampleTime", "0"); // 0 for continuous derivative
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", "off");
+        this.coefficientSource = getParameterByName("CoefficientSource");
+        this.externalReset = getParameterByName("ExternalReset");
+        this.conditionSource = getParameterByName("InitialConditionSource");
+        this.showStatePort = getParameterByName("ShowStatePort");
+        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous derivative
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -154,16 +154,15 @@ public class Derivative extends ContinuousBlock {
         }
         
         // Initialize from DTO parameters using new Parameter creation
-        this.filterCoefficient = new Parameter(this, 1, "FilterCoefficient", String.valueOf(dto.getFilterCoefficientValue()));
-        this.initialCondition = new Parameter(this, 2, "InitialCondition", String.valueOf(dto.getInitialConditionValue()));
-        this.coefficientSource = new Parameter(this, 3, "CoefficientSource", dto.getCoefficientSourceValue());
-        this.externalReset = new Parameter(this, 4, "ExternalReset", dto.getExternalResetValue());
-        this.conditionSource = new Parameter(this, 5, "InitialConditionSource", dto.getInitialConditionSourceValue());
-        this.showStatePort = new Parameter(this, 6, "ShowStatePort", dto.getShowStatePortValue() ? "on" : "off");
-        this.sampleTime = new Parameter(this, 7, "SampleTime", 
-            dto.getSampleTime() != null ? dto.getSampleTime().getAsString() : "0");
-        this.outDataType = new Parameter(this, 8, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 9, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        this.filterCoefficient = getParameterByName("FilterCoefficient");
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.coefficientSource = getParameterByName("CoefficientSource");
+        this.externalReset = getParameterByName("ExternalReset");
+        this.conditionSource = getParameterByName("InitialConditionSource");
+        this.showStatePort = getParameterByName("ShowStatePort");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Execute initialization logic exactly like JSONObject constructor
         initializePorts();

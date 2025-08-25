@@ -89,10 +89,10 @@ public class Divide extends MathBlock {
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() != null && dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         
         // Initialize parameters with extracted values
-        this.divideMethod = new Parameter(this, 1, "DivideMethod", divideMethodValue);
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        this.divideMethod = getParameterByName("DivideMethod");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add parameters to parameter list
         parameterList.add(this.divideMethod);

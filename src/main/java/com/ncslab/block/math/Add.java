@@ -113,11 +113,11 @@ public class Add extends MathBlock {
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
 
         // Initialize final parameters from DTO
-        this.inputs = new Parameter(this, 1, "Inputs", inputsValue);
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
-        this.inputSameDT = new Parameter(this, 3, "InputSameDT", inputSameDTValue);
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", saturateValue);
+        this.inputs = getParameterByName("Inputs");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.inputSameDT = getParameterByName("InputSameDT");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         this.inputSequence = this.inputs.getInitString();
         

@@ -106,14 +106,14 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.gain = new Parameter(this, 1, "Gain", paramValues.getString("gainval"));
-        this.sampleTimeParam = new Parameter(this, 2, "SampleTime", paramValues.getString("SampleTime"));
-        this.initialCondition = new Parameter(this, 3, "InitialCondition", paramValues.getString("InitialCondition"));
-        this.integratorMethod = new Parameter(this, 4, "IntegratorMethod", paramValues.optString("IntegratorMethod", "Integration: Forward Euler"));
+        this.gain = getParameterByName("Gain");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.integratorMethod = getParameterByName("IntegratorMethod");
 
         // Create missing SIMULINK parameters with defaults
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -126,12 +126,12 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.gain = new Parameter(this, 1, "Gain", "1");
-        this.initialCondition = new Parameter(this, 2, "Initialcondition", "0");
-        this.integratorMethod = new Parameter(this, 3, "Integratormethod", "0");
-        this.sampleTimeParam = new Parameter(this, 4, "Sampletimeparam", "0");
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.gain = getParameterByName("Gain");
+        this.initialCondition = getParameterByName("Initialcondition");
+        this.integratorMethod = getParameterByName("Integratormethod");
+        this.sampleTimeParam = getParameterByName("Sampletimeparam");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

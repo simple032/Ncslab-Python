@@ -66,9 +66,9 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
 		inputPortList.add(new InputPort(this,5));//vel
 		outputPortList.add(new OutputPort(this,"AccOutput",1,false));
 		outputPortList.add(new OutputPort(this,"SpeedOutput",2,false));
-		v=new Parameter(this,parameterList.size()+1,"v",paramValues.getString("v"));
+		v=getParameterByName("v");
 
-		vel=new Parameter(this,parameterList.size()+1,"vel",paramValues.getString("vel"));
+		vel=getParameterByName("vel");
 
 		//pumpState=new State(this,1,"pumpState");
 		//stateList.add(pumpState);

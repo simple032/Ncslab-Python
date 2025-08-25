@@ -1,5 +1,6 @@
 package com.ncslab.block.route;
 
+import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
@@ -7,6 +8,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import lombok.Getter;
+
+import org.checkerframework.checker.units.qual.t;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.route.FromDto;
@@ -91,11 +94,11 @@ public class From extends RouteBlock {
 		super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.gotoTag = new Parameter(this, 1, "GotoTag", paramValues.getString("GotoTag"));
-        this.iconDisplay = new Parameter(this, 2, "IconDisplay", "Tag");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: auto");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.gotoTag = getParameterByName("GotoTag");
+        this.iconDisplay = getParameterByName("IconDisplay");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -112,11 +115,11 @@ public class From extends RouteBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.gotoTag = new Parameter(this, 1, "Gototag", "0");
-        this.iconDisplay = new Parameter(this, 2, "IconDisplay", "Tag");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: auto");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.gotoTag = getParameterByName("Gototag");
+        this.iconDisplay = getParameterByName("IconDisplay");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();
@@ -253,7 +256,8 @@ public class From extends RouteBlock {
 
     public void updateDimension() throws MatDimException {
         OutputPort out  = outputPortList.get(0);
-        InputPort in  = inputPortList.get(0);
+        InputPort in  = getInputPort();
+        if(in == null)  return;
         OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         out.setHeight(signal.getHeight());
         out.setWidth(signal.getWidth());
@@ -266,15 +270,40 @@ public class From extends RouteBlock {
 
     @Override
     public void calculateOutput(double t) {
-        InputPort in = inputPortList.get(0);
+        InputPort in = getInputPort();
+        if(in == null)  return;
         OutputPort out = outputPortList.get(0);
         out.setData(in.getData());
     }
 
     @Override
     public void calculateInit() {
-        InputPort in = inputPortList.get(0);
+        InputPort in = getInputPort();
+        if(in == null)  return;
         OutputPort out = outputPortList.get(0);
         out.setData(in.getData());
     }
+
+    private InputPort getInputPort() {
+        // 1. Search from blocks in the same subsytem
+        for(Block block:this.getParent().getBlocks()){
+            if(block instanceof To){
+                To toBlock = (To) block;
+                if(this.getTagName() == toBlock.getTagName()){
+                    return toBlock.getInputPortList().get(0);
+                }
+            }
+        }
+        // 2. Search from blocks globally
+        for(Block block:this.getModel().getBlockList()){
+            if(block instanceof To){
+                To toBlock = (To) block;
+                if(this.getTagName() == toBlock.getTagName()){
+                    return toBlock.getInputPortList().get(0);
+                }
+            }
+        }
+        return null;
+    }
+
 }

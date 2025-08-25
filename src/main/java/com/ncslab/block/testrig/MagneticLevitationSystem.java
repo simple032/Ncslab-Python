@@ -42,11 +42,11 @@ public class MagneticLevitationSystem extends Block {
         velocity = new State(this, 2, "x1");
         stateList.add(velocity);
 
-        gravity = new Parameter(this, 1, "gravity", "9.8");
-        x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "0.2");
-        i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "6.105");
-        Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "-4.5871056 ");
-        Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "5.8929");
+        gravity = getParameterByName("gravity");
+        x0 = getParameterByName("EQUILIBRIUM_POINT_x0");
+        i0 = getParameterByName("EQUILIBRIUM_POINT_i0");
+        Ks = getParameterByName("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT");
+        Ka = getParameterByName("INPUT_RESISTANCE");
     }
     
 
@@ -92,11 +92,11 @@ public class MagneticLevitationSystem extends Block {
         velocity = new State(this, 2, "x1");
         stateList.add(velocity);
 
-        gravity = new Parameter(this, 1, "gravity", "9.8");
-        x0 = new Parameter(this, 2, "EQUILIBRIUM_POINT_x0", "0.2");
-        i0 = new Parameter(this, 3, "EQUILIBRIUM_POINT_i0", "6.105");
-        Ks = new Parameter(this, 4, "TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT", "-4.5871056 ");
-        Ka = new Parameter(this, 5, "INPUT_RESISTANCE", "5.8929");
+        gravity = getParameterByName("gravity");
+        x0 = getParameterByName("EQUILIBRIUM_POINT_x0");
+        i0 = getParameterByName("EQUILIBRIUM_POINT_i0");
+        Ks = getParameterByName("TRANSDUCER_AIRGAP_VOLTAGE_CONSTANT");
+        Ka = getParameterByName("INPUT_RESISTANCE");
     }
 
     public void generateInitCodeM(CodeStructM code) {

@@ -123,16 +123,16 @@ public class TransferFcn extends ContinuousBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.numerator = new Parameter(this, 1, "Numerator", paramValues.getString("Numerator"));
-        this.denominator = new Parameter(this, 2, "Denominator", paramValues.getString("Denominator"));
+        this.numerator = getParameterByName("Numerator");
+        this.denominator = getParameterByName("Denominator");
         
         // Create missing SIMULINK parameters with defaults
-        this.absoluteTolerance = new Parameter(this, 3, "AbsoluteTolerance", "auto");
-        this.continuousStateAttributes = new Parameter(this, 4, "ContinuousStateAttributes", "'''");
-        this.realizeZeroPoleGain = new Parameter(this, 5, "RealizeZeroPoleGain", "off");
-        this.sampleTime = new Parameter(this, 6, "SampleTime", "0"); // 0 for continuous transfer function
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+        this.absoluteTolerance = getParameterByName("AbsoluteTolerance");
+        this.continuousStateAttributes = getParameterByName("ContinuousStateAttributes");
+        this.realizeZeroPoleGain = getParameterByName("RealizeZeroPoleGain");
+        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous transfer function
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -155,25 +155,15 @@ public class TransferFcn extends ContinuousBlock {
     public TransferFcn(TransferFcnDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Use modern DTO parameter access - type-safe with defaults
-        String numeratorStr = blockDto.getParameterValue("Numerator", String.class, "[1]");
-        String denominatorStr = blockDto.getParameterValue("Denominator", String.class, "[1 1]");
-        String absoluteToleranceStr = blockDto.getParameterValue("AbsoluteTolerance", String.class, "auto");
-        String continuousStateAttributesStr = blockDto.getParameterValue("ContinuousStateAttributes", String.class, "'''");
-        String realizeZeroPoleGainStr = blockDto.getParameterValue("RealizeZeroPoleGain", String.class, "off");
-        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "0");
-        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
-        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
-        
-        // Initialize final parameters directly from DTO
-        this.numerator = new Parameter(this, 1, "Numerator", numeratorStr);
-        this.denominator = new Parameter(this, 2, "Denominator", denominatorStr);
-        this.absoluteTolerance = new Parameter(this, 3, "AbsoluteTolerance", absoluteToleranceStr);
-        this.continuousStateAttributes = new Parameter(this, 4, "ContinuousStateAttributes", continuousStateAttributesStr);
-        this.realizeZeroPoleGain = new Parameter(this, 5, "RealizeZeroPoleGain", realizeZeroPoleGainStr);
-        this.sampleTime = new Parameter(this, 6, "SampleTime", sampleTimeStr);
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", outDataTypeStr);
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", saturateStr);
+        // Use centralized parameter management via getParameterByName
+        this.numerator = getParameterByName("Numerator");
+        this.denominator = getParameterByName("Denominator");
+        this.absoluteTolerance = getParameterByName("AbsoluteTolerance");
+        this.continuousStateAttributes = getParameterByName("ContinuousStateAttributes");
+        this.realizeZeroPoleGain = getParameterByName("RealizeZeroPoleGain");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

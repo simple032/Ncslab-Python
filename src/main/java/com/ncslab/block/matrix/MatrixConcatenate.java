@@ -57,8 +57,7 @@ public class MatrixConcatenate extends Block {
     public MatrixConcatenate(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
-        ConcatenateDimension = new Parameter(this, 1, "ConcatenateDimension",
-                paramValues.getString("ConcatenateDimension"));
+        ConcatenateDimension = getParameterByName("ConcatenateDimension");
         outputPortList.add(new OutputPort(this, 1, true));
 
         seq = paramValues.getString("Inputs");

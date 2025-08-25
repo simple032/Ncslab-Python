@@ -109,14 +109,14 @@ public class CompareToConstant extends LogicBlock {
             relopValue = "!=";
         }
 
-        this.constantValue = new Parameter(this, 1, "ConstantValue", "0");
-        this.relationalOperator = new Parameter(this, 2, "RelationalOperator", relopValue);
+        this.constantValue = getParameterByName("ConstantValue");
+        this.relationalOperator = getParameterByName("RelationalOperator");
 
         // Create missing SIMULINK parameters with defaults
-        this.logicDataType = new Parameter(this, 3, "LogicDataType", "boolean");
-        this.sampleTime = new Parameter(this, 4, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.logicDataType = getParameterByName("LogicDataType");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -129,12 +129,12 @@ public class CompareToConstant extends LogicBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.constantValue = new Parameter(this, 1, "Constantvalue", "0");
-        this.relationalOperator = new Parameter(this, 2, "Relationaloperator", "0");
-        this.logicDataType = new Parameter(this, 3, "Logicdatatype", "0");
-        this.sampleTime = new Parameter(this, 4, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.constantValue = getParameterByName("Constantvalue");
+        this.relationalOperator = getParameterByName("Relationaloperator");
+        this.logicDataType = getParameterByName("Logicdatatype");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

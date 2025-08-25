@@ -56,7 +56,7 @@ public class Limiting extends Block{
 
 		outputPortList.add(out);
 		inputPortList.add(in);
-		rmin=new Parameter(this,1,"Rmin",paramValues.getString("Rmin"));
+		rmin=getParameterByName("Rmin");
 		System.out.println(paramValues);
 	}
 	public void generateInitCodeC(CodeStructC code) {

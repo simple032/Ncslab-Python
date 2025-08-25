@@ -119,7 +119,7 @@ public class SFunction extends Block {
 
         sampleTimes = paramValues.getString("SampleTimes").split(",");
         offsetTimes = paramValues.getString("OffsetTimes").split(",");
-        sampleTime = new Parameter(this, 1+parameterNum, "sampleTime", sampleTimes[0]);
+        sampleTime = getParameterByName("sampleTime");
 
         simStructName=blockName.replace("-", "");
     }

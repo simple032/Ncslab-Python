@@ -72,9 +72,9 @@ public class DCMotorAngleDirect extends Block {
         outputPortList.add(new OutputPort(this, "Angle", 2, false));
         this.isHardware = true;
 
-        port_encoder = new Parameter(this, 1, "port", blockJSON.optString("port", "\"/dev/ttyAMA0\""));
+        port_encoder = getParameterByName("port");
 
-        baudrate_encoder = new Parameter(this, 2, "baudrate", blockJSON.optString("baudrate", "115200"));
+        baudrate_encoder = getParameterByName("baudrate");
 
         switch (model.getModelMode()) {
             case Simulation:

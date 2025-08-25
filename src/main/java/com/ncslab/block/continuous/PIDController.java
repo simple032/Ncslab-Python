@@ -144,30 +144,30 @@ public class PIDController extends ContinuousBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.proportionalGain = new Parameter(this, 1, "P", paramValues.getString("P"));
-        this.integralGain = new Parameter(this, 2, "I", paramValues.getString("I"));
-        this.derivativeGain = new Parameter(this, 3, "D", paramValues.getString("D"));
-        this.filterCoefficient = new Parameter(this, 4, "N", paramValues.getString("N"));
+        this.proportionalGain = getParameterByName("P");
+        this.integralGain = getParameterByName("I");
+        this.derivativeGain = getParameterByName("D");
+        this.filterCoefficient = getParameterByName("N");
 
         // Create missing SIMULINK parameters with defaults
-        this.formulationType = new Parameter(this, 5, "FormulationType", "parallel");
-        this.externalReset = new Parameter(this, 6, "ExternalReset", paramValues.optString("externalReset", "none"));
-        this.initialConditionForIntegrator = new Parameter(this, 7, "InitialConditionForIntegrator", "0");
-        this.initialConditionForFilter = new Parameter(this, 8, "InitialConditionForFilter", "0");
-        this.limitOutput = new Parameter(this, 9, "LimitOutput", paramValues.getString("LimitOutput"));
+        this.formulationType = getParameterByName("FormulationType");
+        this.externalReset = getParameterByName("ExternalReset");
+        this.initialConditionForIntegrator = getParameterByName("InitialConditionForIntegrator");
+        this.initialConditionForFilter = getParameterByName("InitialConditionForFilter");
+        this.limitOutput = getParameterByName("LimitOutput");
 
         // Handle saturation limits
         if (limitOutput.getInitString().equals("on")) {
-            this.upperSaturationLimit = new Parameter(this, 10, "UpperSaturationLimit", paramValues.getString("UpperSaturationLimit"));
-            this.lowerSaturationLimit = new Parameter(this, 11, "LowerSaturationLimit", paramValues.getString("LowerSaturationLimit"));
+            this.upperSaturationLimit = getParameterByName("UpperSaturationLimit");
+            this.lowerSaturationLimit = getParameterByName("LowerSaturationLimit");
         } else {
-            this.upperSaturationLimit = new Parameter(this, 10, "UpperSaturationLimit", "inf");
-            this.lowerSaturationLimit = new Parameter(this, 11, "LowerSaturationLimit", "-inf");
+            this.upperSaturationLimit = getParameterByName("UpperSaturationLimit");
+            this.lowerSaturationLimit = getParameterByName("LowerSaturationLimit");
         }
 
-        this.sampleTime = new Parameter(this, 12, "SampleTime", paramValues.optString("sampleTime", "0"));
-        this.outDataType = new Parameter(this, 13, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 14, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -195,20 +195,20 @@ public class PIDController extends ContinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.proportionalGain = new Parameter(this, 1, "Proportionalgain", "0");
-        this.integralGain = new Parameter(this, 2, "Integralgain", "0");
-        this.derivativeGain = new Parameter(this, 3, "Derivativegain", "0");
-        this.filterCoefficient = new Parameter(this, 4, "Filtercoefficient", "0");
-        this.formulationType = new Parameter(this, 5, "FormulationType", "parallel");
-        this.externalReset = new Parameter(this, 6, "Externalreset", "0");
-        this.initialConditionForIntegrator = new Parameter(this, 7, "InitialConditionForIntegrator", "0");
-        this.initialConditionForFilter = new Parameter(this, 8, "InitialConditionForFilter", "0");
-        this.limitOutput = new Parameter(this, 9, "Limitoutput", "0");
-        this.upperSaturationLimit = new Parameter(this, 10, "Uppersaturationlimit", "0");
-        this.lowerSaturationLimit = new Parameter(this, 11, "Lowersaturationlimit", "0");
-        this.sampleTime = new Parameter(this, 12, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 13, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 14, "SaturateOnIntegerOverflow", "off");
+        this.proportionalGain = getParameterByName("Proportionalgain");
+        this.integralGain = getParameterByName("Integralgain");
+        this.derivativeGain = getParameterByName("Derivativegain");
+        this.filterCoefficient = getParameterByName("Filtercoefficient");
+        this.formulationType = getParameterByName("FormulationType");
+        this.externalReset = getParameterByName("Externalreset");
+        this.initialConditionForIntegrator = getParameterByName("InitialConditionForIntegrator");
+        this.initialConditionForFilter = getParameterByName("InitialConditionForFilter");
+        this.limitOutput = getParameterByName("Limitoutput");
+        this.upperSaturationLimit = getParameterByName("Uppersaturationlimit");
+        this.lowerSaturationLimit = getParameterByName("Lowersaturationlimit");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

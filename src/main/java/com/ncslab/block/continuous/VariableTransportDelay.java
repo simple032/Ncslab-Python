@@ -107,16 +107,16 @@ public class VariableTransportDelay extends ContinuousBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.delayType = new Parameter(this, 1, "DelayType", paramValues.getString("VariableDelayType"));
-        this.maximumDelayTime = new Parameter(this, 2, "MaximumDelayTime", paramValues.getString("MaxDelayTime"));
-        this.initialOutput = new Parameter(this, 3, "InitialOutput", paramValues.getString("InitialOutput"));
-        this.initialBufferSize = new Parameter(this, 4, "InitialBufferSize", paramValues.getString("InitialBuffsize"));
-        this.padeOrder = new Parameter(this, 5, "PadeOrder", paramValues.getString("PadeOrder"));
+        this.delayType = getParameterByName("DelayType");
+        this.maximumDelayTime = getParameterByName("MaximumDelayTime");
+        this.initialOutput = getParameterByName("InitialOutput");
+        this.initialBufferSize = getParameterByName("InitialBufferSize");
+        this.padeOrder = getParameterByName("PadeOrder");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 6, "SampleTime", "0"); // 0 for continuous delay
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous delay
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -129,14 +129,14 @@ public class VariableTransportDelay extends ContinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.delayType = new Parameter(this, 1, "Delaytype", "0");
-        this.maximumDelayTime = new Parameter(this, 2, "Maximumdelaytime", "0");
-        this.initialOutput = new Parameter(this, 3, "Initialoutput", "0");
-        this.initialBufferSize = new Parameter(this, 4, "Initialbuffersize", "0");
-        this.padeOrder = new Parameter(this, 5, "Padeorder", "0");
-        this.sampleTime = new Parameter(this, 6, "SampleTime", "0");
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", "off");
+        this.delayType = getParameterByName("Delaytype");
+        this.maximumDelayTime = getParameterByName("Maximumdelaytime");
+        this.initialOutput = getParameterByName("Initialoutput");
+        this.initialBufferSize = getParameterByName("Initialbuffersize");
+        this.padeOrder = getParameterByName("Padeorder");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

@@ -88,11 +88,11 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 		super(blockIn, model);
 		
         // Create legacy parameters for backward compatibility
-        this.sampleTimeParam = new Parameter(this, 1, "SampleTime", String.valueOf(paramValues.optDouble("SampleTime", -1)));
+        this.sampleTimeParam = getParameterByName("SampleTime");
         
         // Create missing SIMULINK parameters with defaults
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -110,9 +110,9 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.sampleTimeParam = new Parameter(this, 1, "Sampletimeparam", "0");
-        this.outDataType = new Parameter(this, 2, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
+        this.sampleTimeParam = getParameterByName("Sampletimeparam");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

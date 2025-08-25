@@ -61,10 +61,10 @@ public class Submatrix extends Block {
     public Submatrix(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
-        startingRow = new Parameter(this, 1, "StartingRow", paramValues.getString("StartingRow"));
-        endingRow = new Parameter(this, 2, "EndingRow", paramValues.getString("EndingRow"));
-        startingColumn = new Parameter(this, 3, "StartingColumn", paramValues.getString("StartingColumn"));
-        endingColumn = new Parameter(this, 4, "EndingColumn", paramValues.getString("EndingColumn"));
+        startingRow = getParameterByName("StartingRow");
+        endingRow = getParameterByName("EndingRow");
+        startingColumn = getParameterByName("StartingColumn");
+        endingColumn = getParameterByName("EndingColumn");
         outputPortList.add(new OutputPort(this, 1, true));
         inputPortList.add(new InputPort(this, 1));
     }

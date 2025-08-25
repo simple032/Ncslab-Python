@@ -56,9 +56,9 @@ public class UDPSend extends com.ncslab.block.Block{
 		//һ�����
 		inputPortList.add(new InputPort(this,1));
 
-		RemoteIPAddress=new Parameter(this,parameterList.size()+1,"RemoteIPAddress",paramValues.getString("RemoteIPAddress"));
-		RemoteIPPort=new Parameter(this,parameterList.size()+1,"RemoteIPPort",paramValues.getString("RemoteIPPort"));
-		LocalIPPort=new Parameter(this,parameterList.size()+1,"LocalIPPort",paramValues.getString("LocalIPPort"));
+		RemoteIPAddress=getParameterByName("RemoteIPAddress");
+		RemoteIPPort=getParameterByName("RemoteIPPort");
+		LocalIPPort=getParameterByName("LocalIPPort");
 
 	}
 

@@ -77,24 +77,24 @@ public class Substitution extends Block {
 
         // 两个输入
         inputPortList.add(new InputPort(this, 1));
-        BCM = new Parameter(this, 1, "BCM", paramValues.getString("BCM"));
+        BCM = getParameterByName("BCM");
         inputPortList.add(new InputPort(this, 2));
-        DA = new Parameter(this, 2, "DA", paramValues.getString("DA"));
+        DA = getParameterByName("DA");
         // 七个输出
         outputPortList.add(new OutputPort(this, "AD1", 1, false));
-        AD1 = new Parameter(this, 3, "AD1", paramValues.getString("AD1"));
+        AD1 = getParameterByName("AD1");
         outputPortList.add(new OutputPort(this, "AD2", 2, false));
-        AD2 = new Parameter(this, 4, "AD2", paramValues.getString("AD2"));
+        AD2 = getParameterByName("AD2");
         outputPortList.add(new OutputPort(this, "AD3", 3, false));
-        AD3 = new Parameter(this, 5, "AD3", paramValues.getString("AD3"));
+        AD3 = getParameterByName("AD3");
         outputPortList.add(new OutputPort(this, "AD4", 4, false));
-        AD4 = new Parameter(this, 6, "AD4", paramValues.getString("AD4"));
+        AD4 = getParameterByName("AD4");
         outputPortList.add(new OutputPort(this, "AD5", 5, false));
-        AD5 = new Parameter(this, 7, "AD5", paramValues.getString("AD5"));
+        AD5 = getParameterByName("AD5");
         outputPortList.add(new OutputPort(this, "AD6", 6, false));
-        AD6 = new Parameter(this, 8, "AD6", paramValues.getString("AD6"));
+        AD6 = getParameterByName("AD6");
         outputPortList.add(new OutputPort(this, "AD7", 7, false));
-        AD7 = new Parameter(this, 9, "AD7", paramValues.getString("AD7"));
+        AD7 = getParameterByName("AD7");
     }
 
     public void generateInitCodeM(CodeStructM code) {

@@ -95,12 +95,12 @@ public class DetectDecrease extends LogicBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.vinWhenRising = new Parameter(this, 1, "VinWhenRising", "0");
-        this.vinWhenFalling = new Parameter(this, 2, "VinWhenFalling", "1");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-        this.initialState = new Parameter(this, 6, "InitialState", "0");
+        this.vinWhenRising = getParameterByName("VinWhenRising");
+        this.vinWhenFalling = getParameterByName("VinWhenFalling");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        this.initialState = getParameterByName("InitialState");
 
         // Add all parameters to parameter list
 
@@ -114,12 +114,12 @@ public class DetectDecrease extends LogicBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.vinWhenRising = new Parameter(this, 1, "VinWhenRising", "0");
-        this.vinWhenFalling = new Parameter(this, 2, "VinWhenFalling", "1");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
-        this.initialState = new Parameter(this, 6, "InitialState", "0");
+        this.vinWhenRising = getParameterByName("VinWhenRising");
+        this.vinWhenFalling = getParameterByName("VinWhenFalling");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        this.initialState = getParameterByName("InitialState");
 
         // Initialize ports
         initializePorts();

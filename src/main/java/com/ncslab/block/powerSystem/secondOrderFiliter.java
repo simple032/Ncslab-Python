@@ -74,12 +74,12 @@ public class secondOrderFiliter extends Block{
 		inputPortList.add(new InputPort(this,1));
 		outputPortList.add(new OutputPort(this,1,true));
 
-		filterType=new Parameter(this,parameterList.size()+1,"filterType",paramValues.getString("secondFilterType"));
-		naturalFrequency=new Parameter(this,parameterList.size()+1,"naturalFrequency",paramValues.getString("secondFrequency"));
-		dampingRatio=new Parameter(this,parameterList.size()+1,"dampingRatio",paramValues.getString("secondDampingRatio"));
-		sampleTime=new Parameter(this,parameterList.size()+1,"sampleTime",paramValues.getString("sampleTime"));
-		initState=new Parameter(this,parameterList.size()+1,"initState",paramValues.getString("secondInitState"));
-		DCInitialInput=new Parameter(this,parameterList.size()+1,"DCInitialInput",paramValues.getString("secondDCInput"));
+		filterType=getParameterByName("filterType");
+		naturalFrequency=getParameterByName("naturalFrequency");
+		dampingRatio=getParameterByName("dampingRatio");
+		sampleTime=getParameterByName("sampleTime");
+		initState=getParameterByName("initState");
+		DCInitialInput=getParameterByName("DCInitialInput");
 
 	}
 	public void generateArraysCodeC(CodeStructC code) {

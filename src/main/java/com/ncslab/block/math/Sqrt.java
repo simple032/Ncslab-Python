@@ -91,12 +91,12 @@ public class Sqrt extends MathBlock {
             functionValue = paramValues.getString("SqrtFunction");
         else
             functionValue = paramValues.getString("Function");
-        this.function = new Parameter(this, 1, "Function", functionValue);
+        this.function = getParameterByName("Function");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -119,10 +119,10 @@ public class Sqrt extends MathBlock {
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         
         // Create parameters from DTO values
-        this.function = new Parameter(this, 1, "Function", functionValue);
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeStr);
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        this.function = getParameterByName("Function");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Validate parameters
         validateParameters(this.function, this.sampleTime);

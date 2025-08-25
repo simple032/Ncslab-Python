@@ -102,12 +102,12 @@ public class LogicOperator extends LogicBlock {
         super(blockIn, model);
 
         // Create legacy parameters for backward compatibility
-        this.operator = new Parameter(this, 1, "Operator", paramValues.getString("Operator"));
-        this.inputs = new Parameter(this, 2, "Inputs", String.valueOf(paramValues.getDouble("Inputs")));
-        this.allPortsSameDT = new Parameter(this, 3, "AllPortsSameDT", "on");
-        this.sampleTime = new Parameter(this, 4, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", "off");
+        this.operator = getParameterByName("Operator");
+        this.inputs = getParameterByName("Inputs");
+        this.allPortsSameDT = getParameterByName("AllPortsSameDT");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -129,20 +129,17 @@ public class LogicOperator extends LogicBlock {
         super(dto, model);
 
         // Initialize parameters from DTO with null safety
-        this.operator = new Parameter(this, 1, "Operator", 
-            dto.getOperator() != null ? dto.getOperator().getAsString() : "AND");
+        this.operator = getParameterByName("Operator");
         int inputsValue = dto.getInputs() != null ? dto.getInputs().getAsInteger() : 2;
-        this.inputs = new Parameter(this, 2, "Inputs", String.valueOf(inputsValue));
+        this.inputs = getParameterByName("Inputs");
         
         String allPortsSameDTValue = dto.getAllPortsSameDT() != null ? dto.getAllPortsSameDT().getAsString() : "on";
-        this.allPortsSameDT = new Parameter(this, 3, "AllPortsSameDT", allPortsSameDTValue);
+        this.allPortsSameDT = getParameterByName("AllPortsSameDT");
         
         double sampleTimeValue = dto.getSampleTime() != null ? dto.getSampleTime().getAsDouble() : -1.0;
-        this.sampleTime = new Parameter(this, 4, "SampleTime", String.valueOf(sampleTimeValue));
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", 
-            dto.getOutDataTypeStr() != null ? dto.getOutDataTypeStr().getAsString() : "boolean");
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", 
-            dto.getSaturateOnIntegerOverflow() != null ? dto.getSaturateOnIntegerOverflow().getAsString() : "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Parse number of inputs and create ports
         this.num = dto.getInputsValue();

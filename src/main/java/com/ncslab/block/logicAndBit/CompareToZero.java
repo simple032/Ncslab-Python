@@ -105,13 +105,13 @@ public class CompareToZero extends LogicBlock{
         if ("~=".equals(relopValue)) {
             relopValue = "!=";
         }
-        this.relationalOperator = new Parameter(this, 1, "RelationalOperator", relopValue);
+        this.relationalOperator = getParameterByName("RelationalOperator");
 
         // Create missing SIMULINK parameters with defaults
-        this.logicDataType = new Parameter(this, 2, "LogicDataType", "boolean");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1"); // -1 for inherited
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Logical (see Configuration Parameters: Optimization)");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.logicDataType = getParameterByName("LogicDataType");
+        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Add all parameters to parameter list
 
@@ -126,11 +126,11 @@ public class CompareToZero extends LogicBlock{
         super(dto, model);
 
         // Extract parameters from DTO
-        this.relationalOperator = new Parameter(this, 1, "RelationalOperator", dto.getRelationalOperatorValue());
-        this.logicDataType = new Parameter(this, 2, "LogicDataType", dto.getLogicDataTypeValue());
-        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        this.relationalOperator = getParameterByName("RelationalOperator");
+        this.logicDataType = getParameterByName("LogicDataType");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Store legacy relop for backward compatibility
         this.relop = dto.getRelationalOperatorValue();

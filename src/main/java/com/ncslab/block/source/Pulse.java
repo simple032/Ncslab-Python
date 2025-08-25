@@ -95,15 +95,15 @@ public class Pulse extends SourceBlock {
         super(blockJSON, model);
 
         // Create legacy parameters for backward compatibility
-        this.amplitude = new Parameter(this, 1, "Amplitude", paramValues.getString("Amplitude"));
-        this.period = new Parameter(this, 2, "Period", paramValues.getString("Period"));
-        this.pulseWidth = new Parameter(this, 3, "PulseWidth", paramValues.getString("PulseWidth"));
-        this.phaseDelay = new Parameter(this, 4, "PhaseDelay", paramValues.getString("PhaseDelay"));
+        this.amplitude = getParameterByName("Amplitude");
+        this.period = getParameterByName("Period");
+        this.pulseWidth = getParameterByName("PulseWidth");
+        this.phaseDelay = getParameterByName("PhaseDelay");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 5, "SampleTime", "0"); // 0 for continuous pulse
-        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", "Inherit: Same as parameter");
-        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous pulse
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -116,13 +116,13 @@ public class Pulse extends SourceBlock {
         super(pulseDto, model);
 
         // Initialize final parameters from PulseDto
-        this.amplitude = new Parameter(this, 1, "Amplitude", String.valueOf(pulseDto.getAmplitudeValue()));
-        this.period = new Parameter(this, 2, "Period", String.valueOf(pulseDto.getPeriodValue()));
-        this.pulseWidth = new Parameter(this, 3, "PulseWidth", String.valueOf(pulseDto.getPulseWidthValue()));
-        this.phaseDelay = new Parameter(this, 4, "PhaseDelay", String.valueOf(pulseDto.getPhaseDelayValue()));
-        this.sampleTime = new Parameter(this, 5, "SampleTime", String.valueOf(pulseDto.getSampleTimeValue()));
-        this.outDataType = new Parameter(this, 6, "OutDataTypeStr", pulseDto.getOutDataTypeStr() != null ? pulseDto.getOutDataTypeStr().getAsString() : "Inherit: Same as parameter");
-        this.saturateOnIntegerOverflow = new Parameter(this, 7, "SaturateOnIntegerOverflow", pulseDto.getSaturateOnIntegerOverflow() != null ? (pulseDto.getSaturateOnIntegerOverflow().getAsBoolean() ? "on" : "off") : "off");
+        this.amplitude = getParameterByName("Amplitude");
+        this.period = getParameterByName("Period");
+        this.pulseWidth = getParameterByName("PulseWidth");
+        this.phaseDelay = getParameterByName("PhaseDelay");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

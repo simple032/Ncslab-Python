@@ -87,13 +87,13 @@ public class RepeatingSequence extends SourceBlock {
         super(blockJSON, model);
 
         // Create legacy parameters for backward compatibility
-        this.timeValues = new Parameter(this, 1, "TimeValues", paramValues.getString("rep_seq_t"));
-        this.outputValues = new Parameter(this, 2, "OutputValues", paramValues.getString("rep_seq_y"));
+        this.timeValues = getParameterByName("TimeValues");
+        this.outputValues = getParameterByName("OutputValues");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "0"); // 0 for continuous sequence
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as parameter");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous sequence
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -109,11 +109,11 @@ public class RepeatingSequence extends SourceBlock {
         String timeValuesStr = blockDto.getTimeValues() != null ? blockDto.getTimeValues().getValue(String.class) : "[0 1]";
         String outputValuesStr = blockDto.getOutputValues() != null ? blockDto.getOutputValues().getValue(String.class) : "[0 1]";
         
-        this.timeValues = new Parameter(this, 1, "TimeValues", timeValuesStr);
-        this.outputValues = new Parameter(this, 2, "OutputValues", outputValuesStr);
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "0");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as parameter");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.timeValues = getParameterByName("TimeValues");
+        this.outputValues = getParameterByName("OutputValues");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

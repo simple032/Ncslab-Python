@@ -83,14 +83,10 @@ public class In extends Block {
         super(blockJSON, model);
 
         // Create SIMULINK parameters with defaults
-        this.port = new Parameter(this, 1, "No",
-            paramValues.optString("No", paramValues.optString("No", "1")));
-        this.portDimensions = new Parameter(this, 2, "PortDimensions",
-            paramValues.optString("PortDimensions", "-1"));
-        this.sampleTime = new Parameter(this, 3, "SampleTime",
-            paramValues.optString("SampleTime", "-1"));
-        this.outputDataType = new Parameter(this, 4, "OutputDataTypeStr",
-            paramValues.optString("OutputDataTypeStr", "Inherit: auto"));
+        this.port = getParameterByName("No");
+        this.portDimensions = getParameterByName("PortDimensions");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outputDataType = getParameterByName("OutputDataTypeStr");
 
         // Initialize ports
         initializePorts();
@@ -102,14 +98,10 @@ public class In extends Block {
 
         // Initialize final parameters from DTO
         // Create SIMULINK parameters with defaults
-        this.port = new Parameter(this, 1, "No",
-            paramValues.optString("No", paramValues.optString("No", "1")));
-        this.portDimensions = new Parameter(this, 2, "PortDimensions",
-            paramValues.optString("PortDimensions", "-1"));
-        this.sampleTime = new Parameter(this, 3, "SampleTime",
-            paramValues.optString("SampleTime", "-1"));
-        this.outputDataType = new Parameter(this, 4, "OutputDataTypeStr",
-            paramValues.optString("OutputDataTypeStr", "Inherit: auto"));
+        this.port = getParameterByName("No");
+        this.portDimensions = getParameterByName("PortDimensions");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outputDataType = getParameterByName("OutputDataTypeStr");
 
         // Initialize ports
         initializePorts();

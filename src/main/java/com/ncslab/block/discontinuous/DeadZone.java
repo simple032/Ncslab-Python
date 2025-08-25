@@ -128,11 +128,11 @@ public class DeadZone extends DiscontinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.startOfDeadZone = new Parameter(this, 1, "Startofdeadzone", "0");
-        this.endOfDeadZone = new Parameter(this, 2, "Endofdeadzone", "0");
-        this.sampleTime = new Parameter(this, 3, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", "off");
+        this.startOfDeadZone = getParameterByName("Startofdeadzone");
+        this.endOfDeadZone = getParameterByName("Endofdeadzone");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

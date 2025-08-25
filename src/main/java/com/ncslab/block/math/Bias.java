@@ -86,12 +86,12 @@ public class Bias extends MathBlock {
         super(blockJSON, model);
         
         // Create legacy bias parameter
-        this.bias = new Parameter(this, 1, "Bias", paramValues.getString("Bias"));
+        this.bias = getParameterByName("Bias");
         
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = new Parameter(this, 2, "SampleTime", "-1");
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", "Inherit: Same as input");
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
         
@@ -111,10 +111,10 @@ public class Bias extends MathBlock {
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() != null && dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
         
         // Initialize parameters with extracted values
-        this.bias = new Parameter(this, 1, "Bias", biasValue);
-        this.sampleTime = new Parameter(this, 2, "SampleTime", sampleTimeValue);
-        this.outDataType = new Parameter(this, 3, "OutDataTypeStr", outDataTypeValue);
-        this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", saturateValue);
+        this.bias = getParameterByName("Bias");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Validate parameters
         validateParameters(this.bias, this.sampleTime);

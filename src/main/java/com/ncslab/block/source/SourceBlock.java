@@ -84,9 +84,9 @@ public abstract class SourceBlock extends Block {
         Parameter saturateParam = getParameterByName("SaturateOnIntegerOverflow");
         
         // Create with defaults if not found
-        this.sampleTime = sampleTimeParam != null ? sampleTimeParam : new Parameter(this, 1, "SampleTime", "0");
-        this.outDataType = outDataTypeParam != null ? outDataTypeParam : new Parameter(this, 2, "OutDataTypeStr", "double");
-        this.saturateOnIntegerOverflow = saturateParam != null ? saturateParam : new Parameter(this, 3, "SaturateOnIntegerOverflow", "off");
+        this.sampleTime = sampleTimeParam != null ? sampleTimeParam : getParameterByName("SampleTime");
+        this.outDataType = outDataTypeParam != null ? outDataTypeParam : getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = saturateParam != null ? saturateParam : getParameterByName("SaturateOnIntegerOverflow");
         
         // Add parameters if they weren't already added by parseParameterList
         if (sampleTimeParam == null) parameterList.add(this.sampleTime);

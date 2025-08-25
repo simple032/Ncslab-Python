@@ -77,12 +77,11 @@ public class MinMax extends MathBlock {
         super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
         
         // Create parameters from DTO
-        this.function = new Parameter(this, 1, "Function", dto.getFunctionValue());
-        this.numInputs = new Parameter(this, 2, "NumInputs", String.valueOf(dto.getNumInputsValue()));
-        this.sampleTime = new Parameter(this, 3, "SampleTime", String.valueOf(dto.getSampleTime() != null ? dto.getSampleTime() : -1.0));
-        this.outDataType = new Parameter(this, 4, "OutDataTypeStr", dto.getOutDataTypeStrValue());
-        this.saturateOnIntegerOverflow = new Parameter(this, 5, "SaturateOnIntegerOverflow", 
-            dto.getSaturateOnIntegerOverflowValue() ? "on" : "off");
+        this.function = getParameterByName("Function");
+        this.numInputs = getParameterByName("NumInputs");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add parameters to parameter list
         parameterList.add(function);

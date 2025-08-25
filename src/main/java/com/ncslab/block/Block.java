@@ -19,6 +19,7 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.system.NCSLabSystem;
 import com.ncslab.block.lan.CCodeBlock;
 import com.ncslab.block.lan.MCodeBlock;
 import com.ncslab.util.TemplateUtils;
@@ -74,6 +75,11 @@ public class Block implements MCodeBlock, CCodeBlock{
 	//指向上级Model模型的指针
     @Getter
     protected NCSLabModel model;
+
+	/* 指向上级Block的指针 */
+	@Getter
+	@Setter
+	protected NCSLabSystem parent;
 
 	protected boolean isHardware = false;
 
@@ -136,11 +142,13 @@ public class Block implements MCodeBlock, CCodeBlock{
         this.blockPath = blockDto.getBlockPath();
         this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";
         
-        // Initialize paramValues only if needed for legacy compatibility
+        // Initialize paramValues from DTO for parameter parsing
+        this.paramValues = new JSONObject();
         if (blockDto.getParamValues() != null && !blockDto.getParamValues().isEmpty()) {
-            this.paramValues = new JSONObject(blockDto.getParamValues());
-        } else {
-            this.paramValues = new JSONObject();
+            // Copy DTO parameter values to JSONObject
+            for (Map.Entry<String, Object> entry : blockDto.getParamValues().entrySet()) {
+                this.paramValues.put(entry.getKey(), entry.getValue());
+            }
         }
         
         parseParameterList();
@@ -507,6 +515,7 @@ public class Block implements MCodeBlock, CCodeBlock{
             parameterList.add(new Parameter(this, paramIndex++, paramName, actualValue));
         }
     }
+
 
 	protected String[] getInputPortVariables(){
 		List<String> inputPortVariables = new ArrayList<>();
