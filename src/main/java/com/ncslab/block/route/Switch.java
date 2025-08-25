@@ -1,6 +1,6 @@
 package com.ncslab.block.route;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.route.RouteBlock;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
@@ -33,7 +33,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Switch extends Block {
+public class Switch extends RouteBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter threshold;

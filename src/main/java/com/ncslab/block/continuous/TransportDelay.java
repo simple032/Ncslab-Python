@@ -11,7 +11,7 @@ import com.ncslab.dto.block.specialized.continuous.TransportDelayDto;
 
 import Jama.Matrix;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.continuous.ContinuousBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
@@ -43,7 +43,7 @@ import java.util.HashMap;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class TransportDelay extends Block {
+public class TransportDelay extends ContinuousBlock {
 
     // === Internal Implementation ===
     private Matrix delayTimeMatrix;

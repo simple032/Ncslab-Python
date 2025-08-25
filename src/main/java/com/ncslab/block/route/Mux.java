@@ -6,7 +6,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.route.MuxDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.route.RouteBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -35,7 +35,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Mux extends Block {
+public class Mux extends RouteBlock {
 	private int num;
 
 	private boolean feedThrough = true;

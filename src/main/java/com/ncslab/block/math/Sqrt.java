@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.SqrtDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -32,7 +32,7 @@ import java.util.Map;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Sqrt extends Block {
+public class Sqrt extends MathBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter function;

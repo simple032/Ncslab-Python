@@ -1,6 +1,6 @@
 package com.ncslab.block.continuous;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.continuous.ContinuousBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -46,7 +46,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class PIDController extends Block {
+public class PIDController extends ContinuousBlock {
 
     // === Internal State ===
     private State stateIntegral;

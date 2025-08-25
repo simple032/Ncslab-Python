@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.route.FromDto;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.route.RouteBlock;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.ncslablink.NCSLabModel;
 
@@ -31,7 +31,7 @@ import java.util.HashMap;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class From extends Block {
+public class From extends RouteBlock {
     @Getter
     private String tagName;
 

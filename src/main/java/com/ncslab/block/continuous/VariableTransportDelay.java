@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.continuous.VariableTransportDelayDto;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.continuous.ContinuousBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -36,7 +36,7 @@ import com.ncslab.util.TemplateManager;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class VariableTransportDelay extends Block {
+public class VariableTransportDelay extends ContinuousBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter delayType;

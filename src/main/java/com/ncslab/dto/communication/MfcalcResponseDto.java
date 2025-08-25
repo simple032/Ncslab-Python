@@ -124,7 +124,12 @@ public class MfcalcResponseDto {
             if (dataObj instanceof JSONArray) {
                 JSONArray dataArray = (JSONArray) dataObj;
                 builder.variables(dataArray.toList().stream()
-                    .map(obj -> (Map<String, Object>) obj)
+                    .filter(obj -> obj instanceof Map)
+                    .map(obj -> {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> map = (Map<String, Object>) obj;
+                        return map;
+                    })
                     .toList());
             }
         }

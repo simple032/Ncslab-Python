@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.SignDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -34,7 +34,7 @@ import java.util.Map;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Sign extends Block {
+public class Sign extends MathBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter zeroCrossing;

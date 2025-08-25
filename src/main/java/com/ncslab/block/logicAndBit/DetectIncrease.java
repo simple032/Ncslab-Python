@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.logic.DetectIncreaseDto;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.logicAndBit.LogicBlock;
 import Jama.Matrix;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -36,7 +36,7 @@ import com.ncslab.util.TemplateManager;
  * - SaturateOnIntegerOverflow: Handle integer overflow
  * - InitialState: Initial value for edge detection
  */
-public class DetectIncrease extends Block {
+public class DetectIncrease extends LogicBlock {
 
     private Data previousData;
 

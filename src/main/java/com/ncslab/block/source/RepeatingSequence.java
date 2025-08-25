@@ -15,7 +15,7 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.Block;
+import com.ncslab.block.source.SourceBlock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +33,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class RepeatingSequence extends Block {
+public class RepeatingSequence extends SourceBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter timeValues;

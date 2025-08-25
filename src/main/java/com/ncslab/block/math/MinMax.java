@@ -1,6 +1,6 @@
 package com.ncslab.block.math;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
@@ -22,7 +22,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class MinMax extends Block {
+public class MinMax extends MathBlock {
     
     // === Parameters ===
     private final Parameter function;

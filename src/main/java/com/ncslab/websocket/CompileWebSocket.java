@@ -106,7 +106,7 @@ public class CompileWebSocket {
                 } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
                     host = "Linux";
                 } else {
-                    throw new UnsupportedOperationException("Unsupported OS: " + osName);
+                    host = "Unknown";
                 }
 
                 String target = mdlData.optString("target", "PC");

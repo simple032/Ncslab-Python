@@ -4,7 +4,7 @@ import com.ncslab.block.data.Data;
 import com.ncslab.dto.block.specialized.math.AddDto;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
@@ -33,7 +33,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Add extends Block {
+public class Add extends MathBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private Parameter inputs;

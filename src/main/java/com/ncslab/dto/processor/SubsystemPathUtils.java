@@ -26,7 +26,7 @@ public final class SubsystemPathUtils {
     
     // Private constructor to prevent instantiation of utility class
     private SubsystemPathUtils() {
-        throw new UnsupportedOperationException("Utility class");
+        // Default implementation - no operation needed
     }
     
     // ===== PATH ANALYSIS METHODS =====

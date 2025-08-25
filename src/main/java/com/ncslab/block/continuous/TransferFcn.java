@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.continuous.ContinuousBlock;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.State;
@@ -42,7 +42,7 @@ import java.util.Objects;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class TransferFcn extends Block {
+public class TransferFcn extends ContinuousBlock {
     // === Internal Implementation ===
     private double D = 0;
     private boolean feedThrough = false;
@@ -155,21 +155,25 @@ public class TransferFcn extends Block {
     public TransferFcn(TransferFcnDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Extract parameters from DTO using same names and defaults as JSON constructor
-        JSONObject paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null) {
-            paramValues = new JSONObject(blockDto.getParamValues());
-        }
+        // Use modern DTO parameter access - type-safe with defaults
+        String numeratorStr = blockDto.getParameterValue("Numerator", String.class, "[1]");
+        String denominatorStr = blockDto.getParameterValue("Denominator", String.class, "[1 1]");
+        String absoluteToleranceStr = blockDto.getParameterValue("AbsoluteTolerance", String.class, "auto");
+        String continuousStateAttributesStr = blockDto.getParameterValue("ContinuousStateAttributes", String.class, "'''");
+        String realizeZeroPoleGainStr = blockDto.getParameterValue("RealizeZeroPoleGain", String.class, "off");
+        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "0");
+        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
+        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
         
-        // Initialize final parameters using exact same logic as JSON constructor
-        this.numerator = new Parameter(this, 1, "Numerator", paramValues.optString("Numerator", "[1]"));
-        this.denominator = new Parameter(this, 2, "Denominator", paramValues.optString("Denominator", "[1 1]"));
-        this.absoluteTolerance = new Parameter(this, 3, "AbsoluteTolerance", paramValues.optString("AbsoluteTolerance", "auto"));
-        this.continuousStateAttributes = new Parameter(this, 4, "ContinuousStateAttributes", paramValues.optString("ContinuousStateAttributes", "'''"));
-        this.realizeZeroPoleGain = new Parameter(this, 5, "RealizeZeroPoleGain", paramValues.optString("RealizeZeroPoleGain", "off"));
-        this.sampleTime = new Parameter(this, 6, "SampleTime", paramValues.optString("SampleTime", "0"));
-        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
-        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
+        // Initialize final parameters directly from DTO
+        this.numerator = new Parameter(this, 1, "Numerator", numeratorStr);
+        this.denominator = new Parameter(this, 2, "Denominator", denominatorStr);
+        this.absoluteTolerance = new Parameter(this, 3, "AbsoluteTolerance", absoluteToleranceStr);
+        this.continuousStateAttributes = new Parameter(this, 4, "ContinuousStateAttributes", continuousStateAttributesStr);
+        this.realizeZeroPoleGain = new Parameter(this, 5, "RealizeZeroPoleGain", realizeZeroPoleGainStr);
+        this.sampleTime = new Parameter(this, 6, "SampleTime", sampleTimeStr);
+        this.outDataType = new Parameter(this, 7, "OutDataTypeStr", outDataTypeStr);
+        this.saturateOnIntegerOverflow = new Parameter(this, 8, "SaturateOnIntegerOverflow", saturateStr);
 
         // Initialize ports
         initializePorts();

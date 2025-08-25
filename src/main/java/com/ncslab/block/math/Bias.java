@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.BiasDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
@@ -32,7 +32,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Bias extends Block {
+public class Bias extends MathBlock {
     
     // === SIMULINK-Compatible Parameters ===
     private final Parameter bias;

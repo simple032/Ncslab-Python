@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.logic.CompareToZeroDto;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.logicAndBit.LogicBlock;
 import Jama.Matrix;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -34,7 +34,7 @@ import java.util.HashMap;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class CompareToZero extends Block{
+public class CompareToZero extends LogicBlock{
 
     // Legacy field for backward compatibility
     String relop;

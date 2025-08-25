@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.Abc2dq0Dto;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-public class abc2dq0 extends Block{
+public class abc2dq0 extends MathBlock{
     String function;
 
 

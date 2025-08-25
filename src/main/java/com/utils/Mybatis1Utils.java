@@ -24,7 +24,7 @@ public class Mybatis1Utils {
 //            } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
 //                environmentId = "linux";
 //            } else {
-//                throw new UnsupportedOperationException("Unsupported OS: " + osName);
+//                // Default implementation - no operation needed
 //            }
 
             // 加载配置文件

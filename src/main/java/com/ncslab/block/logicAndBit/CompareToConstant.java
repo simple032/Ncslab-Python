@@ -11,7 +11,7 @@ import com.ncslab.dto.block.specialized.logic.CompareToConstantDto;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.logicAndBit.LogicBlock;
 import Jama.Matrix;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -37,7 +37,7 @@ import com.ncslab.util.TemplateManager;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class CompareToConstant extends Block {
+public class CompareToConstant extends LogicBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter constantValue;

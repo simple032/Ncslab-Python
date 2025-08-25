@@ -1,6 +1,6 @@
 package com.ncslab.block.math;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -16,7 +16,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 
-public class Matrix extends Block {
+public class Matrix extends MathBlock {
 
     public double elements[][];
     public int row;

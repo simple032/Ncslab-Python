@@ -1,6 +1,6 @@
 package com.ncslab.block.math;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.dto.block.specialized.math.LogarithmDto;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -26,7 +26,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Logarithm extends Block {
+public class Logarithm extends MathBlock {
     
     // === Parameters ===
     private Parameter logType;

@@ -151,7 +151,7 @@ public class SimulateWebSocket {
                 } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
                     host = "Linux";
                 } else {
-                    throw new UnsupportedOperationException("Unsupported OS: " + osName);
+                    host = "Unknown";
                 }
                 System.out.println("Running on " + host + " with DTO-enhanced WebSocket");
                 

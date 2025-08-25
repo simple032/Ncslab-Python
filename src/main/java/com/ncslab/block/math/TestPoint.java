@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.TestPointDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-public class TestPoint extends Block {
+public class TestPoint extends MathBlock {
 
     
     

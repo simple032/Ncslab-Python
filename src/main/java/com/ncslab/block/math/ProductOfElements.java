@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.ProductOfElementsDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductOfElements extends Block {
+public class ProductOfElements extends MathBlock {
 
     private String seq;
     boolean allDimensions = true;

@@ -5,7 +5,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.SumDto;
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
@@ -34,7 +34,7 @@ import java.util.List;
  * - SaturateOnIntegerOverflow: Handle integer overflow
  * - Icon: Icon shape representation
  */
-public class Sum extends Block {
+public class Sum extends MathBlock {
     
     // === SIMULINK-Compatible Parameters ===
     private final Parameter inputs;
@@ -118,16 +118,13 @@ public class Sum extends Block {
     public Sum(SumDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Extract parameters directly from DTO map - avoid JSONObject conversion
-        Map<String, Object> paramValuesMap = blockDto.getParamValues();
-        
-        // Parse parameters directly or use defaults
-        String inputsStr = getParameterValue(paramValuesMap, "Inputs", "++");
-        String sampleTimeStr = getParameterValue(paramValuesMap, "SampleTime", "-1");
-        String inputSameDTStr = getParameterValue(paramValuesMap, "InputSameDT", "on");
-        String outDataTypeStr = getParameterValue(paramValuesMap, "OutDataTypeStr", "Inherit: Same as input");
-        String saturateStr = getParameterValue(paramValuesMap, "SaturateOnIntegerOverflow", "off");
-        String iconStr = getParameterValue(paramValuesMap, "Icon", "rectangular");
+        // Use modern DTO parameter access - type-safe with defaults
+        String inputsStr = blockDto.getParameterValue("Inputs", String.class, "++");
+        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "-1");
+        String inputSameDTStr = blockDto.getParameterValue("InputSameDT", String.class, "on");
+        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
+        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
+        String iconStr = blockDto.getParameterValue("Icon", String.class, "rectangular");
         
         // Initialize final parameters directly from DTO
         this.inputs = new Parameter(this, 1, "Inputs", inputsStr);
@@ -146,16 +143,6 @@ public class Sum extends Block {
 
     
     
-    /**
-     * Helper method to extract parameter value from Map - avoiding JSONObject conversion
-     */
-    private static String getParameterValue(Map<String, Object> paramValues, String paramName, String defaultValue) {
-        if (paramValues == null) {
-            return defaultValue;
-        }
-        Object value = paramValues.get(paramName);
-        return value != null ? value.toString() : defaultValue;
-    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Sum fromJSON(JSONObject blockJSON, NCSLabModel model) {

@@ -1,6 +1,6 @@
 package com.ncslab.block.discontinuous;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.discontinuous.DiscontinuousBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
@@ -39,7 +39,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Relay extends Block {
+public class Relay extends DiscontinuousBlock {
     // Legacy fields for backward compatibility
     Parameter onSwitchValue;
     Parameter offSwitchValue;

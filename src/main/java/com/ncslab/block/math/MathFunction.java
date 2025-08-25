@@ -1,6 +1,6 @@
 package com.ncslab.block.math;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
@@ -36,7 +36,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class MathFunction extends Block {
+public class MathFunction extends MathBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter operator;

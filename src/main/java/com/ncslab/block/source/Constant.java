@@ -107,12 +107,9 @@ public class Constant extends SourceBlock {
     public Constant(ConstantDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Extract parameters directly from DTO map - avoid JSONObject conversion
-        Map<String, Object> paramValuesMap = blockDto.getParamValues();
-        
-        // Parse parameters directly or use defaults
-        String valueStr = getParameterValue(paramValuesMap, "Value", "1");
-        String framePeriodStr = getParameterValue(paramValuesMap, "FramePeriod", "1");
+        // Use modern DTO parameter access - type-safe with defaults
+        String valueStr = blockDto.getParameterValue("Value", String.class, "1");
+        String framePeriodStr = blockDto.getParameterValue("FramePeriod", String.class, "1");
         
         // Initialize final parameters directly from DTO
         this.value = new Parameter(this, 1, "Value", valueStr);
@@ -126,16 +123,6 @@ public class Constant extends SourceBlock {
 
     
 
-    /**
-     * Helper method to extract parameter value from Map - avoiding JSONObject conversion
-     */
-    private static String getParameterValue(Map<String, Object> paramValues, String paramName, String defaultValue) {
-        if (paramValues == null) {
-            return defaultValue;
-        }
-        Object value = paramValues.get(paramName);
-        return value != null ? value.toString() : defaultValue;
-    }
     
     // === Static Factory Method for JSON Deserialization ===
     public static Constant fromJSON(JSONObject blockJSON, NCSLabModel model) {

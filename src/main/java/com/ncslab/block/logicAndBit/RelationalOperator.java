@@ -1,6 +1,6 @@
 package com.ncslab.block.logicAndBit;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.logicAndBit.LogicBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
@@ -35,7 +35,7 @@ import java.util.HashMap;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class RelationalOperator extends Block {
+public class RelationalOperator extends LogicBlock {
 
     // Legacy field for backward compatibility
     String relop;
@@ -306,13 +306,13 @@ public class RelationalOperator extends Block {
         Data resultData;
         switch (inputData1.getDataType()) {
             case REAL:
-                resultData = new Data(compare(inputData1.getInitValue(), inputData2.getInitValue(), relop));
+                resultData = new Data(compareValues(inputData1.getInitValue(), inputData2.getInitValue(), relop));
                 break;
             case MATRIX:
                 Matrix matrixResult = new Matrix(inputData1.getMatrix().getRowDimension(), inputData1.getMatrix().getColumnDimension());
                 for (int i = 0; i < inputData1.getMatrix().getRowDimension(); i++) {
                     for (int j = 0; j < inputData1.getMatrix().getColumnDimension(); j++) {
-                        matrixResult.set(i, j, compare(inputData1.getMatrix().get(i, j), inputData2.getMatrix().get(i, j), relop));
+                        matrixResult.set(i, j, compareValues(inputData1.getMatrix().get(i, j), inputData2.getMatrix().get(i, j), relop));
                     }
                 }
                 resultData = new Data(matrixResult);
@@ -324,7 +324,7 @@ public class RelationalOperator extends Block {
         out.setData(resultData);
     }
 
-    private double compare(double inputValue1, double inputValue2, String operator) {
+    private double compareValues(double inputValue1, double inputValue2, String operator) {
         switch (operator) {
             case "==":
                 return inputValue1 == inputValue2 ? 1.0 : 0.0;

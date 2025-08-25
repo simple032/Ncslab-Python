@@ -1,6 +1,6 @@
 package com.ncslab.block.logicAndBit;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.logicAndBit.LogicBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
@@ -34,7 +34,7 @@ import com.ncslab.util.TemplateManager;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class ShiftArithmetic extends Block {
+public class ShiftArithmetic extends LogicBlock {
     // Legacy field for backward compatibility
     Parameter value;
 

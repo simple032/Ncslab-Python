@@ -13,13 +13,13 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.Block;
+import com.ncslab.block.hardware.HardwareBlock;
 import com.ncslab.util.TemplateManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GPIO extends Block{
+public class GPIO extends HardwareBlock{
 
 	Parameter Bcm;
 

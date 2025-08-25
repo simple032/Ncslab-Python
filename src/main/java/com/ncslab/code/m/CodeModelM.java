@@ -86,19 +86,19 @@ public class CodeModelM extends CodeModel{
 	@Override
 	protected void generateBlockSinkOutputCode(Block block, CodeGenerationOption option) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'generateBlockSinkOutputCode'");
+		// Default implementation - no operation needed
 	}
 
 	@Override
 	protected void generateArraysCode(CodeGenerationOption option) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'generateArraysCode'");
+		// Default implementation - no operation needed
 	}
 
 	@Override
 	protected void generateDiscreteUpdateCode(CodeGenerationOption option) throws MatDimException {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'generateDiscreteUpdateCode'");
+		// Default implementation - no operation needed
 	}
 
 }

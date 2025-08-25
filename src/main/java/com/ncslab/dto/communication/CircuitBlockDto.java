@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +21,7 @@ import java.util.HashSet;
  * Extends BlockDto with circuit-specific fields and methods
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

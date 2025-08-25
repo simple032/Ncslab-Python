@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.ProductDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -36,7 +36,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Product extends Block {
+public class Product extends MathBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter inputs;
@@ -131,21 +131,23 @@ public class Product extends Block {
     public Product(ProductDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
-        // Extract parameters from DTO using same names and defaults as JSON constructor
-        JSONObject paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null) {
-            paramValues = new JSONObject(blockDto.getParamValues());
-        }
+        // Use modern DTO parameter access - type-safe with defaults
+        String inputsStr = blockDto.getParameterValue("Inputs", String.class, "**");
+        String multiplicationStr = blockDto.getParameterValue("Multiplication", String.class, "Element-wise(.*)");
+        String sampleTimeStr = blockDto.getParameterValue("SampleTime", String.class, "-1");
+        String inputSameDTStr = blockDto.getParameterValue("InputSameDT", String.class, "on");
+        String outDataTypeStr = blockDto.getParameterValue("OutDataTypeStr", String.class, "Inherit: Same as input");
+        String saturateStr = blockDto.getParameterValue("SaturateOnIntegerOverflow", String.class, "off");
         
-        // Initialize final parameters using exact same logic as JSON constructor
-        this.inputs = new Parameter(this, 1, "Inputs", paramValues.optString("Inputs", "**"));
+        // Initialize final parameters directly from DTO
+        this.inputs = new Parameter(this, 1, "Inputs", inputsStr);
         this.inputSequence = this.inputs.getInitString(); // Initialize final field from parameter
-        this.multiplication = new Parameter(this, 2, "Multiplication", paramValues.optString("Multiplication", "Element-wise(.*)"));
+        this.multiplication = new Parameter(this, 2, "Multiplication", multiplicationStr);
         this.matrixMultiplication = "Matrix(*)".equals(this.multiplication.getInitString());
-        this.sampleTime = new Parameter(this, 3, "SampleTime", paramValues.optString("SampleTime", "-1"));
-        this.inputSameDT = new Parameter(this, 4, "InputSameDT", paramValues.optString("InputSameDT", "on"));
-        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", paramValues.optString("OutDataTypeStr", "Inherit: Same as input"));
-        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", paramValues.optString("SaturateOnIntegerOverflow", "off"));
+        this.sampleTime = new Parameter(this, 3, "SampleTime", sampleTimeStr);
+        this.inputSameDT = new Parameter(this, 4, "InputSameDT", inputSameDTStr);
+        this.outDataType = new Parameter(this, 5, "OutDataTypeStr", outDataTypeStr);
+        this.saturateOnIntegerOverflow = new Parameter(this, 6, "SaturateOnIntegerOverflow", saturateStr);
 
         // Initialize ports
         initializePorts();

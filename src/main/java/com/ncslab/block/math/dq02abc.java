@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.Dq02abcDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.HashMap;
 import com.ncslab.util.TemplateManager;
 
-public class dq02abc extends Block {
+public class dq02abc extends MathBlock {
     private String function;
 
 

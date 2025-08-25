@@ -1,6 +1,6 @@
 package com.ncslab.block.math;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.dto.block.specialized.math.ExponentialDto;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -24,7 +24,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class Exponential extends Block {
+public class Exponential extends MathBlock {
     
     // === Parameters ===
     private Parameter expType;

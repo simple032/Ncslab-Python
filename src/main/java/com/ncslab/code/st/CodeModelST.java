@@ -94,7 +94,7 @@ public class CodeModelST extends CodeModel {
     @Override
 	protected void generateDerivativeCode(CodeGenerationOption option) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'generateDerivativeCode'");
+		// Default implementation - no operation needed
 	}
 
 

@@ -3,7 +3,7 @@ package com.ncslab.block.continuous;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.continuous.OldPIDControllerDto;
-import com.ncslab.block.Block;
+import com.ncslab.block.continuous.ContinuousBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.HashMap;
 import lombok.Getter;
 
-public class OldPIDController extends Block {
+public class OldPIDController extends ContinuousBlock {
 
     private Parameter cparaP;
     private Parameter cparaI;

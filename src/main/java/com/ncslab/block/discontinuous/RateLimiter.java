@@ -1,6 +1,6 @@
 package com.ncslab.block.discontinuous;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.discontinuous.DiscontinuousBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
@@ -36,7 +36,7 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class RateLimiter extends Block {
+public class RateLimiter extends DiscontinuousBlock {
     // Legacy fields for backward compatibility
     Parameter lowerLimit;
     Parameter upperLimit;

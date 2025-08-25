@@ -1,6 +1,6 @@
 package com.ncslab.block.math;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.ncslab.util.TemplateManager;
 
-public class Rounding extends Block {
+public class Rounding extends MathBlock {
 
     Parameter operator;
     String operatorString;

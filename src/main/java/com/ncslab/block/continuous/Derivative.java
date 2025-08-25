@@ -9,7 +9,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.TemplateManager;
 import java.util.HashMap;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.continuous.ContinuousBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
@@ -38,7 +38,7 @@ import java.util.List;
  *
  * Note: Implements filtered derivative G=s/(Ts+1) where T->0 gives ideal derivative
  */
-public class Derivative extends Block {
+public class Derivative extends ContinuousBlock {
 
     // === Internal State ===
     private State stateIntegral;

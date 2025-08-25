@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.logic.IntervalTestDto;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.logicAndBit.LogicBlock;
 import Jama.Matrix;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -35,7 +35,7 @@ import com.ncslab.util.TemplateManager;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class IntervalTest extends Block {
+public class IntervalTest extends LogicBlock {
     // Legacy fields for backward compatibility
     Parameter upLimit;
     Parameter lowLimit;

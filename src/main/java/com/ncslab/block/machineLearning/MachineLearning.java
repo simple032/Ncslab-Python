@@ -16,11 +16,12 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.block.Block;
+import com.ncslab.block.machineLearning.MLBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
-public abstract class MachineLearning extends Block{
+public abstract class MachineLearning extends MLBlock{
 
     protected OutputPort outputPort;
     protected int _width, _height;

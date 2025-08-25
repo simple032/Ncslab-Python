@@ -1,6 +1,6 @@
 package com.ncslab.block.logicAndBit;
 
-import com.ncslab.block.Block;
+import com.ncslab.block.logicAndBit.LogicBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
@@ -36,7 +36,7 @@ import com.ncslab.util.TemplateManager;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  */
-public class LogicOperator extends Block {
+public class LogicOperator extends LogicBlock {
     private double num;
 
     // === SIMULINK-Compatible Parameters ===
