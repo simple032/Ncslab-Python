@@ -98,4 +98,59 @@ public class dq02abc extends MathBlock {
 
     public void checkDimension() throws MatDimException {
     }
+    
+    @Override
+    public void calculateInit() {
+        // Initialization logic for dq02abc block
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK dq0 to abc transformation block
+        // Inputs: d, q, 0 components (in1, in2, in3) and angle theta (in4)
+        com.ncslab.block.data.Data dData = inputPortList.get(0).getData();
+        com.ncslab.block.data.Data qData = inputPortList.get(1).getData();
+        com.ncslab.block.data.Data zeroData = inputPortList.get(2).getData();
+        com.ncslab.block.data.Data thetaData = inputPortList.get(3).getData();
+        
+        double d = dData.getInitValue();
+        double q = qData.getInitValue();
+        double zero = zeroData.getInitValue();
+        double theta = thetaData.getInitValue();
+        
+        // dq0 to abc transformation (inverse of abc to dq0)
+        // Standard inverse transformation matrix:
+        // [ a ]   [  cos(theta)        -sin(theta)      1 ] [ d ]
+        // [ b ] = [  cos(theta-2π/3)   -sin(theta-2π/3) 1 ] [ q ]
+        // [ c ]   [  cos(theta+2π/3)   -sin(theta+2π/3) 1 ] [ 0 ]
+        
+        if ("Stationary reference frame".equals(function)) {
+            // Stationary reference frame (theta = 0)
+            theta = 0;
+        }
+        
+        // Calculate a component
+        double a = d * Math.cos(theta) - q * Math.sin(theta) + zero;
+        
+        // Calculate b component
+        double angle_b = theta - 2.0 * Math.PI / 3.0;
+        double b = d * Math.cos(angle_b) - q * Math.sin(angle_b) + zero;
+        
+        // Calculate c component  
+        double angle_c = theta + 2.0 * Math.PI / 3.0;
+        double c = d * Math.cos(angle_c) - q * Math.sin(angle_c) + zero;
+        
+        // Set output data
+        com.ncslab.block.data.Data aOutputData = new com.ncslab.block.data.Data(1, 1);
+        aOutputData.setInitValue(a);
+        outputPortList.get(0).setData(aOutputData);
+        
+        com.ncslab.block.data.Data bOutputData = new com.ncslab.block.data.Data(1, 1);
+        bOutputData.setInitValue(b);
+        outputPortList.get(1).setData(bOutputData);
+        
+        com.ncslab.block.data.Data cOutputData = new com.ncslab.block.data.Data(1, 1);
+        cOutputData.setInitValue(c);
+        outputPortList.get(2).setData(cOutputData);
+    }
 }

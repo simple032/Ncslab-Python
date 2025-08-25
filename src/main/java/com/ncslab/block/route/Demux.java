@@ -103,7 +103,7 @@ public class Demux extends RouteBlock {
         // Add all parameters to parameter list
 
 		this.feedThrough = true;
-		this.num = paramValues.getInt("Outputs");
+		this.num = outputs.getData().getIntValue();
 
 		// Create output ports based on parameter
 		for(int i=0; i<num; i++) {
@@ -306,5 +306,63 @@ public class Demux extends RouteBlock {
 			throw(e);
 		}
 	}
+
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Demux block logic:
+        // Takes a vector input and splits it into multiple scalar outputs
+        // Each output port gets one element from the input vector
+        
+        // Get input data (vector)
+        Data inputData = inputPortList.get(0).getData();
+        
+        // Handle different data types
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - split into scalar/vector outputs
+            for (int i = 0; i < num && i < outputPortList.size(); i++) {
+                // Create output data for each port
+                Data outputData = new Data(1, 1); // Scalar output
+                
+                // Extract element from matrix
+                if (inputData.getMatrix() != null) {
+                    // For row vector: extract column i
+                    // For column vector: extract row i
+                    if (inputData.getHeight() == 1) {
+                        // Row vector - extract column i
+                        if (i < inputData.getWidth()) {
+                            double value = inputData.getMatrix().get(0, i);
+                            outputData.setInitValue(value);
+                        }
+                    } else if (inputData.getWidth() == 1) {
+                        // Column vector - extract row i
+                        if (i < inputData.getHeight()) {
+                            double value = inputData.getMatrix().get(i, 0);
+                            outputData.setInitValue(value);
+                        }
+                    } else {
+                        // General matrix - extract elements in row-major order
+                        int totalElements = inputData.getHeight() * inputData.getWidth();
+                        if (i < totalElements) {
+                            int row = i / inputData.getWidth();
+                            int col = i % inputData.getWidth();
+                            double value = inputData.getMatrix().get(row, col);
+                            outputData.setInitValue(value);
+                        }
+                    }
+                }
+                
+                // Set output port data
+                outputPortList.get(i).setData(outputData);
+            }
+        } else {
+            // Scalar input - replicate to all outputs (edge case)
+            double scalarValue = inputData.getInitValue();
+            for (int i = 0; i < num && i < outputPortList.size(); i++) {
+                Data outputData = new Data(1, 1);
+                outputData.setInitValue(scalarValue);
+                outputPortList.get(i).setData(outputData);
+            }
+        }
+    }
 }
 

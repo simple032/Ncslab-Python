@@ -36,7 +36,7 @@ public abstract class RouteBlock extends Block {
         super(blockJson, model);
     }
 
-        public void calculateInit() {
+    public void calculateInit() {
         // Initialize routing: set all outputs to zero/default values
         initializeRouting();
         
@@ -45,16 +45,14 @@ public abstract class RouteBlock extends Block {
         }
     }
 
-        public void calculateOutput(double t) {
-        // Default implementation - routing blocks should override this method
-        // with their specific signal routing logic
-    }
+    @Override
+    public abstract void calculateOutput(double t);
 
-        public void calculateDerivative(double t) {
+    public void calculateDerivative(double t) {
         // Routing blocks are typically stateless - no derivatives
     }
 
-        public void calculateUpdate(double t) {
+    public void calculateUpdate(double t) {
         // Routing blocks typically don't maintain internal state
         // Override if the routing block has switching logic that needs state updates
     }

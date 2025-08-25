@@ -1,6 +1,8 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
@@ -298,5 +300,60 @@ public class Reciprocal extends MathBlock {
     
     public double getLowerLimit() {
         return lowerLimit.getData().getInitValue();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Reciprocal block: computes 1/input
+        Data inputData = inputPortList.get(0).getData();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply reciprocal element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    double reciprocal = value != 0 ? 1.0 / value : Double.POSITIVE_INFINITY;
+                    
+                    // Apply saturation if enabled
+                    if (isEnableSaturation()) {
+                        reciprocal = applySaturation(reciprocal);
+                    }
+                    
+                    outputMatrix.set(i, j, reciprocal);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            double reciprocal = inputValue != 0 ? 1.0 / inputValue : Double.POSITIVE_INFINITY;
+            
+            // Apply saturation if enabled
+            if (isEnableSaturation()) {
+                reciprocal = applySaturation(reciprocal);
+            }
+            
+            outputData = new Data(1, 1);
+            outputData.setInitValue(reciprocal);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private double applySaturation(double value) {
+        double upperLim = getUpperLimit();
+        double lowerLim = getLowerLimit();
+        
+        if (value > upperLim) {
+            return upperLim;
+        } else if (value < lowerLim) {
+            return lowerLim;
+        } else {
+            return value;
+        }
     }
 }

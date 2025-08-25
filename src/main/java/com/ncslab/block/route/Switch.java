@@ -2,11 +2,14 @@ package com.ncslab.block.route;
 
 import com.ncslab.block.route.RouteBlock;
 import lombok.Getter;
+
+import org.apache.yetus.audience.InterfaceAudience.Public;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.route.SwitchDto;
 
 import com.ncslab.block.data.DataType;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -309,23 +312,84 @@ public class Switch extends RouteBlock {
 		String outputCode = TemplateManager.renderTemplate("c/route/Switch/output.vm", context);
 		code.addOutputCode(outputCode);
 	}
-	  public void updateDimension() throws MatDimException{
-			OutputPort out  = outputPortList.get(0);
-			InputPort in1  = inputPortList.get(0);
-			InputPort in3  =  inputPortList.get(2);
-			OutputSignal signal1=in1.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			OutputSignal signal3=in3.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			if(signal1.getHeight()!=signal3.getHeight()||signal1.getWidth()!=signal3.getWidth()) {
-				MatDimException e=new MatDimException("Block "+this.blockName+" input1 and input3 dimension doesn't match!\n \n");
-				throw(e);
-				}
-			out.setHeight(signal1.getHeight());
-			out.setWidth(signal1.getWidth());
-			out.getOutputSignalC().setHeight(signal1.getHeight());
-			out.getOutputSignalC().setWidth(signal1.getWidth());
-			out.getOutputSignalC().setDataType(signal1.getDataType());
-			}
-	   public void checkDimension() throws MatDimException{
+    public void updateDimension() throws MatDimException{
+        OutputPort out  = outputPortList.get(0);
+        InputPort in1  = inputPortList.get(0);
+        InputPort in3  =  inputPortList.get(2);
+        OutputSignal signal1=in1.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal3=in3.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if(signal1.getHeight()!=signal3.getHeight()||signal1.getWidth()!=signal3.getWidth()) {
+            MatDimException e=new MatDimException("Block "+this.blockName+" input1 and input3 dimension doesn't match!\n \n");
+            throw(e);
+            }
+        out.setHeight(signal1.getHeight());
+        out.setWidth(signal1.getWidth());
+        out.getOutputSignalC().setHeight(signal1.getHeight());
+        out.getOutputSignalC().setWidth(signal1.getWidth());
+        out.getOutputSignalC().setDataType(signal1.getDataType());
+    }
+
+	public void checkDimension() throws MatDimException{
 	   // No additional dimension checks needed for switch block
 	}
+
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Switch block logic:
+        // If control signal meets criteria with threshold, output = input1 (port 0)
+        // Otherwise, output = input2 (port 2)
+        // Control signal is at port 1
+        
+        // Get input data
+        Data input1Data = inputPortList.get(0).getData();  // First input
+        Data controlData = inputPortList.get(1).getData(); // Control signal
+        Data input2Data = inputPortList.get(2).getData();  // Second input
+        
+        // Get threshold and criteria parameters
+        double thresholdValue = threshold.getDouble();
+        String criteriaStr = criteria.getInitString();
+        
+        // Get control signal value (assuming scalar control for now)
+        double controlValue = controlData.getInitValue();
+        
+        // Apply switching criteria
+        boolean condition = false;
+        switch (criteriaStr) {
+            case ">=":
+                condition = (controlValue >= thresholdValue);
+                break;
+            case ">":
+                condition = (controlValue > thresholdValue);
+                break;
+            case "~=":
+            case "!=":
+                condition = (Math.abs(controlValue - thresholdValue) > 1e-12); // Not equal with tolerance
+                break;
+            case "<=":
+                condition = (controlValue <= thresholdValue);
+                break;
+            case "<":
+                condition = (controlValue < thresholdValue);
+                break;
+            case "==":
+                condition = (Math.abs(controlValue - thresholdValue) <= 1e-12); // Equal with tolerance
+                break;
+            default:
+                condition = (controlValue >= thresholdValue); // Default to ">="
+                break;
+        }
+        
+        // Set output based on condition
+        Data outputData;
+        if (condition) {
+            // Condition is true, output input1
+            outputData = input1Data;
+        } else {
+            // Condition is false, output input2  
+            outputData = input2Data;
+        }
+        
+        // Set the output port data
+        outputPortList.get(0).setData(outputData);
+    }
 }

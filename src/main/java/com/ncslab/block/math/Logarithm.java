@@ -1,6 +1,8 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.dto.block.specialized.math.LogarithmDto;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -234,5 +236,60 @@ public class Logarithm extends MathBlock {
     
     public double getCustomBase() {
         return customBase.getData().getInitValue();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Logarithm block: computes logarithmic functions
+        Data inputData = inputPortList.get(0).getData();
+        String logTypeValue = getLogType();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply logarithm function element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    double logValue = applyLogarithmFunction(value, logTypeValue);
+                    outputMatrix.set(i, j, logValue);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            double logValue = applyLogarithmFunction(inputValue, logTypeValue);
+            outputData = new Data(1, 1);
+            outputData.setInitValue(logValue);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private double applyLogarithmFunction(double value, String logType) {
+        // Handle negative and zero values (return NaN for negative, -Infinity for zero)
+        if (value <= 0) {
+            return value == 0 ? Double.NEGATIVE_INFINITY : Double.NaN;
+        }
+        
+        switch (logType) {
+            case "log":
+                return Math.log(value); // Natural logarithm (ln)
+            case "log2":
+                return Math.log(value) / Math.log(2); // Log base 2
+            case "log10":
+                return Math.log10(value); // Log base 10
+            case "custom":
+                double base = getCustomBase();
+                if (base <= 0 || base == 1) {
+                    return Double.NaN; // Invalid base
+                }
+                return Math.log(value) / Math.log(base);
+            default:
+                return Math.log(value); // Default to natural logarithm
+        }
     }
 }

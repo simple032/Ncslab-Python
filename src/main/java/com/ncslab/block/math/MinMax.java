@@ -1,6 +1,8 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
@@ -193,5 +195,83 @@ public class MinMax extends MathBlock {
     
     public int getNumInputs() {
         return (int) numInputs.getData().getInitValue();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK MinMax block: computes minimum or maximum of inputs
+        String functionValue = getFunction();
+        boolean isMin = "min".equals(functionValue);
+        Data outputData;
+        
+        // Get all input data
+        List<Data> inputDataList = new ArrayList<>();
+        for (int i = 0; i < inputPortList.size(); i++) {
+            inputDataList.add(inputPortList.get(i).getData());
+        }
+        
+        // Check if any input is a matrix
+        boolean hasMatrix = inputDataList.stream().anyMatch(data -> data.getDataType() == DataType.MATRIX);
+        
+        if (hasMatrix) {
+            // Matrix operation - find dimensions
+            Data firstMatrixData = inputDataList.stream()
+                .filter(data -> data.getDataType() == DataType.MATRIX)
+                .findFirst()
+                .orElse(inputDataList.get(0));
+            
+            if (firstMatrixData.getDataType() == DataType.MATRIX) {
+                Jama.Matrix firstMatrix = firstMatrixData.getMatrix();
+                Jama.Matrix outputMatrix = new Jama.Matrix(firstMatrix.getRowDimension(), firstMatrix.getColumnDimension());
+                
+                for (int i = 0; i < firstMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < firstMatrix.getColumnDimension(); j++) {
+                        double result = isMin ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                        
+                        for (Data inputData : inputDataList) {
+                            double value;
+                            if (inputData.getDataType() == DataType.MATRIX) {
+                                value = inputData.getMatrix().get(i, j);
+                            } else {
+                                value = inputData.getInitValue();
+                            }
+                            
+                            if (isMin) {
+                                result = Math.min(result, value);
+                            } else {
+                                result = Math.max(result, value);
+                            }
+                        }
+                        outputMatrix.set(i, j, result);
+                    }
+                }
+                outputData = new Data(outputMatrix);
+            } else {
+                // All scalars
+                outputData = calculateScalarMinMax(inputDataList, isMin);
+            }
+        } else {
+            // All scalar inputs
+            outputData = calculateScalarMinMax(inputDataList, isMin);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private Data calculateScalarMinMax(List<Data> inputDataList, boolean isMin) {
+        double result = isMin ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+        
+        for (Data inputData : inputDataList) {
+            double value = inputData.getInitValue();
+            if (isMin) {
+                result = Math.min(result, value);
+            } else {
+                result = Math.max(result, value);
+            }
+        }
+        
+        Data outputData = new Data(1, 1);
+        outputData.setInitValue(result);
+        return outputData;
     }
 }

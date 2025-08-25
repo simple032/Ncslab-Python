@@ -1,6 +1,8 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.dto.block.specialized.math.PowerDto;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -208,5 +210,114 @@ public class Power extends MathBlock {
     // === Getter Methods ===
     public String getPowerMethod() {
         return powerMethod.getData().getInitString();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Power block: computes base^exponent
+        Data baseData = inputPortList.get(0).getData();
+        Data exponentData = inputPortList.get(1).getData();
+        String powerMethodValue = getPowerMethod();
+        Data outputData;
+        
+        if (baseData.getDataType() == DataType.MATRIX || exponentData.getDataType() == DataType.MATRIX) {
+            // Matrix operation
+            if ("Matrix(^)".equals(powerMethodValue)) {
+                // Matrix power operation (base^exponent where exponent is scalar)
+                if (baseData.getDataType() == DataType.MATRIX && exponentData.getDataType() != DataType.MATRIX) {
+                    Jama.Matrix baseMatrix = baseData.getMatrix();
+                    double exp = exponentData.getInitValue();
+                    Jama.Matrix outputMatrix = baseMatrix.copy();
+                    
+                    // For matrix power, we need to compute matrix^n which is matrix multiplication
+                    if (exp == 0) {
+                        // Identity matrix
+                        outputMatrix = Jama.Matrix.identity(baseMatrix.getRowDimension(), baseMatrix.getColumnDimension());
+                    } else if (exp > 0 && exp == Math.floor(exp)) {
+                        // Integer power - repeated matrix multiplication
+                        int intExp = (int) exp;
+                        Jama.Matrix result = Jama.Matrix.identity(baseMatrix.getRowDimension(), baseMatrix.getColumnDimension());
+                        for (int i = 0; i < intExp; i++) {
+                            result = result.times(baseMatrix);
+                        }
+                        outputMatrix = result;
+                    } else {
+                        // Non-integer or negative power - element-wise fallback
+                        for (int i = 0; i < baseMatrix.getRowDimension(); i++) {
+                            for (int j = 0; j < baseMatrix.getColumnDimension(); j++) {
+                                double value = Math.pow(baseMatrix.get(i, j), exp);
+                                outputMatrix.set(i, j, value);
+                            }
+                        }
+                    }
+                    outputData = new Data(outputMatrix);
+                } else {
+                    // Element-wise fallback for incompatible matrix operations
+                    outputData = performElementWisePower(baseData, exponentData);
+                }
+            } else {
+                // Element-wise power operation
+                outputData = performElementWisePower(baseData, exponentData);
+            }
+        } else {
+            // Scalar inputs
+            double baseValue = baseData.getInitValue();
+            double expValue = exponentData.getInitValue();
+            double result = Math.pow(baseValue, expValue);
+            outputData = new Data(1, 1);
+            outputData.setInitValue(result);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private Data performElementWisePower(Data baseData, Data exponentData) {
+        if (baseData.getDataType() == DataType.MATRIX && exponentData.getDataType() == DataType.MATRIX) {
+            // Both matrices - element-wise power
+            Jama.Matrix baseMatrix = baseData.getMatrix();
+            Jama.Matrix expMatrix = exponentData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(baseMatrix.getRowDimension(), baseMatrix.getColumnDimension());
+            
+            for (int i = 0; i < baseMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < baseMatrix.getColumnDimension(); j++) {
+                    double base = baseMatrix.get(i, j);
+                    double exp = expMatrix.get(i, j);
+                    outputMatrix.set(i, j, Math.pow(base, exp));
+                }
+            }
+            return new Data(outputMatrix);
+        } else if (baseData.getDataType() == DataType.MATRIX) {
+            // Base is matrix, exponent is scalar
+            Jama.Matrix baseMatrix = baseData.getMatrix();
+            double expValue = exponentData.getInitValue();
+            Jama.Matrix outputMatrix = new Jama.Matrix(baseMatrix.getRowDimension(), baseMatrix.getColumnDimension());
+            
+            for (int i = 0; i < baseMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < baseMatrix.getColumnDimension(); j++) {
+                    double base = baseMatrix.get(i, j);
+                    outputMatrix.set(i, j, Math.pow(base, expValue));
+                }
+            }
+            return new Data(outputMatrix);
+        } else if (exponentData.getDataType() == DataType.MATRIX) {
+            // Base is scalar, exponent is matrix
+            double baseValue = baseData.getInitValue();
+            Jama.Matrix expMatrix = exponentData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(expMatrix.getRowDimension(), expMatrix.getColumnDimension());
+            
+            for (int i = 0; i < expMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < expMatrix.getColumnDimension(); j++) {
+                    double exp = expMatrix.get(i, j);
+                    outputMatrix.set(i, j, Math.pow(baseValue, exp));
+                }
+            }
+            return new Data(outputMatrix);
+        } else {
+            // Both scalars
+            double result = Math.pow(baseData.getInitValue(), exponentData.getInitValue());
+            Data outputData = new Data(1, 1);
+            outputData.setInitValue(result);
+            return outputData;
+        }
     }
 }

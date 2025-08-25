@@ -50,10 +50,8 @@ public abstract class LogicBlock extends Block {
         }
     }
 
-        public void calculateOutput(double t) {
-        // Default implementation - logic blocks should override this method
-        // with their specific logical operations
-    }
+    @Override
+    public abstract void calculateOutput(double t);
 
         public void calculateDerivative(double t) {
         // Logic blocks are discrete - no derivatives

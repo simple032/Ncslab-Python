@@ -48,12 +48,10 @@ public abstract class MathBlock extends Block {
         }
     }
 
-        public void calculateOutput(double t) {
-        // Default implementation - mathematical blocks should override this method
-        // with their specific mathematical operations
-    }
-
-        public void calculateDerivative(double t) {
+    @Override
+    public abstract void calculateOutput(double t);
+    
+    public void calculateDerivative(double t) {
         // Mathematical blocks are typically stateless - no derivatives
     }
 

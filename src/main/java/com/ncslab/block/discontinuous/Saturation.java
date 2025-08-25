@@ -191,6 +191,47 @@ public class Saturation extends DiscontinuousBlock {
         identity.put("blockUUID", blockUUID);
         return identity;
     }
+    
+    // === Getter Methods ===
+    public double getUpperSaturationLimit() {
+        return upperSaturationLimit.getData().getInitValue();
+    }
+    
+    public double getLowerSaturationLimit() {
+        return lowerSaturationLimit.getData().getInitValue();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Saturation block: limits signal to specified range
+        Data inputData = inputPortList.get(0).getData();
+        double lowerLim = getLowerSaturationLimit();
+        double upperLim = getUpperSaturationLimit();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply saturation element-wise
+            Matrix inputMatrix = inputData.getMatrix();
+            Matrix outputMatrix = new Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    double saturatedValue = applySaturation(value, lowerLim, upperLim);
+                    outputMatrix.set(i, j, saturatedValue);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            double saturatedValue = applySaturation(inputValue, lowerLim, upperLim);
+            outputData = new Data(1, 1);
+            outputData.setInitValue(saturatedValue);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
 
     // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {

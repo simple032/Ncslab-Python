@@ -1,12 +1,12 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.math.ProductOfElementsDto;
 import com.ncslab.block.math.MathBlock;
-import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
@@ -92,5 +92,61 @@ public class ProductOfElements extends MathBlock {
         
         Parameter dimensionParam = getParameterByName("ElementsDimension");
         dimension = Integer.parseInt(dimensionParam.getInitString());
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK ProductOfElements block: multiplies elements together
+        OutputPort out = outputPortList.get(0);
+        Data inputData = inputPortList.get(0).getData();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            
+            if (allDimensions) {
+                // Product of all elements in the matrix
+                double product = 1.0;
+                for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                        product *= inputMatrix.get(i, j);
+                    }
+                }
+                outputData = new Data(1, 1);
+                outputData.setInitValue(product);
+            } else if (dimension == 1) {
+                // Product along rows (each column becomes one element)
+                int cols = inputMatrix.getColumnDimension();
+                Jama.Matrix outputMatrix = new Jama.Matrix(1, cols);
+                
+                for (int j = 0; j < cols; j++) {
+                    double product = 1.0;
+                    for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                        product *= inputMatrix.get(i, j);
+                    }
+                    outputMatrix.set(0, j, product);
+                }
+                outputData = new Data(outputMatrix);
+            } else {
+                // Product along columns (each row becomes one element)
+                int rows = inputMatrix.getRowDimension();
+                Jama.Matrix outputMatrix = new Jama.Matrix(rows, 1);
+                
+                for (int i = 0; i < rows; i++) {
+                    double product = 1.0;
+                    for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                        product *= inputMatrix.get(i, j);
+                    }
+                    outputMatrix.set(i, 0, product);
+                }
+                outputData = new Data(outputMatrix);
+            }
+        } else {
+            // Scalar input - just pass through
+            outputData = new Data(1, 1);
+            outputData.setInitValue(inputData.getInitValue());
+        }
+        
+        out.setData(outputData);
     }
 }

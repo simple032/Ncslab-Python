@@ -50,10 +50,8 @@ public abstract class DiscontinuousBlock extends Block {
         }
     }
 
-        public void calculateOutput(double t) {
-        // Default implementation - discontinuous blocks should override this method
-        // with their specific discontinuous nonlinear functions
-    }
+    @Override
+    public abstract void calculateOutput(double t);
 
         public void calculateDerivative(double t) {
         // Discontinuous blocks typically don't have continuous derivatives

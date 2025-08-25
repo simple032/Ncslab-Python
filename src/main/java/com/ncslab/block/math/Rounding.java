@@ -2,6 +2,7 @@ package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -82,6 +83,52 @@ public class Rounding extends MathBlock {
 
         if ("fix".equals(operatorString)) {
             operatorString = "trunc";
+        }
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Rounding block: applies rounding function to input
+        Data inputData = inputPortList.get(0).getData();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply rounding function element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    double roundedValue = applyRoundingFunction(value, operatorString);
+                    outputMatrix.set(i, j, roundedValue);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            double roundedValue = applyRoundingFunction(inputValue, operatorString);
+            outputData = new Data(1, 1);
+            outputData.setInitValue(roundedValue);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private double applyRoundingFunction(double value, String operator) {
+        switch (operator) {
+            case "floor":
+                return Math.floor(value);
+            case "ceil":
+                return Math.ceil(value);
+            case "round":
+                return Math.round(value);
+            case "trunc":
+            case "fix":
+                return value >= 0 ? Math.floor(value) : Math.ceil(value); // Truncate towards zero
+            default:
+                return Math.floor(value); // Default to floor
         }
     }
 }

@@ -203,4 +203,45 @@ public class DeadZone extends DiscontinuousBlock {
         identity.put("blockUUID", blockUUID);
         return identity;
     }
+    
+    // === Getter Methods ===
+    public double getStartOfDeadZone() {
+        return startOfDeadZone.getData().getInitValue();
+    }
+    
+    public double getEndOfDeadZone() {
+        return endOfDeadZone.getData().getInitValue();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK DeadZone block: implements dead zone nonlinearity
+        Data inputData = inputPortList.get(0).getData();
+        double lowerThreshold = getStartOfDeadZone();
+        double upperThreshold = getEndOfDeadZone();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply dead zone element-wise
+            Matrix inputMatrix = inputData.getMatrix();
+            Matrix outputMatrix = new Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    double deadZoneValue = applyDeadZone(value, lowerThreshold, upperThreshold);
+                    outputMatrix.set(i, j, deadZoneValue);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            double deadZoneValue = applyDeadZone(inputValue, lowerThreshold, upperThreshold);
+            outputData = new Data(1, 1);
+            outputData.setInitValue(deadZoneValue);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
 }

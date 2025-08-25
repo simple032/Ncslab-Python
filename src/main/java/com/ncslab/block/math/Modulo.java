@@ -1,6 +1,8 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
@@ -230,5 +232,106 @@ public class Modulo extends MathBlock {
 
     public boolean isUseDivisorPort() {
         return useDivisorPort;
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Modulo block: computes modulo operation (remainder)
+        Data numeratorData = inputPortList.get(0).getData();
+        Data denominatorData;
+        String moduloTypeValue = getModuloType();
+        
+        // Get denominator from either internal parameter or external port
+        if (useDivisorPort && inputPortList.size() > 1) {
+            denominatorData = inputPortList.get(1).getData();
+        } else {
+            // Use internal divisor parameter
+            double divisorValue = getDivisorValue();
+            denominatorData = new Data(1, 1);
+            denominatorData.setInitValue(divisorValue);
+        }
+        
+        Data outputData = performModuloOperation(numeratorData, denominatorData, moduloTypeValue);
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private Data performModuloOperation(Data numeratorData, Data denominatorData, String moduloType) {
+        if (numeratorData.getDataType() == DataType.MATRIX || denominatorData.getDataType() == DataType.MATRIX) {
+            // Matrix operation - apply modulo element-wise
+            if (numeratorData.getDataType() == DataType.MATRIX && denominatorData.getDataType() == DataType.MATRIX) {
+                // Both matrices
+                Jama.Matrix numeratorMatrix = numeratorData.getMatrix();
+                Jama.Matrix denominatorMatrix = denominatorData.getMatrix();
+                Jama.Matrix outputMatrix = new Jama.Matrix(numeratorMatrix.getRowDimension(), numeratorMatrix.getColumnDimension());
+                
+                for (int i = 0; i < numeratorMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < numeratorMatrix.getColumnDimension(); j++) {
+                        double numerator = numeratorMatrix.get(i, j);
+                        double denominator = denominatorMatrix.get(i, j);
+                        double result = computeModulo(numerator, denominator, moduloType);
+                        outputMatrix.set(i, j, result);
+                    }
+                }
+                return new Data(outputMatrix);
+            } else if (numeratorData.getDataType() == DataType.MATRIX) {
+                // Numerator is matrix, denominator is scalar
+                Jama.Matrix numeratorMatrix = numeratorData.getMatrix();
+                double denominatorValue = denominatorData.getInitValue();
+                Jama.Matrix outputMatrix = new Jama.Matrix(numeratorMatrix.getRowDimension(), numeratorMatrix.getColumnDimension());
+                
+                for (int i = 0; i < numeratorMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < numeratorMatrix.getColumnDimension(); j++) {
+                        double numerator = numeratorMatrix.get(i, j);
+                        double result = computeModulo(numerator, denominatorValue, moduloType);
+                        outputMatrix.set(i, j, result);
+                    }
+                }
+                return new Data(outputMatrix);
+            } else {
+                // Numerator is scalar, denominator is matrix
+                double numeratorValue = numeratorData.getInitValue();
+                Jama.Matrix denominatorMatrix = denominatorData.getMatrix();
+                Jama.Matrix outputMatrix = new Jama.Matrix(denominatorMatrix.getRowDimension(), denominatorMatrix.getColumnDimension());
+                
+                for (int i = 0; i < denominatorMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < denominatorMatrix.getColumnDimension(); j++) {
+                        double denominator = denominatorMatrix.get(i, j);
+                        double result = computeModulo(numeratorValue, denominator, moduloType);
+                        outputMatrix.set(i, j, result);
+                    }
+                }
+                return new Data(outputMatrix);
+            }
+        } else {
+            // Scalar inputs
+            double numeratorValue = numeratorData.getInitValue();
+            double denominatorValue = denominatorData.getInitValue();
+            double result = computeModulo(numeratorValue, denominatorValue, moduloType);
+            Data outputData = new Data(1, 1);
+            outputData.setInitValue(result);
+            return outputData;
+        }
+    }
+    
+    private double computeModulo(double numerator, double denominator, String moduloType) {
+        if (denominator == 0) {
+            return Double.NaN; // Division by zero
+        }
+        
+        switch (moduloType) {
+            case "fmod":
+                // C-style fmod: sign follows numerator
+                return numerator % denominator;
+            case "rem":
+                // MATLAB rem: IEEE remainder operation (sign follows numerator, different from fmod for negative denominators)
+                double result = numerator % denominator;
+                if (result != 0 && Math.signum(numerator) != Math.signum(denominator)) {
+                    // Adjust for IEEE remainder when signs differ
+                    return result;
+                }
+                return result;
+            default:
+                return numerator % denominator; // Default to fmod behavior
+        }
     }
 }

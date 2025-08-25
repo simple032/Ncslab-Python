@@ -1,9 +1,12 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
+
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -189,5 +192,102 @@ public class Divide extends MathBlock {
     // === Getter Methods ===
     public String getDivideMethod() {
         return divideMethod.getData().getInitString();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Divide block: computes numerator/denominator
+        Data numeratorData = inputPortList.get(0).getData();
+        Data denominatorData = inputPortList.get(1).getData();
+        String divideMethodValue = getDivideMethod();
+        Data outputData;
+        
+        if (numeratorData.getDataType() == DataType.MATRIX || denominatorData.getDataType() == DataType.MATRIX) {
+            // Matrix operation
+            if ("Matrix(/.)".equals(divideMethodValue)) {
+                // Matrix division operation (numerator/denominator where denominator can be matrix)
+                if (numeratorData.getDataType() == DataType.MATRIX && denominatorData.getDataType() == DataType.MATRIX) {
+                    // Matrix / Matrix = numerator * inverse(denominator)
+                    Jama.Matrix numeratorMatrix = numeratorData.getMatrix();
+                    Jama.Matrix denominatorMatrix = denominatorData.getMatrix();
+                    try {
+                        Jama.Matrix inverseMatrix = denominatorMatrix.inverse();
+                        Jama.Matrix outputMatrix = numeratorMatrix.times(inverseMatrix);
+                        outputData = new Data(outputMatrix);
+                    } catch (RuntimeException e) {
+                        // Singular matrix - fallback to element-wise
+                        outputData = performElementWiseDivide(numeratorData, denominatorData);
+                    }
+                } else {
+                    // Element-wise fallback for mixed types
+                    outputData = performElementWiseDivide(numeratorData, denominatorData);
+                }
+            } else {
+                // Element-wise division operation
+                outputData = performElementWiseDivide(numeratorData, denominatorData);
+            }
+        } else {
+            // Scalar inputs
+            double numeratorValue = numeratorData.getInitValue();
+            double denominatorValue = denominatorData.getInitValue();
+            double result = denominatorValue != 0 ? numeratorValue / denominatorValue : Double.POSITIVE_INFINITY;
+            outputData = new Data(1, 1);
+            outputData.setInitValue(result);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private Data performElementWiseDivide(Data numeratorData, Data denominatorData) {
+        if (numeratorData.getDataType() == DataType.MATRIX && denominatorData.getDataType() == DataType.MATRIX) {
+            // Both matrices - element-wise division
+            Jama.Matrix numeratorMatrix = numeratorData.getMatrix();
+            Jama.Matrix denominatorMatrix = denominatorData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(numeratorMatrix.getRowDimension(), numeratorMatrix.getColumnDimension());
+            
+            for (int i = 0; i < numeratorMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < numeratorMatrix.getColumnDimension(); j++) {
+                    double numerator = numeratorMatrix.get(i, j);
+                    double denominator = denominatorMatrix.get(i, j);
+                    double result = denominator != 0 ? numerator / denominator : Double.POSITIVE_INFINITY;
+                    outputMatrix.set(i, j, result);
+                }
+            }
+            return new Data(outputMatrix);
+        } else if (numeratorData.getDataType() == DataType.MATRIX) {
+            // Numerator is matrix, denominator is scalar
+            Jama.Matrix numeratorMatrix = numeratorData.getMatrix();
+            double denominatorValue = denominatorData.getInitValue();
+            Jama.Matrix outputMatrix = new Jama.Matrix(numeratorMatrix.getRowDimension(), numeratorMatrix.getColumnDimension());
+            
+            for (int i = 0; i < numeratorMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < numeratorMatrix.getColumnDimension(); j++) {
+                    double numerator = numeratorMatrix.get(i, j);
+                    double result = denominatorValue != 0 ? numerator / denominatorValue : Double.POSITIVE_INFINITY;
+                    outputMatrix.set(i, j, result);
+                }
+            }
+            return new Data(outputMatrix);
+        } else if (denominatorData.getDataType() == DataType.MATRIX) {
+            // Numerator is scalar, denominator is matrix
+            double numeratorValue = numeratorData.getInitValue();
+            Jama.Matrix denominatorMatrix = denominatorData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(denominatorMatrix.getRowDimension(), denominatorMatrix.getColumnDimension());
+            
+            for (int i = 0; i < denominatorMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < denominatorMatrix.getColumnDimension(); j++) {
+                    double denominator = denominatorMatrix.get(i, j);
+                    double result = denominator != 0 ? numeratorValue / denominator : Double.POSITIVE_INFINITY;
+                    outputMatrix.set(i, j, result);
+                }
+            }
+            return new Data(outputMatrix);
+        } else {
+            // Both scalars
+            double result = denominatorData.getInitValue() != 0 ? numeratorData.getInitValue() / denominatorData.getInitValue() : Double.POSITIVE_INFINITY;
+            Data outputData = new Data(1, 1);
+            outputData.setInitValue(result);
+            return outputData;
+        }
     }
 }

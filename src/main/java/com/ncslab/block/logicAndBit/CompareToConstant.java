@@ -271,4 +271,45 @@ public class CompareToConstant extends LogicBlock {
         output = new OutputPort(this, 1, true);
         outputPortList.add(output);
     }
+    
+    // === Getter Methods ===
+    public double getConstantValue() {
+        return constantValue.getData().getInitValue();
+    }
+    
+    public String getRelationalOperator() {
+        return relationalOperator.getData().getInitString();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK CompareToConstant block: compares input to constant value
+        Data inputData = inputPortList.get(0).getData();
+        double constantVal = getConstantValue();
+        String operator = getRelationalOperator();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply comparison element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    boolean result = compare(value, constantVal, operator);
+                    outputMatrix.set(i, j, fromBoolean(result));
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            boolean result = compare(inputValue, constantVal, operator);
+            outputData = new Data(1, 1);
+            outputData.setInitValue(fromBoolean(result));
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
 }

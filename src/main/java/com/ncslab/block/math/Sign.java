@@ -281,12 +281,30 @@ public class Sign extends MathBlock {
 
     @Override
     public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
+        // SIMULINK Sign block: computes sign of input (-1, 0, or 1)
         Data inputData = inputPortList.get(0).getData();
-        double value = inputData.getInitValue();
-        double signValue = Math.signum(value);
-        Data resultData = new Data(signValue);
-        out.setData(resultData);
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply sign element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    outputMatrix.set(i, j, Math.signum(value));
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input - apply sign directly
+            double inputValue = inputData.getInitValue();
+            outputData = new Data(1, 1);
+            outputData.setInitValue(Math.signum(inputValue));
+        }
+        
+        outputPortList.get(0).setData(outputData);
     }
 }
 

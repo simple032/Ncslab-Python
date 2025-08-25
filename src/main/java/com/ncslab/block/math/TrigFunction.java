@@ -323,19 +323,59 @@ public class TrigFunction extends MathBlock {
 
     @Override
     public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
+        // SIMULINK Trigonometric Function block: computes trig functions
         Data inputData = inputPortList.get(0).getData();
-        double trigValue;
+        Data outputData;
 
         if (!trigFunction.equals("atan2")) {
-            trigValue = applyTrigonometricFunction(inputData.getInitValue(), trigFunction);
+            // Single input trigonometric functions
+            if (inputData.getDataType() == DataType.MATRIX) {
+                // Matrix input - apply trig function element-wise
+                Jama.Matrix inputMatrix = inputData.getMatrix();
+                Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+                
+                for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                        double value = inputMatrix.get(i, j);
+                        double trigValue = applyTrigonometricFunction(value, trigFunction);
+                        outputMatrix.set(i, j, trigValue);
+                    }
+                }
+                outputData = new Data(outputMatrix);
+            } else {
+                // Scalar input
+                double trigValue = applyTrigonometricFunction(inputData.getInitValue(), trigFunction);
+                outputData = new Data(1, 1);
+                outputData.setInitValue(trigValue);
+            }
         } else {
+            // atan2 function requires two inputs
             Data secondInputData = inputPortList.get(1).getData();
-            trigValue = Math.atan2(inputData.getInitValue(), secondInputData.getInitValue());
+            
+            if (inputData.getDataType() == DataType.MATRIX && secondInputData.getDataType() == DataType.MATRIX) {
+                // Matrix inputs - apply atan2 element-wise
+                Jama.Matrix inputMatrix1 = inputData.getMatrix();
+                Jama.Matrix inputMatrix2 = secondInputData.getMatrix();
+                Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix1.getRowDimension(), inputMatrix1.getColumnDimension());
+                
+                for (int i = 0; i < inputMatrix1.getRowDimension(); i++) {
+                    for (int j = 0; j < inputMatrix1.getColumnDimension(); j++) {
+                        double y = inputMatrix1.get(i, j);
+                        double x = inputMatrix2.get(i, j);
+                        double atanValue = Math.atan2(y, x);
+                        outputMatrix.set(i, j, atanValue);
+                    }
+                }
+                outputData = new Data(outputMatrix);
+            } else {
+                // Scalar inputs
+                double trigValue = Math.atan2(inputData.getInitValue(), secondInputData.getInitValue());
+                outputData = new Data(1, 1);
+                outputData.setInitValue(trigValue);
+            }
         }
 
-        Data resultData = new Data(trigValue);
-        out.setData(resultData);
+        outputPortList.get(0).setData(outputData);
     }
 
     private double applyTrigonometricFunction(double value, String function) {

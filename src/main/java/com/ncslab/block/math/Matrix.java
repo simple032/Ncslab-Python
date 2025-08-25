@@ -2,6 +2,7 @@ package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
@@ -111,5 +112,33 @@ public class Matrix extends MathBlock {
                 this.scalar = this.row * this.column == 1;
             }
         }
+    }
+    
+    @Override
+    public void calculateInit() {
+        // Initialization logic for Matrix block
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Matrix block: outputs constant matrix value
+        Data outputData;
+        
+        if (scalar || (row == 1 && column == 1)) {
+            // Scalar output
+            outputData = new Data(1, 1);
+            outputData.setInitValue(elements[0][0]);
+        } else {
+            // Matrix output
+            Jama.Matrix outputMatrix = new Jama.Matrix(row, column);
+            for (int i = 0; i < row; i++) {
+                for (int j = 0; j < column; j++) {
+                    outputMatrix.set(i, j, elements[i][j]);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        }
+        
+        outputPortList.get(0).setData(outputData);
     }
 }

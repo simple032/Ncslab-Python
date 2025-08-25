@@ -281,11 +281,31 @@ public class Bias extends MathBlock {
 
     @Override
     public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
+        // SIMULINK Bias block: adds bias value to input signal
         Data inputData = inputPortList.get(0).getData();
-        Data biasData = bias.getData();
-        Data resultData = inputData.plus(biasData);
-        out.setData(resultData);
+        double biasValue = bias.getData().getInitValue();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - add bias to each element
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    outputMatrix.set(i, j, value + biasValue);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input - add bias directly
+            double inputValue = inputData.getInitValue();
+            outputData = new Data(1, 1);
+            outputData.setInitValue(inputValue + biasValue);
+        }
+        
+        outputPortList.get(0).setData(outputData);
     }
 }
 

@@ -1,6 +1,8 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
+
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
@@ -304,30 +306,64 @@ public class Sqrt extends MathBlock {
 
     @Override
     public void calculateOutput(double t) {
-        OutputPort out = outputPortList.get(0);
+        // SIMULINK Sqrt block: computes square root functions
         Data inputData = inputPortList.get(0).getData();
         String functionValue = function.getInitString();
+        Data outputData;
         
-        double sqrtValue;
-        double inputValue = inputData.getInitValue();
-        
-        switch (functionValue) {
-            case "sqrt":
-                sqrtValue = Math.sqrt(inputValue);
-                break;
-            case "rSqrt":
-                sqrtValue = 1.0 / Math.sqrt(inputValue);
-                break;
-            case "signedSqrt":
-                sqrtValue = inputValue >= 0 ? Math.sqrt(inputValue) : -Math.sqrt(-inputValue);
-                break;
-            default:
-                sqrtValue = Math.sqrt(inputValue);
-                break;
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply sqrt function element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    double sqrtValue;
+                    
+                    switch (functionValue) {
+                        case "sqrt":
+                            sqrtValue = Math.sqrt(Math.abs(value)); // Handle negative values
+                            break;
+                        case "rSqrt":
+                            sqrtValue = value == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.sqrt(Math.abs(value));
+                            break;
+                        case "signedSqrt":
+                            sqrtValue = value >= 0 ? Math.sqrt(value) : -Math.sqrt(-value);
+                            break;
+                        default:
+                            sqrtValue = Math.sqrt(Math.abs(value));
+                            break;
+                    }
+                    outputMatrix.set(i, j, sqrtValue);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            double sqrtValue;
+            
+            switch (functionValue) {
+                case "sqrt":
+                    sqrtValue = Math.sqrt(Math.abs(inputValue)); // Handle negative values
+                    break;
+                case "rSqrt":
+                    sqrtValue = inputValue == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.sqrt(Math.abs(inputValue));
+                    break;
+                case "signedSqrt":
+                    sqrtValue = inputValue >= 0 ? Math.sqrt(inputValue) : -Math.sqrt(-inputValue);
+                    break;
+                default:
+                    sqrtValue = Math.sqrt(Math.abs(inputValue));
+                    break;
+            }
+            
+            outputData = new Data(1, 1);
+            outputData.setInitValue(sqrtValue);
         }
         
-        Data resultData = new Data(sqrtValue);
-        out.setData(resultData);
+        outputPortList.get(0).setData(outputData);
     }
 }
 

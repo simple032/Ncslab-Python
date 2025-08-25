@@ -1,6 +1,8 @@
 package com.ncslab.block.math;
 
 import com.ncslab.block.math.MathBlock;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.dto.block.specialized.math.ExponentialDto;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -232,5 +234,52 @@ public class Exponential extends MathBlock {
     
     public double getCustomBase() {
         return customBase.getData().getInitValue();
+    }
+    
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK Exponential block: computes exponential functions
+        Data inputData = inputPortList.get(0).getData();
+        String expTypeValue = getExpType();
+        Data outputData;
+        
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply exponential function element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    double expValue = applyExponentialFunction(value, expTypeValue);
+                    outputMatrix.set(i, j, expValue);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input
+            double inputValue = inputData.getInitValue();
+            double expValue = applyExponentialFunction(inputValue, expTypeValue);
+            outputData = new Data(1, 1);
+            outputData.setInitValue(expValue);
+        }
+        
+        outputPortList.get(0).setData(outputData);
+    }
+    
+    private double applyExponentialFunction(double value, String expType) {
+        switch (expType) {
+            case "exp":
+                return Math.exp(value);
+            case "exp2":
+                return Math.pow(2, value);
+            case "exp10":
+                return Math.pow(10, value);
+            case "custom":
+                double base = getCustomBase();
+                return Math.pow(base, value);
+            default:
+                return Math.exp(value); // Default to natural exponential
+        }
     }
 }
