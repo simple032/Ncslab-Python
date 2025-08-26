@@ -306,6 +306,13 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
     }
 
     @Override
+    public void calculateUpdate(double t) {
+        // This method is called to update internal state before calculateOutput
+        // For discrete time integrator, the state update happens in calculateDiscreteUpdate
+        // This method is typically empty for discrete blocks that do state updates in calculateDiscreteUpdate
+    }
+
+    @Override
     public void calculateDiscreteUpdate(double t) {
         InputPort in = inputPortList.get(0);
         Data inputSignal = in.getData();

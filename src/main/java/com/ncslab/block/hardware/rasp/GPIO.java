@@ -80,4 +80,36 @@ public class GPIO extends HardwareBlock{
 		context.put("inputSignal",  inputPortList.get(0) .getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/GPIO/output.vm", context));
 	}
+
+    @Override
+    public void calculateOutput(double t) {
+        // GPIO block typically controls digital output pins
+        // This is a sink block - it takes input and controls hardware GPIO pin
+        // For simulation purposes, we don't produce output signals
+        
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() != null) {
+            double inputValue = input.getData().getInitValue();
+            int gpioPin = Bcm.getData().getIntValue();
+            
+            // For real hardware, this would control the actual GPIO pin
+            // For simulation, we can log the GPIO state
+            boolean gpioState = inputValue > 0.5; // Threshold for digital output
+            
+            // Log GPIO state for debugging (in real hardware this would set the pin)
+            System.out.printf("GPIO Pin %d: %s (input: %.3f)%n", gpioPin, 
+                gpioState ? "HIGH" : "LOW", inputValue);
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize GPIO block
+        // For real hardware, this would configure the GPIO pin as output
+        int gpioPin = Bcm.getData().getIntValue();
+        
+        // Log initialization (in real hardware this would configure the pin)
+        System.out.printf("GPIO Pin %d initialized as output%n", gpioPin);
+    }
 }

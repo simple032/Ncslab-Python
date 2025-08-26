@@ -344,19 +344,168 @@ public class Pulse extends SourceBlock {
 	    }
 	@Override
 	public void calculateOutput(double t) {
-		// 实现具体的输出计算逻辑
-		double amplitudeValue = amplitude.getData().getInitValue();
-		double periodValue = period.getData().getInitValue();
-		double pulseWidthValue = pulseWidth.getData().getInitValue();
+		OutputPort outputPort = outputPortList.get(0);
+		Data outputData;
 
-		double output = amplitudeValue * (t % periodValue < pulseWidthValue ? 1 : 0);
-		outputPortList.get(0).getOutputSignalC().setValue(output);
+		// Handle both scalar and matrix cases
+		if (amplitude.getDataType() == com.ncslab.block.data.DataType.REAL) {
+			// Scalar case - SIMULINK-compatible pulse generation
+			double amplitudeValue = amplitude.getData().getInitValue();
+			double periodValue = period.getData().getInitValue();
+			double pulseWidthValue = pulseWidth.getData().getInitValue();
+			double phaseDelayValue = phaseDelay.getData().getInitValue();
+
+			// Handle edge cases
+			if (periodValue <= 0.0 || Double.isNaN(periodValue) || Double.isInfinite(periodValue)) {
+				outputData = new Data(0.0); // Safe fallback
+			} else if (Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+				outputData = new Data(0.0); // Safe fallback
+			} else {
+				// Apply phase delay
+				double adjustedTime = t - phaseDelayValue;
+				
+				// Handle negative time (before pulse starts)
+				if (adjustedTime < 0.0) {
+					outputData = new Data(0.0);
+				} else {
+					// Calculate position within period
+					double timeInPeriod = adjustedTime % periodValue;
+					
+					// Convert pulse width to time units
+					// If pulseWidth > 100, treat as absolute time, otherwise as percentage
+					double pulseWidthTime;
+					if (pulseWidthValue > 100.0) {
+						pulseWidthTime = pulseWidthValue / 100.0 * periodValue; // Still percentage if > 100
+					} else {
+						pulseWidthTime = pulseWidthValue / 100.0 * periodValue; // Percentage of period
+					}
+					
+					// Clamp pulse width to period
+					pulseWidthTime = Math.min(pulseWidthTime, periodValue);
+					
+					// Generate pulse output
+					double outputValue = (timeInPeriod < pulseWidthTime) ? amplitudeValue : 0.0;
+					outputData = new Data(outputValue);
+				}
+			}
+		} else {
+			// Matrix case - element-wise pulse generation
+			int height = amplitude.getHeight();
+			int width = amplitude.getWidth();
+			outputData = new Data(height, width);
+			
+			for (int i = 0; i < height; i++) {
+				for (int j = 0; j < width; j++) {
+					double amplitudeValue = amplitude.getData().getMatrix().get(i, j);
+					double periodValue = period.getData().getMatrix().get(i, j);
+					double pulseWidthValue = pulseWidth.getData().getMatrix().get(i, j);
+					double phaseDelayValue = phaseDelay.getData().getMatrix().get(i, j);
+
+					// Handle edge cases
+					if (periodValue <= 0.0 || Double.isNaN(periodValue) || Double.isInfinite(periodValue)) {
+						outputData.getMatrix().set(i, j, 0.0);
+					} else if (Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+						outputData.getMatrix().set(i, j, 0.0);
+					} else {
+						// Apply phase delay
+						double adjustedTime = t - phaseDelayValue;
+						
+						if (adjustedTime < 0.0) {
+							outputData.getMatrix().set(i, j, 0.0);
+						} else {
+							// Calculate position within period
+							double timeInPeriod = adjustedTime % periodValue;
+							
+							// Convert pulse width to time units
+							double pulseWidthTime;
+							if (pulseWidthValue > 100.0) {
+								pulseWidthTime = pulseWidthValue / 100.0 * periodValue;
+							} else {
+								pulseWidthTime = pulseWidthValue / 100.0 * periodValue;
+							}
+							
+							// Clamp pulse width to period
+							pulseWidthTime = Math.min(pulseWidthTime, periodValue);
+							
+							// Generate pulse output
+							double outputValue = (timeInPeriod < pulseWidthTime) ? amplitudeValue : 0.0;
+							outputData.getMatrix().set(i, j, outputValue);
+						}
+					}
+				}
+			}
+		}
+
+		outputPort.setData(outputData);
 	}
 
 	@Override
 	public void calculateInit() {
-		// 初始化逻辑
-		outputPortList.get(0).getOutputSignalC().setValue(0.0);
+		OutputPort outputPort = outputPortList.get(0);
+		Data initialData;
+
+		// Initialize output based on phase delay and initial conditions
+		if (amplitude.getDataType() == com.ncslab.block.data.DataType.REAL) {
+			// Scalar case
+			double phaseDelayValue = phaseDelay.getData().getInitValue();
+			double amplitudeValue = amplitude.getData().getInitValue();
+			double periodValue = period.getData().getInitValue();
+			double pulseWidthValue = pulseWidth.getData().getInitValue();
+
+			// Handle edge cases for parameters
+			if (periodValue <= 0.0 || Double.isNaN(periodValue) || Double.isInfinite(periodValue) ||
+				Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+				initialData = new Data(0.0); // Safe fallback
+			} else {
+				// If phase delay is 0 or negative, pulse starts at t=0
+				if (phaseDelayValue <= 0.0) {
+					double pulseWidthTime = (pulseWidthValue > 100.0) ? 
+						pulseWidthValue / 100.0 * periodValue : pulseWidthValue / 100.0 * periodValue;
+					pulseWidthTime = Math.min(pulseWidthTime, periodValue);
+					
+					// At t=0, if pulse width > 0, output should be amplitude
+					initialData = new Data((pulseWidthTime > 0.0) ? amplitudeValue : 0.0);
+				} else {
+					// Pulse hasn't started yet due to phase delay
+					initialData = new Data(0.0);
+				}
+			}
+		} else {
+			// Matrix case
+			int height = amplitude.getHeight();
+			int width = amplitude.getWidth();
+			initialData = new Data(height, width);
+
+			for (int i = 0; i < height; i++) {
+				for (int j = 0; j < width; j++) {
+					double phaseDelayValue = phaseDelay.getData().getMatrix().get(i, j);
+					double amplitudeValue = amplitude.getData().getMatrix().get(i, j);
+					double periodValue = period.getData().getMatrix().get(i, j);
+					double pulseWidthValue = pulseWidth.getData().getMatrix().get(i, j);
+
+					// Handle edge cases
+					if (periodValue <= 0.0 || Double.isNaN(periodValue) || Double.isInfinite(periodValue) ||
+						Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+						initialData.getMatrix().set(i, j, 0.0);
+					} else {
+						// If phase delay is 0 or negative, pulse starts at t=0
+						if (phaseDelayValue <= 0.0) {
+							double pulseWidthTime = (pulseWidthValue > 100.0) ? 
+								pulseWidthValue / 100.0 * periodValue : pulseWidthValue / 100.0 * periodValue;
+							pulseWidthTime = Math.min(pulseWidthTime, periodValue);
+							
+							// At t=0, if pulse width > 0, output should be amplitude
+							initialData.getMatrix().set(i, j, (pulseWidthTime > 0.0) ? amplitudeValue : 0.0);
+						} else {
+							// Pulse hasn't started yet due to phase delay
+							initialData.getMatrix().set(i, j, 0.0);
+						}
+					}
+				}
+			}
+		}
+
+		outputPort.setData(initialData);
 	}
 }
 // Removed extra closing brace if present

@@ -115,5 +115,6 @@ abstract public class DiscreteBlock extends Block {
         }
     }
 
-//    abstract public void calculateOutput(double t);
+   abstract public void calculateOutput(double t);
+   abstract public void calculateUpdate(double t);
 }

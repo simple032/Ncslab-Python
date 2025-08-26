@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.io.State;
+import Jama.Matrix;
 
 /**
  * Discrete_Transfer_Fcnz block with SIMULINK-compatible parameters and type-safe constructors.
@@ -39,6 +42,10 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     
     // === Internal state ===
     private final boolean feedthrough = true; // Transfer function blocks have feedthrough
+    private State[] xStates;  // State variables for the transfer function
+    private State[] uStates;  // Previous input values for the transfer function
+    private int numOrder = 0;  // Numerator order
+    private int denOrder = 0;  // Denominator order
 
     // === Static Parameter Definitions ===
     
@@ -291,4 +298,156 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 	 public void checkDimension() throws MatDimException{
 		 // No additional dimension checks needed for discrete transfer function
 	}
+
+    @Override
+    public void calculateInit() {
+        // Initialize state arrays based on numerator and denominator orders
+        OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
+        numOrder = signal2.getWidth() - 1;  // Numerator order
+        denOrder = signal3.getWidth() - 1;  // Denominator order
+        
+        // Initialize state arrays
+        xStates = new State[Math.max(denOrder, 1)];
+        uStates = new State[Math.max(numOrder, 1)];
+        
+        for (int i = 0; i < xStates.length; i++) {
+            xStates[i] = new State(this, i + 1, "x_state_" + i, 1, 1);
+            xStates[i].setData(new Data(0.0));
+        }
+        
+        for (int i = 0; i < uStates.length; i++) {
+            uStates[i] = new State(this, i + 1, "u_state_" + i, 1, 1);
+            uStates[i].setData(new Data(0.0));
+        }
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Discrete transfer function output calculation
+        // y(k) = (b0*u(k) + b1*u(k-1) + ... + bn*u(k-n)) / a0 - (a1*y(k-1) + ... + am*y(k-m)) / a0
+        
+        InputPort input = inputPortList.get(0);  // Input signal
+        InputPort numerator = inputPortList.get(1);  // Numerator coefficients [b0, b1, ..., bn]
+        InputPort denominator = inputPortList.get(2);  // Denominator coefficients [a0, a1, ..., am]
+        OutputPort output = outputPortList.get(0);
+        
+        Data inputSignal = input.getData();
+        Data numCoeffs = numerator.getData();
+        Data denCoeffs = denominator.getData();
+        
+        // Get coefficient values
+        double[] b = new double[numCoeffs.getWidth()];
+        double[] a = new double[denCoeffs.getWidth()];
+        
+        if (numCoeffs.getDataType() == DataType.MATRIX) {
+            Matrix numMatrix = numCoeffs.getMatrix();
+            for (int i = 0; i < b.length; i++) {
+                b[i] = numMatrix.get(0, i);
+            }
+        } else {
+            b[0] = numCoeffs.getInitValue();
+        }
+        
+        if (denCoeffs.getDataType() == DataType.MATRIX) {
+            Matrix denMatrix = denCoeffs.getMatrix();
+            for (int i = 0; i < a.length; i++) {
+                a[i] = denMatrix.get(0, i);
+            }
+        } else {
+            a[0] = denCoeffs.getInitValue();
+        }
+        
+        // Normalize by a[0] if needed
+        if (Math.abs(a[0]) < 1e-10) {
+            throw new RuntimeException("Denominator coefficient a[0] cannot be zero");
+        }
+        
+        // Calculate output based on Direct Form II
+        double outputValue = 0.0;
+        
+        if (inputSignal.getDataType() == DataType.REAL) {
+            // Scalar input case
+            double u = inputSignal.getInitValue();
+            
+            // Calculate numerator part: b0*u(k) + b1*u(k-1) + ... 
+            outputValue = b[0] * u / a[0];
+            for (int i = 1; i < b.length && i <= uStates.length; i++) {
+                outputValue += b[i] * uStates[i-1].getData().getInitValue() / a[0];
+            }
+            
+            // Subtract denominator part: a1*y(k-1) + a2*y(k-2) + ...
+            for (int i = 1; i < a.length && i <= xStates.length; i++) {
+                outputValue -= a[i] * xStates[i-1].getData().getInitValue() / a[0];
+            }
+            
+            output.setData(new Data(outputValue));
+        } else {
+            // Matrix input case - apply transfer function element-wise
+            Matrix inputMatrix = inputSignal.getMatrix();
+            Matrix outputMatrix = new Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+            
+            for (int row = 0; row < inputMatrix.getRowDimension(); row++) {
+                for (int col = 0; col < inputMatrix.getColumnDimension(); col++) {
+                    double u = inputMatrix.get(row, col);
+                    
+                    // Calculate for this element
+                    outputValue = b[0] * u / a[0];
+                    // Note: For matrix inputs, states would need to be matrices too
+                    // This is a simplified implementation
+                    
+                    outputMatrix.set(row, col, outputValue);
+                }
+            }
+            
+            output.setData(new Data(outputMatrix));
+        }
+    }
+
+    @Override
+    public void calculateUpdate(double t) {
+        // Update state variables for next time step
+        // This is called at each discrete time step to shift the state variables
+        
+        InputPort input = inputPortList.get(0);
+        OutputPort output = outputPortList.get(0);
+        
+        Data inputSignal = input.getData();
+        Data outputSignal = output.getOutputSignalC().getData();
+        
+        if (inputSignal.getDataType() == DataType.REAL) {
+            // Shift input states (u(k-1) = u(k), u(k-2) = u(k-1), etc.)
+            for (int i = uStates.length - 1; i > 0; i--) {
+                uStates[i].setData(uStates[i-1].getData());
+            }
+            if (uStates.length > 0) {
+                uStates[0].setData(inputSignal);
+            }
+            
+            // Shift output states (y(k-1) = y(k), y(k-2) = y(k-1), etc.)
+            for (int i = xStates.length - 1; i > 0; i--) {
+                xStates[i].setData(xStates[i-1].getData());
+            }
+            if (xStates.length > 0) {
+                xStates[0].setData(outputSignal);
+            }
+        } else {
+            // For matrix inputs, would need matrix state handling
+            // Simplified implementation for now
+            for (int i = uStates.length - 1; i > 0; i--) {
+                uStates[i].setData(uStates[i-1].getData());
+            }
+            if (uStates.length > 0) {
+                uStates[0].setData(inputSignal);
+            }
+            
+            for (int i = xStates.length - 1; i > 0; i--) {
+                xStates[i].setData(xStates[i-1].getData());
+            }
+            if (xStates.length > 0) {
+                xStates[0].setData(outputSignal);
+            }
+        }
+    }
 }

@@ -305,4 +305,89 @@ public class Zero_Order_Hold extends DiscreteBlock {
     public void checkDimension() throws MatDimException {
         // No additional dimension checks needed for zero-order hold
     }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Zero-order hold: outputs the last sampled input value
+        OutputPort output = outputPortList.get(0);
+        
+        if (stateOutput == null || stateOutput.getData() == null) {
+            // If no state available, pass through current input
+            InputPort input = inputPortList.get(0);
+            if (input.getData() != null) {
+                output.setData(input.getData());
+            } else {
+                output.setData(new Data(0.0));
+            }
+            return;
+        }
+        
+        // Output the held (sampled) value from state
+        output.setData(stateOutput.getData());
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize zero-order hold block
+        OutputPort output = outputPortList.get(0);
+        InputPort input = inputPortList.get(0);
+        
+        // Sample the initial input value
+        if (input.getData() != null) {
+            Data initialInput = input.getData();
+            
+            // Initialize state with input value
+            if (stateOutput != null) {
+                stateOutput.setData(initialInput);
+            }
+            
+            // Initialize output with input value
+            output.setData(initialInput);
+        } else {
+            // No input available, initialize with zero
+            Data zeroData = new Data(0.0);
+            
+            if (stateOutput != null) {
+                stateOutput.setData(zeroData);
+            }
+            output.setData(zeroData);
+        }
+    }
+    
+    @Override
+    public void calculateUpdate(double t) {
+        // Update zero-order hold state at discrete sample times
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() == null || stateOutput == null) {
+            return;
+        }
+        
+        double sampleTime = sampleTimeParam.getData().getInitValue();
+        
+        // For zero-order hold, we sample the input at discrete time intervals
+        // This update happens at the sample time boundaries
+        if (sampleTime > 0) {
+            // Check if it's time to sample (this is typically controlled by the solver)
+            // For now, we'll sample the current input value
+            Data inputData = input.getData();
+            
+            if (inputData.getDataType() == DataType.REAL) {
+                stateOutput.setData(new Data(inputData.getInitValue()));
+            } else if (inputData.getDataType() == DataType.MATRIX) {
+                // For matrix inputs, create a copy
+                Jama.Matrix inputMatrix = inputData.getMatrix();
+                Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+                
+                for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                        outputMatrix.set(i, j, inputMatrix.get(i, j));
+                    }
+                }
+                stateOutput.setData(new Data(outputMatrix));
+            } else {
+                stateOutput.setData(inputData);
+            }
+        }
+    }
 }

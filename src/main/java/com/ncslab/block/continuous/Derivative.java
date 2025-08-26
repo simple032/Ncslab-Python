@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.TemplateManager;
+import Jama.Matrix;
 import java.util.HashMap;
 
 import com.ncslab.block.continuous.ContinuousBlock;
@@ -449,5 +450,97 @@ public class Derivative extends ContinuousBlock {
     }
     public void checkDimension() throws MatDimException {
         // No special dimension checks needed for derivative block
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Filtered derivative implementation: G = s/(Ts+1)
+        // For filtered derivative, we need the internal state representing the integral
+        OutputPort output = outputPortList.get(0);
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() == null || stateIntegral == null) {
+            // Initialize with zero if no data or state available
+            output.setData(new Data(0.0));
+            return;
+        }
+        
+        Data inputData = input.getData();
+        Data stateData = stateIntegral.getData();
+        double filterCoeff = filterCoefficient.getDouble();
+        
+        if (inputData.getDataType() == DataType.REAL) {
+            // Scalar case: output = (input - state) / T
+            double inputValue = inputData.getInitValue();
+            double stateValue = stateData.getInitValue();
+            double outputValue = (inputValue - stateValue) / filterCoeff;
+            
+            // Handle edge cases
+            if (Double.isNaN(outputValue) || Double.isInfinite(outputValue)) {
+                outputValue = 0.0;
+            }
+            
+            output.setData(new Data(outputValue));
+        } else if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix case: output = (input - state) / T (element-wise)
+            Matrix inputMatrix = inputData.getMatrix();
+            Matrix stateMatrix = stateData.getMatrix();
+            
+            int rows = inputMatrix.getRowDimension();
+            int cols = inputMatrix.getColumnDimension();
+            Matrix outputMatrix = new Matrix(rows, cols);
+            
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    double inputValue = inputMatrix.get(i, j);
+                    double stateValue = stateMatrix.get(i, j);
+                    double outputValue = (inputValue - stateValue) / filterCoeff;
+                    
+                    // Handle edge cases
+                    if (Double.isNaN(outputValue) || Double.isInfinite(outputValue)) {
+                        outputValue = 0.0;
+                    }
+                    
+                    outputMatrix.set(i, j, outputValue);
+                }
+            }
+            
+            output.setData(new Data(outputMatrix));
+        } else {
+            // Unknown data type - default to zero
+            output.setData(new Data(0.0));
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize derivative output based on initial conditions
+        OutputPort output = outputPortList.get(0);
+        
+        if (stateIntegral != null) {
+            // Set initial state to initial condition
+            double ic = initialCondition.getDouble();
+            
+            if (stateIntegral.getDataType() == DataType.REAL) {
+                stateIntegral.setData(new Data(ic));
+                output.setData(new Data(0.0)); // Initial derivative output is zero
+            } else if (stateIntegral.getDataType() == DataType.MATRIX) {
+                int height = stateIntegral.getHeight();
+                int width = stateIntegral.getWidth();
+                Matrix icMatrix = new Matrix(height, width);
+                
+                // Initialize all elements to initial condition
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        icMatrix.set(i, j, ic);
+                    }
+                }
+                
+                stateIntegral.setData(new Data(icMatrix));
+                output.setData(new Data(new Matrix(height, width))); // Zero matrix output
+            }
+        } else {
+            output.setData(new Data(0.0));
+        }
     }
 }

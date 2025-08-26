@@ -298,4 +298,195 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         identity.put("blockUUID", blockUUID);
         return identity;
     }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Discrete transfer function: H(z) = num(z)/den(z)
+        // Implemented as direct form II structure
+        OutputPort output = outputPortList.get(0);
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() == null) {
+            output.setData(new Data(0.0));
+            return;
+        }
+        
+        Data inputData = input.getData();
+        double[] numCoeffs = numerator.getData().getDoubleArray();
+        double[] denCoeffs = denominator.getData().getDoubleArray();
+        
+        if (inputData.getDataType() == DataType.REAL) {
+            double inputValue = inputData.getInitValue();
+            double outputValue = 0.0;
+            
+            // Calculate numerator contribution: sum(num[i] * delayed_inputs[i])
+            // For direct form II: num[0] * u[k] + num[1] * x1[k] + num[2] * x2[k] + ...
+            outputValue += numCoeffs[0] * inputValue;
+            
+            // Add contributions from internal states (delayed inputs)
+            for (int i = 0; i < xStateList.size() && i + 1 < numCoeffs.length; i++) {
+                State state = xStateList.get(i);
+                if (state.getData() != null) {
+                    outputValue += numCoeffs[i + 1] * state.getData().getInitValue();
+                }
+            }
+            
+            // Handle edge cases
+            if (Double.isNaN(outputValue) || Double.isInfinite(outputValue)) {
+                outputValue = 0.0;
+            }
+            
+            output.setData(new Data(outputValue));
+            
+        } else if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix case - apply transfer function element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            int rows = inputMatrix.getRowDimension();
+            int cols = inputMatrix.getColumnDimension();
+            Jama.Matrix outputMatrix = new Jama.Matrix(rows, cols);
+            
+            // For matrices, we apply the transfer function to each element
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    double inputElement = inputMatrix.get(row, col);
+                    double outputElement = 0.0;
+                    
+                    // Calculate transfer function for this element
+                    outputElement += numCoeffs[0] * inputElement;
+                    
+                    // Add state contributions (this is simplified - in practice,
+                    // matrix transfer functions would need separate state storage per element)
+                    for (int i = 0; i < xStateList.size() && i + 1 < numCoeffs.length; i++) {
+                        State state = xStateList.get(i);
+                        if (state.getData() != null && state.getData().getDataType() == DataType.MATRIX) {
+                            Jama.Matrix stateMatrix = state.getData().getMatrix();
+                            if (row < stateMatrix.getRowDimension() && col < stateMatrix.getColumnDimension()) {
+                                outputElement += numCoeffs[i + 1] * stateMatrix.get(row, col);
+                            }
+                        } else if (state.getData() != null) {
+                            // Use scalar state for all matrix elements
+                            outputElement += numCoeffs[i + 1] * state.getData().getInitValue();
+                        }
+                    }
+                    
+                    // Handle edge cases
+                    if (Double.isNaN(outputElement) || Double.isInfinite(outputElement)) {
+                        outputElement = 0.0;
+                    }
+                    
+                    outputMatrix.set(row, col, outputElement);
+                }
+            }
+            
+            output.setData(new Data(outputMatrix));
+            
+        } else {
+            // Unknown data type
+            output.setData(new Data(0.0));
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize discrete transfer function block
+        OutputPort output = outputPortList.get(0);
+        
+        // Initialize internal states with initial states parameter
+        double ic = initialStates.getDouble();
+        for (State state : xStateList) {
+            if (state.getDataType() == DataType.REAL) {
+                state.setData(new Data(ic));
+            } else if (state.getDataType() == DataType.MATRIX) {
+                int height = state.getHeight();
+                int width = state.getWidth();
+                Jama.Matrix icMatrix = new Jama.Matrix(height, width);
+                
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        icMatrix.set(i, j, ic);
+                    }
+                }
+                state.setData(new Data(icMatrix));
+            }
+        }
+        
+        // Initialize output to zero
+        output.setData(new Data(0.0));
+    }
+    
+    @Override
+    public void calculateUpdate(double t) {
+        // Update discrete transfer function states
+        // Direct Form II: x[k+1] = shift register of delayed inputs minus feedback
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() == null || xStateList.isEmpty()) {
+            return;
+        }
+        
+        Data inputData = input.getData();
+        double[] denCoeffs = denominator.getData().getDoubleArray();
+        
+        if (inputData.getDataType() == DataType.REAL) {
+            double inputValue = inputData.getInitValue();
+            
+            // Calculate the intermediate signal w[k] for direct form II
+            double wk = inputValue;
+            
+            // Subtract feedback terms: w[k] = u[k] - sum(den[i+1] * x[i])
+            for (int i = 0; i < xStateList.size() && i + 1 < denCoeffs.length; i++) {
+                State state = xStateList.get(i);
+                if (state.getData() != null) {
+                    wk -= denCoeffs[i + 1] * state.getData().getInitValue();
+                }
+            }
+            
+            // Shift register: x[k+1] = [w[k], x1[k], x2[k], ...]
+            // Update states in reverse order to avoid overwriting
+            for (int i = xStateList.size() - 1; i > 0; i--) {
+                State currentState = xStateList.get(i);
+                State previousState = xStateList.get(i - 1);
+                if (previousState.getData() != null) {
+                    currentState.setData(new Data(previousState.getData().getInitValue()));
+                }
+            }
+            
+            // Set first state to intermediate signal
+            if (!xStateList.isEmpty()) {
+                xStateList.get(0).setData(new Data(wk));
+            }
+            
+        } else if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix case - similar update but for matrix elements
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            
+            // For simplicity, we handle matrix case by using scalar approach
+            // In practice, you might want separate state storage per matrix element
+            double inputScalar = 0.0;
+            if (inputMatrix.getRowDimension() > 0 && inputMatrix.getColumnDimension() > 0) {
+                inputScalar = inputMatrix.get(0, 0);
+            }
+            
+            double wk = inputScalar;
+            for (int i = 0; i < xStateList.size() && i + 1 < denCoeffs.length; i++) {
+                State state = xStateList.get(i);
+                if (state.getData() != null) {
+                    wk -= denCoeffs[i + 1] * state.getData().getInitValue();
+                }
+            }
+            
+            // Shift register update
+            for (int i = xStateList.size() - 1; i > 0; i--) {
+                State currentState = xStateList.get(i);
+                State previousState = xStateList.get(i - 1);
+                if (previousState.getData() != null) {
+                    currentState.setData(new Data(previousState.getData().getInitValue()));
+                }
+            }
+            
+            if (!xStateList.isEmpty()) {
+                xStateList.get(0).setData(new Data(wk));
+            }
+        }
+    }
 }

@@ -319,4 +319,214 @@ public class DiscreteStateSpace extends DiscreteBlock {
         identity.put("blockUUID", blockUUID);
         return identity;
     }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Discrete state space: y[k] = C*x[k] + D*u[k]
+        OutputPort output = outputPortList.get(0);
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() == null) {
+            output.setData(new Data(0.0));
+            return;
+        }
+        
+        Data inputData = input.getData();
+        Matrix CMatrix = C.getMatrix();
+        Matrix DMatrix = D.getMatrix();
+        
+        if (inputData.getDataType() == DataType.REAL && !xStateList.isEmpty()) {
+            // Scalar case
+            double inputValue = inputData.getInitValue();
+            
+            // Calculate C*x[k] 
+            double outputFromStates = 0.0;
+            for (int i = 0; i < xStateList.size(); i++) {
+                State state = xStateList.get(i);
+                double stateValue = state.getData().getInitValue();
+                if (i < CMatrix.getColumnDimension()) {
+                    outputFromStates += CMatrix.get(0, i) * stateValue;
+                }
+            }
+            
+            // Calculate D*u[k]
+            double outputFromInput = DMatrix.get(0, 0) * inputValue;
+            
+            // Total output: y[k] = C*x[k] + D*u[k]
+            double totalOutput = outputFromStates + outputFromInput;
+            output.setData(new Data(totalOutput));
+            
+        } else if (inputData.getDataType() == DataType.MATRIX && !xStateList.isEmpty()) {
+            // Matrix case
+            Matrix inputMatrix = inputData.getMatrix();
+            
+            // Get current state vector
+            int numStates = xStateList.size();
+            Matrix stateVector = new Matrix(numStates, 1);
+            for (int i = 0; i < numStates; i++) {
+                State state = xStateList.get(i);
+                if (state.getData().getDataType() == DataType.REAL) {
+                    stateVector.set(i, 0, state.getData().getInitValue());
+                } else if (state.getData().getDataType() == DataType.MATRIX) {
+                    // For matrix states, take the first element
+                    Matrix stateMatrix = state.getData().getMatrix();
+                    if (stateMatrix.getRowDimension() > 0 && stateMatrix.getColumnDimension() > 0) {
+                        stateVector.set(i, 0, stateMatrix.get(0, 0));
+                    }
+                }
+            }
+            
+            // Calculate C*x[k]
+            Matrix outputFromStates = CMatrix.times(stateVector);
+            
+            // Calculate D*u[k] - handle different input dimensions
+            Matrix outputFromInput;
+            if (inputMatrix.getRowDimension() == DMatrix.getColumnDimension()) {
+                outputFromInput = DMatrix.times(inputMatrix);
+            } else {
+                // Create compatible input vector
+                Matrix inputVector = new Matrix(DMatrix.getColumnDimension(), 1);
+                for (int i = 0; i < Math.min(DMatrix.getColumnDimension(), inputMatrix.getRowDimension()); i++) {
+                    inputVector.set(i, 0, inputMatrix.get(i, 0));
+                }
+                outputFromInput = DMatrix.times(inputVector);
+            }
+            
+            // Total output: y[k] = C*x[k] + D*u[k]
+            Matrix totalOutput = outputFromStates.plus(outputFromInput);
+            output.setData(new Data(totalOutput));
+            
+        } else {
+            // No states or invalid input - use feedthrough only
+            if (inputData.getDataType() == DataType.REAL) {
+                double inputValue = inputData.getInitValue();
+                double outputValue = DMatrix.get(0, 0) * inputValue;
+                output.setData(new Data(outputValue));
+            } else if (inputData.getDataType() == DataType.MATRIX) {
+                Matrix inputMatrix = inputData.getMatrix();
+                Matrix outputMatrix = DMatrix.times(inputMatrix);
+                output.setData(new Data(outputMatrix));
+            } else {
+                output.setData(new Data(0.0));
+            }
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize discrete state space block
+        OutputPort output = outputPortList.get(0);
+        
+        // Initialize states to initial condition
+        double ic = initialCondition.getDouble();
+        for (State state : xStateList) {
+            if (state.getDataType() == DataType.REAL) {
+                state.setData(new Data(ic));
+            } else if (state.getDataType() == DataType.MATRIX) {
+                int height = state.getHeight();
+                int width = state.getWidth();
+                Matrix icMatrix = new Matrix(height, width);
+                
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        icMatrix.set(i, j, ic);
+                    }
+                }
+                state.setData(new Data(icMatrix));
+            }
+        }
+        
+        // Initialize output to zero
+        Matrix CMatrix = C.getMatrix();
+        if (CMatrix.getRowDimension() == 1 && CMatrix.getColumnDimension() == 1) {
+            output.setData(new Data(0.0));
+        } else {
+            Matrix zeroOutput = new Matrix(CMatrix.getRowDimension(), 1);
+            output.setData(new Data(zeroOutput));
+        }
+    }
+    
+    @Override
+    public void calculateUpdate(double t) {
+        // Update discrete state: x[k+1] = A*x[k] + B*u[k]
+        // This method is called during discrete time steps
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() == null || xStateList.isEmpty()) {
+            return;
+        }
+        
+        Data inputData = input.getData();
+        Matrix AMatrix = A.getMatrix();
+        Matrix BMatrix = B.getMatrix();
+        
+        if (inputData.getDataType() == DataType.REAL) {
+            // Scalar case
+            double inputValue = inputData.getInitValue();
+            
+            // Create new state values
+            List<Double> newStateValues = new ArrayList<>();
+            
+            for (int i = 0; i < xStateList.size(); i++) {
+                State state = xStateList.get(i);
+                double oldStateValue = state.getData().getInitValue();
+                
+                // Calculate A*x[k] component for this state
+                double stateComponent = 0.0;
+                for (int j = 0; j < xStateList.size(); j++) {
+                    if (j < AMatrix.getColumnDimension()) {
+                        double otherStateValue = xStateList.get(j).getData().getInitValue();
+                        stateComponent += AMatrix.get(i, j) * otherStateValue;
+                    }
+                }
+                
+                // Calculate B*u[k] component
+                double inputComponent = 0.0;
+                if (i < BMatrix.getRowDimension()) {
+                    inputComponent = BMatrix.get(i, 0) * inputValue;
+                }
+                
+                // New state value: x[k+1] = A*x[k] + B*u[k]
+                double newStateValue = stateComponent + inputComponent;
+                newStateValues.add(newStateValue);
+            }
+            
+            // Update all states with new values
+            for (int i = 0; i < xStateList.size(); i++) {
+                xStateList.get(i).setData(new Data(newStateValues.get(i)));
+            }
+            
+        } else if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix case - similar implementation for matrices
+            Matrix inputMatrix = inputData.getMatrix();
+            
+            // Get current state vector
+            int numStates = xStateList.size();
+            Matrix currentStateVector = new Matrix(numStates, 1);
+            for (int i = 0; i < numStates; i++) {
+                State state = xStateList.get(i);
+                if (state.getData().getDataType() == DataType.REAL) {
+                    currentStateVector.set(i, 0, state.getData().getInitValue());
+                }
+            }
+            
+            // Calculate A*x[k]
+            Matrix stateUpdate = AMatrix.times(currentStateVector);
+            
+            // Calculate B*u[k]
+            Matrix inputVector = new Matrix(BMatrix.getColumnDimension(), 1);
+            for (int i = 0; i < Math.min(BMatrix.getColumnDimension(), inputMatrix.getRowDimension()); i++) {
+                inputVector.set(i, 0, inputMatrix.get(i, 0));
+            }
+            Matrix inputUpdate = BMatrix.times(inputVector);
+            
+            // New state: x[k+1] = A*x[k] + B*u[k]
+            Matrix newStateVector = stateUpdate.plus(inputUpdate);
+            
+            // Update states
+            for (int i = 0; i < numStates && i < newStateVector.getRowDimension(); i++) {
+                xStateList.get(i).setData(new Data(newStateVector.get(i, 0)));
+            }
+        }
+    }
 }

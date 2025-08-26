@@ -1,50 +1,77 @@
 package com.ncslab.block.route;
 
-import Jama.Matrix;
-import com.ncslab.block.data.Data;
+// Java standard imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+// External libraries
 import lombok.Getter;
 import org.json.JSONObject;
+import Jama.Matrix;
+
+// Internal imports - DTO
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.route.MuxDto;
-import com.ncslab.block.route.RouteBlock;
+
+// Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
+import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.NCSLabModel;
+
+// Internal imports - Block components
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
+
+// Internal imports - Code generation
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
-import com.ncslab.ncslablink.BlockCreationException;
-import com.ncslab.ncslablink.MatDimException;
-import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Mux block with SIMULINK-compatible parameters and type-safe constructors.
+ * Mux (Multiplexer) block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * Combines multiple input signals into a single output vector by concatenating the inputs.
+ * Supports both scalar and vector input signals with configurable input port ordering.
  * 
  * SIMULINK Parameters:
  * - Inputs: Number of input ports or vector of input port widths
- * - DisplayOrder: Display order of input ports
+ * - DisplayOrder: Display order of input ports (top-down, bottom-up)
  * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Mux extends RouteBlock {
-	private int num;
-
-	private boolean feedThrough = true;
-
+    // === Configuration ===
+    /** Number of input ports */
+    private int num;
+    
+    /** Feedthrough flag - Mux has direct feedthrough */
+    private boolean feedThrough = true;
+    
     // === SIMULINK-Compatible Parameters ===
+    /** Input ports specification parameter */
     private final Parameter inputs;
+    
+    /** Display order parameter */
     private final Parameter displayOrder;
+    
+    /** Sample time parameter */
     private final Parameter sampleTime;
+    
+    /** Output data type specification parameter */
     private final Parameter outDataType;
+    
+    /** Integer overflow handling parameter */
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===

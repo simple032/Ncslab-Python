@@ -1,51 +1,77 @@
 package com.ncslab.block.discontinuous;
 
-import com.ncslab.block.discontinuous.DiscontinuousBlock;
-import com.ncslab.block.data.Data;
-import com.ncslab.block.data.DataType;
+// Java standard imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+// External libraries
 import lombok.Getter;
 import org.json.JSONObject;
+import Jama.Matrix;
+
+// Internal imports - DTO
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.discontinuous.SaturationDto;
-import java.util.HashMap;
 
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
-import Jama.Matrix;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.io.Parameter;
-import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
+// Internal imports - Core
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.util.TemplateManager;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
+// Internal imports - Block components
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+
+// Internal imports - Code generation
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.util.TemplateManager;
 
 /**
  * Saturation block with SIMULINK-compatible parameters and type-safe constructors.
  * 
+ * Implements signal saturation by limiting output values between configurable upper and lower bounds.
+ * Input signals exceeding the limits are clipped to the respective boundary values.
+ * 
  * SIMULINK Parameters:
- * - UpperSaturationLimit: Upper saturation limit
- * - LowerSaturationLimit: Lower saturation limit
+ * - UpperLimit/UpperSaturationLimit: Upper saturation limit
+ * - LowerLimit/LowerSaturationLimit: Lower saturation limit
  * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Saturation extends DiscontinuousBlock {
-    // Legacy fields for backward compatibility
+    // === Legacy Compatibility ===
+    /** Legacy lower limit parameter for backward compatibility */
     Parameter lowerLimit;
+    
+    /** Legacy upper limit parameter for backward compatibility */
     Parameter upperLimit;
-
+    
     // === SIMULINK-Compatible Parameters ===
+    /** Upper saturation limit parameter */
     private final Parameter upperSaturationLimit;
+    
+    /** Lower saturation limit parameter */
     private final Parameter lowerSaturationLimit;
+    
+    /** Sample time parameter */
     private final Parameter sampleTime;
+    
+    /** Output data type specification parameter */
     private final Parameter outDataType;
+    
+    /** Integer overflow handling parameter */
     private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===

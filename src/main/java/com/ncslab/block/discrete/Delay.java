@@ -1,51 +1,76 @@
 package com.ncslab.block.discrete;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.data.Data;
-import com.ncslab.block.data.DataType;
+// Java standard imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+// External libraries
 import lombok.Getter;
 import org.json.JSONObject;
+import Jama.Matrix;
+
+// Internal imports - DTO
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.discrete.DelayDto;
 
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputPort;
-import Jama.Matrix;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.io.Parameter;
-import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
+// Internal imports - Core
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.util.TemplateManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
+// Internal imports - Block components
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+
+// Internal imports - Code generation
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.util.TemplateManager;
 
 /**
  * Delay block with SIMULINK-compatible parameters and type-safe constructors.
  *
+ * Implements a discrete-time delay (z^-n) by buffering input samples and outputting
+ * them after a specified number of time steps. Essential for discrete control systems.
+ *
  * SIMULINK Parameters:
- * - DelayLength: Number of samples to delay
+ * - DelayLength: Number of samples to delay (n in z^-n)
  * - InitialCondition: Initial condition for the delay buffer
  * - SampleTime: Sample time for discrete operation
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Delay extends DiscreteBlock {
 
     // === Internal State ===
+    /** Delay buffer storing historical input samples */
     private List<Data> buffer;
-
+    
     // === SIMULINK-Compatible Parameters ===
+    /** Delay length parameter (number of samples) */
     private final Parameter delayLength;
+    
+    /** Initial condition parameter for delay buffer */
     private final Parameter initialCondition;
+    
+    /** Sample time parameter */
     private final Parameter sampleTimeParam;
+    
+    /** Output data type specification parameter */
     private final Parameter outDataType;
+    
+    /** Integer overflow handling parameter */
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -328,5 +353,76 @@ public class Delay extends DiscreteBlock {
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/output.vm", context);
         code.addOutputCode(codeStr);
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Discrete delay: y[k] = u[k-n] where n is the delay length
+        OutputPort output = outputPortList.get(0);
+        
+        if (buffer == null || buffer.isEmpty()) {
+            // If buffer not initialized or empty, output initial condition
+            double ic = initialCondition.getDouble();
+            output.setData(new Data(ic));
+            return;
+        }
+        
+        int delayLengthValue = (int) delayLength.getData().getInitValue();
+        
+        // Output the delayed sample from buffer
+        // Buffer stores samples in chronological order: [oldest, ..., newest]
+        // For delay of n, we want the sample from n steps ago
+        if (buffer.size() >= delayLengthValue) {
+            // Get the delayed sample (from n steps ago)
+            int delayedIndex = buffer.size() - delayLengthValue;
+            Data delayedData = buffer.get(delayedIndex);
+            output.setData(delayedData);
+        } else {
+            // Not enough samples in buffer yet, use initial condition
+            double ic = initialCondition.getDouble();
+            output.setData(new Data(ic));
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize delay block
+        OutputPort output = outputPortList.get(0);
+        int delayLengthValue = (int) delayLength.getData().getInitValue();
+        double ic = initialCondition.getDouble();
+        
+        // Initialize buffer with initial condition values
+        buffer = new ArrayList<>();
+        
+        // Pre-fill buffer with initial conditions for the delay length
+        for (int i = 0; i < delayLengthValue; i++) {
+            buffer.add(new Data(ic));
+        }
+        
+        // Initial output is the initial condition
+        output.setData(new Data(ic));
+    }
+    
+    @Override
+    public void calculateUpdate(double t) {
+        // Update delay buffer with new input sample
+        InputPort input = inputPortList.get(0);
+        
+        if (input.getData() == null || buffer == null) {
+            return;
+        }
+        
+        Data inputData = input.getData();
+        int delayLengthValue = (int) delayLength.getData().getInitValue();
+        
+        // Add new sample to buffer
+        buffer.add(inputData);
+        
+        // Keep buffer size manageable - only keep what we need for delay
+        // We need delayLength + 1 samples to output the properly delayed value
+        int maxBufferSize = delayLengthValue + 10; // Keep a few extra for stability
+        while (buffer.size() > maxBufferSize) {
+            buffer.remove(0); // Remove oldest sample
+        }
     }
 }

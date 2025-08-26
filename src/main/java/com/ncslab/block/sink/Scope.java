@@ -1,37 +1,46 @@
 package com.ncslab.block.sink;
 
-import com.ncslab.block.data.Data;
-import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.sink.ScopeDto;
-import lombok.Getter;
-import com.ncslab.util.TemplateManager;
-import org.json.JSONObject;
-
-import com.ncslab.block.data.DataType;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.Parameter;
-import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
-import com.ncslab.ncslablink.BlockCreationException;
-import com.ncslab.ncslablink.MatDimException;
-import com.ncslab.ncslablink.NCSLabModel;
-
-import com.ncslab.block.discrete.DiscreteBlock;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.io.OutputPort;
-
-import com.ncslab.block.io.terminal.ScopeStruct;
-
-import com.ncslab.ncslablink.ModelMode;
-
-import java.util.Objects;
+// Java standard imports
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Objects;
+
+// External libraries
+import lombok.Getter;
+import org.json.JSONObject;
+
+// Internal imports - DTO
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.sink.ScopeDto;
+
+// Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
+import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.ModelMode;
+import com.ncslab.ncslablink.NCSLabModel;
+
+// Internal imports - Block components
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
+import com.ncslab.block.discrete.DiscreteBlock;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+import com.ncslab.block.io.terminal.ScopeStruct;
+
+// Internal imports - Code generation
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.util.TemplateManager;
 
 /**
  * Scope block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * Provides signal visualization and data logging capabilities for simulation analysis.
+ * Collects and stores input signal data for plotting and post-processing.
  * 
  * SIMULINK Parameters:
  * - NumberOfInputs: Number of input ports
@@ -39,14 +48,24 @@ import java.util.HashMap;
  * - SaveName: Variable name to save data
  * - SaveFormat: Data save format
  * - BufferSize: Size of data buffer
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Scope extends SinkBlock {
 
-    int inportNum; // TODO：兼容后续多输入
+    // === Configuration ===
+    /** Number of input ports (TODO: Support for multiple inputs) */
+    int inportNum;
+    
+    /** Scope data structures for each input */
     ScopeStruct[] scopeStructs;
-
+    
     // === SIMULINK-Compatible Parameters ===
+    /** Number of input ports parameter */
     private final Parameter numberOfInputs;
+    
+    /** Sample time parameter for data collection */
     private final Parameter sampleTime;
     private final Parameter saveName;
     private final Parameter saveFormat;
@@ -405,6 +424,58 @@ public class Scope extends SinkBlock {
             scopeStructs[i].setMaxDataLength(Integer.parseInt(bufferSize.getInitString()));
 
             model.addTerminal(scopeStructs[i]);
+        }
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Scope blocks are sink blocks - they collect data but don't produce output
+        // For SIMULINK compatibility, we still need to implement calculateOutput
+        // The actual data collection happens in calculateDiscreteUpdate
+        
+        // Store input data in scope structures if in simulation mode
+        if (model.getModelMode() == ModelMode.Simulation) {
+            for(int i = 0; i < inportNum && i < inputPortList.size(); i++) {
+                if (scopeStructs != null && scopeStructs[i] != null) {
+                    Data inputData = inputPortList.get(i).getData();
+                    if (inputData != null) {
+                        // For continuous-time operation, we may need to sample data here
+                        // Check if we should sample at this time point
+                        double sampleTimeValue = sampleTime.getDouble();
+                        boolean shouldSample = false;
+                        
+                        if (sampleTimeValue <= 0) {
+                            // Continuous sampling - sample every call
+                            shouldSample = true;
+                        } else {
+                            // Discrete sampling - check if it's time to sample
+                            double lastSampleTime = scopeStructs[i].getTimeList().isEmpty() ? 
+                                -1.0 : scopeStructs[i].getTimeList().get(scopeStructs[i].getTimeList().size() - 1);
+                            shouldSample = (t - lastSampleTime) >= sampleTimeValue * 0.99; // Small tolerance
+                        }
+                        
+                        if (shouldSample && (scopeStructs[i].getTimeList().isEmpty() || 
+                            t > scopeStructs[i].getTimeList().get(scopeStructs[i].getTimeList().size() - 1))) {
+                            scopeStructs[i].addTimeSeries(t, inputData);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize scope data structures
+        if (model.getModelMode() == ModelMode.Simulation) {
+            for(int i = 0; i < inportNum; i++) {
+                if (scopeStructs != null && scopeStructs[i] != null) {                    
+                    // Add initial data point at t=0 if there's input data
+                    if (i < inputPortList.size() && inputPortList.get(i).getData() != null) {
+                        scopeStructs[i].addTimeSeries(0.0, inputPortList.get(i).getData());
+                    }
+                }
+            }
         }
     }
 

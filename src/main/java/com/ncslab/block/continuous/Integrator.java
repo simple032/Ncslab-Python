@@ -1,33 +1,44 @@
 package com.ncslab.block.continuous;
 
-import com.ncslab.block.data.Data;
-import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.continuous.IntegratorDto;
+// Java standard imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+// External libraries
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.util.TemplateManager;
 
-import com.ncslab.block.continuous.ContinuousBlock;
-import com.ncslab.block.data.DataType;
+// Internal imports - DTO
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.continuous.IntegratorDto;
+
+// Internal imports - Core
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
+
+// Internal imports - Block components
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.State;
+import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.block.io.State;
+
+// Internal imports - Code generation
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
-import com.ncslab.block.io.OutputSignal;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
+import com.ncslab.util.TemplateManager;
 
 /**
  * Integrator block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * Performs continuous-time integration using the fundamental theorem of calculus.
+ * Supports initial conditions, external reset, and output saturation limits.
  * 
  * SIMULINK Parameters:
  * - InitialCondition: Initial output value at t=0
@@ -41,32 +52,65 @@ import java.util.List;
  * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Integrator extends ContinuousBlock {
     
     // === Internal State ===
+    /** Integration state variable maintaining the integral value */
     private State stateIntegral;
     
     // === Saturation Optimization ===
+    /** Whether output saturation is enabled for performance optimization */
     private boolean saturationEnabled = false;
+    
+    /** Upper saturation limit value */
     private double upperLimit = Double.POSITIVE_INFINITY;
+    
+    /** Lower saturation limit value */
     private double lowerLimit = Double.NEGATIVE_INFINITY;
     
     // === SIMULINK-Compatible Parameters ===
+    /** Initial condition parameter */
     private final Parameter initialCondition;
+    
+    /** External reset mode parameter */
     private final Parameter externalReset;
+    
+    /** Initial condition source parameter */
     private final Parameter conditionSource;
+    
+    /** Output limiting enable parameter */
     private final Parameter limitOutput;
+    
+    /** Upper saturation limit parameter */
     private final Parameter upperSaturationLimit;
+    
+    /** Lower saturation limit parameter */
     private final Parameter lowerSaturationLimit;
+    
+    /** Saturation port visibility parameter */
     private final Parameter showSaturationPort;
+    
+    /** State port visibility parameter */
     private final Parameter showStatePort;
+    
+    /** Sample time parameter */
     private final Parameter sampleTime;
+    
+    /** Output data type parameter */
     private final Parameter outDataType;
+    
+    /** Integer overflow handling parameter */
     private final Parameter saturateOnIntegerOverflow;
     
     // === Port References ===
+    /** Output port reference */
     private OutputPort output;
+    
+    /** Input port reference */
     private InputPort input;
     
     // === Static Parameter Definitions ===
@@ -620,16 +664,126 @@ public class Integrator extends ContinuousBlock {
         OutputPort output = outputPortList.get(0);
         Data outputData = stateIntegral.getData();
         
-        // Apply saturation limits if enabled (optimized)
+        // Handle edge cases for integral state
+        if (outputData == null) {
+            // Fallback to initial condition if state is null
+            outputData = initialCondition.getData();
+        }
+        
+        // Apply saturation limits if enabled
         if (saturationEnabled) {
             if (outputData.getDataType() == DataType.REAL) {
                 double value = outputData.getInitValue();
+                
+                // Handle NaN and infinity cases
+                if (Double.isNaN(value)) {
+                    // Reset to initial condition on NaN
+                    value = initialCondition.getData().getInitValue();
+                    if (Double.isNaN(value)) {
+                        value = 0.0; // Ultimate fallback
+                    }
+                } else if (Double.isInfinite(value)) {
+                    // Clamp infinite values to limits
+                    value = value > 0 ? upperLimit : lowerLimit;
+                }
+                
+                // Apply saturation limits
                 if (value > upperLimit) {
                     outputData = new Data(upperLimit);
                 } else if (value < lowerLimit) {
                     outputData = new Data(lowerLimit);
+                } else {
+                    outputData = new Data(value);
                 }
-                // No new Data object created if no saturation needed
+            } else {
+                // Matrix case with saturation
+                int height = outputData.getHeight();
+                int width = outputData.getWidth();
+                Data saturatedData = new Data(height, width);
+                
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        double value = outputData.getMatrix().get(i, j);
+                        
+                        // Handle NaN and infinity cases
+                        if (Double.isNaN(value)) {
+                            if (initialCondition.getDataType() == DataType.MATRIX && 
+                                i < initialCondition.getHeight() && j < initialCondition.getWidth()) {
+                                value = initialCondition.getData().getMatrix().get(i, j);
+                                if (Double.isNaN(value)) {
+                                    value = 0.0;
+                                }
+                            } else {
+                                value = 0.0;
+                            }
+                        } else if (Double.isInfinite(value)) {
+                            value = value > 0 ? upperLimit : lowerLimit;
+                        }
+                        
+                        // Apply saturation limits
+                        if (value > upperLimit) {
+                            saturatedData.getMatrix().set(i, j, upperLimit);
+                        } else if (value < lowerLimit) {
+                            saturatedData.getMatrix().set(i, j, lowerLimit);
+                        } else {
+                            saturatedData.getMatrix().set(i, j, value);
+                        }
+                    }
+                }
+                outputData = saturatedData;
+            }
+        } else {
+            // No saturation, but still handle NaN/Infinity
+            if (outputData.getDataType() == DataType.REAL) {
+                double value = outputData.getInitValue();
+                
+                if (Double.isNaN(value)) {
+                    value = initialCondition.getData().getInitValue();
+                    if (Double.isNaN(value)) {
+                        value = 0.0;
+                    }
+                    outputData = new Data(value);
+                } else if (Double.isInfinite(value)) {
+                    // Keep infinity but could be clamped in future if needed
+                    // For now, pass through to maintain SIMULINK compatibility
+                }
+            } else {
+                // Matrix case without saturation but with NaN handling
+                int height = outputData.getHeight();
+                int width = outputData.getWidth();
+                boolean needsCleaning = false;
+                
+                // Check if any element needs cleaning
+                for (int i = 0; i < height && !needsCleaning; i++) {
+                    for (int j = 0; j < width && !needsCleaning; j++) {
+                        double value = outputData.getMatrix().get(i, j);
+                        if (Double.isNaN(value)) {
+                            needsCleaning = true;
+                        }
+                    }
+                }
+                
+                if (needsCleaning) {
+                    Data cleanedData = new Data(height, width);
+                    for (int i = 0; i < height; i++) {
+                        for (int j = 0; j < width; j++) {
+                            double value = outputData.getMatrix().get(i, j);
+                            if (Double.isNaN(value)) {
+                                if (initialCondition.getDataType() == DataType.MATRIX && 
+                                    i < initialCondition.getHeight() && j < initialCondition.getWidth()) {
+                                    value = initialCondition.getData().getMatrix().get(i, j);
+                                    if (Double.isNaN(value)) {
+                                        value = 0.0;
+                                    }
+                                } else {
+                                    value = 0.0;
+                                }
+                            }
+                            cleanedData.getMatrix().set(i, j, value);
+                        }
+                    }
+                    outputData = cleanedData;
+                }
             }
         }
         

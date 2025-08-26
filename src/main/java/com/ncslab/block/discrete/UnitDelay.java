@@ -375,6 +375,13 @@ public class UnitDelay extends DiscreteBlock {
     }
 
     @Override
+    public void calculateUpdate(double t) {
+        // This method is called to update internal state before calculateOutput
+        // For unit delay, the update happens in calculateDiscreteUpdate
+        // This method is typically empty for discrete blocks that do state updates in calculateDiscreteUpdate
+    }
+
+    @Override
     public void calculateDiscreteUpdate(double t) {
         InputPort input = inputPortList.get(0);
         // Shift values: previous becomes current input

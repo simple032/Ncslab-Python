@@ -484,45 +484,183 @@ public class PIDController extends ContinuousBlock {
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        Data currentState = new Data();
+        Data currentState;
 
+        // Validate input data
+        if (inputPortList.isEmpty() || inputPortList.get(0).getData() == null) {
+            // No input data available, use initial conditions
+            out.setData(new Data(initialConditionForIntegrator.getData().getInitValue()));
+            return;
+        }
+
+        Data inputData = inputPortList.get(0).getData();
+        
         if (proportionalGain.getDataType() == DataType.REAL && stateIntegral.getDataType() == DataType.REAL) {
-            currentState = currentState.plus(proportionalGain.getData().times(inputPortList.get(0).getData()))
-                .plus(stateIntegral.getData())
-                .plus(stateFilter.getData().times(filterCoefficient.getData()));
-
-            if (externalReset.getInitString().equals("on") && !inputPortList.get(1).getData().equals(new Data(0))) {
-                stateIntegral.setData(new Data(initialConditionForIntegrator.getData().getInitValue()));
-                stateFilter.setData(new Data(initialConditionForFilter.getData().getInitValue()));
+            // Scalar case with enhanced edge case handling
+            double inputValue = inputData.getInitValue();
+            double pGain = proportionalGain.getData().getInitValue();
+            double integralState = stateIntegral.getData().getInitValue();
+            double filterState = stateFilter.getData().getInitValue();
+            double fCoeff = filterCoefficient.getData().getInitValue();
+            
+            // Handle NaN and infinite inputs
+            if (Double.isNaN(inputValue) || Double.isInfinite(inputValue)) {
+                inputValue = 0.0; // Safe fallback
+            }
+            
+            // Handle NaN and infinite gains
+            if (Double.isNaN(pGain) || Double.isInfinite(pGain)) {
+                pGain = 0.0;
+            }
+            if (Double.isNaN(fCoeff) || Double.isInfinite(fCoeff)) {
+                fCoeff = 0.0;
+            }
+            
+            // Handle NaN states (reset to initial conditions)
+            if (Double.isNaN(integralState)) {
+                integralState = initialConditionForIntegrator.getData().getInitValue();
+                if (Double.isNaN(integralState)) {
+                    integralState = 0.0;
+                }
+                stateIntegral.setData(new Data(integralState));
+            }
+            if (Double.isNaN(filterState)) {
+                filterState = initialConditionForFilter.getData().getInitValue();
+                if (Double.isNaN(filterState)) {
+                    filterState = 0.0;
+                }
+                stateFilter.setData(new Data(filterState));
             }
 
-            if (limitOutput.getInitString().equals("on")) {
-                if (currentState.getInitValue() > upperSaturationLimit.getData().getInitValue()) {
-                    currentState.setInitValue(upperSaturationLimit.getData().getInitValue());
-                } else if (currentState.getInitValue() < lowerSaturationLimit.getData().getInitValue()) {
-                    currentState.setInitValue(lowerSaturationLimit.getData().getInitValue());
+            // Calculate PID output: P + I + D
+            double output = pGain * inputValue + integralState + filterState * fCoeff;
+            
+            // Handle external reset
+            if (externalReset.getInitString().equals("on") && inputPortList.size() > 1) {
+                Data resetData = inputPortList.get(1).getData();
+                if (resetData != null && !resetData.equals(new Data(0))) {
+                    stateIntegral.setData(new Data(initialConditionForIntegrator.getData().getInitValue()));
+                    stateFilter.setData(new Data(initialConditionForFilter.getData().getInitValue()));
+                    // Recalculate output after reset
+                    output = pGain * inputValue + initialConditionForIntegrator.getData().getInitValue() + 
+                            initialConditionForFilter.getData().getInitValue() * fCoeff;
                 }
             }
-        } else {
-            for (int i = 0; i < stateIntegral.getHeight(); i++) {
-                for (int j = 0; j < stateIntegral.getWidth(); j++) {
-                    currentState = currentState.plus(new Data(proportionalGain.getData().getMatrix().get(i, j) * inputPortList.get(0).getData().getMatrix().get(i, j)))
-                        .plus(new Data(stateIntegral.getData().getMatrix().get(i, j)))
-                        .plus(new Data(stateFilter.getData().getMatrix().get(i, j) * filterCoefficient.getData().getMatrix().get(i, j)));
 
-                    if (externalReset.getInitString().equals("on") && inputPortList.get(1).getData().getMatrix().get(i, j) != 0) {
-                        stateIntegral.getData().getMatrix().set(i, j, initialConditionForIntegrator.getData().getMatrix().get(i, j));
-                        stateFilter.getData().getMatrix().set(i, j, initialConditionForFilter.getData().getMatrix().get(i, j));
+            // Apply output saturation
+            if (limitOutput.getInitString().equals("on")) {
+                double upperLimit = upperSaturationLimit.getData().getInitValue();
+                double lowerLimit = lowerSaturationLimit.getData().getInitValue();
+                
+                // Handle NaN limits
+                if (Double.isNaN(upperLimit) || Double.isInfinite(upperLimit)) {
+                    upperLimit = Double.POSITIVE_INFINITY;
+                }
+                if (Double.isNaN(lowerLimit) || Double.isInfinite(lowerLimit)) {
+                    lowerLimit = Double.NEGATIVE_INFINITY;
+                }
+                
+                if (output > upperLimit) {
+                    output = upperLimit;
+                } else if (output < lowerLimit) {
+                    output = lowerLimit;
+                }
+            }
+            
+            // Handle final output NaN/Infinity
+            if (Double.isNaN(output)) {
+                output = initialConditionForIntegrator.getData().getInitValue();
+                if (Double.isNaN(output)) {
+                    output = 0.0;
+                }
+            }
+            
+            currentState = new Data(output);
+        } else {
+            // Matrix case with enhanced edge case handling
+            int height = stateIntegral.getHeight();
+            int width = stateIntegral.getWidth();
+            currentState = new Data(height, width);
+            
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    double inputValue = (inputData.getDataType() == DataType.MATRIX) ? 
+                        inputData.getMatrix().get(i, j) : inputData.getInitValue();
+                    double pGain = proportionalGain.getData().getMatrix().get(i, j);
+                    double integralState = stateIntegral.getData().getMatrix().get(i, j);
+                    double filterState = stateFilter.getData().getMatrix().get(i, j);
+                    double fCoeff = filterCoefficient.getData().getMatrix().get(i, j);
+
+                    // Handle NaN and infinite inputs
+                    if (Double.isNaN(inputValue) || Double.isInfinite(inputValue)) {
+                        inputValue = 0.0;
+                    }
+                    if (Double.isNaN(pGain) || Double.isInfinite(pGain)) {
+                        pGain = 0.0;
+                    }
+                    if (Double.isNaN(fCoeff) || Double.isInfinite(fCoeff)) {
+                        fCoeff = 0.0;
+                    }
+                    
+                    // Handle NaN states
+                    if (Double.isNaN(integralState)) {
+                        integralState = initialConditionForIntegrator.getData().getMatrix().get(i, j);
+                        if (Double.isNaN(integralState)) {
+                            integralState = 0.0;
+                        }
+                        stateIntegral.getData().getMatrix().set(i, j, integralState);
+                    }
+                    if (Double.isNaN(filterState)) {
+                        filterState = initialConditionForFilter.getData().getMatrix().get(i, j);
+                        if (Double.isNaN(filterState)) {
+                            filterState = 0.0;
+                        }
+                        stateFilter.getData().getMatrix().set(i, j, filterState);
                     }
 
-                    if (limitOutput.getInitString().equals("on")) {
-                        double value = currentState.getMatrix().get(i, j);
-                        if (value > upperSaturationLimit.getData().getMatrix().get(i, j)) {
-                            currentState.getMatrix().set(i, j, upperSaturationLimit.getData().getMatrix().get(i, j));
-                        } else if (value < lowerSaturationLimit.getData().getMatrix().get(i, j)) {
-                            currentState.getMatrix().set(i, j, lowerSaturationLimit.getData().getMatrix().get(i, j));
+                    // Calculate PID output
+                    double output = pGain * inputValue + integralState + filterState * fCoeff;
+
+                    // Handle external reset
+                    if (externalReset.getInitString().equals("on") && inputPortList.size() > 1) {
+                        Data resetData = inputPortList.get(1).getData();
+                        if (resetData != null && resetData.getDataType() == DataType.MATRIX) {
+                            double resetValue = resetData.getMatrix().get(i, j);
+                            if (resetValue != 0) {
+                                double resetIntegral = initialConditionForIntegrator.getData().getMatrix().get(i, j);
+                                double resetFilter = initialConditionForFilter.getData().getMatrix().get(i, j);
+                                stateIntegral.getData().getMatrix().set(i, j, resetIntegral);
+                                stateFilter.getData().getMatrix().set(i, j, resetFilter);
+                                output = pGain * inputValue + resetIntegral + resetFilter * fCoeff;
+                            }
                         }
                     }
+
+                    // Apply output saturation
+                    if (limitOutput.getInitString().equals("on")) {
+                        double upperLimit = upperSaturationLimit.getData().getMatrix().get(i, j);
+                        double lowerLimit = lowerSaturationLimit.getData().getMatrix().get(i, j);
+                        
+                        if (Double.isNaN(upperLimit) || Double.isInfinite(upperLimit)) {
+                            upperLimit = Double.POSITIVE_INFINITY;
+                        }
+                        if (Double.isNaN(lowerLimit) || Double.isInfinite(lowerLimit)) {
+                            lowerLimit = Double.NEGATIVE_INFINITY;
+                        }
+                        
+                        if (output > upperLimit) {
+                            output = upperLimit;
+                        } else if (output < lowerLimit) {
+                            output = lowerLimit;
+                        }
+                    }
+                    
+                    // Handle final output NaN
+                    if (Double.isNaN(output)) {
+                        output = 0.0;
+                    }
+
+                    currentState.getMatrix().set(i, j, output);
                 }
             }
         }

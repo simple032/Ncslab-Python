@@ -1,30 +1,42 @@
 package com.ncslab.block.math;
 
-import com.ncslab.block.data.Data;
-import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.math.SumDto;
+// Java standard imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+// External libraries
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.block.math.MathBlock;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.block.io.Parameter;
-import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
+
+// Internal imports - DTO
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.SumDto;
+
+// Internal imports - Core
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.util.TemplateManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
+// Internal imports - Block components
+import com.ncslab.block.data.Data;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+
+// Internal imports - Code generation
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.util.TemplateManager;
 
 /**
  * Sum block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * Performs element-wise summation and subtraction operations based on input sequence.
+ * Similar to Add block but with additional icon configuration support.
  * 
  * SIMULINK Parameters:
  * - Inputs: String sequence defining input signs (e.g., "++", "+-", "++--")
@@ -33,18 +45,33 @@ import java.util.List;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  * - Icon: Icon shape representation
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Sum extends MathBlock {
     
     // === SIMULINK-Compatible Parameters ===
+    /** Input sequence parameter defining operation signs */
     private final Parameter inputs;
+    
+    /** Sample time parameter for discrete operation */
     private final Parameter sampleTime;
+    
+    /** Input data type consistency requirement parameter */
     private final Parameter inputSameDT;
+    
+    /** Output data type specification parameter */
     private final Parameter outDataType;
+    
+    /** Integer overflow handling parameter */
     private final Parameter saturateOnIntegerOverflow;
+    
+    /** Icon shape representation parameter */
     private final Parameter icon;
     
     // === Operational Settings ===
+    /** Input sequence string defining operation signs ('+' or '-' for each input) */
     @Getter
     private final String inputSequence;
     

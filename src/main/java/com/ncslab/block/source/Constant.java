@@ -1,30 +1,42 @@
 package com.ncslab.block.source;
 
-import com.ncslab.block.Block;
-import com.ncslab.block.data.Data;
-import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.source.ConstantDto;
+// Java standard imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+// External libraries
 import lombok.Getter;
 import org.json.JSONObject;
 
+// Internal imports - DTO
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.source.ConstantDto;
+
+// Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
+import com.ncslab.ncslablink.NCSLabModel;
+
+// Internal imports - Block components
+import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.Parameter;
+
+// Internal imports - Code generation
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
-import com.ncslab.ncslablink.BlockCreationException;
-import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.util.TemplateUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Constant block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * Generates a constant output signal with configurable scalar or matrix values.
+ * The output remains constant throughout the simulation duration.
  * 
  * SIMULINK Parameters:
  * - Value: Constant value (scalar or matrix)
@@ -32,11 +44,17 @@ import java.util.List;
  * - FramePeriod: Frame period for frame-based operations
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Constant extends SourceBlock {
     
     // === Constant-Specific SIMULINK Parameters ===
+    /** Constant value parameter (scalar or matrix) */
     private final Parameter value;
+    
+    /** Frame period parameter for frame-based operations */
     private final Parameter framePeriod;
     
     // === Static Parameter Definitions ===

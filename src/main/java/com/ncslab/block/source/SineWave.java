@@ -369,20 +369,140 @@ public class SineWave extends SourceBlock {
     // === Runtime Simulation API (restored) ===
     @Override
     public void calculateOutput(double t) {
-        // 实现具体的输出计算逻辑
-        double amplitudeValue = amplitude.getData().getInitValue();
-        double biasValue = bias.getData().getInitValue();
-        double frequencyValue = frequency.getData().getInitValue();
-        double phaseValue = phase.getData().getInitValue();
+        OutputPort outputPort = outputPortList.get(0);
+        Data outputData;
 
-        double output = amplitudeValue * Math.sin(frequencyValue * t + phaseValue) + biasValue;
-        outputPortList.get(0).getOutputSignalC().setValue(output);
+        // Handle both scalar and matrix cases
+        if (amplitude.getDataType() == com.ncslab.block.data.DataType.REAL) {
+            // Scalar case - SIMULINK-compatible sine wave generation
+            double amplitudeValue = amplitude.getData().getInitValue();
+            double biasValue = bias.getData().getInitValue();
+            double frequencyValue = frequency.getData().getInitValue();
+            double phaseValue = phase.getData().getInitValue();
+
+            // Handle edge cases
+            if (Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+                outputData = new Data(Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+            } else if (Double.isNaN(frequencyValue) || Double.isInfinite(frequencyValue)) {
+                outputData = new Data(Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+            } else if (Double.isNaN(phaseValue) || Double.isInfinite(phaseValue)) {
+                outputData = new Data(Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+            } else {
+                // Standard sine wave calculation: amplitude * sin(2*pi*frequency*t + phase) + bias
+                // Note: SIMULINK uses 2*pi*frequency for Hz, or direct frequency for rad/s
+                double argument = frequencyValue * t + phaseValue;
+                double sineValue = Math.sin(argument);
+                
+                // Handle NaN result from sin (shouldn't happen with finite inputs, but defensive)
+                if (Double.isNaN(sineValue)) {
+                    sineValue = 0.0;
+                }
+                
+                double outputValue = amplitudeValue * sineValue + (Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                outputData = new Data(outputValue);
+            }
+        } else {
+            // Matrix case - element-wise sine wave generation
+            int height = amplitude.getHeight();
+            int width = amplitude.getWidth();
+            outputData = new Data(height, width);
+            
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    double amplitudeValue = amplitude.getData().getMatrix().get(i, j);
+                    double biasValue = bias.getData().getMatrix().get(i, j);
+                    double frequencyValue = frequency.getData().getMatrix().get(i, j);
+                    double phaseValue = phase.getData().getMatrix().get(i, j);
+
+                    // Handle edge cases for each matrix element
+                    if (Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+                        outputData.getMatrix().set(i, j, Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                    } else if (Double.isNaN(frequencyValue) || Double.isInfinite(frequencyValue)) {
+                        outputData.getMatrix().set(i, j, Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                    } else if (Double.isNaN(phaseValue) || Double.isInfinite(phaseValue)) {
+                        outputData.getMatrix().set(i, j, Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                    } else {
+                        // Standard sine wave calculation
+                        double argument = frequencyValue * t + phaseValue;
+                        double sineValue = Math.sin(argument);
+                        
+                        // Handle NaN result from sin
+                        if (Double.isNaN(sineValue)) {
+                            sineValue = 0.0;
+                        }
+                        
+                        double outputValue = amplitudeValue * sineValue + (Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                        outputData.getMatrix().set(i, j, outputValue);
+                    }
+                }
+            }
+        }
+
+        outputPort.setData(outputData);
     }
 
     @Override
     public void calculateInit() {
-        // 初始化逻辑
-        double biasValue = bias.getData().getInitValue();
-        outputPortList.get(0).getOutputSignalC().setValue(biasValue);
+        OutputPort outputPort = outputPortList.get(0);
+        Data initialData;
+
+        // Initialize output at t=0: amplitude * sin(phase) + bias
+        if (amplitude.getDataType() == com.ncslab.block.data.DataType.REAL) {
+            // Scalar case
+            double amplitudeValue = amplitude.getData().getInitValue();
+            double biasValue = bias.getData().getInitValue();
+            double phaseValue = phase.getData().getInitValue();
+
+            // Handle edge cases for parameters
+            if (Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+                initialData = new Data(Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+            } else if (Double.isNaN(phaseValue) || Double.isInfinite(phaseValue)) {
+                initialData = new Data(Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+            } else {
+                // At t=0: amplitude * sin(phase) + bias
+                double sineValue = Math.sin(phaseValue);
+                
+                // Handle NaN result from sin
+                if (Double.isNaN(sineValue)) {
+                    sineValue = 0.0;
+                }
+                
+                double initialValue = amplitudeValue * sineValue + (Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                initialData = new Data(initialValue);
+            }
+        } else {
+            // Matrix case
+            int height = amplitude.getHeight();
+            int width = amplitude.getWidth();
+            initialData = new Data(height, width);
+
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    double amplitudeValue = amplitude.getData().getMatrix().get(i, j);
+                    double biasValue = bias.getData().getMatrix().get(i, j);
+                    double phaseValue = phase.getData().getMatrix().get(i, j);
+
+                    // Handle edge cases for each matrix element
+                    if (Double.isNaN(amplitudeValue) || Double.isInfinite(amplitudeValue)) {
+                        initialData.getMatrix().set(i, j, Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                    } else if (Double.isNaN(phaseValue) || Double.isInfinite(phaseValue)) {
+                        initialData.getMatrix().set(i, j, Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                    } else {
+                        // At t=0: amplitude * sin(phase) + bias
+                        double sineValue = Math.sin(phaseValue);
+                        
+                        // Handle NaN result from sin
+                        if (Double.isNaN(sineValue)) {
+                            sineValue = 0.0;
+                        }
+                        
+                        double initialValue = amplitudeValue * sineValue + (Double.isNaN(biasValue) || Double.isInfinite(biasValue) ? 0.0 : biasValue);
+                        initialData.getMatrix().set(i, j, initialValue);
+                    }
+                }
+            }
+        }
+
+        outputPort.setData(initialData);
     }
 }

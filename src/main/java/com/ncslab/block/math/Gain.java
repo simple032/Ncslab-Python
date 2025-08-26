@@ -1,49 +1,72 @@
 package com.ncslab.block.math;
 
-import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.math.GainDto;
+// Java standard imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+// External libraries
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.block.math.MathBlock;
-import com.ncslab.block.data.Data;
-import com.ncslab.block.data.DataType;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.Parameter;
-import com.ncslab.block.io.InputPort;
-import com.ncslab.block.io.OutputSignal;
-import com.ncslab.code.c.CodeStructC;
-import com.ncslab.code.m.CodeStructM;
+
+// Internal imports - DTO
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.math.GainDto;
+
+// Internal imports - Core
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
-import com.ncslab.util.TemplateManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
+// Internal imports - Block components
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+
+// Internal imports - Code generation
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.util.TemplateManager;
 
 /**
  * Gain block with SIMULINK-compatible parameters and type-safe constructors.
+ * 
+ * Multiplies input signal by a configurable gain value using either element-wise
+ * or matrix multiplication. Supports scalar, vector, and matrix gain values.
  *
  * SIMULINK Parameters:
  * - Gain: Gain value (scalar or matrix)
- * - Multiplication: Element-wise or Matrix multiplication mode
+ * - Multiplication: Element-wise (K.*u) or Matrix (K*u) multiplication mode
  * - SampleTime: Sample time for discrete operation (-1 for inherited)
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
+ * 
+ * @author NCSLab Team
+ * @version 2025
  */
 public class Gain extends MathBlock {
 
     // === SIMULINK-Compatible Parameters ===
+    /** Gain value parameter (scalar, vector, or matrix) */
     @Getter
     protected Parameter gain;
+    
+    /** Sample time parameter for discrete operation */
     private final Parameter sampleTime;
+    
+    /** Output data type specification parameter */
     private final Parameter outDataType;
+    
+    /** Integer overflow handling parameter */
     private final Parameter saturateOnIntegerOverflow;
-
+    
     // === Operational Settings ===
+    /** True for matrix multiplication (K*u), false for element-wise (K.*u) */
     private final boolean matrixMultiplication;
 
     // === Static Parameter Definitions ===
