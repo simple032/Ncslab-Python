@@ -150,8 +150,7 @@ public class SineWave extends SourceBlock {
 
 
     void initializePorts(){
-        // Initialize ports
-        outputPortList.add(new OutputPort(this, 1, false));
+        // Initialize ports        
         outputPortList.get(0).setHeight(amplitude.getHeight());
         outputPortList.get(0).setWidth(amplitude.getWidth());
 

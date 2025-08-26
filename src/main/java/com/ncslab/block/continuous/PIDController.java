@@ -194,21 +194,21 @@ public class PIDController extends ContinuousBlock {
     public PIDController(PIDControllerDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.proportionalGain = getParameterByName("Proportionalgain");
-        this.integralGain = getParameterByName("Integralgain");
-        this.derivativeGain = getParameterByName("Derivativegain");
-        this.filterCoefficient = getParameterByName("Filtercoefficient");
-        this.formulationType = getParameterByName("FormulationType");
-        this.externalReset = getParameterByName("Externalreset");
-        this.initialConditionForIntegrator = getParameterByName("InitialConditionForIntegrator");
-        this.initialConditionForFilter = getParameterByName("InitialConditionForFilter");
-        this.limitOutput = getParameterByName("Limitoutput");
-        this.upperSaturationLimit = getParameterByName("Uppersaturationlimit");
-        this.lowerSaturationLimit = getParameterByName("Lowersaturationlimit");
-        this.sampleTime = getParameterByName("SampleTime");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        // Initialize final parameters from DTO with proper null checking and correct names
+        this.proportionalGain = getParameterOrDefault("P", 1, "P");
+        this.integralGain = getParameterOrDefault("I", 2, "I");
+        this.derivativeGain = getParameterOrDefault("D", 3, "D");
+        this.filterCoefficient = getParameterOrDefault("N", 4, "N");
+        this.formulationType = getParameterOrDefault("FormulationType", 5, "FormulationType");
+        this.externalReset = getParameterOrDefault("ExternalReset", 6, "ExternalReset");
+        this.initialConditionForIntegrator = getParameterOrDefault("InitialConditionForIntegrator", 7, "InitialConditionForIntegrator");
+        this.initialConditionForFilter = getParameterOrDefault("InitialConditionForFilter", 8, "InitialConditionForFilter");
+        this.limitOutput = getParameterOrDefault("LimitOutput", 9, "LimitOutput");
+        this.upperSaturationLimit = getParameterOrDefault("UpperSaturationLimit", 10, "UpperSaturationLimit");
+        this.lowerSaturationLimit = getParameterOrDefault("LowerSaturationLimit", 11, "LowerSaturationLimit");
+        this.sampleTime = getParameterOrDefault("SampleTime", 12, "SampleTime");
+        this.outDataType = getParameterOrDefault("OutDataTypeStr", 13, "OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterOrDefault("SaturateOnIntegerOverflow", 14, "SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();
@@ -231,10 +231,27 @@ public class PIDController extends ContinuousBlock {
      * Generic DTO Constructor for factory compatibility
      */
     public PIDController(BlockDto blockDto, NCSLabModel model) {
-        this((PIDControllerDto) blockDto, model);
+        this(castToPIDControllerDto(blockDto), model);
     }
-
-
+    
+    private static PIDControllerDto castToPIDControllerDto(BlockDto blockDto) {
+        if (blockDto instanceof PIDControllerDto) {
+            return (PIDControllerDto) blockDto;
+        }
+        throw new BlockCreationException("DTO type mismatch for block type 'PIDController': expected PIDControllerDto but got " + 
+                                       blockDto.getClass().getSimpleName() + ". Block name: " + blockDto.getBlockName());
+    }
+    
+    /**
+     * Helper method to get parameter or create default if null
+     */
+    private Parameter getParameterOrDefault(String paramName, int paramId, String defaultKey) {
+        Parameter param = getParameterByName(paramName);
+        if (param == null) {
+            param = new Parameter(this, paramId, paramName, PARAMETER_DEFAULTS.get(defaultKey));
+        }
+        return param;
+    }
 
     // === Static Factory Method for JSON Deserialization ===
     public static PIDController fromJSON(JSONObject blockJSON, NCSLabModel model) {

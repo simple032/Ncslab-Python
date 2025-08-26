@@ -10,25 +10,37 @@ double Ks = -4.5871056; /* transducer voltage constant */
 double Ka = 5.8929; /* input resistance */
 
 /* Current input signal */
-double u = $inputPortVariable;
+#if($inputPortVariable)
+double u = ${inputPortVariable};
+#end
 
 /* State variables: position (x0) and velocity (x1) */
-double x = $position;
-double v = $velocity;
+#if($position && $velocity)
+double x = ${position};
+double v = ${velocity};
+#end
 
 /* Magnetic levitation dynamics - position derivative is velocity */
-$positionDerivative = v;
+#if($positionDerivative && $velocity)
+${positionDerivative} = v;
+#end
 
 /* Velocity derivative - magnetic force vs gravity */
 /* Simplified magnetic force model: F_mag = K * i^2 / x^2 */
+#if($velocityDerivative && $inputPortVariable)
 double K_mag = 0.001; /* magnetic force constant */
 double current = u;   /* input current */
 double mag_force = (x > 0.01) ? K_mag * current * current / (x * x) : 0;
-$velocityDerivative = g - mag_force;
+${velocityDerivative} = g - mag_force;
+#end
 
 #else
 /* Hardware mode - simple dynamics */
-$positionDerivative = $velocity;
-$velocityDerivative = $inputPortVariable - 9.8;
+#if($positionDerivative && $velocity)
+${positionDerivative} = ${velocity};
+#end
+#if($velocityDerivative && $inputPortVariable)
+${velocityDerivative} = ${inputPortVariable} - 9.8;
+#end
 #end
 }

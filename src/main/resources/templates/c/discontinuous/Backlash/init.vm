@@ -9,6 +9,7 @@ $initialOutputInitCodeC
 #elseif($initialOutput.dataType == $realDataType && $signal.dataType == $matrixDataType)
     #set($height = $xStateHeight)
     #set($width = $xStateWidth)
+    #if($height && $width)
     #set($hMax = $height - 1)
     #set($wMax = $width - 1)
 
@@ -17,9 +18,13 @@ $initialOutputInitCodeC
             $xStateName($i, $j) = $initialOutputName;
         #end
     #end
+    #else
+    $xStateName = $initialOutputName;
+    #end
 #else
     #set($height = $xStateHeight)
     #set($width = $xStateWidth)
+    #if($height && $width)
     #set($hMax = $height - 1)
     #set($wMax = $width - 1)
 
@@ -27,5 +32,8 @@ $initialOutputInitCodeC
         #foreach($j in [0..$wMax])
             $xStateName($i, $j) = $initialOutputName($i, $j);
         #end
+    #end
+    #else
+    $xStateName = $initialOutputName;
     #end
 #end

@@ -1,14 +1,14 @@
 /*Code for Update of :($blockId)$blockName*/
 #if($signalDataType == $realDataType && $proportionalGainDataType == $realDataType)
-$integralStateName=$integralStateName+$integralStateDerivativeName*model.stepSize;
-$filterStateName=$filterStateName+$filterStateDerivativeName*model.stepSize;
+$integralStateName=$integralStateName+$integralStateDerivativeName*${modelStepSize};
+$filterStateName=$filterStateName+$filterStateDerivativeName*${modelStepSize};
 #else
 #set($stateFilterHeightMax = $filterStateHeight - 1)
 #set($stateFilterWidthMax = $filterStateWidth - 1)
 #foreach($i in [0..$stateFilterHeightMax])
 #foreach($j in [0..$stateFilterWidthMax])
-$integralStateName($i,$j)=$integralStateName($i,$j)+$integralStateDerivativeName($i,$j)*model.stepSize;
-$filterStateName($i,$j)=$filterStateName($i,$j)+$filterStateDerivativeName($i,$j)*model.stepSize;
+$integralStateName($i,$j)=$integralStateName($i,$j)+$integralStateDerivativeName($i,$j)*${modelStepSize};
+$filterStateName($i,$j)=$filterStateName($i,$j)+$filterStateDerivativeName($i,$j)*${modelStepSize};
 #end
 #end
 #end

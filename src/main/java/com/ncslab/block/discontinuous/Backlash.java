@@ -117,12 +117,12 @@ public class Backlash extends DiscontinuousBlock {
     public Backlash(BacklashDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.backlashWidthParam = getParameterByName("Backlashwidthparam");
-        this.initialOutputParam = getParameterByName("Initialoutputparam");
-        this.sampleTime = getParameterByName("SampleTime");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        // Initialize final parameters from DTO with proper null checking
+        this.backlashWidthParam = getParameterOrDefault("BacklashWidth", 1, "BacklashWidth");
+        this.initialOutputParam = getParameterOrDefault("InitialOutput", 2, "InitialOutput");
+        this.sampleTime = getParameterOrDefault("SampleTime", 3, "SampleTime");
+        this.outDataType = getParameterOrDefault("OutDataTypeStr", 4, "OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterOrDefault("SaturateOnIntegerOverflow", 5, "SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();
@@ -137,6 +137,17 @@ public class Backlash extends DiscontinuousBlock {
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
+    }
+    
+    /**
+     * Helper method to get parameter or create default if null
+     */
+    private Parameter getParameterOrDefault(String paramName, int paramId, String defaultKey) {
+        Parameter param = getParameterByName(paramName);
+        if (param == null) {
+            param = new Parameter(this, paramId, paramName, PARAMETER_DEFAULTS.get(defaultKey));
+        }
+        return param;
     }
 
     // === Static Factory Method for JSON Deserialization ===

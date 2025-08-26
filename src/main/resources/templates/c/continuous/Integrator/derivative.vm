@@ -12,11 +12,13 @@
             ## Scalar input, matrix initial condition
             #set($height = $initialConditionHeight)
             #set($width = $initialConditionWidth)
-            #set($hMax = $height - 1)
-            #set($wMax = $width - 1)
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
+            #if($height && $width)
+                #set($hMax = $height - 1)
+                #set($wMax = $width - 1)
+                #foreach($i in [0..$hMax])
+                    #foreach($j in [0..$wMax])
             ${stateDerivative}($i,$j) = $inputSignal($i,$j);
+                    #end
                 #end
             #end
         #end
@@ -24,11 +26,13 @@
         ## Matrix integrator
         #set($height = $signalHeight)
         #set($width = $signalWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
+        #if($height && $width)
+            #set($hMax = $height - 1)
+            #set($wMax = $width - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
         ${stateDerivative}($i,$j) = $inputSignal($i,$j);
+                #end
             #end
         #end
     #end

@@ -135,6 +135,46 @@ public class BallBeamSystem extends Block {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add template variables required by derivative.vm template
+        if (!inputPortList.isEmpty()) {
+            context.put("inputPortVariable", getInputPortVariable(0));
+        }
+        
+        // Add constraint variables from parameters or defaults
+        Parameter lbAngleParam = getParameterByName("lb_angle");
+        Parameter ubAngleParam = getParameterByName("ub_angle");
+        context.put("la", lbAngleParam != null ? lbAngleParam.getData().getInitString() : PARAMETER_DEFAULTS.get("lb_angle"));
+        context.put("ua", ubAngleParam != null ? ubAngleParam.getData().getInitString() : PARAMETER_DEFAULTS.get("ub_angle"));
+        
+        // Add state derivative variables
+        if (stateList.size() >= 3) {
+            context.put("stateX0DerivativeName", stateList.get(0).getDerivativeName());
+            context.put("stateX1DerivativeName", stateList.get(1).getDerivativeName());
+            context.put("stateX2DerivativeName", stateList.get(2).getDerivativeName());
+            
+            context.put("stateX0", stateList.get(0).getName());
+            context.put("stateX1", stateList.get(1).getName());
+            context.put("stateX2", stateList.get(2).getName());
+        }
+        
+        // Add physical constants from parameters or defaults
+        Parameter massParam = getParameterByName("mass_ball");
+        Parameter gravityParam = getParameterByName("gravity");
+        Parameter lengthParam = getParameterByName("length_beam");
+        Parameter momentParam = getParameterByName("moment_of_inertial");
+        Parameter radiusParam = getParameterByName("radius_ball");
+        Parameter lengthLinkParam = getParameterByName("length_link");
+        
+        context.put("M", massParam != null ? massParam.getData().getInitString() : PARAMETER_DEFAULTS.get("mass_ball"));
+        context.put("g", gravityParam != null ? gravityParam.getData().getInitString() : PARAMETER_DEFAULTS.get("gravity"));
+        context.put("L", lengthParam != null ? lengthParam.getData().getInitString() : PARAMETER_DEFAULTS.get("length_beam"));
+        context.put("J", momentParam != null ? momentParam.getData().getInitString() : PARAMETER_DEFAULTS.get("moment_of_inertial"));
+        context.put("R", radiusParam != null ? radiusParam.getData().getInitString() : PARAMETER_DEFAULTS.get("radius_ball"));
+        context.put("d", lengthLinkParam != null ? lengthLinkParam.getData().getInitString() : PARAMETER_DEFAULTS.get("length_link"));
+        
+        // Add local variable declarations if needed
+        context.put("localVariableDeclarations", "double u = 0.0; // Control input");
 
         String derivativeCode = TemplateManager.renderTemplate("c/testrig/BallBeamSystem/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);

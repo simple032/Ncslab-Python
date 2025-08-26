@@ -9,16 +9,24 @@
     if((int)${POS0Flag.value}==1) {Serialport_Send(hCommXzIPSUST,cmdClearPos,strlen(cmdClearPos));
     usleep(3000);}
     }char xzcmd[50]={0},xzcmd2[50]={0};
+    #if($inputPortVariable1)
     int xztmp = ${inputPortVariable1};
     float xzacctmp = xztmp/9.424776;
     float xzacc = (xztmp>=0)?xzacctmp:-xzacctmp;
     int xzaccInt=(int)xzacc;
+    #end
+    #if($inputPortVariable2)
     int VspeedValue = (int)${inputPortVariable2}>0?${inputPortVariable2}:-${inputPortVariable2};
+    #end
+    #if($inputPortVariable1)
     sprintf((char*)xzcmd,"GZ100A%d\r\n",xzaccInt);if(xzIPSUSTbool==false)Serialport_Recv(hCommXzIPSUST,recvBuffXzIPSUST,62);
+    #end
     printf("recvBuff=%s\n",recvBuffXzIPSUST);
     if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd,strlen(xzcmd));
+    #if($inputPortVariable1)
     if(xztmp<0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V-%d\r\n",VspeedValue);
     else if(xztmp>0&&(int)${ENAOrDIS.name}==1) sprintf((char*)xzcmd2,"GZ000V%d\r\n",VspeedValue);
+    #end
     else sprintf((char*)xzcmd2,"GZ000V0\r\n");
     if(xzIPSUSTbool==true)usleep(3000);
     if(xzIPSUSTbool==true) Serialport_Send(hCommXzIPSUST,xzcmd2,strlen(xzcmd2));
@@ -47,8 +55,12 @@
     static bool position_reset = false;
     
     // Input processing
+    #if($inputPortVariable1)
     int control_input = ${inputPortVariable1};
+    #end
+    #if($inputPortVariable2)
     int speed_input = ${inputPortVariable2};
+    #end
     bool enable_flag = (int)${ENAOrDIS.name} == 1;
     bool pos_reset_flag = (int)${POS0Flag.value} == 1;
     

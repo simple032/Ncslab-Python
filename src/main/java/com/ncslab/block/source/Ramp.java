@@ -118,11 +118,6 @@ public class Ramp extends SourceBlock {
         this.start = getParameterByName("Start");
         this.initialOutput = getParameterByName("InitialOutput");
 
-        // Add Ramp-specific parameters to parameter list
-        parameterList.add(slope);
-        parameterList.add(start);
-        parameterList.add(initialOutput);
-
         // Set port dimensions based on slope parameter
         if (!outputPortList.isEmpty()) {
             outputPortList.get(0).setHeight(slope.getHeight());

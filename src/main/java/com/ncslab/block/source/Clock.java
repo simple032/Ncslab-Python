@@ -150,11 +150,24 @@ public class Clock extends SourceBlock {
     private static void setParameterBlockReference(Clock block, Parameter... parameters) {
         for (Parameter param : parameters) {
             try {
-                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
-                blockField.setAccessible(true);
-                blockField.set(param, block);
+                // Use setBlock method if available
+                if (param != null) {
+                    java.lang.reflect.Method setBlockMethod = Parameter.class.getDeclaredMethod("setBlock", com.ncslab.block.Block.class);
+                    setBlockMethod.setAccessible(true);
+                    setBlockMethod.invoke(param, block);
+                }
             } catch (Exception e) {
-                // Fallback: parameter block reference will be null, but should work for basic operations
+                // Try reflection to access private field as fallback
+                try {
+                    if (param != null) {
+                        java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                        blockField.setAccessible(true);
+                        blockField.set(param, block);
+                    }
+                } catch (Exception e2) {
+                    // Fallback: parameter block reference will be null, but should work for basic operations
+                    System.err.println("Warning: Could not set block reference for parameter " + (param != null ? param.getName() : "null"));
+                }
             }
         }
     }

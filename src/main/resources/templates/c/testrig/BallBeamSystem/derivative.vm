@@ -1,11 +1,21 @@
 /*Code for Derivative of BallBeamSystem:($blockId)$blockName*/
-$localVariableDeclarations
-if ($inputPortVariable < $la)
-    u=$la;
-else if (($inputPortVariable >= $la) && ($inputPortVariable <= $ua))
-    u=$inputPortVariable;
+#if($localVariableDeclarations)
+${localVariableDeclarations}
+#end
+#if($inputPortVariable && $la && $ua)
+if (${inputPortVariable} < ${la})
+    u=${la};
+else if ((${inputPortVariable} >= ${la}) && (${inputPortVariable} <= ${ua}))
+    u=${inputPortVariable};
 else
-    u=$ua;
-$stateX0DerivativeName=$stateX1;
-$stateX2DerivativeName=u-$stateX2;
-$stateX1DerivativeName=-$M*$g*sin($d*u/$L)/($J/($R*$R)+$M)+$M*$stateX0*$d*$d*$stateX2DerivativeName*$stateX2DerivativeName/($L*$L*($J/($R*$R)+$M));
+    u=${ua};
+#end
+#if($stateX0DerivativeName && $stateX1)
+${stateX0DerivativeName}=${stateX1};
+#end
+#if($stateX2DerivativeName && $stateX2)
+${stateX2DerivativeName}=u-${stateX2};
+#end
+#if($stateX1DerivativeName && $M && $g && $d && $L && $J && $R && $stateX0)
+${stateX1DerivativeName}=-${M}*${g}*sin(${d}*u/${L})/(${J}/(${R}*${R})+${M})+${M}*${stateX0}*${d}*${d}*${stateX2DerivativeName}*${stateX2DerivativeName}/(${L}*${L}*(${J}/(${R}*${R})+${M}));
+#end

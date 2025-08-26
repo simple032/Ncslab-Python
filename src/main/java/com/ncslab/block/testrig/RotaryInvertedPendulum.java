@@ -115,6 +115,17 @@ public class RotaryInvertedPendulum extends Block {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add template variables required by derivative.vm template
+        if (!inputPortList.isEmpty()) {
+            context.put("input1", getInputPortVariable(0));
+        }
+        
+        // Add state variables
+        if (!stateList.isEmpty()) {
+            context.put("stateX0DerivativeName", stateList.get(0).getDerivativeName());
+            context.put("stateX0", stateList.get(0).getName());
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/RotaryInvertedPendulum/derivative.vm", context);
         code.addDerivativeCode(codeStr);

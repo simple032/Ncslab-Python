@@ -1,2 +1,8 @@
 /* 状态空间模块微分计算: ($blockId) $blockName */
-${xState.getDerivativeName()} = ${A.getName()} * ${xState.getName()} + ${B.getName()} * $inputSignal;
+#if($inputSignal)
+${xState.getDerivativeName()} = ${A.getName()} * ${xState.getName()} + ${B.getName()} * ${inputSignal};
+#elseif($inputSignalName)
+${xState.getDerivativeName()} = ${A.getName()} * ${xState.getName()} + ${B.getName()} * ${inputSignalName};
+#else
+${xState.getDerivativeName()} = ${A.getName()} * ${xState.getName()};
+#end

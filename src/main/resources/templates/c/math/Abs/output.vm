@@ -1,15 +1,17 @@
-/*Code for output of block Abs:($blockId)$blockName*/r
+/*Code for output of block Abs:($blockId)$blockName*/
 #if($inputPortList.size() > 0)
     #if($inputSignal1DataType == $realDataType)
         ## Scalar absolute value
         $outputSignal = fabs($inputSignal1Name);
     #else
         ## Matrix absolute value
-        #set($hMax = $signalHeight - 1)
-        #set($wMax = $signalWidth - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
+        #if($signalHeight && $signalWidth)
+            #set($hMax = $signalHeight - 1)
+            #set($wMax = $signalWidth - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
         ${outputSignal}($i,$j) = fabs(${inputSignal1Name}($i,$j));
+                #end
             #end
         #end
     #end

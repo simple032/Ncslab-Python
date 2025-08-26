@@ -3,8 +3,12 @@
 /* Simulation mode - RotaryInvertedPendulum (R1IP) simulation */
 /* SerialPortState represents communication state - simple first-order lag */
 double commTimeConstant = 0.1;
-$stateX0DerivativeName = ($input1 - $stateX0) / commTimeConstant;
+#if($stateX0DerivativeName && $input1 && $stateX0)
+${stateX0DerivativeName} = (${input1} - ${stateX0}) / commTimeConstant;
+#end
 #else
 /* Hardware mode - communication state tracks input */
-$stateX0DerivativeName = $input1 - $stateX0;
+#if($stateX0DerivativeName && $input1 && $stateX0)
+${stateX0DerivativeName} = ${input1} - ${stateX0};
+#end
 #end
