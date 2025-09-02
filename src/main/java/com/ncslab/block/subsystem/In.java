@@ -13,8 +13,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
-import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.subsystem.InportDto;
+import com.ncslab.dto.block.specialized.subsystem.InDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -93,7 +92,7 @@ public class In extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates In block directly from BlockDto DTO
      */
-    public In(InportDto blockDto, NCSLabModel model) {
+    public In(InDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

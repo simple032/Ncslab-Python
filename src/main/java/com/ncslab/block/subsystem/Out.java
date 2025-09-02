@@ -13,8 +13,7 @@ import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
-import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.subsystem.OutportDto;
+import com.ncslab.dto.block.specialized.subsystem.OutDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -93,7 +92,7 @@ public class Out extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates Out block directly from BlockDto DTO
      */
-    public Out(OutportDto blockDto, NCSLabModel model) {
+    public Out(OutDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Create SIMULINK parameters with defaults
