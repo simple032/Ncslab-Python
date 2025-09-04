@@ -29,7 +29,11 @@ public class MdlDataDto {
     
     // Parsed model data (transient - computed from jsonDataString)
     private ModelDataDto modelData;
-    
+
+    // Parsed target
+    @Builder.Default
+    private String target = "PC";
+
     /**
      * Parse the jsonDataString into ModelDataDto
      * @param objectMapper Jackson ObjectMapper for parsing

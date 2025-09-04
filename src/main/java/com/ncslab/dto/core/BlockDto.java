@@ -89,7 +89,9 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.MagneticLevitationSystemDto.class, name = "MagneticLevitationSystem"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.SubsystemDto.class, name = "Subsystem"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.InportDto.class, name = "Inport"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.InDto.class, name = "In"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.OutportDto.class, name = "Outport"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.OutDto.class, name = "Out"),
     // Additional block types from BlockType.java
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller (s)"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller"),
@@ -316,10 +318,10 @@ public class BlockDto implements BaseDto {
     /**
      * Legacy parameter values for backward compatibility.
      * Used by legacy JSON parsing and some existing blocks.
-     * @deprecated Use typed parameters instead
+     * Note: While typed parameters are preferred for new code,
+     * this field remains necessary for backward compatibility.
      */
-    @JsonProperty("paramValues")
-    @Deprecated
+    @JsonProperty("paramValues")    
     protected Map<String, Object> paramValues;
     
     /**
