@@ -1,53 +1,14 @@
 /*Code for output of block Sqrt:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0)
-    #if($inputSignal1DataType == $realDataType)
-        ## Scalar square root functions
-        #if($function == "sqrt")
-            ## Standard square root
-            $outputSignal = sqrt($inputSignal1Name);
-        #elseif($function == "signedSqrt")
-            ## Signed square root: sqrt(|x|) * sign(x)
-            if($inputSignal1Name >= 0.0) {
-                $outputSignal = sqrt($inputSignal1Name);
-            } else {
-                $outputSignal = -sqrt(-$inputSignal1Name);
-            }
-        #elseif($function == "rSqrt")
-            ## Reciprocal square root: 1/sqrt(x)
-            $outputSignal = 1.0 / sqrt($inputSignal1Name);
-        #else
-            ## Default to standard square root
-            $outputSignal = sqrt($inputSignal1Name);
-        #end
-    #elseif($inputSignal1DataType == $matrixDataType)
-        ## Matrix square root functions - element-wise
-        #set($hMax = $inputSignal1Height - 1)
-        #set($wMax = $inputSignal1Width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-                #if($function == "sqrt")
-                    ## Standard square root
-                    $outputSignal($i, $j) = sqrt($inputSignal1Name($i, $j));
-                #elseif($function == "signedSqrt")
-                    ## Signed square root
-                    if($inputSignal1Name($i, $j) >= 0.0) {
-                        $outputSignal($i, $j) = sqrt($inputSignal1Name($i, $j));
-                    } else {
-                        $outputSignal($i, $j) = -sqrt(-$inputSignal1Name($i, $j));
-                    }
-                #elseif($function == "rSqrt")
-                    ## Reciprocal square root
-                    $outputSignal($i, $j) = 1.0 / sqrt($inputSignal1Name($i, $j));
-                #else
-                    ## Default to standard square root
-                    $outputSignal($i, $j) = sqrt($inputSignal1Name($i, $j));
-                #end
-            #end
-        #end
-    #end
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar square root: output = sqrt(input)
+    $outputVar = sqrt($inputVar);
 #else
-    ## Fallback if parameters missing
-    #if($outputPortList && $outputPortList.size() > 0)
-        $outputSignal = 0.0; /* Sqrt block missing parameters */
+    ## Matrix square root: element-wise operation
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+        ${outputVar}($i,$j) = sqrt(${inputVar}($i,$j));
+        #end
     #end
 #end

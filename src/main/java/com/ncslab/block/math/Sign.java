@@ -50,6 +50,10 @@ public class Sign extends MathBlock {
 
     public static final Map<String, String> PARAMETER_DEFAULTS;
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put("ZeroCrossing", "on");
@@ -62,6 +66,25 @@ public class Sign extends MathBlock {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (sign has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     
     // === Private Constructor with Typed Parameters ===
