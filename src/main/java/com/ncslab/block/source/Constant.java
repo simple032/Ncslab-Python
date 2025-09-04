@@ -41,7 +41,6 @@ import com.ncslab.util.TemplateUtils;
  * SIMULINK Parameters:
  * - Value: Constant value (scalar or matrix)
  * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
- * - FramePeriod: Frame period for frame-based operations
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  * 
@@ -54,9 +53,6 @@ public class Constant extends SourceBlock {
     /** Constant value parameter (scalar or matrix) */
     private final Parameter value;
     
-    /** Frame period parameter for frame-based operations */
-    private final Parameter framePeriod;
-    
     // === Static Parameter Definitions ===
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -64,10 +60,10 @@ public class Constant extends SourceBlock {
         // Constant-specific defaults
         Map<String, String> constantDefaults = new HashMap<>();
         constantDefaults.put("Value", "1");
-        constantDefaults.put("FramePeriod", "1");
         
         // Merge with common source block defaults
-        PARAMETER_DEFAULTS = mergeWithCommonDefaults(constantDefaults);
+        // PARAMETER_DEFAULTS = mergeWithCommonDefaults(constantDefaults);
+        PARAMETER_DEFAULTS = constantDefaults;
     }
 
     public static final List<String> outputNames = new ArrayList<>();
@@ -80,22 +76,20 @@ public class Constant extends SourceBlock {
         // No input ports for constant block
     }
     // === Private Constructor with Typed Parameters ===
-    private Constant(Parameter value, Parameter sampleTime, Parameter framePeriod,
+    private Constant(Parameter value, Parameter sampleTime,
                     Parameter outDataType, Parameter saturateOnIntegerOverflow,
                     String blockName, String blockPath, String blockUUID, 
                     NCSLabModel model) {
         super("Constant", sampleTime, outDataType, saturateOnIntegerOverflow, blockName, blockPath, blockUUID, model);
         
         // Validate parameters
-        validateParameters(value, sampleTime, framePeriod);
+        validateParameters(value, sampleTime);
         
         // Assign Constant-specific parameters
         this.value = Objects.requireNonNull(value, "Value parameter cannot be null");
-        this.framePeriod = Objects.requireNonNull(framePeriod, "Frame period parameter cannot be null");
         
         // Add Constant-specific parameters to parameter list
-        parameterList.add(value);
-        parameterList.add(framePeriod);
+        parameterList.add(value);        
         
         // Set port dimensions
         initializePorts();
@@ -108,7 +102,6 @@ public class Constant extends SourceBlock {
         
         // Get parameters by name from the automatically populated parameterList
         this.value = getParameterByName("Value");
-        this.framePeriod = getParameterByName("FramePeriod");
         
         // Verify SourceBlock parameters are properly inherited
         if (getSampleTime() == null || getOutDataType() == null || getSaturateOnIntegerOverflow() == null) {
@@ -127,7 +120,6 @@ public class Constant extends SourceBlock {
 
         // Use centralized parameter management via getParameterByName
         this.value = getParameterByName("Value");
-        this.framePeriod = getParameterByName("FramePeriod");
 
         // Initialize ports
         initializePorts();
@@ -154,16 +146,16 @@ public class Constant extends SourceBlock {
             // Create typed parameters from JSON with defaults
             Parameter value = createValueFromJSON(paramValues, blockName);
             Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
-            Parameter framePeriod = createFramePeriodFromJSON(paramValues, blockName);
+
             Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
             Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
             
-            Constant block = new Constant(value, sampleTime, framePeriod, outDataType, saturateParam,
+            Constant block = new Constant(value, sampleTime, outDataType, saturateParam,
                                          blockName, blockPath, blockUUID, model);
             
             // Set block reference in parameters (required for Parameter constructor compatibility)
-            setParameterBlockReference(block, value, sampleTime, framePeriod, outDataType, saturateParam);
-            
+            setParameterBlockReference(block, value, sampleTime, outDataType, saturateParam);
+
             return block;
             
         } catch (Exception e) {
@@ -173,30 +165,27 @@ public class Constant extends SourceBlock {
     
     // === Static Factory Method for Programmatic Creation ===
     public static Constant create(String name, String path, double constantValue, NCSLabModel model) {
-        return create(name, path, constantValue, 0.0, 1.0, "Inherit: Same as parameter", false, model);
+        return create(name, path, constantValue, 0.0, "Inherit: Same as parameter", false, model);
     }
     
-    public static Constant create(String name, String path, double constantValue,
-                                 double sampleTime, double framePeriod, String outDataType, 
-                                 boolean saturateOnOverflow, NCSLabModel model) {
+    public static Constant create(String name, String path, double constantValue, double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
         // Create parameters
         Parameter valueParam = new Parameter(null, 1, "Value", String.valueOf(constantValue));
         Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter framePeriodParam = new Parameter(null, 3, "FramePeriod", String.valueOf(framePeriod));
         Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
         Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        Constant block = new Constant(valueParam, sampleTimeParam, framePeriodParam, outDataTypeParam, saturateParam,
+
+        Constant block = new Constant(valueParam, sampleTimeParam, outDataTypeParam, saturateParam,
                                      name, path, "null", model);
         
         // Set block reference in parameters
-        setParameterBlockReference(block, valueParam, sampleTimeParam, framePeriodParam, outDataTypeParam, saturateParam);
-        
+        setParameterBlockReference(block, valueParam, sampleTimeParam, outDataTypeParam, saturateParam);
+
         return block;
     }
     
     // === Parameter Validation ===
-    private static void validateParameters(Parameter value, Parameter sampleTime, Parameter framePeriod) {
+    private static void validateParameters(Parameter value, Parameter sampleTime) {
         // Validate value is finite
         double val = value.getDouble();
         if (Double.isNaN(val) || Double.isInfinite(val)) {
@@ -209,11 +198,6 @@ public class Constant extends SourceBlock {
             throw new IllegalArgumentException("Sample time must be >= 0 or -1 (inherited)");
         }
         
-        // Validate frame period (must be positive)
-        double framePeriodValue = framePeriod.getDouble();
-        if (framePeriodValue <= 0.0 || framePeriodValue == Double.NaN || framePeriodValue == Double.POSITIVE_INFINITY) {
-            throw new IllegalArgumentException("Frame period must be positive");
-        }
     }
     
     // === Helper Methods for JSON Parameter Creation ===
@@ -225,11 +209,6 @@ public class Constant extends SourceBlock {
     private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
         String sampleTimeValue = paramValues.optString("SampleTime", "0");
         return new Parameter(null, 2, "SampleTime", sampleTimeValue);
-    }
-    
-    private static Parameter createFramePeriodFromJSON(JSONObject paramValues, String blockName) {
-        String framePeriodValue = paramValues.optString("FramePeriod", "1");
-        return new Parameter(null, 3, "FramePeriod", framePeriodValue);
     }
     
     private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
@@ -295,7 +274,8 @@ public class Constant extends SourceBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        context.put("blockId", this.getBlockId());
+        context.put("blockName", this.getBlockName());
         context.put("value", value);
 
         String codeStr = TemplateManager.renderTemplate("c/source/Constant/init.vm", context);
@@ -307,8 +287,7 @@ public class Constant extends SourceBlock {
         TemplateUtils.populateAllContext(context, this);
         
         // Add block-specific variables with proper C names
-        context.put("value", value.getName());
-        context.put("outputs", getOutputPortVariables());
+        context.put("value", value.getName());        
 
         // Use the improved template (now updated directly)
         String codeStr = TemplateManager.renderTemplate("c/source/Constant/output.vm", context);

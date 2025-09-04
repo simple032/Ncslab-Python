@@ -56,7 +56,8 @@ public class BandLimitedWhiteNoise extends SourceBlock {
         noiseDefaults.put("Ts", "0.1");
         
         // Merge with common source block defaults
-        PARAMETER_DEFAULTS.putAll(mergeWithCommonDefaults(noiseDefaults));
+        // PARAMETER_DEFAULTS.putAll(mergeWithCommonDefaults(noiseDefaults));
+        PARAMETER_DEFAULTS.putAll(noiseDefaults);
     }
     
     // === Private Constructor with Typed Parameters ===

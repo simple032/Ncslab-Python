@@ -255,7 +255,6 @@ public class RepeatingSequence extends SourceBlock {
     
     // === Port Initialization ===
     private void initializePorts() {
-        outputPortList.add(new OutputPort(this, 1, false));
         outputPortList.get(0).setHeight(1);
         outputPortList.get(0).setWidth(1);
     }

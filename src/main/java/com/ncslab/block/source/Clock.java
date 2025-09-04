@@ -33,10 +33,8 @@ public class Clock extends SourceBlock {
     // Parameter defaults (inherited common ones from SourceBlock)
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
-        // Clock uses the common defaults from SourceBlock
-        PARAMETER_DEFAULTS = new HashMap<>(COMMON_PARAMETER_DEFAULTS);
-        // Clock is typically continuous by default
-        PARAMETER_DEFAULTS.put("SampleTime", "0");  // Continuous
+        PARAMETER_DEFAULTS = new HashMap<>();
+        // Clock-specific parameter defaults can be added here if needed
     }
 
     // === Private Constructor with Typed Parameters ===

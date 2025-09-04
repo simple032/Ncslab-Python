@@ -45,10 +45,27 @@ public abstract class SourceBlock extends Block {
     
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // All source blocks have one output port
         outputNames.add("out1");
         // Source blocks typically have no input ports
+        
+        // Input port defaults (source blocks have no inputs)
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        
+        // Output port defaults (source blocks have one output)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     /**
@@ -79,24 +96,14 @@ public abstract class SourceBlock extends Block {
         super(blockDto, model);
         
         // Get common parameters from already-parsed parameterList (from Block constructor)
-        Parameter sampleTimeParam = getParameterByName("SampleTime");
-        Parameter outDataTypeParam = getParameterByName("OutDataTypeStr");
-        Parameter saturateParam = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Create with defaults if not found
-        this.sampleTime = sampleTimeParam != null ? sampleTimeParam : getParameterByName("SampleTime");
-        this.outDataType = outDataTypeParam != null ? outDataTypeParam : getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = saturateParam != null ? saturateParam : getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Add parameters if they weren't already added by parseParameterList
-        if (sampleTimeParam == null) parameterList.add(this.sampleTime);
-        if (outDataTypeParam == null) parameterList.add(this.outDataType);
-        if (saturateParam == null) parameterList.add(this.saturateOnIntegerOverflow);
+        sampleTime = getParameterByName("SampleTime");
+        outDataType = getParameterByName("OutDataTypeStr");
+        saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Add parameters if they weren't already added by parseParameterList        
         
         // Create standard output port
-        if (outputPortList.isEmpty()) {
-            outputPortList.add(new OutputPort(this, 1));
-        }
+        outputPortList.add(new OutputPort(this, 1));        
         
         System.out.println("DTO-NATIVE: SourceBlock created successfully - " + blockDto.getBlockName());
     }
@@ -143,16 +150,20 @@ public abstract class SourceBlock extends Block {
      */
     private int getNextParameterId() {
         return parameterList.size() + 1;
-    }
+    }  
 
     /**
      * Helper method to merge common defaults with block-specific defaults
      */
-    protected static Map<String, String> mergeWithCommonDefaults(Map<String, String> blockSpecificDefaults) {
+    private static Map<String, String> mergeWithCommonDefaults(Map<String, String> blockSpecificDefaults) {
         Map<String, String> merged = new HashMap<>(COMMON_PARAMETER_DEFAULTS);
-        merged.putAll(blockSpecificDefaults);
+        
+        for (Map.Entry<String, String> entry : blockSpecificDefaults.entrySet()) {
+            merged.put(entry.getKey(), entry.getValue());
+        }
         return merged;
     }
+
 
     /**
      * Get the sample time value as double

@@ -1,7 +1,2 @@
 /*Code for output of block Constant:($blockId)$blockName*/
-#if($value)
-    $outputSignal = $value;
-#else
-    ## Fallback to default value if parameter not found
-    $outputSignal = 1; /* Using default constant value */
-#end
+$outputSignal = $value;

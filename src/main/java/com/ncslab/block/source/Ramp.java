@@ -53,7 +53,8 @@ public class Ramp extends SourceBlock {
         rampDefaults.put("InitialOutput", "0");
         
         // Merge with common source block defaults
-        PARAMETER_DEFAULTS = mergeWithCommonDefaults(rampDefaults);
+        // PARAMETER_DEFAULTS = mergeWithCommonDefaults(rampDefaults);
+        PARAMETER_DEFAULTS = rampDefaults;
     }
 
     public static final List<String> outputNames = new ArrayList<>();

@@ -112,7 +112,7 @@ public class ShiftArithmetic extends LogicBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.bitShiftNumber = getParameterByName("Bitshiftnumber");
+        this.bitShiftNumber = getParameterByName("BitShiftNumber");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");

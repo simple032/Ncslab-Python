@@ -52,17 +52,35 @@ public class Step extends SourceBlock {
         stepDefaults.put("FinalValue", "1");             // After step
         
         // Merge with common source block defaults
-        PARAMETER_DEFAULTS = mergeWithCommonDefaults(stepDefaults);
+        // PARAMETER_DEFAULTS = mergeWithCommonDefaults(stepDefaults);
+        PARAMETER_DEFAULTS = stepDefaults;
     }
 
     public static final List<String> outputNames = new ArrayList<>();
     
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization (source block has no inputs)
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
         // No input ports for step block
+        
+        // Input port defaults (step block has no inputs)
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        
+        // Output port defaults (step block has one output)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     
     // === Private Constructor with Typed Parameters ===
@@ -84,8 +102,7 @@ public class Step extends SourceBlock {
         parameterList.add(initialValue);
         parameterList.add(finalValue);
         
-        // Set port dimensions
-        initializePorts();
+        // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor"
     }
     
     // === Legacy Constructor (Deprecated) ===
@@ -136,7 +153,7 @@ public class Step extends SourceBlock {
         parameterList.add(finalValue);
         
         // Complete initialization
-        initializePorts();
+        // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
         
         System.out.println("Enhanced DTO: Step block created successfully - " + dto.getBlockName());
     }
@@ -301,10 +318,11 @@ public class Step extends SourceBlock {
     
     
     // === Port Dimension Setup ===
-    private void initializePorts() {
-        // Set port dimensions based on time parameter
+    // @Override
+    protected void postConstructionInitialization() {
+        // Set port dimensions based on time parameter after centralized port creation
         outputPortList.get(0).setHeight(time.getHeight());
-        outputPortList.get(0).setWidth(time.getWidth());
+        outputPortList.get(0).setWidth(time.getWidth());    
     }
 
     // === Code Generation Methods (preserved from original) ===

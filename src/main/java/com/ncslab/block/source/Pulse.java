@@ -63,10 +63,27 @@ public class Pulse extends SourceBlock {
     
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization (source block has no inputs)
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
         // No input ports for pulse block
+        
+        // Input port defaults (source block has no inputs)
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        
+        // Output port defaults
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false); // Source blocks don't have feedthrough
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     // === Private Constructor with Typed Parameters ===
     private Pulse(Parameter amplitude, Parameter period, Parameter pulseWidth, Parameter phaseDelay,
@@ -280,7 +297,6 @@ public class Pulse extends SourceBlock {
     
     // === Port Initialization ===
     private void initializePorts() {
-        outputPortList.add(new OutputPort(this, 1, false));
         outputPortList.get(0).setHeight(amplitude.getHeight());
         outputPortList.get(0).setWidth(amplitude.getWidth());
     }
@@ -321,12 +337,20 @@ public class Pulse extends SourceBlock {
 		code.addInitCode(codeStr);
 	}
 	public void generateOutputCodeC(CodeStructC code) {
+		// Use TemplateUtils for comprehensive context population
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		
+		// Add Pulse-specific context variables
 		context.put("block", this);
 		context.put("outputs", getOutputPortVariables());
 		context.put("amplitude", amplitude);
 		context.put("period", period);
 		context.put("pulseWidth", pulseWidth);
 		context.put("phaseDelay", phaseDelay);
+		
+		// Add dimension variables needed by template
+		context.put("amplitudeHeight", amplitude.getHeight());
+		context.put("amplitudeWidth", amplitude.getWidth());
 
 		String codeStr = TemplateManager.renderTemplate("c/source/Pulse/output.vm", context);
 		code.addOutputCode(codeStr);
