@@ -592,7 +592,7 @@ public class SimulationModel extends NCSLabModel{
     protected void calculateOutputs(double t) {
         // 计算各个模块的输出
         // 类似Simulink的mdlOutputs
-        for(Block block: outputChain) {
+        for(Block block: getOutputChain()) {
             block.calculateOutput(t);
         }
 

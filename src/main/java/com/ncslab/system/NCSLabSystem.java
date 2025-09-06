@@ -5,6 +5,7 @@ import com.ncslab.line.Line;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.sink.Scope;
+import com.ncslab.block.subsystem.Subsystem;
 import com.ncslab.ncslablink.MatDimException;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,8 +53,7 @@ public class NCSLabSystem {
     /**
      * Execution order chain - determines the order blocks are calculated
      * This is the dependency-resolved execution sequence
-     */
-    @Getter
+     */        
     private final List<Block> outputChain = new ArrayList<>();
     
     /**
@@ -303,6 +303,17 @@ public class NCSLabSystem {
         
         // Print execution order for debugging
         printExecutionChain();
+
+        for(Block block: outputChain) {
+            // Perform any additional processing on each block if needed
+            if(block instanceof Subsystem) {
+                // Handle subsystem-specific logic
+                Subsystem subSystem = (Subsystem) block;
+                // Perform operations specific to the subsystem
+                result = dependencyAnalyzer.analyzeAndResolve(blocks);
+                subSystem.getInnerSystem().setupOutputChain();
+            }
+        }
     }
     
     /**
@@ -377,6 +388,19 @@ public class NCSLabSystem {
         System.out.println("=== END OUTPUT CHAIN (" + outputChain.size() + " blocks) ===");
     }
     
+
+    public List<Block> getOutputChain() {
+        List<Block> fullOutputChain = new ArrayList<>();
+        for(Block block: outputChain) {
+			if(block instanceof Subsystem) {
+				fullOutputChain.addAll(((Subsystem) block).getInnerSystem().getOutputChain());
+			}
+			else{
+				fullOutputChain.add(block);
+			}
+		}
+		return fullOutputChain;
+    }
     /**
      * Sort output chain by dependency order using proper topological sorting
      * This ensures blocks execute in the correct order based on actual connections

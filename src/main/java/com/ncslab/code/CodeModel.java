@@ -104,7 +104,7 @@ abstract public class CodeModel extends NCSLabModel {
     }
 
 	private void generateOutputCodeFromChain(CodeGenerationOption option) {
-		for(Block block:outputChain) {
+		for(Block block:getOutputChain()) {
 			//根据输出链，建立Ouput的代码
 			if(block instanceof com.ncslab.block.sink.SinkBlock) {
 				generateBlockSinkOutputCode(block,option);

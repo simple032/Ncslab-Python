@@ -1068,10 +1068,15 @@ abstract public class CodeStructC{
 		}
 
 		dataStructureCode+="/*Define outputPort structures*/\n";
+		java.util.Set<String> generatedOutputPorts = new java.util.HashSet<>();
 		for(Block block:model.getBlockList()) {
 			if(block.getOutputPortList().size()>0) {
 				for(OutputPort output:block.getOutputPortList()) {
-					output.generateDataStructureCodeC(this);
+					String portId = "outputPort" + block.getBlockId() + "_" + output.getNumber();
+					if (!generatedOutputPorts.contains(portId)) {
+						output.generateDataStructureCodeC(this);
+						generatedOutputPorts.add(portId);
+					}
 				}
 				dataStructureCode+="OUTPUT_PORT *outputPorts"+block.getBlockId()+"["+block.getOutputPortList().size()+"];\n";
 			}
@@ -1165,7 +1170,7 @@ abstract public class CodeStructC{
 			dataStructureCode+="BLOCK *blocks["+model.getBlockList().size()+"];\n";
 		}
 		else {
-			dataStructureCode+="BLOCK **blocks=NULL";
+			dataStructureCode+="BLOCK **blocks=NULL;\n";
 		}
 		dataStructureCode+="MODEL model={(char *)\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+","+model.getConfig().getStartTime()+",0.0,"+model.getConfig().getFixedStep()+",0,0,0,0,NULL,NULL,NULL,NULL,0,0};\n";
 	}

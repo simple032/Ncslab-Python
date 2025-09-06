@@ -49,6 +49,10 @@ public class TemplateManager {
             t.merge(context, writer);
             return writer.toString();
         } catch (Exception e) {
+            System.err.println("Template rendering error details:");
+            System.err.println("Template: " + templateName);
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("Template rendering failed: " + templateName, e);
         }
     }

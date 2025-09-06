@@ -34,28 +34,84 @@ public class TemplateUtils {
 //            }
 //        }
 
-        // Add detailed parameter information - both C variable names and values
+        // Add pre-computed parameter information with standardized names
+        java.util.List<String> paramNames = new java.util.ArrayList<>();
+        java.util.List<String> paramVariables = new java.util.ArrayList<>();
+        java.util.List<Object> paramValues = new java.util.ArrayList<>();
+        
         for (com.ncslab.block.io.Parameter param : block.getParameterList()) {
-            context.put(param.getName(), param.getName()); // C variable name as string
-            context.put(param.getName() + "Name", param.getName()); // Explicit C variable name
-            context.put(param.getName() + "Value", param.getData().getInitValue());
-            context.put(param.getName() + "Object", param); // Keep object for advanced access if needed
+            String paramName = param.getName();
+            String paramVar = param.getName(); // C variable name
+            Object paramValue = param.getData().getInitValue();
+            
+            paramNames.add(paramName);
+            paramVariables.add(paramVar);
+            paramValues.add(paramValue);
+            
+            // Individual parameter access (legacy)
+            context.put(paramName, paramVar); // C variable name as string
+            context.put(paramName + "Name", paramVar); // Explicit C variable name
+            context.put(paramName + "Value", paramValue);
+            context.put(paramName + "Object", param); // Keep object for advanced access if needed
+            
+            // Add generic template variable names for backward compatibility
+            if ("Gain".equals(paramName)) {
+                context.put("parameterName", paramVar); // For Gain block templates
+                context.put("gainName", paramVar);
+            }
+            if ("SampleTime".equals(paramName)) {
+                context.put("sampleTimeName", paramVar); // For discrete block templates
+            }
+            if ("offset".equals(paramName) || "Offset".equals(paramName)) {
+                context.put("offsetName", paramVar);
+                context.put("offsetInitCodeC", paramVar + " = " + paramValue + ";");
+            }
         }
+        
+        // Standardized parameter collections
+        context.put("paramNames", paramNames);
+        context.put("paramVariables", paramVariables);
+        context.put("paramValues", paramValues);
 
-        // Add detailed state information - both C variable names and values
+        // Add pre-computed state information with standardized names
+        java.util.List<String> stateNames = new java.util.ArrayList<>();
+        java.util.List<String> stateVariables = new java.util.ArrayList<>();
+        java.util.List<Object> stateValues = new java.util.ArrayList<>();
+        
         for (com.ncslab.block.io.State state : block.getStateList()) {
-            context.put(state.getName(), state.getName()); // C variable name as string
-            context.put(state.getName() + "Name", state.getName()); // Explicit C variable name
-            context.put(state.getName() + "Value", state.getData().getInitValue());
-            context.put(state.getName() + "Object", state); // Keep object for advanced access if needed
+            String stateName = state.getName();
+            String stateVar = state.getName(); // C variable name
+            Object stateValue = state.getData().getInitValue();
+            
+            stateNames.add(stateName);
+            stateVariables.add(stateVar);
+            stateValues.add(stateValue);
+            
+            // Individual state access (legacy)
+            context.put(stateName, stateVar); // C variable name as string
+            context.put(stateName + "Name", stateVar); // Explicit C variable name
+            context.put(stateName + "Value", stateValue);
+            context.put(stateName + "Object", state); // Keep object for advanced access if needed
+            
+            // Add generic template variable names for backward compatibility
+            if (stateName.contains("stateX") || stateName.contains("stateOutput")) {
+                context.put("stateOutputName", stateVar);
+            }
         }
+        
+        // Standardized state collections
+        context.put("stateNames", stateNames);
+        context.put("stateVariables", stateVariables);
+        context.put("stateValues", stateValues);
 
-        // Add input/output signal variable names (C variable names as strings)
+        // Add standardized input/output signal variable names (C variable names as strings)
         if (!block.getInputPortList().isEmpty()) {
-            context.put("inputSignal", block.getInputPortVariable(0));
+            context.put("inputVar", block.getInputPortVariable(0));
+            context.put("inputSignal", block.getInputPortVariable(0));  // Backward compatibility
         }
         if (!block.getOutputPortList().isEmpty()) {
-            context.put("outputSignal", block.getOutputPortVariable(0));
+            context.put("outputVar", block.getOutputPortVariable(0));
+            context.put("outputSignal", block.getOutputPortVariable(0));  // Backward compatibility
         }
 
         // Add block-specific configuration
@@ -69,6 +125,22 @@ public class TemplateUtils {
         context.put("inputHeight", !block.getInputPortList().isEmpty() ? block.getInputPortList().get(0).getHeight() : 0);
         context.put("outputWidth", !block.getOutputPortList().isEmpty() ? block.getOutputPortList().get(0).getWidth() : 0);
         context.put("outputHeight", !block.getOutputPortList().isEmpty() ? block.getOutputPortList().get(0).getHeight() : 0);
+        
+        // Add signal dimensions for compatibility with existing templates
+        if (!block.getInputPortList().isEmpty()) {
+            context.put("signalWidth", block.getInputPortList().get(0).getWidth());
+            context.put("signalHeight", block.getInputPortList().get(0).getHeight());
+            context.put("wMax", block.getInputPortList().get(0).getWidth() - 1);
+            context.put("hMax", block.getInputPortList().get(0).getHeight() - 1);
+        }
+        
+        // Add template-compatible signal variable names
+        if (!block.getInputPortList().isEmpty()) {
+            context.put("inputSignalName", block.getInputPortVariable(0));
+        }
+        if (!block.getOutputPortList().isEmpty()) {
+            context.put("outputSignalName", block.getOutputPortVariable(0));
+        }
 
         // Add parameter dimension information (for blocks like Gain that need gainHeight/gainWidth)
         for (com.ncslab.block.io.Parameter param : block.getParameterList()) {
@@ -121,7 +193,7 @@ public class TemplateUtils {
         context.put("parameters", block.getParameterList());
         context.put("states", block.getStateList());
 
-        // Input/Output variables for easy access
+        // Pre-computed Input/Output variables for standardized template access
         if (!block.getInputPortList().isEmpty()) {
             java.util.List<String> inputs = new java.util.ArrayList<>();
             for (int i = 0; i < block.getInputPortList().size(); i++) {
@@ -135,6 +207,12 @@ public class TemplateUtils {
                 }
             }
             context.put("inputs", inputs);
+            
+            // Add individual input variables with standardized names
+            for (int i = 0; i < inputs.size(); i++) {
+                context.put("inputVar" + (i + 1), inputs.get(i));
+                context.put("input" + (i + 1), inputs.get(i));  // Backward compatibility
+            }
         }
 
         if (!block.getOutputPortList().isEmpty()) {
@@ -143,6 +221,12 @@ public class TemplateUtils {
                 outputs.add(block.getOutputPortVariable(i));
             }
             context.put("outputs", outputs);
+            
+            // Add individual output variables with standardized names  
+            for (int i = 0; i < outputs.size(); i++) {
+                context.put("outputVar" + (i + 1), outputs.get(i));
+                context.put("output" + (i + 1), outputs.get(i));  // Backward compatibility
+            }
         }
 
         // Utility functions for templates

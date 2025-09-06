@@ -29,8 +29,9 @@ public class Line {
     private int lineId=0;
 
 	Line(JSONObject lineJSON,List<Block> blockList){
-		String fromBlockName=lineJSON.getString("fromBlockName");
-		String toBlockName=lineJSON.getString("toBlockName");
+		// 当前端从子系统中发送框图时，会出现部分模块缺少blockName的问题
+		String fromBlockName=lineJSON.optString("fromBlockName", "null");
+		String toBlockName=lineJSON.optString("toBlockName", "null");
         String fromBlockUUID=lineJSON.optString("fromBlockUUID", "null");
         String toBlockUUID=lineJSON.optString("toBlockUUID", "null");
 
