@@ -1,6 +1,5 @@
 package com.ncslab.code.m;
 
-import org.json.JSONObject;
 import com.ncslab.dto.communication.ServerRequestDto;
 import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.dto.communication.MfcalcResponseDto;
@@ -85,7 +84,7 @@ public class MfcalcClientManager {
     }
 
     // 设置变量
-    public MfcalcResponseDto setVariableForUser(String userId, String variableName, JSONObject value) {
+    public MfcalcResponseDto setVariableForUser(String userId, String variableName, Object value) {
         MfcalcClient client = getClientForUser(userId);
         return client.setVariable(variableName, value);
     }

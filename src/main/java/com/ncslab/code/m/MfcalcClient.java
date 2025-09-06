@@ -10,10 +10,13 @@ import java.util.Optional;
 
 import com.utils.Property;
 import com.ncslab.dto.communication.MfcalcResponseDto;
+import com.ncslab.dto.communication.MfcalcRequestDto;
 import lombok.Getter;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Map;
 
+@Slf4j
 public class MfcalcClient {
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 9090;
@@ -25,7 +28,7 @@ public class MfcalcClient {
     private static MfcalcClient instance;
     private static boolean initialized = false;
     @Getter
-    private static JSONArray localVariables;
+    private static List<Map<String, Object>> localVariables;
 
     public MfcalcClient(Socket socket) throws IOException {
         String server_host = Optional.ofNullable(System.getenv("MfcalcServerHost"))
@@ -40,9 +43,11 @@ public class MfcalcClient {
     }
 
     // 获取单例实例的静态方法
-    private JSONObject sendRequest(JSONObject request) {
+    private MfcalcResponseDto sendRequest(MfcalcRequestDto request) {
         try {
-            outputStream.write((request.toString() + "\n").getBytes());
+            String requestJson = request.toJsonString();
+            log.debug("Sending request to MFCalc server: {}", requestJson);
+            outputStream.write((requestJson + "\n").getBytes());
             outputStream.flush();
 
             // 读取缓冲区长度
@@ -60,73 +65,61 @@ public class MfcalcClient {
                 response.append((char) c);
                 count++;
             }
-            return new JSONObject(response.toString());
+            String responseStr = response.toString();
+            // Print the raw response from server
+            System.out.println("Raw response from MFCalc server: " + responseStr);
+            log.debug("Received response from MFCalc server: {}", responseStr);
+            return MfcalcResponseDto.fromJsonString(responseStr);
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            log.error("Error sending request to MFCalc server: {}", e.getMessage(), e);
+            // Log to file for debugging
+            try (java.io.FileWriter fw = new java.io.FileWriter("mfcalc.log", true)) {
+                fw.write(e.toString() + "\n");
+                for (StackTraceElement ste : e.getStackTrace()) {
+                    fw.write("\tat " + ste + "\n");
+                }
+            } catch (IOException logEx) {
+                log.error("Failed to write to mfcalc.log: {}", logEx.getMessage());
+            }
+            return MfcalcResponseDto.builder()
+                    .status("error")
+                    .error("Connection error: " + e.getMessage())
+                    .build();
         }
     }
 
     public MfcalcResponseDto runScript(String script) {
-        JSONObject request = new JSONObject();
-        request.put("message_type", "run_script");
-        request.put("message_id", generateMessageId());
-        request.put("data", new JSONObject().put("script", script));
-        JSONObject jsonResponse = sendRequest(request);
-        return MfcalcResponseDto.fromJsonObject(jsonResponse);
+        MfcalcRequestDto request = MfcalcRequestDto.createRunScript(script);
+        return sendRequest(request);
     }
 
     public MfcalcResponseDto debugScript(String script, int[] breakpoints) {
-        JSONObject request = new JSONObject();
-        request.put("message_type", "debug_script");
-        request.put("message_id", generateMessageId());
-        request.put("data", new JSONObject().put("script", script).put("breakpoints", breakpoints));
-        JSONObject jsonResponse = sendRequest(request);
-        return MfcalcResponseDto.fromJsonObject(jsonResponse);
+        MfcalcRequestDto request = MfcalcRequestDto.createDebugScript(script, breakpoints);
+        return sendRequest(request);
     }
 
     public MfcalcResponseDto runCommand(String command) {
-        JSONObject request = new JSONObject();
-        request.put("message_type", "run_command");
-        request.put("message_id", generateMessageId());
-        request.put("data", new JSONObject().put("command", command));
-        JSONObject jsonResponse = sendRequest(request);
-        return MfcalcResponseDto.fromJsonObject(jsonResponse);
+        MfcalcRequestDto request = MfcalcRequestDto.createRunCommand(command);
+        return sendRequest(request);
     }
 
     public MfcalcResponseDto getVariables() {
-        JSONObject request = new JSONObject();
-        request.put("message_type", "get_variables");
-        request.put("message_id", generateMessageId());
-        request.put("data", new JSONObject());
-        JSONObject jsonResponse = sendRequest(request);
-        if (jsonResponse != null && jsonResponse.has("data")) {
-            localVariables = jsonResponse.getJSONArray("data");
+        MfcalcRequestDto request = MfcalcRequestDto.createGetVariables();
+        MfcalcResponseDto response = sendRequest(request);
+        if (response != null && response.getVariables() != null) {
+            localVariables = response.getVariables();
         }
-        return MfcalcResponseDto.fromJsonObject(jsonResponse);
+        return response;
     }
 
     public MfcalcResponseDto getVariable(String variableName) {
-        JSONObject request = new JSONObject();
-        request.put("message_type", "get_variable");
-        request.put("message_id", generateMessageId());
-        request.put("data", new JSONObject().put("variable_name", variableName));
-        JSONObject jsonResponse = sendRequest(request);
-        return MfcalcResponseDto.fromJsonObject(jsonResponse);
+        MfcalcRequestDto request = MfcalcRequestDto.createGetVariable(variableName);
+        return sendRequest(request);
     }
 
-    public MfcalcResponseDto setVariable(String variableName, JSONObject variableValue) {
-        JSONObject request = new JSONObject();
-        request.put("message_type", "set_variables");
-        request.put("message_id", generateMessageId());
-        request.put("data", new JSONObject().put("variable_name", variableName).put("value", variableValue));
-        JSONObject jsonResponse = sendRequest(request);
-        return MfcalcResponseDto.fromJsonObject(jsonResponse);
-    }
-
-    private String generateMessageId() {
-        // 简单生成一个唯一的消息 ID，实际应用中可以使用更复杂的方式
-        return String.valueOf(System.currentTimeMillis());
+    public MfcalcResponseDto setVariable(String variableName, Object variableValue) {
+        MfcalcRequestDto request = MfcalcRequestDto.createSetVariable(variableName, variableValue);
+        return sendRequest(request);
     }
 
     public void close() {

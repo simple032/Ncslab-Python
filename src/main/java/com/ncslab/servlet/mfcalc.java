@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 import com.ncslab.code.m.CodeModelM;
 import com.ncslab.code.m.CodeOctaveM;
@@ -88,24 +89,48 @@ public class mfcalc extends HttpServlet {
 				case "runScript":
 					MfcalcResponseDto scriptResponse = client.runScript(model.getMainCode()+"\n");
 					System.out.println(scriptResponse);
-					if (scriptResponse != null && scriptResponse.getData() != null) {
-						// Handle data object - could be JSONObject from legacy response
-						Object data = scriptResponse.getData();
-						if (data instanceof JSONObject) {
-							JSONObject jo = (JSONObject) data;
-							model.setOutputResult(jo.optString("log",""));
-							model.setFigureResult(jo.optJSONObject("figures"));
+					
+					// Check if the response indicates an error
+					if (scriptResponse == null || scriptResponse.isError()) {
+						String errorMsg = scriptResponse != null ? scriptResponse.getErrorInfo() : "Null response from MFCalc server";
+						log.error("MFCalc runScript error: {}", errorMsg);
+						message = errorMsg;
+						operationSuccess = false;
+					} else {
+						if (scriptResponse.getData() != null) {
+							// Handle data object - could be JSONObject from legacy response
+							Object data = scriptResponse.getData();
+							if (data instanceof JSONObject) {
+								JSONObject jo = (JSONObject) data;
+								model.setOutputResult(jo.optString("log",""));
+								model.setFigureResult(jo.optJSONObject("figures"));
+							}
 						}
-					}
-					if (scriptResponse != null && scriptResponse.getOutput() != null) {
-						model.setOutputResult(scriptResponse.getOutput());
+						if (scriptResponse.getOutput() != null) {
+							model.setOutputResult(scriptResponse.getOutput());
+						} else if (scriptResponse.getOutputLog() != null) {
+							// Fallback to outputLog if output is not available
+							model.setOutputResult(scriptResponse.getOutputLog());
+						}
 					}
 					// Note: Missing break; in original code - maintaining the same behavior
 				case "getVariables":	
 					MfcalcResponseDto variablesResponse = client.getVariables();
 					System.out.println(variablesResponse);
-					if (variablesResponse != null && variablesResponse.getData() != null) {
-						model.setOutputMat(variablesResponse.getData().toString());
+					
+					// Check if the response indicates an error
+					if (variablesResponse == null || variablesResponse.isError()) {
+						String errorMsg = variablesResponse != null ? variablesResponse.getErrorInfo() : "Null response from MFCalc server";
+						log.error("MFCalc getVariables error: {}", errorMsg);
+						// Only update the status if we haven't already set it to failed
+						if (operationSuccess) {
+							message = errorMsg;
+							operationSuccess = false;
+						}
+					} else if (variablesResponse.getData() != null) {
+						// Convert variables data to proper JSON format
+						String jsonData = JsonUtils.toJson(variablesResponse.getData());
+						model.setOutputMat(jsonData != null ? jsonData : "[]");
 					}
 					break;
 				default:

@@ -44,8 +44,8 @@ public class JsonUtils {
         objectMapper.configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
         objectMapper.setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);
         
-        // Optional: Configure for pretty printing (can be disabled for production)
-        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        // Disable pretty printing for compact JSON output
+        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false);
     }
     
     /**
@@ -388,6 +388,26 @@ public class JsonUtils {
             log.error("Failed to serialize DTO {}: {}", dto.getClass().getSimpleName(), e.getMessage());
             return "{\"error\":\"Serialization failed: " + e.getMessage().replace("\"", "\\\"")
                 + "\",\"objectType\":\"" + dto.getClass().getSimpleName() + "\"}";
+        }
+    }
+    
+    /**
+     * Deserialize JSON string to DTO
+     * @param jsonString JSON string to deserialize
+     * @param clazz DTO class type
+     * @return Deserialized DTO object or null if deserialization fails
+     */
+    public static <T> T deserializeDto(String jsonString, Class<T> clazz) {
+        if (jsonString == null || jsonString.trim().isEmpty()) {
+            log.error("Cannot deserialize null or empty JSON string to {}", clazz.getSimpleName());
+            return null;
+        }
+        
+        try {
+            return objectMapper.readValue(jsonString, clazz);
+        } catch (IOException e) {
+            log.error("Failed to deserialize JSON to DTO {}: {}", clazz.getSimpleName(), e.getMessage());
+            return null;
         }
     }
     

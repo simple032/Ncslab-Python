@@ -2,20 +2,24 @@ package com.ncslab.dto.communication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import org.json.JSONObject;
-import org.json.JSONArray;
+import lombok.extern.slf4j.Slf4j;
+import com.ncslab.util.JsonUtils;
 
 import java.util.List;
 import java.util.Map;
+
+import org.json.JSONObject;
 
 /**
  * DTO for MfcalcClient response handling
  * Provides type-safe representation of MFCalc server responses
  */
+@Slf4j
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,12 +38,15 @@ public class MfcalcResponseDto {
     
     @JsonProperty("data")
     private Object data; // Response data - can be various types
-    
+
     @JsonProperty("error")
     private String error; // Error message if any
     
     @JsonProperty("output")
     private String output; // Console output
+
+    @JsonProperty("log")
+    private String outputLog; // Log messages (which will be replaced by output in future)
     
     @JsonProperty("variables")
     private List<Map<String, Object>> variables; // For getVariables() response
@@ -81,73 +88,54 @@ public class MfcalcResponseDto {
     }
     
     /**
-     * Create MfcalcResponseDto from JSONObject response
-     * @param jsonResponse JSONObject from MfcalcClient
+     * Create MfcalcResponseDto from JSON string response
+     * @param jsonResponse JSON string from MfcalcClient
      * @return MfcalcResponseDto instance
      */
-    public static MfcalcResponseDto fromJsonObject(JSONObject jsonResponse) {
+    public static MfcalcResponseDto fromJsonString(String jsonResponse) {
+        if (jsonResponse == null || jsonResponse.trim().isEmpty()) {
+            return MfcalcResponseDto.builder()
+                    .status("error")
+                    .error("Null or empty response from MFCalc server")
+                    .build();
+        }
+        
+        try {
+            // Use Jackson to deserialize the JSON string directly to DTO
+            MfcalcResponseDto dto = JsonUtils.deserializeDto(jsonResponse, MfcalcResponseDto.class);
+            
+            // Post-process variables if data is a List
+            if (dto.getData() instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> varList = (List<Map<String, Object>>) dto.getData();
+                dto.setVariables(varList);
+            }
+            
+            return dto;
+        } catch (Exception e) {
+            log.error("Failed to parse MFCalc response: {}", e.getMessage(), e);
+            return MfcalcResponseDto.builder()
+                    .status("error")
+                    .error("Failed to parse response: " + e.getMessage())
+                    .build();
+        }
+    }
+    
+    /**
+     * Create MfcalcResponseDto from JSONObject response (deprecated - for backward compatibility)
+     * @param jsonResponse JSONObject from MfcalcClient
+     * @return MfcalcResponseDto instance
+     * @deprecated Use fromJsonString instead
+     */
+    @Deprecated
+    public static MfcalcResponseDto fromJsonObject(org.json.JSONObject jsonResponse) {
         if (jsonResponse == null) {
             return MfcalcResponseDto.builder()
                     .status("error")
                     .error("Null response from MFCalc server")
                     .build();
         }
-        
-        MfcalcResponseDto.MfcalcResponseDtoBuilder builder = MfcalcResponseDto.builder();
-        
-        // Extract basic fields
-        if (jsonResponse.has("message_type")) {
-            builder.messageType(jsonResponse.getString("message_type"));
-        }
-        if (jsonResponse.has("message_id")) {
-            builder.messageId(jsonResponse.getString("message_id"));
-        }
-        if (jsonResponse.has("status")) {
-            builder.status(jsonResponse.getString("status"));
-        }
-        if (jsonResponse.has("error")) {
-            builder.error(jsonResponse.getString("error"));
-        }
-        if (jsonResponse.has("output")) {
-            builder.output(jsonResponse.getString("output"));
-        }
-        if (jsonResponse.has("execution_time")) {
-            builder.executionTime(jsonResponse.getLong("execution_time"));
-        }
-        
-        // Handle data field - can be various types
-        if (jsonResponse.has("data")) {
-            Object dataObj = jsonResponse.get("data");
-            builder.data(dataObj);
-            
-            // For getVariables() response, data is typically a JSONArray
-            if (dataObj instanceof JSONArray) {
-                JSONArray dataArray = (JSONArray) dataObj;
-                builder.variables(dataArray.toList().stream()
-                    .filter(obj -> obj instanceof Map)
-                    .map(obj -> {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> map = (Map<String, Object>) obj;
-                        return map;
-                    })
-                    .toList());
-            }
-        }
-        
-        // Handle breakpoints for debug responses
-        if (jsonResponse.has("breakpoints")) {
-            Object breakpointsObj = jsonResponse.get("breakpoints");
-            if (breakpointsObj instanceof JSONArray) {
-                JSONArray breakpointsArray = (JSONArray) breakpointsObj;
-                int[] breakpoints = new int[breakpointsArray.length()];
-                for (int i = 0; i < breakpointsArray.length(); i++) {
-                    breakpoints[i] = breakpointsArray.getInt(i);
-                }
-                builder.breakpoints(breakpoints);
-            }
-        }
-        
-        return builder.build();
+        return fromJsonString(jsonResponse.toString());
     }
     
     /**
@@ -158,7 +146,7 @@ public class MfcalcResponseDto {
      * @param output Console output
      * @return Success MfcalcResponseDto
      */
-    public static MfcalcResponseDto createScriptSuccess(String messageType, String messageId, Object result, String output) {
+    public static MfcalcResponseDto createScriptSuccess(String messageType, String messageId, JSONObject result, String output) {
         return MfcalcResponseDto.builder()
                 .messageType(messageType)
                 .messageId(messageId)
