@@ -13,6 +13,9 @@ import org.json.JSONObject;
 import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.util.JsonUtils;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -58,12 +61,10 @@ public class ai extends HttpServlet {
 				if(pathParts.length >= 2)
 					platform = pathParts[1];
 			}
-            InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
-            String result = "";
-            int respInt = insr.read();
-            while(respInt!=-1) {
-                result +=(char)respInt;
-                respInt = insr.read();
+            // Modern approach to read request body
+            String result;
+            try (InputStream is = request.getInputStream()) {
+                result = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
             System.out.println(result);
             JSONArray blockTypes = new JSONArray(result);

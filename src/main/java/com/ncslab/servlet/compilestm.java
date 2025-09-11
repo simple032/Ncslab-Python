@@ -1,7 +1,8 @@
 package com.ncslab.servlet;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -44,14 +45,11 @@ public class compilestm extends HttpServlet {
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 
 
-		//��ȡPost��JSON����
-		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
-        String result = "";
-        int respInt = insr.read();
-        while(respInt!=-1) {
-            result +=(char)respInt;
-            respInt = insr.read();
-        }
+		// Modern approach to read request body
+		String result;
+		try (InputStream is = request.getInputStream()) {
+			result = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+		}
         JSONObject jsonIn = new JSONObject(result);
         int code = 2000;
         String errorMsgs="";

@@ -1,7 +1,9 @@
 package com.ncslab.servlet;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,11 +11,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.dto.communication.MfcalcResponseDto;
+import com.ncslab.dto.communication.MfcalcServletRequestDto;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,21 +56,38 @@ public class mfcalc extends HttpServlet {
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 
 		System.out.println("mfcalc");
-		//��ȡPost��JSON����
-		InputStreamReader insr = new InputStreamReader(request.getInputStream(),"utf-8");
-        String result = "";
-        int respInt = insr.read();
-        while(respInt!=-1) {
-            result +=(char)respInt;
-            respInt = insr.read();
+		String result = "";
+        // 使用try-with-resources自动关闭资源
+		try (InputStream is = request.getInputStream()) {
+			// 直接从InputStream读取所有字节并转换为字符串
+			result = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			log.error("Error reading request input stream: {}", e.getMessage());
+			ServerResponseDto errorResponse = ServerResponseDto.createError("Error reading request", "mfcalc");
+			errorResponse.setCode(400);
+			String errorJson = JsonUtils.serializeDto(errorResponse);
+			response.getWriter().append(errorJson);
+			return;
+		}
+				
+        // Parse JSON to DTO
+        MfcalcServletRequestDto requestDto = JsonUtils.deserializeDto(result, MfcalcServletRequestDto.class);
+        
+        // Validate request
+        if (requestDto == null || !requestDto.isValid()) {
+            String errorMsg = requestDto != null ? requestDto.getValidationError() : "Invalid JSON request format";
+            log.error("Invalid mfcalc request: {}", errorMsg);
+            ServerResponseDto errorResponse = ServerResponseDto.createError(errorMsg, "mfcalc");
+            errorResponse.setCode(400);
+            String errorJson = JsonUtils.serializeDto(errorResponse);
+            response.getWriter().append(errorJson);
+            return;
         }
-        JSONObject jsonIn = new JSONObject(result);
 
         CodeOctaveM model = new CodeOctaveM();
-//    	model.mainCode = jsonIn.getJSONObject("data").toString();//result;
-    	model.setMainCode(jsonIn.getString("data"));		
-		model.setUserId(jsonIn.getInt("userId"));
-		String method = jsonIn.optString("method", "runScript");
+    	model.setMainCode(requestDto.getData());		
+		model.setUserId(requestDto.getUserId());
+		String method = requestDto.getMethodOrDefault();
 
     	System.out.println(model.getMainCode());
 //    	System.out.println(jsonIn);
@@ -97,22 +114,18 @@ public class mfcalc extends HttpServlet {
 						message = errorMsg;
 						operationSuccess = false;
 					} else {
-						if (scriptResponse.getData() != null) {
-							// Handle data object - could be JSONObject from legacy response
-							Object data = scriptResponse.getData();
-							if (data instanceof JSONObject) {
-								JSONObject jo = (JSONObject) data;
-								model.setOutputResult(jo.optString("log",""));
-								model.setFigureResult(jo.optJSONObject("figures"));
-							}
-						}
 						if (scriptResponse.getOutput() != null) {
 							model.setOutputResult(scriptResponse.getOutput());
 						} else if (scriptResponse.getOutputLog() != null) {
 							// Fallback to outputLog if output is not available
 							model.setOutputResult(scriptResponse.getOutputLog());
 						}
+
+						if (scriptResponse.getFigures() != null) {
+							model.setFigureResult(scriptResponse.getFigures());
+						}
 					}
+					break;
 					// Note: Missing break; in original code - maintaining the same behavior
 				case "getVariables":	
 					MfcalcResponseDto variablesResponse = client.getVariables();
@@ -140,18 +153,17 @@ public class mfcalc extends HttpServlet {
 				}
 
 				if (operationSuccess) {
-					// Create result data using Map instead of JSONObject
 					Map<String, Object> resultData = new HashMap<>();
 					resultData.put("log", model.getOutputResult());
 					if(model.getFigureResult() != null) {
-						// Convert JSONObject to Map for Jackson serialization
-						resultData.put("figures", model.getFigureResult().toMap());
+						// FiguresData is already serializable by Jackson
+						resultData.put("figures", model.getFigureResult());
 					}
 					resultData.put("BeginFigFileIndex", model.OutputFigBeginIndex);
 					resultData.put("EndFigFileIndex", model.OutputFigEndIndex);
 					resultData.put("figFileUrl", "/mfcalccode/figure");
 					resultData.put("dataFileUrl", "/mfcalccode");
-					resultData.put("mat", model.getOutputMat());
+					resultData.put("mat", model.getOutputMat());					
 					
 					// Create success response using DTO
 					responseDto = ServerResponseDto.builder()
@@ -170,16 +182,17 @@ public class mfcalc extends HttpServlet {
 					responseDto.setCode(400); // Bad Request
 				}
 			}else{
-				System.out.println("No mfcalc server available...");
+				System.err.println("No mfcalc server available...");
 				responseDto = ServerResponseDto.createError("No mfcalc server available...", "mfcalc");
 				responseDto.setCode(503); // Service Unavailable
 			}
 
 			// Use JsonUtils for serialization
 			String jsonResponse = JsonUtils.serializeDto(responseDto);
+			System.out.println("Response to frontend: " + jsonResponse);
 			response.getWriter().append(jsonResponse);
 			
-		} catch (JSONException e) {
+		} catch (JsonProcessingException e) {
 			log.error("JSON processing error in mfcalc servlet: {}", e.getMessage());
 			// Create error response using DTO
 			ServerResponseDto errorResponse = ServerResponseDto.createError(
