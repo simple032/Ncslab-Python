@@ -9,6 +9,7 @@ import java.util.Objects;
 
 // External libraries
 import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 
 // Internal imports - DTO
@@ -60,7 +61,9 @@ public class Integrator extends ContinuousBlock {
     
     // === Internal State ===
     /** Integration state variable maintaining the integral value */
-    private State stateIntegral;
+    @Getter
+    @Setter
+    private State state;
     
     // === Saturation Optimization ===
     /** Whether output saturation is enabled for performance optimization */
@@ -136,10 +139,32 @@ public class Integrator extends ContinuousBlock {
     
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults (basic configuration, will be extended dynamically based on parameters)
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> basicInput = new HashMap<>();
+        basicInput.put("name", "in1");
+        basicInput.put("width", 1);
+        basicInput.put("height", 1);
+        basicInput.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(basicInput);
+        
+        // Output port defaults
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> basicOutput = new HashMap<>();
+        basicOutput.put("name", "out1");
+        basicOutput.put("width", 1);
+        basicOutput.put("height", 1);
+        basicOutput.put("dataType", "REAL");
+        OUTPUT_PORT_DEFAULTS.add(basicOutput);
     }
     
     // === Private Constructor with Typed Parameters ===
@@ -166,8 +191,19 @@ public class Integrator extends ContinuousBlock {
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
         
-        // Parameters are automatically added to parameterList by parent Block class
-        
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.initialCondition);
+        parameterList.add(this.externalReset);
+        parameterList.add(this.conditionSource);
+        parameterList.add(this.limitOutput);
+        parameterList.add(this.upperSaturationLimit);
+        parameterList.add(this.lowerSaturationLimit);
+        parameterList.add(this.showSaturationPort);
+        parameterList.add(this.showStatePort);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
         
@@ -192,7 +228,20 @@ public class Integrator extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
+        // Add all parameters to parameter list if they exist
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.externalReset != null) parameterList.add(this.externalReset);
+        if (this.conditionSource != null) parameterList.add(this.conditionSource);
+        if (this.limitOutput != null) parameterList.add(this.limitOutput);
+        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
+        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
+        if (this.showSaturationPort != null) parameterList.add(this.showSaturationPort);
+        if (this.showStatePort != null) parameterList.add(this.showStatePort);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports based on legacy logic
         input = new InputPort(this, 1);
         inputPortList.add(input);
@@ -396,7 +445,7 @@ public class Integrator extends ContinuousBlock {
                 blockField.setAccessible(true);
                 blockField.set(param, block);
                 // Update parameter name after setting block reference
-                param.updateParameterName();
+                param.updateName();
             } catch (Exception e) {
                 // Fallback: parameter block reference will be null, but should work for basic operations
             }
@@ -422,7 +471,7 @@ public class Integrator extends ContinuousBlock {
         output = new OutputPort(this, 1, false);
         outputPortList.add(output);
         
-        // Additional input ports based on reset and condition source
+        // Add additional input ports based on reset and condition source parameters
         String resetMode = externalReset.getInitString();
         String icSource = conditionSource.getInitString();
         
@@ -439,7 +488,7 @@ public class Integrator extends ContinuousBlock {
             inputNames.add("IC0");
         }
         
-        // Additional output ports
+        // Add additional output ports based on parameter settings
         if (showStatePort.getInitString().equals("on")) {
             outputPortList.add(new OutputPort(this, 2, false)); // State port
             outputNames.add("state");
@@ -450,13 +499,16 @@ public class Integrator extends ContinuousBlock {
             outputPortList.add(new OutputPort(this, portNum, false)); // Saturation port
             outputNames.add("saturation");
         }
+        
+        // Pre-compute saturation settings for performance
+        updateSaturationSettings();
     }
 
     // === Code Generation Methods (preserved from original) ===
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("state", stateIntegral);
+        context.put("state", state);
         context.put("initialCondition", initialCondition);
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/init.vm", context);
@@ -466,7 +518,7 @@ public class Integrator extends ContinuousBlock {
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("state", stateIntegral);
+        context.put("state", state);
         context.put("input", getInputPortVariables()[0]);
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/derivative.vm", context);
@@ -475,8 +527,20 @@ public class Integrator extends ContinuousBlock {
 
     public void generateArraysCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Basic template variables
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
+        context.put("ConditionSource", conditionSource.getData().getInitString());
+        
+        // State variables - both forms for template compatibility
+        context.put("state", state.getName());
+        context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
+        
+        // Data type constants for template conditionals
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
+        
         String arraysCode = TemplateManager.renderTemplate("c/continuous/Integrator/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
@@ -484,7 +548,7 @@ public class Integrator extends ContinuousBlock {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("state", stateIntegral);
+        context.put("state", state);
         context.put("output", getOutputPortVariables()[0]);
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/output.vm", context);
@@ -494,16 +558,37 @@ public class Integrator extends ContinuousBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Basic template variables
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
-        // Use proper C variable name instead of Java object reference
-        InputPort inputPort;
-        context.put("signal", getInputPortVariable(0));
-        context.put("signalName", getInputPortVariable(0));
-        context.put("state", stateIntegral.getName());
+        context.put("ConditionSource", conditionSource.getData().getInitString());
+        
+        // State variables - both forms for template compatibility
+        context.put("state", state.getName());
+        context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
+        
+        // Initial condition variables - both forms for template compatibility  
         context.put("initialCondition", initialCondition.getData().getInitString());
         context.put("InitialCondition", initialCondition.getData().getInitString());
+        context.put("InitialConditionObject", initialCondition.getData());
+        
+        // Signal variables
+        context.put("signal", getInputPortVariable(0));
+        context.put("signalName", getInputPortVariable(0));
+        context.put("inputSignal", getInputPortVariable(0));
+        
+        // Output signal object for dataType checking
+        OutputPort outputPort = outputPortList.get(0);
+        context.put("outputSignalObject", outputPort.getOutputSignalC());
+        
+        // Data type constants for template conditionals
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
+        
+        // Handle external condition source input
         if (conditionSource.getInitString().equals("external")) {
+            InputPort inputPort;
             if (externalReset.getInitString().equals("none")) {
                 inputPort = inputPortList.get(1);
             } else {
@@ -511,33 +596,72 @@ public class Integrator extends ContinuousBlock {
             }
             context.put("input", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
         }
+        
         String initCode = TemplateManager.renderTemplate("c/continuous/Integrator/init.vm", context);
         code.addInitCode(initCode);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Basic template variables
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("state", stateIntegral.getName());
+        context.put("ConditionSource", conditionSource.getData().getInitString());
+        
+        // State variables - both forms for template compatibility
+        context.put("state", state.getName());
+        context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
+        
+        // Output variables
         context.put("outputs", getOutputPortVariables());
+        context.put("output", getOutputPortVariable(0));
+        
+        // Data type constants for template conditionals
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
+        
         String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Basic template variables
         context.put("externalReset", externalReset.getData().getInitString());
         context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("state", stateIntegral.getName());
-        context.put("stateDerivative", stateIntegral.getDerivativeName());
+        context.put("ConditionSource", conditionSource.getData().getInitString());
+        
+        // State variables - both forms for template compatibility
+        context.put("state", state.getName());
+        context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
+        context.put("stateDerivative", state.getDerivativeName());
+        context.put("stateDerivativeName", state.getDerivativeName());
+        
+        // Input/output variables
         context.put("inputSignal", getInputPortVariable(0));
         context.put("inputs", getInputPortVariables());
+        context.put("input", getInputPortVariable(0));
+        
+        // Data type constants for template conditionals
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
+        
+        // Get actual data types for template conditionals
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
+            OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            context.put("signalDataType", signal.getDataType());
+        } else {
+            context.put("signalDataType", com.ncslab.block.data.DataType.REAL);
+        }
+        context.put("initialConditionDataType", initialCondition.getData().getDataType());
         
         // Add dimension variables for template loops
-        if (stateIntegral.getHeight() > 1 || stateIntegral.getWidth() > 1) {
-            context.put("signalHeight", stateIntegral.getHeight());
-            context.put("signalWidth", stateIntegral.getWidth());
+        if (state.getHeight() > 1 || state.getWidth() > 1) {
+            context.put("signalHeight", state.getHeight());
+            context.put("signalWidth", state.getWidth());
         }
         if (initialCondition.getHeight() > 1 || initialCondition.getWidth() > 1) {
             context.put("initialConditionHeight", initialCondition.getHeight());
@@ -562,7 +686,7 @@ public class Integrator extends ContinuousBlock {
                         out.getOutputSignalC().setHeight(1);
                         out.getOutputSignalC().setWidth(1);
                         out.getOutputSignalC().setDataType(DataType.REAL);
-                        stateIntegral = new State(this, 1, "integral", 1, 1);
+                        state = new State(this, 1, "integral", 1, 1);
                         break;
                     case MATRIX:
                         out.setHeight(initialCondition.getHeight());
@@ -570,7 +694,7 @@ public class Integrator extends ContinuousBlock {
                         out.getOutputSignalC().setHeight(initialCondition.getHeight());
                         out.getOutputSignalC().setWidth(initialCondition.getWidth());
                         out.getOutputSignalC().setDataType(DataType.MATRIX);
-                        stateIntegral = new State(this, 1, "integral", initialCondition.getHeight(), initialCondition.getWidth());
+                        state = new State(this, 1, "integral", initialCondition.getHeight(), initialCondition.getWidth());
                         break;
                 }
                 break;
@@ -582,7 +706,7 @@ public class Integrator extends ContinuousBlock {
                         out.getOutputSignalC().setHeight(signal.getHeight());
                         out.getOutputSignalC().setWidth(signal.getWidth());
                         out.getOutputSignalC().setDataType(DataType.MATRIX);
-                        stateIntegral = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
+                        state = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
                         break;
                     case MATRIX:
                         out.setHeight(signal.getHeight());
@@ -590,12 +714,12 @@ public class Integrator extends ContinuousBlock {
                         out.getOutputSignalC().setHeight(signal.getHeight());
                         out.getOutputSignalC().setWidth(signal.getWidth());
                         out.getOutputSignalC().setDataType(DataType.MATRIX);
-                        stateIntegral = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
+                        state = new State(this, 1, "integral", signal.getHeight(), signal.getWidth());
                         break;
                 }
                 break;
         }
-        stateList.add(stateIntegral);
+        stateList.add(state);
     }    /**
      * DTO-NATIVE Constructor - Creates Integrator block directly from BlockDto DTO
      */
@@ -614,6 +738,19 @@ public class Integrator extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Add all parameters to parameter list if they exist
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.externalReset != null) parameterList.add(this.externalReset);
+        if (this.conditionSource != null) parameterList.add(this.conditionSource);
+        if (this.limitOutput != null) parameterList.add(this.limitOutput);
+        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
+        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
+        if (this.showSaturationPort != null) parameterList.add(this.showSaturationPort);
+        if (this.showStatePort != null) parameterList.add(this.showStatePort);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
@@ -648,21 +785,21 @@ public class Integrator extends ContinuousBlock {
     @Override
     public void calculateInit() {
         OutputPort output = outputPortList.get(0);
-        stateIntegral.setData(initialCondition.getData());
-        output.setData(stateIntegral.getData());
+        state.setData(initialCondition.getData());
+        output.setData(state.getData());
     }
 
     @Override
     public void calculateDerivative(double t) {
         InputPort inputPort = inputPortList.get(0);
         OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        stateIntegral.setDerivateData(signal.getData());
+        state.setDerivateData(signal.getData());
     }
 
     @Override
     public void calculateOutput(double t) {
         OutputPort output = outputPortList.get(0);
-        Data outputData = stateIntegral.getData();
+        Data outputData = state.getData();
         
         // Handle edge cases for integral state
         if (outputData == null) {

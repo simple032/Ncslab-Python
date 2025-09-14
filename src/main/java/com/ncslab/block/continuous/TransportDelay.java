@@ -129,7 +129,9 @@ public class TransportDelay extends ContinuousBlock {
         // Add all parameters to parameter list
 
         // Cache delay time matrix for legacy compatibility
-        this.delayTimeMatrix = delayTime.getMatrix();
+        if (this.delayTime != null) {
+            this.delayTimeMatrix = this.delayTime.getMatrix();
+        }
 
         // Initialize ports
         initializePorts();
@@ -140,13 +142,18 @@ public class TransportDelay extends ContinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.delayTime = getParameterByName("Delaytime");
-        this.initialOutput = getParameterByName("Initialoutput");
-        this.bufferSize = getParameterByName("Buffersize");
+        this.delayTime = getParameterByName("DelayTime");
+        this.initialOutput = getParameterByName("InitialOutput");
+        this.bufferSize = getParameterByName("BufferSize");
         this.padeOrder = getParameterByName("PadeOrder");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Cache delay time matrix
+        if (this.delayTime != null) {
+            this.delayTimeMatrix = this.delayTime.getMatrix();
+        }
 
         // Initialize ports
         initializePorts();
@@ -319,6 +326,11 @@ public class TransportDelay extends ContinuousBlock {
         // Ensure buffer has enough space with a generous safety margin
         return Math.max(20, (int)(delay / model.getConfig().getFixedStep()) + 5);
     }
+    
+    @Override
+    protected String getBufferName() {
+        return "buffer" + getBlockId();
+    }
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
@@ -333,7 +345,22 @@ public class TransportDelay extends ContinuousBlock {
 		context.put("bufferSize", bufferSize);
 		context.put("bufferName", getBufferName());
 
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		// Fail fast - validate required input signal connection exists
+		if (inputPortList == null || inputPortList.isEmpty()) {
+			throw new BlockCreationException("TransportDelay block cannot generate init code: no input ports configured");
+		}
+		
+		InputPort inputPort = inputPortList.get(0);
+		if (inputPort == null || inputPort.getLinkedLine() == null || 
+			inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+			throw new BlockCreationException("TransportDelay block cannot generate init code: input port not properly connected");
+		}
+		
+		OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		if (signal == null) {
+			throw new BlockCreationException("TransportDelay block cannot generate init code: input signal is null");
+		}
+		
 		context.put("inputSignal", signal);
 		context.put("isFixedStepSolver", isFixedStepSolver(model.getConfig().getSolver()));
 
@@ -370,7 +397,22 @@ public class TransportDelay extends ContinuousBlock {
         context.put("delayTime", delayTime);
         context.put("bufferName", getBufferName());
 
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        // Fail fast - validate required input signal connection exists
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("TransportDelay block cannot generate arrays code: no input ports configured");
+        }
+        
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort == null || inputPort.getLinkedLine() == null || 
+            inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate arrays code: input port not properly connected");
+        }
+        
+        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if (signal == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate arrays code: input signal is null");
+        }
+        
         context.put("inputSignal", signal);
         context.put("isFixedStepSolver", isFixedStepSolver(model.getConfig().getSolver()));
 
@@ -406,41 +448,98 @@ public class TransportDelay extends ContinuousBlock {
      */
     public void generateDerivativeCodeC(CodeStructC code) {
         super.generateDerivativeCodeC(code);
-
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         context.put("block", this);
         context.put("realDataType", DataType.REAL);
         context.put("matrixDataType", DataType.MATRIX);
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
         context.put("bufferSize", bufferSize);
+        context.put("bufferName", getBufferName());
 
-        // Pass delayTime as delaytime to match template
+        // Pass delayTime as delaytime to match template expectations
         context.put("delaytime", delayTime);
-
-        // Pass paramValues for accessing DelayTime parameter
-        context.put("paramValues", paramValues);
+        context.put("delayTime", delayTime);
+        context.put("initialOutput", initialOutput);
+        
+        // Add solver type for template
+        context.put("solverType", model.getConfig().getSolver());
 
         // Pass model for solver check
         context.put("model", model);
+        context.put("isFixedStepSolver", isFixedStepSolver(model.getConfig().getSolver()));
+        
+        // Fail fast - validate required input signal connection exists
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("TransportDelay block cannot generate derivative code: no input ports configured");
+        }
+        
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate derivative code: input port is null");
+        }
+        
+        if (inputPort.getLinkedLine() == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate derivative code: input port not connected");
+        }
+        
+        OutputPort linkedOutputPort = inputPort.getLinkedLine().getLinkedOutputPort();
+        if (linkedOutputPort == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate derivative code: input signal source is null");
+        }
+        
+        OutputSignal inputSignal = linkedOutputPort.getOutputSignalC();
+        if (inputSignal == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate derivative code: input signal is null");
+        }
+        
+        // Add validated input signal information to context
+        context.put("inputSignal", inputSignal);
+        context.put("inputSignalName", inputSignal.getName()); // Signal name already includes full block prefix // C variable name
+        context.put("signalHeight", inputSignal.getHeight());
+        context.put("signalWidth", inputSignal.getWidth());
+        context.put("signalDataType", inputSignal.getDataType());
+        
+        // Add delay time value for template usage
+        context.put("delayTimeValue", delayTime.getDouble());
+        
+        // Add the validated signal to context for template access
+        context.put("signal", inputSignal);
 
-        // For matrix delay times, calculate buffer length for each element
-        if (delayTime.getDataType() == DataType.MATRIX) {
-            // Create a test object that mimics the test.get() method in template
-            Map<String, Object> test = new HashMap<>();
+        // For matrix delay times, provide proper matrix access
+        if (delayTime.getDataType() == DataType.MATRIX && delayTimeMatrix != null) {
+            context.put("delayTimeMatrix", delayTimeMatrix);
+            context.put("delayTimeHeight", delayTime.getHeight());
+            context.put("delayTimeWidth", delayTime.getWidth());
+            
+            // Create buffer length calculations for matrix delay times
+            java.util.List<java.util.List<Integer>> bufferLengths = new java.util.ArrayList<>();
             for (int i = 0; i < delayTime.getHeight(); i++) {
+                java.util.List<Integer> row = new java.util.ArrayList<>();
                 for (int j = 0; j < delayTime.getWidth(); j++) {
-                    String key = i + "," + j;
-                    test.put(key, delayTimeMatrix.get(i, j));
+                    row.add(calculateBufferLength(delayTimeMatrix.get(i, j)));
                 }
+                bufferLengths.add(row);
             }
+            context.put("bufferLengths", bufferLengths);
+            
+            // Create a test object that provides matrix access for templates
             context.put("test", new Object() {
                 public double get(int i, int j) {
-                    return delayTimeMatrix.get(i, j);
+                    if (delayTimeMatrix != null && i >= 0 && i < delayTimeMatrix.getRowDimension() && 
+                        j >= 0 && j < delayTimeMatrix.getColumnDimension()) {
+                        return delayTimeMatrix.get(i, j);
+                    }
+                    return delayTime.getDouble(); // Fallback to scalar value
                 }
             });
+        } else {
+            context.put("delayTimeMatrix", null);
+            context.put("delayTimeHeight", 1);
+            context.put("delayTimeWidth", 1);
+            context.put("bufferLengths", new java.util.ArrayList<>());
         }
-
-        // Make this block instance accessible to call methods
-        final TransportDelay thisBlock = this;
 
         String derivativeCode = TemplateManager.renderTemplate("c/continuous/TransportDelay/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);
@@ -463,9 +562,35 @@ public class TransportDelay extends ContinuousBlock {
         context.put("bufferSize", bufferSize);
         context.put("bufferName", getBufferName());
 
-        OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        OutputSignal outputSignal = outputPortList.get(0).getOutputSignalC();
-
+        // Fail fast - validate required signal connections exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("TransportDelay block cannot generate output code: no input ports configured");
+        }
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new BlockCreationException("TransportDelay block cannot generate output code: no output ports configured");
+        }
+        
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort == null || inputPort.getLinkedLine() == null || 
+            inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate output code: input port not properly connected");
+        }
+        
+        OutputPort outputPort = outputPortList.get(0);
+        if (outputPort == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate output code: output port is null");
+        }
+        
+        OutputSignal inputSignal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal outputSignal = outputPort.getOutputSignalC();
+        
+        if (inputSignal == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate output code: input signal is null");
+        }
+        if (outputSignal == null) {
+            throw new BlockCreationException("TransportDelay block cannot generate output code: output signal is null");
+        }
+        
         context.put("inputSignal", inputSignal);
         context.put("outputSignal", outputSignal);
         context.put("isFixedStepSolver", isFixedStepSolver(model.getConfig().getSolver()));
@@ -482,10 +607,28 @@ public class TransportDelay extends ContinuousBlock {
     }
 
 	public void updateDimension() throws MatDimException {
-
+		// Fail fast - validate required ports and connections exist
+		if (outputPortList == null || outputPortList.isEmpty()) {
+			throw new MatDimException("TransportDelay block cannot update dimensions: no output ports configured");
+		}
+		if (inputPortList == null || inputPortList.isEmpty()) {
+			throw new MatDimException("TransportDelay block cannot update dimensions: no input ports configured");
+		}
+		
 		OutputPort out = outputPortList.get(0);
 		InputPort in = inputPortList.get(0);
+		
+		if (out == null) {
+			throw new MatDimException("TransportDelay block cannot update dimensions: output port is null");
+		}
+		if (in == null || in.getLinkedLine() == null || in.getLinkedLine().getLinkedOutputPort() == null) {
+			throw new MatDimException("TransportDelay block cannot update dimensions: input port not properly connected");
+		}
+		
 		OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		if (signal == null) {
+			throw new MatDimException("TransportDelay block cannot update dimensions: input signal is null");
+		}
 		switch (signal.getDataType()) {
 		case REAL:
 			switch (delayTime.getDataType()) {
@@ -527,7 +670,21 @@ public class TransportDelay extends ContinuousBlock {
 	}
 
 	public void checkDimension() throws MatDimException {
-		OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		// Fail fast - validate required ports and connections exist
+		if (inputPortList == null || inputPortList.isEmpty()) {
+			throw new MatDimException("TransportDelay block cannot check dimensions: no input ports configured");
+		}
+		
+		InputPort inputPort = inputPortList.get(0);
+		if (inputPort == null || inputPort.getLinkedLine() == null || 
+			inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+			throw new MatDimException("TransportDelay block cannot check dimensions: input port not properly connected");
+		}
+		
+		OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+		if (signal == null) {
+			throw new MatDimException("TransportDelay block cannot check dimensions: input signal is null");
+		}
 		switch (initialOutput.getDataType()) {
 		case REAL:
 			switch (signal.getDataType()) {
@@ -573,7 +730,19 @@ public class TransportDelay extends ContinuousBlock {
 
     @Override
     public void calculateInit() {
+        // Fail fast - validate required ports exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new IllegalStateException("TransportDelay block cannot initialize: no output ports configured");
+        }
+        
         OutputPort out = outputPortList.get(0);
+        if (out == null) {
+            throw new IllegalStateException("TransportDelay block cannot initialize: output port is null");
+        }
+        if (bufferSize == null || bufferSize.getData() == null) {
+            throw new IllegalStateException("TransportDelay block cannot initialize: buffer size parameter not configured");
+        }
+        
         buffer = new FifoBufferExtended<>(bufferSize.getData().getIntValue());
         buffer.setInterpolationStrategy(new FifoBufferExtended.LinearDataInterpolationStrategy());
         out.setData(new Data(out.getHeight(), out.getWidth()));
@@ -581,7 +750,22 @@ public class TransportDelay extends ContinuousBlock {
 
     @Override
     public void calculateOutput(double t) {
+        // Fail fast - validate required components exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new IllegalStateException("TransportDelay block cannot calculate output: no output ports configured");
+        }
+        if (buffer == null) {
+            throw new IllegalStateException("TransportDelay block cannot calculate output: buffer not initialized");
+        }
+        if (delayTime == null) {
+            throw new IllegalStateException("TransportDelay block cannot calculate output: delay time parameter not configured");
+        }
+        
         OutputPort out = outputPortList.get(0);
+        if (out == null) {
+            throw new IllegalStateException("TransportDelay block cannot calculate output: output port is null");
+        }
+        
         Data linearResult = buffer.getValueByDelay(t, delayTime.getDouble());
         if (linearResult != null) {
             out.setData(linearResult);
@@ -590,7 +774,22 @@ public class TransportDelay extends ContinuousBlock {
 
     @Override
     public void calculateDerivative(double t) {
+        // Fail fast - validate required components exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new IllegalStateException("TransportDelay block cannot calculate derivative: no input ports configured");
+        }
+        if (buffer == null) {
+            throw new IllegalStateException("TransportDelay block cannot calculate derivative: buffer not initialized");
+        }
+        
         InputPort in = inputPortList.get(0);
+        if (in == null) {
+            throw new IllegalStateException("TransportDelay block cannot calculate derivative: input port is null");
+        }
+        if (in.getData() == null) {
+            throw new IllegalStateException("TransportDelay block cannot calculate derivative: input data is null");
+        }
+        
         buffer.add(t, in.getData());
     }
 }

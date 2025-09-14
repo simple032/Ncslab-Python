@@ -97,7 +97,18 @@ public class VariableTransportDelay extends ContinuousBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.delayType);
+        parameterList.add(this.maximumDelayTime);
+        parameterList.add(this.initialOutput);
+        parameterList.add(this.initialBufferSize);
+        parameterList.add(this.padeOrder);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         initializePorts();
     }
     
@@ -118,7 +129,15 @@ public class VariableTransportDelay extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.delayType != null) parameterList.add(this.delayType);
+        if (this.maximumDelayTime != null) parameterList.add(this.maximumDelayTime);
+        if (this.initialOutput != null) parameterList.add(this.initialOutput);
+        if (this.initialBufferSize != null) parameterList.add(this.initialBufferSize);
+        if (this.padeOrder != null) parameterList.add(this.padeOrder);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
@@ -129,16 +148,26 @@ public class VariableTransportDelay extends ContinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.delayType = getParameterByName("Delaytype");
-        this.maximumDelayTime = getParameterByName("Maximumdelaytime");
-        this.initialOutput = getParameterByName("Initialoutput");
-        this.initialBufferSize = getParameterByName("Initialbuffersize");
-        this.padeOrder = getParameterByName("Padeorder");
+        this.delayType = getParameterByName("DelayType");
+        this.maximumDelayTime = getParameterByName("MaximumDelayTime");
+        this.initialOutput = getParameterByName("InitialOutput");
+        this.initialBufferSize = getParameterByName("InitialBufferSize");
+        this.padeOrder = getParameterByName("PadeOrder");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.delayType != null) parameterList.add(this.delayType);
+        if (this.maximumDelayTime != null) parameterList.add(this.maximumDelayTime);
+        if (this.initialOutput != null) parameterList.add(this.initialOutput);
+        if (this.initialBufferSize != null) parameterList.add(this.initialBufferSize);
+        if (this.padeOrder != null) parameterList.add(this.padeOrder);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -344,20 +373,68 @@ public class VariableTransportDelay extends ContinuousBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
-        context.put("signal2", inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+        // Fail fast - validate required signal connections exist
+        if (inputPortList == null || inputPortList.size() < 2) {
+            throw new BlockCreationException("VariableTransportDelay block cannot generate output code: requires exactly 2 input ports");
+        }
+        
+        InputPort inputPort1 = inputPortList.get(0);
+        InputPort inputPort2 = inputPortList.get(1);
+        
+        if (inputPort1 == null || inputPort1.getLinkedLine() == null || 
+            inputPort1.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("VariableTransportDelay block cannot generate output code: signal input port not properly connected");
+        }
+        
+        if (inputPort2 == null || inputPort2.getLinkedLine() == null || 
+            inputPort2.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("VariableTransportDelay block cannot generate output code: delay input port not properly connected");
+        }
+        
+        OutputSignal signal1 = inputPort1.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        OutputSignal signal2 = inputPort2.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
+        if (signal1 == null) {
+            throw new BlockCreationException("VariableTransportDelay block cannot generate output code: signal input is null");
+        }
+        if (signal2 == null) {
+            throw new BlockCreationException("VariableTransportDelay block cannot generate output code: delay input is null");
+        }
+        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add block-specific context
+        context.put("signal", signal1);
+        context.put("signal2", signal2);
         context.put("MaximumDelayTime", maximumDelayTime);
         context.put("InitialOutput", initialOutput);
-        context.put("outputs", getOutputPortVariables());
         String codeStr = TemplateManager.renderTemplate("c/continuous/VariableTransportDelay/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void updateDimension() throws MatDimException {
+        // Fail fast - validate required ports and connections exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new MatDimException("VariableTransportDelay block cannot update dimensions: no output ports configured");
+        }
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new MatDimException("VariableTransportDelay block cannot update dimensions: no input ports configured");
+        }
+        
         OutputPort out = outputPortList.get(0);
         InputPort in = inputPortList.get(0);
+        
+        if (out == null) {
+            throw new MatDimException("VariableTransportDelay block cannot update dimensions: output port is null");
+        }
+        if (in == null || in.getLinkedLine() == null || in.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new MatDimException("VariableTransportDelay block cannot update dimensions: input port not properly connected");
+        }
+        
         OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if (signal == null) {
+            throw new MatDimException("VariableTransportDelay block cannot update dimensions: input signal is null");
+        }
 
         out.setHeight(signal.getHeight());
         out.setWidth(signal.getWidth());
@@ -367,9 +444,23 @@ public class VariableTransportDelay extends ContinuousBlock {
     }
 
     public void checkDimension() throws MatDimException {
-        if (maximumDelayTime.getDataType() != DataType.REAL || initialOutput.getDataType() != DataType.REAL || initialBufferSize.getDataType() != DataType.REAL || padeOrder.getDataType() != DataType.REAL) {
-            MatDimException e = new MatDimException("Parameter of Block " + this.blockName + " can't be Matrix!\n \n");
-            throw (e);
+        // Fail fast - validate required parameters exist
+        if (maximumDelayTime == null) {
+            throw new MatDimException("VariableTransportDelay block cannot check dimensions: maximum delay time parameter is null");
+        }
+        if (initialOutput == null) {
+            throw new MatDimException("VariableTransportDelay block cannot check dimensions: initial output parameter is null");
+        }
+        if (initialBufferSize == null) {
+            throw new MatDimException("VariableTransportDelay block cannot check dimensions: initial buffer size parameter is null");
+        }
+        if (padeOrder == null) {
+            throw new MatDimException("VariableTransportDelay block cannot check dimensions: pade order parameter is null");
+        }
+        
+        if (maximumDelayTime.getDataType() != DataType.REAL || initialOutput.getDataType() != DataType.REAL || 
+            initialBufferSize.getDataType() != DataType.REAL || padeOrder.getDataType() != DataType.REAL) {
+            throw new MatDimException("Parameter of Block " + this.blockName + " can't be Matrix!\n \n");
         }
     }
 }

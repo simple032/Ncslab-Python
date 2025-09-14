@@ -52,6 +52,7 @@ public class TransferFcn extends ContinuousBlock {
     
     // === SIMULINK-Compatible Parameters ===
     private final Parameter numerator;
+    @Getter
     private final Parameter denominator;
     private final Parameter absoluteTolerance;
     private final Parameter continuousStateAttributes;
@@ -72,6 +73,10 @@ public class TransferFcn extends ContinuousBlock {
     
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
@@ -86,6 +91,25 @@ public class TransferFcn extends ContinuousBlock {
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (feedthrough determined by numerator degree)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false); // Default, will be updated based on numerator/denominator order
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // === Private Constructor with Typed Parameters ===
@@ -165,8 +189,19 @@ public class TransferFcn extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
+        // Parse transfer function coefficients (same as legacy method)
+        parseVector();
+
+        // Initialize states
+        for (int i = 0; i < num.length; i++) {
+            State xState = new State(this, i + 1, "x" + (i + 1));
+            xStateList.add(xState);
+            stateList.add(xState);
+        }
+
         // Initialize ports
-        initializePorts();
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, feedThrough));
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
@@ -360,11 +395,31 @@ public class TransferFcn extends ContinuousBlock {
     
     // === Transfer Function Parsing (New Method) ===
     private void parseTransferFunction() {
+        // Fail fast - validate parameters exist
+        if (numerator == null) {
+            throw new BlockCreationException("TransferFcn block requires numerator parameter");
+        }
+        if (denominator == null) {
+            throw new BlockCreationException("TransferFcn block requires denominator parameter");
+        }
+        
         num = numerator.getDoubleArray();
         den = denominator.getDoubleArray();
+        
+        // Fail fast - validate arrays exist and are non-empty
+        if (num == null || num.length == 0) {
+            throw new BlockCreationException("TransferFcn block numerator coefficients cannot be null or empty");
+        }
+        if (den == null || den.length == 0) {
+            throw new BlockCreationException("TransferFcn block denominator coefficients cannot be null or empty");
+        }
 
         // Normalize by leading coefficient of denominator
         double unit = den[0];
+        if (Math.abs(unit) < 1e-15) {
+            throw new BlockCreationException("TransferFcn block leading coefficient of denominator cannot be zero");
+        }
+        
         for (int i = 0; i < den.length; i++) {
             den[i] = den[i] / unit;
         }
@@ -384,35 +439,68 @@ public class TransferFcn extends ContinuousBlock {
             }
 
             // Reduce order of numerator
-            double[] numShort = new double[num.length - 1];
-            System.arraycopy(num, 1, numShort, 0, num.length - 1);
-            num = numShort;
+            if (num.length > 1) {
+                double[] numShort = new double[num.length - 1];
+                System.arraycopy(num, 1, numShort, 0, num.length - 1);
+                num = numShort;
+            } else {
+                num = new double[0]; // Empty array if single element
+            }
         }
 
         // Remove leading coefficient from denominator (it's now 1)
-        double[] denShort = new double[den.length - 1];
-        System.arraycopy(den, 1, denShort, 0, den.length - 1);
-        den = denShort;
+        if (den.length > 1) {
+            double[] denShort = new double[den.length - 1];
+            System.arraycopy(den, 1, denShort, 0, den.length - 1);
+            den = denShort;
+        } else {
+            den = new double[0]; // Empty array if single element
+        }
 
         // Pad numerator with leading zeros if necessary
-        double[] numShort = new double[den.length];
-        for (int i = 0; i < den.length; i++) {
-            if (i < den.length - num.length) {
-                numShort[i] = 0;
-            } else {
-                numShort[i] = num[i - (den.length - num.length)];
+        if (den.length > 0) {
+            double[] numShort = new double[den.length];
+            for (int i = 0; i < den.length; i++) {
+                if (i < den.length - num.length) {
+                    numShort[i] = 0;
+                } else {
+                    int srcIndex = i - (den.length - num.length);
+                    if (srcIndex >= 0 && srcIndex < num.length) {
+                        numShort[i] = num[srcIndex];
+                    } else {
+                        numShort[i] = 0; // Should not happen with proper bounds
+                    }
+                }
             }
+            num = numShort;
         }
-        num = numShort;
     }
 
     private void parseVector() {
         // Legacy method - uses new parameter objects
+        
+        // Fail fast - validate parameters exist
+        if (numerator == null || denominator == null) {
+            throw new BlockCreationException("TransferFcn block requires both numerator and denominator parameters");
+        }
+        
         num = numerator.getDoubleArray();
         den = denominator.getDoubleArray();
+        
+        // Fail fast - validate arrays exist and are non-empty
+        if (num == null || num.length == 0) {
+            throw new BlockCreationException("TransferFcn block numerator coefficients cannot be null or empty");
+        }
+        if (den == null || den.length == 0) {
+            throw new BlockCreationException("TransferFcn block denominator coefficients cannot be null or empty");
+        }
 
         // Normalize
         double unit = den[0];
+        if (Math.abs(unit) < 1e-15) {
+            throw new BlockCreationException("TransferFcn block leading coefficient of denominator cannot be zero");
+        }
+        
         for (int i = 0; i < den.length; i++) {
             den[i] = den[i] / unit;
         }
@@ -429,24 +517,39 @@ public class TransferFcn extends ContinuousBlock {
                 num[i] = num[i] - D * den[i];
             }
 
-            double[] numShort = new double[num.length - 1];
-            System.arraycopy(num, 1, numShort, 0, num.length - 1);
-            num = numShort;
-        }
-
-        double[] denShort = new double[den.length - 1];
-        System.arraycopy(den, 1, denShort, 0, den.length - 1);
-        den = denShort;
-
-        double[] numShort = new double[den.length];
-        for (int i = 0; i < den.length; i++) {
-            if (i < den.length - num.length) {
-                numShort[i] = 0;
+            if (num.length > 1) {
+                double[] numShort = new double[num.length - 1];
+                System.arraycopy(num, 1, numShort, 0, num.length - 1);
+                num = numShort;
             } else {
-                numShort[i] = num[i - (den.length - num.length)];
+                num = new double[0]; // Empty array if single element
             }
         }
-        num = numShort;
+
+        if (den.length > 1) {
+            double[] denShort = new double[den.length - 1];
+            System.arraycopy(den, 1, denShort, 0, den.length - 1);
+            den = denShort;
+        } else {
+            den = new double[0]; // Empty array if single element
+        }
+
+        if (den.length > 0) {
+            double[] numShort = new double[den.length];
+            for (int i = 0; i < den.length; i++) {
+                if (i < den.length - num.length) {
+                    numShort[i] = 0;
+                } else {
+                    int srcIndex = i - (den.length - num.length);
+                    if (srcIndex >= 0 && srcIndex < num.length) {
+                        numShort[i] = num[srcIndex];
+                    } else {
+                        numShort[i] = 0; // Should not happen with proper bounds
+                    }
+                }
+            }
+            num = numShort;
+        }
     }
 
     @Override
@@ -530,7 +633,27 @@ public class TransferFcn extends ContinuousBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Fail fast - validate required states exist
+        if (xStateList == null) {
+            throw new BlockCreationException("TransferFcn block requires state list for initialization");
+        }
         context.put("states", xStateList);
+        
+        // Add individual state names for easy template access
+        for (int i = 0; i < xStateList.size(); i++) {
+            State state = xStateList.get(i);
+            if (state == null) {
+                throw new BlockCreationException("TransferFcn block state " + i + " cannot be null");
+            }
+            context.put("stateName" + i, state.getName());
+            context.put("stateDerivativeName" + i, state.getDerivativeName());
+        }
+        
+        if (!xStateList.isEmpty()) {
+            State firstState = xStateList.get(0);
+            context.put("stateName", context.get(firstState.getLocalName())); // Use state local name mapped by TemplateUtils // C variable name // For single state access
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/init.vm", context);
         code.addInitCode(codeStr);
@@ -538,19 +661,35 @@ public class TransferFcn extends ContinuousBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Fail fast - validate required states exist
+        if (xStateList == null) {
+            throw new BlockCreationException("TransferFcn block requires state list for output code generation");
+        }
         context.put("states", xStateList);
+        
+        // Fail fast - validate numerator array exists
+        if (num == null) {
+            throw new BlockCreationException("TransferFcn block requires valid numerator coefficients");
+        }
         context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
+        
         context.put("feedThrough", feedThrough);
         context.put("D", D);
         
         // Add individual state names for easy template access
         for (int i = 0; i < xStateList.size(); i++) {
             State state = xStateList.get(i);
+            if (state == null) {
+                throw new BlockCreationException("TransferFcn block state " + i + " cannot be null");
+            }
             context.put("stateName" + i, state.getName());
             context.put("stateDerivativeName" + i, state.getDerivativeName());
         }
+        
         if (!xStateList.isEmpty()) {
-            context.put("stateName", xStateList.get(0).getName()); // For single state access
+            State firstState = xStateList.get(0);
+            context.put("stateName", context.get(firstState.getLocalName())); // Use state local name mapped by TemplateUtils // C variable name // For single state access
         }
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/output.vm", context);
@@ -559,17 +698,32 @@ public class TransferFcn extends ContinuousBlock {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Fail fast - validate required states exist
+        if (xStateList == null) {
+            throw new BlockCreationException("TransferFcn block requires state list for derivative code generation");
+        }
         context.put("states", xStateList);
+        
+        // Fail fast - validate denominator array exists
+        if (den == null) {
+            throw new BlockCreationException("TransferFcn block requires valid denominator coefficients");
+        }
         context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
         
         // Add individual state names for easy template access
         for (int i = 0; i < xStateList.size(); i++) {
             State state = xStateList.get(i);
+            if (state == null) {
+                throw new BlockCreationException("TransferFcn block state " + i + " cannot be null");
+            }
             context.put("stateName" + i, state.getName());
             context.put("stateDerivativeName" + i, state.getDerivativeName());
         }
+        
         if (!xStateList.isEmpty()) {
-            context.put("stateName", xStateList.get(0).getName()); // For single state access
+            State firstState = xStateList.get(0);
+            context.put("stateName", context.get(firstState.getLocalName())); // Use state local name mapped by TemplateUtils // C variable name // For single state access
         }
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/TransferFcn/derivative.vm", context);

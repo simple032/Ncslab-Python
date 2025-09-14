@@ -98,10 +98,33 @@ public class PIDController extends ContinuousBlock {
 
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (PID has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // === Private Constructor with Typed Parameters ===
@@ -131,6 +154,23 @@ public class PIDController extends ContinuousBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.proportionalGain);
+        parameterList.add(this.integralGain);
+        parameterList.add(this.derivativeGain);
+        parameterList.add(this.filterCoefficient);
+        parameterList.add(this.formulationType);
+        parameterList.add(this.externalReset);
+        parameterList.add(this.initialConditionForIntegrator);
+        parameterList.add(this.initialConditionForFilter);
+        parameterList.add(this.limitOutput);
+        parameterList.add(this.upperSaturationLimit);
+        parameterList.add(this.lowerSaturationLimit);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
 
@@ -169,7 +209,21 @@ public class PIDController extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.proportionalGain != null) parameterList.add(this.proportionalGain);
+        if (this.integralGain != null) parameterList.add(this.integralGain);
+        if (this.derivativeGain != null) parameterList.add(this.derivativeGain);
+        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
+        if (this.formulationType != null) parameterList.add(this.formulationType);
+        if (this.externalReset != null) parameterList.add(this.externalReset);
+        if (this.initialConditionForIntegrator != null) parameterList.add(this.initialConditionForIntegrator);
+        if (this.initialConditionForFilter != null) parameterList.add(this.initialConditionForFilter);
+        if (this.limitOutput != null) parameterList.add(this.limitOutput);
+        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
+        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports based on legacy logic
         input = new InputPort(this, 1);
@@ -209,6 +263,22 @@ public class PIDController extends ContinuousBlock {
         this.sampleTime = getParameterOrDefault("SampleTime", 12, "SampleTime");
         this.outDataType = getParameterOrDefault("OutDataTypeStr", 13, "OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterOrDefault("SaturateOnIntegerOverflow", 14, "SaturateOnIntegerOverflow");
+
+        // Add all parameters to parameter list if they exist
+        if (this.proportionalGain != null) parameterList.add(this.proportionalGain);
+        if (this.integralGain != null) parameterList.add(this.integralGain);
+        if (this.derivativeGain != null) parameterList.add(this.derivativeGain);
+        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
+        if (this.formulationType != null) parameterList.add(this.formulationType);
+        if (this.externalReset != null) parameterList.add(this.externalReset);
+        if (this.initialConditionForIntegrator != null) parameterList.add(this.initialConditionForIntegrator);
+        if (this.initialConditionForFilter != null) parameterList.add(this.initialConditionForFilter);
+        if (this.limitOutput != null) parameterList.add(this.limitOutput);
+        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
+        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
@@ -741,8 +811,8 @@ public class PIDController extends ContinuousBlock {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         // Add missing template variables for init
-        context.put("integralStateName", stateIntegral.getName());
-        context.put("filterStateName", stateFilter.getName());
+        // Note: State name mappings (integralStateName, filterStateName) are now handled
+        // automatically by TemplateUtils.populateAllContext() using local names
         context.put("integralStateHeight", stateIntegral.getHeight());
         context.put("integralStateWidth", stateIntegral.getWidth());
         context.put("filterStateHeight", stateFilter.getHeight());
@@ -758,17 +828,32 @@ public class PIDController extends ContinuousBlock {
         
         // Add PID-specific context variables
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("signal", signal);
+        context.put("signal", signal.getName()); // Use signal name string, not object
         context.put("resetSig",
             inputPortList.size()>1?
             inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName():0
         );
-        
+
         // Add missing template variables that aren't in populateAllContext
         context.put("outputVar", outputPortList.get(0).getOutputSignalC().getName());
-        context.put("signalName", signal.getName());
+        context.put("signalName", signal.getName()); // Already includes full block prefix like Block2_Output1
         context.put("signalDataType", signal.getDataType());
-        
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
+
+        // Note: PID-specific parameter names (proportionalGainName, integralGainName, etc.)
+        // are now handled automatically by TemplateUtils.populateAllContext()
+
+        context.put("proportionalGainHeight", proportionalGain.getHeight());
+        context.put("proportionalGainWidth", proportionalGain.getWidth());
+        context.put("proportionalGainDataType", proportionalGain.getDataType());
+
+        // Note: State name mappings (stateIntegralName, stateFilterName) are now handled
+        // automatically by TemplateUtils.populateAllContext() using local names
+
+        // Add saturation limit name mappings
+        context.put("upperSaturationLimitName", context.get("UpperSaturationLimit"));
+        context.put("lowerSaturationLimitName", context.get("LowerSaturationLimit"));
         
         // Add reset signal name if external reset is enabled
         if (inputPortList.size() > 1) {
@@ -791,8 +876,8 @@ public class PIDController extends ContinuousBlock {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         // Add missing template variables for update
-        context.put("integralStateName", stateIntegral.getName());
-        context.put("filterStateName", stateFilter.getName());
+        // Note: State name mappings (integralStateName, filterStateName) are now handled
+        // automatically by TemplateUtils.populateAllContext() using local names
         context.put("integralStateDerivativeName", stateIntegral.getDerivativeName());
         context.put("filterStateDerivativeName", stateFilter.getDerivativeName());
         context.put("integralStateHeight", stateIntegral.getHeight());

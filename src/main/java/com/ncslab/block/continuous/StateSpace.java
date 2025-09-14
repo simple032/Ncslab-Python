@@ -48,6 +48,7 @@ public class StateSpace extends ContinuousBlock {
     private List<State> xStateList = new ArrayList<>();
     
     // === SIMULINK-Compatible Parameters ===
+    @Getter
     private final Parameter stateMatrix;
     private final Parameter inputMatrix;
     private final Parameter outputMatrix;
@@ -71,6 +72,10 @@ public class StateSpace extends ContinuousBlock {
     
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
@@ -87,6 +92,25 @@ public class StateSpace extends ContinuousBlock {
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (feedthrough will be determined dynamically from D matrix)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false); // Default, will be updated based on D matrix
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // === Private Constructor with Typed Parameters ===
@@ -111,6 +135,19 @@ public class StateSpace extends ContinuousBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.stateMatrix);
+        parameterList.add(this.inputMatrix);
+        parameterList.add(this.outputMatrix);
+        parameterList.add(this.feedthroughMatrix);
+        parameterList.add(this.initialState);
+        parameterList.add(this.absoluteTolerance);
+        parameterList.add(this.continuousStateAttributes);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
         // Determine feedthrough
         this.feedThrough = !feedthroughMatrix.isZero();
         
@@ -138,8 +175,18 @@ public class StateSpace extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
-        // Add all parameters to parameter list
-        
+        // Add all parameters to parameter list if they exist
+        if (this.stateMatrix != null) parameterList.add(this.stateMatrix);
+        if (this.inputMatrix != null) parameterList.add(this.inputMatrix);
+        if (this.outputMatrix != null) parameterList.add(this.outputMatrix);
+        if (this.feedthroughMatrix != null) parameterList.add(this.feedthroughMatrix);
+        if (this.initialState != null) parameterList.add(this.initialState);
+        if (this.absoluteTolerance != null) parameterList.add(this.absoluteTolerance);
+        if (this.continuousStateAttributes != null) parameterList.add(this.continuousStateAttributes);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Determine feedthrough
         if (feedthroughMatrix.isZero()) {
             feedThrough = false;
@@ -176,7 +223,18 @@ public class StateSpace extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        
+        // Add all parameters to parameter list if they exist
+        if (this.stateMatrix != null) parameterList.add(this.stateMatrix);
+        if (this.inputMatrix != null) parameterList.add(this.inputMatrix);
+        if (this.outputMatrix != null) parameterList.add(this.outputMatrix);
+        if (this.feedthroughMatrix != null) parameterList.add(this.feedthroughMatrix);
+        if (this.initialState != null) parameterList.add(this.initialState);
+        if (this.absoluteTolerance != null) parameterList.add(this.absoluteTolerance);
+        if (this.continuousStateAttributes != null) parameterList.add(this.continuousStateAttributes);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize states and ports
         initializeStates();
         initializePorts();
@@ -450,6 +508,11 @@ public class StateSpace extends ContinuousBlock {
 		context.put("D", feedthroughMatrix);
 		context.put("X0", initialState);
 		context.put("xState", xState);
+		
+		// Add state name for template variable
+		if (xState != null) {
+			context.put("stateName", context.get(xState.getLocalName())); // Use state local name mapped by TemplateUtils // C variable name
+		}
 
 		String codeStr = TemplateManager.renderTemplate("c/continuous/StateSpace/init.vm", context);
 		code.addInitCode(codeStr);
@@ -457,11 +520,17 @@ public class StateSpace extends ContinuousBlock {
 
    public void generateOutputCodeC(CodeStructC code) {
 		super.generateOutputCodeC(code);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 		context.put("block", this);
 		context.put("C", outputMatrix);
 		context.put("D", feedthroughMatrix);
 		context.put("xState", xState);
 		context.put("feedThrough", feedThrough);
+		
+		// Add state name for template variable
+		if (xState != null) {
+			context.put("stateName", context.get(xState.getLocalName())); // Use state local name mapped by TemplateUtils // C variable name
+		}
 
 		String codeStr = TemplateManager.renderTemplate("c/continuous/StateSpace/output.vm", context);
 		code.addOutputCode(codeStr);

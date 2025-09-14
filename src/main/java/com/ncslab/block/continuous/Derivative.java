@@ -5,6 +5,8 @@ import com.ncslab.block.data.Data;
 import com.ncslab.block.io.*;
 import lombok.Getter;
 import org.json.JSONObject;
+
+import com.ncslab.dto.block.specialized.continuous.DerivativeDto;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.TemplateManager;
 import Jama.Matrix;
@@ -81,10 +83,33 @@ public class Derivative extends ContinuousBlock {
 
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (derivative has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     // === Private Constructor with Typed Parameters ===
     private Derivative(Parameter filterCoefficient, Parameter initialCondition, Parameter coefficientSource,
@@ -106,6 +131,18 @@ public class Derivative extends ContinuousBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.filterCoefficient);
+        parameterList.add(this.initialCondition);
+        parameterList.add(this.coefficientSource);
+        parameterList.add(this.externalReset);
+        parameterList.add(this.conditionSource);
+        parameterList.add(this.showStatePort);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
     }
@@ -129,7 +166,16 @@ public class Derivative extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.coefficientSource != null) parameterList.add(this.coefficientSource);
+        if (this.externalReset != null) parameterList.add(this.externalReset);
+        if (this.conditionSource != null) parameterList.add(this.conditionSource);
+        if (this.showStatePort != null) parameterList.add(this.showStatePort);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports based on legacy logic
         input = new InputPort(this, 1);
@@ -145,7 +191,7 @@ public class Derivative extends ContinuousBlock {
      * @param dto The DTO containing block configuration
      * @param model The parent model
      */
-    public Derivative(com.ncslab.dto.block.specialized.continuous.DerivativeDto dto, NCSLabModel model) {
+    public Derivative(DerivativeDto dto, NCSLabModel model) {
         super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
         
         // Validate DTO before initialization
@@ -164,7 +210,18 @@ public class Derivative extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
+        // Add all parameters to parameter list if they exist
+        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.coefficientSource != null) parameterList.add(this.coefficientSource);
+        if (this.externalReset != null) parameterList.add(this.externalReset);
+        if (this.conditionSource != null) parameterList.add(this.conditionSource);
+        if (this.showStatePort != null) parameterList.add(this.showStatePort);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Execute initialization logic exactly like JSONObject constructor
         initializePorts();
         
@@ -402,15 +459,34 @@ public class Derivative extends ContinuousBlock {
         context.put("signal", signal);
         context.put("state", stateIntegral);
         context.put("output", getOutputPortVariables()[0]);
+        
+        // Add the state name for template variable substitution
+        if (stateIntegral != null) {
+            context.put("stateName", context.get(stateIntegral.getLocalName())); // Use state local name mapped by TemplateUtils // C variable name
+        }
+        
+        // Add signal dimensions and data type for template
+        context.put("signalDataType", signal.getDataType());
+        context.put("realDataType", DataType.REAL);
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/Derivative/init.vm", context);
         code.addInitCode(codeStr);
     }
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+        
+        // Get input signal for dimension information
+        com.ncslab.block.io.OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
+        context.put("signal", inputSignal);
         context.put("state", stateIntegral);
         context.put("solver", this.model.getConfig().getSolver());
+        
+        // Add dimension variables needed by template
+        context.put("signalHeight", inputSignal.getHeight());
+        context.put("signalWidth", inputSignal.getWidth());
 
         String codeStr = TemplateManager.renderTemplate("c/continuous/Derivative/output.vm", context);
         code.addOutputCode(codeStr);
