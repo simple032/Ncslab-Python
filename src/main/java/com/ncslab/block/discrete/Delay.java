@@ -94,12 +94,35 @@ public class Delay extends DiscreteBlock {
 
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // SIMULINK parameter names
 
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (delay has no feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     // === Private Constructor with Typed Parameters ===
     private Delay(Parameter delayLength, Parameter initialCondition, Parameter sampleTime,
@@ -116,11 +139,21 @@ public class Delay extends DiscreteBlock {
         this.sampleTimeParam = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.delayLength);
+        parameterList.add(this.initialCondition);
+        parameterList.add(this.sampleTimeParam);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);
 
         // Initialize ports
-        initializePorts();
+        // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
+        
+        // Call post-construction initialization to ensure ports are properly set up
+        postConstructionInitialization();
     }
 
     // === Legacy Constructor (Deprecated) ===
@@ -137,13 +170,21 @@ public class Delay extends DiscreteBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.delayLength != null) parameterList.add(this.delayLength);
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Set discrete sample time
         setSampleTime(sampleTimeParam);
 
         // Initialize ports
-        initializePorts();
+        // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
+        
+        // Call post-construction initialization to ensure ports are properly set up
+        postConstructionInitialization();
     }    /**
      * DTO-NATIVE Constructor - Creates Delay block directly from DelayDto DTO
      */
@@ -157,11 +198,21 @@ public class Delay extends DiscreteBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
+        // Add parameters to parameterList for template context population
+        if (this.delayLength != null) parameterList.add(this.delayLength);
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);
 
         // Initialize ports
-        initializePorts();
+        // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
+        
+        // Call post-construction initialization to ensure ports are properly set up
+        postConstructionInitialization();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + delayDto.getBlockName());
     }
@@ -290,24 +341,62 @@ public class Delay extends DiscreteBlock {
         return identity;
     }
     // === Port Initialization ===
-    private void initializePorts() {
-        // Main input port
-        input = new InputPort(this, 1);
-        inputPortList.add(input);
-
-        // Main output port (no feedthrough for delay)
-        output = new OutputPort(this, 1, false);
-        outputPortList.add(output);
+    protected void postConstructionInitialization() {
+        // Assign ports from centrally-created defaults
+        if (inputPortList != null && !inputPortList.isEmpty()) {
+            input = inputPortList.get(0);
+        }
+        if (outputPortList != null && !outputPortList.isEmpty()) {
+            output = outputPortList.get(0);
+        }
+        
+        // For standalone delay blocks (created for testing), initialize ports if they don't exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            inputPortList = new ArrayList<>();
+            input = new InputPort(this, 1);
+            inputPortList.add(input);
+        }
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            outputPortList = new ArrayList<>();
+            output = new OutputPort(this, 1, false); // No feedthrough for delay
+            outputPortList.add(output);
+        }
     }
 
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         context.put("block", this);
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        context.put("blockId", getBlockId());
+        
+        // Fail fast - validate required connections exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("Delay block requires input port for code generation");
+        }
+        
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort == null) {
+            throw new BlockCreationException("Delay block input port cannot be null");
+        }
+        
+        if (inputPort.getLinkedLine() == null || inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("Delay block requires valid input signal connection for code generation");
+        }
+        
+        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if (signal == null) {
+            throw new BlockCreationException("Delay block requires valid output signal for code generation");
+        }
+        
         context.put("signal", signal);
         context.put("signalHeight", signal.getHeight());
         context.put("signalWidth", signal.getWidth());
-        context.put("delayLength", delayLength.getData().getIntValue());
+        
+        // Fail fast - validate delay length parameter exists
+        if (delayLength == null || delayLength.getData() == null) {
+            throw new BlockCreationException("Delay block requires valid delay length parameter");
+        }
+        context.put("delayLength", delayLength.getData().getIntValue()); 
+        
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
@@ -325,31 +414,45 @@ public class Delay extends DiscreteBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("sampleTime", sampleTimeParam);
-        context.put("sampleTimeName", sampleTimeParam.getName());
         context.put("initialCondition", initialCondition);
-        context.put("initialConditionName", initialCondition.getName());
         context.put("delayLength", delayLength);
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        OutputPort out = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
-        context.put("sampleTime", sampleTimeParam);
-        context.put("sampleTimeName", sampleTimeParam.getName());
-        context.put("initialCondition", initialCondition);
-        context.put("initialConditionName", initialCondition.getName());
-        context.put("delayLength", delayLength.getData().getIntValue());
-        context.put("inputSignal", getInputPortVariable(0));
-        context.put("outputSignal", getOutputPortVariable(0));
-        context.put("outputs", getOutputPortVariables());
-        context.put("inputPortList", inputPortList);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Fail fast - validate required ports exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new BlockCreationException("Delay block requires output port for code generation");
+        }
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("Delay block requires input port for code generation");
+        }
+        
         context.put("outputPortList", outputPortList);
+        context.put("inputPortList", inputPortList);
+        
+        // Fail fast - validate required parameters exist
+        if (sampleTimeParam == null) {
+            throw new BlockCreationException("Delay block requires sample time parameter");
+        }
+        if (initialCondition == null) {
+            throw new BlockCreationException("Delay block requires initial condition parameter");
+        }
+        if (delayLength == null || delayLength.getData() == null) {
+            throw new BlockCreationException("Delay block requires valid delay length parameter");
+        }
+        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add block-specific context
+        context.put("delayLength", delayLength.getData().getIntValue());
+        context.put("sampleTime", sampleTimeParam);
+        // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/output.vm", context);
         code.addOutputCode(codeStr);
@@ -358,7 +461,24 @@ public class Delay extends DiscreteBlock {
     @Override
     public void calculateOutput(double t) {
         // Discrete delay: y[k] = u[k-n] where n is the delay length
+        
+        // Fail fast - validate critical components exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new IllegalStateException("Delay block cannot calculate output: no output ports configured");
+        }
+        
         OutputPort output = outputPortList.get(0);
+        if (output == null) {
+            throw new IllegalStateException("Delay block cannot calculate output: output port is null");
+        }
+        
+        if (delayLength == null || delayLength.getData() == null) {
+            throw new IllegalStateException("Delay block cannot calculate output: delay length parameter is missing");
+        }
+        
+        if (initialCondition == null) {
+            throw new IllegalStateException("Delay block cannot calculate output: initial condition parameter is missing");
+        }
         
         if (buffer == null || buffer.isEmpty()) {
             // If buffer not initialized or empty, output initial condition
@@ -375,8 +495,14 @@ public class Delay extends DiscreteBlock {
         if (buffer.size() >= delayLengthValue) {
             // Get the delayed sample (from n steps ago)
             int delayedIndex = buffer.size() - delayLengthValue;
-            Data delayedData = buffer.get(delayedIndex);
-            output.setData(delayedData);
+            if (delayedIndex >= 0 && delayedIndex < buffer.size()) {
+                Data delayedData = buffer.get(delayedIndex);
+                output.setData(delayedData);
+            } else {
+                // Index out of bounds, use initial condition
+                double ic = initialCondition.getDouble();
+                output.setData(new Data(ic));
+            }
         } else {
             // Not enough samples in buffer yet, use initial condition
             double ic = initialCondition.getDouble();
@@ -387,7 +513,25 @@ public class Delay extends DiscreteBlock {
     @Override
     public void calculateInit() {
         // Initialize delay block
+        
+        // Fail fast - validate critical components exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new IllegalStateException("Delay block cannot initialize: no output ports configured");
+        }
+        
         OutputPort output = outputPortList.get(0);
+        if (output == null) {
+            throw new IllegalStateException("Delay block cannot initialize: output port is null");
+        }
+        
+        if (delayLength == null || delayLength.getData() == null) {
+            throw new IllegalStateException("Delay block cannot initialize: delay length parameter is missing");
+        }
+        
+        if (initialCondition == null) {
+            throw new IllegalStateException("Delay block cannot initialize: initial condition parameter is missing");
+        }
+        
         int delayLengthValue = (int) delayLength.getData().getInitValue();
         double ic = initialCondition.getDouble();
         
@@ -406,10 +550,27 @@ public class Delay extends DiscreteBlock {
     @Override
     public void calculateUpdate(double t) {
         // Update delay buffer with new input sample
-        InputPort input = inputPortList.get(0);
         
-        if (input.getData() == null || buffer == null) {
-            return;
+        // Fail fast - validate critical components exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new IllegalStateException("Delay block cannot update: no input ports configured");
+        }
+        
+        if (buffer == null) {
+            throw new IllegalStateException("Delay block cannot update: buffer not initialized (call calculateInit() first)");
+        }
+        
+        InputPort input = inputPortList.get(0);
+        if (input == null) {
+            throw new IllegalStateException("Delay block cannot update: input port is null");
+        }
+        
+        if (input.getData() == null) {
+            throw new IllegalStateException("Delay block cannot update: input data is null");
+        }
+        
+        if (delayLength == null || delayLength.getData() == null) {
+            throw new IllegalStateException("Delay block cannot update: delay length parameter is missing");
         }
         
         Data inputData = input.getData();

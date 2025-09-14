@@ -96,7 +96,16 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         this.sampleTimeParam = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.gain);
+        parameterList.add(this.initialCondition);
+        parameterList.add(this.integratorMethod);
+        parameterList.add(this.sampleTimeParam);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         initializePorts();
     }
 
@@ -115,7 +124,13 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.gain != null) parameterList.add(this.gain);
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.integratorMethod != null) parameterList.add(this.integratorMethod);
+        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
@@ -127,13 +142,21 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
 
         // Initialize final parameters from DTO
         this.gain = getParameterByName("Gain");
-        this.initialCondition = getParameterByName("Initialcondition");
-        this.integratorMethod = getParameterByName("Integratormethod");
-        this.sampleTimeParam = getParameterByName("Sampletimeparam");
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.integratorMethod = getParameterByName("IntegratorMethod");
+        this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.gain != null) parameterList.add(this.gain);
+        if (this.initialCondition != null) parameterList.add(this.initialCondition);
+        if (this.integratorMethod != null) parameterList.add(this.integratorMethod);
+        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -363,20 +386,38 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Get the actual signal data object for dataType checking
+        InputPort in = inputPortList.get(0);
+        Data signalData = in.getData();
+
+        // Ensure all required template variables are set with non-null values
+        String outputVarName = getOutputPortVariable(0);
+        String inputVarName = getInputPortVariable(0);
+        // Use template context variables populated by TemplateUtils to avoid double prefixing
+        String xStateVarName = xState != null ? xState.getName() : "Block" + blockId + "_xState";
+
         // Use proper C variable names instead of Java object references
         context.put("block", this);
-        context.put("out", getOutputPortVariable(0));
-        context.put("outputSignal", getOutputPortVariable(0));
-        context.put("signal", getInputPortVariable(0));
-        context.put("signalName", getInputPortVariable(0));
-        context.put("xState", xState.getName());
-        context.put("xStateName", xState.getName());
-        context.put("gain", gain.getName());
-        context.put("gainval", gain.getName());
-        context.put("gainvalName", gain.getName());
-        context.put("sampleTime", sampleTimeParam.getName());
-        context.put("sampleTimeName", sampleTimeParam.getName());
+        context.put("out", outputVarName);
+        context.put("outputSignal", outputVarName);
+        context.put("signal", signalData);  // Use actual Data object for dataType checking
+        context.put("signalName", inputVarName);
+        context.put("xState", xState);  // Use the State object itself
+        context.put("xStateName", xStateVarName);
+        context.put("gainval", gain);  // Use actual Parameter object for dataType checking
+        context.put("gainvalName", context.get(gain.getLocalName())); // Use parameter local name mapped by TemplateUtils
+        context.put("sampleTime", sampleTimeParam);  // Use the Parameter object itself
+        context.put("sampleTimeName", context.get(sampleTimeParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
         context.put("option", integratorMethod.getInitString());
+
+        // Add missing dimension variables for matrix operations
+        context.put("gainvalHeight", gain != null ? gain.getHeight() : 1);
+        context.put("gainvalWidth", gain != null ? gain.getWidth() : 1);
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/output.vm", context);
         code.addOutputCode(codeStr);

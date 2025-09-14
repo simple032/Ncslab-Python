@@ -85,7 +85,16 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         this.sampleTimeParam = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Determine feedthrough
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.numerator);
+        parameterList.add(this.denominator);
+        parameterList.add(this.initialStates);
+        parameterList.add(this.sampleTimeParam);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         if (denominator.getWidth() == numerator.getWidth()) {
             feedThrough = true;
         }
@@ -119,7 +128,13 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.numerator != null) parameterList.add(this.numerator);
+        if (this.denominator != null) parameterList.add(this.denominator);
+        if (this.initialStates != null) parameterList.add(this.initialStates);
+        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Determine feedthrough
         if (denominator.getWidth() == numerator.getWidth()) {
@@ -147,12 +162,20 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         // Initialize final parameters from DTO
         this.numerator = getParameterByName("Numerator");
         this.denominator = getParameterByName("Denominator");
-        this.initialStates = getParameterByName("Initialstates");
-        this.sampleTimeParam = getParameterByName("Sampletimeparam");
+        this.initialStates = getParameterByName("InitialStates");
+        this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.numerator != null) parameterList.add(this.numerator);
+        if (this.denominator != null) parameterList.add(this.denominator);
+        if (this.initialStates != null) parameterList.add(this.initialStates);
+        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
         
         // Determine feedthrough

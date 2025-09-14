@@ -96,10 +96,20 @@ abstract public class DiscreteBlock extends Block {
     public void updateDimension() throws MatDimException{
         if (sampleTime < 0) {
             if (sampleTime == -1) {
-                Block linkedBlock = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBlock();
-                if (linkedBlock instanceof DiscreteBlock) {
-                    sampleTime = ((DiscreteBlock) linkedBlock).getSampleTime();
+                // Add defensive null checks for input port list
+                if (inputPortList != null && !inputPortList.isEmpty() && 
+                    inputPortList.get(0) != null && 
+                    inputPortList.get(0).getLinkedLine() != null &&
+                    inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
+                    
+                    Block linkedBlock = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getBlock();
+                    if (linkedBlock instanceof DiscreteBlock) {
+                        sampleTime = ((DiscreteBlock) linkedBlock).getSampleTime();
+                    } else {
+                        sampleTime = model.getConfig().getFixedStep();
+                    }
                 } else {
+                    // If no input connection, use fixed step as default
                     sampleTime = model.getConfig().getFixedStep();
                 }
             }else {
@@ -108,11 +118,18 @@ abstract public class DiscreteBlock extends Block {
         }else if(sampleTime == 0) {
         	sampleTime = model.getConfig().getFixedStep();
         }
-        for(Parameter parameter:parameterList) {
-            if(parameter.getLocalName().equals("sampleTime")) {
-                parameter.getData().setInitValue(sampleTime);
+        
+        // Add null check for parameter list
+        if (parameterList != null) {
+            for(Parameter parameter:parameterList) {
+                if(parameter != null && parameter.getLocalName().equals("sampleTime")) {
+                    parameter.getData().setInitValue(sampleTime);
+                }
             }
         }
+        
+        // Call subclass-specific dimension update logic
+        updateDimensionInside();
     }
 
    abstract public void calculateOutput(double t);

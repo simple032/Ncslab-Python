@@ -57,12 +57,35 @@ public class Zero_Order_Hold extends DiscreteBlock {
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // SIMULINK parameter names
         
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (zero-order hold has no feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // === Private Constructor with Typed Parameters ===
@@ -223,7 +246,7 @@ public class Zero_Order_Hold extends DiscreteBlock {
     // === Code Generation Methods (preserved from original) ===
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("sampleTime", sampleTimeParam);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Zero_Order_Hold/init.vm", context);
@@ -232,25 +255,25 @@ public class Zero_Order_Hold extends DiscreteBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
+        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add block-specific context (keeping existing logic)
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputPort ops = outputPortList.get(0);
-        context.put("block", this);
-        context.put("outputPortList", getOutputPortList());
-        context.put("sampleTime", sampleTimeParam);
         context.put("signal", signal);
         context.put("ops", ops);
         context.put("optHeightIndex", ops.getHeight()-1);
         context.put("optWidthIndex", ops.getWidth()-1);
-        context.put("outputs", getOutputPortVariables());
-
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Zero_Order_Hold/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDiscreteUpdateCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
         context.put("inputPortList", getInputPortList());
         context.put("stateOutput", stateOutput);
         context.put("signal", signal);
@@ -265,7 +288,9 @@ public class Zero_Order_Hold extends DiscreteBlock {
         InputPort in = inputPortList.get(0);
         OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-        if ((Double.parseDouble(paramValues.getString("SampleTime").trim()) * 1000000) % (model.getConfig().getFixedStep() * 1000000) > 0.000001) {
+        // Use sampleTimeParam instead of direct paramValues access for better null safety
+        double sampleTimeValue = sampleTimeParam.getData().getInitValue();
+        if ((sampleTimeValue * 1000000) % (model.getConfig().getFixedStep() * 1000000) > 0.000001) {
             MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be an integer multiple of the fixed-step size!\n \n");
             throw(e);
         }

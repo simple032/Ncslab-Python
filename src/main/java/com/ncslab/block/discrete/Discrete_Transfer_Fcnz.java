@@ -117,11 +117,16 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.sampleTimeParam = getParameterByName("Sampletimeparam");
+        this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
         
         setSampleTime(sampleTimeParam);
@@ -238,11 +243,20 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     }
 	//define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
         context.put("block", this);
         context.put("signal1", signal1);
         context.put("signal3", signal3);
+        
+        // Add dimension variables needed by templates
+        context.put("signal1Height", signal1.getHeight());
+        context.put("signal1Width", signal1.getWidth());
+        context.put("stateNum", signal3.getWidth() - 1);  // Number of states
 
         String arraysCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/arrays.vm", context);
         code.addArraysCode(arraysCode);
@@ -250,19 +264,53 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+        
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         context.put("block", this);
         context.put("sampleTime", sampleTimeParam);
+        // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        
+        // Add signal variables if ports are connected
+        if (inputPortList.size() >= 3) {
+            if (inputPortList.get(1).getLinkedLine() != null && 
+                inputPortList.get(1).getLinkedLine().getLinkedOutputPort() != null) {
+                OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+                // FIXED: signal2.getName() already includes Block prefix, don't add another
+                context.put("signal2Name", signal2.getName()); // Already has Block{id}_Output{port} format
+                context.put("signal2DataType", signal2.getDataType());
+                context.put("signal2", signal2.getName());
+                // Provide pre-constructed variable names with _REAL suffix for template
+                context.put("signal2NameREAL", signal2.getName() + "_REAL");
+            }
+            if (inputPortList.get(2).getLinkedLine() != null && 
+                inputPortList.get(2).getLinkedLine().getLinkedOutputPort() != null) {
+                OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+                // FIXED: signal3.getName() already includes Block prefix, don't add another
+                context.put("signal3Name", signal3.getName()); // Already has Block{id}_Output{port} format
+                context.put("signal3DataType", signal3.getDataType());
+                context.put("signal3", signal3.getName());
+                // Provide pre-constructed variable names with _REAL suffix for template
+                context.put("signal3NameREAL", signal3.getName() + "_REAL");
+            }
+        }
 
         String initCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/init.vm", context);
         code.addInitCode(initCode);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
         context.put("block", this);
         context.put("inputPortList", inputPortList);
         context.put("realDataType", DataType.REAL);
@@ -270,6 +318,24 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         context.put("signal1", signal1);
         context.put("signal2", signal2);
         context.put("signal3", signal3);
+        
+        // Add dimension variables needed by templates
+        context.put("signal1Height", signal1.getHeight());
+        context.put("signal1Width", signal1.getWidth());
+        context.put("s1Height", signal1.getHeight());
+        context.put("s1Width", signal1.getWidth());
+        context.put("s2Width", signal2.getWidth());
+        context.put("s3Width", signal3.getWidth());
+        context.put("stateDim", signal3.getWidth() - 1);  // Denominator order - 1
+        context.put("stateNum", signal3.getWidth() - 1);  // Number of states
+        
+        // Add signal names for template
+        // FIXED: Signal names already include Block prefix, don't add another
+        context.put("signal1Name", signal1.getName()); // Already has Block{id}_Output{port} format
+        context.put("signal2Name", signal2.getName()); // Already has Block{id}_Output{port} format
+        context.put("signal3Name", signal3.getName()); // Already has Block{id}_Output{port} format
+        context.put("signal2NameREAL", signal2.getName() + "_REAL");
+        context.put("signal3NameREAL", signal3.getName() + "_REAL");
 
         String outputCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/output.vm", context);
         code.addOutputCode(outputCode);

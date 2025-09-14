@@ -68,12 +68,35 @@ public class UnitDelay extends DiscreteBlock {
 
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // SIMULINK parameter names
 
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (unit delay has no feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false); // Unit delay never has feedthrough
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     // === Private Constructor with Typed Parameters ===
     private UnitDelay(Parameter initialCondition, Parameter sampleTimeParam, Parameter outDataType, 
@@ -93,7 +116,7 @@ public class UnitDelay extends DiscreteBlock {
         setSampleTime(this.sampleTimeParam);
 
         // Initialize ports
-        initializePorts();
+        postConstructionInitialization();
     }
 
     // === Legacy Constructor (Deprecated) ===
@@ -111,21 +134,53 @@ public class UnitDelay extends DiscreteBlock {
         setSampleTime(sampleTimeParam);
 
         // Initialize ports
-        initializePorts();
+        postConstructionInitialization();
     }    /**
      * DTO-NATIVE Constructor - Creates UnitDelay block directly from BlockDto DTO
      */
     public UnitDelay(UnitDelayDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.initialCondition = getParameterByName("InitialCondition");
-        this.sampleTimeParam = getParameterByName("SampleTime");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+        // Create parameters from DTO data to ensure they exist in parameterList
+        try {
+            // Create parameters manually if they don't exist in parameterList
+            if (parameterList.isEmpty()) {
+                this.initialCondition = new Parameter(this, 1, "InitialCondition", 
+                    blockDto.getInitialCondition() != null ? blockDto.getInitialCondition().getAsString() : "0.0");
+                this.sampleTimeParam = new Parameter(this, 2, "SampleTime", 
+                    blockDto.getSampleTime() != null ? blockDto.getSampleTime().getAsString() : "-1");
+                this.outDataType = new Parameter(this, 3, "OutDataTypeStr", 
+                    blockDto.getOutDataTypeStr() != null ? blockDto.getOutDataTypeStr().getAsString() : "Inherit: Same as input");
+                this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", 
+                    blockDto.getSaturateOnIntegerOverflow() != null ? blockDto.getSaturateOnIntegerOverflow().getAsString() : "off");
+                
+                // Add to parameter list for template access
+                parameterList.add(this.initialCondition);
+                parameterList.add(this.sampleTimeParam);
+                parameterList.add(this.outDataType);
+                parameterList.add(this.saturateOnIntegerOverflow);
+                
+                // Update parameter names for template access
+                this.initialCondition.updateName();
+                this.sampleTimeParam.updateName();
+                this.outDataType.updateName();
+                this.saturateOnIntegerOverflow.updateName();
+            } else {
+                // Get parameters by name from the automatically populated parameterList
+                this.initialCondition = getParameterByName("InitialCondition");
+                this.sampleTimeParam = getParameterByName("SampleTime");
+                this.outDataType = getParameterByName("OutDataTypeStr");
+                this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+            }
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to initialize UnitDelay parameters from DTO: " + e.getMessage(), e);
+        }
+
+        // Set discrete sample time
+        setSampleTime(this.sampleTimeParam);
 
         // Initialize ports
-        initializePorts();
+        postConstructionInitialization();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
@@ -242,14 +297,24 @@ public class UnitDelay extends DiscreteBlock {
     }
 
     // === Port Initialization ===
-    private void initializePorts() {
-        // Main input port
-        input = new InputPort(this, 1);
-        inputPortList.add(input);
-
-        // Main output port (no feedthrough for unit delay)
-        output = new OutputPort(this, 1, feedthrough);
-        outputPortList.add(output);
+    private void postConstructionInitialization() {
+        // Create ports if they don't exist (DTO constructor may not have created them)
+        if (inputPortList.isEmpty()) {
+            InputPort inputPort = new InputPort(this, 1, "in1");
+            inputPortList.add(inputPort);
+        }
+        
+        if (outputPortList.isEmpty()) {
+            OutputPort outputPort = new OutputPort(this, 1, feedthrough); // Use Block, int, boolean constructor
+            outputPortList.add(outputPort);
+        }
+        
+        // Set references to the ports
+        input = inputPortList.get(0);  // First input port
+        output = outputPortList.get(0); // First output port
+        
+        // Unit delay never has feedthrough, so set false (redundant since constructor already sets it)
+        output.setFeedThrough(feedthrough); // false
     }
 
     // === Helper Methods ===
@@ -267,9 +332,6 @@ public class UnitDelay extends DiscreteBlock {
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        // Use proper C variable name instead of Java object reference
-        context.put("signal", getInputPortVariable(0));
-        context.put("signalName", getInputPortVariable(0));
         
         // Add dimension variables for arrays
         InputPort inputPort = inputPortList.get(0);
@@ -282,6 +344,11 @@ public class UnitDelay extends DiscreteBlock {
             context.put("signalHeight", signal.getHeight());
             context.put("signalWidth", signal.getWidth());
         }
+        
+        // Use proper C variable name instead of Java object reference
+        String inputSignalName = getInputPortVariable(0);
+        context.put("signal", inputSignalName);
+        context.put("signalName", inputSignalName);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/arrays.vm", context);
         code.addArraysCode(codeStr);
@@ -299,11 +366,12 @@ public class UnitDelay extends DiscreteBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        // Add parameter objects and their names for template
+        // FIXED: Use C variable names from TemplateUtils context, no manual prefix generation
+        // TemplateUtils already generates "Block{id}_{paramName}" format
         context.put("sampleTime", sampleTimeParam);
-        context.put("sampleTimeName", sampleTimeParam.getName());
+        // sampleTimeName is already set by TemplateUtils.populateAllContext()
         context.put("initialCondition", initialCondition);
-        context.put("initialConditionName", initialCondition.getName());
+        // initialConditionName is already set by TemplateUtils.populateAllContext()
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/init.vm", context);
         code.addInitCode(codeStr);
@@ -311,22 +379,30 @@ public class UnitDelay extends DiscreteBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        // Use proper C variable name instead of Java object reference
-        context.put("signal", getInputPortVariable(0));
-        context.put("signalName", getInputPortVariable(0));
-        context.put("output1", getOutputPortVariable(0));
         
-        // Add parameter objects and their names
-        context.put("sampleTime", sampleTimeParam);
-        context.put("sampleTimeName", sampleTimeParam.getName());
-        context.put("initialCondition", initialCondition);
-        context.put("initialConditionName", initialCondition.getName());
-        
-        // Add dimension variables for template loops
+        // Get input port and signal information
         InputPort inputPort = inputPortList.get(0);
         OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
+        // Use proper C variable name instead of Java object reference
+        String inputSignalName = getInputPortVariable(0);
+        context.put("signal", inputSignalName);
+        context.put("signalName", inputSignalName);
+        context.put("output1", getOutputPortVariable(0));
+        
+        // Add parameter objects and their values for template - use C variable names
+        context.put("sampleTime", sampleTimeParam);
+        // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("initialCondition", initialCondition);
+        // initialConditionName is already set by TemplateUtils.populateAllContext() with correct prefix
+        
+        // Add dimension variables for template loops
         context.put("signalHeight", signal.getHeight());
         context.put("signalWidth", signal.getWidth());
+        
+        // Add data type information for template conditional logic
+        context.put("signalDataType", signal.getDataType());
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/output.vm", context);
         code.addOutputCode(codeStr);
@@ -387,5 +463,52 @@ public class UnitDelay extends DiscreteBlock {
         // Shift values: previous becomes current input
         previousValue = currentValue;
         currentValue = input.getData();
+    }
+
+    /**
+     * Generate discrete update code for C code generation.
+     * This method handles the template-based code generation for discrete time updates.
+     */
+    public void generateDiscreteUpdateCodeCInside(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Get input port and signal information
+        InputPort inputPort = inputPortList.get(0);
+        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
+        // Use proper C variable name instead of Java object reference
+        String inputSignalName = getInputPortVariable(0);
+        context.put("signal", inputSignalName);
+        context.put("signalName", inputSignalName);
+        context.put("output1", getOutputPortVariable(0));
+        
+        // Add parameter objects and their values for template - use C variable names
+        context.put("sampleTime", sampleTimeParam);
+        // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("initialCondition", initialCondition);
+        // initialConditionName is already set by TemplateUtils.populateAllContext() with correct prefix
+        
+        // Add dimension variables for template loops
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
+        
+        // Add data type information for template conditional logic
+        context.put("signalDataType", signal.getDataType());
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+
+        // Check if discrete update template exists, otherwise use inline code
+        try {
+            String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/discreteUpdate.vm", context);
+            code.addDiscreteUpdateCode(codeStr);
+        } catch (Exception e) {
+            // Fallback to manual discrete update code if no template exists
+            String discreteUpdateCode = String.format("/* Discrete update for UnitDelay block %d: %s */\n", 
+                                                    getBlockId(), getBlockName());
+            discreteUpdateCode += String.format("Block%d_unit_delay_savedata[0][1] = Block%d_unit_delay_savedata[0][0];\n", 
+                                               getBlockId(), getBlockId());
+            discreteUpdateCode += String.format("Block%d_unit_delay_savedata[0][0] = %s;\n", 
+                                               getBlockId(), inputSignalName);
+            code.addDiscreteUpdateCode(discreteUpdateCode);
+        }
     }
 }
