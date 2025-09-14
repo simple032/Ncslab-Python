@@ -54,6 +54,10 @@ public class Coulomb extends DiscontinuousBlock {
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<HashMap<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<HashMap<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Parameter defaults
         PARAMETER_DEFAULTS.put("Offset", "0");
@@ -65,6 +69,25 @@ public class Coulomb extends DiscontinuousBlock {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        HashMap<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (coulomb has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        HashMap<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // === Private Constructor with Typed Parameters ===
@@ -116,13 +139,20 @@ public class Coulomb extends DiscontinuousBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.offsetParam = getParameterByName("Offsetparam");
-        this.gainParam = getParameterByName("Gainparam");
+        this.offsetParam = getParameterByName("Offset");
+        this.gainParam = getParameterByName("Gain");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.offsetParam != null) parameterList.add(this.offsetParam);
+        if (this.gainParam != null) parameterList.add(this.gainParam);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
         
         // Legacy field mapping for backward compatibility
@@ -287,9 +317,31 @@ public class Coulomb extends DiscontinuousBlock {
     }
 
     private void prepareContext() {
-        OutputPort out  = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        // Fail fast - validate required ports and connections exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new BlockCreationException("Coulomb block cannot prepare context: no output ports configured");
+        }
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("Coulomb block cannot prepare context: no input ports configured");
+        }
+        
+        OutputPort out = outputPortList.get(0);
+        InputPort inputPort = inputPortList.get(0);
+        
+        if (out == null) {
+            throw new BlockCreationException("Coulomb block cannot prepare context: output port is null");
+        }
+        if (inputPort == null || inputPort.getLinkedLine() == null || 
+            inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("Coulomb block cannot prepare context: input port not properly connected");
+        }
+        
+        OutputPort ops = inputPort.getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = ops.getOutputSignalC();
+        
+        if (signal == null) {
+            throw new BlockCreationException("Coulomb block cannot prepare context: input signal is null");
+        }
 
         context.put("block", this); // 当前Block对象（含getBlockId()）
         context.put("inputPortList", inputPortList); // 输入端口列表
@@ -314,12 +366,35 @@ public class Coulomb extends DiscontinuousBlock {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        OutputPort out  = outputPortList.get(0);
-        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        
+        // Fail fast - validate required ports and connections exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: no output ports configured");
+        }
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: no input ports configured");
+        }
+        
+        OutputPort out = outputPortList.get(0);
+        InputPort inputPort = inputPortList.get(0);
+        
+        if (out == null) {
+            throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: output port is null");
+        }
+        if (inputPort == null || inputPort.getLinkedLine() == null || 
+            inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: input port not properly connected");
+        }
+        
+        OutputPort ops = inputPort.getLinkedLine().getLinkedOutputPort();
+        OutputSignal signal = ops.getOutputSignalC();
+        
+        if (signal == null) {
+            throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: input signal is null");
+        }
         
         context.put("block", this);
-        context.put("outputSignal", out.getOutputSignalC());
+        context.put("outputSignal", out.getOutputSignalC().getName()); // Use signal name, not object
         context.put("inputSignal", signal);
         context.put("gain", gain);
         context.put("offset", offset);
@@ -334,21 +409,64 @@ public class Coulomb extends DiscontinuousBlock {
 
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         prepareContext();
+        
+        // Add initialization code variables for Coulomb template
+        context.put("offsetInitCodeC", "/* Offset initialization for " + offset.getName() + " */");
+        context.put("gainInitCodeC", "/* Gain initialization for " + gain.getName() + " */");
+        
         String initCode = TemplateManager.renderTemplate("c/discontinuous/Coulomb/init.vm", context);
         code.addInitCode(initCode);
     }
 
     public void generateOutputCodeC(CodeStructC code){
         super.generateOutputCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        prepareContext();  // Add the prepareContext call to provide all necessary template variables
+        
+        // Add specific template variables needed for Coulomb
+        if (inputPortList != null && !inputPortList.isEmpty()) {
+            InputPort inputPort = inputPortList.get(0);
+            if (inputPort != null && inputPort.getLinkedLine() != null && 
+                inputPort.getLinkedLine().getLinkedOutputPort() != null) {
+                OutputPort ops = inputPort.getLinkedLine().getLinkedOutputPort();
+                context.put("opsHeight", ops.getHeight());
+                context.put("opsWidth", ops.getWidth());
+                context.put("signalName", getInputPortVariable(0));
+                context.put("gainName", context.get(gain.getLocalName())); // Use parameter local name mapped by TemplateUtils // C variable name
+                context.put("offsetName", context.get(offset.getLocalName())); // Use parameter local name mapped by TemplateUtils
+                context.put("outputSignalName", getOutputPortVariable(0));
+            }
+        }
+        
         String outputCode = TemplateManager.renderTemplate("c/discontinuous/Coulomb/output.vm", context);
         code.addOutputCode(outputCode);
     }
 
      public void updateDimension() throws MatDimException{
-        OutputPort out  = outputPortList.get(0);
-        InputPort in  = inputPortList.get(0);
-        OutputSignal signal=in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        // Fail fast - validate required ports and connections exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new MatDimException("Coulomb block cannot update dimensions: no output ports configured");
+        }
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new MatDimException("Coulomb block cannot update dimensions: no input ports configured");
+        }
+        
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        
+        if (out == null) {
+            throw new MatDimException("Coulomb block cannot update dimensions: output port is null");
+        }
+        if (in == null || in.getLinkedLine() == null || in.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new MatDimException("Coulomb block cannot update dimensions: input port not properly connected");
+        }
+        
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if (signal == null) {
+            throw new MatDimException("Coulomb block cannot update dimensions: input signal is null");
+        }
         if(offset.getWidth()!=gain.getWidth()||offset.getHeight()!=gain.getHeight()) {
             MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions don't match!All input dimensions should be same!");
             throw(e);

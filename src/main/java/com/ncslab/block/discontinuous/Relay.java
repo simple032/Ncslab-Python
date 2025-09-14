@@ -71,13 +71,37 @@ public class Relay extends DiscontinuousBlock {
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
+    
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
+
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
 
     static {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (relay has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // Add a method to calculate state indices
@@ -143,16 +167,25 @@ public class Relay extends DiscontinuousBlock {
     public Relay(RelayDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.switchOnPoint = getParameterByName("Switchonpoint");
-        this.switchOffPoint = getParameterByName("Switchoffpoint");
-        this.outputWhenOn = getParameterByName("Outputwhenon");
-        this.outputWhenOff = getParameterByName("Outputwhenoff");
+        // Initialize final parameters from DTO - use correct parameter names matching JSON constructor
+        this.switchOnPoint = getParameterByName("OnSwitchValue");
+        this.switchOffPoint = getParameterByName("OffSwitchValue");
+        this.outputWhenOn = getParameterByName("OnOutputValue");
+        this.outputWhenOff = getParameterByName("OffOutputValue");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.switchOnPoint != null) parameterList.add(this.switchOnPoint);
+        if (this.switchOffPoint != null) parameterList.add(this.switchOffPoint);
+        if (this.outputWhenOn != null) parameterList.add(this.outputWhenOn);
+        if (this.outputWhenOff != null) parameterList.add(this.outputWhenOff);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
         
         // Legacy field mapping for backward compatibility
@@ -258,15 +291,34 @@ public class Relay extends DiscontinuousBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        // Add parameter objects and their names
-        context.put("onSwitchValue", onSwitchValue);
-        context.put("onSwitchValueName", onSwitchValue.getName());
-        context.put("offSwitchValue", offSwitchValue);
-        context.put("offSwitchValueName", offSwitchValue.getName());
-        context.put("onOutputValue", onOutputValue);
-        context.put("onOutputValueName", onOutputValue.getName());
-        context.put("offOutputValue", offOutputValue);
-        context.put("offOutputValueName", offOutputValue.getName());
+        // Fail fast - validate required parameters exist
+        if (switchOnPoint == null) {
+            throw new BlockCreationException("Relay block requires switch on point parameter for initialization");
+        }
+        if (switchOffPoint == null) {
+            throw new BlockCreationException("Relay block requires switch off point parameter for initialization");
+        }
+        if (outputWhenOn == null) {
+            throw new BlockCreationException("Relay block requires output when on parameter for initialization");
+        }
+        if (outputWhenOff == null) {
+            throw new BlockCreationException("Relay block requires output when off parameter for initialization");
+        }
+        
+        // Use legacy fields if available, otherwise use SIMULINK parameters
+        Parameter onSwitchParam = (onSwitchValue != null) ? onSwitchValue : switchOnPoint;
+        Parameter offSwitchParam = (offSwitchValue != null) ? offSwitchValue : switchOffPoint;
+        Parameter onOutputParam = (onOutputValue != null) ? onOutputValue : outputWhenOn;
+        Parameter offOutputParam = (offOutputValue != null) ? offOutputValue : outputWhenOff;
+        
+        context.put("onSwitchValue", onSwitchParam);
+        // onSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("offSwitchValue", offSwitchParam);
+        // offSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("onOutputValue", onOutputParam);
+        // onOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("offOutputValue", offOutputParam);
+        // offOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/init.vm", context);
         code.addInitCode(codeStr);
@@ -276,15 +328,34 @@ public class Relay extends DiscontinuousBlock {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        // Add parameter objects and their names
-        context.put("onSwitchValue", onSwitchValue);
-        context.put("onSwitchValueName", onSwitchValue.getName());
-        context.put("offSwitchValue", offSwitchValue);
-        context.put("offSwitchValueName", offSwitchValue.getName());
-        context.put("onOutputValue", onOutputValue);
-        context.put("onOutputValueName", onOutputValue.getName());
-        context.put("offOutputValue", offOutputValue);
-        context.put("offOutputValueName", offOutputValue.getName());
+        // Fail fast - validate required parameters exist
+        if (switchOnPoint == null) {
+            throw new BlockCreationException("Relay block requires switch on point parameter for code generation");
+        }
+        if (switchOffPoint == null) {
+            throw new BlockCreationException("Relay block requires switch off point parameter for code generation");
+        }
+        if (outputWhenOn == null) {
+            throw new BlockCreationException("Relay block requires output when on parameter for code generation");
+        }
+        if (outputWhenOff == null) {
+            throw new BlockCreationException("Relay block requires output when off parameter for code generation");
+        }
+        
+        // Use legacy fields if available, otherwise use SIMULINK parameters
+        Parameter onSwitchParam = (onSwitchValue != null) ? onSwitchValue : switchOnPoint;
+        Parameter offSwitchParam = (offSwitchValue != null) ? offSwitchValue : switchOffPoint;
+        Parameter onOutputParam = (onOutputValue != null) ? onOutputValue : outputWhenOn;
+        Parameter offOutputParam = (offOutputValue != null) ? offOutputValue : outputWhenOff;
+        
+        context.put("onSwitchValue", onSwitchParam);
+        // onSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("offSwitchValue", offSwitchParam);
+        // offSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("onOutputValue", onOutputParam);
+        // onOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
+        context.put("offOutputValue", offOutputParam);
+        // offOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
         
         // Add input/output signal names
         context.put("inputs", getInputPortVariables());
@@ -310,29 +381,79 @@ public class Relay extends DiscontinuousBlock {
     @Override
     public void calculateInit() {
         // Initialize state based on initial condition
-        if (xState != null) {
-            Data output = onOutputValue.getData();
-            outputPortList.get(0).getOutputSignalC().setData(output);
+        
+        // Fail fast - validate critical components exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new IllegalStateException("Relay block cannot initialize: no output ports configured");
         }
+        
+        OutputPort outputPort = outputPortList.get(0);
+        if (outputPort == null) {
+            throw new IllegalStateException("Relay block cannot initialize: output port is null");
+        }
+        
+        if (outputWhenOff == null) {
+            throw new IllegalStateException("Relay block cannot initialize: output when off parameter is missing");
+        }
+        
+        // Initialize with off state by default
+        Parameter offOutputParam = (offOutputValue != null) ? offOutputValue : outputWhenOff;
+        Data output = offOutputParam.getData();
+        outputPort.getOutputSignalC().setData(output);
     }
 
     @Override
     public void calculateOutput(double t) {
-        Data input = inputPortList.get(0).getData();
+        // Fail fast - validate required ports and parameters exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new IllegalStateException("Relay block cannot calculate output: no input ports configured");
+        }
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new IllegalStateException("Relay block cannot calculate output: no output ports configured");
+        }
+        
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort == null || inputPort.getData() == null) {
+            throw new IllegalStateException("Relay block cannot calculate output: input data is null");
+        }
+        
+        OutputPort outputPort = outputPortList.get(0);
+        if (outputPort == null || outputPort.getOutputSignalC() == null) {
+            throw new IllegalStateException("Relay block cannot calculate output: output port or signal is null");
+        }
+        
+        if (switchOnPoint == null || switchOnPoint.getData() == null) {
+            throw new IllegalStateException("Relay block cannot calculate output: switch on point parameter is missing");
+        }
+        if (switchOffPoint == null || switchOffPoint.getData() == null) {
+            throw new IllegalStateException("Relay block cannot calculate output: switch off point parameter is missing");
+        }
+        if (outputWhenOn == null || outputWhenOff == null) {
+            throw new IllegalStateException("Relay block cannot calculate output: output parameters are missing");
+        }
+        
+        Data input = inputPort.getData();
         double inputValue = input.getInitValue();
-        double onSwitch = onSwitchValue.getData().getInitValue();
-        double offSwitch = offSwitchValue.getData().getInitValue();
+        
+        // Use legacy fields if available, otherwise use SIMULINK parameters
+        Parameter onSwitchParam = (onSwitchValue != null) ? onSwitchValue : switchOnPoint;
+        Parameter offSwitchParam = (offSwitchValue != null) ? offSwitchValue : switchOffPoint;
+        Parameter onOutputParam = (onOutputValue != null) ? onOutputValue : outputWhenOn;
+        Parameter offOutputParam = (offOutputValue != null) ? offOutputValue : outputWhenOff;
+        
+        double onSwitch = onSwitchParam.getData().getInitValue();
+        double offSwitch = offSwitchParam.getData().getInitValue();
         
         Data output;
         if (inputValue >= onSwitch) {
-            output = onOutputValue.getData();
+            output = onOutputParam.getData();
         } else if (inputValue <= offSwitch) {
-            output = offOutputValue.getData();
+            output = offOutputParam.getData();
         } else {
             // Keep previous state - use current output
-            output = outputPortList.get(0).getOutputSignalC().getData();
+            output = outputPort.getOutputSignalC().getData();
         }
         
-        outputPortList.get(0).getOutputSignalC().setData(output);
+        outputPort.getOutputSignalC().setData(output);
     }
 }

@@ -65,10 +65,33 @@ public class RateLimiter extends DiscontinuousBlock {
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (rate limiter has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     // === Private Constructor with Typed Parameters ===
     private RateLimiter(String blockName, String blockPath, String blockUUID, NCSLabModel model) {
@@ -122,7 +145,14 @@ public class RateLimiter extends DiscontinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.risingSlew != null) parameterList.add(this.risingSlew);
+        if (this.fallingSlew != null) parameterList.add(this.fallingSlew);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
         
         // Legacy field mapping for backward compatibility
@@ -193,8 +223,8 @@ public class RateLimiter extends DiscontinuousBlock {
 
     // Define arrays to save state
     public void generateArraysCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
         context.put("signal", signal);
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/RateLimiter/arrays.vm", context);
@@ -225,7 +255,7 @@ public class RateLimiter extends DiscontinuousBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("upperLimit", upperLimit);
         context.put("lowerLimit", lowerLimit);
 
@@ -235,10 +265,11 @@ public class RateLimiter extends DiscontinuousBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal outputSignal = outputPortList.get(0).getOutputSignalC();
         
-        context.put("block", this);
         context.put("upperLimit", upperLimit);
         context.put("lowerLimit", lowerLimit);
         context.put("signal", signal);

@@ -56,6 +56,10 @@ public class Backlash extends DiscontinuousBlock {
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<HashMap<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<HashMap<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Parameter defaults
         PARAMETER_DEFAULTS.put("BacklashWidth", "0.5");
@@ -67,6 +71,25 @@ public class Backlash extends DiscontinuousBlock {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        HashMap<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (backlash has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        HashMap<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // === Private Constructor with Typed Parameters ===
@@ -117,12 +140,12 @@ public class Backlash extends DiscontinuousBlock {
     public Backlash(BacklashDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO with proper null checking
-        this.backlashWidthParam = getParameterOrDefault("BacklashWidth", 1, "BacklashWidth");
-        this.initialOutputParam = getParameterOrDefault("InitialOutput", 2, "InitialOutput");
-        this.sampleTime = getParameterOrDefault("SampleTime", 3, "SampleTime");
-        this.outDataType = getParameterOrDefault("OutDataTypeStr", 4, "OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterOrDefault("SaturateOnIntegerOverflow", 5, "SaturateOnIntegerOverflow");
+        // Initialize final parameters from DTO with fail-fast validation
+        this.backlashWidthParam = getRequiredParameter("BacklashWidth");
+        this.initialOutputParam = getRequiredParameter("InitialOutput");
+        this.sampleTime = getRequiredParameter("SampleTime");
+        this.outDataType = getRequiredParameter("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getRequiredParameter("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();
@@ -140,12 +163,12 @@ public class Backlash extends DiscontinuousBlock {
     }
     
     /**
-     * Helper method to get parameter or create default if null
+     * Helper method to get parameter with fail-fast validation
      */
-    private Parameter getParameterOrDefault(String paramName, int paramId, String defaultKey) {
+    private Parameter getRequiredParameter(String paramName) {
         Parameter param = getParameterByName(paramName);
         if (param == null) {
-            param = new Parameter(this, paramId, paramName, PARAMETER_DEFAULTS.get(defaultKey));
+            throw new BlockCreationException("Backlash block requires " + paramName + " parameter");
         }
         return param;
     }
@@ -350,7 +373,7 @@ public class Backlash extends DiscontinuousBlock {
         OutputSignal signal=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         
         context.put("block", this);
-        context.put("outputSignal", out.getOutputSignalC());
+        context.put("outputSignal", out.getOutputSignalC().getName()); // Use signal name, not object
         context.put("inputSignal", signal);
         context.put("backlashWidth", backlashWidth);
         context.put("inputHeight", signal.getHeight());
@@ -364,14 +387,33 @@ public class Backlash extends DiscontinuousBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
+        // Fail fast - validate required parameters exist
+        if (backlashWidth == null) {
+            throw new BlockCreationException("Backlash block requires backlash width parameter for initialization");
+        }
+        if (initialOutput == null) {
+            throw new BlockCreationException("Backlash block requires initial output parameter for initialization");
+        }
+        
         // Add required template variables
         context.put("backlashWidth", backlashWidth);
-        context.put("backlashWidthName", backlashWidth.getName());
+        context.put("backlashWidthName", context.get(backlashWidth.getLocalName())); // Use parameter local name mapped by TemplateUtils
         context.put("initialOutput", initialOutput);
+        context.put("initialOutputName", context.get(initialOutput.getLocalName())); // Use parameter local name mapped by TemplateUtils
         context.put("xState", xState);
         context.put("xStateName", xState != null ? xState.getName() : "save_data");
         
-        // Generate backlash width initialization code if needed
+        // Add dimension information
+        context.put("backlashWidthHeight", backlashWidth.getHeight());
+        context.put("backlashWidthWidth", backlashWidth.getWidth());
+        context.put("initialOutputHeight", initialOutput.getHeight());
+        context.put("initialOutputWidth", initialOutput.getWidth());
+        
+        // Add data types
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
+        
+        // Generate backlash width initialization code
         StringBuilder backlashWidthInitCode = new StringBuilder();
         if (backlashWidth.getDataType() == DataType.MATRIX) {
             for (int i = 0; i < backlashWidth.getHeight(); i++) {
@@ -387,7 +429,7 @@ public class Backlash extends DiscontinuousBlock {
         }
         context.put("backlashWidthInitCodeC", backlashWidthInitCode.toString());
         
-        // Generate initial output initialization code if needed
+        // Generate initial output initialization code
         StringBuilder initialOutputInitCode = new StringBuilder();
         if (initialOutput.getDataType() == DataType.MATRIX) {
             for (int i = 0; i < initialOutput.getHeight(); i++) {
@@ -411,27 +453,75 @@ public class Backlash extends DiscontinuousBlock {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        // Add input signal information
+        // Fail fast - validate required connections exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("Backlash block requires input port for code generation");
+        }
+        if (inputPortList.get(0) == null || inputPortList.get(0).getLinkedLine() == null ||
+            inputPortList.get(0).getLinkedLine().getLinkedOutputPort() == null) {
+            throw new BlockCreationException("Backlash block requires valid input signal connection for code generation");
+        }
+        
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("signalName", signal.getName());
-        context.put("inputSignalName", signal.getName());
+        if (signal == null) {
+            throw new BlockCreationException("Backlash block requires valid output signal for code generation");
+        }
+        
+        // Fail fast - validate required parameters exist
+        if (backlashWidth == null) {
+            throw new BlockCreationException("Backlash block requires backlash width parameter for code generation");
+        }
+        if (initialOutput == null) {
+            throw new BlockCreationException("Backlash block requires initial output parameter for code generation");
+        }
+        
+        // Add input signal information
+        context.put("signal", signal);
+        context.put("signalName", signal.getName()); // Signal name already includes full block prefix
+        context.put("inputSignalName", signal.getName()); // Signal name already includes full block prefix
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
+        
+        // Add ops (output port source) information
+        OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
+        context.put("ops", ops);
+        context.put("opsHeight", signal.getHeight());
+        context.put("opsWidth", signal.getWidth());
         
         // Add output signal information
+        if (outputPortList == null || outputPortList.isEmpty() || outputPortList.get(0) == null) {
+            throw new BlockCreationException("Backlash block requires output port for code generation");
+        }
         OutputSignal outputSignal = outputPortList.get(0).getOutputSignalC();
-        context.put("outputSignalName", outputSignal.getName());
+        context.put("outputSignal", outputSignal);
+        context.put("outputSignalName", outputSignal.getName()); // Signal name already includes full block prefix
         
         // Add state information
         context.put("xState", xState);
         context.put("xStateName", xState != null ? xState.getName() : "save_data");
+        if (xState != null) {
+            context.put("xStateHeight", xState.getHeight());
+            context.put("xStateWidth", xState.getWidth());
+        } else {
+            context.put("xStateHeight", 1);
+            context.put("xStateWidth", 1);
+        }
         
-        // TODO: Add missing dimension variables for template - xStateHeight, xStateWidth, 
-        // opsHeight, opsWidth, backlashWidthHeight, backlashWidthWidth to fix Velocity 
-        // "Right side of range operator [n..m] has null value" errors
-        
-        // Add parameter names
+        // Add parameter information
         context.put("backlashWidth", backlashWidth);
-        context.put("backlashWidthName", backlashWidth.getName());
+        context.put("backlashWidthName", context.get(backlashWidth.getLocalName())); // Use parameter local name mapped by TemplateUtils
         context.put("initialOutput", initialOutput);
+        context.put("initialOutputName", context.get(initialOutput.getLocalName())); // Use parameter local name mapped by TemplateUtils
+        
+        // Add dimension information for template loops
+        context.put("backlashWidthHeight", backlashWidth.getHeight());
+        context.put("backlashWidthWidth", backlashWidth.getWidth());
+        context.put("initialOutputHeight", initialOutput.getHeight());
+        context.put("initialOutputWidth", initialOutput.getWidth());
+        
+        // Add data types
+        context.put("realDataType", DataType.REAL);
+        context.put("matrixDataType", DataType.MATRIX);
         
         String outputCode = TemplateManager.renderTemplate("c/discontinuous/Backlash/output.vm", context);
         code.addOutputCode(outputCode);

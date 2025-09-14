@@ -91,10 +91,33 @@ public class Saturation extends DiscontinuousBlock {
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (saturation has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
 
     // === Private Constructor with Typed Parameters ===
@@ -142,17 +165,24 @@ public class Saturation extends DiscontinuousBlock {
     public Saturation(SaturationDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.upperSaturationLimit = getParameterByName("Uppersaturationlimit");
-        this.lowerSaturationLimit = getParameterByName("Lowersaturationlimit");
+        // Initialize final parameters from DTO - use correct parameter names matching JSON constructor
+        this.upperSaturationLimit = getParameterByName("UpperLimit");
+        this.lowerSaturationLimit = getParameterByName("LowerLimit");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
+        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
         
-        // Legacy field mapping for backward compatibility
+        // Legacy field mapping for backward compatibility - add null checks
         this.upperLimit = this.upperSaturationLimit;
         this.lowerLimit = this.lowerSaturationLimit;
 
@@ -220,17 +250,42 @@ public class Saturation extends DiscontinuousBlock {
     
     // === Getter Methods ===
     public double getUpperSaturationLimit() {
+        if (upperSaturationLimit == null || upperSaturationLimit.getData() == null) {
+            throw new IllegalStateException("Saturation block upper limit parameter is not properly configured");
+        }
         return upperSaturationLimit.getData().getInitValue();
     }
     
     public double getLowerSaturationLimit() {
+        if (lowerSaturationLimit == null || lowerSaturationLimit.getData() == null) {
+            throw new IllegalStateException("Saturation block lower limit parameter is not properly configured");
+        }
         return lowerSaturationLimit.getData().getInitValue();
     }
     
     @Override
     public void calculateOutput(double t) {
         // SIMULINK Saturation block: limits signal to specified range
-        Data inputData = inputPortList.get(0).getData();
+        
+        // Fail fast - validate required ports and parameters exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new IllegalStateException("Saturation block cannot calculate output: no input ports configured");
+        }
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new IllegalStateException("Saturation block cannot calculate output: no output ports configured");
+        }
+        
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort == null || inputPort.getData() == null) {
+            throw new IllegalStateException("Saturation block cannot calculate output: input data is null");
+        }
+        
+        OutputPort outputPort = outputPortList.get(0);
+        if (outputPort == null) {
+            throw new IllegalStateException("Saturation block cannot calculate output: output port is null");
+        }
+        
+        Data inputData = inputPort.getData();
         double lowerLim = getLowerSaturationLimit();
         double upperLim = getUpperSaturationLimit();
         Data outputData;
@@ -256,21 +311,52 @@ public class Saturation extends DiscontinuousBlock {
             outputData.setInitValue(saturatedValue);
         }
         
-        outputPortList.get(0).setData(outputData);
+        outputPort.setData(outputData);
+    }
+
+    /**
+     * Apply saturation limits to a value.
+     * @param value Input value to saturate
+     * @param lowerLimit Lower saturation limit
+     * @param upperLimit Upper saturation limit
+     * @return Saturated value within specified limits
+     */
+    protected double applySaturation(double value, double lowerLimit, double upperLimit) {
+        if (value < lowerLimit) {
+            return lowerLimit;
+        } else if (value > upperLimit) {
+            return upperLimit;
+        } else {
+            return value;
+        }
     }
 
     // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        // Add input port list size
+        // Fail fast - validate required ports exist
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new BlockCreationException("Saturation block requires input port for code generation");
+        }
         context.put("inputPortListSize", inputPortList.size());
         
-        // Add parameter objects and their names
-        context.put("lowerLimit", lowerLimit);
-        context.put("upperLimit", upperLimit);
-        context.put("lowerLimitName", lowerLimit.getName());
-        context.put("upperLimitName", upperLimit.getName());
+        // Fail fast - validate required parameters exist
+        if (lowerSaturationLimit == null) {
+            throw new BlockCreationException("Saturation block requires lower saturation limit parameter");
+        }
+        if (upperSaturationLimit == null) {
+            throw new BlockCreationException("Saturation block requires upper saturation limit parameter");
+        }
+        
+        // Use legacy fields if available, otherwise use SIMULINK parameters
+        Parameter lowerParam = (lowerLimit != null) ? lowerLimit : lowerSaturationLimit;
+        Parameter upperParam = (upperLimit != null) ? upperLimit : upperSaturationLimit;
+        
+        context.put("lowerLimit", lowerParam);
+        context.put("lowerLimitName", context.get(lowerParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
+        context.put("upperLimit", upperParam);
+        context.put("upperLimitName", context.get(upperParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
         
         // Add port signal names
         context.put("inputPort0SignalName", getInputPortVariable(0));
@@ -286,9 +372,22 @@ public class Saturation extends DiscontinuousBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        // Add parameter objects for template
-        context.put("lowerLimit", lowerLimit);
-        context.put("upperLimit", upperLimit);
+        // Fail fast - validate required parameters exist
+        if (lowerSaturationLimit == null) {
+            throw new BlockCreationException("Saturation block requires lower saturation limit parameter for initialization");
+        }
+        if (upperSaturationLimit == null) {
+            throw new BlockCreationException("Saturation block requires upper saturation limit parameter for initialization");
+        }
+        
+        // Use legacy fields if available, otherwise use SIMULINK parameters
+        Parameter lowerParam = (lowerLimit != null) ? lowerLimit : lowerSaturationLimit;
+        Parameter upperParam = (upperLimit != null) ? upperLimit : upperSaturationLimit;
+
+        context.put("lowerLimit", lowerParam);
+        context.put("lowerLimitName", context.get(lowerParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
+        context.put("upperLimit", upperParam);
+        context.put("upperLimitName", context.get(upperParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/init.vm", context);
         code.addInitCode(codeStr);
@@ -296,9 +395,31 @@ public class Saturation extends DiscontinuousBlock {
 
     // === Dimension Management ===
     public void updateDimension() throws MatDimException {
+        // Fail fast - validate required ports and connections exist
+        if (outputPortList == null || outputPortList.isEmpty()) {
+            throw new MatDimException("Saturation block cannot update dimensions: no output ports configured");
+        }
+        if (inputPortList == null || inputPortList.isEmpty()) {
+            throw new MatDimException("Saturation block cannot update dimensions: no input ports configured");
+        }
+        
         OutputPort out = outputPortList.get(0);
         InputPort in = inputPortList.get(0);
+        
+        if (out == null) {
+            throw new MatDimException("Saturation block cannot update dimensions: output port is null");
+        }
+        if (in == null) {
+            throw new MatDimException("Saturation block cannot update dimensions: input port is null");
+        }
+        if (in.getLinkedLine() == null || in.getLinkedLine().getLinkedOutputPort() == null) {
+            throw new MatDimException("Saturation block cannot update dimensions: input not properly connected");
+        }
+        
         OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if (signal == null) {
+            throw new MatDimException("Saturation block cannot update dimensions: input signal is null");
+        }
 
         out.setHeight(signal.getHeight());
         out.setWidth(signal.getWidth());

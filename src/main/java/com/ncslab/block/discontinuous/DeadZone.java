@@ -65,6 +65,10 @@ public class DeadZone extends DiscontinuousBlock {
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     // Add a method to calculate lower value indices
     private int[] calculateLowerValueIndices(int height, int width) {
         int[] indices = new int[height * width];
@@ -81,6 +85,25 @@ public class DeadZone extends DiscontinuousBlock {
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (deadzone has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     // === Private Constructor with Typed Parameters ===
     private DeadZone(String blockName, String blockPath, String blockUUID, NCSLabModel model) {
@@ -134,7 +157,14 @@ public class DeadZone extends DiscontinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.startOfDeadZone != null) parameterList.add(this.startOfDeadZone);
+        if (this.endOfDeadZone != null) parameterList.add(this.endOfDeadZone);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
         
         // Legacy field mapping for backward compatibility
@@ -243,5 +273,18 @@ public class DeadZone extends DiscontinuousBlock {
         }
         
         outputPortList.get(0).setData(outputData);
+    }
+    
+    /**
+     * Apply dead zone nonlinearity to a single value
+     */
+    protected double applyDeadZone(double value, double lowerThreshold, double upperThreshold) {
+        if (value >= lowerThreshold && value <= upperThreshold) {
+            return 0.0; // Within dead zone - output zero
+        } else if (value < lowerThreshold) {
+            return value - lowerThreshold; // Below dead zone
+        } else {
+            return value - upperThreshold; // Above dead zone
+        }
     }
 }
