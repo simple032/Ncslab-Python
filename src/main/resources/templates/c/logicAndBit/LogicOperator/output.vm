@@ -76,9 +76,9 @@
                     pro${blockId}[$i][$j] = 1.0;
                     #foreach($input in $inputs)
                         #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
-                        pro${blockId}[$i][$j] *= $inputSignalName($i, $j);
+                        pro${blockId}[$i][$j] *= $inputSignalName[$i][$j];
                     #end
-                    $opsName($i, $j) = (pro${blockId}[$i][$j] == 0.0) ? 0.0 : 1.0;
+                    $opsName[$i][$j] = (pro${blockId}[$i][$j] == 0.0) ? 0.0 : 1.0;
                 #end
             #end
         #elseif($operator == "OR")
@@ -88,9 +88,9 @@
                     sum${blockId}[$i][$j] = 0.0;
                     #foreach($input in $inputs)
                         #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
-                        sum${blockId}[$i][$j] += $inputSignalName($i, $j);
+                        sum${blockId}[$i][$j] += $inputSignalName[$i][$j];
                     #end
-                    $opsName($i, $j) = (sum${blockId}[$i][$j] == 0.0) ? 0.0 : 1.0;
+                    $opsName[$i][$j] = (sum${blockId}[$i][$j] == 0.0) ? 0.0 : 1.0;
                 #end
             #end
         #elseif($operator == "NAND")
@@ -100,9 +100,9 @@
                     pro${blockId}[$i][$j] = 1.0;
                     #foreach($input in $inputs)
                         #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
-                        pro${blockId}[$i][$j] *= $inputSignalName($i, $j);
+                        pro${blockId}[$i][$j] *= $inputSignalName[$i][$j];
                     #end
-                    $opsName($i, $j) = (pro${blockId}[$i][$j] == 0.0) ? 1.0 : 0.0;
+                    $opsName[$i][$j] = (pro${blockId}[$i][$j] == 0.0) ? 1.0 : 0.0;
                 #end
             #end
         #elseif($operator == "NOR")
@@ -112,9 +112,9 @@
                     sum${blockId}[$i][$j] = 0.0;
                     #foreach($input in $inputs)
                         #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
-                        sum${blockId}[$i][$j] += $inputSignalName($i, $j);
+                        sum${blockId}[$i][$j] += $inputSignalName[$i][$j];
                     #end
-                    $opsName($i, $j) = (sum${blockId}[$i][$j] == 0.0) ? 1.0 : 0.0;
+                    $opsName[$i][$j] = (sum${blockId}[$i][$j] == 0.0) ? 1.0 : 0.0;
                 #end
             #end
         #elseif($operator == "XOR")
@@ -124,11 +124,11 @@
                     sum${blockId}[$i][$j] = 0;
                     #foreach($input in $inputs)
                         #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
-                        if($inputSignalName($i, $j) != 0.0) {
+                        if($inputSignalName[$i][$j] != 0.0) {
                             sum${blockId}[$i][$j] += 1;
                         }
                     #end
-                    $opsName($i, $j) = (sum${blockId}[$i][$j] % 2 == 0) ? 0.0 : 1.0;
+                    $opsName[$i][$j] = (sum${blockId}[$i][$j] % 2 == 0) ? 0.0 : 1.0;
                 #end
             #end
         #elseif($operator == "NXOR")
@@ -138,11 +138,11 @@
                     sum${blockId}[$i][$j] = 0;
                     #foreach($input in $inputs)
                         #set($inputSignal = $input.linkedLine.linkedOutputPort.outputSignalC)
-                        if($inputSignalName($i, $j) != 0.0) {
+                        if($inputSignalName[$i][$j] != 0.0) {
                             sum${blockId}[$i][$j] += 1;
                         }
                     #end
-                    $opsName($i, $j) = (sum${blockId}[$i][$j] % 2 == 0) ? 1.0 : 0.0;
+                    $opsName[$i][$j] = (sum${blockId}[$i][$j] % 2 == 0) ? 1.0 : 0.0;
                 #end
             #end
         #elseif($operator == "NOT")
@@ -150,20 +150,20 @@
                 #set($inputSignal = $inputs.get(0).linkedLine.linkedOutputPort.outputSignalC)
                 #foreach($i in [0..$hIndex])
                     #foreach($j in [0..$wIndex])
-                        $opsName($i, $j) = ($inputSignalName($i, $j) == 0.0) ? 1.0 : 0.0;
+                        $opsName[$i][$j] = ($inputSignalName[$i][$j] == 0.0) ? 1.0 : 0.0;
                     #end
                 #end
             #else
                 #foreach($i in [0..$hIndex])
                     #foreach($j in [0..$wIndex])
-                        $opsName($i, $j) = 0.0; /* NOT operator requires exactly one input */
+                        $opsName[$i][$j] = 0.0; /* NOT operator requires exactly one input */
                     #end
                 #end
             #end
         #else
             #foreach($i in [0..$hIndex])
                 #foreach($j in [0..$wIndex])
-                    $opsName($i, $j) = 0.0; /* Unknown operator */
+                    $opsName[$i][$j] = 0.0; /* Unknown operator */
                 #end
             #end
         #end

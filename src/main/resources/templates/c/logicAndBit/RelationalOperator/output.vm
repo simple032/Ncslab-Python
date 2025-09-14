@@ -15,10 +15,10 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        if($signal1Name($i,$j) $relop $signal2Name($i,$j)) {
-            $opsName($i,$j) = 1.0;
+        if($signal1Name[$i][$j] $relop $signal2Name[$i][$j]) {
+            $opsName[$i][$j] = 1.0;
         } else {
-            $opsName($i,$j) = 0.0;
+            $opsName[$i][$j] = 0.0;
         }
             #end
         #end

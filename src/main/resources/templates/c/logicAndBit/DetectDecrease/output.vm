@@ -16,12 +16,12 @@ preValue_${blockId} = $signalName;
 #foreach($i in [0..$signalHeightIndex])
 #set($signalWidthIndex = $signalWidth - 1)
     #foreach($j in [0..$signalWidthIndex])
-        if($signalName($i,$j) < preValue_${blockId}[$i][$j]) {
-            $outName($i,$j) = 1.0;
+        if($signalName[$i][$j] < preValue_${blockId}[$i][$j]) {
+            $outName[$i][$j] = 1.0;
         } else {
-            $outName($i,$j) = 0.0;
+            $outName[$i][$j] = 0.0;
         }
-        preValue_${blockId}[$i][$j] = $signalName($i,$j);
+        preValue_${blockId}[$i][$j] = $signalName[$i][$j];
     #end
 #end
 #end

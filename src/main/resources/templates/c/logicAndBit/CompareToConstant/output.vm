@@ -23,17 +23,17 @@
             #foreach($j in [0..$wMax])
                 #if($const.dataType == $realDataType)
                     ## Scalar constant compared to matrix elements
-                    if($inputVar($i, $j) $relop $constantValue) {
-                        $outputVar($i, $j) = 1.0;
+                    if($inputVar[$i][$j] $relop $constantValue) {
+                        $outputVar[$i][$j] = 1.0;
                     } else {
-                        $outputVar($i, $j) = 0.0;
+                        $outputVar[$i][$j] = 0.0;
                     }
                 #else
                     ## Matrix constant compared to matrix elements
-                    if($inputVar($i, $j) $relop $constantValue($i, $j)) {
-                        $outputVar($i, $j) = 1.0;
+                    if($inputVar[$i][$j] $relop $constantValue[$i][$j]) {
+                        $outputVar[$i][$j] = 1.0;
                     } else {
-                        $outputVar($i, $j) = 0.0;
+                        $outputVar[$i][$j] = 0.0;
                     }
                 #end
             #end
