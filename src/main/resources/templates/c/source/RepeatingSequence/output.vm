@@ -8,7 +8,7 @@
         #set($width = $TimeValuesObject.width)
         #set($height = $TimeValuesObject.height)
         ## Simple implementation: output first value for now
-        $outputSignal = $OutputValues(0,0);
+        $outputSignal = $OutputValues[0][0];
     #end
 #else
     ## Fallback with default behavior

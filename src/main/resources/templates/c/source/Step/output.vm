@@ -15,10 +15,10 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        if(model.time < $Time(${i},${j})) {
-            $outputSignal(${i},${j}) = $InitialValue(${i},${j});
+        if(model.time < $Time[${i}][${j}]) {
+            $outputSignal[${i}][${j}] = $InitialValue[${i}][${j}];
         } else {
-            $outputSignal(${i},${j}) = $FinalValue(${i},${j});
+            $outputSignal[${i}][${j}] = $FinalValue[${i}][${j}];
         }
             #end
         #end

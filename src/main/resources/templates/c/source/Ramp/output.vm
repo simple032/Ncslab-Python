@@ -15,10 +15,10 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        if(model.time < $Start($i,$j)) {
-            $outputSignal($i,$j) = $InitialOutput($i,$j);
+        if(model.time < $Start[$i][$j]) {
+            $outputSignal[$i][$j] = $InitialOutput[$i][$j];
         } else {
-            $outputSignal($i,$j) = $InitialOutput($i,$j) + $Slope($i,$j)*(model.time - $Start($i,$j));
+            $outputSignal[$i][$j] = $InitialOutput[$i][$j] + $Slope[$i][$j]*(model.time - $Start[$i][$j]);
         }
             #end
         #end

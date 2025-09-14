@@ -11,7 +11,7 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-        $outputSignal($i,$j) = $Bias($i,$j) + $Amplitude($i,$j) * sin($Frequency($i,$j) * model.time + $Phase($i,$j));
+        $outputSignal[$i][$j] = $Bias[$i][$j] + $Amplitude[$i][$j] * sin($Frequency[$i][$j] * model.time + $Phase[$i][$j]);
             #end
         #end
     #end

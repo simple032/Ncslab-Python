@@ -6,12 +6,12 @@
     #if($inputHeight == 1)
         ## Row vector input - split columns to outputs
         #foreach($i in [0..$maxOutputIdx])
-        ${outputNames.get($i)} = $inputName(0,$i);
+        ${outputNames.get($i)} = $inputName[0][$i];
         #end
     #else
         ## Column vector input - split rows to outputs
         #foreach($i in [0..$maxOutputIdx])
-        ${outputNames.get($i)} = $inputName($i,0);
+        ${outputNames.get($i)} = $inputName[$i][0];
         #end
     #end
 #else

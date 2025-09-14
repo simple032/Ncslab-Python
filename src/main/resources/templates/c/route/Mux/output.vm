@@ -6,14 +6,14 @@
     #foreach($input in $inputs)
         #if($input.linkedLine.linkedOutputPort.outputSignalC.dataType == $realDataType)
             ## Scalar input - place in output vector
-            ${outputVar}(${outputIdx},0) = ${block.getInputPortVariable($foreach.index)};
+            ${outputVar}[${outputIdx}][0] = ${block.getInputPortVariable($foreach.index)};
             #set($outputIdx = $outputIdx + 1)
         #elseif($input.linkedLine.linkedOutputPort.outputSignalC.height == 1)
             ## Row vector input - concatenate columns
             #set($inputWidth = $input.linkedLine.linkedOutputPort.outputSignalC.width)
             #set($widthMax = $inputWidth - 1)
             #foreach($j in [0..$widthMax])
-            ${outputVar}(${outputIdx},0) = ${block.getInputPortVariable($foreach.parent.index)}(0,${j});
+            ${outputVar}[${outputIdx}][0] = ${block.getInputPortVariable($foreach.parent.index)}[0][${j}];
             #set($outputIdx = $outputIdx + 1)
             #end
         #elseif($input.linkedLine.linkedOutputPort.outputSignalC.width == 1)
@@ -21,7 +21,7 @@
             #set($inputHeight = $input.linkedLine.linkedOutputPort.outputSignalC.height)
             #set($heightMax = $inputHeight - 1)
             #foreach($i in [0..$heightMax])
-            ${outputVar}(${outputIdx},0) = ${block.getInputPortVariable($foreach.parent.index)}(${i},0);
+            ${outputVar}[${outputIdx}][0] = ${block.getInputPortVariable($foreach.parent.index)}[${i}][0];
             #set($outputIdx = $outputIdx + 1)
             #end
         #end
