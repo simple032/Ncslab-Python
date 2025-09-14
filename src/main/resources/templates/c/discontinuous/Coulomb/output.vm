@@ -20,12 +20,12 @@
         
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if($signalName($i, $j) > 0) {
-                    $outputSignalName($i, $j) = 1 * ($gainName * fabs($signalName($i, $j)) + $offsetName);
-                } else if($signalName($i, $j) < 0) {
-                    $outputSignalName($i, $j) = (-1) * ($gainName * fabs($signalName($i, $j)) + $offsetName);
+                if($signalName[$i][$j] > 0) {
+                    $outputSignalName[$i][$j] = 1 * ($gainName * fabs($signalName[$i][$j]) + $offsetName);
+                } else if($signalName[$i][$j] < 0) {
+                    $outputSignalName[$i][$j] = (-1) * ($gainName * fabs($signalName[$i][$j]) + $offsetName);
                 } else {
-                    $outputSignalName($i, $j) = 0;
+                    $outputSignalName[$i][$j] = 0;
                 }
             #end
         #end
@@ -40,11 +40,11 @@
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
                 if($signalName > 0) {
-                    $outputSignalName($i, $j) = 1 * ($gainName($i, $j) * fabs($signalName) + $offsetName($i, $j));
+                    $outputSignalName[$i][$j] = 1 * ($gainName[$i][$j] * fabs($signalName) + $offsetName[$i][$j]);
                 } else if($signalName < 0) {
-                    $outputSignalName($i, $j) = (-1) * ($gainName($i, $j) * fabs($signalName) + $offsetName($i, $j));
+                    $outputSignalName[$i][$j] = (-1) * ($gainName[$i][$j] * fabs($signalName) + $offsetName[$i][$j]);
                 } else {
-                    $outputSignalName($i, $j) = 0;
+                    $outputSignalName[$i][$j] = 0;
                 }
             #end
         #end
@@ -56,12 +56,12 @@
         
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if($signalName($i, $j) > 0) {
-                    $outputSignalName($i, $j) = 1 * ($gainName($i, $j) * fabs($signalName($i, $j)) + $offsetName($i, $j));
-                } else if($signalName($i, $j) < 0) {
-                    $outputSignalName($i, $j) = (-1) * ($gainName($i, $j) * fabs($signalName($i, $j)) + $offsetName($i, $j));
+                if($signalName[$i][$j] > 0) {
+                    $outputSignalName[$i][$j] = 1 * ($gainName[$i][$j] * fabs($signalName[$i][$j]) + $offsetName[$i][$j]);
+                } else if($signalName[$i][$j] < 0) {
+                    $outputSignalName[$i][$j] = (-1) * ($gainName[$i][$j] * fabs($signalName[$i][$j]) + $offsetName[$i][$j]);
                 } else {
-                    $outputSignalName($i, $j) = 0;
+                    $outputSignalName[$i][$j] = 0;
                 }
             #end
         #end

@@ -24,14 +24,14 @@
 
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if($signalName($i, $j) < $xStateName($i, $j) - 0.5 * $backlashWidthName) {
-                    $outputSignalName($i, $j) = $signalName($i, $j) + 0.5 * $backlashWidthName;
-                } else if($signalName($i, $j) <= $xStateName($i, $j) + 0.5 * $backlashWidthName) {
-                    $outputSignalName($i, $j) = $xStateName($i, $j);
+                if($signalName(${i}, ${j}) < $xStateName(${i}, ${j}) - 0.5 * $backlashWidthName) {
+                    $outputSignalName(${i}, ${j}) = $signalName(${i}, ${j}) + 0.5 * $backlashWidthName;
+                } else if($signalName(${i}, ${j}) <= $xStateName(${i}, ${j}) + 0.5 * $backlashWidthName) {
+                    $outputSignalName(${i}, ${j}) = $xStateName(${i}, ${j});
                 } else {
-                    $outputSignalName($i, $j) = $signalName($i, $j) - 0.5 * $backlashWidthName;
+                    $outputSignalName(${i}, ${j}) = $signalName(${i}, ${j}) - 0.5 * $backlashWidthName;
                 }
-                $xStateName($i, $j) = $outputSignalName($i, $j);
+                $xStateName(${i}, ${j}) = $outputSignalName(${i}, ${j});
             #end
         #end
     #end
@@ -44,14 +44,14 @@
 
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if($signalName < $xStateName($i, $j) - 0.5 * $backlashWidthName($i, $j)) {
-                    $outputSignalName($i, $j) = $signalName + 0.5 * $backlashWidthName($i, $j);
-                } else if($signalName <= $xStateName($i, $j) + 0.5 * $backlashWidthName($i, $j)) {
-                    $outputSignalName($i, $j) = $xStateName($i, $j);
+                if($signalName < $xStateName(${i}, ${j}) - 0.5 * $backlashWidthName(${i}, ${j})) {
+                    $outputSignalName(${i}, ${j}) = $signalName + 0.5 * $backlashWidthName(${i}, ${j});
+                } else if($signalName <= $xStateName(${i}, ${j}) + 0.5 * $backlashWidthName(${i}, ${j})) {
+                    $outputSignalName(${i}, ${j}) = $xStateName(${i}, ${j});
                 } else {
-                    $outputSignalName($i, $j) = $signalName - 0.5 * $backlashWidthName($i, $j);
+                    $outputSignalName(${i}, ${j}) = $signalName - 0.5 * $backlashWidthName(${i}, ${j});
                 }
-                $xStateName($i, $j) = $outputSignalName($i, $j);
+                $xStateName(${i}, ${j}) = $outputSignalName(${i}, ${j});
             #end
         #end
     #else
@@ -62,14 +62,14 @@
 
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                if($signalName($i, $j) < $xStateName($i, $j) - 0.5 * $backlashWidthName($i, $j)) {
-                    $outputSignalName($i, $j) = $signalName($i, $j) + 0.5 * $backlashWidthName($i, $j);
-                } else if($signalName($i, $j) <= $xStateName($i, $j) + 0.5 * $backlashWidthName($i, $j)) {
-                    $outputSignalName($i, $j) = $xStateName($i, $j);
+                if($signalName(${i}, ${j}) < $xStateName(${i}, ${j}) - 0.5 * $backlashWidthName(${i}, ${j})) {
+                    $outputSignalName(${i}, ${j}) = $signalName(${i}, ${j}) + 0.5 * $backlashWidthName(${i}, ${j});
+                } else if($signalName(${i}, ${j}) <= $xStateName(${i}, ${j}) + 0.5 * $backlashWidthName(${i}, ${j})) {
+                    $outputSignalName(${i}, ${j}) = $xStateName(${i}, ${j});
                 } else {
-                    $outputSignalName($i, $j) = $signalName($i, $j) - 0.5 * $backlashWidthName($i, $j);
+                    $outputSignalName(${i}, ${j}) = $signalName(${i}, ${j}) - 0.5 * $backlashWidthName(${i}, ${j});
                 }
-                $xStateName($i, $j) = $outputSignalName($i, $j);
+                $xStateName(${i}, ${j}) = $outputSignalName(${i}, ${j});
             #end
         #end
     #end

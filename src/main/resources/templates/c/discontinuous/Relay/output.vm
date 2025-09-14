@@ -20,12 +20,12 @@
             #if($optWidthIndex && $optHeightIndex)
                 #foreach($i in [0..$optWidthIndex])
                     #foreach($j in [0..$optHeightIndex])
-                        if($inputVar(${i},${j}) > $onSwitchValueName) {
-                            $stateVar(${i},${j}) = $onOutputValueName;
-                        } else if($inputVar(${i},${j}) < $offSwitchValueName) {
-                            $stateVar(${i},${j}) = $offOutputValueName;
+                        if($inputVar(${i}, ${j}) > $onSwitchValueName) {
+                            $stateVar(${i}, ${j}) = $onOutputValueName;
+                        } else if($inputVar(${i}, ${j}) < $offSwitchValueName) {
+                            $stateVar(${i}, ${j}) = $offOutputValueName;
                         }
-                        $outputVar(${i},${j}) = $stateVar(${i},${j});
+                        $outputVar(${i}, ${j}) = $stateVar(${i}, ${j});
                     #end
                 #end
             #end
@@ -40,12 +40,12 @@
             #set($wMax = $width - 1)
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    if($inputVar > $onSwitchValueName(${i},${j})) {
-                        $stateVar(${i},${j}) = $onOutputValueName(${i},${j});
-                    } else if($inputVar < $offSwitchValueName(${i},${j})) {
-                        $stateVar(${i},${j}) = $offOutputValueName(${i},${j});
+                    if($inputVar > $onSwitchValueName(${i}, ${j})) {
+                        $stateVar(${i}, ${j}) = $onOutputValueName(${i}, ${j});
+                    } else if($inputVar < $offSwitchValueName(${i}, ${j})) {
+                        $stateVar(${i}, ${j}) = $offOutputValueName(${i}, ${j});
                     }
-                    $outputVar(${i},${j}) = $stateVar(${i},${j});
+                    $outputVar(${i}, ${j}) = $stateVar(${i}, ${j});
                 #end
             #end
         #else
@@ -53,12 +53,12 @@
             #if($optWidthIndex && $optHeightIndex)
                 #foreach($i in [0..$optWidthIndex])
                     #foreach($j in [0..$optHeightIndex])
-                        if($inputVar(${i},${j}) > $onSwitchValueName(${i},${j})) {
-                            $stateVar(${i},${j}) = $onOutputValueName(${i},${j});
-                        } else if($inputVar(${i},${j}) < $offSwitchValueName(${i},${j})) {
-                            $stateVar(${i},${j}) = $offOutputValueName(${i},${j});
+                        if($inputVar(${i}, ${j}) > $onSwitchValueName(${i}, ${j})) {
+                            $stateVar(${i}, ${j}) = $onOutputValueName(${i}, ${j});
+                        } else if($inputVar(${i}, ${j}) < $offSwitchValueName(${i}, ${j})) {
+                            $stateVar(${i}, ${j}) = $offOutputValueName(${i}, ${j});
                         }
-                        $outputVar(${i},${j}) = $stateVar(${i},${j});
+                        $outputVar(${i}, ${j}) = $stateVar(${i}, ${j});
                     #end
                 #end
             #end

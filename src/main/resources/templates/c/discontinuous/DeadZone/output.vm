@@ -14,25 +14,25 @@
       #foreach($j in [0..$opsHeightIndex])
       // 输入是实数，输出是矩阵，对矩阵每个元素应用实数阈值
       if($signalName > $upperValueName) {
-        ${output1}(${i},${j}) = $signalName - $upperValueName;
+        ${output1}(${i}, ${j}) = $signalName - $upperValueName;
       } else if($signalName < $lowerValueName) {
-        ${output1}(${i},${j}) = $signalName - $lowerValueName;
+        ${output1}(${i}, ${j}) = $signalName - $lowerValueName;
       } else {
-        ${output1}(${i},${j}) = 0;
+        ${output1}(${i}, ${j}) = 0;
       }
       #end
     #end
   #end
 #else
   #if($ops.outputSignalC.dataType == $realDataType)
-    #set($lowerValueIndices = $block.calculateLowerValueIndices($lowerValue.height, $lowerValue.width))
+    #set($lowerValueIndices = $block.calculateLowerValueIndices[$lowerValue.height][$lowerValue.width])
     #foreach($index in $lowerValueIndices)
       #set($i = $index / $lowerValue.width)
       #set($j = $index % $lowerValue.width)
-    if($signalName(${i},${j}) > $upperValueName) {
-      ${output1} += $signalName(${i},${j}) - $upperValueName;
-    } else if($signalName(${i},${j}) < $lowerValueName) {
-      ${output1} += $signalName(${i},${j}) - $lowerValueName;
+    if($signalName(${i}, ${j}) > $upperValueName) {
+      ${output1} += $signalName(${i}, ${j}) - $upperValueName;
+    } else if($signalName(${i}, ${j}) < $lowerValueName) {
+      ${output1} += $signalName(${i}, ${j}) - $lowerValueName;
     } else {
       ${output1} += 0; // 可以省略这行
     }
@@ -41,12 +41,12 @@
     #foreach($i in [0..$lowerValueHeightIndex])
       #foreach($j in [0..$lowerValueWidthIndex])
       // 双方都是矩阵，逐元素比较
-      if($signalName(${i},${j}) > $upperValueName(${i},${j})) {
-        ${output1}(${i},${j}) = $signalName(${i},${j}) - $upperValueName(${i},${j});
-      } else if($signalName(${i},${j}) < $lowerValueName(${i},${j})) {
-        ${output1}(${i},${j}) = $signalName(${i},${j}) - $lowerValueName(${i},${j});
+      if($signalName(${i}, ${j}) > $upperValueName(${i}, ${j})) {
+        ${output1}(${i}, ${j}) = $signalName(${i}, ${j}) - $upperValueName(${i}, ${j});
+      } else if($signalName(${i}, ${j}) < $lowerValueName(${i}, ${j})) {
+        ${output1}(${i}, ${j}) = $signalName(${i}, ${j}) - $lowerValueName(${i}, ${j});
       } else {
-        ${output1}(${i},${j}) = 0;
+        ${output1}(${i}, ${j}) = 0;
       }
       #end
     #end
