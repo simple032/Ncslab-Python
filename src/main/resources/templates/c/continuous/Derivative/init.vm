@@ -8,7 +8,7 @@ $output = 0.0;
         #set($signalWidthIndex = ($signalWidth - 1))
         #foreach($i in [0..$signalHeightIndex])
             #foreach($j in [0..$signalWidthIndex])
-          $stateName($i, $j) = 0;
+          $stateName[$i][$j] = 0;
             #end
         #end
     #end

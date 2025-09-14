@@ -7,8 +7,8 @@ $filterStateName=$filterStateName+$filterStateDerivativeName*${modelStepSize};
 #set($stateFilterWidthMax = $filterStateWidth - 1)
 #foreach($i in [0..$stateFilterHeightMax])
 #foreach($j in [0..$stateFilterWidthMax])
-$integralStateName($i,$j)=$integralStateName($i,$j)+$integralStateDerivativeName($i,$j)*${modelStepSize};
-$filterStateName($i,$j)=$filterStateName($i,$j)+$filterStateDerivativeName($i,$j)*${modelStepSize};
+$integralStateName[$i][$j]=$integralStateName[$i][$j]+$integralStateDerivativeName[$i][$j]*${modelStepSize};
+$filterStateName[$i][$j]=$filterStateName[$i][$j]+$filterStateDerivativeName[$i][$j]*${modelStepSize};
 #end
 #end
 #end

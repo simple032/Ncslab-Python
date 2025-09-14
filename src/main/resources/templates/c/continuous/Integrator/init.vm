@@ -8,7 +8,8 @@ $InitialCondition = $inputSignal;
     #else
       for(int i=0; i<$InitialConditionObject.height; i++){
         for(int j=0; j<$InitialConditionObject.width; j++){
-          $state(i,j) = $InitialCondition(i,j);
+#set($tempVar = "${InitialCondition}[i][j]")
+          ${state}[i][j] = ${tempVar};
         }
       }
     #end
@@ -16,7 +17,8 @@ $InitialCondition = $inputSignal;
     #if($InitialConditionObject.dataType == $realDataType)
       for(int i=0; i<$outputSignalObject.height; i++){
         for(int j=0; j<$outputSignalObject.width; j++){
-          $state(i,j) = $InitialCondition;
+#set($tempStateVar = "${state}[i][j]")
+          ${tempStateVar} = $InitialCondition;
         }
       }
     #else

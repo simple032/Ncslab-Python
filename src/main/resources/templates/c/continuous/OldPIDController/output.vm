@@ -11,10 +11,10 @@
     #foreach($i in [0..$pHeightIndex])
 #set($pWidthIndex = $proportionalGainWidth - 1)
         #foreach($j in [0..$pWidthIndex])
-            $outputSignal($i,$j) = $proportionalGainName($i,$j) * $inputSignal($i,$j)
-                                      + $integralStateName($i,$j)
-                                      + $derivativeGainName($i,$j) * $filterCoefficientName($i,$j)
-                                      * ($inputSignal($i,$j) - $filterStateName($i,$j));
+            $outputSignal[$i][$j] = $proportionalGainName[$i][$j] * $inputSignal[$i][$j]
+                                      + $integralStateName[$i][$j]
+                                      + $derivativeGainName[$i][$j] * $filterCoefficientName[$i][$j]
+                                      * ($inputSignal[$i][$j] - $filterStateName[$i][$j]);
         #end
     #end
 #end

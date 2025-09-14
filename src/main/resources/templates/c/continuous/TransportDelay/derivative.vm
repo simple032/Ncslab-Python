@@ -8,21 +8,25 @@
     #if($block.delaytime.dataType == $realDataType)
       #set($bufferLength = $block.calculateBufferLength($delayTimeValue))
       #set($bufferLengthMinus1 = $bufferLength - 1)
-      for(int i=0; i<$bufferLengthMinus1; i++) {
-        Block$blockId_transport_delay_savedata[i] = Block$blockId_transport_delay_savedata[i+1];
+      for(int i=0; i<${bufferLengthMinus1}; i++) {
+        #set($blockPrefix = "Block${blockId}_transport_delay_savedata")
+        ${blockPrefix}[i] = ${blockPrefix}[i+1];
       }
-      Block$blockId_transport_delay_savedata[$bufferLengthMinus1] = $signal.name;
+      #set($blockPrefix = "Block${blockId}_transport_delay_savedata")
+      ${blockPrefix}[${bufferLengthMinus1}] = $signal.name;
     #elseif($block.delaytime.dataType == $matrixDataType)
       #set($delayTimeHeightMax = $block.delaytime.height - 1)
       #set($delayTimeWidthMax = $block.delaytime.width - 1)
       #foreach($i in [0..$delayTimeHeightMax])
         #foreach($j in [0..$delayTimeWidthMax])
-          #set($bufferLen = $block.calculateBufferLength($block.test.get($i,$j)))
+          #set($bufferLen = $block.calculateBufferLength($block.test.get[$i][$j]))
           #set($bufferLenMinus1 = $bufferLen - 1)
-          for(int m=0; m<$bufferLenMinus1; m++) {
-            Block$blockId_transport_delay_savedata_${i}_${j}_[m] = Block$blockId_transport_delay_savedata_${i}_${j}_[m+1];
+          for(int m=0; m<${bufferLenMinus1}; m++) {
+            #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
+            ${blockArray}[m] = ${blockArray}[m+1];
           }
-          Block$blockId_transport_delay_savedata_${i}_${j}_[$bufferLenMinus1] = $signal.name;
+          #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
+          ${blockArray}[${bufferLenMinus1}] = $signal.name;
         #end
       #end
     #end
@@ -34,10 +38,12 @@
         #foreach($j in [0..$signalWidthMax])
           #set($bufferLen = $block.calculateBufferLength($delayTimeValue))
           #set($bufferLenMinus1 = $bufferLen - 1)
-          for(int m=0; m<$bufferLenMinus1; m++) {
-            Block$blockId_transport_delay_savedata_${i}_${j}_[m] = Block$blockId_transport_delay_savedata_${i}_${j}_[m+1];
+          for(int m=0; m<${bufferLenMinus1}; m++) {
+            #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
+            ${blockArray}[m] = ${blockArray}[m+1];
           }
-          Block$blockId_transport_delay_savedata_${i}_${j}_[$bufferLenMinus1] = $signal.name($i,$j);
+          #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
+          ${blockArray}[${bufferLenMinus1}] = $signal.name[${i}][${j}];
         #end
       #end
     #elseif($block.delaytime.dataType == $matrixDataType)
@@ -45,12 +51,14 @@
       #set($signalWidthMax = $signalWidth - 1)
       #foreach($i in [0..$signalHeightMax])
         #foreach($j in [0..$signalWidthMax])
-          #set($bufferLen = $block.calculateBufferLength($block.test.get($i,$j)))
+          #set($bufferLen = $block.calculateBufferLength($block.test.get[$i][$j]))
           #set($bufferLenMinus1 = $bufferLen - 1)
-          for(int m=0; m<$bufferLenMinus1; m++) {
-            Block$blockId_transport_delay_savedata_${i}_${j}_[m] = Block$blockId_transport_delay_savedata_${i}_${j}_[m+1];
+          for(int m=0; m<${bufferLenMinus1}; m++) {
+            #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
+            ${blockArray}[m] = ${blockArray}[m+1];
           }
-          Block$blockId_transport_delay_savedata_${i}_${j}_[$bufferLenMinus1] = $signal.name($i,$j);
+          #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
+          ${blockArray}[${bufferLenMinus1}] = $signal.name[${i}][${j}];
         #end
       #end
     #end
@@ -58,7 +66,7 @@
 #else
   #if($signalDataType == $realDataType)
     #if($block.delaytime.dataType == $realDataType)
-      insert_to_buffer(&$block.getBufferName(), model.time, $signal.name);
+      insert_to_buffer(&${bufferName}, model.time, $signal.name);
     #elseif($block.delaytime.dataType == $matrixDataType)
       #set($delayTimeHeightMax = $block.delaytime.height - 1)
       #set($delayTimeWidthMax = $block.delaytime.width - 1)
@@ -66,12 +74,12 @@
         #foreach($j in [0..$delayTimeWidthMax])
           #set($index = $i * $block.delaytime.width + $j)
           #set($bufferSizeMinus2 = $bufferSize.data.intValue - 2)
-          for(int m=$bufferSizeMinus2; m>=0; m--) {
-            Block$blockIdyout[${index}][m+1] = Block$blockIdyout[${index}][m];
-            Block$blockIdtout[${index}][m+1] = Block$blockIdtout[${index}][m];
+          for(int m=${bufferSizeMinus2}; m>=0; m--) {
+            Block${blockId}yout[${index}][m+1] = Block${blockId}yout[${index}][m];
+            Block${blockId}tout[${index}][m+1] = Block${blockId}tout[${index}][m];
           }
-          Block$blockIdyout[${index}][0] = $signal.name;
-          Block$blockIdtout[${index}][0] = model.time;
+          Block${blockId}yout[${index}][0] = $signal.name;
+          Block${blockId}tout[${index}][0] = model.time;
         #end
       #end
     #end
@@ -83,12 +91,12 @@
         #foreach($j in [0..$signalWidthMax])
           #set($index = $i * $signalWidth + $j)
           #set($bufferSizeMinus2 = $bufferSize.data.intValue - 2)
-          for(int m=$bufferSizeMinus2; m>=0; m--) {
-            Block$blockIdyout[${index}][m+1] = Block$blockIdyout[${index}][m];
-            Block$blockIdtout[${index}][m+1] = Block$blockIdtout[${index}][m];
+          for(int m=${bufferSizeMinus2}; m>=0; m--) {
+            Block${blockId}yout[${index}][m+1] = Block${blockId}yout[${index}][m];
+            Block${blockId}tout[${index}][m+1] = Block${blockId}tout[${index}][m];
           }
-          Block$blockIdyout[${index}][0] = $signal.name($i,$j);
-          Block$blockIdtout[${index}][0] = model.time;
+          Block${blockId}yout[${index}][0] = $signal.name[$i][$j];
+          Block${blockId}tout[${index}][0] = model.time;
         #end
       #end
     #end
