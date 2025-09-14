@@ -1,0 +1,9 @@
+/*Code for init of BallPlateSystem::($blockId)$blockName*/
+#if ($modelMode == $simulationMode)
+/* Initialize BallPlateSystem simulation states */
+#foreach ($state in $stateList)
+${state.name} = 0.0;
+#end
+#else
+/* Initialize BallPlateSystem hardware interface */
+#end

@@ -1,0 +1,15 @@
+/*Code for derivative of BallPlateSystem::($blockId)$blockName*/
+#if ($modelMode == $simulationMode)
+/* BallPlateSystem simulation derivatives */
+#if ($stateList && $stateList.size() > 0)
+${stateList.get(0).name}_derivative = x1;  /* Position derivative = velocity */
+#if ($stateList.size() > 1)
+${stateList.get(1).name}_derivative = x2;  /* Velocity derivative = acceleration */
+#end
+#if ($stateList.size() > 2 && $inputPortList && $inputPortList.size() > 0)
+${stateList.get(2).name}_derivative = ${inputPortList.get(0).linkedLine.linkedOutputPort.outputSignalC.name} - x0;  /* Control input */
+#end
+#end
+#else
+/* BallPlateSystem hardware mode - no derivatives */
+#end

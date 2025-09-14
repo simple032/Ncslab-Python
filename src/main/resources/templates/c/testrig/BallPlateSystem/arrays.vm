@@ -1,0 +1,8 @@
+/*Code for arrays of BallPlateSystem::($blockId)$blockName*/
+#if ($stateList && $stateList.size() > 0)
+/* State arrays for BallPlateSystem */
+#foreach ($state in $stateList)
+double ${state.name} = 0.0;
+double ${state.name}_derivative = 0.0;
+#end
+#end

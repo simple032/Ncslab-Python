@@ -1,0 +1,18 @@
+/*Code for output of BallPlateSystem::($blockId)$blockName*/
+#if ($modelMode == $simulationMode)
+/* BallPlateSystem simulation output */
+#if ($outputPortList && $outputPortList.size() > 0)
+$outputPortList.get(0).outputSignalC.name = x0;  /* Position */
+#if ($outputPortList.size() > 1)
+$outputPortList.get(1).outputSignalC.name = x1;  /* Angle */
+#end
+#if ($outputPortList.size() > 2)
+$outputPortList.get(2).outputSignalC.name = x2;  /* Derivative */
+#end
+#end
+#else
+/* BallPlateSystem hardware mode output */
+#if ($outputPortList && $outputPortList.size() > 0)
+$outputPortList.get(0).outputSignalC.name = 0.0;  /* Default output */
+#end
+#end

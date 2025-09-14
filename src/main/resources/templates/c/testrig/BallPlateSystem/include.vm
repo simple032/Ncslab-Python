@@ -1,0 +1,3 @@
+/*Code for include files of BallPlateSystem::($blockId)$blockName*/
+#include <math.h>
+#include <stdio.h>

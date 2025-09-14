@@ -1,10 +1,18 @@
-/*Code for Derivative of InvertedPendulum:(${block.blockId})${block.blockName}*/
+/*Code for Derivative of InvertedPendulum:($blockId)$blockName*/
 #if ($modelMode == $simulationMode)
 /* Simulation mode - InvertedPendulum (L1IP) simulation */
 /* SerialPortState represents communication state - simple first-order lag */
 double commTimeConstant = 0.1;
-${block.getDerivativeVariable(0)} = (${inputPortVariable} - ${block.getStateVariable(0)}) / commTimeConstant;
+#if($stateVariables && $stateVariables.size() > 0)
+$stateVariables.get(0)_derivative = ($inputVar - $stateVariables.get(0)) / commTimeConstant;
+#else
+${blockName}_State_derivative = ($inputVar - ${blockName}_State) / commTimeConstant;
+#end
 #else
 /* Hardware mode - communication state tracks input */
-${block.getDerivativeVariable(0)} = ${inputPortVariable} - ${block.getStateVariable(0)};
+#if($stateVariables && $stateVariables.size() > 0)
+$stateVariables.get(0)_derivative = $inputVar - $stateVariables.get(0);
+#else
+${blockName}_State_derivative = $inputVar - ${blockName}_State;
+#end
 #end

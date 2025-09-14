@@ -1,19 +1,19 @@
-#set($inputSignal = $block.getInputPortVariable(0))
-#set($outputFanSpeed = $blockOutputPortVariables.get(0))
-#set($outputPosition = $blockOutputPortVariables.get(1))
-
+/*Code for output of block ALP:($blockId)$blockName*/
 #if ($modelMode == $simulationMode)
-#foreach($state in $states)
+#if($stateVariables && $num && $den)
+#foreach($state in $stateVariables)
 #set($numIndex = $den.size() - $foreach.index - 1)
-#set($output = $outputFanSpeed + " += " + $stateName + " * " + $num[$numIndex] + ";")
+#if($outputVar1)$outputVar1 += $state * $num.get($numIndex);#end
+#end
 #end
 #elseif ($modelMode == $compilationMode)
-#set($hardwareDefineName = "Block" + $blockBlockId + "_Alp")
-$hardwareDefineName.alpPWM = 2600 * $inputSignal;
+#if($hardwareDefineName && $inputVar)
+$hardwareDefineName.alpPWM = 2600 * $inputVar;
 $hardwareDefineName.alpPWM = $hardwareDefineName.alpPWM > 2400.0 ? 2400.0 : $hardwareDefineName.alpPWM;
 $hardwareDefineName.alpPWM = $hardwareDefineName.alpPWM < 0 ? 0 : $hardwareDefineName.alpPWM;
 
 outputAlp(&$hardwareDefineName);
-$outputFanSpeed = 2.0 * $hardwareDefineName.fanspeed_output;
-$outputPosition = calalpoutput(635 - 19.0114 * $hardwareDefineName.position);
+#if($outputVar1)$outputVar1 = 2.0 * $hardwareDefineName.fanspeed_output;#end
+#if($outputVar2)$outputVar2 = calalpoutput(635 - 19.0114 * $hardwareDefineName.position);#end
+#end
 #end

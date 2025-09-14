@@ -1,4 +1,4 @@
-/*Code for Derivative of DoubleTank:(${block.blockId})${block.blockName}*/
+/*Code for Derivative of DoubleTank:($blockId)$blockName*/
 #if ($modelMode == $simulationMode)
 /* Simulation mode - DoubleTank differential equations */
 double pumpK = 1.0;
@@ -7,12 +7,27 @@ double waterLevelK = 0.1;
 double waterLevelT = 50.0;
 
 /* Pump dynamics: first-order lag */
-${block.getDerivativeVariable(0)} = (pumpK * ${inputPortVariable} - ${block.getStateVariable(0)}) / pumpT;
+#if($stateVariables && $stateVariables.size() > 0)
+$stateVariables.get(0)_derivative = (pumpK * $inputVar - $stateVariables.get(0)) / pumpT;
+#else
+${stateX0Name}_derivative = (pumpK * $inputVar - ${stateX0Name}) / pumpT;
+#end
 
 /* Water level dynamics: first-order lag */
-${block.getDerivativeVariable(1)} = (waterLevelK * ${block.getStateVariable(0)} - ${block.getStateVariable(1)}) / waterLevelT;
+#if($stateVariables && $stateVariables.size() > 1)
+$stateVariables.get(1)_derivative = (waterLevelK * $stateVariables.get(0) - $stateVariables.get(1)) / waterLevelT;
+#else
+${stateX1Name}_derivative = (waterLevelK * ${stateX0Name} - ${stateX1Name}) / waterLevelT;
+#end
 #else
 /* Hardware mode - minimal dynamics */
-${block.getDerivativeVariable(0)} = ${inputPortVariable} - ${block.getStateVariable(0)};
-${block.getDerivativeVariable(1)} = ${block.getStateVariable(0)} - ${block.getStateVariable(1)};
+#if($stateVariables && $stateVariables.size() > 0)
+$stateVariables.get(0)_derivative = $inputVar - $stateVariables.get(0);
+#if($stateVariables.size() > 1)
+$stateVariables.get(1)_derivative = $stateVariables.get(0) - $stateVariables.get(1);
+#end
+#else
+${stateX0Name}_derivative = $inputVar - ${stateX0Name};
+${stateX1Name}_derivative = ${stateX0Name} - ${stateX1Name};
+#end
 #end

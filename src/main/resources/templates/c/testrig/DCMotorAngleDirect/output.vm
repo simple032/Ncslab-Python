@@ -29,7 +29,7 @@
         }
 
         $outputAngle = $angleN * 360 + Angle;
-        $block.setRWork("angledata", Angle)
+        $block.setRWork["angledata"][Angle]
     }
 #else
 #end
