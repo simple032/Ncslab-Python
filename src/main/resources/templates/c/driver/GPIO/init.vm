@@ -9,7 +9,7 @@ void $blockName_Init(void) {
     
     /* 中断配置（使用宏统一处理） */
     #if defined(${interruptEnable})
-    $blockName_ENABLE_INTERRUPT(${triggerEdge}, ${priority});
+    $blockName_ENABLE_INTERRUPT[${triggerEdge}][${priority}];
     #end
     
     HAL_GPIO_Init(${port}, &GPIO_InitStruct);

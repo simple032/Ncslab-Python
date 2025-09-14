@@ -1,5 +1,5 @@
 #if($dataType == $realDataType)
 REAL ${name};
 #elseif($dataType == $matrixDataType)
-Matrix ${name}(${rows},${cols});
+Matrix ${name}[${rows}][${cols}];
 #end

@@ -19,7 +19,7 @@
         GPIO_PIN_15 : EXTI15_10_IRQn \
     )
 
-\#define $blockName_ENABLE_INTERRUPT(edge, prio) \
+\#define $blockName_ENABLE_INTERRUPT[edge][prio] \
     do { \
         GPIO_InitStruct.Mode |= GPIO_MODE_IT_##edge; \
         HAL_NVIC_SetPriority(GPIO_IRQ_MAP(${pinNumber}), prio, 0); \
