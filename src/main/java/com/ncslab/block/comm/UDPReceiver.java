@@ -102,14 +102,14 @@ public class UDPReceiver extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPReceiver/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("outputs", getOutputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPReceiver/output.vm", context);
@@ -118,14 +118,14 @@ public class UDPReceiver extends Block {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         super.generateDerivativeCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPReceiver/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPReceiver/statement.vm", context);
         code.addStatementCode(codeStr);

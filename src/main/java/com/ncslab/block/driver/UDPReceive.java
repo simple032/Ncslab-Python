@@ -28,7 +28,15 @@ public class UDPReceive extends com.ncslab.block.Block{
      */
     public UDPReceive(UDPReceiveDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+        initializePorts();
         System.out.println("DTO-NATIVE: UDPReceive block created successfully - " + blockDto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public UDPReceive(BlockDto blockDto, NCSLabModel model) {
+        this((UDPReceiveDto) blockDto, model);
     }
 
 
@@ -47,20 +55,30 @@ public class UDPReceive extends com.ncslab.block.Block{
         outputNames.add("out1");
     }
 	Parameter LocalIPPort;
+	
+	private void initializePorts() {
+        outputPortList.add(new OutputPort(this,1,false));
+        LocalIPPort = getParameterByName("LocalIPPort");
+    }
+	
+	@Deprecated
 	public UDPReceive(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 
-		//һ�����
-		outputPortList.add(new OutputPort(this,1,false));
+        initializePorts();
 
+        // Safe parameter access with null checks
         String ipPort = "";
-        if(paramValues.has("LocalIPPort")) ipPort = paramValues.getString("LocalIPPort");
-        else{
-            ipPort = paramValues.getString("address") + ":" + paramValues.getInt("port");
+        if (paramValues != null) {
+            if(paramValues.has("LocalIPPort")) {
+                ipPort = paramValues.getString("LocalIPPort");
+            } else {
+                ipPort = paramValues.getString("address") + ":" + paramValues.getInt("port");
+            }
+        } else {
+            // Use default if paramValues is null
+            ipPort = "127.0.0.1:8080";
         }
-
-        LocalIPPort=getParameterByName("LocalIPPort");
-
 	}
 
 	public void generateInitCodeM(CodeStructM code) {
@@ -83,7 +101,15 @@ public class UDPReceive extends com.ncslab.block.Block{
 		super.generateInitCodeC(code);
 
 		context.put("block", this);
-		context.put("localIPPort", paramValues.getInt("LocalIPPort"));
+		// Safe parameter access with null checks
+		int localIPPort = 8080; // default value
+		if (paramValues != null && paramValues.has("LocalIPPort")) {
+		    localIPPort = paramValues.getInt("LocalIPPort");
+		} else if (LocalIPPort != null) {
+		    // Fallback to Parameter object
+		    localIPPort = (int) LocalIPPort.getData().getInitValue();
+		}
+		context.put("localIPPort", localIPPort);
 
 		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/UDPReceive/init.vm", context);
 		code.addInitCode(codeStr);
@@ -92,7 +118,7 @@ public class UDPReceive extends com.ncslab.block.Block{
 	public void generateOutputCodeC(CodeStructC code) {
 		super.generateOutputCodeC(code);
 
-		context.put("block", this);
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
 		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/driver/UDPReceive/output.vm", context);
 		code.addOutputCode(codeStr);

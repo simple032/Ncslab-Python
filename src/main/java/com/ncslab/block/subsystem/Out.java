@@ -72,7 +72,13 @@ public class Out extends Block {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outputDataType = Objects.requireNonNull(outputDataType, "Output data type parameter cannot be null");
 
-        // Initialize ports
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.port);
+        parameterList.add(this.portDimensions);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outputDataType);
+
+
         initializePorts();
     }
 
@@ -87,7 +93,13 @@ public class Out extends Block {
         this.sampleTime = getParameterByName("SampleTime");
         this.outputDataType = getParameterByName("OutputDataTypeStr");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.port != null) parameterList.add(this.port);
+        if (this.portDimensions != null) parameterList.add(this.portDimensions);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outputDataType != null) parameterList.add(this.outputDataType);
+
+        
         initializePorts();
     }    /**
      * DTO-NATIVE Constructor - Creates Out block directly from BlockDto DTO
@@ -101,7 +113,13 @@ public class Out extends Block {
         this.sampleTime = getParameterByName("SampleTime");
         this.outputDataType = getParameterByName("OutputDataTypeStr");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.port != null) parameterList.add(this.port);
+        if (this.portDimensions != null) parameterList.add(this.portDimensions);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outputDataType != null) parameterList.add(this.outputDataType);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -169,11 +187,15 @@ public class Out extends Block {
         // Safely handle signal connection chain with null checks
         InputPort inputPort = inputPortList.get(0);
         if (inputPort != null && inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
-            context.put("inputSignal", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+            context.put("inputSignal", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
         } else {
             context.put("inputSignal", null);
         }
-        context.put("outputSignal", outputPortList.get(0).getOutputSignalC());
+        if (outputPortList.size() > 0) {
+            context.put("outputSignal", outputPortList.get(0).getOutputSignalC().getName());
+        } else {
+            context.put("outputSignal", null);
+        }
 
         String outputCode = TemplateManager.renderTemplate("c/subsystem/Out/output.vm", context);
         code.addOutputCode(outputCode);

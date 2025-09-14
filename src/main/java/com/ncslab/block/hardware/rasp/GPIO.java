@@ -35,6 +35,11 @@ public class GPIO extends HardwareBlock{
 
 
     public static final List<String> inputNames = new ArrayList<>();
+    public static final List<String> outputNames = new ArrayList<>();
+    
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
     
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
@@ -42,12 +47,23 @@ public class GPIO extends HardwareBlock{
         inputNames.add("in1");
         
         PARAMETER_DEFAULTS.put("Bcm", "18");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (GPIO is output-only hardware block)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
     }
 	public GPIO(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 
-		//一个输入
-		inputPortList.add(new InputPort(this,1));
+		// Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
 
 		Bcm=new Parameter(this,1,"Bcm",paramValues.getString("Bcm"));
 	}
@@ -69,15 +85,42 @@ public class GPIO extends HardwareBlock{
 
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
+		
+		// Populate all standard template variables first
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		
 		context.put("block", this);
 		context.put("Bcm",  Bcm.getData().getIntValue());
+		context.put("bcmParameterName", Bcm.getName());
+		context.put("paramName", Bcm.getName());
+		context.put("BCM", Bcm.getData().getIntValue());
+		
+		// GPIO-specific ADC output variables
+		for (int i = 1; i <= 8; i++) {
+			context.put("outputAD" + i, "outputAD" + i);
+			context.put("AD" + i, i - 1);
+		}
+		
 		code.addInitCode(TemplateManager.renderTemplate("c/hardware/rasp/GPIO/init.vm", context));
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
+		// Populate all standard template variables first
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+		
 		context.put("block", this);
 		context.put("Bcm",  Bcm.getData().getIntValue());
+		context.put("bcmParameterName", Bcm.getName());
+		context.put("paramName", Bcm.getName());
+		context.put("BCM", Bcm.getData().getIntValue());
 		context.put("inputSignal",  inputPortList.get(0) .getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+		
+		// GPIO-specific ADC output variables (commonly used in GPIO templates)
+		for (int i = 1; i <= 8; i++) {
+			context.put("outputAD" + i, "outputAD" + i);
+			context.put("AD" + i, i - 1); // Zero-based channel indexing
+		}
+		
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/GPIO/output.vm", context));
 	}
 

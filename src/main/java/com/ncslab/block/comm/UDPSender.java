@@ -102,7 +102,7 @@ public class UDPSender extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("addr", addr);
         context.put("port", port);
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPSender/init.vm", context);
@@ -110,7 +110,7 @@ public class UDPSender extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPSender/output.vm", context);
@@ -119,14 +119,14 @@ public class UDPSender extends Block {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         super.generateDerivativeCodeC(code);
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPSender/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPSender/statement.vm", context);
         code.addStatementCode(codeStr);

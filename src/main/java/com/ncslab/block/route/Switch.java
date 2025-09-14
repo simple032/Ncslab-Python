@@ -57,6 +57,10 @@ public class Switch extends RouteBlock {
 
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -75,6 +79,39 @@ public class Switch extends RouteBlock {
         inputNames.add("in1"); // First data input
         inputNames.add("in2"); // Control signal
         inputNames.add("in3"); // Second data input
+        
+        // Input port defaults (3 inputs: data1, control, data2)
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        Map<String, Object> input2 = new HashMap<>();
+        input2.put("name", "in2");
+        input2.put("width", 1);
+        input2.put("height", 1);
+        input2.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input2);
+        
+        Map<String, Object> input3 = new HashMap<>();
+        input3.put("name", "in3");
+        input3.put("width", 1);
+        input3.put("height", 1);
+        input3.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input3);
+        
+        // Output port defaults (switch has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
     }
     // === Private Constructor with Typed Parameters ===
     private Switch(Parameter threshold, Parameter criteria, Parameter sampleTime,
@@ -88,7 +125,15 @@ public class Switch extends RouteBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.threshold);
+        parameterList.add(this.criteria);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         initializePorts();
     }
 
@@ -106,7 +151,12 @@ public class Switch extends RouteBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.threshold != null) parameterList.add(this.threshold);
+        if (this.criteria != null) parameterList.add(this.criteria);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
@@ -135,8 +185,15 @@ public class Switch extends RouteBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Execute initialization logic exactly like JSONObject constructor
+
+        // Add all parameters to parameter list if they exist
+        if (this.threshold != null) parameterList.add(this.threshold);
+        if (this.criteria != null) parameterList.add(this.criteria);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+         logic exactly like JSONObject constructor
         initializePorts();
         
         // Complete initialization
@@ -307,7 +364,7 @@ public class Switch extends RouteBlock {
 		
 		// Add threshold parameter and name
 		context.put("threshold", threshold);
-		context.put("thresholdName", threshold.getName());
+		context.put("thresholdName", context.get(threshold.getLocalName())); // Use parameter local name mapped by TemplateUtils // C variable name
 
 		String outputCode = TemplateManager.renderTemplate("c/route/Switch/output.vm", context);
 		code.addOutputCode(outputCode);

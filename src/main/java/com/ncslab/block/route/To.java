@@ -118,7 +118,14 @@ public class To extends RouteBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.gotoTag != null) parameterList.add(this.gotoTag);
+        if (this.iconDisplay != null) parameterList.add(this.iconDisplay);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -238,12 +245,26 @@ public class To extends RouteBlock {
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
 
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         context.put("block", this);
         context.put("gotoTag", this.gotoTag);
         context.put("iconDisplay", this.iconDisplay);
         context.put("sampleTime", this.sampleTime);
         context.put("outDataType", this.outDataType);
         context.put("saturateOnIntegerOverflow", this.saturateOnIntegerOverflow);
+
+        // Add input/output signal variables for template
+        if (inputPortList != null && !inputPortList.isEmpty() && 
+            inputPortList.get(0).getLinkedLine() != null &&
+            inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
+            context.put("inputSignal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        }
+        
+        if (outputPortList != null && !outputPortList.isEmpty()) {
+            context.put("outputSignal", outputPortList.get(0).getOutputSignalC().getName());
+        }
 
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/route/To/output.vm", context);
         code.addOutputCode(codeStr);
