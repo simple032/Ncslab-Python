@@ -2,26 +2,26 @@
 #if(!$matrixMultiplication)
 ## Element-wise multiplication mode
 #if($gain.getDataType() == $DataType.REAL)
-#if($inputSignal.getDataType() == $DataType.REAL)
-${outputSignal.getName()}=${gain.getName()}*${inputSignal.getName()};
-#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#if($inputSignalObject.getDataType() == $DataType.REAL)
+${outputSignalObject.getName()}=${gain.getName()}*${inputSignalObject.getName()};
+#elseif($inputSignalObject.getDataType() == $DataType.MATRIX)
 #foreach($i in [1..$inputHeight])
 #foreach($j in [1..$inputWidth])
-${outputSignal.getName()}($i,$j)=${gain.getName()}*${inputSignal.getName()}($i,$j);
+${outputSignalObject.getName()}($i,$j)=${gain.getName()}*${inputSignalObject.getName()}($i,$j);
 #end
 #end
 #end
 #elseif($gain.getDataType() == $DataType.MATRIX)
-#if($inputSignal.getDataType() == $DataType.REAL)
+#if($inputSignalObject.getDataType() == $DataType.REAL)
 #foreach($i in [1..$gainHeight])
 #foreach($j in [1..$gainWidth])
-${outputSignal.getName()}($i,$j)=${gain.getName()}($i,$j)*${inputSignal.getName()};
+${outputSignalObject.getName()}($i,$j)=${gain.getName()}($i,$j)*${inputSignalObject.getName()};
 #end
 #end
-#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#elseif($inputSignalObject.getDataType() == $DataType.MATRIX)
 #foreach($i in [1..$inputHeight])
 #foreach($j in [1..$inputWidth])
-${outputSignal.getName()}($i,$j)=${gain.getName()}($i,$j)*${inputSignal.getName()}($i,$j);
+${outputSignalObject.getName()}($i,$j)=${gain.getName()}($i,$j)*${inputSignalObject.getName()}($i,$j);
 #end
 #end
 #end
@@ -29,20 +29,20 @@ ${outputSignal.getName()}($i,$j)=${gain.getName()}($i,$j)*${inputSignal.getName(
 #else
 ## Matrix multiplication mode
 #if($gain.getDataType() == $DataType.REAL)
-#if($inputSignal.getDataType() == $DataType.REAL)
-${outputSignal.getName()}=${gain.getName()}*${inputSignal.getName()};
-#elseif($inputSignal.getDataType() == $DataType.MATRIX)
+#if($inputSignalObject.getDataType() == $DataType.REAL)
+${outputSignalObject.getName()}=${gain.getName()}*${inputSignalObject.getName()};
+#elseif($inputSignalObject.getDataType() == $DataType.MATRIX)
 for(int i=0;i<${inputHeight};i++){
-${outputSignal.getName()}(i,0)=${gain.getName()}*${inputSignal.getName()}(i,0);
+${outputSignalObject.getName()}(i,0)=${gain.getName()}*${inputSignalObject.getName()}(i,0);
 }
 #end
 #elseif($gain.getDataType() == $DataType.MATRIX)
-#if($inputSignal.getDataType() == $DataType.REAL)
+#if($inputSignalObject.getDataType() == $DataType.REAL)
 for(int i=0;i<${gainWidth};i++){
-${outputSignal.getName()}[0][i]=${gain.getName()}[0][i]*${inputSignal.getName()};
+${outputSignalObject.getName()}[0][i]=${gain.getName()}[0][i]*${inputSignalObject.getName()};
 }
-#elseif($inputSignal.getDataType() == $DataType.MATRIX)
-${outputSignal.getName()}=${inputSignal.getName()}*${gain.getName()};
+#elseif($inputSignalObject.getDataType() == $DataType.MATRIX)
+${outputSignalObject.getName()}=${inputSignalObject.getName()}*${gain.getName()};
 #end
 #end
 #end
