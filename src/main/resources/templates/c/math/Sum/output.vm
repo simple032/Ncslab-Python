@@ -32,16 +32,16 @@
         #foreach($m in [0..$hMax])
             #foreach($n in [0..$wMax])
                 ## Initialize element
-                ${outputVar}($m, $n) = 0.0;
+                ${outputVar}[$m][$n] = 0.0;
                 
                 ## Sum all inputs for this element
                 #foreach($i in [0..$maxIndex])
                     #set($sign = $sequence.charAt($i))
                     #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
                     #if($sign == '+')
-                        ${outputVar}($m, $n) += ${inputVar}($m, $n);
+                        ${outputVar}[$m][$n] += ${inputVar}[$m][$n];
                     #elseif($sign == '-')
-                        ${outputVar}($m, $n) -= ${inputVar}($m, $n);
+                        ${outputVar}[$m][$n] -= ${inputVar}[$m][$n];
                     #end
                 #end
             #end

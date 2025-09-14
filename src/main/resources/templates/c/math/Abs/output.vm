@@ -8,7 +8,7 @@
     #set($wMax = $inputWidth - 1)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-        ${outputVar}($i,$j) = fabs(${inputVar}($i,$j));
+        ${outputVar}[$i][$j] = fabs(${inputVar}[$i][$j]);
         #end
     #end
 #end

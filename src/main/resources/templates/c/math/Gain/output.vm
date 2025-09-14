@@ -17,7 +17,7 @@
             #set($wMax = $width - 1)
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputSignal($i, $j) = ${gainValue} * $inputSignal($i, $j);
+                    $outputSignal[$i][$j] = ${gainValue} * $inputSignal[$i][$j];
                 #end
             #end
         #end

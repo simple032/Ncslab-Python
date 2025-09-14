@@ -51,42 +51,42 @@
             ## Matrix transpose
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($j, $i) = $inputVar($i, $j);
+                    $outputVar[$j][$i] = $inputVar[$i][$j];
                 #end
             #end
         #elseif($function == "reciprocal")
             ## Element-wise reciprocal
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($i, $j) = 1.0 / ($inputVar($i, $j));
+                    $outputVar[$i][$j] = 1.0 / ($inputVar[$i][$j]);
                 #end
             #end
         #elseif($function == "square")
             ## Element-wise square
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($i, $j) = ($inputVar($i, $j)) * ($inputVar($i, $j));
+                    $outputVar[$i][$j] = ($inputVar[$i][$j]) * ($inputVar[$i][$j]);
                 #end
             #end
         #elseif($function == "exp")
             ## Element-wise exponential
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($i, $j) = exp($inputVar($i, $j));
+                    $outputVar[$i][$j] = exp($inputVar[$i][$j]);
                 #end
             #end
         #elseif($function == "log")
             ## Element-wise natural logarithm
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($i, $j) = log($inputVar($i, $j));
+                    $outputVar[$i][$j] = log($inputVar[$i][$j]);
                 #end
             #end
         #elseif($function == "log10")
             ## Element-wise base-10 logarithm
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($i, $j) = log10($inputVar($i, $j));
+                    $outputVar[$i][$j] = log10($inputVar[$i][$j]);
                 #end
             #end
         #elseif($function == "pow")
@@ -95,13 +95,13 @@
                 #set($exponent = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
                 #foreach($i in [0..$hMax])
                     #foreach($j in [0..$wMax])
-                        $outputVar($i, $j) = pow($inputVar($i, $j), $exponent);
+                        $outputVar[$i][$j] = pow($inputVar[$i][$j], $exponent);
                     #end
                 #end
             #else
                 #foreach($i in [0..$hMax])
                     #foreach($j in [0..$wMax])
-                        $outputVar($i, $j) = $inputVar($i, $j); /* Power function requires second input */
+                        $outputVar[$i][$j] = $inputVar[$i][$j]; /* Power function requires second input */
                     #end
                 #end
             #end
@@ -109,14 +109,14 @@
             ## Element-wise square root
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($i, $j) = sqrt($inputVar($i, $j));
+                    $outputVar[$i][$j] = sqrt($inputVar[$i][$j]);
                 #end
             #end
         #else
             ## Unknown function - default to identity
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
-                    $outputVar($i, $j) = $inputVar($i, $j);
+                    $outputVar[$i][$j] = $inputVar[$i][$j];
                 #end
             #end
         #end

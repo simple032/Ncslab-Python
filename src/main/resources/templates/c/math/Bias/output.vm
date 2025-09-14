@@ -8,7 +8,7 @@
     #set($wMax = $inputWidth - 1)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-        ${outputVar}($i, $j) = ${inputVar}($i, $j) + $BiasValue;
+        ${outputVar}[$i][$j] = ${inputVar}[$i][$j] + $BiasValue;
         #end
     #end
 #end

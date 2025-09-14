@@ -37,12 +37,12 @@
         #foreach($m in [0..$hMax])
             #foreach($n in [0..$wMax])
                 ## Initialize element
-                $outputVar($m, $n) = 0;
+                $outputVar[$m][$n] = 0;
                 
                 ## Sum all inputs for this element
                 #foreach($i in [0..$maxIndex])
                     #set($sign = $sequence.charAt($i))
-                $outputVar($m, $n) $sign= #getInputSignalName($i)($m, $n);
+                $outputVar[$m][$n] $sign= #getInputSignalName($i)($m, $n);
                 #end
             #end
         #end

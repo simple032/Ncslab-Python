@@ -14,7 +14,7 @@
     #set($widthMax = $width - 1)
     #foreach($i in [0..$heightMax])
         #foreach($j in [0..$widthMax])
-            $outputSignal($i, $j) = $parameterName;
+            $outputSignal[$i][$j] = $parameterName;
         #end
     #end
 #end

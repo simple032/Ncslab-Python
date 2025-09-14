@@ -25,16 +25,16 @@
         #foreach($j in [1..$width])
             #switch($operator)
                 #case("floor")
-                    $outputSignal($i-1, $j-1) = floor($inputSignal($i-1, $j-1));
+                    $outputSignal[$i-1][$j-1] = floor($inputSignal[$i-1][$j-1]);
                     #break
                 #case("ceil")
-                    $outputSignal($i-1, $j-1) = ceil($inputSignal($i-1, $j-1));
+                    $outputSignal[$i-1][$j-1] = ceil($inputSignal[$i-1][$j-1]);
                     #break
                 #case("round")
-                    $outputSignal($i-1, $j-1) = round($inputSignal($i-1, $j-1));
+                    $outputSignal[$i-1][$j-1] = round($inputSignal[$i-1][$j-1]);
                     #break
                 #case("fix")
-                    $outputSignal($i-1, $j-1) = trunc($inputSignal($i-1, $j-1));
+                    $outputSignal[$i-1][$j-1] = trunc($inputSignal[$i-1][$j-1]);
                     #break
             #endswitch
         #end

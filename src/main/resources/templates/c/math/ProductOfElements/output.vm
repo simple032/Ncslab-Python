@@ -23,9 +23,9 @@
         $outputSignal = 1;
         #foreach($m in [0..$hMax])
             #foreach($n in [0..$wMax])
-                $outputSignal($m, $n) = 1;
+                $outputSignal[$m][$n] = 1;
                 #foreach($i in [0..$seqMax])
-                    $outputSignal($m, $n) $sequence.charAt($i)= $inputSignal($m, $n);
+                    $outputSignal[$m][$n] $sequence.charAt($i)= $inputSignal[$m][$n];
                 #end
             #end
         #end
@@ -33,19 +33,19 @@
         #if($dimension == 2)
             #set($mMax = $signalWidth - 1)
             #foreach($m in [0..$mMax])
-                $outputSignal(0, $m) = 1;
+                $outputSignal[0][$m] = 1;
                 #set($nMax = $signalHeight - 1)
                 #foreach($n in [0..$nMax])
-                    $outputSignal(0, $m) += $sequence.charAt(0) + $inputSignal($n, $m);
+                    $outputSignal[0][$m] += $sequence.charAt(0) + $inputSignal[$n][$m];
                 #end
             #end
         #else
             #set($mMax = $signalHeight - 1)
             #foreach($m in [0..$mMax])
-                $outputSignal($m, 0) = 1;
+                $outputSignal[$m][0] = 1;
                 #set($nMax = $signalHeight - 1)
                 #foreach($n in [0..$nMax])
-                    $outputSignal($m, 0) += $sequence.charAt(0) + $inputSignal($m, $n);
+                    $outputSignal[$m][0] += $sequence.charAt(0) + $inputSignal[$m][$n];
                 #end
             #end
         #end

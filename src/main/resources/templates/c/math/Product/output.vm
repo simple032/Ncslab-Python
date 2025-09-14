@@ -37,16 +37,16 @@
             ## Initialize each element to 1 and apply operations
             #foreach($m in [0..$hMax])
                 #foreach($n in [0..$wMax])
-                    ${outputVar}($m, $n) = 1.0;
+                    ${outputVar}[$m][$n] = 1.0;
                     
                     ## Apply operations for this element
                     #foreach($i in [0..$maxIndex])
                         #set($operation = $sequence.charAt($i))
                         #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
                         #if($operation == '*')
-                            ${outputVar}($m, $n) *= ${inputVar}($m, $n);
+                            ${outputVar}[$m][$n] *= ${inputVar}[$m][$n];
                         #elseif($operation == '/')
-                            ${outputVar}($m, $n) /= ${inputVar}($m, $n);
+                            ${outputVar}[$m][$n] /= ${inputVar}[$m][$n];
                         #end
                     #end
                 #end
