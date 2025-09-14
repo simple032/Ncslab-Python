@@ -120,7 +120,16 @@ public class Sum extends MathBlock {
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
         this.icon = Objects.requireNonNull(icon, "Icon parameter cannot be null");
-        // Initialize ports based on input sequence
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.inputs);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.inputSameDT);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+        parameterList.add(this.icon);
+
+ based on input sequence
         initializePorts();
     }
     // === Legacy Constructor (Deprecated) ===
@@ -136,8 +145,16 @@ public class Sum extends MathBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         this.icon = getParameterByName("Icon");
-        
-        // Initialize ports
+
+        // Add all parameters to parameter list if they exist
+        if (this.inputs != null) parameterList.add(this.inputs);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.inputSameDT != null) parameterList.add(this.inputSameDT);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+        if (this.icon != null) parameterList.add(this.icon);
+
+        
         initializePorts();
     }    /**
      * DTO-NATIVE Constructor - Creates Sum block directly from BlockDto DTO
@@ -154,7 +171,15 @@ public class Sum extends MathBlock {
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         this.icon = getParameterByName("Icon");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.inputs != null) parameterList.add(this.inputs);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.inputSameDT != null) parameterList.add(this.inputSameDT);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+        if (this.icon != null) parameterList.add(this.icon);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());

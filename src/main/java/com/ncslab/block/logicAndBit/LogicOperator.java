@@ -347,6 +347,9 @@ public class LogicOperator extends LogicBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         OutputPort out  = outputPortList.get(0);
         OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         String operatorValue = operator.getInitString();
@@ -361,6 +364,15 @@ public class LogicOperator extends LogicBlock {
         context.put("opsName", out.getOutputSignalC().getName());
         context.put("operator", operatorValue);
         context.put("signal1", signal1);
+        context.put("blockBlockId", blockId); // Add blockBlockId for template
+        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        
+        // Add input signal name for template - this will be used in the foreach loop
+        if (inputPortList.size() > 0 && inputPortList.get(0).getLinkedLine() != null && 
+            inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
+            context.put("inputSignalName", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        }
+        
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/LogicOperator/output.vm", context);
         code.addOutputCode(codeStr);
     }

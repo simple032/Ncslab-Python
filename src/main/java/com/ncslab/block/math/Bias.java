@@ -93,12 +93,25 @@ public class Bias extends MathBlock {
         
         // Validate parameters
         validateParameters(bias, sampleTime);
-        
+
         // Assign parameters
         this.bias = Objects.requireNonNull(bias, "Bias parameter cannot be null");
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Add parameters to parameter list for TemplateUtils access
+        // First update parameter block references and names
+        setParameterBlockReference(this, bias, sampleTime, outDataType, saturateOnIntegerOverflow);
+        bias.updateName();
+        sampleTime.updateName();
+        outDataType.updateName();
+        saturateOnIntegerOverflow.updateName();
+
+        parameterList.add(bias);
+        parameterList.add(sampleTime);
+        parameterList.add(outDataType);
+        parameterList.add(saturateOnIntegerOverflow);
         // Initialize ports
         initializePorts();
     }
@@ -280,11 +293,14 @@ public class Bias extends MathBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("blockId", getBlockId());
         context.put("blockName", getBlockName());
         context.put("inputPortList", getInputPortList());
         context.put("outputPortList", getOutputPortList());
-        context.put("bias", bias);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        // TemplateUtils already creates proper C variable names for parameters
+        // bias parameter will be available as context.get("Bias") with proper Block{id}_Bias format
 
         String codeStr = TemplateManager.renderTemplate("c/math/Bias/output.vm", context);
         code.addOutputCode(codeStr);

@@ -117,7 +117,13 @@ public class ShiftArithmetic extends LogicBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.bitShiftNumber != null) parameterList.add(this.bitShiftNumber);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -276,7 +282,7 @@ public class ShiftArithmetic extends LogicBlock {
     public void generateOutputCodeC(CodeStructC code) {
         context.put("block", this);
         context.put("value", bitShiftNumber);
-        context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC());
+        context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
         context.put("outputs", getOutputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/ShiftArithmetic/output.vm", context);

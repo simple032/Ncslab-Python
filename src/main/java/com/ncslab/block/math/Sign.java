@@ -101,7 +101,14 @@ public class Sign extends MathBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.zeroCrossing);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         initializePorts();
     }
     
@@ -116,8 +123,12 @@ public class Sign extends MathBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
-        // Add all parameters to parameter list
-        
+        // Add all parameters to parameter list if they exist
+        if (this.zeroCrossing != null) parameterList.add(this.zeroCrossing);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
     }
@@ -134,7 +145,13 @@ public class Sign extends MathBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.zeroCrossing != null) parameterList.add(this.zeroCrossing);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -263,8 +280,12 @@ public class Sign extends MathBlock {
         OutputPort ops1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         
         context.put("block", this);
-        context.put("inputSignal", ops1.getOutputSignalC());
-        context.put("outputSignal", getOutputPortList().get(0).getOutputSignalC());
+        // For C templates - use string variable names, not objects
+        context.put("inputSignal", ops1.getOutputSignalC().getName());
+        context.put("outputSignal", getOutputPortList().get(0).getOutputSignalC().getName());
+        // For MATLAB templates that need objects - provide separate object references
+        context.put("inputSignalObject", ops1.getOutputSignalC());
+        context.put("outputSignalObject", getOutputPortList().get(0).getOutputSignalC());
         context.put("inputHeight", ops1.getHeight());
         context.put("inputWidth", ops1.getWidth());
         
@@ -273,10 +294,20 @@ public class Sign extends MathBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add input/output signal names for template
+        if (inputPortList.size() > 0 && inputPortList.get(0).getLinkedLine() != null && 
+            inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
+            String inputSignalName = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+            context.put("inputSignalName", inputSignalName);
+        }
+        
+        if (outputPortList.size() > 0) {
+            String outputSignalName = outputPortList.get(0).getOutputSignalC().getName();
+            context.put("outputSignalName", outputSignalName);
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/math/Sign/output.vm", context);
         code.addOutputCode(codeStr);

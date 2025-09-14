@@ -80,6 +80,9 @@ public class TestPoint extends MathBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
         context.put("blockId", getBlockId());
         context.put("blockName", getBlockName());
         context.put("inputPortList", getInputPortList());

@@ -117,8 +117,15 @@ public class Add extends MathBlock {
         this.inputSameDT = Objects.requireNonNull(inputSameDT, "InputSameDT parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        
-        // Initialize ports based on input sequence
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.inputs);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.inputSameDT);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+ based on input sequence
         initializePorts();
     }
 
@@ -200,8 +207,15 @@ public class Add extends MathBlock {
         this.inputSameDT = getParameterByName("InputSameDT");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Initialize ports based on sequence
+
+        // Add all parameters to parameter list if they exist
+        if (this.inputs != null) parameterList.add(this.inputs);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.inputSameDT != null) parameterList.add(this.inputSameDT);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+         based on sequence
         initializePorts();
     }
 
@@ -430,8 +444,12 @@ public class Add extends MathBlock {
         OutputPort out = outputPortList.get(0);
         OutputPort firstInput = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         context.put("sequence", inputSequence);
-        context.put("outputSignal", out.getOutputSignalC());
-        context.put("firstInputSignal", firstInput.getOutputSignalC());
+        // For C templates - use string variable names, not objects
+        context.put("outputSignal", out.getOutputSignalC().getName());
+        context.put("firstInputSignal", firstInput.getOutputSignalC().getName());
+        // For MATLAB templates that need objects - provide separate object references
+        context.put("outputSignalObject", out.getOutputSignalC());
+        context.put("firstInputSignalObject", firstInput.getOutputSignalC());
         
         String codeStr = TemplateManager.renderTemplate("m/math/Add/output.vm", context);
         code.addOutputCode(codeStr);

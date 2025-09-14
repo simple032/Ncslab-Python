@@ -351,8 +351,9 @@ public class RelationalOperator extends LogicBlock {
         OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         
         // Use proper C variable names instead of Java object references
-        context.put("signal1Name", signal1.getName());
-        context.put("signal2Name", signal2.getName());
+        // Signal names already include Block{id}_Output{port} prefix, don't add another prefix
+        context.put("signal1Name", signal1.getName()); // Already properly prefixed
+        context.put("signal2Name", signal2.getName()); // Already properly prefixed
         context.put("opsName", out.getOutputSignalC().getName());
         context.put("relop", relop);
         

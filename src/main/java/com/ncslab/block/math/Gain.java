@@ -331,8 +331,12 @@ public class Gain extends MathBlock {
         // Add Gain-specific context
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        context.put("outputSignal", out.getOutputSignalC());
-        context.put("inputSignal", ops.getOutputSignalC());
+        // For C templates - use string variable names, not objects
+        context.put("outputSignal", out.getOutputSignalC().getName());
+        context.put("inputSignal", ops.getOutputSignalC().getName());
+        // For MATLAB templates that need objects - provide separate object references
+        context.put("outputSignalObject", out.getOutputSignalC());
+        context.put("inputSignalObject", ops.getOutputSignalC());
         context.put("matrixMultiplication", this.matrixMultiplication);
         
         String codeStr = TemplateManager.renderTemplate("m/math/Gain/output.vm", context);

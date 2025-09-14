@@ -89,6 +89,15 @@ public class CompareToConstant extends LogicBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.constantValue);
+        parameterList.add(this.relationalOperator);
+        parameterList.add(this.logicDataType);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
     }
@@ -118,7 +127,13 @@ public class CompareToConstant extends LogicBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list
+        // Add all parameters to parameter list if they exist
+        if (this.constantValue != null) parameterList.add(this.constantValue);
+        if (this.relationalOperator != null) parameterList.add(this.relationalOperator);
+        if (this.logicDataType != null) parameterList.add(this.logicDataType);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
@@ -135,6 +150,14 @@ public class CompareToConstant extends LogicBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Add parameters to parameterList for template context population
+        if (this.constantValue != null) parameterList.add(this.constantValue);
+        if (this.relationalOperator != null) parameterList.add(this.relationalOperator);
+        if (this.logicDataType != null) parameterList.add(this.logicDataType);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
