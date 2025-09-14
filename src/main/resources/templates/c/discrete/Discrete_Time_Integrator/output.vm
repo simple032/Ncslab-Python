@@ -44,28 +44,32 @@
             #set($wMax = $gainvalWidth - 1)
             for(int i = 0; i <= $hMax; i++) {
                 for(int j = 0; j <= $wMax; j++) {
+                    #set($outputIdx = "${outputVar}[i][j]")
+                    #set($stateIdx = "${stateVar}[i][j]")
+                    #set($gainIdx = "${gainVar}[i][j]")
+
                     #if($option == "Integration: Forward Euler")
-                        $outputVar(i,j) = $stateVar(i,j);
-                        $stateVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $sampleTimeVar * $inputVar;
+                        $outputIdx = $stateIdx;
+                        $stateIdx = $stateIdx + $gainIdx * $sampleTimeVar * $inputVar;
                     #elseif($option == "Integration: Backward Euler")
-                        $outputVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $inputVar * $sampleTimeVar;
-                        $stateVar(i,j) = $outputVar(i,j);
+                        $outputIdx = $stateIdx + $gainIdx * $inputVar * $sampleTimeVar;
+                        $stateIdx = $outputIdx;
                     #elseif($option == "Integration: Trapezoidal")
-                        $outputVar(i,j) = $stateVar(i,j) + $sampleTimeVar / 2 * $inputVar * $gainVar(i,j);
-                        $stateVar(i,j) = $outputVar(i,j) + $sampleTimeVar / 2 * $inputVar * $gainVar(i,j);
+                        $outputIdx = $stateIdx + $sampleTimeVar / 2 * $inputVar * $gainIdx;
+                        $stateIdx = $outputIdx + $sampleTimeVar / 2 * $inputVar * $gainIdx;
                     #elseif($option == "Accumulation: Forward Euler")
-                        $outputVar(i,j) = $stateVar(i,j);
-                        $stateVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $inputVar;
+                        $outputIdx = $stateIdx;
+                        $stateIdx = $stateIdx + $gainIdx * $inputVar;
                     #elseif($option == "Accumulation: Backward Euler")
-                        $outputVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $inputVar;
-                        $stateVar(i,j) = $outputVar(i,j);
+                        $outputIdx = $stateIdx + $gainIdx * $inputVar;
+                        $stateIdx = $outputIdx;
                     #elseif($option == "Accumulation: Trapezoidal")
-                        $outputVar(i,j) = $stateVar(i,j) + $inputVar * $gainVar(i,j) * 0.5;
-                        $stateVar(i,j) = $outputVar(i,j) + $inputVar * $gainVar(i,j) * 0.5;
+                        $outputIdx = $stateIdx + $inputVar * $gainIdx * 0.5;
+                        $stateIdx = $outputIdx + $inputVar * $gainIdx * 0.5;
                     #else
                         ## Default to Forward Euler
-                        $outputVar(i,j) = $stateVar(i,j);
-                        $stateVar(i,j) = $stateVar(i,j) + $gainVar(i,j) * $sampleTimeVar * $inputVar;
+                        $outputIdx = $stateIdx;
+                        $stateIdx = $stateIdx + $gainIdx * $sampleTimeVar * $inputVar;
                     #end
                 }
             }

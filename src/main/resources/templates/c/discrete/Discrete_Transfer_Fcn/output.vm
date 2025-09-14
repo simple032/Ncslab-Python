@@ -14,11 +14,11 @@
     if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
         #if($feedThrough)
             ## Direct feedthrough case
-            $outputVar = Block${blockId}_discrete_transfer_savedata[0] * $numName(0, 0);
+            $outputVar = Block${blockId}_discrete_transfer_savedata[0] * $numName[0][0];
             #set($numWidthIndex = $numWidth - 1)
             #foreach($index in [0..$numWidthIndex])
                 #set($nextIndex = $index + 1)
-            $outputVar += $numName(0, $nextIndex) * $stateName;
+            $outputVar += $numName[0][$nextIndex] * $stateName;
             #end
         #else
             ## No direct feedthrough
@@ -28,9 +28,9 @@
             #foreach($index in [0..$wMax])
                 #set($nextIndex = $index + $h)
                 #if($stateWidth == 1 && $stateHeight == 1)
-            $outputVar += $numName(0, ${index}) * $stateName(0, 0);
+            $outputVar += $numName[0][${index}] * $stateName[0][0];
                 #else
-            $outputVar += $numName(0, ${index}) * $stateName;
+            $outputVar += $numName[0][${index}] * $stateName;
                 #end
             #end
         #end

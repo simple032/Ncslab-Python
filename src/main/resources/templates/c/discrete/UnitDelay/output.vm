@@ -46,14 +46,14 @@
             #foreach($i in [0..$hMax])
                 #foreach($j in [0..$wMax])
             if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-                Block${blockId}_unit_delay_savedata[${i}][(int)(model.time/sampleTimeTmp)%2+2*${j}] = $signalName(${i},${j});
+                Block${blockId}_unit_delay_savedata[${i}][(int)(model.time/sampleTimeTmp)%2+2*${j}] = $signalName(${i}, ${j});
             }
             
             if(model.time < sampleTimeTmp) {
-                ${output1}(${i},${j}) = $initialConditionName(${i},${j});
+                ${output1}(${i}, ${j}) = $initialConditionName(${i}, ${j});
             } else {
                 if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-                    ${output1}(${i},${j}) = Block${blockId}_unit_delay_savedata[${i}][!((int)(model.time/sampleTimeTmp)%2)+2*${j}];
+                    ${output1}(${i}, ${j}) = Block${blockId}_unit_delay_savedata[${i}][!((int)(model.time/sampleTimeTmp)%2)+2*${j}];
                 }
             }
                 #end

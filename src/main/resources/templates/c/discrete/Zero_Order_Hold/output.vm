@@ -9,7 +9,7 @@ if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.0000
   #foreach($i in [0..$optHeightIndex])
     #foreach($j in [0..$optWidthIndex])
 if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-    ${output1}(${i},${j}) = $signalName(${i},${j});
+    ${output1}(${i}, ${j}) = $signalName(${i}, ${j});
 }
     #end
   #end

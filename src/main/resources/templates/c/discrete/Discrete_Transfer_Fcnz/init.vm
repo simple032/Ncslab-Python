@@ -1,14 +1,14 @@
-/* Code for initialization of block Discrete_Transfer_Fcnz:(${blockId}) ${blockName} */
-${sampleTime.getInitCodeC()}
+/* Code for initialization of block Discrete_Transfer_Fcnz:($blockId) $blockName */
+#if($sampleTime)$sampleTime.getInitCodeC()#end
 sample_time[sample_i]=$sampleTimeName;
 sample_i++;
 #if($signal2DataType == $realDataType)
-REAL ${signal2Name}_REAL = $signal2Name;
-Matrix $signal2Name(1,2);
-  $signal2Name.set(0,0, ${signal2Name}_REAL);
+REAL $signal2NameREAL = $signal2Name;
+Matrix $signal2Name[1][2];
+  $signal2Name.set(0,0, $signal2NameREAL);
 #end
 #if($signal3DataType == $realDataType)
-REAL ${signal3Name}_REAL = $signal3Name;
-Matrix $signal3Name(1,2);
-  $signal3Name.set(0,0, ${signal3Name}_REAL);
+REAL $signal3NameREAL = $signal3Name;
+Matrix $signal3Name[1][2];
+  $signal3Name.set(0,0, $signal3NameREAL);
 #end

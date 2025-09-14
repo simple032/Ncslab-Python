@@ -7,7 +7,7 @@ ${initialStates.initCodeC}
 #if($states.size() > 1)
   #set($stateSizeIndex = $statesSize - 1)
   #foreach($i in [0..$stateSizeIndex])
-    $stateName = $initialStatesName(0, ${i});
+    $stateName = $initialStatesName[0][${i}];
   #end
 #else
   ${states.get(0).getName()} = $initialStatesName;

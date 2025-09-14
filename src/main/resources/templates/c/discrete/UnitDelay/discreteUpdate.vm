@@ -1,0 +1,19 @@
+/*Code for discrete update of block UnitDelay:($blockId)$blockName*/
+#if($stateVariables && $stateVariables.size() > 0)
+    #foreach($stateVar in $stateVariables)
+${stateVar}_stateOutput = $signalName;
+    #end
+#elseif($states && $states.size() > 0)
+    #foreach($state in $states)
+${state.name}_stateOutput = $signalName;
+    #end
+#else
+## Fallback for single state case with proper signal name
+#if($inputSignalName)
+${blockName}_State_stateOutput = $inputSignalName;
+#elseif($signalName)
+${blockName}_State_stateOutput = $signalName;
+#else
+${blockName}_State_stateOutput = input_signal;
+#end
+#end
