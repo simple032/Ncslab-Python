@@ -98,7 +98,7 @@ public class BlockType{
         blockClassTree.put("PIDController(s)", com.ncslab.block.continuous.PIDController.class);
         blockClassTree.put("State-Space", com.ncslab.block.continuous.StateSpace.class);
         blockClassTree.put("TransportDelay", com.ncslab.block.continuous.TransportDelay.class);
-        blockClassTree.put("PIDController", com.ncslab.block.continuous.OldPIDController.class);
+        blockClassTree.put("PIDController", com.ncslab.block.continuous.PIDController.class);
 
         // Testrig
         blockClassTree.put("WaterLevel", com.ncslab.block.testrig.WaterLevel.class);
@@ -165,6 +165,10 @@ public class BlockType{
         blockClassTree.put("Discrete-TimeIntegrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);
         blockClassTree.put("DiscreteTransferFcn", com.ncslab.block.discrete.Discrete_Transfer_Fcn.class);
         blockClassTree.put("DiscreteTransferFcn(z)", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);
+        // DTO compatibility mappings (class name format)
+        blockClassTree.put("Discrete_Time_Integrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);
+        blockClassTree.put("Discrete_Transfer_Fcnz", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);
+        blockClassTree.put("Zero_Order_Hold", com.ncslab.block.discrete.Zero_Order_Hold.class);
 
         // Route
         blockClassTree.put("Mux", com.ncslab.block.route.Mux.class);
@@ -291,19 +295,6 @@ public class BlockType{
 
 		return block;
 		// return null;
-	}
-	
-	/**
-	 * High-performance DTO factory method using OptimizedBlockFactory
-	 * @param id Block ID
-	 * @param blockDto BlockDto DTO
-	 * @param model NCSLabModel instance
-	 * @return Block instance created with optimal performance
-	 * @throws ModelException if block creation fails
-	 */
-	public static Block createBlockFromDto(int id, BlockDto blockDto, NCSLabModel model) throws ModelException {
-		// Use optimized factory for better performance
-		return OptimizedBlockFactory.createOptimizedBlock(id, blockDto, model);
 	}
 	
     public static Set<String> getBlockTypes(){

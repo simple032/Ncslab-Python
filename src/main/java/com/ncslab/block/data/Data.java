@@ -112,13 +112,12 @@ public class Data {
 
         boolean founded = false;
         if (client != null) {
-            JSONArray variables = MfcalcClient.getLocalVariables();
+            List<Map<String, Object>> variables = MfcalcClient.getLocalVariables(); 
             if (variables != null) {
-                for(int i=0;i<variables.length();i++) {
-                    JSONObject variable = variables.getJSONObject(i);
-                    if(variable.getString("name").equals(dataString)){
+                for (Map<String, Object> variable : variables) {
+                    if (variable.get("name").equals(dataString)) {
                         founded = true;
-                        result = variable.getString("value");
+                        result = variable.containsKey("value") ? variable.get("value").toString() : dataString;
                         break;
                     }
                 }
@@ -132,7 +131,7 @@ public class Data {
                     if (variableResponse != null && variableResponse.getData() instanceof JSONObject) {
                         JSONObject variable = (JSONObject) variableResponse.getData();
                         if (variable.getString("name").equals(variableName)) {
-                            result = variable.getString("value");
+                            result = variable.has("value") ? variable.getString("value") : dataString;
                         }
                     }
                 } else {

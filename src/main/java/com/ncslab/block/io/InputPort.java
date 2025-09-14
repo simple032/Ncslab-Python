@@ -57,6 +57,12 @@ public class InputPort {
 		}
 	}
 
+	public InputPort(Block block, int number, String name) {
+		this.block = block;
+		this.number = number;
+		this.name = name;
+	}
+
     public int getWidth() {
 		OutputSignal signal=getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 		return signal.getWidth();

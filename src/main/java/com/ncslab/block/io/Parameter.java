@@ -29,34 +29,27 @@ public class Parameter {
 		this.id=id;
 		this.localName=localName;
 
-		// Handle case where block is null (for factory methods)
-		if (block != null) {
-			String blockUUID = "null"; // Placeholder for UUID retrieval logic
-			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
-				this.name="Block"+blockUUID.replace("-","_")+"_"+localName;
-			} else {
-				// Use block ID when UUID is null/empty
-				this.name="Block"+block.getBlockId()+"_"+localName;
-			}
-		} else {
-			// Temporary name when block is null - will be updated later via setParameterBlockReference
-			this.name="_TempBlock_"+localName;
-		}
+		// updateName();
 
 		data=new Data(inString);
 	}
 
 	// Method to update parameter name after block reference is set
-	public void updateParameterName() {
-		if (block != null && name.startsWith("_TempBlock_")) {
-			String blockUUID = "null"; // Placeholder for UUID retrieval logic
-			if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
-				this.name = "Block"+blockUUID.replace("-","_")+"_"+localName;
-			} else {
-				// Use block ID when UUID is null/empty
-				this.name = "Block"+block.getBlockId()+"_"+localName;
-			}
+	public void updateName() {
+		if (block == null) {
+			// If block is null, use a generic name
+			this.name = "Parameter_" + localName;
+			return;
 		}
+		
+		// String blockUUID = block.getBlockUUID(); // Placeholder for UUID retrieval logic
+		// if (blockUUID != null && !blockUUID.equals("null") && !blockUUID.isEmpty()) {
+		// 	this.name = "Block"+blockUUID.replace("-","_")+"_"+localName;
+		// } else {
+			// Use block ID when UUID is null/empty
+			this.name = "Block"+block.getBlockId()+"_"+localName;
+		// }
+		
 	}
 
     public DataType getDataType() {

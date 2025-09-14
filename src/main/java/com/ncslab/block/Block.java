@@ -147,7 +147,7 @@ public class Block implements MCodeBlock, CCodeBlock {
     public static List<String> outputNames = new ArrayList<>();
     
     /** Velocity template context for code generation */
-    protected VelocityContext context = null;
+    protected final VelocityContext context = new VelocityContext();;
     
     // === Parameter Management ===
     
@@ -189,6 +189,55 @@ public class Block implements MCodeBlock, CCodeBlock {
             .orElse(null);
     }
 
+    /**
+     * Retrieves input port defaults from the derived class's static INPUT_PORT_DEFAULTS field.
+     * Uses reflection to access the static field, allowing each block type to define its own input port configurations.
+     * 
+     * @return List of input port configurations, empty list if no defaults found
+     */
+    protected List<Map<String, Object>> getInputPortDefaults() {
+        try {
+            Class<?> clazz = this.getClass();
+            java.lang.reflect.Field defaultsField = clazz.getField("INPUT_PORT_DEFAULTS");
+            
+            if (List.class.isAssignableFrom(defaultsField.getType())) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> defaults = (List<Map<String, Object>>) defaultsField.get(null);
+                return defaults != null ? defaults : new ArrayList<>();
+            }
+        } catch (NoSuchFieldException | IllegalAccessException | SecurityException e) {
+            // Graceful fallback for blocks without INPUT_PORT_DEFAULTS
+            System.err.println("Cannot retrieve input port defaults for " + this.getClass().getName());
+        }
+        
+        return new ArrayList<>();
+    }
+
+    /**
+     * Retrieves output port defaults from the derived class's static OUTPUT_PORT_DEFAULTS field.
+     * Uses reflection to access the static field, allowing each block type to define its own output port configurations.
+     * 
+     * @return List of output port configurations, empty list if no defaults found
+     */
+    protected List<Map<String, Object>> getOutputPortDefaults() {
+        try {
+            Class<?> clazz = this.getClass();
+            java.lang.reflect.Field defaultsField = clazz.getField("OUTPUT_PORT_DEFAULTS");
+            
+            if (List.class.isAssignableFrom(defaultsField.getType())) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> defaults = (List<Map<String, Object>>) defaultsField.get(null);
+                return defaults != null ? defaults : new ArrayList<>();
+            }
+        } catch (NoSuchFieldException | IllegalAccessException | SecurityException e) {
+            // Graceful fallback for blocks without OUTPUT_PORT_DEFAULTS
+            System.err.println("Cannot retrieve output port defaults for " + this.getClass().getName());
+        }
+        
+        return new ArrayList<>();
+    }
+
+    private void postConstructionInitialization() {}
     // === Constructors ===
     
     /**
@@ -204,18 +253,21 @@ public class Block implements MCodeBlock, CCodeBlock {
         this.blockName = blockDto.getBlockName();
         this.model = model;
         this.blockPath = blockDto.getBlockPath();
-        this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";
+        this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";       
         
-        // Initialize paramValues from DTO for backward compatibility
+        // Initialize paramValues for legacy compatibility
         this.paramValues = new JSONObject();
-        if (blockDto.getParamValues() != null && !blockDto.getParamValues().isEmpty()) {
+        if (blockDto.getParamValues() != null) {
+            // Convert DTO parameter map to JSONObject for legacy block compatibility
             for (Map.Entry<String, Object> entry : blockDto.getParamValues().entrySet()) {
                 this.paramValues.put(entry.getKey(), entry.getValue());
             }
         }
-        
-        parseParameterList();
-        initializeTemplateContext();
+ 
+        parseParameterList(blockDto);
+        // parseInputOutputPorts(blockDto);
+        // postConstructionInitialization();        
+        TemplateUtils.populateAllContext(context, this);
     }
 
     /**
@@ -240,16 +292,13 @@ public class Block implements MCodeBlock, CCodeBlock {
         this.blockUUID = blockIn.optString("blockUUID", "null");
         
         parseParameterList();
-        initializeTemplateContext();
+        // parseInputOutputPorts();
+        // postConstructionInitialization();
+        TemplateUtils.populateAllContext(context, this);
     }
 
-    /**
-     * Initializes the Velocity template context with comprehensive block data.
-     * Centralizes context setup for consistent template rendering across all blocks.
-     */
-    private void initializeTemplateContext() {
-        context = new VelocityContext();
-        TemplateUtils.populateAllContext(context, this);
+    public int getStateNum(){        
+        return stateList.size();
     }
     
     // === Public Block Interface Methods ===
@@ -315,20 +364,74 @@ public class Block implements MCodeBlock, CCodeBlock {
      * Gets the variable name for the specified input port.
      * 
      * @param n Input port index
-     * @return Variable name for the input port
+     * @return Variable name for the input port, or null if index is invalid or port not connected
      */
     public String getInputPortVariable(int n) {
-        return inputPortList.get(n).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+        // Check bounds and list state
+        if (inputPortList == null || n < 0 || n >= inputPortList.size()) {
+            System.err.println("Warning: Input port index " + n + " is out of bounds for block " + 
+                             blockName + " (ID: " + blockId + "). InputPort list size: " + 
+                             (inputPortList != null ? inputPortList.size() : "null"));
+            return null;
+        }
+        
+        InputPort inputPort = inputPortList.get(n);
+        if (inputPort == null) {
+            System.err.println("Warning: Input port at index " + n + " is null for block " + 
+                             blockName + " (ID: " + blockId + ")");
+            return null;
+        }
+        
+        if (inputPort.getLinkedLine() == null) {
+            System.err.println("Warning: Input port " + n + " has no linked line for block " + 
+                             blockName + " (ID: " + blockId + ")");
+            return null;
+        }
+        
+        if (inputPort.getLinkedLine().getLinkedOutputPort() == null) {
+            System.err.println("Warning: Input port " + n + " linked line has no output port for block " + 
+                             blockName + " (ID: " + blockId + ")");
+            return null;
+        }
+        
+        if (inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC() == null) {
+            System.err.println("Warning: Input port " + n + " output signal is null for block " + 
+                             blockName + " (ID: " + blockId + ")");
+            return null;
+        }
+        
+        return inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
     }
     
     /**
      * Gets the variable name for the specified output port.
      * 
      * @param n Output port index
-     * @return Variable name for the output port
+     * @return Variable name for the output port, or null if index is invalid or signal not available
      */
     public String getOutputPortVariable(int n) {
-        return outputPortList.get(n).getOutputSignalC().getName();
+        // Check bounds and list state
+        if (outputPortList == null || n < 0 || n >= outputPortList.size()) {
+            System.err.println("Warning: Output port index " + n + " is out of bounds for block " + 
+                             blockName + " (ID: " + blockId + "). OutputPort list size: " + 
+                             (outputPortList != null ? outputPortList.size() : "null"));
+            return null;
+        }
+        
+        OutputPort outputPort = outputPortList.get(n);
+        if (outputPort == null) {
+            System.err.println("Warning: Output port at index " + n + " is null for block " + 
+                             blockName + " (ID: " + blockId + ")");
+            return null;
+        }
+        
+        if (outputPort.getOutputSignalC() == null) {
+            System.err.println("Warning: Output port " + n + " signal is null for block " + 
+                             blockName + " (ID: " + blockId + ")");
+            return null;
+        }
+        
+        return outputPort.getOutputSignalC().getName();
     }
     
     /**
@@ -466,6 +569,11 @@ public class Block implements MCodeBlock, CCodeBlock {
 
 
 	public void updateBlock() {
+        // 更新Parameter的name
+        for (Parameter parameter : parameterList) {
+            parameter.updateName();
+        }
+
 		int i=0;
 		//建立模块OutputPort对应的Signal
 		for(OutputPort outputPort : outputPortList) {
@@ -492,7 +600,7 @@ public class Block implements MCodeBlock, CCodeBlock {
 	//生成C语言的Init代码,不同的Block类型，重载这个方法，生成自己的代码
 	@Override
 	public void generateInitCodeC(CodeStructC code) {
-		String initCode="/*Code for initialization of block Pulse:("+getBlockId()+")"+getBlockName()+"*/\n";
+		String initCode="/*Code for initialization of block "+ getBlockType() +":("+getBlockId()+")"+getBlockName()+"*/\n";
 		code.addInitCode(initCode);
 		for(Parameter parameter : parameterList) {
 			code.addParameter(parameter);
@@ -678,25 +786,176 @@ public class Block implements MCodeBlock, CCodeBlock {
             String defaultValue = entry.getValue();
             
             // Safe parameter value extraction with default fallback
-            String actualValue = (paramValues != null) ? 
-                paramValues.optString(paramName, defaultValue) : defaultValue;
-            
+            String actualValue = (paramValues != null) ?  paramValues.optString(paramName, defaultValue) : defaultValue;
+
             parameterList.add(new Parameter(this, paramIndex++, paramName, actualValue));
         }
     }
 
+    /**
+     * Parses the parameter list from default values and actual parameter values.
+     * Creates Parameter objects with proper indexing and default value fallback.
+     */
+    private void parseParameterList(BlockDto blockDto) {
+        Map<String, String> defaults = getParameterDefaults();
+        
+        int paramIndex = 1;
+        Map<String, Object> paramValues = blockDto.getParamValues();
+
+        for (Map.Entry<String, String> entry : defaults.entrySet()) {
+            String paramName = entry.getKey();
+            String defaultValue = entry.getValue();
+            
+            // Safe parameter value extraction with default fallback and type conversion
+            String actualValue = defaultValue;
+            if (paramValues != null) {
+                Object paramValue = paramValues.getOrDefault(paramName, defaultValue);
+                actualValue = (paramValue != null) ? String.valueOf(paramValue) : defaultValue;
+            }
+
+            parameterList.add(new Parameter(this, paramIndex++, paramName, actualValue));
+        }
+    }
+
+    /**
+     * Parses the input and output port lists from default values.
+     * Creates InputPort and OutputPort objects using centralized configuration.
+     */
+    private void parseInputOutputPorts() {
+        parseInputPorts();
+        parseOutputPorts();
+    }
+
+    /**
+     * Parses the input and output port lists from default values and DTO overrides.
+     * Creates InputPort and OutputPort objects using centralized configuration.
+     */
+    private void parseInputOutputPorts(BlockDto blockDto) {
+        parseInputPorts(blockDto);
+        parseOutputPorts(blockDto);
+    }
+
+    /**
+     * Parses input ports from static defaults using legacy JSON constructor.
+     */
+    private void parseInputPorts() {
+        List<Map<String, Object>> inputDefaults = getInputPortDefaults();
+        for (int i = 0; i < inputDefaults.size(); i++) {
+            Map<String, Object> portConfig = inputDefaults.get(i);
+            InputPort inputPort = createInputPort(i + 1, portConfig);
+            inputPortList.add(inputPort);
+        }
+    }
+
+    /**
+     * Parses input ports from static defaults with DTO overrides.
+     */
+    private void parseInputPorts(BlockDto blockDto) {
+        List<Map<String, Object>> inputDefaults = getInputPortDefaults();
+        for (int i = 0; i < inputDefaults.size(); i++) {
+            Map<String, Object> portConfig = inputDefaults.get(i);
+            InputPort inputPort = createInputPort(i + 1, portConfig, blockDto);
+            inputPortList.add(inputPort);
+        }
+    }
+
+    /**
+     * Parses output ports from static defaults using legacy JSON constructor.
+     */
+    private void parseOutputPorts() {
+        List<Map<String, Object>> outputDefaults = getOutputPortDefaults();
+        for (int i = 0; i < outputDefaults.size(); i++) {
+            Map<String, Object> portConfig = outputDefaults.get(i);
+            OutputPort outputPort = createOutputPort(i + 1, portConfig);
+            outputPortList.add(outputPort);
+        }
+    }
+
+    /**
+     * Parses output ports from static defaults with DTO overrides.
+     */
+    private void parseOutputPorts(BlockDto blockDto) {
+        List<Map<String, Object>> outputDefaults = getOutputPortDefaults();
+        for (int i = 0; i < outputDefaults.size(); i++) {
+            Map<String, Object> portConfig = outputDefaults.get(i);
+            OutputPort outputPort = createOutputPort(i + 1, portConfig, blockDto);
+            outputPortList.add(outputPort);
+        }
+    }
+
+    /**
+     * Creates an InputPort from configuration for legacy JSON constructor.
+     */
+    private InputPort createInputPort(int index, Map<String, Object> config) {
+        String name = (String) config.getOrDefault("name", "in" + index);
+        int width = (Integer) config.getOrDefault("width", 1);
+        int height = (Integer) config.getOrDefault("height", 1);
+        String dataTypeStr = (String) config.getOrDefault("dataType", "REAL");
+        DataType dataType = DataType.valueOf(dataTypeStr);
+        
+        return new InputPort(this, index, name);
+    }
+
+    /**
+     * Creates an InputPort from configuration with DTO overrides.
+     */
+    private InputPort createInputPort(int index, Map<String, Object> config, BlockDto blockDto) {
+        // Use defaults first, then override with DTO values if available
+        String name = (String) config.getOrDefault("name", "in" + index);
+        int width = (Integer) config.getOrDefault("width", 1);
+        int height = (Integer) config.getOrDefault("height", 1);
+        String dataTypeStr = (String) config.getOrDefault("dataType", "REAL");
+        DataType dataType = DataType.valueOf(dataTypeStr);
+        
+        // TODO: Override with DTO port configuration when available
+        
+        return new InputPort(this, index, name);
+    }
+
+    /**
+     * Creates an OutputPort from configuration for legacy JSON constructor.
+     */
+    private OutputPort createOutputPort(int index, Map<String, Object> config) {
+        String name = (String) config.getOrDefault("name", "out" + index);
+        int width = (Integer) config.getOrDefault("width", 1);
+        int height = (Integer) config.getOrDefault("height", 1);
+        String dataTypeStr = (String) config.getOrDefault("dataType", "REAL");
+        boolean feedthrough = (Boolean) config.getOrDefault("feedthrough", false);
+        DataType dataType = DataType.valueOf(dataTypeStr);
+        
+        return new OutputPort(this, name, index, feedthrough);
+    }
+
+    /**
+     * Creates an OutputPort from configuration with DTO overrides.
+     */
+    private OutputPort createOutputPort(int index, Map<String, Object> config, BlockDto blockDto) {
+        // Use defaults first, then override with DTO values if available
+        String name = (String) config.getOrDefault("name", "out" + index);
+        int width = (Integer) config.getOrDefault("width", 1);
+        int height = (Integer) config.getOrDefault("height", 1);
+        String dataTypeStr = (String) config.getOrDefault("dataType", "REAL");
+        boolean feedthrough = (Boolean) config.getOrDefault("feedthrough", false);
+        DataType dataType = DataType.valueOf(dataTypeStr);
+        
+        // TODO: Override with DTO port configuration when available        
+        return new OutputPort(this, name, index, feedthrough);
+    }
 
     // === Utility Methods ===
     
     /**
      * Gets all input port variable names as an array.
      * 
-     * @return Array of input port variable names
+     * @return Array of input port variable names (skips null entries)
      */
     protected String[] getInputPortVariables() {
         List<String> inputPortVariables = new ArrayList<>();
         for (int n = 0; n < inputPortList.size(); n++) {
-            inputPortVariables.add(getInputPortVariable(n));
+            String varName = getInputPortVariable(n);
+            if (varName != null) {
+                inputPortVariables.add(varName);
+            }
         }
         return inputPortVariables.toArray(new String[0]);
     }
@@ -704,14 +963,41 @@ public class Block implements MCodeBlock, CCodeBlock {
     /**
      * Gets all output port variable names as an array.
      * 
-     * @return Array of output port variable names
+     * @return Array of output port variable names (skips null entries)
      */
     protected String[] getOutputPortVariables() {
         List<String> outputPortVariables = new ArrayList<>();
         for (int n = 0; n < outputPortList.size(); n++) {
-            outputPortVariables.add(getOutputPortVariable(n));
+            String varName = getOutputPortVariable(n);
+            if (varName != null) {
+                outputPortVariables.add(varName);
+            }
         }
         return outputPortVariables.toArray(new String[0]);
+    }
+    
+    /**
+     * Safely gets the variable name for the specified input port with fallback.
+     * 
+     * @param n Input port index
+     * @param fallback Default value to return if input port is not available
+     * @return Variable name for the input port, or fallback value if not available
+     */
+    protected String safeGetInputPortVariable(int n, String fallback) {
+        String varName = getInputPortVariable(n);
+        return varName != null ? varName : fallback;
+    }
+    
+    /**
+     * Safely gets the variable name for the specified output port with fallback.
+     * 
+     * @param n Output port index
+     * @param fallback Default value to return if output port is not available
+     * @return Variable name for the output port, or fallback value if not available
+     */
+    protected String safeGetOutputPortVariable(int n, String fallback) {
+        String varName = getOutputPortVariable(n);
+        return varName != null ? varName : fallback;
     }
 
     // === Multi-Language Code Generation Interface ===

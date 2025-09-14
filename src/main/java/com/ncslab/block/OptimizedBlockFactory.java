@@ -11,6 +11,8 @@ import java.lang.reflect.Constructor;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
+import java.util.Arrays;
+
 
 /**
  * Optimized BlockFactory using MethodHandle caching for high-performance block creation.
@@ -70,50 +72,36 @@ public class OptimizedBlockFactory {
                 finalizeBlock(block, id);
                 incrementCacheHit();
                 log.debug("Created optimized block: {} (type: {}, DTO: {})", 
-                         blockDto.getBlockName(), blockType, blockDto.getClass().getSimpleName());
+                         blockDto.getBlockName(), blockType, blockDto.getClass().getName());
                 return block;
-            } else {
-                // Fallback to generic BlockDto constructor
-                dtoConstructor = getDtoConstructor(blockType);
-                if (dtoConstructor != null) {
-                    Block block = (Block) dtoConstructor.invoke(blockDto, model);
-                    finalizeBlock(block, id);
-                    incrementCacheHit();
-                    log.debug("Created block using generic constructor: {} (type: {})", 
-                             blockDto.getBlockName(), blockType);
-                    return block;
-                }
-            }
-            
+            }             
             // No suitable constructor found
             incrementCacheMiss();
             throw new ModelException(String.format(
                 "No suitable DTO constructor found for block type '%s' with DTO type '%s'", 
-                blockType, blockDto.getClass().getSimpleName()));
-            
-        } catch (ModelException e) {
-            throw e;
+                blockType, blockDto.getClass().getName()));
+
         } catch (ClassCastException e) {
             throw new ModelException(String.format(
                 "DTO type mismatch for block type '%s': cannot cast %s to expected type", 
-                blockType, blockDto.getClass().getSimpleName()), e);
+                blockType, blockDto.getClass().getName()), e);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             throw new ModelException(String.format(
                 "Invalid arguments for block creation (type: %s, DTO: %s): %s", 
-                blockType, blockDto.getClass().getSimpleName(), e.getMessage()), e);
+                blockType, blockDto.getClass().getName(), e.getMessage()), e);
         } catch (Exception e) {
             log.error("Unexpected error creating optimized block of type '{}' with DTO '{}': {}", 
-                     blockType, blockDto.getClass().getSimpleName(), e.getMessage(), e);
+                     blockType, blockDto.getClass().getName(), e.getMessage(), e);
             throw new ModelException(String.format(
                 "Failed to create block: %s (DTO: %s) - %s", 
-                blockType, blockDto.getClass().getSimpleName(), e.getMessage()), e);
+                blockType, blockDto.getClass().getName(), e.getMessage()), e);
         } catch (Throwable t) {
             log.error("Critical error creating optimized block of type '{}' with DTO '{}': {}", 
-                     blockType, blockDto.getClass().getSimpleName(), t.getMessage(), t);
+                     blockType, blockDto.getClass().getName(), t.getMessage(), t);
             throw new ModelException(String.format(
                 "Failed to create block: %s (DTO: %s) - %s", 
-                blockType, blockDto.getClass().getSimpleName(), t.getMessage()));
+                blockType, blockDto.getClass().getName(), t.getMessage()));
         }
     }
     
@@ -158,37 +146,36 @@ public class OptimizedBlockFactory {
     }
     
     /**
-     * Enhanced constructor finder with best match selection for specific DTO types
+     * Strict constructor finder: only matches exact parameter types
      */
-    public static Constructor<? extends Block> findBestConstructor(Class<? extends Block> blockClass, Class<? extends BlockDto> dtoType) {
+    public static Constructor<? extends Block> findBestConstructor(
+            Class<? extends Block> blockClass, 
+            Class<? extends BlockDto> dtoType) {
+        
         String cacheKey = blockClass.getName() + "_" + dtoType.getName();
         Constructor<? extends Block> cachedConstructor = constructorCache.get(cacheKey);
         if (cachedConstructor != null) {
             return cachedConstructor;
-        }
-        
-        Constructor<?>[] constructors = blockClass.getConstructors();
+        } else if (constructorCache.containsKey(cacheKey)) {
+            return null; // previously cached as not found
+        }        
+
         Constructor<? extends Block> bestMatch = null;
-        int bestScore = -1;
-        
-        for (Constructor<?> constructor : constructors) {
+
+        for (Constructor<?> constructor : blockClass.getConstructors()) {
             Class<?>[] parameterTypes = constructor.getParameterTypes();
             
-            if (parameterTypes.length != 2 || !parameterTypes[1].equals(NCSLabModel.class)) {
-                continue;
-            }
-            
-            if (BlockDto.class.isAssignableFrom(parameterTypes[0])) {
-                int score = calculateTypeScore(parameterTypes[0], dtoType);
-                if (score > bestScore) {
-                    bestScore = score;
-                    @SuppressWarnings("unchecked")
-                    Constructor<? extends Block> typedConstructor = (Constructor<? extends Block>) constructor;
-                    bestMatch = typedConstructor;
-                }
+            if (parameterTypes.length == 2 
+                && parameterTypes[0].equals(dtoType) 
+                && parameterTypes[1].equals(NCSLabModel.class)) {
+                
+                @SuppressWarnings("unchecked")
+                Constructor<? extends Block> typedConstructor = (Constructor<? extends Block>) constructor;
+                bestMatch = typedConstructor;
+                break;
             }
         }
-        
+
         // Cache result (even if null)
         constructorCache.put(cacheKey, bestMatch);
         return bestMatch;
@@ -210,25 +197,28 @@ public class OptimizedBlockFactory {
      * Gets or creates a DTO constructor method handle using dynamic discovery
      */
     private static MethodHandle getDtoConstructor(String blockType, Class<? extends BlockDto> dtoType) {
-        String cacheKey = blockType + "_" + (dtoType != null ? dtoType.getSimpleName() : "BlockDto");
+        String cacheKey = blockType + "_" + (dtoType != null ? dtoType.getName() : "null");
+
         return dtoConstructorCache.computeIfAbsent(cacheKey, key -> {
             try {
+                if (dtoType == null) {
+                    log.debug("DTO type is required but null given for block type: {}", blockType);
+                    incrementCacheMiss();
+                    return null;
+                }
+
                 Class<? extends Block> blockClass = getBlockClass(blockType);
                 if (blockClass == null) {
                     incrementCacheMiss();
                     return null;
                 }
-                
-                // Use enhanced constructor discovery
-                Constructor<? extends Block> constructor = dtoType != null ? 
-                    findBestConstructor(blockClass, dtoType) : 
-                    findConstructor(blockClass);
-                
+
+                Constructor<? extends Block> constructor = findBestConstructor(blockClass, dtoType);
                 if (constructor != null) {
                     return lookup.unreflectConstructor(constructor);
                 } else {
-                    log.debug("No suitable DTO constructor found for block type: {} with DTO type: {}", 
-                             blockType, dtoType != null ? dtoType.getSimpleName() : "BlockDto");
+                    log.debug("No exact constructor found for block type: {} with DTO type: {}", 
+                            blockType, dtoType.getName());
                     incrementCacheMiss();
                     return null;
                 }
@@ -239,14 +229,8 @@ public class OptimizedBlockFactory {
             }
         });
     }
-    
-    /**
-     * Backward compatibility method - uses generic BlockDto type
-     */
-    private static MethodHandle getDtoConstructor(String blockType) {
-        return getDtoConstructor(blockType, null);
-    }
-    
+
+
     /**
      * Gets block class from cache or BlockType registry
      */
@@ -325,27 +309,16 @@ public class OptimizedBlockFactory {
     }
     
     /**
-     * Warmup method handles for common block types
+     * Clear cache entries for specific block types (useful for debugging DTO issues)
      */
-    public static void warmupCache() {
-        log.info("Warming up OptimizedBlockFactory cache...");
+    public static void clearCacheForBlockType(String blockType) {
+        // Clear constructor cache entries that start with block type
+        constructorCache.entrySet().removeIf(entry -> entry.getKey().contains(blockType));
         
-        // Common block types to pre-cache
-        String[] commonBlocks = {
-            "Constant", "Gain", "Sum", "Integrator", "Scope", "Add", "Product",
-            "Step", "Clock", "Derivative", "TransferFcn", "PIDController",
-            "Switch", "Mux", "Demux", "Saturation", "UnitDelay"
-        };
+        // Clear DTO constructor cache entries
+        dtoConstructorCache.entrySet().removeIf(entry -> entry.getKey().startsWith(blockType + "_"));
         
-        for (String blockType : commonBlocks) {
-            // Pre-warm both generic and specific constructor caches
-            Class<? extends Block> blockClass = getBlockClass(blockType);
-            if (blockClass != null) {
-                findConstructor(blockClass);
-                getDtoConstructor(blockType);
-            }
-        }
-        
-        log.info("OptimizedBlockFactory cache warmed up with {} common block types", commonBlocks.length);
+        log.info("Cleared caches for block type: {}", blockType);
     }
+    
 }
