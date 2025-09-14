@@ -102,7 +102,17 @@ public class Pulse extends SourceBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.amplitude);
+        parameterList.add(this.period);
+        parameterList.add(this.pulseWidth);
+        parameterList.add(this.phaseDelay);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         initializePorts();
     }
     
@@ -122,8 +132,15 @@ public class Pulse extends SourceBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
-        // Add all parameters to parameter list
-        
+        // Add all parameters to parameter list if they exist
+        if (this.amplitude != null) parameterList.add(this.amplitude);
+        if (this.period != null) parameterList.add(this.period);
+        if (this.pulseWidth != null) parameterList.add(this.pulseWidth);
+        if (this.phaseDelay != null) parameterList.add(this.phaseDelay);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
     }    /**
@@ -141,7 +158,16 @@ public class Pulse extends SourceBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.amplitude != null) parameterList.add(this.amplitude);
+        if (this.period != null) parameterList.add(this.period);
+        if (this.pulseWidth != null) parameterList.add(this.pulseWidth);
+        if (this.phaseDelay != null) parameterList.add(this.phaseDelay);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + pulseDto.getBlockName());
@@ -347,6 +373,12 @@ public class Pulse extends SourceBlock {
 		context.put("period", period);
 		context.put("pulseWidth", pulseWidth);
 		context.put("phaseDelay", phaseDelay);
+		
+		// Add parameter names for template ${...Name} variables - use local names to avoid double prefixing
+		context.put("amplitudeName", context.get(amplitude.getLocalName())); // Use parameter local name mapped by TemplateUtils
+		context.put("periodName", context.get(period.getLocalName())); // Use parameter local name mapped by TemplateUtils
+		context.put("pulseWidthName", context.get(pulseWidth.getLocalName())); // Use parameter local name mapped by TemplateUtils
+		context.put("phaseDelayName", context.get(phaseDelay.getLocalName())); // Use parameter local name mapped by TemplateUtils
 		
 		// Add dimension variables needed by template
 		context.put("amplitudeHeight", amplitude.getHeight());

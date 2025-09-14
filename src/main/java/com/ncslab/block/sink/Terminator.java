@@ -26,8 +26,24 @@ public class Terminator extends SinkBlock{
 
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization (sink block has no outputs)
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (terminator has no outputs)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
     }
 	public Terminator(JSONObject scopeIn,NCSLabModel model) {
 		super(scopeIn,model);
@@ -74,6 +90,23 @@ public class Terminator extends SinkBlock{
 	}
 
     public void checkDimension() throws MatDimException {
+    }
+
+    public void generateOutputCodeC(com.ncslab.code.c.CodeStructC code) {
+        super.generateOutputCodeC(code);
+        
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        
+        // Add Terminator-specific context variables
+        context.put("block", this);
+        
+        // Since Terminator is a sink block with no outputs, provide empty outputSignal
+        context.put("outputSignal", "");
+        context.put("outputSignalName", "");
+        
+        // Terminator blocks don't generate any C code - they just terminate signals
+        // No template rendering needed since terminators don't produce output
     }
 
 }

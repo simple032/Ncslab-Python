@@ -36,13 +36,17 @@ public class Matplotlib extends SinkBlock{
      */
     public Matplotlib(com.ncslab.dto.block.specialized.sink.MatplotlibDto matplotlibDto, NCSLabModel model) {
         super(matplotlibDto, model);
-        inputPortList.add(new InputPort(this, 1));
+        // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
         System.out.println("DTO-NATIVE: Matplotlib block created successfully from MatplotlibDto - " + matplotlibDto.getBlockName());
     }
 
 
 
     public static final List<String> inputNames = new ArrayList<>();
+
+    // Port defaults for centralized initialization (sink block has no outputs)
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
 
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
@@ -56,6 +60,18 @@ public class Matplotlib extends SinkBlock{
 
     static {
         inputNames.add("in1");
+        
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (matplotlib has no outputs)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
     }
 
 	public Matplotlib(JSONObject scopeIn,NCSLabModel model) {

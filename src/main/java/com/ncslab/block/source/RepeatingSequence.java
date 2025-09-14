@@ -77,7 +77,15 @@ public class RepeatingSequence extends SourceBlock {
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.timeValues);
+        parameterList.add(this.outputValues);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         initializePorts();
     }
     
@@ -95,8 +103,13 @@ public class RepeatingSequence extends SourceBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
-        // Add all parameters to parameter list
-        
+        // Add all parameters to parameter list if they exist
+        if (this.timeValues != null) parameterList.add(this.timeValues);
+        if (this.outputValues != null) parameterList.add(this.outputValues);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
     }    /**
@@ -115,7 +128,14 @@ public class RepeatingSequence extends SourceBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Initialize ports
+        // Add all parameters to parameter list if they exist
+        if (this.timeValues != null) parameterList.add(this.timeValues);
+        if (this.outputValues != null) parameterList.add(this.outputValues);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName() + 

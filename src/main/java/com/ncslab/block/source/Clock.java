@@ -214,6 +214,8 @@ public class Clock extends SourceBlock {
 
 
     // === Code Generation Methods (preserved from original) ===
+    // Clock blocks don't need initialization code, they inherit from SourceBlock
+
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
         // Populate all standard context variables

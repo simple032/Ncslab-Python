@@ -74,9 +74,25 @@ public class Scope extends SinkBlock {
     // === Static Parameter Definitions ===
     public static final List<String> inputNames = new ArrayList<>();
 
+    // Port defaults for centralized initialization (sink block has no outputs)
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
     static {        
         // Dynamic input names based on number of inputs
         inputNames.add("in1");
+        
+        // Input port defaults (basic single input, can be expanded dynamically)
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+        
+        // Output port defaults (sink block has no outputs)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
     }
 
     // === Parameter Defaults ===
@@ -348,7 +364,7 @@ public class Scope extends SinkBlock {
                 OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
                 context.put("inputSignal1Height", inputSignal.getHeight());
                 context.put("inputSignal1Width", inputSignal.getWidth());
-                context.put("inputSignal1Name", inputSignal.getName());
+                context.put("inputSignal1Name", "Block" + getBlockId() + "_" + inputSignal.getName()); // C variable name
                 context.put("inputSignal", inputSignal.getName());
                 context.put("inputSignal1DataType", inputSignal.getDataType());
                 context.put("realDataType", com.ncslab.block.data.DataType.REAL);
@@ -384,7 +400,7 @@ public class Scope extends SinkBlock {
                 OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
                 context.put("inputSignal1Height", inputSignal.getHeight());
                 context.put("inputSignal1Width", inputSignal.getWidth());
-                context.put("inputSignal1Name", inputSignal.getName());
+                context.put("inputSignal1Name", "Block" + getBlockId() + "_" + inputSignal.getName()); // C variable name
                 context.put("inputSignal", inputSignal.getName());
                 context.put("inputSignal1DataType", inputSignal.getDataType());
                 context.put("realDataType", com.ncslab.block.data.DataType.REAL);

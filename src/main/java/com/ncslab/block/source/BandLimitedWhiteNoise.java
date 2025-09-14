@@ -93,8 +93,11 @@ public class BandLimitedWhiteNoise extends SourceBlock {
         this.cov = getParameterByName("Cov");
         this.samplePeriod = getParameterByName("Ts");
         
-        // Add all parameters to parameter list
-        
+        // Add all parameters to parameter list (they should already be added by parent constructor)
+        if (this.seed != null && !parameterList.contains(this.seed)) parameterList.add(this.seed);
+        if (this.cov != null && !parameterList.contains(this.cov)) parameterList.add(this.cov);
+        if (this.samplePeriod != null && !parameterList.contains(this.samplePeriod)) parameterList.add(this.samplePeriod);
+
         // Initialize ports
         initializePorts();
     }    /**
@@ -261,7 +264,11 @@ public class BandLimitedWhiteNoise extends SourceBlock {
     // === Code Generation Methods (using Velocity templates) ===
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        
+
+        // Ensure all standard template variables are populated first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Then add Parameter objects for method calls like ${samplePeriod.getInitCodeC()}
         context.put("seed", this.seed);
         context.put("cov", this.cov);
         context.put("samplePeriod", this.samplePeriod);
@@ -272,6 +279,9 @@ public class BandLimitedWhiteNoise extends SourceBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
+        
+        // Ensure all standard template variables are populated
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         context.put("block", this);
         context.put("seed", this.seed);

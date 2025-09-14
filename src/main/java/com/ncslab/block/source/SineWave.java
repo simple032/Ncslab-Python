@@ -99,7 +99,19 @@ public class SineWave extends SourceBlock {
         this.timeSource = Objects.requireNonNull(timeSource, "Time source parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
         this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
-        // Initialize ports
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.amplitude);
+        parameterList.add(this.bias);
+        parameterList.add(this.frequency);
+        parameterList.add(this.phase);
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.samples);
+        parameterList.add(this.timeSource);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+
         initializePorts();
     }
 
@@ -121,8 +133,17 @@ public class SineWave extends SourceBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
-        // Add all parameters to parameter list
-        
+        // Add all parameters to parameter list if they exist
+        if (this.amplitude != null) parameterList.add(this.amplitude);
+        if (this.bias != null) parameterList.add(this.bias);
+        if (this.frequency != null) parameterList.add(this.frequency);
+        if (this.phase != null) parameterList.add(this.phase);
+        if (this.sampleTime != null) parameterList.add(this.sampleTime);
+        if (this.samples != null) parameterList.add(this.samples);
+        if (this.timeSource != null) parameterList.add(this.timeSource);
+        if (this.outDataType != null) parameterList.add(this.outDataType);
+        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
+
         // Initialize ports
         initializePorts();
     }    
