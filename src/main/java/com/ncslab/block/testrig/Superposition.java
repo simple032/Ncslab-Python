@@ -26,6 +26,8 @@ public class Superposition extends Block {
     Parameter BCM3;
     Parameter AD1;
     Parameter AD2;
+    Parameter AD3;
+    Parameter AD4;
 
 
     
@@ -76,6 +78,10 @@ public class Superposition extends Block {
         AD1 = getParameterByName("AD1");
         outputPortList.add(new OutputPort(this, "AD2", 2, false));
         AD2 = getParameterByName("AD2");
+        outputPortList.add(new OutputPort(this, "AD3", 3, false));
+        AD3 = getParameterByName("AD3");
+        outputPortList.add(new OutputPort(this, "AD4", 4, false));
+        AD4 = getParameterByName("AD4");
     }
 
     public void generateInitCodeM(CodeStructM code) {
@@ -108,6 +114,30 @@ public class Superposition extends Block {
         context.put("inputPortVariables", getInputPortVariables());
         context.put("outputPortVariables", getOutputPortVariables());
         context.put("modelMode", model.getModelMode().name());
+        
+        // Add necessary variables for template
+        context.put("blockOutputPortVariables", getOutputPortVariables());
+        
+        // Add parameter values that template expects
+        context.put("BCM1", BCM1.getDouble());
+        context.put("BCM2", BCM2.getDouble());
+        context.put("BCM3", BCM3.getDouble());
+        context.put("AD1", AD1.getDouble());
+        context.put("AD2", AD2.getDouble());
+        context.put("AD3", AD3.getDouble());
+        context.put("AD4", AD4.getDouble());
+
+        // Add output variable names
+        if (getOutputPortVariables().length >= 4) {
+            context.put("outputAD1", getOutputPortVariables()[0]);
+            context.put("outputAD2", getOutputPortVariables()[1]);
+            context.put("outputAD3", getOutputPortVariables()[2]);
+            context.put("outputAD4", getOutputPortVariables()[3]);
+        }
+        
+        // TODO:Add mode constants for template comparison
+        // context.put("compilationMode", com.ncslab.ncslablink.ModelMode.COMPILATION);
+        // context.put("simulationMode", com.ncslab.ncslablink.ModelMode.SIMULATION);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/Superposition/output.vm", context);
         code.addOutputCode(codeStr);

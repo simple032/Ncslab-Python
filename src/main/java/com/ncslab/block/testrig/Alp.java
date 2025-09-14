@@ -33,6 +33,26 @@ public class Alp extends Block {
      */
     public Alp(AlpDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+        
+        // Initialize ports and states same as JSON constructor
+        this.isHardware = true;
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, "FanSpeed", 1, false));
+        outputPortList.add(new OutputPort(this, "Position", 2, false));
+        
+        // Initialize states based on model mode
+        switch(model.getModelMode()) {
+            case Simulation:
+                for(int i = 0; i < 3; i++) {
+                    State xState = new State(this, i + 1, "x" + (i + 1));
+                    xStateList.add(xState);
+                    stateList.add(xState);
+                }
+                break;
+            case Compilation:
+                break;
+        }
+        
         System.out.println("DTO-NATIVE: Alp block created successfully - " + blockDto.getBlockName());
     }
 
@@ -87,6 +107,13 @@ public void generateInitCodeC(CodeStructC code) {
 	        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 	        context.put("states", xStateList);
 	        context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
+	        context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
+	        
+	        // Ensure hardwareDefineName is set
+	        if (hardwareDefineName == null) {
+	            hardwareDefineName = "Block" + this.getBlockId() + "_Alp";
+	        }
+	        context.put("hardwareDefineName", hardwareDefineName);
 	
 	        String codeStr = TemplateManager.renderTemplate("c/testrig/Alp/output.vm", context);
 	        code.addOutputCode(codeStr);
@@ -101,7 +128,13 @@ public void generateInitCodeC(CodeStructC code) {
 						+xStateList.get(i+1).getName()
 						+";\n";
 			}
-			derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+getInputPortVariable(0);
+			String inputVar = getInputPortVariable(0);
+			if (inputVar != null) {
+				derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+inputVar;
+			} else {
+				// Fallback for disconnected input port
+				derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=(0.0";
+			}
 			int i=den.length-1;
 			for(State xState:xStateList) {
 				derivativeCode+="-"+xState.getName()+"*"+den[i];

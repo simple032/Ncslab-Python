@@ -137,9 +137,7 @@ public class BallBeamSystem extends Block {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         // Add template variables required by derivative.vm template
-        if (!inputPortList.isEmpty()) {
-            context.put("inputPortVariable", getInputPortVariable(0));
-        }
+        context.put("inputPortVariable", safeGetInputPortVariable(0, "0.0"));
         
         // Add constraint variables from parameters or defaults
         Parameter lbAngleParam = getParameterByName("lb_angle");

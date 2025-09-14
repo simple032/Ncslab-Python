@@ -123,11 +123,15 @@ public class Substitution extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("parameterList", parameterList);
         context.put("inputPortVariables", getInputPortVariables());
         context.put("outputPortVariables", getOutputPortVariables());
         context.put("modelMode", model.getModelMode().name());
+        
+        // TODO:Add mode constants for template comparison
+        // context.put("compilationMode", com.ncslab.ncslablink.ModelMode.COMPILATION);
+        // context.put("simulationMode", com.ncslab.ncslablink.ModelMode.SIMULATION);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/Substitution/output.vm", context);
         code.addOutputCode(codeStr);

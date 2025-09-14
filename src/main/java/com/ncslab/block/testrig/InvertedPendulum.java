@@ -30,7 +30,26 @@ public class InvertedPendulum extends Block {
      */
     public InvertedPendulum(InvertedPendulumDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+        initializeBlock();
         System.out.println("DTO-NATIVE: InvertedPendulum block created successfully - " + blockDto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public InvertedPendulum(BlockDto blockDto, NCSLabModel model) {
+        this((InvertedPendulumDto) blockDto, model);
+    }
+    
+    private void initializeBlock() {
+        // Initialize ports and states (same as JSON constructor)
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, "Angle", 1, false));
+        outputPortList.add(new OutputPort(this, "Set_X", 2, false));
+        outputPortList.add(new OutputPort(this, "Real_X", 3, false));
+
+        spState = new State(this, 1, "SerialPortState");
+        stateList.add(spState);
     }
 
 
@@ -104,6 +123,29 @@ public class InvertedPendulum extends Block {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add testrig-specific template variables
+        if (spState != null) {
+            context.put("stateX0", spState.getName() + "(0,0)"); 
+            context.put("stateX1", spState.getName() + "(1,0)");
+            context.put("stateX2", spState.getName() + "(2,0)");
+        }
+        
+        // Add output variables for template
+        if (outputPortList.size() > 0) {
+            context.put("output1", outputPortList.get(0).getOutputSignalC().getName());
+        }
+        if (outputPortList.size() > 1) {
+            context.put("output2", outputPortList.get(1).getOutputSignalC().getName());
+        }
+        if (outputPortList.size() > 2) {
+            context.put("output3", outputPortList.get(2).getOutputSignalC().getName());
+        }
+        
+        // Add commonly needed testrig variables
+        context.put("lb_position", -0.5); // Default lower bound
+        context.put("ub_angle", 0.5);     // Default upper bound  
+        context.put("rwork_tem", 0.0);    // Temporary work variable
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/InvertedPendulum/output.vm", context);
         code.addOutputCode(codeStr);

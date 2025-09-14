@@ -6,6 +6,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.testrig.RaspFanDto;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.State;
@@ -20,8 +21,10 @@ import java.util.List;
 public class RaspFan extends Block {
     String hardwareDefineName;
 
-    
-    
+    private final double [] num = new double[] {1.659};
+    private final double [] den = new double[] {1, 1.849, 1.566};
+    private List<State> xStateList = new ArrayList<>();
+
     /**
      * DTO-NATIVE Constructor - Creates RaspFan block directly from RaspFanDto DTO
      */
@@ -30,17 +33,14 @@ public class RaspFan extends Block {
         this.isHardware = true;
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, "FanSpeed", 1, false));
+        // Initialize states
+        for (int i = 0; i < num.length; i++) {
+            State xState = new State(this, i + 1, "x" + (i + 1));
+            xStateList.add(xState);
+            stateList.add(xState);
+        }
         System.out.println("DTO-NATIVE: RaspFan block created successfully - " + blockDto.getBlockName());
-    }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public RaspFan(BlockDto blockDto, NCSLabModel model) {
-        this((RaspFanDto) blockDto, model);
-    }
-
-
+    }    
 
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
@@ -90,6 +90,49 @@ public class RaspFan extends Block {
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/RaspFan/output.vm", context);
         code.addOutputCode(codeStr);
+    }
+
+    @Override
+    public void calculateInit() {
+        
+        OutputPort out = outputPortList.get(0);
+        // TODO:还需要调试
+//        Data data = new Data(num.length > 0 ? num[0] : 0);
+        Data data = new Data(0);
+        for (State state : xStateList) {
+            state.setData(data);
+        }
+        out.setData(data);
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        Data currentState = new Data();   
+
+        int i=num.length-1;
+        for (State xState:xStateList) {
+            currentState = currentState.plus(xState.getData().times(new Data(num[i])));
+            i--;
+        }
+
+        out.setData(currentState);
+    }
+
+    @Override
+    public void calculateDerivative(double t) {
+
+        for(int i = 0; i < xStateList.size() - 1; i++){
+            xStateList.get(i).setDerivateData(xStateList.get(i+1).getData());
+        }
+
+        Data derivativeData = inputPortList.get(0).getData();;
+        int i=den.length-1;
+        for(State xState:xStateList) {
+            derivativeData = derivativeData.minus(xState.getData().times(new Data(den[i])));
+            i--;
+        }
+        xStateList.get(xStateList.size() - 1).setDerivateData(derivativeData);
     }
 
 }

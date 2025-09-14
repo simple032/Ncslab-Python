@@ -31,7 +31,31 @@ public class DoubleTank extends Block {
      */
     public DoubleTank(DoubleTankDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+        initializeBlock();
         System.out.println("DTO-NATIVE: DoubleTank block created successfully - " + blockDto.getBlockName());
+    }
+    
+    /**
+     * Generic DTO Constructor for factory compatibility
+     */
+    public DoubleTank(BlockDto blockDto, NCSLabModel model) {
+        this((DoubleTankDto) blockDto, model);
+    }
+    
+    private void initializeBlock() {
+        // Initialize hardware flag and ports/states (same as JSON constructor)
+        this.isHardware = true;
+
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, "Pump_Speed", 1, false));
+        outputPortList.add(new OutputPort(this, "Water_Level", 2, false));
+
+        pumpState = new State(this, 1, "pumpState");
+        stateList.add(pumpState);
+        levelState = new State(this, 2, "levelState");
+        stateList.add(levelState);
+
+        rworkList.add(new RWork(this, 1, "tem"));
     }
 
 
@@ -53,21 +77,10 @@ public class DoubleTank extends Block {
     State pumpState;
     State levelState;
 
+    @Deprecated
     public DoubleTank(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
-
-        this.isHardware = true;
-
-        inputPortList.add(new InputPort(this, 1));
-        outputPortList.add(new OutputPort(this, "Pump_Speed", 1, false));
-        outputPortList.add(new OutputPort(this, "Water_Level", 2, false));
-
-        pumpState = new State(this, 1, "pumpState");
-        stateList.add(pumpState);
-        levelState = new State(this, 2, "levelState");
-        stateList.add(levelState);
-
-        rworkList.add(new RWork(this, 1, "tem"));
+        initializeBlock();
     }
 
     public void generateInitCodeM(CodeStructM code) {
@@ -118,6 +131,24 @@ public class DoubleTank extends Block {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add hardware-specific template variables
+        context.put("hardwareDefineName", "Block" + getBlockId() + "_DoubleTank");
+        
+        // Add input variable for template
+        if (inputPortList != null && !inputPortList.isEmpty() && 
+            inputPortList.get(0).getLinkedLine() != null &&
+            inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
+            context.put("input", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+        }
+        
+        // Add output variables for template
+        if (outputPortList.size() > 0) {
+            context.put("output1", outputPortList.get(0).getOutputSignalC().getName());
+        }
+        if (outputPortList.size() > 1) {
+            context.put("output2", outputPortList.get(1).getOutputSignalC().getName());
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DoubleTank/output.vm", context);
         code.addOutputCode(codeStr);

@@ -35,6 +35,19 @@ public class BallPlateSystem extends Block {
      */
     public BallPlateSystem(BallPlateSystemDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+        
+        // Initialize ports and states (same as JSON constructor)
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, "Position", 1, false));
+        outputPortList.add(new OutputPort(this, "Angle", 2, false));
+        outputPortList.add(new OutputPort(this, "dr", 3, false));
+
+        stateList.add(new State(this, 1, "x0"));
+        stateList.add(new State(this, 2, "x1"));
+        stateList.add(new State(this, 3, "x2"));
+
+        rworkList.add(new RWork(this, 1, "tem"));
+        
         System.out.println("DTO-NATIVE: BallPlateSystem block created successfully - " + blockDto.getBlockName());
     }
 
