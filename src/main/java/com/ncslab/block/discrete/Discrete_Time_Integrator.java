@@ -105,7 +105,7 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         initializePorts();
     }
 
@@ -156,7 +156,7 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());

@@ -94,7 +94,7 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         if (denominator.getWidth() == numerator.getWidth()) {
             feedThrough = true;
         }
@@ -175,7 +175,7 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
         
         // Determine feedthrough

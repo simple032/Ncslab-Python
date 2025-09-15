@@ -126,7 +126,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
         
         setSampleTime(sampleTimeParam);

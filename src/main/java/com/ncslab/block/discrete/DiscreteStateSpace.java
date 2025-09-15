@@ -111,7 +111,7 @@ public class DiscreteStateSpace extends DiscreteBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         if (D.isZero()) {
             feedThrough = false;
         } else {
@@ -192,7 +192,7 @@ public class DiscreteStateSpace extends DiscreteBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
         
         // Determine feedthrough
