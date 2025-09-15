@@ -217,7 +217,11 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.RotaryInvertedPendulumDto.class, name = "R1IP"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.SecondOrderRotaryInvertedPendulumDto.class, name = "R2IP"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.BallPlateSystemDto.class, name = "BallPlateSystem"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.WaterLevelDto.class, name = "NetWaterLevel")
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.WaterLevelDto.class, name = "NetWaterLevel"),
+    // Data processing blocks (added Week 6)
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.ByteUnpackDto.class, name = "Byte Unpack"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.DataTypeConversionDto.class, name = "DataTypeConversion")
     // All DTOs with javax.validation issues now fixed!
 })
 @Data
