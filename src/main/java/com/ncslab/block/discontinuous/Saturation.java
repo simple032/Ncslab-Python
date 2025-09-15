@@ -179,7 +179,7 @@ public class Saturation extends DiscontinuousBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
         
         // Legacy field mapping for backward compatibility - add null checks
