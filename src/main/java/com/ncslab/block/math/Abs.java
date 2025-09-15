@@ -104,7 +104,7 @@ public class Abs extends MathBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         initializePorts();
     }
 
@@ -123,7 +123,7 @@ public class Abs extends MathBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
     }
 
@@ -154,7 +154,7 @@ public class Abs extends MathBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
         
         System.out.println("DTO-SPECIFIC: Abs block created successfully from AbsDto - " + dto.getBlockName());

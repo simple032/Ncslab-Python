@@ -108,7 +108,7 @@ public class Sqrt extends MathBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         initializePorts();
     }
     

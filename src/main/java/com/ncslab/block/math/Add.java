@@ -125,7 +125,7 @@ public class Add extends MathBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
- based on input sequence
+        // based on input sequence        
         initializePorts();
     }
 
@@ -215,7 +215,7 @@ public class Add extends MathBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-         based on sequence
+        //  based on sequence
         initializePorts();
     }
 
