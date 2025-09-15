@@ -111,7 +111,7 @@ public class SineWave extends SourceBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         initializePorts();
     }
 

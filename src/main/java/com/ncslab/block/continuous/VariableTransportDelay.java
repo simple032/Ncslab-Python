@@ -108,7 +108,7 @@ public class VariableTransportDelay extends ContinuousBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         initializePorts();
     }
     
@@ -167,7 +167,7 @@ public class VariableTransportDelay extends ContinuousBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());

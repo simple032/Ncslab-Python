@@ -131,7 +131,7 @@ public class IntervalTest extends LogicBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-        
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());

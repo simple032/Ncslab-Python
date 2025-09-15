@@ -78,7 +78,7 @@ public class Out extends Block {
         parameterList.add(this.sampleTime);
         parameterList.add(this.outputDataType);
 
-
+
         initializePorts();
     }
 
@@ -98,8 +98,7 @@ public class Out extends Block {
         if (this.portDimensions != null) parameterList.add(this.portDimensions);
         if (this.sampleTime != null) parameterList.add(this.sampleTime);
         if (this.outputDataType != null) parameterList.add(this.outputDataType);
-
-        
+        
         initializePorts();
     }    /**
      * DTO-NATIVE Constructor - Creates Out block directly from BlockDto DTO
@@ -119,7 +118,7 @@ public class Out extends Block {
         if (this.sampleTime != null) parameterList.add(this.sampleTime);
         if (this.outputDataType != null) parameterList.add(this.outputDataType);
 
-        
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());

@@ -133,7 +133,7 @@ public class Switch extends RouteBlock {
         parameterList.add(this.outDataType);
         parameterList.add(this.saturateOnIntegerOverflow);
 
-
+
         initializePorts();
     }
 
@@ -193,7 +193,7 @@ public class Switch extends RouteBlock {
         if (this.outDataType != null) parameterList.add(this.outDataType);
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
-         logic exactly like JSONObject constructor
+        //  logic exactly like JSONObject constructor
         initializePorts();
         
         // Complete initialization

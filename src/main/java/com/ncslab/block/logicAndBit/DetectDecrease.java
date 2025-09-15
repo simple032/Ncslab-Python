@@ -129,7 +129,7 @@ public class DetectDecrease extends LogicBlock {
         if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
         if (this.initialState != null) parameterList.add(this.initialState);
 
-        
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());

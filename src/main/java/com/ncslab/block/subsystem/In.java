@@ -78,7 +78,7 @@ public class In extends Block {
         parameterList.add(this.sampleTime);
         parameterList.add(this.outputDataType);
 
- - In block receives from subsystem input
+        // - In block receives from subsystem input
         initializePorts();
     }
 
@@ -99,7 +99,7 @@ public class In extends Block {
         if (this.sampleTime != null) parameterList.add(this.sampleTime);
         if (this.outputDataType != null) parameterList.add(this.outputDataType);
 
-        
+        
         initializePorts();
     }    /**
      * DTO-NATIVE Constructor - Creates In block directly from BlockDto DTO
@@ -120,7 +120,7 @@ public class In extends Block {
         if (this.sampleTime != null) parameterList.add(this.sampleTime);
         if (this.outputDataType != null) parameterList.add(this.outputDataType);
 
-        
+        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
