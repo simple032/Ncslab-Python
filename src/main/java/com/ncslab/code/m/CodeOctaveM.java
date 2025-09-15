@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
+import com.ncslab.dto.communication.MfcalcResponseDto;
 
 public class CodeOctaveM {
 	/*
@@ -35,7 +36,7 @@ public class CodeOctaveM {
 
     @Getter
     @Setter
-    private JSONObject figureResult;
+    private MfcalcResponseDto.FiguresData figureResult;
 	//OutputMat输出的工作区
 	@Getter
 	@Setter

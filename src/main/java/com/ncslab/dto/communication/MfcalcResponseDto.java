@@ -60,6 +60,85 @@ public class MfcalcResponseDto {
     @JsonProperty("breakpoints")
     private int[] breakpoints; // For debug responses
     
+    @JsonProperty("figures")
+    private FiguresData figures; // For plot/figure data from MFCalc
+    
+    /**
+     * Inner class to represent figures data structure
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class FiguresData {
+        @JsonProperty("version")
+        private String version;
+        
+        @JsonProperty("type")
+        private String type;
+        
+        @JsonProperty("figure_count")
+        private Integer figureCount;
+        
+        @JsonProperty("figures")
+        private List<Figure> figures;
+        
+        @Data
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @Builder
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Figure {
+            @JsonProperty("figure_id")
+            private Integer figureId;
+            
+            @JsonProperty("plot")
+            private Plot plot;
+            
+            @Data
+            @NoArgsConstructor
+            @AllArgsConstructor
+            @Builder
+            @JsonIgnoreProperties(ignoreUnknown = true)
+            public static class Plot {
+                @JsonProperty("title")
+                private String title;
+                
+                @JsonProperty("xlabel")
+                private String xlabel;
+                
+                @JsonProperty("ylabel")
+                private String ylabel;
+                
+                @JsonProperty("line_count")
+                private Integer lineCount;
+                
+                @JsonProperty("lines")
+                private List<Line> lines;
+                
+                @Data
+                @NoArgsConstructor
+                @AllArgsConstructor
+                @Builder
+                @JsonIgnoreProperties(ignoreUnknown = true)
+                public static class Line {
+                    @JsonProperty("point_count")
+                    private Integer pointCount;
+                    
+                    @JsonProperty("style")
+                    private String style; // TODO: mfcalc server传输回来的字符串有问题
+                    
+                    @JsonProperty("x_data")
+                    private double[] xData;
+                    
+                    @JsonProperty("y_data")
+                    private double[] yData;
+                }
+            }
+        }
+    }
+    
     /**
      * Check if response indicates success
      * @return true if successful
@@ -100,9 +179,40 @@ public class MfcalcResponseDto {
                     .build();
         }
         
+        String trimmedResponse = jsonResponse.trim();
+        
+        // Check if response is just a plain number (non-JSON response)
+        if (trimmedResponse.matches("^\\d+$")) {
+            log.warn("MFCalc returned plain number response: {}", trimmedResponse);
+            return MfcalcResponseDto.builder()
+                    .status("error")
+                    .error("Invalid response format from MFCalc: plain number " + trimmedResponse)
+                    .build();
+        }
+        
+        // Check if response doesn't look like JSON
+        if (!trimmedResponse.startsWith("{") && !trimmedResponse.startsWith("[")) {
+            log.warn("MFCalc returned non-JSON response: {}", 
+                    trimmedResponse.length() > 100 ? trimmedResponse.substring(0, 100) + "..." : trimmedResponse);
+            return MfcalcResponseDto.builder()
+                    .status("error")
+                    .error("Invalid response format from MFCalc: not a JSON object")
+                    .build();
+        }
+        
         try {
             // Use Jackson to deserialize the JSON string directly to DTO
             MfcalcResponseDto dto = JsonUtils.deserializeDto(jsonResponse, MfcalcResponseDto.class);
+            
+            // Check if dto is null (shouldn't happen but defensive programming)
+            if (dto == null) {
+                log.error("JsonUtils.deserializeDto returned null for response: {}", 
+                        jsonResponse.length() > 200 ? jsonResponse.substring(0, 200) + "..." : jsonResponse);
+                return MfcalcResponseDto.builder()
+                        .status("error")
+                        .error("Failed to parse response: deserialization returned null")
+                        .build();
+            }
             
             // Post-process variables if data is a List
             if (dto.getData() instanceof List) {
@@ -113,7 +223,17 @@ public class MfcalcResponseDto {
             
             return dto;
         } catch (Exception e) {
-            log.error("Failed to parse MFCalc response: {}", e.getMessage(), e);
+            log.error("Failed to parse MFCalc response: {}", e.getMessage());
+            
+            // Check if it's a JSON parsing issue with corrupted data
+            if (e.getMessage() != null && e.getMessage().contains("character escape sequence")) {
+                log.error("Response appears to have corrupted/malformed JSON data");
+                return MfcalcResponseDto.builder()
+                        .status("error")
+                        .error("Malformed JSON response from MFCalc: " + e.getMessage())
+                        .build();
+            }
+            
             return MfcalcResponseDto.builder()
                     .status("error")
                     .error("Failed to parse response: " + e.getMessage())

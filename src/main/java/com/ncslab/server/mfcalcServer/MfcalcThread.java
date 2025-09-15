@@ -133,7 +133,6 @@ public class MfcalcThread extends Thread {
 				if (data instanceof JSONObject) {
 					JSONObject jo = (JSONObject) data;
 					model.setOutputResult(jo.optString("log",""));
-					model.setFigureResult(jo.optJSONObject("figures"));
 				}
 			}
 			if (scriptResponse != null && scriptResponse.getOutput() != null) {

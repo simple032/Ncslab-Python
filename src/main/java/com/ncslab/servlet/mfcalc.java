@@ -104,27 +104,20 @@ public class mfcalc extends HttpServlet {
 				
 				switch (method) {
 				case "runScript":
-					MfcalcResponseDto scriptResponse = client.runScript(model.getMainCode()+"\n");
+					MfcalcResponseDto scriptResponse = client.runScript(model.getMainCode());
 					System.out.println(scriptResponse);
 					
-					// Check if the response indicates an error
-					if (scriptResponse == null || scriptResponse.isError()) {
-						String errorMsg = scriptResponse != null ? scriptResponse.getErrorInfo() : "Null response from MFCalc server";
-						log.error("MFCalc runScript error: {}", errorMsg);
-						message = errorMsg;
-						operationSuccess = false;
-					} else {
-						if (scriptResponse.getOutput() != null) {
-							model.setOutputResult(scriptResponse.getOutput());
-						} else if (scriptResponse.getOutputLog() != null) {
-							// Fallback to outputLog if output is not available
-							model.setOutputResult(scriptResponse.getOutputLog());
-						}
-
-						if (scriptResponse.getFigures() != null) {
-							model.setFigureResult(scriptResponse.getFigures());
-						}
+					// Check if the response indicates an error					
+					if (scriptResponse.getOutput() != null) {
+						model.setOutputResult(scriptResponse.getOutput());
+					} else if (scriptResponse.getOutputLog() != null) {
+						// Fallback to outputLog if output is not available
+						model.setOutputResult(scriptResponse.getOutputLog());
 					}
+
+					if (scriptResponse.getFigures() != null) {
+						model.setFigureResult(scriptResponse.getFigures());
+					}					
 					break;
 					// Note: Missing break; in original code - maintaining the same behavior
 				case "getVariables":	
