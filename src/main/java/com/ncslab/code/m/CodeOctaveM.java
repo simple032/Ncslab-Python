@@ -2,11 +2,17 @@ package com.ncslab.code.m;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+
 import org.json.JSONObject;
 
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.dto.communication.MfcalcResponseDto;
+import com.ncslab.dto.ui.AppMessage;
+import com.ncslab.dto.ui.FiguresData;
+import com.ncslab.dto.ui.UIComponentMessage;
 
 public class CodeOctaveM {
 	/*
@@ -36,7 +42,13 @@ public class CodeOctaveM {
 
     @Getter
     @Setter
-    private MfcalcResponseDto.FiguresData figureResult;
+    private FiguresData figureResult;
+	@Getter
+	@Setter
+	private AppMessage app;
+	@Getter
+	@Setter
+	private List<UIComponentMessage> uiComponents;
 	//OutputMat输出的工作区
 	@Getter
 	@Setter

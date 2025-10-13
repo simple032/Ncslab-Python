@@ -30,9 +30,18 @@ public class MfcalcClientManager {
 
     // 获取指定用户的 MfcalcClient 实例（如果不存在则创建）
     public static MfcalcClient getClientForUser(String userId) {
+        // Check if existing client is still connected
+        MfcalcClient existingClient = clientMap.get(userId);
+        if (existingClient != null && !existingClient.isConnected()) {
+            // Remove disconnected client and create a new one
+            clientMap.remove(userId);
+            existingClient.close();
+            existingClient = null;
+        }
+
         return clientMap.computeIfAbsent(userId, k -> {
             try {
-                return new MfcalcClient(null);
+                return new MfcalcClient(null, userId);
             } catch (IOException e) {
                 // System.err.println("Failed to create MfcalcClient for user: " + userId);
                 return null;

@@ -124,7 +124,7 @@ public class Data {
             }
             if(!founded) {
                 String variableName = generateRandomVariableName();
-                MfcalcResponseDto commandResponse = client.runCommand(variableName + "=" + dataString + ";\n");
+                MfcalcResponseDto commandResponse = client.runCommand(variableName + "=" + dataString + ";");
 
                 if (commandResponse != null && commandResponse.isSuccess()) {
                     MfcalcResponseDto variableResponse = client.getVariable(variableName);
@@ -137,9 +137,9 @@ public class Data {
                 } else {
                     result = dataString;
                 }
-                client.runCommand("clear " + variableName + "\n");
+                client.runCommand("clear " + variableName);
                 // TODO:将变量名添加到临时变量列表中，以便在程序结束时批量清除，但是M2PCode还无法实现
-//                temp_variable_names.add(variableName);
+                // temp_variable_names.add(variableName);
             }
         }
         return result.trim();

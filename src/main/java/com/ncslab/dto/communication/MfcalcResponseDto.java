@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+
+import com.ncslab.dto.ui.AppMessage;
+import com.ncslab.dto.ui.FiguresData;
 import com.ncslab.util.JsonUtils;
 
 import java.util.List;
@@ -62,82 +65,9 @@ public class MfcalcResponseDto {
     
     @JsonProperty("figures")
     private FiguresData figures; // For plot/figure data from MFCalc
-    
-    /**
-     * Inner class to represent figures data structure
-     */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class FiguresData {
-        @JsonProperty("version")
-        private String version;
-        
-        @JsonProperty("type")
-        private String type;
-        
-        @JsonProperty("figure_count")
-        private Integer figureCount;
-        
-        @JsonProperty("figures")
-        private List<Figure> figures;
-        
-        @Data
-        @NoArgsConstructor
-        @AllArgsConstructor
-        @Builder
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Figure {
-            @JsonProperty("figure_id")
-            private Integer figureId;
-            
-            @JsonProperty("plot")
-            private Plot plot;
-            
-            @Data
-            @NoArgsConstructor
-            @AllArgsConstructor
-            @Builder
-            @JsonIgnoreProperties(ignoreUnknown = true)
-            public static class Plot {
-                @JsonProperty("title")
-                private String title;
-                
-                @JsonProperty("xlabel")
-                private String xlabel;
-                
-                @JsonProperty("ylabel")
-                private String ylabel;
-                
-                @JsonProperty("line_count")
-                private Integer lineCount;
-                
-                @JsonProperty("lines")
-                private List<Line> lines;
-                
-                @Data
-                @NoArgsConstructor
-                @AllArgsConstructor
-                @Builder
-                @JsonIgnoreProperties(ignoreUnknown = true)
-                public static class Line {
-                    @JsonProperty("point_count")
-                    private Integer pointCount;
-                    
-                    @JsonProperty("style")
-                    private String style; // TODO: mfcalc server传输回来的字符串有问题
-                    
-                    @JsonProperty("x_data")
-                    private double[] xData;
-                    
-                    @JsonProperty("y_data")
-                    private double[] yData;
-                }
-            }
-        }
-    }
+
+    @JsonProperty("app")
+    private AppMessage app;
     
     /**
      * Check if response indicates success
@@ -164,6 +94,14 @@ public class MfcalcResponseDto {
             return error;
         }
         return isError() ? "Unknown MFCalc error" : null;
+    }
+
+    /**
+     * Check if response has app data
+     * @return true if app data exists
+     */
+    public boolean hasApp() {
+        return app != null;
     }
     
     /**

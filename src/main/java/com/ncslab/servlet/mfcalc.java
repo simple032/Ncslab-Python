@@ -16,7 +16,6 @@ import com.ncslab.dto.communication.MfcalcResponseDto;
 import com.ncslab.dto.communication.MfcalcServletRequestDto;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -35,10 +34,27 @@ import com.ncslab.server.octaveserver.OctaveThread;
 /**
  * Servlet implementation class octave
  */
-@Slf4j
 @WebServlet("/mfcalc")
 public class mfcalc extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+
+	// Helper method for logging
+	private void logInfo(String message) {
+		System.out.println("[MFCALC-INFO] " + new java.util.Date() + " - " + message);
+	}
+
+	private void logError(String message) {
+		System.err.println("[MFCALC-ERROR] " + new java.util.Date() + " - " + message);
+	}
+
+	private void logError(String message, Throwable e) {
+		System.err.println("[MFCALC-ERROR] " + new java.util.Date() + " - " + message);
+		e.printStackTrace(System.err);
+	}
+
+	private void logDebug(String message) {
+		System.out.println("[MFCALC-DEBUG] " + new java.util.Date() + " - " + message);
+	}
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -52,82 +68,138 @@ public class mfcalc extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		//response.getWriter().append("Served at: ").append(request.getContextPath());
+		logInfo("=== MFCalc Servlet Request Started ===");
+		logInfo("Request Method: " + request.getMethod());
+		logInfo("Request URI: " + request.getRequestURI());
+		logInfo("Content-Type: " + request.getContentType());
 
-		System.out.println("mfcalc");
+		// Set response content type
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+
 		String result = "";
         // 使用try-with-resources自动关闭资源
 		try (InputStream is = request.getInputStream()) {
 			// 直接从InputStream读取所有字节并转换为字符串
 			result = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+			logInfo("Received request body length: " + result.length() + " bytes");
+			logDebug("Request body: " + (result.length() > 500 ? result.substring(0, 500) + "..." : result));
 		} catch (IOException e) {
-			log.error("Error reading request input stream: {}", e.getMessage());
+			logError("Error reading request input stream", e);
 			ServerResponseDto errorResponse = ServerResponseDto.createError("Error reading request", "mfcalc");
 			errorResponse.setCode(400);
 			String errorJson = JsonUtils.serializeDto(errorResponse);
 			response.getWriter().append(errorJson);
+			response.getWriter().flush();
+			logInfo("=== MFCalc Servlet Request Ended (Error Reading) ===");
 			return;
 		}
 				
         // Parse JSON to DTO
-        MfcalcServletRequestDto requestDto = JsonUtils.deserializeDto(result, MfcalcServletRequestDto.class);
-        
+        logInfo("Parsing request JSON to DTO...");
+        MfcalcServletRequestDto requestDto = null;
+        try {
+            requestDto = JsonUtils.deserializeDto(result, MfcalcServletRequestDto.class);
+            logInfo("Successfully parsed request DTO");
+        } catch (Exception e) {
+            logError("Failed to parse request JSON", e);
+            ServerResponseDto errorResponse = ServerResponseDto.createError("Invalid JSON format: " + e.getMessage(), "mfcalc");
+            errorResponse.setCode(400);
+            String errorJson = JsonUtils.serializeDto(errorResponse);
+            response.getWriter().append(errorJson);
+            response.getWriter().flush();
+            logInfo("=== MFCalc Servlet Request Ended (Parse Error) ===");
+            return;
+        }
+
         // Validate request
         if (requestDto == null || !requestDto.isValid()) {
             String errorMsg = requestDto != null ? requestDto.getValidationError() : "Invalid JSON request format";
-            log.error("Invalid mfcalc request: {}", errorMsg);
+            logError("Invalid mfcalc request: " + errorMsg);
             ServerResponseDto errorResponse = ServerResponseDto.createError(errorMsg, "mfcalc");
             errorResponse.setCode(400);
             String errorJson = JsonUtils.serializeDto(errorResponse);
             response.getWriter().append(errorJson);
+            response.getWriter().flush();
+            logInfo("=== MFCalc Servlet Request Ended (Validation Error) ===");
             return;
         }
 
+        logInfo("Request DTO validated - userId: " + requestDto.getUserId() + ", method: " + requestDto.getMethodOrDefault() +
+                ", data length: " + (requestDto.getData() != null ? requestDto.getData().length() : 0));
+
+        logInfo("Creating CodeOctaveM model...");
         CodeOctaveM model = new CodeOctaveM();
-    	model.setMainCode(requestDto.getData());		
+    	model.setMainCode(requestDto.getData());
 		model.setUserId(requestDto.getUserId());
 		String method = requestDto.getMethodOrDefault();
 
-    	System.out.println(model.getMainCode());
-//    	System.out.println(jsonIn);
-//    	System.out.println(jsonIn.getString("data"));
+    	logDebug("Model main code length: " + (model.getMainCode() != null ? model.getMainCode().length() : 0));
+    	logInfo("Method to execute: " + method);
 
     	try {
+    		logInfo("Getting MFCalc client for user: " + model.getUserId());
+    		System.out.flush();
 			MfcalcClient client = MfcalcClientManager.getClientForUser(String.valueOf(model.getUserId()));
+			logInfo("MFCalc client retrieved");
 
 			ServerResponseDto responseDto;
-			
+
 			if(client != null){
+				logInfo("MFCalc client obtained successfully");
+				System.out.flush();
 				String message = "SUCCESS";
 				boolean operationSuccess = true;
-				
+
 				switch (method) {
 				case "runScript":
-					MfcalcResponseDto scriptResponse = client.runScript(model.getMainCode());
-					System.out.println(scriptResponse);
-					
-					// Check if the response indicates an error					
-					if (scriptResponse.getOutput() != null) {
-						model.setOutputResult(scriptResponse.getOutput());
-					} else if (scriptResponse.getOutputLog() != null) {
-						// Fallback to outputLog if output is not available
-						model.setOutputResult(scriptResponse.getOutputLog());
-					}
+					logInfo("Executing runScript...");
+					System.out.flush();
+					logInfo("About to call client.runScript()");
+					System.out.flush();
 
-					if (scriptResponse.getFigures() != null) {
-						model.setFigureResult(scriptResponse.getFigures());
-					}					
+					MfcalcResponseDto scriptResponse = client.runScript(model.getMainCode());
+
+					logInfo("client.runScript() returned");
+					System.out.flush();
+					logInfo("runScript response received - status: " + (scriptResponse != null ? scriptResponse.getStatus() : "null"));
+
+					// Check if the response indicates an error
+					if (scriptResponse.isError()) {
+						String errorMsg = scriptResponse.getErrorInfo();
+						logError("MFCalc runScript error: " + errorMsg);
+						message = errorMsg;
+						operationSuccess = false;
+					} else {
+						// Handle output in priority order: output > outputLog (log) > empty
+						if (scriptResponse.getOutput() != null) {
+							model.setOutputResult(scriptResponse.getOutput());
+						} else if (scriptResponse.getOutputLog() != null) {
+							// Fallback to outputLog (mapped from "log" field) if output is not available
+							model.setOutputResult(scriptResponse.getOutputLog());
+						}
+
+						// Handle figures data if present
+						if (scriptResponse.getFigures() != null) {
+							model.setFigureResult(scriptResponse.getFigures());
+						}
+
+						// Handle app data if present
+						if (scriptResponse.getApp() != null) {
+							model.setApp(scriptResponse.getApp());
+						}
+					}
 					break;
 					// Note: Missing break; in original code - maintaining the same behavior
-				case "getVariables":	
+				case "getVariables":
+					logInfo("Executing getVariables...");
 					MfcalcResponseDto variablesResponse = client.getVariables();
-					System.out.println(variablesResponse);
+					logInfo("getVariables response received - status: " + (variablesResponse != null ? variablesResponse.getStatus() : "null"));
 					
 					// Check if the response indicates an error
 					if (variablesResponse == null || variablesResponse.isError()) {
 						String errorMsg = variablesResponse != null ? variablesResponse.getErrorInfo() : "Null response from MFCalc server";
-						log.error("MFCalc getVariables error: {}", errorMsg);
+						logError("MFCalc getVariables error: " + errorMsg);
 						// Only update the status if we haven't already set it to failed
 						if (operationSuccess) {
 							message = errorMsg;
@@ -146,11 +218,21 @@ public class mfcalc extends HttpServlet {
 				}
 
 				if (operationSuccess) {
+					logInfo("Building success response...");
 					Map<String, Object> resultData = new HashMap<>();
 					resultData.put("log", model.getOutputResult());
 					if(model.getFigureResult() != null) {
 						// FiguresData is already serializable by Jackson
 						resultData.put("figures", model.getFigureResult());
+						logDebug("Added figures to result");
+					}
+					if(model.getApp() != null) {
+						resultData.put("app", model.getApp());
+						logDebug("Added app to result");
+					}
+					if(model.getUiComponents() != null) {
+						resultData.put("uiComponents", model.getUiComponents());
+						logDebug("Added uiComponents to result");
 					}
 					resultData.put("BeginFigFileIndex", model.OutputFigBeginIndex);
 					resultData.put("EndFigFileIndex", model.OutputFigEndIndex);
@@ -168,41 +250,58 @@ public class mfcalc extends HttpServlet {
 							.executionTime(System.currentTimeMillis())
 							.build();
 					
-					System.out.println("MFCalc execution successful");
+					logInfo("MFCalc execution successful - building response complete");
 				} else {
+					logError("Operation failed: " + message);
 					// Create error response for unknown method
 					responseDto = ServerResponseDto.createError(message, "mfcalc");
 					responseDto.setCode(400); // Bad Request
 				}
 			}else{
-				System.err.println("No mfcalc server available...");
+				logError("No mfcalc server available for user: " + model.getUserId());
 				responseDto = ServerResponseDto.createError("No mfcalc server available...", "mfcalc");
 				responseDto.setCode(503); // Service Unavailable
 			}
 
 			// Use JsonUtils for serialization
+			logInfo("Serializing response to JSON...");
 			String jsonResponse = JsonUtils.serializeDto(responseDto);
-			System.out.println("Response to frontend: " + jsonResponse);
+			logInfo("Response JSON length: " + (jsonResponse != null ? jsonResponse.length() : 0) + " bytes" + " bytes");
+			logDebug("Response to frontend: " + (jsonResponse.length() > 500 ? jsonResponse.substring(0, 500) + "..." : jsonResponse));
+
 			response.getWriter().append(jsonResponse);
+			response.getWriter().flush();
+			logInfo("Response sent to client successfully");
+			logInfo("=== MFCalc Servlet Request Completed Successfully ===");
 			
 		} catch (JsonProcessingException e) {
-			log.error("JSON processing error in mfcalc servlet: {}", e.getMessage());
+			logError("JSON processing error in mfcalc servlet", e);
 			// Create error response using DTO
 			ServerResponseDto errorResponse = ServerResponseDto.createError(
 				"JSON processing error: " + e.getMessage(), "mfcalc");
 			errorResponse.setCode(400);
-			
+
 			String errorJson = JsonUtils.serializeDto(errorResponse);
 			response.getWriter().append(errorJson);
+			response.getWriter().flush();
+			logInfo("=== MFCalc Servlet Request Ended (JSON Processing Error) ===");
 		} catch (Exception e) {
-			log.error("Unexpected error in mfcalc servlet: {}", e.getMessage());
+			logError("Unexpected error in mfcalc servlet", e);
+			e.printStackTrace(); // Print full stack trace for debugging
+
 			// Create generic error response
 			ServerResponseDto errorResponse = ServerResponseDto.createError(
-				"Internal server error", "mfcalc");
+				"Internal server error: " + e.getMessage(), "mfcalc");
 			errorResponse.setCode(500);
-			
-			String errorJson = JsonUtils.serializeDto(errorResponse);
-			response.getWriter().append(errorJson);
+
+			try {
+				String errorJson = JsonUtils.serializeDto(errorResponse);
+				response.getWriter().append(errorJson);
+				response.getWriter().flush();
+			} catch (Exception e2) {
+				logError("Failed to send error response", e2);
+			}
+			logInfo("=== MFCalc Servlet Request Ended (Unexpected Error) ===");
 		}
 
 
