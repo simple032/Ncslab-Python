@@ -270,7 +270,7 @@ public class MfcalcClient {
 
             // Print the raw response from server
             log.info("Response received - length: {} bytes", responseStr.length());
-            System.out.println("Raw response from MFCalc server: " + responseStr);
+            // System.out.println("Raw response from MFCalc server: " + responseStr);
             log.debug("Full response: {}", responseStr.length() > 500 ? responseStr.substring(0, 500) + "..." : responseStr);
 
             MfcalcResponseDto dto = MfcalcResponseDto.fromJsonString(responseStr);

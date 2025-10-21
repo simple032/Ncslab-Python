@@ -146,6 +146,8 @@ public class BlockType{
         // Comm
         blockClassTree.put("UDPSender", com.ncslab.block.comm.UDPSender.class);
         blockClassTree.put("UDPReceiver", com.ncslab.block.comm.UDPReceiver.class);
+        blockClassTree.put("SerialSender", com.ncslab.block.comm.SerialSender.class);
+        blockClassTree.put("SerialReceiver", com.ncslab.block.comm.SerialReceiver.class);
 
         // Driver
         blockClassTree.put("UDPSend", com.ncslab.block.driver.UDPSend.class);

@@ -1,0 +1,14 @@
+## Variables populated in Java context: $outputSignal (output port variable), $outputWidth (number of values to receive)
+
+% Receive data from serial port (handles both scalar and vector)
+if serial_port_$blockId.NumBytesAvailable >= $outputWidth * 8
+    if $outputWidth == 1
+        $outputSignal = read(serial_port_$blockId, 1, "double");
+    else
+        % Receive vector
+        $outputSignal = zeros($outputWidth, 1);
+        for i = 1:$outputWidth
+            $outputSignal(i) = read(serial_port_$blockId, 1, "double");
+        end
+    end
+end

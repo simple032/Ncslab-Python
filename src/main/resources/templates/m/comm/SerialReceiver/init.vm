@@ -1,0 +1,8 @@
+## Variables populated in Java context: $portName, $baudRate, $dataBits, $stopBits, $parity
+
+% Initialize serial port for SerialReceiver block $blockId
+serial_port_$blockId = serialport("$portName", $baudRate);
+configureTerminator(serial_port_$blockId, "CR/LF");
+serial_port_$blockId.DataBits = $dataBits;
+serial_port_$blockId.StopBits = $stopBits;
+serial_port_$blockId.Parity = "$parity";

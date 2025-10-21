@@ -1,0 +1,8 @@
+## Serial communication function declarations and variables
+
+int serial_fd_$blockId;
+
+void Serial_Config_$blockId(const char* port, int baud, int databits, int stopbits, const char* parity);
+void Serial_Init_$blockId();
+void Serial_Send_$blockId(double data);
+void Serial_Close_$blockId();

@@ -1,0 +1,11 @@
+## Variables populated in Java context: $inputSignal (input port variable, can be scalar or vector)
+
+% Send data over serial port (handles both scalar and vector)
+if isscalar($inputSignal)
+    write(serial_port_$blockId, $inputSignal, "double");
+else
+    % Send each element of the vector
+    for i = 1:length($inputSignal)
+        write(serial_port_$blockId, $inputSignal(i), "double");
+    end
+end

@@ -1,0 +1,6 @@
+## Variables populated in Java context: $outputSignal (output port variable, can be scalar or vector)
+
+if(model.majorStep == 1){
+    // Receive data to output port (handles both scalar and vector)
+    $outputSignal = Serial_Receive_$blockId();
+}

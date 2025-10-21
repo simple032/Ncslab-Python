@@ -1,0 +1,4 @@
+## Variables populated in Java context: $portName, $baudRate, $dataBits, $stopBits, $parity
+
+Serial_Config_$blockId("$portName", $baudRate, $dataBits, $stopBits, "$parity");
+Serial_Init_$blockId();
