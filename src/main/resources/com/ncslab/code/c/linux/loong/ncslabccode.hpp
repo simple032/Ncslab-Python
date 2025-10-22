@@ -6,6 +6,30 @@
 
 #include <list>
 
+// Hardware-specific includes - only include when explicitly enabled for hardware builds
+#ifdef _ENABLE_PI
+#include "ncs_serialport.h"
+#endif // _ENABLE_PI
+
+// Hardware and system includes for testrig blocks
+#ifdef __linux__
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <unistd.h>
+#ifndef TCIOFLUSH
+#define TCIOFLUSH 2
+#endif
+#endif
+
+// Constants for testrig blocks
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef AERO_PI
+#define AERO_PI M_PI
+#endif
+
 enum DATA_TYPE {SINGLE,MATRIX};
 
 #define REAL double
@@ -188,6 +212,8 @@ struct TERMINAL
 struct SCOPE
 {
 	char *name;
+	char *path;
+	char *uuid;
 	int maxDataLength;
 	int width;
 	int height;

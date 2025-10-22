@@ -15,13 +15,13 @@
 #include <wiringPi.h>
 #include <wiringSerial.h>
 #include <unistd.h>
-
-#endif
-
 #include <sys/select.h>
 #include <sys/time.h>
-#include "ncs_serialport.h"
+#endif
 
+#if _ENABLE_PI
+#include "ncs_serialport.h"
+#endif // _ENABLE_PI
 /*****************************serialport***************************************/
 
 //HANDLE hComm;

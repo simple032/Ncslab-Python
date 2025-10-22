@@ -80,6 +80,11 @@ typedef struct {
 	int speedPulse;
 }DCMOTORANGLEDIRECT;
 
+typedef struct {
+	REAL PWM;
+	int speed;
+}NEWMOTOR;
+
 void initWaterLevel(WATER_LEVEL *);
 void outputWaterLevel(WATER_LEVEL *);
 
@@ -92,6 +97,10 @@ void outputRaspFan(RASPFAN *);
 
 void initDCMotorAngleDirect(DCMOTORANGLEDIRECT *);
 void outputDCMotorAngleDirect(DCMOTORANGLEDIRECT *);
+
+void initNewMotor(NEWMOTOR *);
+void outputNewMotor(NEWMOTOR *);
+
 void initHardware();
 
 
