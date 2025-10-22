@@ -1,6 +1,6 @@
 #set($output = $outputPortList.get(0).getOutputSignalC())
 
-/* Code for output of MatrixMultiply: ($blockBlockId)$blockBlockName */
+/* Code for output of MatrixMultiply: ($blockId)$blockName */
 $output.setName($inputPort0SignalName)
 
 #foreach($i in [1..$inputPortListSize-1])

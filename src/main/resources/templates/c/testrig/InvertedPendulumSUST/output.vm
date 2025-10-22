@@ -5,7 +5,7 @@
 #set($ENAOrDISValue = $block.getParameter("ENAOrDIS").getName())
 
 #if ($modelMode == $compilationMode)
-#set($hardwareDefineName = "Block" + $blockBlockId + "_InvertedPendulumSUST")
+#set($hardwareDefineName = "Block" + $blockId + "_InvertedPendulumSUST")
 initInvertedPendulumSUST(&$hardwareDefineName);
 
 if (mp->majorStep > 0) {

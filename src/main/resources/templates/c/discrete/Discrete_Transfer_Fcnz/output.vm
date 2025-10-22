@@ -1,6 +1,6 @@
 /* Code for output of discrete_transfer_funz:(${blockId}) ${blockName} */
 #set($outVar = $outputSignal)
-#set($blockId = $blockId)
+
 #set($s2Width = $s2Width)
 #set($s3Width = $s3Width)
 #set($stateDim = $math.sub[$s3Width][1])

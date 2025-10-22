@@ -3,7 +3,7 @@
 #set($outputAngle = $blockOutputPortVariables.get(1))
 
 #if ($modelMode == $compilationMode)
-    #set($hardwareDefineName = "Block" + $blockBlockId + "_DCMotorAngleDirect")
+    #set($hardwareDefineName = "Block" + $blockId + "_DCMotorAngleDirect")
     initDCMotorAngleDirect(&$hardwareDefineName);
 
     if (mp->majorStep > 0) {

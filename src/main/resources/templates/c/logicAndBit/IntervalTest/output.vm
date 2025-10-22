@@ -1,5 +1,5 @@
-#set($blockId = $blockBlockId)
-#set($blockName = $blockBlockName)
+
+
 #set($out = $output1)
 #set($signal = $inputs.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
 #set($lower = $lowLimit)

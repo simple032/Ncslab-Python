@@ -9,5 +9,5 @@
 #set($minDimension = $matrixWidth)
 #end
 
-/* Code for output of CreateDiagonalMatrix: ($blockBlockId)$blockBlockName */
+/* Code for output of CreateDiagonalMatrix: ($blockId)$blockName */
 $output.setName($inputName.toDiagonal($minDimension))

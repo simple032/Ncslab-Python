@@ -1,6 +1,6 @@
 /* Velocity Template for initialization of block LoongarchPLC */
-#set($blockId = $blockBlockId)
-#set($blockName = $blockBlockName)
+
+
 
 #if ($modelMode == $simulationMode)
     // Simulation mode - No hardware initialization needed

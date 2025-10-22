@@ -1,2 +1,2 @@
-/* 初始化From模块: ($blockBlockId) $blockBlockName */
+/* 初始化From模块: ($blockId) $blockName */
 ${block.getOutputVariable(0)} = $inputs.get(0);

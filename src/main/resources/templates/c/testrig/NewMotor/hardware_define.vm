@@ -1,2 +1,3 @@
+NEWMOTOR ${hardwareDefineName};
 HANDLE hComm;
 HANDLE hComm1;

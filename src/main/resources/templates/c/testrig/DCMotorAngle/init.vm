@@ -1,6 +1,6 @@
 /* Velocity Template for initialization of block DCMotorAngle */
-#set($blockId = $blockBlockId)
-#set($blockName = $blockBlockName)
+
+
 
 #if ($modelMode == $simulationMode)
     #foreach($state in $blockStateList)

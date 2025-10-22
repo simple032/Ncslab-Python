@@ -5,8 +5,8 @@
 #set($motorT = $block.getParameter("motorT").getInitDouble())
 
 #if ($modelMode == $compilationMode)
-    #set($hardwareDefineName = "Block" + $blockBlockId + "_NewMotor")
-    initNewMotor(&$hardwareDefineName);
+    ## #set($hardwareDefineName = "Block" + $blockId + "_NewMotor")
+    ## initNewMotor(&$hardwareDefineName);
 
     if (mp->majorStep > 0) {
         int bufLen = 255;

@@ -1,6 +1,6 @@
 /*Code for output of block RateLimiter:($blockId)$blockName*/
 
-#set($blockId = $blockBlockId)
+
 #set($dataVar = "Block${blockId}RateLimiter_data")
 
 if(mp->majorStep > 0) {

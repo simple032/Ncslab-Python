@@ -1,6 +1,6 @@
 /* Velocity Template for initialization of block NewMotor */
-#set($blockId = $blockBlockId)
-#set($blockName = $blockBlockName)
+
+
 
 #if ($modelMode == $simulationMode)
     #foreach($state in $blockStateList)

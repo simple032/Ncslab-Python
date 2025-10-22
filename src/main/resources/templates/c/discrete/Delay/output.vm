@@ -2,7 +2,7 @@
 #set($outputSignal = $outputSignal)
 #set($sampleTime = $sampleTimeName)
 #set($initialCondition = $initialConditionName)
-#set($blockId = $blockId)
+
 
 /* Code for output of block Delay:($blockId)$blockName */
 {

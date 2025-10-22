@@ -3,11 +3,11 @@
     $output2 = $stateX1;
 #elseif ($modelMode == $compilationMode)
 if (mp->majorStep > 0) {
-        $hardwareDefineName.pumpPWM = 0.0002 * $input;
-        $hardwareDefineName.pumpPWM = $hardwareDefineName.pumpPWM > 1.0 ? 1.0 : $hardwareDefineName.pumpPWM;
-        $hardwareDefineName.pumpPWM = $hardwareDefineName.pumpPWM < 0.15 ? 0.15 : $hardwareDefineName.pumpPWM;
+        ${hardwareDefineName}.pumpPWM = 0.0002 * $input;
+        ${hardwareDefineName}.pumpPWM = ${hardwareDefineName}.pumpPWM > 1.0 ? 1.0 : ${hardwareDefineName}.pumpPWM;
+        ${hardwareDefineName}.pumpPWM = ${hardwareDefineName}.pumpPWM < 0.15 ? 0.15 : ${hardwareDefineName}.pumpPWM;
         outputWaterLevel(&$hardwareDefineName);
-        $output1 = $hardwareDefineName.speed_counter_in;
-        $output2 = $hardwareDefineName.level;
+        $output1 = ${hardwareDefineName}.speed_counter_in;
+        $output2 = ${hardwareDefineName}.level;
 }
 #end

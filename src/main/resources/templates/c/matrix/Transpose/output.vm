@@ -1,5 +1,5 @@
 #set($input = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
 #set($output = $outputPortList.get(0).getOutputSignalC())
 
-/* Code for output of Transpose: ($blockBlockId)$blockBlockName */
+/* Code for output of Transpose: ($blockId)$blockName */
 $output.setName($inputName.transpose())

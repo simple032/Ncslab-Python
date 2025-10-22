@@ -9,7 +9,7 @@
 #parse("c/shared/block_header.vm")
 
 ## Block-specific variables
-#set($blockId = $blockId)
+
 #set($outputVar = $outputSignal)
 #set($inputSignal = #getInputSignal(0))
 

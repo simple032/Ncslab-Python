@@ -1,5 +1,5 @@
-#set($blockId = $blockBlockId)
-#set($blockName = $blockBlockName)
+
+
 /* Define variable/arrays for block Detect Decrease ($blockId) $blockName */
 #if($signal.dataType == $realDataType)
 double preValue_${blockId} = 0;

@@ -1,7 +1,7 @@
 /*Code for Derivative of PID Controller:($blockId)$blockName*/
 #if($inputPortList && $inputPortList.size() > 0 && $stateIntegral && $stateFilter && $proportionalGain)
     #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
-    #set($blockId = $blockId)
+    
     
     #if($signalDataType == $realDataType && $proportionalGain.dataType == $realDataType)
         ## Scalar PID derivative calculation
