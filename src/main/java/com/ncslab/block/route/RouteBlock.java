@@ -31,7 +31,10 @@ public abstract class RouteBlock extends Block {
 
     /**
      * Legacy JSON Constructor
+     * @deprecated Use DTO-native constructor for new development
      */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     protected RouteBlock(JSONObject blockJson, NCSLabModel model) {
         super(blockJson, model);
     }

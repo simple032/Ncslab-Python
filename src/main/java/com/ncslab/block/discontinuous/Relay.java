@@ -175,16 +175,6 @@ public class Relay extends DiscontinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.switchOnPoint != null) parameterList.add(this.switchOnPoint);
-        if (this.switchOffPoint != null) parameterList.add(this.switchOffPoint);
-        if (this.outputWhenOn != null) parameterList.add(this.outputWhenOn);
-        if (this.outputWhenOff != null) parameterList.add(this.outputWhenOff);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         
         initializePorts();
         

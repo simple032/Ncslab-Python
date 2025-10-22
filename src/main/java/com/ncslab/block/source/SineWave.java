@@ -132,17 +132,6 @@ public class SineWave extends SourceBlock {
         this.timeSource = getParameterByName("TimeSource");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Add all parameters to parameter list if they exist
-        if (this.amplitude != null) parameterList.add(this.amplitude);
-        if (this.bias != null) parameterList.add(this.bias);
-        if (this.frequency != null) parameterList.add(this.frequency);
-        if (this.phase != null) parameterList.add(this.phase);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.samples != null) parameterList.add(this.samples);
-        if (this.timeSource != null) parameterList.add(this.timeSource);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();

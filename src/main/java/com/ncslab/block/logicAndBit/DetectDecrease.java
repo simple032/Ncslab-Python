@@ -120,15 +120,6 @@ public class DetectDecrease extends LogicBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         this.initialState = getParameterByName("InitialState");
-
-        // Add all parameters to parameter list if they exist
-        if (this.vinWhenRising != null) parameterList.add(this.vinWhenRising);
-        if (this.vinWhenFalling != null) parameterList.add(this.vinWhenFalling);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-        if (this.initialState != null) parameterList.add(this.initialState);
-
         
         initializePorts();
 

@@ -166,17 +166,6 @@ public class Derivative extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list if they exist
-        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.coefficientSource != null) parameterList.add(this.coefficientSource);
-        if (this.externalReset != null) parameterList.add(this.externalReset);
-        if (this.conditionSource != null) parameterList.add(this.conditionSource);
-        if (this.showStatePort != null) parameterList.add(this.showStatePort);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports based on legacy logic
         input = new InputPort(this, 1);
         inputPortList.add(input);
@@ -210,17 +199,6 @@ public class Derivative extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.coefficientSource != null) parameterList.add(this.coefficientSource);
-        if (this.externalReset != null) parameterList.add(this.externalReset);
-        if (this.conditionSource != null) parameterList.add(this.conditionSource);
-        if (this.showStatePort != null) parameterList.add(this.showStatePort);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Execute initialization logic exactly like JSONObject constructor
         initializePorts();

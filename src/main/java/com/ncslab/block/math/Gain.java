@@ -347,8 +347,8 @@ public class Gain extends MathBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        String codeStr = TemplateManager.renderTemplate("c/math/Gain/init.vm", context);
-        code.addInitCode(codeStr);
+        // String codeStr = TemplateManager.renderTemplate("c/math/Gain/init.vm", context);
+        // code.addInitCode(codeStr);
     }
 
     private boolean isMatrixMultiplication() {

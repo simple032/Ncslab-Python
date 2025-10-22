@@ -126,15 +126,6 @@ public class CompareToConstant extends LogicBlock {
         this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.constantValue != null) parameterList.add(this.constantValue);
-        if (this.relationalOperator != null) parameterList.add(this.relationalOperator);
-        if (this.logicDataType != null) parameterList.add(this.logicDataType);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports
         initializePorts();
     }    /**
@@ -150,14 +141,6 @@ public class CompareToConstant extends LogicBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add parameters to parameterList for template context population
-        if (this.constantValue != null) parameterList.add(this.constantValue);
-        if (this.relationalOperator != null) parameterList.add(this.relationalOperator);
-        if (this.logicDataType != null) parameterList.add(this.logicDataType);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();

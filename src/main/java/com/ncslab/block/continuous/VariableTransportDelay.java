@@ -128,17 +128,6 @@ public class VariableTransportDelay extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous delay
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Add all parameters to parameter list if they exist
-        if (this.delayType != null) parameterList.add(this.delayType);
-        if (this.maximumDelayTime != null) parameterList.add(this.maximumDelayTime);
-        if (this.initialOutput != null) parameterList.add(this.initialOutput);
-        if (this.initialBufferSize != null) parameterList.add(this.initialBufferSize);
-        if (this.padeOrder != null) parameterList.add(this.padeOrder);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports
         initializePorts();
     }    /**
@@ -156,17 +145,6 @@ public class VariableTransportDelay extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.delayType != null) parameterList.add(this.delayType);
-        if (this.maximumDelayTime != null) parameterList.add(this.maximumDelayTime);
-        if (this.initialOutput != null) parameterList.add(this.initialOutput);
-        if (this.initialBufferSize != null) parameterList.add(this.initialBufferSize);
-        if (this.padeOrder != null) parameterList.add(this.padeOrder);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         
         initializePorts();
 

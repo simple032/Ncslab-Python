@@ -5,6 +5,7 @@ import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import lombok.Getter;
+import lombok.Setter;
 import Jama.Matrix;
 
 public class Parameter {
@@ -19,6 +20,7 @@ public class Parameter {
     @Getter
     private String localName;
     @Getter
+	@Setter
 	private Block block;
 
     @Getter

@@ -120,12 +120,6 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         
         initializePorts();
         

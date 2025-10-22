@@ -66,6 +66,7 @@ public class To extends RouteBlock {
     }
 
     // === Private Constructor with Typed Parameters ===
+    @SuppressWarnings("deprecation")
     private To(Parameter gotoTag, Parameter iconDisplay, Parameter sampleTime,
               Parameter outDataType, Parameter saturateOnIntegerOverflow,
               String blockName, String blockPath, String blockUUID, NCSLabModel model) {
@@ -87,6 +88,7 @@ public class To extends RouteBlock {
 
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
+    @SuppressWarnings("deprecation")
 	public To(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);
 
@@ -117,14 +119,6 @@ public class To extends RouteBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.gotoTag != null) parameterList.add(this.gotoTag);
-        if (this.iconDisplay != null) parameterList.add(this.iconDisplay);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         
         initializePorts();
 

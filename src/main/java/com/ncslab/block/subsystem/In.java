@@ -92,13 +92,6 @@ public class In extends Block {
         this.portDimensions = getParameterByName("PortDimensions");
         this.sampleTime = getParameterByName("SampleTime");
         this.outputDataType = getParameterByName("OutputDataTypeStr");
-
-        // Add all parameters to parameter list if they exist
-        if (this.port != null) parameterList.add(this.port);
-        if (this.portDimensions != null) parameterList.add(this.portDimensions);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outputDataType != null) parameterList.add(this.outputDataType);
-
         
         initializePorts();
     }    /**
@@ -113,13 +106,6 @@ public class In extends Block {
         this.portDimensions = getParameterByName("PortDimensions");
         this.sampleTime = getParameterByName("SampleTime");
         this.outputDataType = getParameterByName("OutputDataTypeStr");
-
-        // Add all parameters to parameter list if they exist
-        if (this.port != null) parameterList.add(this.port);
-        if (this.portDimensions != null) parameterList.add(this.portDimensions);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outputDataType != null) parameterList.add(this.outputDataType);
-
         
         initializePorts();
 

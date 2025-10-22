@@ -123,15 +123,6 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         // Create missing SIMULINK parameters with defaults
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.gain != null) parameterList.add(this.gain);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.integratorMethod != null) parameterList.add(this.integratorMethod);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports
         initializePorts();
     }    /**
@@ -147,15 +138,6 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.gain != null) parameterList.add(this.gain);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.integratorMethod != null) parameterList.add(this.integratorMethod);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         
         initializePorts();
 

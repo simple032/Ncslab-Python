@@ -977,7 +977,19 @@ abstract public class CodeStructC{
 
 	public boolean makeExeFile() {
 		try {
-            Process process = Runtime.getRuntime().exec(maketool, null, new File(codePath));
+            // Use ProcessBuilder instead of deprecated Runtime.exec()
+            ProcessBuilder processBuilder = new ProcessBuilder();
+
+            // Split the maketool command into command and arguments
+            // This handles commands like "make" or "mingw32-make"
+            String[] commandParts = maketool.split("\\s+");
+            processBuilder.command(commandParts);
+
+            // Set working directory
+            processBuilder.directory(new File(codePath));
+
+            // Start the process
+            Process process = processBuilder.start();
 
             // 创建线程读取标准输出和错误输出
             StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
@@ -1236,6 +1248,9 @@ abstract public class CodeStructC{
 		for(Block block:model.getBlockList()) {
 			dataStructureInitCode+="/*Initialize parameters for block ("+block.getBlockId()+")"+block.getBlockName()+"*/\n";
 			for(Parameter parameter:block.getParameterList()) {
+				if(parameter.getBlock() == null){
+					parameter.setBlock(block);
+				}
 				dataStructureInitCode+=parameter.getDataStructureInitCodeC();
 			}
 		}

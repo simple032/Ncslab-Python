@@ -145,15 +145,6 @@ public class Sum extends MathBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         this.icon = getParameterByName("Icon");
-
-        // Add all parameters to parameter list if they exist
-        if (this.inputs != null) parameterList.add(this.inputs);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.inputSameDT != null) parameterList.add(this.inputSameDT);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-        if (this.icon != null) parameterList.add(this.icon);
-
         
         initializePorts();
     }    /**
@@ -170,15 +161,6 @@ public class Sum extends MathBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         this.icon = getParameterByName("Icon");
-
-        // Add all parameters to parameter list if they exist
-        if (this.inputs != null) parameterList.add(this.inputs);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.inputSameDT != null) parameterList.add(this.inputSameDT);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-        if (this.icon != null) parameterList.add(this.icon);
-
         
         initializePorts();
 

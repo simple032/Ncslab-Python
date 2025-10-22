@@ -127,15 +127,6 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         // Create missing SIMULINK parameters with defaults
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.numerator != null) parameterList.add(this.numerator);
-        if (this.denominator != null) parameterList.add(this.denominator);
-        if (this.initialStates != null) parameterList.add(this.initialStates);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Determine feedthrough
         if (denominator.getWidth() == numerator.getWidth()) {
             feedThrough = true;
@@ -166,15 +157,6 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.numerator != null) parameterList.add(this.numerator);
-        if (this.denominator != null) parameterList.add(this.denominator);
-        if (this.initialStates != null) parameterList.add(this.initialStates);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         
         initializePorts();
         

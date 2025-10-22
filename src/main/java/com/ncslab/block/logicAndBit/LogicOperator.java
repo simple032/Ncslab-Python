@@ -364,7 +364,7 @@ public class LogicOperator extends LogicBlock {
         context.put("opsName", out.getOutputSignalC().getName());
         context.put("operator", operatorValue);
         context.put("signal1", signal1);
-        context.put("blockBlockId", blockId); // Add blockBlockId for template
+        context.put("blockId", blockId); // Add blockId for template
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
         
         // Add input signal name for template - this will be used in the foreach loop

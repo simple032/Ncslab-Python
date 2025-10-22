@@ -47,14 +47,15 @@ public class Subsystem extends Block{
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
     
+    @SuppressWarnings("deprecation")
     public Subsystem(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
         inBlockList = new ArrayList<>();
         outBlockList = new ArrayList<>();
-        
+
         // Initialize NCSLabSystem to manage subsystem's internal structure
         innerSystem = new NCSLabSystem();
-        
+
         // Initialize with empty collections - blocks and lines will be added via management methods
     }
 

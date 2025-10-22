@@ -75,6 +75,27 @@ public class Data {
 
         initString = inString.trim();
 
+        dataString = initString;
+        if (isStringMatrix(dataString)) {
+            System.out.println("Matrix: " + dataString);
+            dataType = DataType.MATRIX;
+            initMatrix = parseMatrix(dataString);
+        } else {
+            try {
+                initValue = Double.parseDouble(dataString);
+                intValue = (int) initValue;
+            } catch (NumberFormatException | JexlException ee) {
+                // 如果解析失败，将 initString 设置为 dataString
+                initString = dataString;
+            }
+        }
+	}
+
+    /* 根据从前端传递来的字符串建立数据 */
+	public Data(String inString, boolean parsedAuto) {
+
+        initString = inString.trim();
+
         dataString = parseExpression(inString);
         if (isStringMatrix(dataString)) {
             System.out.println("Matrix: " + dataString);
@@ -106,7 +127,7 @@ public class Data {
     }
 
 	private static String parseExpression(String dataString) {
-		// 使用M2PCode解析表达式
+		// TODO:使用M2PCode解析表达式，将硬编码18替换为实际用户ID
         MfcalcClient client = MfcalcClientManager.getClientForUser("18");
         String result = dataString;
 

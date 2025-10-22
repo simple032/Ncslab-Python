@@ -143,15 +143,10 @@ public class Step extends SourceBlock {
         }
         
         // Initialize from DTO parameters
-        this.time = createParameterFromDto("Time", dto.getTime(), dto);
-        this.initialValue = createParameterFromDto("InitialValue", dto.getInitialValue(), dto);
-        this.finalValue = createParameterFromDto("FinalValue", dto.getFinalValue(), dto);
-        
-        // Add parameters to parameter list
-        parameterList.add(time);
-        parameterList.add(initialValue);
-        parameterList.add(finalValue);
-        
+        this.time = getParameterByName("Time");
+        this.initialValue = getParameterByName("InitialValue");
+        this.finalValue = getParameterByName("FinalValue");
+
         // Complete initialization
         // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
         

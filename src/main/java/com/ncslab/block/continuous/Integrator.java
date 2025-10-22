@@ -229,19 +229,6 @@ public class Integrator extends ContinuousBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list if they exist
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.externalReset != null) parameterList.add(this.externalReset);
-        if (this.conditionSource != null) parameterList.add(this.conditionSource);
-        if (this.limitOutput != null) parameterList.add(this.limitOutput);
-        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
-        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
-        if (this.showSaturationPort != null) parameterList.add(this.showSaturationPort);
-        if (this.showStatePort != null) parameterList.add(this.showStatePort);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports based on legacy logic
         input = new InputPort(this, 1);
         inputPortList.add(input);
@@ -738,20 +725,6 @@ public class Integrator extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.externalReset != null) parameterList.add(this.externalReset);
-        if (this.conditionSource != null) parameterList.add(this.conditionSource);
-        if (this.limitOutput != null) parameterList.add(this.limitOutput);
-        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
-        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
-        if (this.showSaturationPort != null) parameterList.add(this.showSaturationPort);
-        if (this.showStatePort != null) parameterList.add(this.showStatePort);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports
         initializePorts();
 

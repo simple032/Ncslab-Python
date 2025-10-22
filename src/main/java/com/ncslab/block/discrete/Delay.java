@@ -169,14 +169,6 @@ public class Delay extends DiscreteBlock {
         // Create missing SIMULINK parameters with defaults
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.delayLength != null) parameterList.add(this.delayLength);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Set discrete sample time
         setSampleTime(sampleTimeParam);
 
@@ -197,13 +189,6 @@ public class Delay extends DiscreteBlock {
         this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add parameters to parameterList for template context population
-        if (this.delayLength != null) parameterList.add(this.delayLength);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);

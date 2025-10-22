@@ -98,9 +98,13 @@ public class NewMotor extends Block {
         }
     }
 
+    String hardwareDefineName;
+
     public String getHardwareDefineCodeC() {
-        context.put("block", this);
-        
+        hardwareDefineName = "Block" + this.getBlockId() + "_NewMotor";
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        context.put("hardwareDefineName", hardwareDefineName);
+
         return TemplateManager.renderTemplate("c/testrig/NewMotor/hardware_define.vm", context);
     }
 
@@ -131,7 +135,9 @@ public class NewMotor extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
+        hardwareDefineName = "Block" + this.getBlockId() + "_NewMotor";
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        context.put("hardwareDefineName", hardwareDefineName);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/NewMotor/init.vm", context);
         code.addInitCode(codeStr);
@@ -145,17 +151,20 @@ public class NewMotor extends Block {
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add hardware-specific template variables
-        context.put("hardwareDefineName", "Block" + getBlockId() + "_NewMotor");
-        
+        // Ensure hardwareDefineName is set
+        if (hardwareDefineName == null) {
+            hardwareDefineName = "Block" + this.getBlockId() + "_NewMotor";
+        }
+        context.put("hardwareDefineName", hardwareDefineName);
+
         // Add input variable for template
-        if (inputPortList != null && !inputPortList.isEmpty() && 
+        if (inputPortList != null && !inputPortList.isEmpty() &&
             inputPortList.get(0).getLinkedLine() != null &&
             inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
             context.put("input", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
         }
-        
-        // Add output variables for template  
+
+        // Add output variables for template
         if (outputPortList.size() > 0) {
             context.put("output1", outputPortList.get(0).getOutputSignalC().getName());
         }

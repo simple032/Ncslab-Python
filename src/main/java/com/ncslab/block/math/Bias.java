@@ -288,8 +288,8 @@ public class Bias extends MathBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        String codeStr = TemplateManager.renderTemplate("c/math/Bias/init.vm", context);
-        code.addInitCode(codeStr);
+        // String codeStr = TemplateManager.renderTemplate("c/math/Bias/init.vm", context);
+        // code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {

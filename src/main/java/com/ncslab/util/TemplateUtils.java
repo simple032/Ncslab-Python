@@ -40,31 +40,46 @@ public class TemplateUtils {
         java.util.List<Object> paramValues = new java.util.ArrayList<>();
         
         for (com.ncslab.block.io.Parameter param : block.getParameterList()) {
-            String paramName = param.getName();
-            String paramVar = param.getName(); // C variable name
+            String paramName = param.getName(); // Already includes Block{id}_ prefix
+            String paramLocalName = param.getLocalName(); // Local name without prefix
+            String paramVar = paramName; // Use the full name as-is, already properly prefixed
             Object paramValue = param.getData().getInitValue();
-            
+
             paramNames.add(paramName);
             paramVariables.add(paramVar);
             paramValues.add(paramValue);
-            
-            // Individual parameter access (legacy)
-            context.put(paramName, paramVar); // C variable name as string
-            context.put(paramName + "Name", paramVar); // Explicit C variable name
-            context.put(paramName + "Value", paramValue);
-            context.put(paramName + "Object", param); // Keep object for advanced access if needed
-            
-            // Add generic template variable names for backward compatibility
-            if ("Gain".equals(paramName)) {
+
+            // Individual parameter access using local name to avoid double prefixing
+            context.put(paramLocalName, paramVar); // C variable name as string
+            context.put(paramLocalName + "Name", paramVar); // Explicit C variable name
+            context.put(paramLocalName + "Value", paramValue);
+            context.put(paramLocalName + "Object", param); // Keep object for advanced access if needed
+
+            // Add generic template variable names for backward compatibility using local name
+            if ("Gain".equals(paramLocalName)) {
                 context.put("parameterName", paramVar); // For Gain block templates
                 context.put("gainName", paramVar);
             }
-            if ("SampleTime".equals(paramName)) {
+            if ("SampleTime".equals(paramLocalName)) {
                 context.put("sampleTimeName", paramVar); // For discrete block templates
             }
-            if ("offset".equals(paramName) || "Offset".equals(paramName)) {
+            if ("offset".equals(paramLocalName) || "Offset".equals(paramLocalName)) {
                 context.put("offsetName", paramVar);
                 context.put("offsetInitCodeC", paramVar + " = " + paramValue + ";");
+            }
+
+            // PID Controller specific parameter mappings using local name
+            if ("P".equals(paramLocalName)) {
+                context.put("proportionalGainName", paramVar);
+            }
+            if ("I".equals(paramLocalName)) {
+                context.put("integralGainName", paramVar);
+            }
+            if ("D".equals(paramLocalName)) {
+                context.put("derivativeGainName", paramVar);
+            }
+            if ("N".equals(paramLocalName)) {
+                context.put("filterCoefficientName", paramVar);
             }
         }
         
@@ -77,22 +92,28 @@ public class TemplateUtils {
         java.util.List<String> stateNames = new java.util.ArrayList<>();
         java.util.List<String> stateVariables = new java.util.ArrayList<>();
         java.util.List<Object> stateValues = new java.util.ArrayList<>();
-        
+
         for (com.ncslab.block.io.State state : block.getStateList()) {
-            String stateName = state.getName();
-            String stateVar = state.getName(); // C variable name
+            String stateName = state.getName(); // Already includes Block{id}_State_ prefix
+            String stateVar = stateName; // Use as-is, already properly prefixed
+            String stateLocalName = state.getLocalName(); // Local name without prefix
             Object stateValue = state.getData().getInitValue();
-            
+
             stateNames.add(stateName);
             stateVariables.add(stateVar);
             stateValues.add(stateValue);
-            
-            // Individual state access (legacy)
+
+            // Individual state access (legacy) - use full state name as key
             context.put(stateName, stateVar); // C variable name as string
             context.put(stateName + "Name", stateVar); // Explicit C variable name
             context.put(stateName + "Value", stateValue);
             context.put(stateName + "Object", state); // Keep object for advanced access if needed
-            
+
+            // Add local name mapping to avoid double prefixing
+            context.put(stateLocalName, stateVar); // Map local name to full C variable name
+            context.put(stateLocalName + "Name", stateVar); // Explicit mapping for template access
+            context.put(stateLocalName + "Value", stateValue);
+
             // Add generic template variable names for backward compatibility
             if (stateName.contains("stateX") || stateName.contains("stateOutput")) {
                 context.put("stateOutputName", stateVar);
@@ -144,8 +165,9 @@ public class TemplateUtils {
 
         // Add parameter dimension information (for blocks like Gain that need gainHeight/gainWidth)
         for (com.ncslab.block.io.Parameter param : block.getParameterList()) {
-            context.put(param.getName() + "Height", param.getHeight());
-            context.put(param.getName() + "Width", param.getWidth());
+            String paramLocalName = param.getLocalName(); // Use local name to avoid double prefixing
+            context.put(paramLocalName + "Height", param.getHeight());
+            context.put(paramLocalName + "Width", param.getWidth());
         }
 
         // Add DataType constants for template comparisons
@@ -245,6 +267,30 @@ public class TemplateUtils {
         public int max(int a, int b) { return Math.max(a, b); }
         public int min(int a, int b) { return Math.min(a, b); }
         public int abs(int a) { return Math.abs(a); }
+
+        // Support for array-style access: $math.sub[$width][1] should return $width - 1
+        // This creates a nested array structure for subtraction operations
+        public java.util.Map<Integer, java.util.Map<Integer, Integer>> sub = new java.util.HashMap<Integer, java.util.Map<Integer, Integer>>() {
+            @Override
+            public java.util.Map<Integer, Integer> get(Object key) {
+                if (key instanceof Integer) {
+                    final int outerIndex = (Integer) key;
+                    return new java.util.HashMap<Integer, Integer>() {
+                        @Override
+                        public Integer get(Object innerKey) {
+                            if (innerKey instanceof Integer) {
+                                int innerIndex = (Integer) innerKey;
+                                if (innerIndex == 1) {
+                                    return outerIndex - 1;  // $math.sub[$width][1] = $width - 1
+                                }
+                            }
+                            return 0;
+                        }
+                    };
+                }
+                return new java.util.HashMap<>();
+            }
+        };
     }
 
     /**

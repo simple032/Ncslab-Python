@@ -207,14 +207,6 @@ public class Add extends MathBlock {
         this.inputSameDT = getParameterByName("InputSameDT");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.inputs != null) parameterList.add(this.inputs);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.inputSameDT != null) parameterList.add(this.inputSameDT);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         //  based on sequence
         initializePorts();
     }

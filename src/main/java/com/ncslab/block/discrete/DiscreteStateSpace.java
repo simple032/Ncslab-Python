@@ -142,17 +142,6 @@ public class DiscreteStateSpace extends DiscreteBlock {
         this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.A != null) parameterList.add(this.A);
-        if (this.B != null) parameterList.add(this.B);
-        if (this.C != null) parameterList.add(this.C);
-        if (this.D != null) parameterList.add(this.D);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Determine feedthrough
         if (D.isZero()) {
             feedThrough = false;
@@ -181,17 +170,6 @@ public class DiscreteStateSpace extends DiscreteBlock {
         this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.A != null) parameterList.add(this.A);
-        if (this.B != null) parameterList.add(this.B);
-        if (this.C != null) parameterList.add(this.C);
-        if (this.D != null) parameterList.add(this.D);
-        if (this.initialCondition != null) parameterList.add(this.initialCondition);
-        if (this.sampleTimeParam != null) parameterList.add(this.sampleTimeParam);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         
         initializePorts();
         

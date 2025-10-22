@@ -64,6 +64,7 @@ public class BlockType{
         blockClassTree.put("SineWave", com.ncslab.block.source.SineWave.class);
         blockClassTree.put("Sin", com.ncslab.block.source.SineWave.class);
         blockClassTree.put("Band-LimitedWhiteNoise", com.ncslab.block.source.BandLimitedWhiteNoise.class);
+        blockClassTree.put("Band-Limited White Noise", com.ncslab.block.source.BandLimitedWhiteNoise.class);
 
         blockClassTree.put("Sum", com.ncslab.block.math.Sum.class);
         blockClassTree.put("Gain", com.ncslab.block.math.Gain.class);
@@ -72,6 +73,7 @@ public class BlockType{
         blockClassTree.put("Sign", com.ncslab.block.math.Sign.class);
         blockClassTree.put("Product", com.ncslab.block.math.Product.class);
         blockClassTree.put("MathFunction", com.ncslab.block.math.MathFunction.class);
+        blockClassTree.put("Math Function", com.ncslab.block.math.MathFunction.class);
         blockClassTree.put("Math", com.ncslab.block.math.MathFunction.class);
         blockClassTree.put("TestPoint", com.ncslab.block.math.TestPoint.class);
         blockClassTree.put("abc2dq", com.ncslab.block.math.abc2dq0.class);

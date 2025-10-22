@@ -131,16 +131,6 @@ public class Pulse extends SourceBlock {
         this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous pulse
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Add all parameters to parameter list if they exist
-        if (this.amplitude != null) parameterList.add(this.amplitude);
-        if (this.period != null) parameterList.add(this.period);
-        if (this.pulseWidth != null) parameterList.add(this.pulseWidth);
-        if (this.phaseDelay != null) parameterList.add(this.phaseDelay);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports
         initializePorts();
     }    /**
@@ -158,16 +148,6 @@ public class Pulse extends SourceBlock {
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
-        // Add all parameters to parameter list if they exist
-        if (this.amplitude != null) parameterList.add(this.amplitude);
-        if (this.period != null) parameterList.add(this.period);
-        if (this.pulseWidth != null) parameterList.add(this.pulseWidth);
-        if (this.phaseDelay != null) parameterList.add(this.phaseDelay);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
-        
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + pulseDto.getBlockName());

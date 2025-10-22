@@ -174,19 +174,6 @@ public class StateSpace extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous state space
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Add all parameters to parameter list if they exist
-        if (this.stateMatrix != null) parameterList.add(this.stateMatrix);
-        if (this.inputMatrix != null) parameterList.add(this.inputMatrix);
-        if (this.outputMatrix != null) parameterList.add(this.outputMatrix);
-        if (this.feedthroughMatrix != null) parameterList.add(this.feedthroughMatrix);
-        if (this.initialState != null) parameterList.add(this.initialState);
-        if (this.absoluteTolerance != null) parameterList.add(this.absoluteTolerance);
-        if (this.continuousStateAttributes != null) parameterList.add(this.continuousStateAttributes);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Determine feedthrough
         if (feedthroughMatrix.isZero()) {
             feedThrough = false;
@@ -222,19 +209,6 @@ public class StateSpace extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.stateMatrix != null) parameterList.add(this.stateMatrix);
-        if (this.inputMatrix != null) parameterList.add(this.inputMatrix);
-        if (this.outputMatrix != null) parameterList.add(this.outputMatrix);
-        if (this.feedthroughMatrix != null) parameterList.add(this.feedthroughMatrix);
-        if (this.initialState != null) parameterList.add(this.initialState);
-        if (this.absoluteTolerance != null) parameterList.add(this.absoluteTolerance);
-        if (this.continuousStateAttributes != null) parameterList.add(this.continuousStateAttributes);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize states and ports
         initializeStates();
         initializePorts();

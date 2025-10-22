@@ -150,14 +150,6 @@ public class Switch extends RouteBlock {
         this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.threshold != null) parameterList.add(this.threshold);
-        if (this.criteria != null) parameterList.add(this.criteria);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports
         initializePorts();
     }    
@@ -185,14 +177,6 @@ public class Switch extends RouteBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.threshold != null) parameterList.add(this.threshold);
-        if (this.criteria != null) parameterList.add(this.criteria);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         //  logic exactly like JSONObject constructor
         initializePorts();
         

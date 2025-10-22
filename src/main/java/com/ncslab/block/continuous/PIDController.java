@@ -208,23 +208,6 @@ public class PIDController extends ContinuousBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.proportionalGain != null) parameterList.add(this.proportionalGain);
-        if (this.integralGain != null) parameterList.add(this.integralGain);
-        if (this.derivativeGain != null) parameterList.add(this.derivativeGain);
-        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
-        if (this.formulationType != null) parameterList.add(this.formulationType);
-        if (this.externalReset != null) parameterList.add(this.externalReset);
-        if (this.initialConditionForIntegrator != null) parameterList.add(this.initialConditionForIntegrator);
-        if (this.initialConditionForFilter != null) parameterList.add(this.initialConditionForFilter);
-        if (this.limitOutput != null) parameterList.add(this.limitOutput);
-        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
-        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
-
         // Initialize ports based on legacy logic
         input = new InputPort(this, 1);
         inputPortList.add(input);
@@ -263,22 +246,6 @@ public class PIDController extends ContinuousBlock {
         this.sampleTime = getParameterOrDefault("SampleTime", 12, "SampleTime");
         this.outDataType = getParameterOrDefault("OutDataTypeStr", 13, "OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterOrDefault("SaturateOnIntegerOverflow", 14, "SaturateOnIntegerOverflow");
-
-        // Add all parameters to parameter list if they exist
-        if (this.proportionalGain != null) parameterList.add(this.proportionalGain);
-        if (this.integralGain != null) parameterList.add(this.integralGain);
-        if (this.derivativeGain != null) parameterList.add(this.derivativeGain);
-        if (this.filterCoefficient != null) parameterList.add(this.filterCoefficient);
-        if (this.formulationType != null) parameterList.add(this.formulationType);
-        if (this.externalReset != null) parameterList.add(this.externalReset);
-        if (this.initialConditionForIntegrator != null) parameterList.add(this.initialConditionForIntegrator);
-        if (this.initialConditionForFilter != null) parameterList.add(this.initialConditionForFilter);
-        if (this.limitOutput != null) parameterList.add(this.limitOutput);
-        if (this.upperSaturationLimit != null) parameterList.add(this.upperSaturationLimit);
-        if (this.lowerSaturationLimit != null) parameterList.add(this.lowerSaturationLimit);
-        if (this.sampleTime != null) parameterList.add(this.sampleTime);
-        if (this.outDataType != null) parameterList.add(this.outDataType);
-        if (this.saturateOnIntegerOverflow != null) parameterList.add(this.saturateOnIntegerOverflow);
 
         // Initialize ports
         initializePorts();
