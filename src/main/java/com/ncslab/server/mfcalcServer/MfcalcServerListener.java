@@ -20,7 +20,7 @@ public class MfcalcServerListener implements ServletContextListener{
          // TODO Auto-generated method stub
         MfcalcServer server = MfcalcServer.instance;
         if (server != null) {
-            server.stop();
+            server.shutdown();
             System.out.println("MfcalcServer stopped.");
         }
     }

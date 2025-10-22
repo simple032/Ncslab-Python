@@ -161,4 +161,22 @@ public class MfcalcThread extends Thread {
 		}
 	}
 
+	/**
+	 * Gracefully shuts down this MfcalcThread.
+	 * Closes the socket connection and interrupts the thread.
+	 */
+	public void shutdown() {
+		// Close the socket if it's open
+		if (socket != null && !socket.isClosed()) {
+			try {
+				socket.close();
+			} catch (Exception e) {
+				System.err.println("Error closing socket: " + e.getMessage());
+			}
+		}
+
+		// Interrupt the thread to wake it up from wait()
+		this.interrupt();
+	}
+
 }

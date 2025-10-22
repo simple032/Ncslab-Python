@@ -21,8 +21,13 @@ public class ServerListener implements ServletContextListener {
 	/**
      * @see ServletContextListener#contextDestroyed(ServletContextEvent)
      */
-    public void contextDestroyed(ServletContextEvent arg0)  { 
-         // TODO Auto-generated method stub
+    public void contextDestroyed(ServletContextEvent arg0)  {
+         // Shutdown the SimulationServer to prevent thread leaks
+        SimulationServer server = SimulationServer.instance;
+        if (server != null) {
+            server.shutdown();
+            System.out.println("SimulationServer stopped.");
+        }
     }
 
 	/**

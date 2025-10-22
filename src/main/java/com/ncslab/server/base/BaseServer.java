@@ -14,9 +14,15 @@ import java.util.*;
 public abstract class BaseServer<T extends BaseServerThread<T, ?>> extends Thread {
 
     public static int ServerDefaultPort = 2001;
-    
+
     protected Vector<T> threadList = new Vector<T>();
     protected String serverName = "BaseServer";
+
+    /** Flag to signal server shutdown */
+    private volatile boolean running = true;
+
+    /** Server socket for accepting connections */
+    protected ServerSocket serverSocket;
     
     /**
      * Constructor that allows setting the server name.
@@ -114,25 +120,75 @@ public abstract class BaseServer<T extends BaseServerThread<T, ?>> extends Threa
     @Override
     public void run() {
         System.out.println(getStartLogText());
-        
+
         try {
             int port = getPort();
-            ServerSocket serverSocket = new ServerSocket(port);
-            
-            Socket socket = new Socket();
-            
-            while(true) {
-                socket = serverSocket.accept();
-                
-                T thread = createServerThread(socket);
-                threadList.add(thread);
-                thread.start();
-                
-                InetAddress address = socket.getInetAddress();
-                System.out.println(getClientConnectedLogText(address));
+            serverSocket = new ServerSocket(port);
+
+            while(running) {
+                try {
+                    Socket socket = serverSocket.accept();
+
+                    if (!running) {
+                        socket.close();
+                        break;
+                    }
+
+                    T thread = createServerThread(socket);
+                    threadList.add(thread);
+                    thread.start();
+
+                    InetAddress address = socket.getInetAddress();
+                    System.out.println(getClientConnectedLogText(address));
+                } catch (SocketException e) {
+                    // Socket closed during shutdown, exit gracefully
+                    if (!running) {
+                        break;
+                    }
+                    throw e;
+                }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (running) {
+                e.printStackTrace();
+            }
+        } finally {
+            closeServerSocket();
+        }
+    }
+
+    /**
+     * Gracefully shuts down the server.
+     * Stops accepting new connections and closes all active threads.
+     * This method replaces the deprecated Thread.stop().
+     */
+    public void shutdown() {
+        running = false;
+        closeServerSocket();
+
+        // Close all active threads
+        synchronized(threadList) {
+            for (T thread : threadList) {
+                try {
+                    thread.shutdown();
+                } catch (Exception e) {
+                    System.err.println("Error shutting down thread: " + e.getMessage());
+                }
+            }
+            threadList.clear();
+        }
+    }
+
+    /**
+     * Closes the server socket if it's open.
+     */
+    private void closeServerSocket() {
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+            } catch (Exception e) {
+                System.err.println("Error closing server socket: " + e.getMessage());
+            }
         }
     }
 }

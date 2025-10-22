@@ -63,4 +63,23 @@ public abstract class BaseServerThread<T extends BaseServerThread<T, S>, S exten
      * @param isBusy true if the thread is busy, false otherwise
      */
     public void setIsBusy(boolean isBusy) { this.isBusy = isBusy; }
+
+    /**
+     * Gracefully shuts down this thread.
+     * Closes the socket connection and interrupts the thread if it's running.
+     * Subclasses can override this to add additional cleanup logic.
+     */
+    public void shutdown() {
+        // Close the socket if it's open
+        if (socket != null && !socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (Exception e) {
+                System.err.println("Error closing socket: " + e.getMessage());
+            }
+        }
+
+        // Interrupt the thread to wake it up from any blocking operations
+        this.interrupt();
+    }
 }

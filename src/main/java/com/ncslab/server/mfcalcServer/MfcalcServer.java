@@ -11,6 +11,9 @@ public static MfcalcServer instance=new MfcalcServer();
 	public static int ServerDefaultPort= 2003;
 	private Vector<MfcalcThread> mfcalcThreadList=new Vector<MfcalcThread>();
 
+	/** Flag to signal server shutdown */
+	private volatile boolean running = true;
+
 	public void removeMfcalcThread(MfcalcThread thread) {
 		mfcalcThreadList.remove(thread);
 	}
@@ -59,11 +62,40 @@ public static MfcalcServer instance=new MfcalcServer();
 //                System.out.println("HelloMfcalcServer");
 //            }
 			synchronized(thread) {
-				thread.wait(Long.MAX_VALUE);
+				while (running) {
+					thread.wait(1000); // Wait with timeout to check running flag periodically
+				}
 			}
+		} catch (InterruptedException e) {
+			// Thread interrupted, exit gracefully
+			Thread.currentThread().interrupt();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Gracefully shuts down the MfcalcServer.
+	 * Stops all active threads and releases resources.
+	 * This method replaces the deprecated Thread.stop().
+	 */
+	public void shutdown() {
+		running = false;
+
+		// Close all active threads
+		synchronized(mfcalcThreadList) {
+			for (MfcalcThread thread : mfcalcThreadList) {
+				try {
+					thread.shutdown();
+				} catch (Exception e) {
+					System.err.println("Error shutting down MfcalcThread: " + e.getMessage());
+				}
+			}
+			mfcalcThreadList.clear();
+		}
+
+		// Interrupt the server thread to wake it up from wait()
+		this.interrupt();
 	}
 }

@@ -16,7 +16,7 @@ public class OctaveServerListener implements ServletContextListener{
         // 释放资源
         OctaveServer server = OctaveServer.instance;
         if (server != null) {
-            server.stop();
+            server.shutdown();
             System.out.println("OctaveServer stopped.");
         }
     }

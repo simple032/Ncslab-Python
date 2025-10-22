@@ -20,7 +20,7 @@ public class PythonServerListener implements ServletContextListener{
          // TODO Auto-generated method stub
         PythonServer server = PythonServer.instance;
         if (server != null) {
-            server.stop();
+            server.shutdown();
             System.out.println("PythonServer stopped.");
         }
     }
