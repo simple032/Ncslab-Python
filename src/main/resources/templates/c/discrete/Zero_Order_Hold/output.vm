@@ -1,16 +1,17 @@
-/* Code for output of block Zero_Order_Hold:(${blockId}) ${blockName} */
-{real_T sampleTimeTmp = $sampleTimeName == -1 ? model.stepSize : $sampleTimeName;
+/* Code for output of block Zero_Order_Hold: (${blockId}) ${blockName} */
+{
+    real_T Block${blockId}_sampleTimeTmp = ${sampleTimeName} == -1 ? model.stepSize : ${sampleTimeName};
 
 #if($signalDataType == $realDataType)
-if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-    ${output1} = $signalName;
-}
+    if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+        ${output1} = ${signalName};
+    }
 #else
   #foreach($i in [0..$optHeightIndex])
     #foreach($j in [0..$optWidthIndex])
-if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001) {
-    ${output1}(${i}, ${j}) = $signalName(${i}, ${j});
-}
+    if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+        ${output1}(${i}, ${j}) = ${signalName}(${i}, ${j});
+    }
     #end
   #end
 #end

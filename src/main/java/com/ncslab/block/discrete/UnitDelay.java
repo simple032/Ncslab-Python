@@ -140,41 +140,12 @@ public class UnitDelay extends DiscreteBlock {
      */
     public UnitDelay(UnitDelayDto blockDto, NCSLabModel model) {
         super(blockDto, model);
-
-        // Create parameters from DTO data to ensure they exist in parameterList
-        try {
-            // Create parameters manually if they don't exist in parameterList
-            if (parameterList.isEmpty()) {
-                this.initialCondition = new Parameter(this, 1, "InitialCondition", 
-                    blockDto.getInitialCondition() != null ? blockDto.getInitialCondition().getAsString() : "0.0");
-                this.sampleTimeParam = new Parameter(this, 2, "SampleTime", 
-                    blockDto.getSampleTime() != null ? blockDto.getSampleTime().getAsString() : "-1");
-                this.outDataType = new Parameter(this, 3, "OutDataTypeStr", 
-                    blockDto.getOutDataTypeStr() != null ? blockDto.getOutDataTypeStr().getAsString() : "Inherit: Same as input");
-                this.saturateOnIntegerOverflow = new Parameter(this, 4, "SaturateOnIntegerOverflow", 
-                    blockDto.getSaturateOnIntegerOverflow() != null ? blockDto.getSaturateOnIntegerOverflow().getAsString() : "off");
-                
-                // Add to parameter list for template access
-                parameterList.add(this.initialCondition);
-                parameterList.add(this.sampleTimeParam);
-                parameterList.add(this.outDataType);
-                parameterList.add(this.saturateOnIntegerOverflow);
-                
-                // Update parameter names for template access
-                this.initialCondition.updateName();
-                this.sampleTimeParam.updateName();
-                this.outDataType.updateName();
-                this.saturateOnIntegerOverflow.updateName();
-            } else {
-                // Get parameters by name from the automatically populated parameterList
-                this.initialCondition = getParameterByName("InitialCondition");
-                this.sampleTimeParam = getParameterByName("SampleTime");
-                this.outDataType = getParameterByName("OutDataTypeStr");
-                this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-            }
-        } catch (Exception e) {
-            throw new BlockCreationException("Failed to initialize UnitDelay parameters from DTO: " + e.getMessage(), e);
-        }
+       
+        // Get parameters by name from the automatically populated parameterList
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");    
 
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);

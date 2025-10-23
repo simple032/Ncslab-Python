@@ -6,7 +6,7 @@ Block${blockId}_state[0][0] = Block${blockId}_discrete_transferz_savedata[0][0];
 #set($s1WidthMax = $signal1Width - 1)
 #foreach($m in [0..$s1HeightMax])
   #foreach($n in [0..$s1WidthMax])
-    Block${blockId}_state[$m][$n*${stateDim}] = Block${blockId}_discrete_transferz_savedata[$m][$n];
+    Block${blockId}_state[${m}][${n}*${stateDim}] = Block${blockId}_discrete_transferz_savedata[${m}][${n}];
   #end
 #end
 #end

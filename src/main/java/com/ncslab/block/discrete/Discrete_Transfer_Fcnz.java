@@ -331,6 +331,11 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         context.put("signal2NameREAL", signal2.getName() + "_REAL");
         context.put("signal3NameREAL", signal3.getName() + "_REAL");
 
+        // Add signal data types for template conditionals
+        context.put("signal1DataType", signal1.getDataType());
+        context.put("signal2DataType", signal2.getDataType());
+        context.put("signal3DataType", signal3.getDataType());
+
         String outputCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/output.vm", context);
         code.addOutputCode(outputCode);
     }

@@ -1,25 +1,19 @@
-#set($inputSignal = $inputSignal)
-#set($outputSignal = $outputSignal)
-#set($sampleTime = $sampleTimeName)
-#set($initialCondition = $initialConditionName)
-
-
-/* Code for output of block Delay:($blockId)$blockName */
+/* Code for output of block Delay:(${blockId}) ${blockName} */
 {
-        int h = (int)($delayLength);
+    int h = (int)(${delayLength});
 
-    if (fabs((int)(model.time / $sampleTime + 0.5) - model.time / $sampleTime) < 0.000001 && mp->majorStep > 0) {
+    if (fabs((int)(model.time / ${SampleTimeName} + 0.5) - model.time / ${SampleTimeName}) < 0.000001 && mp->majorStep > 0) {
         for(int i = 0; i < h-1; i++) {
             Block${blockId}_discrete_delay_savedata[0][i] = Block${blockId}_discrete_delay_savedata[0][i+1];
         }
-        Block${blockId}_discrete_delay_savedata[0][h-1] = $inputSignal;
+        Block${blockId}_discrete_delay_savedata[0][h-1] = ${inputSignal};
     }
 
-    if ((model.time + 0.00001) < ($delayLength * $sampleTime)) {
-        $outputSignal = $initialCondition;
+    if ((model.time + 0.00001) < (${delayLength} * ${SampleTimeName})) {
+        ${outputSignal} = ${InitialConditionName};
     } else {
-        if (fabs((int)(model.time / $sampleTime + 0.5) - model.time / $sampleTime) < 0.000001) {
-            $outputSignal = Block${blockId}_discrete_delay_savedata[0][0];
+        if (fabs((int)(model.time / ${SampleTimeName} + 0.5) - model.time / ${SampleTimeName}) < 0.000001) {
+            ${outputSignal} = Block${blockId}_discrete_delay_savedata[0][0];
         }
     }
 }

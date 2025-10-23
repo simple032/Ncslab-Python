@@ -1,16 +1,17 @@
-/*Code for output of block Discrete_Time_Integrator:(${blockId})${blockName}*/
+/* Code for output of block Discrete_Time_Integrator: (${blockId}) ${blockName} */
 #if($signal && $gainval && $xState && $out && $sampleTime)
     #set($outputVar = $outputSignal)
     #set($inputVar = $signalName)
     #set($gainVar = $gainvalName)
     #set($stateVar = $xStateName)
     #set($sampleTimeVar = $sampleTimeName)
-    
-    ## Determine sample time
-    real_T sampleTimeTmp = $sampleTimeVar == -1 ? model.stepSize : $sampleTimeVar;
-    
+
+{
+    ## Determine sample time (block-scoped to avoid conflicts)
+    real_T Block${blockId}_sampleTimeTmp = ${sampleTimeVar} == -1 ? model.stepSize : ${sampleTimeVar};
+
     ## Check if it's a sample time hit
-    if(fabs(floor(model.time/sampleTimeTmp+0.5) - model.time/sampleTimeTmp) < 0.000001 && mp->majorStep > 0) {
+    if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001 && mp->majorStep > 0) {
         #if($signal.dataType == $realDataType)
             ## Scalar discrete-time integration
             #if($gainval.dataType == $realDataType)
@@ -75,9 +76,10 @@
             }
         #end
     }
+}
 #else
     ## Fallback if parameters missing
     #if($out)
-        $outputSignal = 0.0; /* Discrete_Time_Integrator block missing parameters */
+        ${outputSignal} = 0.0; /* Discrete_Time_Integrator block missing parameters */
     #end
 #end

@@ -255,16 +255,26 @@ public class Zero_Order_Hold extends DiscreteBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
-        
+
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Add block-specific context (keeping existing logic)
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        OutputPort ops = outputPortList.get(0);
-        context.put("signal", signal);
-        context.put("ops", ops);
-        context.put("optHeightIndex", ops.getHeight()-1);
-        context.put("optWidthIndex", ops.getWidth()-1);
+
+        // Get signal info for proper C variable names
+        InputPort inputPort = inputPortList.get(0);
+        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        // Add C variable name strings to context (following UnitDelay pattern)
+        String inputSignalName = getInputPortVariable(0);
+        context.put("signal", inputSignalName);
+        context.put("signalName", inputSignalName);
+        context.put("output1", getOutputPortVariable(0));
+
+        // Add data type and dimension information
+        context.put("signalDataType", signal.getDataType());
+        context.put("realDataType", DataType.REAL);
+        context.put("signalHeight", signal.getHeight());
+        context.put("signalWidth", signal.getWidth());
+        context.put("optHeightIndex", signal.getHeight()-1);
+        context.put("optWidthIndex", signal.getWidth()-1);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Zero_Order_Hold/output.vm", context);
         code.addOutputCode(codeStr);
@@ -272,12 +282,21 @@ public class Zero_Order_Hold extends DiscreteBlock {
 
     public void generateDiscreteUpdateCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("inputPortList", getInputPortList());
-        context.put("stateOutput", stateOutput);
-        context.put("signal", signal);
-        context.put("outputs", getOutputPortVariables());
+
+        // Get signal info for proper C variable names
+        InputPort inputPort = inputPortList.get(0);
+        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        // Add C variable name strings to context
+        String inputSignalName = getInputPortVariable(0);
+        context.put("signal", inputSignalName);
+        context.put("signalName", inputSignalName);
+        context.put("output1", getOutputPortVariable(0));
+        context.put("stateOutputName", stateOutput.getName());
+
+        // Add data type information
+        context.put("signalDataType", signal.getDataType());
+        context.put("realDataType", DataType.REAL);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Zero_Order_Hold/discrete_update.vm", context);
         code.addDiscreteUpdateCode(codeStr);

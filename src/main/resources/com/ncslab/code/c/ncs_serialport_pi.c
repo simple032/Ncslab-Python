@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <termios.h>
 
 #ifndef _WIN32
@@ -39,6 +40,9 @@ HANDLE Serialport_Open(char* port, uint32_t baudrate, char* msg)
         err = GetLastError();
         #endif // _WIN32
         sprintf(msg, "%s Open Error. Error code:%d.\r\n", port, err);
+        return INVALID_HANDLE_VALUE;
+    }else if(hComm < 0){
+        sprintf(msg, "%s Open Error.\r\n", port);
         return INVALID_HANDLE_VALUE;
     }
 
@@ -85,7 +89,11 @@ void Serialport_Flush(HANDLE handle)
  */
 BOOL Serialport_Send(HANDLE hComm, uint8_t* sendBuff,DWORD bytesToSend)
 {
-
+    if (hComm == INVALID_HANDLE_VALUE)
+    {
+        return FALSE;
+    }
+    
 	DWORD bytesSend = 0;
 
 	DWORD dwError;

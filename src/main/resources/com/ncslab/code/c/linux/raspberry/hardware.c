@@ -8,8 +8,12 @@
 #include <stdlib.h>
 void initHardware(){
 
-	//printf("Init hardware\n");
-	wiringPiSetup();
+	printf("Init hardware\n");
+	if (wiringPiSetup() < 0) {
+    printf("wiringPi 初始化失败！\n");
+    return -1;
+  }
+
 }
 
 #define ADDO 2
