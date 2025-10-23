@@ -1,14 +1,11 @@
 /* Velocity Template for initialization of block Alp */
 
-
-
 #set($hardwareDefineName = "Block" + $blockId + "_Alp")
-$hardwareDefineName = ALP;
 
 #if ($modelMode == $simulationMode)
     #foreach($state in $blockStateList)
         $stateName = 0;
     #end
 #elseif ($modelMode == $compilationMode)
-    initAlp(&$hardwareDefineName);
+    initAlp(&${hardwareDefineName});
 #end

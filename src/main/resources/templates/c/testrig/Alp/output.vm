@@ -1,19 +1,21 @@
 /*Code for output of block ALP:($blockId)$blockName*/
+#set($inputPort1 = $block.getInputPortVariable(0))
+#set($outputPort1 = $blockOutputPortVariables.get(0))
+#set($outputPort2 = $blockOutputPortVariables.get(1))
+
 #if ($modelMode == $simulationMode)
-#if($stateVariables && $num && $den)
-#foreach($state in $stateVariables)
+#if($blockStateList && $num && $den)
+#foreach($state in $blockStateList)
 #set($numIndex = $den.size() - $foreach.index - 1)
-#if($outputVar1)$outputVar1 += $state * $num.get($numIndex);#end
+$outputPort1 += $state.getName() * $num.get($numIndex);
 #end
 #end
 #elseif ($modelMode == $compilationMode)
-#if($hardwareDefineName && $inputVar)
-${hardwareDefineName}.alpPWM = 2600 * $inputVar;
+${hardwareDefineName}.alpPWM = 2600 * $inputPort1;
 ${hardwareDefineName}.alpPWM = ${hardwareDefineName}.alpPWM > 2400.0 ? 2400.0 : ${hardwareDefineName}.alpPWM;
 ${hardwareDefineName}.alpPWM = ${hardwareDefineName}.alpPWM < 0 ? 0 : ${hardwareDefineName}.alpPWM;
 
-outputAlp(&$hardwareDefineName);
-#if($outputVar1)$outputVar1 = 2.0 * ${hardwareDefineName}.fanspeed_output;#end
-#if($outputVar2)$outputVar2 = calalpoutput(635 - 19.0114 * ${hardwareDefineName}.position);#end
-#end
+outputAlp(&${hardwareDefineName});
+$outputPort1 = 2.0 * ${hardwareDefineName}.fanspeed_output;
+$outputPort2 = calalpoutput(635 - 19.0114 * ${hardwareDefineName}.position);
 #end

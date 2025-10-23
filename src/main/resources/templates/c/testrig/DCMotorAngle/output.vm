@@ -1,36 +1,41 @@
 /* Velocity template for DCMotorAngle output code */
-## Variables now populated directly in Java context: $input, $output1, $output2, $stateX0, $stateX1, $hardwareDefineName
+#set($inputPort1 = $block.getInputPortVariable(0))
+#set($outputPort1 = $blockOutputPortVariables.get(0))
+#set($outputPort2 = $blockOutputPortVariables.get(1))
+#set($stateSpeed = $blockStateList.get(0).getName())
+#set($stateAngle = $blockStateList.get(1).getName())
 
-#if( $modelMode == $simulationMode )
-$output1 = $stateX0;
-$output2 = $stateX1;
-#elseif( $modelMode == $compilationMode )
+#if ($modelMode == $simulationMode)
+$outputPort1 = $stateSpeed;
+$outputPort2 = $stateAngle;
+#elseif ($modelMode == $compilationMode)
 unsigned char cmd[] = {0xAA, 0xAA, 0x01, 0x01, 0x00, 0x00, 0x00};
-int pwm = (int)($input * 5000);
-pwm = max(-5000, min(5000, pwm));
+int pwm = (int)($inputPort1 * 5000);
+pwm = pwm > 5000 ? 5000 : pwm;
+pwm = pwm < -5000 ? -5000 : pwm;
 cmd[4] = (pwm & 0xFF);
 cmd[5] = ((pwm & 0xFF00) >> 8);
 cmd[6] = calcSum(cmd);
-Serialport_Send($hardwareDefineName, cmd, 7);
+Serialport_Send(hComm, cmd, 7);
 
 char recvBuff[255] = {0};
-Serialport_Recv($hardwareDefineName, (uint8_t*)recvBuff, 7);
+Serialport_Recv(hComm, (uint8_t*)recvBuff, 7);
 int speed = recvBuff[4] + (recvBuff[5] << 8);
-$output1 = 5.79582 * speed;
+$outputPort1 = 5.79582 * speed;
 
 unsigned char cmdangle[] = {0x01, 0x04, 0x00, 0x00, 0x00, 0x04, 0xf1, 0xc9};
-Serialport_Send($hardwareDefineName, cmdangle, 8);
+Serialport_Send(hComm, cmdangle, 8);
 
 char recvBuff1[255] = {0};
-Serialport_Recv($hardwareDefineName, (uint8_t*)recvBuff1, 13);
+Serialport_Recv(hComm, (uint8_t*)recvBuff1, 13);
 double Angle = 0.01098633 * (recvBuff1[6] + (recvBuff1[5] << 8));
 
-if ($block.angledata - Angle >= 180) {  ## TODO: Extract angledata to context
-    $block.angle_N = 1 + $block.angle_N;  ## TODO: Extract angle_N to context
-} else if ($block.angledata - Angle <= -180) {
-    $block.angle_N = -1 + $block.angle_N;
+if (angledata - Angle >= 180) {
+    angle_N = 1 + angle_N;
+} else if (angledata - Angle <= -180) {
+    angle_N = -1 + angle_N;
 }
 
-$output2 = $block.angle_N * 360 + Angle;
-$block.angledata = Angle;
+$outputPort2 = angle_N * 360 + Angle;
+angledata = Angle;
 #end

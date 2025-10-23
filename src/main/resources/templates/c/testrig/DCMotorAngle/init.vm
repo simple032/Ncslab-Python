@@ -8,6 +8,6 @@
     #end
 #elseif ($modelMode == $compilationMode)
     char msg[255];
-    HANDLE hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
-    HANDLE hComm1 = Serialport_Open("/dev/ttyUSB1", 115200, msg);
+    hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
+    hComm1 = Serialport_Open("/dev/ttyUSB1", 115200, msg);
 #end

@@ -1,4 +1,7 @@
 /*Define arrays for block DCMotorAngle:($blockId)$blockName*/
-double angledata=0;
-double angledata1=0;
-int angle_N=0;
+double Block${blockId}_angledata = 0;
+double Block${blockId}_angledata1 = 0;
+int Block${blockId}_angle_N = 0;
+\#define angledata Block${blockId}_angledata
+\#define angledata1 Block${blockId}_angledata1
+\#define angle_N Block${blockId}_angle_N

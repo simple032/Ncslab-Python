@@ -12,6 +12,7 @@ import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.util.TemplateManager;
 
 import java.util.HashMap;
@@ -118,7 +119,10 @@ public class ServoMotorSlider extends Block {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
 
-        String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/derivative.vm", context);
-        code.addDerivativeCode(codeStr);
+        if(model.getModelMode() == ModelMode.Simulation) {
+            String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/derivative.vm", context);
+            code.addDerivativeCode(codeStr);
+        }
+        
     }
 }

@@ -82,11 +82,14 @@ public class RaspFan extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        hardwareDefineName = "Block" + this.getBlockId() + "_RaspFan";
+
         context.put("block", this);
-        context.put("states", stateList);
-        context.put("inputPortVariable", getInputPortVariable(0));
-        context.put("outputPortVariables", getOutputPortVariables());
+        context.put("blockId", this.getBlockId());
+        context.put("blockStateList", stateList);
+        context.put("blockOutputPortVariables", java.util.Arrays.asList(getOutputPortVariables()));
         context.put("modelMode", model.getModelMode().name());
+        context.put("hardwareDefineName", hardwareDefineName);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/RaspFan/output.vm", context);
         code.addOutputCode(codeStr);

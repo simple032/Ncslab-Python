@@ -124,7 +124,16 @@ public class WaterLevel extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        context.put("block", this);
+        context.put("blockStateList", stateList);
+        context.put("blockOutputPortVariables", java.util.Arrays.asList(getOutputPortVariables()));
+        context.put("modelMode", model.getModelMode().name());
+
+        // Ensure hardwareDefineName is set
+        if (hardwareDefineName == null) {
+            hardwareDefineName = "Block" + this.getBlockId() + "_WaterLevel";
+        }
+        context.put("hardwareDefineName", hardwareDefineName);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/WaterLevel/output.vm", context);
         code.addOutputCode(codeStr);

@@ -2,6 +2,7 @@ package com.ncslab.block.testrig;
 
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
+import lombok.Setter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.testrig.DCMotorAngleDto;
@@ -32,6 +33,11 @@ public class DCMotorAngle extends Block {
 
     private double input_max = 1.0;
     private double input_min = -1.0;
+    
+    @Getter @Setter
+    private double angledata = 0;
+    @Getter @Setter
+    private int angle_N = 0;
 
 
     private static final List<String> outputNames = new ArrayList<>();
@@ -119,7 +125,10 @@ public class DCMotorAngle extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        context.put("block", this);
+        context.put("blockStateList", stateList);
+        context.put("blockOutputPortVariables", java.util.Arrays.asList(getOutputPortVariables()));
+        context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/output.vm", context);
         code.addOutputCode(codeStr);

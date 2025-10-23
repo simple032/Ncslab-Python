@@ -104,17 +104,19 @@ public void generateInitCodeC(CodeStructC code) {
     code.addInitCode(codeStr);
 }
 	public void generateOutputCodeC(CodeStructC code) {
-	        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-	        context.put("states", xStateList);
+	        context.put("block", this);
+	        context.put("blockStateList", xStateList);
+	        context.put("blockOutputPortVariables", Arrays.asList(getOutputPortVariables()));
+	        context.put("modelMode", model.getModelMode().name());
 	        context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
 	        context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
-	        
+
 	        // Ensure hardwareDefineName is set
 	        if (hardwareDefineName == null) {
 	            hardwareDefineName = "Block" + this.getBlockId() + "_Alp";
 	        }
 	        context.put("hardwareDefineName", hardwareDefineName);
-	
+
 	        String codeStr = TemplateManager.renderTemplate("c/testrig/Alp/output.vm", context);
 	        code.addOutputCode(codeStr);
 	    }
