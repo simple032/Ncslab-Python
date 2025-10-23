@@ -13,12 +13,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.Enumeration;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 
 public class TemplateManager {
     private static VelocityEngine ve;
+    private static ExecutorService executorService;
 //    private static final String TEMPLATE_PATH = "src/main/resources/templates/";
 
     static {
@@ -73,7 +76,8 @@ public class TemplateManager {
                 }
 
                 // Start file watcher in a separate thread
-                Executors.newSingleThreadExecutor().submit(() -> {
+                executorService = Executors.newSingleThreadExecutor();
+                executorService.submit(() -> {
                     try {
                         WatchService watchService = FileSystems.getDefault().newWatchService();
                         templatePath.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
@@ -140,5 +144,19 @@ public class TemplateManager {
         }
 
         System.out.println("=============================");
+    }
+
+    public static void shutdownExecutor() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+            try {
+                if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executorService.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }
