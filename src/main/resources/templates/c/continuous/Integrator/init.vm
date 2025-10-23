@@ -1,28 +1,26 @@
-/* Code for initialization of block Integrator:($blockId) $blockName */
+/* Code for initialization of block Integrator: (${blockId}) ${blockName} */
 #if($ConditionSource == "External")
-$InitialCondition = $inputSignal;
+${InitialCondition} = ${inputSignal};
 #else
   #if($outputSignalObject.dataType == $realDataType)
     #if($InitialConditionObject.dataType == $realDataType)
-      $state = $InitialCondition;
+      ${state} = ${InitialCondition};
     #else
-      for(int i=0; i<$InitialConditionObject.height; i++){
-        for(int j=0; j<$InitialConditionObject.width; j++){
-#set($tempVar = "${InitialCondition}[i][j]")
-          ${state}[i][j] = ${tempVar};
+      for(int i=0; i<${InitialConditionObject.height}; i++){
+        for(int j=0; j<${InitialConditionObject.width}; j++){
+          ${state}[i][j] = ${InitialCondition}[i][j];
         }
       }
     #end
   #else
     #if($InitialConditionObject.dataType == $realDataType)
-      for(int i=0; i<$outputSignalObject.height; i++){
-        for(int j=0; j<$outputSignalObject.width; j++){
-#set($tempStateVar = "${state}[i][j]")
-          ${tempStateVar} = $InitialCondition;
+      for(int i=0; i<${outputSignalObject.height}; i++){
+        for(int j=0; j<${outputSignalObject.width}; j++){
+          ${state}[i][j] = ${InitialCondition};
         }
       }
     #else
-      $state = $InitialCondition;
+      ${state} = ${InitialCondition};
     #end
   #end
 #end

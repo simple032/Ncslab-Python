@@ -1,7 +1,7 @@
-/*Code for output of block Integrator:($blockId)$blockName*/
+/* Code for output of block Integrator: (${blockId}) ${blockName} */
 #if($state)
-    $outputSignal = $state;
+    ${outputSignal} = ${state};
 #else
     ## Fallback if state not properly initialized
-    $outputSignal = 0.0; /* Integrator state not found, using default */
+    ${outputSignal} = 0.0; /* Integrator state not found, using default */
 #end

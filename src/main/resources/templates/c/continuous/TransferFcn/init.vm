@@ -1,4 +1,6 @@
-/* 初始化传递函数模块: ($blockId) $blockName */
+/* Initialize TransferFcn block: (${blockId}) ${blockName} */
+#if($states)
 #foreach($state in $states)
-$stateName = 0;
+${state.getName()} = 0.0;
+#end
 #end

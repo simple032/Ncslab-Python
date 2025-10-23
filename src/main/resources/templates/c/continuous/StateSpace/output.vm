@@ -1,16 +1,16 @@
-/*Code for output of block StateSpace:($blockId)$blockName*/
+/* Code for output of block StateSpace: (${blockId}) ${blockName} */
 #if($C && $xState)
     #set($outputVar = $outputSignal)
     #set($inputVar = $inputSignal)
-    
+
     ## Output = C * x
-    $outputVar = ${C.getName()} * ${xState.getName()};
-    
+    ${outputVar} = ${C.getName()} * ${xState.getName()};
+
     ## Add direct feedthrough if present: y = C*x + D*u
     #if($feedThrough && $D)
-        $outputVar += ${D.getName()} * $inputVar;
+        ${outputVar} += ${D.getName()} * ${inputVar};
     #end
 #else
     ## Fallback if parameters missing
-    $outputSignal = 0.0; /* StateSpace block missing parameters */
+    ${outputSignal} = 0.0; /* StateSpace block missing parameters */
 #end

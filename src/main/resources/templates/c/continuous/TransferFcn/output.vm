@@ -1,41 +1,26 @@
-/*Code for output of block TransferFcn:($blockId)$blockName*/
+/* Code for output of block TransferFcn: (${blockId}) ${blockName} */
 #if($num && $states && $outputs && $outputs.size() > 0)
-    #set($outputVar = $outputSignal)
-    #set($inputVar = $inputSignal)
-    
-    ## Initialize output to zero
-    $outputVar = 0.0;
-    
+    ## Initialize output: if feedthrough, start with D*input, otherwise 0
+    #if($feedThrough && $D)
+${outputSignal} = ${D} * ${inputSignal};
+    #else
+${outputSignal} = 0.0;
+    #end
+
     ## Add contributions from numerator coefficients and states
+    ## Loop through states forward, use num coefficients in reverse (from last to first)
     #if($num.size() > 0 && $states.size() > 0)
         #set($numIndex = $num.size() - 1)
-        #set($stateIndex = 0)
         #foreach($state in $states)
             #if($numIndex >= 0)
-                #if($stateIndex == 0)
-        $outputVar += $stateName0 * ${num.get($numIndex)};
-                #elseif($stateIndex == 1)
-        $outputVar += $stateName1 * ${num.get($numIndex)};
-                #elseif($stateIndex == 2)
-        $outputVar += $stateName2 * ${num.get($numIndex)};
-                #elseif($stateIndex == 3)
-        $outputVar += $stateName3 * ${num.get($numIndex)};
-                #else
-        $outputVar += ${state.getName()} * ${num.get($numIndex)}; /* fallback for order > 4 */
-                #end
+${outputSignal} += ${state.getName()} * ${num.get($numIndex)};
             #end
             #set($numIndex = $numIndex - 1)
-            #set($stateIndex = $stateIndex + 1)
         #end
-    #end
-    
-    ## Add direct feedthrough if present
-    #if($feedThrough && $D)
-        $outputVar += ${D} * $inputVar;
     #end
 #else
     ## Fallback if parameters missing
     #if($outputs && $outputs.size() > 0)
-        $outputSignal = 0.0; /* TransferFcn block missing parameters */
+${outputSignal} = 0.0; /* TransferFcn block missing parameters */
     #end
 #end

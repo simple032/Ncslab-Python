@@ -27,8 +27,8 @@
     ## Initialize PID internal states
     #if($proportionalGain.dataType == $realDataType && $stateIntegral.dataType == $realDataType)
         ## Scalar PID controller
-        $integralStateName = 0.0;
-        $filterStateName = 0.0;
+        ${integralStateName} = 0.0;
+        ${filterStateName} = 0.0;
     #else
         ## Matrix PID controller
         #set($height = $integralStateHeight)
@@ -37,8 +37,8 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                $integralStateName[$i][$j] = 0.0;
-                $filterStateName[$i][$j] = 0.0;
+                ${integralStateName}[${i}][${j}] = 0.0;
+                ${filterStateName}[${i}][${j}] = 0.0;
             #end
         #end
     #end
