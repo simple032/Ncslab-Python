@@ -12,7 +12,7 @@
             ## Matrix data logging - flatten matrix into vector
             for(int i = 0; i < $inputSignal1Height; i++) {
                 for(int j = 0; j < $inputSignal1Width; j++) {
-                    ${scopeStructName}.dataList.push_back($inputSignal[i][j]);
+                    ${scopeStructName}.dataList.push_back(${inputSignal}[i][j]);
                 }
             }
         #end

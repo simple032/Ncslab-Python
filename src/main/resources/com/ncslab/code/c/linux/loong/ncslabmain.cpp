@@ -5,7 +5,7 @@
 
 #include <stdint.h>  // for uint64_t
 
-#ifndef __WIN_NT
+#ifndef _WIN32
 #include <unistd.h>
 #include <sys/timerfd.h>
 #include <sys/epoll.h>

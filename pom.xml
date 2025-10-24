@@ -8,7 +8,7 @@
   <packaging>war</packaging>
 
   <properties>
-    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
     <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
@@ -116,6 +116,13 @@
       <version>2.3</version>
     </dependency>
 
+    <dependency> 
+      <groupId>antlr</groupId>
+      <artifactId>antlr</artifactId>
+      <version>2.7.7</version>
+      <!-- 确保没有设置 <scope>provided</scope>，否则不会打包 -->
+    </dependency>
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
@@ -198,6 +205,13 @@
       <version>3.6.1</version>
     </dependency>
 
+    <!-- jSerialComm for serial port communication -->
+    <dependency>
+      <groupId>com.fazecast</groupId>
+      <artifactId>jSerialComm</artifactId>
+      <version>2.10.4</version>
+    </dependency>
+
     <!--		<dependency>-->
 <!--			<groupId>NCSLabLink</groupId>-->
 <!--			<artifactId>NCSLabLink</artifactId>-->
@@ -244,9 +258,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.13.0</version>
         <configuration>
-          <release>17</release>
+          <release>21</release>
           <annotationProcessorPaths>
             <path>
                 <groupId>org.projectlombok</groupId>

@@ -817,8 +817,8 @@ abstract public class CodeStructC{
 
 		String code="#define STATE_NUM "+stateList.size()+"\n";
 
-		code+="#define SINGLE_STATE_NUM "+model.getSingleStateNum()+"\n";
-		code+="#define MATRIX_STATE_NUM "+model.getMatrixStateNum()+"\n";
+		code+="#define SINGLE_STATE_NUM "+model.getRootSystem().getSingleStateNum()+"\n";
+		code+="#define MATRIX_STATE_NUM "+model.getRootSystem().getMatrixStateNum()+"\n";
 
 		code+="#define STEP_SIZE (1.0*"+model.getConfig().getFixedStep()+")\n";
 

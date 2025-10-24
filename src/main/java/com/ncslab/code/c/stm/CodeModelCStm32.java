@@ -21,6 +21,7 @@ import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.database.Algorithms;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.dto.core.ModelDto;
 
 public class CodeModelCStm32 extends CodeModelC{
 
@@ -30,12 +31,24 @@ public class CodeModelCStm32 extends CodeModelC{
 		super(jsonIn,mode);
 	}
 
+	// DTO-native constructor
+	CodeModelCStm32(ModelDto modelDto, ModelMode mode) throws ModelException{
+		super(modelDto, mode);
+	}
+
 	protected CodeStructC getCodeStructC() {
 		return codeStm32;
 	}
 
 	public static CodeModelCStm32 createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException {
 		CodeModelCStm32 model=new CodeModelCStm32(jsonIn,mode);
+
+		return model;
+	}
+
+	// DTO-native factory method
+	public static CodeModelCStm32 createFromDto(ModelDto modelDto, ModelMode mode) throws ModelException {
+		CodeModelCStm32 model = new CodeModelCStm32(modelDto, mode);
 
 		return model;
 	}
