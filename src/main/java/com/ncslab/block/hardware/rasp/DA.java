@@ -78,9 +78,9 @@ public class DA extends HardwareBlock{
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-	
+		// Populate all standard template variables first
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/DA/output.vm", context));
-		// Removed unused outputCode reference
 	}
 }

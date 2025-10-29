@@ -100,17 +100,11 @@ public class TwoDimensionLookupTableBlock extends LookupTableBlock{
 
     @Override
     public void generateOutputCodeC(CodeStructC code){
-        super.generateOutputCodeC(code);
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String inputSignal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        String inputSignal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        String outputSignal = outputPortList.get(0).getOutputSignalC().getName();
-
-        context.put("block", this);
+        // Add lookup table specific context
         context.put("tableName", getTableName());
-        context.put("inputSignal1", inputSignal1);
-        context.put("inputSignal2", inputSignal2);
-        context.put("outputSignal", outputSignal);
 
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/TwoDimensionLookupTableBlock/output.vm", context);
         code.addOutputCode(codeStr);

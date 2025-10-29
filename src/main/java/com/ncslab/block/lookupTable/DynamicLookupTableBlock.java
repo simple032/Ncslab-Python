@@ -46,9 +46,8 @@ public class DynamicLookupTableBlock extends LookupTableBlock{
     }
     @Override
     public void generateOutputCodeC(CodeStructC code){
-        super.generateOutputCodeC(code);
-
-        context.put("block", this);
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/DynamicLookupTableBlock/output.vm", context);
         code.addOutputCode(codeStr);

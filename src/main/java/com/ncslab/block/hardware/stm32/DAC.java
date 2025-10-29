@@ -85,10 +85,9 @@ public class DAC extends com.ncslab.block.Block{
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-	
-		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/stm32/DAC/output.vm", context));
+		// Populate all standard template variables first
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-		// Removed unused outputCode reference
+		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/stm32/DAC/output.vm", context));
 	}
 }

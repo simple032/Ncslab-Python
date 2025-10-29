@@ -49,26 +49,24 @@ public class ScopeStruct extends Terminal {
 		String blockPath = this.block.getBlockPath();
 		String blockUUID = this.block.getBlockUUID();
 		
-		// Generate SCOPE initialization based on platform capabilities
-		if (blockPath != null && blockUUID != null && !blockPath.isEmpty() && !blockUUID.isEmpty()) {
-			// Windows/standard version with path and uuid
-			code+=this.name+".name = (char *)\""+this.localName+"\";\n";
-			code+=this.name+".path = (char *)\""+blockPath+"\";\n";
-			code+=this.name+".uuid = (char *)\""+blockUUID+"\";\n";
-			code+=this.name+".maxDataLength = "+maxDataLength+";\n";
-			code+=this.name+".width = "+width+";\n";
-			code+=this.name+".height = "+height+";\n";
-			code+=this.name+".cursor = 0;\n";
-			code+=this.name+".isFull = 0;\n";
-		} else {
-			// Linux/loong version without path and uuid
-			code+=this.name+".name = (char *)\""+this.localName+"\";\n";
-			code+=this.name+".maxDataLength = "+maxDataLength+";\n";
-			code+=this.name+".width = "+width+";\n";
-			code+=this.name+".height = "+height+";\n";
-			code+=this.name+".cursor = 0;\n";
-			code+=this.name+".isFull = 0;\n";
+		// Generate SCOPE initialization based on backward platform capabilities
+		if (blockPath == null) {
+			blockPath = "";
 		}
+		if (blockUUID == null) {
+			blockUUID = "";
+		}
+
+		// Windows/standard version with path and uuid
+		code+=this.name+".name = (char *)\""+this.localName+"\";\n";
+		code+=this.name+".path = (char *)\""+blockPath+"\";\n";
+		code+=this.name+".uuid = (char *)\""+blockUUID+"\";\n";
+		code+=this.name+".maxDataLength = "+maxDataLength+";\n";
+		code+=this.name+".width = "+width+";\n";
+		code+=this.name+".height = "+height+";\n";
+		code+=this.name+".cursor = 0;\n";
+		code+=this.name+".isFull = 0;\n";
+		
 		
 		return code;
 	}

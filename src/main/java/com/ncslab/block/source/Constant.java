@@ -274,21 +274,13 @@ public class Constant extends SourceBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("blockId", this.getBlockId());
-        context.put("blockName", this.getBlockName());
-        context.put("value", value);
 
         String codeStr = TemplateManager.renderTemplate("c/source/Constant/init.vm", context);
         code.addInitCode(codeStr);
     }
 
-    public void generateOutputCodeC(CodeStructC code) {
-        // Populate all standard context variables
-        TemplateUtils.populateAllContext(context, this);
-        
-        // Add block-specific variables with proper C names
-        context.put("value", value.getName());        
-
+    public void generateOutputCodeC(CodeStructC code) {                    
+        super.generateOutputCodeC(code);
         // Use the improved template (now updated directly)
         String codeStr = TemplateManager.renderTemplate("c/source/Constant/output.vm", context);
         code.addOutputCode(codeStr);

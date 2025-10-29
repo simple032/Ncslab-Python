@@ -91,15 +91,11 @@ public class OneDimensionLookupTableBlock extends LookupTableBlock{
 
     @Override
     public void generateOutputCodeC(CodeStructC code){
-        super.generateOutputCodeC(code);
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-        String outputSignal = outputPortList.get(0).getOutputSignalC().getName();
-
-        context.put("block", this);
+        // Add lookup table specific context
         context.put("tableName", getTableName());
-        context.put("inputSignal", inputSignal);
-        context.put("outputSignal", outputSignal);
 
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/lookupTable/OneDimensionLookupTableBlock/output.vm", context);
         code.addOutputCode(codeStr);

@@ -10,13 +10,47 @@ import com.ncslab.block.elect.DiodeCurrent;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import com.ncslab.circuit.loop.CircuitLoopException;
+import com.ncslab.dto.block.specialized.elect.DiodeCurrentElectDto;
+import com.ncslab.dto.block.specialized.elect.DiodeCurrentDto;
 
+/**
+ * DiodeCurrentElect block extends DiodeCurrent to support electrical circuit algebraic loop resolution.
+ *
+ * This block provides the same functionality as DiodeCurrent but includes support for
+ * algebraic loop detection and resolution in electrical circuit simulation.
+ */
 public class DiodeCurrentElect extends DiodeCurrent implements ElectBlock {
-	
+
 	private String electLoopString;
-	
+
 	private List<Block> relatedBlockList = new ArrayList<>();
-	
+
+	/**
+	 * DTO-Native Constructor - Creates DiodeCurrentElect block directly from DiodeCurrentElectDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto DiodeCurrentElectDto containing block configuration
+	 * @param model Parent model reference
+	 */
+	public DiodeCurrentElect(DiodeCurrentElectDto dto, NCSLabModel model) {
+		super((DiodeCurrentDto) dto, model);  // Call parent DTO constructor
+
+		// ElectBlock-specific initialization
+		if (dto.getElectLoopString() != null) {
+			this.electLoopString = dto.getElectLoopString().getAsString();
+		}
+		// relatedBlockList will be populated during circuit analysis
+	}
+
+	/**
+	 * Legacy JSON Constructor - Creates block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockJSON JSON object containing block configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	public DiodeCurrentElect(JSONObject blockJSON, NCSLabModel model) {
 		super(blockJSON,model);
 	}

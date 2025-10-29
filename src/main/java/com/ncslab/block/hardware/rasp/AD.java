@@ -77,9 +77,9 @@ public class AD extends HardwareBlock{
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
-	
-		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/AD/output.vm", context));
+		// Populate all standard template variables first
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
+		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/rasp/AD/output.vm", context));
 	}
 }
