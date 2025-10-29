@@ -218,7 +218,10 @@ public class SFunction extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add S-Function specific context
         context.put("name", name);
         context.put("simStructName", simStructName);
         context.put("numDiscState", numDiscState);

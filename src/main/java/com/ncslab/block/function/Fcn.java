@@ -82,7 +82,10 @@ public class Fcn extends Block{
 	}
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add function-specific context
         context.put("expression", expression);
 
         String codeStr = TemplateManager.renderTemplate("c/function/Fcn/output.vm", context);

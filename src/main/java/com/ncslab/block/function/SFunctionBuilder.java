@@ -263,9 +263,12 @@ public class SFunctionBuilder extends Block {
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
-		context.put("block", this);
+		// Populate all standard template variables first
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+		// Add S-Function Builder specific context
 		context.put("name", name);
-		
+
 		String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/function/SFunctionBuilder/output.vm", context);
 		code.addOutputCode(codeStr);
 	}

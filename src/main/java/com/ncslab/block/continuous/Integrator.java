@@ -551,24 +551,6 @@ public class Integrator extends ContinuousBlock {
         context.put("conditionSource", conditionSource.getData().getInitString());
         context.put("ConditionSource", conditionSource.getData().getInitString());
         
-        // State variables - both forms for template compatibility
-        context.put("state", state.getName());
-        context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
-        
-        // Initial condition variables - both forms for template compatibility  
-        context.put("initialCondition", initialCondition.getData().getInitString());
-        context.put("InitialCondition", initialCondition.getData().getInitString());
-        context.put("InitialConditionObject", initialCondition.getData());
-        
-        // Signal variables
-        context.put("signal", getInputPortVariable(0));
-        context.put("signalName", getInputPortVariable(0));
-        context.put("inputSignal", getInputPortVariable(0));
-        
-        // Output signal object for dataType checking
-        OutputPort outputPort = outputPortList.get(0);
-        context.put("outputSignalObject", outputPort.getOutputSignalC());
-        
         // Data type constants for template conditionals
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
         context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);

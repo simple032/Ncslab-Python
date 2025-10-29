@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.data;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -33,6 +34,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Byte Unpack")
 @MigrationCompatible(originalClass = "com.ncslab.block.data.ByteUnpack")
 public class ByteUnpackDto extends BlockDto {
 
