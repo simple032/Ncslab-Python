@@ -1,54 +1,26 @@
-/* Code for output of block Dead Zone:(${block.blockId}) ${block.blockName} */
-#if($lowerValue.data.dataType == $realDataType)
-  #if($ops.outputSignalC.dataType == $realDataType)
-  // 双方都是实数类型，直接使用标量比较
-  if($signalName > $upperValueName) {
-    ${output1} = $signalName - $upperValueName;
-  } else if($signalName < $lowerValueName) {
-    ${output1} = $signalName - $lowerValueName;
-  } else {
-    ${output1} = 0;
-  }
-  #else
-    #foreach($i in [0..$opsWidthIndex])
-      #foreach($j in [0..$opsHeightIndex])
-      // 输入是实数，输出是矩阵，对矩阵每个元素应用实数阈值
-      if($signalName > $upperValueName) {
-        ${output1}(${i}, ${j}) = $signalName - $upperValueName;
-      } else if($signalName < $lowerValueName) {
-        ${output1}(${i}, ${j}) = $signalName - $lowerValueName;
-      } else {
-        ${output1}(${i}, ${j}) = 0;
-      }
-      #end
-    #end
-  #end
-#else
-  #if($ops.outputSignalC.dataType == $realDataType)
-    #set($lowerValueIndices = $block.calculateLowerValueIndices[$lowerValue.height][$lowerValue.width])
-    #foreach($index in $lowerValueIndices)
-      #set($i = $index / $lowerValue.width)
-      #set($j = $index % $lowerValue.width)
-    if($signalName(${i}, ${j}) > $upperValueName) {
-      ${output1} += $signalName(${i}, ${j}) - $upperValueName;
-    } else if($signalName(${i}, ${j}) < $lowerValueName) {
-      ${output1} += $signalName(${i}, ${j}) - $lowerValueName;
+/*Code for output of block DeadZone:($blockId)$blockName*/
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar dead zone
+    if(${inputVar} >= ${LowerValueValue} && ${inputVar} <= ${UpperValueValue}) {
+        ${outputVar} = 0.0;
+    } else if(${inputVar} < ${LowerValueValue}) {
+        ${outputVar} = ${inputVar} - ${LowerValueValue};
     } else {
-      ${output1} += 0; // 可以省略这行
+        ${outputVar} = ${inputVar} - ${UpperValueValue};
     }
+#else
+    ## Matrix dead zone - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}[$i][$j] >= ${LowerValueValue} && ${inputVar}[$i][$j] <= ${UpperValueValue}) {
+        ${outputVar}[$i][$j] = 0.0;
+    } else if(${inputVar}[$i][$j] < ${LowerValueValue}) {
+        ${outputVar}[$i][$j] = ${inputVar}[$i][$j] - ${LowerValueValue};
+    } else {
+        ${outputVar}[$i][$j] = ${inputVar}[$i][$j] - ${UpperValueValue};
+    }
+        #end
     #end
-  #else
-    #foreach($i in [0..$lowerValueHeightIndex])
-      #foreach($j in [0..$lowerValueWidthIndex])
-      // 双方都是矩阵，逐元素比较
-      if($signalName(${i}, ${j}) > $upperValueName(${i}, ${j})) {
-        ${output1}(${i}, ${j}) = $signalName(${i}, ${j}) - $upperValueName(${i}, ${j});
-      } else if($signalName(${i}, ${j}) < $lowerValueName(${i}, ${j})) {
-        ${output1}(${i}, ${j}) = $signalName(${i}, ${j}) - $lowerValueName(${i}, ${j});
-      } else {
-        ${output1}(${i}, ${j}) = 0;
-      }
-      #end
-    #end
-  #end
 #end

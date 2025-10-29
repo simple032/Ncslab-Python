@@ -1,40 +1,24 @@
 /*Code for output of block Pulse:($blockId)$blockName*/
-#if($amplitude && $phaseDelay && $period && $pulseWidth && $outputs && $outputs.size() > 0)
-    #set($outputVar = $output1)
-    
-    #if($amplitude.dataType == $realDataType)
-        ## Scalar pulse generation
-        if(model.time < ${phaseDelayName}) {
-            $outputVar = 0.0;
-        } else if(((int)((model.time-${phaseDelayName})*100) % (int)(${periodName}*100)) < ${periodName}*${pulseWidthName}) {
-            $outputVar = ${amplitudeName};
-        } else {
-            $outputVar = 0.0;
-        }
-    #else
-        ## Matrix pulse generation
-        #set($amplitudeHeightIndex = ${amplitudeHeight} - 1)
-        #set($amplitudeWidthIndex = ${amplitudeWidth} - 1)
-        #foreach($i in [0..$amplitudeHeightIndex])
-            #foreach($j in [0..$amplitudeWidthIndex])
-        if(model.time < ${phaseDelayName}[$i][$j]) {
-            $outputVar[$i][$j] = 0.0;
-        } else if(((int)((model.time-${phaseDelayName}[$i][$j])*100) % (int)(${periodName}[$i][$j]*100)) < ${periodName}[$i][$j]*${pulseWidthName}[$i][$j]) {
-            $outputVar[$i][$j] = ${amplitudeName}[$i][$j];
-        } else {
-            $outputVar[$i][$j] = 0.0;
-        }
-            #end
-        #end
-    #end
+#if($AmplitudeHeight == 1 && $AmplitudeWidth == 1)
+    ## Scalar pulse generation
+    if(model.time < ${PhaseDelay}) {
+        ${outputVar} = 0.0;
+    } else if(((int)((model.time-${PhaseDelay})*100) % (int)(${Period}*100)) < ${Period}*${PulseWidth}) {
+        ${outputVar} = ${Amplitude};
+    } else {
+        ${outputVar} = 0.0;
+    }
 #else
-    ## Fallback with default pulse behavior
-    #if($outputs && $outputs.size() > 0)
-        ## Default: unit pulse with period 1, width 0.5, no delay
-        if(((int)(model.time*100) % 100) < 50) {
-            ${output1} = 1.0;
-        } else {
-            ${output1} = 0.0;
-        }
+    ## Matrix pulse generation
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(model.time < ${PhaseDelay}[$i][$j]) {
+        ${outputVar}[$i][$j] = 0.0;
+    } else if(((int)((model.time-${PhaseDelay}[$i][$j])*100) % (int)(${Period}[$i][$j]*100)) < ${Period}[$i][$j]*${PulseWidth}[$i][$j]) {
+        ${outputVar}[$i][$j] = ${Amplitude}[$i][$j];
+    } else {
+        ${outputVar}[$i][$j] = 0.0;
+    }
+        #end
     #end
 #end

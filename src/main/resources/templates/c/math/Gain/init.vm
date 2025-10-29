@@ -1,7 +1,2 @@
-/*Code for initialization of block Gain:($blockId)$blockName*/
-#if($gain)
-    $parameterName
-#else
-    ## Fallback to default gain value if parameter not found
-    real_T gain_$blockId = 1.0; /* Default gain value */
-#end
+${GainObject.getInitCodeC()}
+${MultiplicationObject.getInitCodeC()}

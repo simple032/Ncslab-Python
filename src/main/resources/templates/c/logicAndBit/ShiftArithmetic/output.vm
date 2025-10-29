@@ -1,9 +1,22 @@
-#set($blockName = "ShiftArithmeticOutput")
-/*
- * $blockName - Output template for ShiftArithmetic
- */
-
-// Generate output here
-
-// Example:
-// return $outputValue;
+/*Code for output of block ShiftArithmetic:($blockId)$blockName*/
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar arithmetic shift
+    #if($BitShiftNumberValue >= 0)
+    ${outputVar} = ${inputVar} * pow(2.0, ${BitShiftNumberValue});
+    #else
+    ${outputVar} = ${inputVar} / pow(2.0, ${math.abs($BitShiftNumberValue)});
+    #end
+#else
+    ## Matrix arithmetic shift - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    #if($BitShiftNumberValue >= 0)
+    ${outputVar}[$i][$j] = ${inputVar}[$i][$j] * pow(2.0, ${BitShiftNumberValue});
+    #else
+    ${outputVar}[$i][$j] = ${inputVar}[$i][$j] / pow(2.0, ${math.abs($BitShiftNumberValue)});
+    #end
+        #end
+    #end
+#end

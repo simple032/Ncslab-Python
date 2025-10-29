@@ -1,4 +1,9 @@
 /* Code for initialization of block Integrator: (${blockId}) ${blockName} */
+## Initialize parameters first
+#if($InitialConditionObject)
+${InitialConditionObject.initCodeC}
+#end
+## Then initialize state using parameter
 #if($ConditionSource == "External")
 ${InitialCondition} = ${inputSignal};
 #else

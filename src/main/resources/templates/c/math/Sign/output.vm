@@ -1,40 +1,26 @@
 /*Code for output of block Sign:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0)
-    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignal)
-    #set($outputVar = $outputSignal)
-    
-    #if($inputSignal.dataType == $realDataType)
-        ## Scalar sign function
-        if($inputVar > 0.0) {
-            $outputVar = 1.0;
-        } else if($inputVar == 0.0) {
-            $outputVar = 0.0;
-        } else {
-            $outputVar = -1.0;
-        }
-    #elseif($inputSignal.dataType == $matrixDataType)
-        ## Matrix sign function - element-wise
-        #set($height = $signalHeight)
-        #set($width = $signalWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-                if($inputVar[$i][$j] > 0.0) {
-                    $outputVar[$i][$j] = 1.0;
-                } else if($inputVar[$i][$j] == 0.0) {
-                    $outputVar[$i][$j] = 0.0;
-                } else {
-                    $outputVar[$i][$j] = -1.0;
-                }
-            #end
-        #end
-    #end
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar sign function
+    if(${inputVar} > 0.0) {
+        ${outputVar} = 1.0;
+    } else if(${inputVar} == 0.0) {
+        ${outputVar} = 0.0;
+    } else {
+        ${outputVar} = -1.0;
+    }
 #else
-    ## Fallback if parameters missing
-    #if($outputPortList && $outputPortList.size() > 0)
-        $outputSignal = 0.0; /* Sign block missing parameters */
+    ## Matrix sign function - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}[$i][$j] > 0.0) {
+        ${outputVar}[$i][$j] = 1.0;
+    } else if(${inputVar}[$i][$j] == 0.0) {
+        ${outputVar}[$i][$j] = 0.0;
+    } else {
+        ${outputVar}[$i][$j] = -1.0;
+    }
+        #end
     #end
 #end

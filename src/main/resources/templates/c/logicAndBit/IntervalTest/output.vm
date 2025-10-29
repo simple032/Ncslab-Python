@@ -1,27 +1,22 @@
-
-
-#set($out = $output1)
-#set($signal = $inputs.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-#set($lower = $lowLimit)
-#set($upper = $upLimit)
-
-/* Code for output of block Interval Test ($blockId) $blockName */
-#if($signal.dataType == $realDataType)
-if($signalName >= $lower && $signalName <= $upper) {
-    $outName = 1.0;
-} else {
-    $outName = 0.0;
-}
+/*Code for output of block IntervalTest:($blockId)$blockName*/
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar interval test
+    if(${inputVar} >= ${LowerLimitValue} && ${inputVar} <= ${UpperLimitValue}) {
+        ${outputVar} = 1.0;
+    } else {
+        ${outputVar} = 0.0;
+    }
 #else
-#set($signalHeightIndex = $signalHeight - 1)
-#foreach($i in [0..$signalHeightIndex])
-#set($signalWidthIndex = $signalWidth - 1)
-    #foreach($j in [0..$signalWidthIndex])
-        if($signalName[$i][$j] >= $lower && $signalName[$i][$j] <= $upper) {
-            $outName[$i][$j] = 1.0;
-        } else {
-            $outName[$i][$j] = 0.0;
-        }
+    ## Matrix interval test - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}[$i][$j] >= ${LowerLimitValue} && ${inputVar}[$i][$j] <= ${UpperLimitValue}) {
+        ${outputVar}[$i][$j] = 1.0;
+    } else {
+        ${outputVar}[$i][$j] = 0.0;
+    }
+        #end
     #end
-#end
 #end

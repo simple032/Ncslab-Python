@@ -1,5 +1,2 @@
-#set($inputPortList = $inputPortList.get(0))
-#set($outputPortList = $outputPortList.get(0))
-
-/* Code for TestPoint block $blockId */
-$outputSignal = $inputSignal;
+/*Code for output of block TestPoint:($blockId)$blockName*/
+${outputVar} = ${inputVar};

@@ -1,2 +1,2 @@
 /*Code for output of block Constant:($blockId)$blockName*/
-$outputSignal = $value;
+${outputVar} = ${Value};

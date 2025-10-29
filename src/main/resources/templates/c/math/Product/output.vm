@@ -1,61 +1,67 @@
 /*Code for output of block Product:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $sequence)
-    #set($firstInput = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputVar = $outputSignal)
-    #set($numInputs = $inputPortList.size())
-    #set($maxIndex = $numInputs - 1)
-    
-    ## Check if this is matrix multiplication or element-wise
-    #if($matrixMultiplication)
-        /* Matrix multiplication mode */
-        /* TODO: Implement matrix multiplication */
-        ${outputVar} = 1.0; /* Placeholder for matrix multiplication */
-    #else
-        ## Element-wise multiplication/division
-        #if($firstInput.dataType == $realDataType)
-            ## Scalar element-wise operations
-            ${outputVar} = 1.0;
-            
-            ## Apply operations in sequence
-            #foreach($i in [0..$maxIndex])
-                #set($operation = $sequence.charAt($i))
-                #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($numInputs = $inputs.size())
+#set($maxIndex = $numInputs - 1)
+
+## Check if this is matrix multiplication or element-wise
+#set($isMatrixMult = false)
+#if($MultiplicationValue && ($MultiplicationValue.contains("Matrix") || $MultiplicationValue.contains("matrix")))
+    #set($isMatrixMult = true)
+#end
+
+## Check if InputsValue is numeric (count) or operator string
+#set($isNumericInput = false)
+#if($InputsValue.length() < $numInputs)
+    #set($isNumericInput = true)
+#end
+
+#if($isMatrixMult)
+    /* Matrix multiplication mode */
+    /* TODO: Implement matrix multiplication */
+    ${outputVar} = 1.0; /* Placeholder for matrix multiplication */
+#else
+    ## Element-wise multiplication/division
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar element-wise operations
+        ${outputVar} = 1.0;
+
+        ## Apply operations in sequence
+        #foreach($i in [0..$maxIndex])
+            #if($isNumericInput)
+                ## Numeric input: use default '*' for all
+    ${outputVar} *= ${inputs.get($i)};
+            #else
+                ## String input: use charAt to get operator
+                #set($operation = $InputsValue.charAt($i))
                 #if($operation == '*')
-                    ${outputVar} *= ${inputVar};
+    ${outputVar} *= ${inputs.get($i)};
                 #elseif($operation == '/')
-                    ${outputVar} /= ${inputVar};
+    ${outputVar} /= ${inputs.get($i)};
                 #end
             #end
-            
-        #elseif($firstInput.dataType == $matrixDataType)
-            ## Matrix element-wise operations
-            #set($height = $signalHeight)
-            #set($width = $signalWidth)
-            #set($hMax = $height - 1)
-            #set($wMax = $width - 1)
-            
-            ## Initialize each element to 1 and apply operations
-            #foreach($m in [0..$hMax])
-                #foreach($n in [0..$wMax])
-                    ${outputVar}[$m][$n] = 1.0;
-                    
-                    ## Apply operations for this element
-                    #foreach($i in [0..$maxIndex])
-                        #set($operation = $sequence.charAt($i))
-                        #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+        #end
+    #else
+        ## Matrix element-wise operations
+        ## Initialize each element to 1 and apply operations
+        #foreach($m in [0..$hMax])
+            #foreach($n in [0..$wMax])
+                ${outputVar}[$m][$n] = 1.0;
+
+                ## Apply operations for this element
+                #foreach($i in [0..$maxIndex])
+                    #if($isNumericInput)
+                        ## Numeric input: use default '*' for all
+            ${outputVar}[$m][$n] *= ${inputs.get($i)}[$m][$n];
+                    #else
+                        ## String input: use charAt to get operator
+                        #set($operation = $InputsValue.charAt($i))
                         #if($operation == '*')
-                            ${outputVar}[$m][$n] *= ${inputVar}[$m][$n];
+            ${outputVar}[$m][$n] *= ${inputs.get($i)}[$m][$n];
                         #elseif($operation == '/')
-                            ${outputVar}[$m][$n] /= ${inputVar}[$m][$n];
+            ${outputVar}[$m][$n] /= ${inputs.get($i)}[$m][$n];
                         #end
                     #end
                 #end
             #end
         #end
-    #end
-#else
-    ## Fallback for missing parameters
-    #if($outputPortList && $outputPortList.size() > 0)
-        $outputSignal = 1.0; /* Product block missing parameters */
     #end
 #end

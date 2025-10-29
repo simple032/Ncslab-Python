@@ -1,27 +1,24 @@
-
-
-#set($out = $output1)
-#set($signal = $inputs.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-
-/* Code for output of block Detect Increase ($blockId) $blockName */
-#if($signal.dataType == $realDataType)
-if($signalName > preValue_${blockId}) {
-    $outName = 1.0;
-} else {
-    $outName = 0.0;
-}
-preValue_${blockId} = $signalName;
+/*Code for output of block DetectIncrease:($blockId)$blockName*/
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar detect increase
+    if(${inputVar} > preValue_${blockId}) {
+        ${outputVar} = 1.0;
+    } else {
+        ${outputVar} = 0.0;
+    }
+    preValue_${blockId} = ${inputVar};
 #else
-#set($signalHeightIndex = $signalHeight - 1)
-#foreach($i in [0..$signalHeightIndex])
-#set($signalWidthIndex = $signalWidth - 1)
-    #foreach($j in [0..$signalWidthIndex])
-        if($signalName[$i][$j] > preValue_${blockId}[$i][$j]) {
-            $outName[$i][$j] = 1.0;
-        } else {
-            $outName[$i][$j] = 0.0;
-        }
-        preValue_${blockId}[$i][$j] = $signalName[$i][$j];
+    ## Matrix detect increase - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}[$i][$j] > preValue_${blockId}[$i][$j]) {
+        ${outputVar}[$i][$j] = 1.0;
+    } else {
+        ${outputVar}[$i][$j] = 0.0;
+    }
+    preValue_${blockId}[$i][$j] = ${inputVar}[$i][$j];
+        #end
     #end
-#end
 #end

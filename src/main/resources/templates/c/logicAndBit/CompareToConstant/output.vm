@@ -1,47 +1,22 @@
 /*Code for output of block CompareToConstant:($blockId)$blockName*/
-#if($inputPortList && $inputPortListSize > 0 && $outputPortList && $outputPortListSize > 0 && $const && $relop)
-    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignalName)
-    #set($outputVar = $outputSignalName)
-    #set($constantValue = $constName)
-    
-    #if($inputSignal.dataType == $realDataType)
-        ## Scalar comparison
-        if($inputVar $relop $constantValue) {
-            $outputVar = 1.0;
-        } else {
-            $outputVar = 0.0;
-        }
-    #else
-        ## Matrix comparison - element-wise
-        #set($height = $inputSignalHeight)
-        #set($width = $inputSignalWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-                #if($const.dataType == $realDataType)
-                    ## Scalar constant compared to matrix elements
-                    if($inputVar[$i][$j] $relop $constantValue) {
-                        $outputVar[$i][$j] = 1.0;
-                    } else {
-                        $outputVar[$i][$j] = 0.0;
-                    }
-                #else
-                    ## Matrix constant compared to matrix elements
-                    if($inputVar[$i][$j] $relop $constantValue[$i][$j]) {
-                        $outputVar[$i][$j] = 1.0;
-                    } else {
-                        $outputVar[$i][$j] = 0.0;
-                    }
-                #end
-            #end
-        #end
-    #end
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar comparison
+    if(${inputVar} ${RelationalOperatorValue} ${ConstantValueValue}) {
+        ${outputVar} = 1.0;
+    } else {
+        ${outputVar} = 0.0;
+    }
 #else
-    ## Fallback if parameters missing
-    #if($outputPortList && $outputPortListSize > 0)
-        $outputPort0SignalName = 0.0; /* CompareToConstant block missing parameters */
+    ## Matrix comparison - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}[$i][$j] ${RelationalOperatorValue} ${ConstantValueValue}) {
+        ${outputVar}[$i][$j] = 1.0;
+    } else {
+        ${outputVar}[$i][$j] = 0.0;
+    }
+        #end
     #end
 #end

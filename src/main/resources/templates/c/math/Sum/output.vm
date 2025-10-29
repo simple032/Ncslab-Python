@@ -1,55 +1,52 @@
 /*Code for output of block Sum:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $sequence)
-    #set($firstInput = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputVar = $outputSignal)
-    #set($numInputs = $inputPortList.size())
-    #set($maxIndex = $numInputs - 1)
-    
-    ## Handle scalar inputs
-    #if($firstInput.dataType == $realDataType)
-        ## Initialize output to zero
-        ${outputVar} = 0.0;
-        
-        ## Add each input with appropriate sign
-        #foreach($i in [0..$maxIndex])
-            #set($sign = $sequence.charAt($i))
-            #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
+#set($numInputs = $inputs.size())
+#set($maxIndex = $numInputs - 1)
+
+## Check if InputsValue is numeric (count) or operator string
+#set($isNumericInput = false)
+#if($InputsValue.length() < $numInputs)
+    #set($isNumericInput = true)
+#end
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar inputs - sum with appropriate signs
+    ${outputVar} = 0.0;
+    #foreach($i in [0..$maxIndex])
+        #if($isNumericInput)
+            ## Numeric input: use default '+' for all
+    ${outputVar} += ${inputs.get($i)};
+        #else
+            ## String input: use charAt to get operator
+            #set($sign = $InputsValue.charAt($i))
             #if($sign == '+')
-                ${outputVar} += ${inputVar};
+    ${outputVar} += ${inputs.get($i)};
             #elseif($sign == '-')
-                ${outputVar} -= ${inputVar};
-            #end
-        #end
-        
-    ## Handle matrix inputs
-    #elseif($firstInput.dataType == $matrixDataType)
-        #set($height = $signalHeight)
-        #set($width = $signalWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        
-        ## Initialize each element to zero and sum
-        #foreach($m in [0..$hMax])
-            #foreach($n in [0..$wMax])
-                ## Initialize element
-                ${outputVar}[$m][$n] = 0.0;
-                
-                ## Sum all inputs for this element
-                #foreach($i in [0..$maxIndex])
-                    #set($sign = $sequence.charAt($i))
-                    #set($inputVar = $inputPortList.get($i).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-                    #if($sign == '+')
-                        ${outputVar}[$m][$n] += ${inputVar}[$m][$n];
-                    #elseif($sign == '-')
-                        ${outputVar}[$m][$n] -= ${inputVar}[$m][$n];
-                    #end
-                #end
+    ${outputVar} -= ${inputs.get($i)};
             #end
         #end
     #end
 #else
-    ## Fallback for missing parameters
-    #if($outputPortList && $outputPortList.size() > 0)
-        $outputSignal = 0.0; /* Sum block missing parameters */
+    ## Matrix inputs - element-wise sum with signs
+    #foreach($m in [0..$hMax])
+        #foreach($n in [0..$wMax])
+            ## Initialize element
+            ${outputVar}[$m][$n] = 0.0;
+
+            ## Sum all inputs for this element
+            #foreach($i in [0..$maxIndex])
+                #if($isNumericInput)
+                    ## Numeric input: use default '+' for all
+            ${outputVar}[$m][$n] += ${inputs.get($i)}[$m][$n];
+                #else
+                    ## String input: use charAt to get operator
+                    #set($sign = $InputsValue.charAt($i))
+                    #if($sign == '+')
+            ${outputVar}[$m][$n] += ${inputs.get($i)}[$m][$n];
+                    #elseif($sign == '-')
+            ${outputVar}[$m][$n] -= ${inputs.get($i)}[$m][$n];
+                    #end
+                #end
+            #end
+        #end
     #end
 #end

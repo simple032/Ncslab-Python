@@ -1,33 +1,24 @@
-/*Code for output of block Gain:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $gain)
-    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($gainValue = $parameterName)
+## Determine multiplication mode from Multiplication parameter
+#set($isMatrixMult = false)
+#if($MultiplicationValue && ($MultiplicationValue.contains("Matrix") || $MultiplicationValue.contains("matrix")))
+    #set($isMatrixMult = true)
+#end
 
-    ## Element-wise multiplication (default behavior)
-    #if($multiplication == false)
-        #if($inputSignal.dataType == $realDataType)
-            ## Scalar input, scalar gain
-            $outputSignal = ${gainValue} * $inputSignal;
-        #elseif($inputSignal.dataType == $matrixDataType)
-            ## Matrix input, element-wise multiplication
-            #set($height = $signalHeight)
-            #set($width = $signalWidth)
-            #set($hMax = $height - 1)
-            #set($wMax = $width - 1)
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputSignal[$i][$j] = ${gainValue} * $inputSignal[$i][$j];
-                #end
+## Element-wise multiplication (default behavior)
+#if(!$isMatrixMult)
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar input, scalar gain
+        ${outputVar} = ${GainValue} * ${inputVar};
+    #else
+        ## Matrix input, element-wise multiplication
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = ${GainValue} * ${inputVar}[$i][$j];
             #end
         #end
-    #else
-        ## Matrix multiplication mode
-        $outputSignal = $inputSignal * ${gainValue};
     #end
 #else
-    ## Fallback for missing parameters
-    #if($outputPortList && $outputPortList.size() > 0)
-        $outputSignal = 0.0; /* Gain block missing parameters */
-    #end
+    ## Matrix multiplication mode
+    ${outputVar} = ${GainValue} * {inputVar};
 #end
+

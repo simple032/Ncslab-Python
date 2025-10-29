@@ -1,2 +1,4 @@
 /* Code for initialization of block Ramp:($blockId) $blockName */
-/* Parameters: Slope=$Slope, Start=$Start, InitialOutput=$InitialOutput */
+${SlopeObject.getInitCodeC()}
+${StartObject.getInitCodeC()}
+${InitialOutputObject.getInitCodeC()}

@@ -7,12 +7,12 @@ LD=g++
 
 CCFlag = -DPSAPI_VERSION=1 \
          -I$(VCPKG_PATH)/include \
-         -I$(M2PLAB_ROOT)/server/cruntime/include \
+         -I${M2PLAB_ROOT}/server/cruntime/include \
 		 -I/data/M2PLab/server/cruntime/include \
 		 -I/usr/include/eigen3 \
          -g -O2
 
-LDFlag = -L$(M2PLAB_ROOT)/server/cruntime/lib -lpthread -lrt  -pthread -fopenmp
+LDFlag = -L${M2PLAB_ROOT}/server/cruntime/lib -lpthread -lrt  -pthread -fopenmp
 
 ncslab: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o
 	$(LD) -o ncslab ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o $(LDFlag)

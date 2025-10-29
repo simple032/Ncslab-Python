@@ -1,33 +1,20 @@
 /*Code for output of block Step:($blockId)$blockName*/
-#if($Time && $InitialValue && $FinalValue)
-    #if($TimeObject.dataType == $realDataType)
-        ## Scalar step function
-        if(model.time < $Time) {
-            $outputSignal = $InitialValue;
-        } else {
-            $outputSignal = $FinalValue;
-        }
-    #else
-        ## Matrix step function
-        #set($height = $TimeObject.height)
-        #set($width = $TimeObject.width)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-        if(model.time < $Time[${i}][${j}]) {
-            $outputSignal[${i}][${j}] = $InitialValue[${i}][${j}];
-        } else {
-            $outputSignal[${i}][${j}] = $FinalValue[${i}][${j}];
-        }
-            #end
+#if($TimeHeight == 1 && $TimeWidth == 1)
+    ## Scalar step function
+    if(model.time < ${Time}) {
+        ${outputVar} = ${InitialValue};
+    } else {
+        ${outputVar} = ${FinalValue};
+    }
+#else
+    ## Matrix step function
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(model.time < ${Time}[$i][$j]) {
+        ${outputVar}[$i][$j] = ${InitialValue}[$i][$j];
+    } else {
+        ${outputVar}[$i][$j] = ${FinalValue}[$i][$j];
+    }
         #end
     #end
-#else
-    ## Fallback with default step behavior
-    if(model.time < 1.0) {
-        $outputSignal = 0.0;
-    } else {
-        $outputSignal = 1.0;
-    }
 #end

@@ -1,7 +1,5 @@
 /* Code for initialization of block Saturation:(${block.blockId}) ${block.blockName} */
-#if($lowerLimit && $lowerLimit.initCodeC)
-${lowerLimit.initCodeC}
-#end
-#if($upperLimit && $upperLimit.initCodeC)
-${upperLimit.initCodeC}
-#end
+#if($LowerLimitObject)
+${LowerLimitObject.initCodeC}#end
+#if($UpperLimitObject)
+${UpperLimitObject.initCodeC}#end

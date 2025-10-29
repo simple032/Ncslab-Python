@@ -1,55 +1,52 @@
-
-#set($outputPortList = $outputPortList.get(0))
-
-
-
-
-/* Code for SumOfElements block $blockId */
-#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
+/*Code for output of block SumOfElements:($blockId)$blockName*/
+## SumOfElements: sum/subtract elements based on sequence parameter
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar input
     #if($sequence.length() == 1)
-        $outputSignal = $inputSignal;
+    ${outputVar} = ${inputVar};
     #else
-        $outputSignal = 0;
+    ${outputVar} = 0;
         #set($iMax = $sequence.length() - 1)
         #foreach($i in [0..$iMax])
-            $outputSignal $sequence.charAt($i)= $inputSignal;
+    ${outputVar} $sequence.charAt($i)= ${inputVar};
         #end
     #end
-#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
+#else
+    ## Matrix input
     #if($allDimensions)
-        #set($height = $signalHeight)
-        #set($width = $signalWidth)
-        $outputSignal = 0;
-        #set($mMax = $height - 1)
-        #set($nMax = $width - 1)
+        ## Element-wise sum over all dimensions
+    ${outputVar} = 0;
+        #set($mMax = $inputHeight - 1)
+        #set($nMax = $inputWidth - 1)
         #foreach($m in [0..$mMax])
             #foreach($n in [0..$nMax])
-                $outputSignal[$m][$n] = 0;
-                $set($iMax = $sequence.length()-1)
+    ${outputVar}[$m][$n] = 0;
+                #set($iMax = $sequence.length()-1)
                 #foreach($i in [0..$iMax])
-                    $outputSignal[$m][$n] $sequence.charAt($i)= $inputSignal[$m][$n];
+    ${outputVar}[$m][$n] $sequence.charAt($i)= ${inputVar}[$m][$n];
                 #end
             #end
         #end
     #else
+        ## Sum along specific dimension
         #if($dimension == 2)
-            #set($width = $signalWidth)
-            #set($mMax = $width - 1)
+            ## Sum along columns (output is row vector)
+            #set($mMax = $inputWidth - 1)
             #foreach($m in [0..$mMax])
-                $outputSignal[0][$m] = 0;
-                #set($nMax = $signalHeight - 1)
+    ${outputVar}[0][$m] = 0;
+                #set($nMax = $inputHeight - 1)
                 #foreach($n in [0..$nMax])
-                    $outputSignal[0][$m] += $inputSignal[$n][$m];
+    ${outputVar}[0][$m] += ${inputVar}[$n][$m];
                 #end
             #end
         #else
-            #set($height = $signalHeight)
-            #set($mMax = $height - 1)
+            ## Sum along rows (output is column vector)
+            #set($mMax = $inputHeight - 1)
             #foreach($m in [0..$mMax])
-                $outputSignal[$m][0] = 0;
-                $set($nMax = $signalWidth - 1)
+    ${outputVar}[$m][0] = 0;
+                #set($nMax = $inputWidth - 1)
                 #foreach($n in [0..$nMax])
-                    $outputSignal[$m][0] += $inputSignal[$m][$n];
+    ${outputVar}[$m][0] += ${inputVar}[$m][$n];
                 #end
             #end
         #end

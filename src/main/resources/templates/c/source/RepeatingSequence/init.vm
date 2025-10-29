@@ -1,14 +1,9 @@
 /* Code for initialization of block RepeatingSequence:($blockId) $blockName */
-/* Parameters: TimeValues=$TimeValues, OutputValues=$OutputValues */
-#if($OutputValues)
-    #if($OutputValuesObject.dataType == $realDataType)
-        ## Scalar initialization
-        $outputSignal = $OutputValues;
-    #else
-        ## Array initialization - set to first value using Matrix accessor (row, col)
-        $outputSignal = ${OutputValues}(0, 0);
-    #end
+${TimeValuesObject.getInitCodeC()}
+${OutputValuesObject.getInitCodeC()}
+## Initialize output to first value
+#if($OutputValuesHeight == 1 && $OutputValuesWidth == 1)
+    ${outputVar} = ${OutputValues};
 #else
-    ## Default initialization
-    $outputSignal = 0.0;
+    ${outputVar} = ${OutputValues}(0,0);
 #end

@@ -1,6 +1,1 @@
-/*Code for initialization of block Bias:($blockId)$blockName*/
-#if($BiasObject)
-${BiasObject.getData().getInitCodeC("bias_${blockId}")}
-#else
-real_T bias_${blockId} = 0.0; /* Default bias value */
-#end
+${BiasObject.getInitCodeC()}

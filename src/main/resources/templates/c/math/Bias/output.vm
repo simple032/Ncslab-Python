@@ -1,14 +1,12 @@
 /*Code for output of block Bias:($blockId)$blockName*/
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar bias: output = input + bias
-    $outputVar = $inputVar + $BiasValue;
+    ${outputVar} = ${inputVar} + ${Bias};
 #else
-    ## Matrix bias: element-wise addition  
-    #set($hMax = $inputHeight - 1)
-    #set($wMax = $inputWidth - 1)
+    ## Matrix bias: element-wise addition
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-        ${outputVar}[$i][$j] = ${inputVar}[$i][$j] + $BiasValue;
+        ${outputVar}[$i][$j] = ${inputVar}[$i][$j] + ${Bias};
         #end
     #end
 #end

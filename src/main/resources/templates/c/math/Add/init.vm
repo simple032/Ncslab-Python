@@ -1,3 +1,2 @@
-## Add block initialization
-#set($block = $blockInfo)
-/* Initialization for $blockName (ID:$blockId) */
+/* Initialization for Add block: ($blockId) $blockName */
+${InputsObject.getInitCodeC()}

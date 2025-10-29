@@ -7,7 +7,7 @@ LD=g++
 VCPKG_TRIPLET = x64-windows
 VCPKG_PATH = $(VCPKG_ROOT)\$(VCPKG_TRIPLET)
 
-CCFlag = -mwindows -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
+CCFlag = -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
          -I${M2PLAB_ROOT}/server/cruntime/include \
          -fopenmp -g -O2
 

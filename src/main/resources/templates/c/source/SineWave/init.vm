@@ -1,2 +1,5 @@
 /* Code for initialization of block Sine Wave:($blockId) $blockName */
-/* Parameters: Amplitude=$Amplitude, Frequency=$Frequency, Phase=$Phase, Bias=$Bias */
+${AmplitudeObject.getInitCodeC()}
+${FrequencyObject.getInitCodeC()}
+${PhaseObject.getInitCodeC()}
+${BiasObject.getInitCodeC()}

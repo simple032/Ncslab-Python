@@ -1,1 +1,1 @@
-${value.initCodeC}
+${ValueObject.getInitCodeC()}

@@ -1,0 +1,3 @@
+/* Initialize From Workspace block: (${blockId}) ${blockName} - Variable: ${variableName} */
+/* TODO: Load workspace data from variable '${variableName}' */
+/* Workspace data should be loaded from external source (MATLAB, file, or API) */

@@ -1,8 +1,2 @@
 /*Code for output of block Clock:($blockId)$blockName*/
-#if($outputVar)
-    ## Output current simulation time
-    $outputVar = model.time;
-#else
-    ## Fallback if output variable not defined
-    $outputSignal = model.time;
-#end
+${outputVar} = model.time;

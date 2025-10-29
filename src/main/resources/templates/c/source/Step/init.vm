@@ -1,2 +1,4 @@
 /* Code for initialization of block Step:($blockId) $blockName */
-/* Parameters: Time=$Time, Before=$Before, After=$After */
+${TimeObject.getInitCodeC()}
+${InitialValueObject.getInitCodeC()}
+${FinalValueObject.getInitCodeC()}

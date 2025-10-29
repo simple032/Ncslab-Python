@@ -1,129 +1,113 @@
 /*Code for output of block MathFunction:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $outputPortList && $outputPortList.size() > 0 && $function)
-    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignal)
-    #set($outputVar = $outputSignal)
-    
-    #if($inputSignal.dataType == $realDataType)
-        ## Scalar mathematical functions
-        #if($function == "transpose")
-            ## Transpose of scalar is itself
-            $outputVar = $inputVar;
-        #elseif($function == "reciprocal")
-            ## Reciprocal: 1/x
-            $outputVar = 1.0 / ($inputVar);
-        #elseif($function == "square")
-            ## Square: x^2
-            $outputVar = ($inputVar) * ($inputVar);
-        #elseif($function == "exp")
-            ## Exponential: e^x
-            $outputVar = exp($inputVar);
-        #elseif($function == "log")
-            ## Natural logarithm: ln(x)
-            $outputVar = log($inputVar);
-        #elseif($function == "log10")
-            ## Base-10 logarithm: log10(x)
-            $outputVar = log10($inputVar);
-        #elseif($function == "pow")
-            ## Power: x^y (requires second input)
-            #if($inputPortList.size() > 1)
-                #set($exponent = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-                $outputVar = pow($inputVar, $exponent);
-            #else
-                $outputVar = $inputVar; /* Power function requires second input */
-            #end
-        #elseif($function == "sqrt")
-            ## Square root: sqrt(x)
-            $outputVar = sqrt($inputVar);
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar mathematical functions
+    #if($function == "transpose")
+        ## Transpose of scalar is itself
+        ${outputVar} = ${inputVar};
+    #elseif($function == "reciprocal")
+        ## Reciprocal: 1/x
+        ${outputVar} = 1.0 / (${inputVar});
+    #elseif($function == "square")
+        ## Square: x^2
+        ${outputVar} = (${inputVar}) * (${inputVar});
+    #elseif($function == "exp")
+        ## Exponential: e^x
+        ${outputVar} = exp(${inputVar});
+    #elseif($function == "log")
+        ## Natural logarithm: ln(x)
+        ${outputVar} = log(${inputVar});
+    #elseif($function == "log10")
+        ## Base-10 logarithm: log10(x)
+        ${outputVar} = log10(${inputVar});
+    #elseif($function == "pow")
+        ## Power: x^y (requires second input)
+        #if($inputs.size() > 1)
+            ${outputVar} = pow(${inputVar}, ${inputs.get(1)});
         #else
-            ## Unknown function - default to identity
-            $outputVar = $inputVar;
+            ${outputVar} = ${inputVar}; /* Power function requires second input */
         #end
-    #elseif($inputSignal.dataType == $matrixDataType)
-        ## Matrix mathematical functions
-        #set($height = $signalHeight)
-        #set($width = $signalWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        
-        #if($function == "transpose")
-            ## Matrix transpose
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$j][$i] = $inputVar[$i][$j];
-                #end
-            #end
-        #elseif($function == "reciprocal")
-            ## Element-wise reciprocal
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$i][$j] = 1.0 / ($inputVar[$i][$j]);
-                #end
-            #end
-        #elseif($function == "square")
-            ## Element-wise square
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$i][$j] = ($inputVar[$i][$j]) * ($inputVar[$i][$j]);
-                #end
-            #end
-        #elseif($function == "exp")
-            ## Element-wise exponential
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$i][$j] = exp($inputVar[$i][$j]);
-                #end
-            #end
-        #elseif($function == "log")
-            ## Element-wise natural logarithm
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$i][$j] = log($inputVar[$i][$j]);
-                #end
-            #end
-        #elseif($function == "log10")
-            ## Element-wise base-10 logarithm
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$i][$j] = log10($inputVar[$i][$j]);
-                #end
-            #end
-        #elseif($function == "pow")
-            ## Element-wise power
-            #if($inputPortList.size() > 1)
-                #set($exponent = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName())
-                #foreach($i in [0..$hMax])
-                    #foreach($j in [0..$wMax])
-                        $outputVar[$i][$j] = pow($inputVar[$i][$j], $exponent);
-                    #end
-                #end
-            #else
-                #foreach($i in [0..$hMax])
-                    #foreach($j in [0..$wMax])
-                        $outputVar[$i][$j] = $inputVar[$i][$j]; /* Power function requires second input */
-                    #end
-                #end
-            #end
-        #elseif($function == "sqrt")
-            ## Element-wise square root
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$i][$j] = sqrt($inputVar[$i][$j]);
-                #end
-            #end
-        #else
-            ## Unknown function - default to identity
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-                    $outputVar[$i][$j] = $inputVar[$i][$j];
-                #end
-            #end
-        #end
+    #elseif($function == "sqrt")
+        ## Square root: sqrt(x)
+        ${outputVar} = sqrt(${inputVar});
+    #else
+        ## Unknown function - default to identity
+        ${outputVar} = ${inputVar};
     #end
 #else
-    ## Fallback if parameters missing
-    #if($outputPortList && $outputPortList.size() > 0)
-        $outputSignal = 0.0; /* MathFunction block missing parameters */
+    ## Matrix mathematical functions - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+
+    #if($function == "transpose")
+        ## Matrix transpose
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$j][$i] = ${inputVar}[$i][$j];
+            #end
+        #end
+    #elseif($function == "reciprocal")
+        ## Element-wise reciprocal
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = 1.0 / (${inputVar}[$i][$j]);
+            #end
+        #end
+    #elseif($function == "square")
+        ## Element-wise square
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = (${inputVar}[$i][$j]) * (${inputVar}[$i][$j]);
+            #end
+        #end
+    #elseif($function == "exp")
+        ## Element-wise exponential
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = exp(${inputVar}[$i][$j]);
+            #end
+        #end
+    #elseif($function == "log")
+        ## Element-wise natural logarithm
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = log(${inputVar}[$i][$j]);
+            #end
+        #end
+    #elseif($function == "log10")
+        ## Element-wise base-10 logarithm
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = log10(${inputVar}[$i][$j]);
+            #end
+        #end
+    #elseif($function == "pow")
+        ## Element-wise power
+        #if($inputs.size() > 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = pow(${inputVar}[$i][$j], ${inputs.get(1)});
+                #end
+            #end
+        #else
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = ${inputVar}[$i][$j]; /* Power function requires second input */
+                #end
+            #end
+        #end
+    #elseif($function == "sqrt")
+        ## Element-wise square root
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = sqrt(${inputVar}[$i][$j]);
+            #end
+        #end
+    #else
+        ## Unknown function - default to identity
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}[$i][$j] = ${inputVar}[$i][$j];
+            #end
+        #end
     #end
 #end

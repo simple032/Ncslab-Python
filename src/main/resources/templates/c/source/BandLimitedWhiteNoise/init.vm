@@ -1,4 +1,4 @@
-${seed.getInitCodeC()}
-${cov.getInitCodeC()}
-${samplePeriod.getInitCodeC()}
-srand(+${seed.getDataString()});
+${SeedObject.getInitCodeC()}
+${CovObject.getInitCodeC()}
+${SamplePeriodObject.getInitCodeC()}
+srand(+${SeedValue});

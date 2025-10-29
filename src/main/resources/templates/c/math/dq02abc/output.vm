@@ -1,25 +1,25 @@
-#set($input1 = $inputSignal)
-#set($input2 = $inputSignal)
-#set($input3 = $inputSignal)
-#set($input4 = $inputSignal)
-#set($output1 = $outputSignal)
-#set($output2 = $outputSignal)
-#set($output3 = $outputSignal)
-#set($function = $blockName)
+/*Code for output of block dq02abc:($blockId)$blockName*/
+## dq02abc transformation: 4 inputs (d, q, 0, theta), 3 outputs (a, b, c)
+#set($in_d = $inputs.get(0))
+#set($in_q = $inputs.get(1))
+#set($in_0 = $inputs.get(2))
+#set($in_theta = $inputs.get(3))
+#set($out_a = $outputs.get(0))
+#set($out_b = $outputs.get(1))
+#set($out_c = $outputs.get(2))
 
-/* Code for dq02abc block $blockId */
 if(model.majorStep == 1){
     #if($function == "Aligned with phase A axis")
-        $output1 = (cos($input4) * $input1 - sin($input4) * $input2 + 1 * $input3);
-        $output2 = (cos($input4 - 2*M_PI/3.0) * $input1 - sin($input4 - 2*M_PI/3.0) * $input2 + 1 * $input3);
-        $output3 = (cos($input4 + 2*M_PI/3.0) * $input1 - sin($input4 + 2*M_PI/3.0) * $input2 + 1 * $input3);
+    ${out_a} = (cos(${in_theta}) * ${in_d} - sin(${in_theta}) * ${in_q} + 1 * ${in_0});
+    ${out_b} = (cos(${in_theta} - 2*M_PI/3.0) * ${in_d} - sin(${in_theta} - 2*M_PI/3.0) * ${in_q} + 1 * ${in_0});
+    ${out_c} = (cos(${in_theta} + 2*M_PI/3.0) * ${in_d} - sin(${in_theta} + 2*M_PI/3.0) * ${in_q} + 1 * ${in_0});
     #elseif($function == "90 degrees behind phase A axis")
-        $output1 = (sin($input4) * $input1 + cos($input4) * $input2 + 1 * $input3);
-        $output2 = (sin($input4 - 2*M_PI/3.0) * $input1 + cos($input4 - 2*M_PI/3.0) * $input2 + 1 * $input3);
-        $output3 = (sin($input4 + 2*M_PI/3.0) * $input1 + cos($input4 + 2*M_PI/3.0) * $input2 + 1 * $input3);
+    ${out_a} = (sin(${in_theta}) * ${in_d} + cos(${in_theta}) * ${in_q} + 1 * ${in_0});
+    ${out_b} = (sin(${in_theta} - 2*M_PI/3.0) * ${in_d} + cos(${in_theta} - 2*M_PI/3.0) * ${in_q} + 1 * ${in_0});
+    ${out_c} = (sin(${in_theta} + 2*M_PI/3.0) * ${in_d} + cos(${in_theta} + 2*M_PI/3.0) * ${in_q} + 1 * ${in_0});
     #else
-        $output1 = (cos($input4) * $input1 - sin($input4) * $input2 + 1 * $input3);
-        $output2 = (cos($input4 - 2*M_PI/3.0) * $input1 - sin($input4 - 2*M_PI/3.0) * $input2 + 1 * $input3);
-        $output3 = (cos($input4 + 2*M_PI/3.0) * $input1 - sin($input4 + 2*M_PI/3.0) * $input2 + 1 * $input3);
+    ${out_a} = (cos(${in_theta}) * ${in_d} - sin(${in_theta}) * ${in_q} + 1 * ${in_0});
+    ${out_b} = (cos(${in_theta} - 2*M_PI/3.0) * ${in_d} - sin(${in_theta} - 2*M_PI/3.0) * ${in_q} + 1 * ${in_0});
+    ${out_c} = (cos(${in_theta} + 2*M_PI/3.0) * ${in_d} - sin(${in_theta} + 2*M_PI/3.0) * ${in_q} + 1 * ${in_0});
     #end
 }

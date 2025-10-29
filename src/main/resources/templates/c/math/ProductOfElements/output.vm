@@ -1,51 +1,52 @@
-
-#set($outputPortList = $outputPortList.get(0))
-
-
-
-
-/* Code for ProductOfElements block $blockId */
-#set($sequenceLength = $sequence.length())
-#set($seqMax = $sequence.length() - 1)
-#if($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $realDataType)
+/*Code for output of block ProductOfElements:($blockId)$blockName*/
+## ProductOfElements: multiply/divide elements based on sequence parameter
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar input
     #if($sequence.length() == 1)
-        $outputSignal = $inputSignal;
+    ${outputVar} = ${inputVar};
     #else
-        $outputSignal = 1;
+    ${outputVar} = 1;
+        #set($seqMax = $sequence.length() - 1)
         #foreach($i in [0..$seqMax])
-            $outputSignal $sequence.charAt($i)= $inputSignal;
+    ${outputVar} $sequence.charAt($i)= ${inputVar};
         #end
     #end
-#elseif($inputPortList.size() > 0 && $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().dataType == $matrixDataType)
+#else
+    ## Matrix input
     #if($allDimensions)
-        #set($hMax = $signalHeight - 1)
-        #set($wMax = $signalWidth - 1)
-        $outputSignal = 1;
+        ## Element-wise product over all dimensions
+    ${outputVar} = 1;
+        #set($hMax = $inputHeight - 1)
+        #set($wMax = $inputWidth - 1)
         #foreach($m in [0..$hMax])
             #foreach($n in [0..$wMax])
-                $outputSignal[$m][$n] = 1;
+    ${outputVar}[$m][$n] = 1;
+                #set($seqMax = $sequence.length() - 1)
                 #foreach($i in [0..$seqMax])
-                    $outputSignal[$m][$n] $sequence.charAt($i)= $inputSignal[$m][$n];
+    ${outputVar}[$m][$n] $sequence.charAt($i)= ${inputVar}[$m][$n];
                 #end
             #end
         #end
     #else
+        ## Product along specific dimension
         #if($dimension == 2)
-            #set($mMax = $signalWidth - 1)
+            ## Product along columns (output is row vector)
+            #set($mMax = $inputWidth - 1)
             #foreach($m in [0..$mMax])
-                $outputSignal[0][$m] = 1;
-                #set($nMax = $signalHeight - 1)
+    ${outputVar}[0][$m] = 1;
+                #set($nMax = $inputHeight - 1)
                 #foreach($n in [0..$nMax])
-                    $outputSignal[0][$m] += $sequence.charAt(0) + $inputSignal[$n][$m];
+    ${outputVar}[0][$m] *= ${inputVar}[$n][$m];
                 #end
             #end
         #else
-            #set($mMax = $signalHeight - 1)
+            ## Product along rows (output is column vector)
+            #set($mMax = $inputHeight - 1)
             #foreach($m in [0..$mMax])
-                $outputSignal[$m][0] = 1;
-                #set($nMax = $signalHeight - 1)
+    ${outputVar}[$m][0] = 1;
+                #set($nMax = $inputWidth - 1)
                 #foreach($n in [0..$nMax])
-                    $outputSignal[$m][0] += $sequence.charAt(0) + $inputSignal[$m][$n];
+    ${outputVar}[$m][0] *= ${inputVar}[$m][$n];
                 #end
             #end
         #end

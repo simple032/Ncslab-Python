@@ -1,36 +1,22 @@
 /*Code for output of block CompareToZero:($blockId)$blockName*/
-#if($inputPortList && $inputPortListSize > 0 && $outputPortList && $outputPortListSize > 0 && $relationalOperator)
-    #set($inputSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
-    #set($outputSignal = $outputPortList.get(0).getOutputSignalC())
-    #set($inputVar = $inputSignalName)
-    #set($outputVar = $outputSignalName)
-    
-    #if($inputSignal.dataType == $realDataType)
-        ## Scalar comparison to zero
-        if(${inputVar} ${relationalOperator} 0.0) {
-            ${outputVar} = 1.0;
-        } else {
-            ${outputVar} = 0.0;
-        }
-    #else
-        ## Matrix comparison to zero - element-wise
-        #set($height = $inputSignalHeight)
-        #set($width = $inputSignalWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-                if(${inputVar}[$i][$j] ${relationalOperator} 0.0) {
-                    ${outputVar}[$i][$j] = 1.0;
-                } else {
-                    ${outputVar}[$i][$j] = 0.0;
-                }
-            #end
-        #end
-    #end
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar comparison to zero
+    if(${inputVar} ${RelationalOperatorValue} 0.0) {
+        ${outputVar} = 1.0;
+    } else {
+        ${outputVar} = 0.0;
+    }
 #else
-    ## Fallback if parameters missing
-    #if($outputPortList && $outputPortListSize > 0)
-        $outputPort0SignalName = 0.0; /* CompareToZero block missing parameters */
+    ## Matrix comparison to zero - element-wise
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}[$i][$j] ${RelationalOperatorValue} 0.0) {
+        ${outputVar}[$i][$j] = 1.0;
+    } else {
+        ${outputVar}[$i][$j] = 0.0;
+    }
+        #end
     #end
 #end

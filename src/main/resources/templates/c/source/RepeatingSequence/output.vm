@@ -1,41 +1,35 @@
 /*Code for output of block RepeatingSequence:($blockId)$blockName*/
-#if($TimeValues && $OutputValues)
-    #if($TimeValuesObject.dataType == $realDataType)
-        ## Scalar repeating sequence - use simple value
-        $outputSignal = $OutputValues;
-    #else
-        ## Array-based repeating sequence with time wrapping and linear interpolation
-        #set($arraySize = $TimeValuesObject.width)
-        #set($lastIndex = $arraySize - 1)
-        {
-            /* Repeating sequence interpolation logic */
-            double dt = model.time;
-            double output_val;
-            int i;
-
-            /* Wrap time to be within sequence period */
-            while (dt > ${TimeValues}(0, ${lastIndex})) {
-                dt -= ${TimeValues}(0, ${lastIndex});
-            }
-
-            /* Default to first value */
-            output_val = ${OutputValues}(0, 0);
-
-            /* Find the time interval and perform linear interpolation */
-            for (i = 0; i < ${lastIndex}; i++) {
-                if (dt >= ${TimeValues}(0, i) && dt < ${TimeValues}(0, i + 1)) {
-                    /* Linear interpolation between points */
-                    output_val = ${OutputValues}(0, i) + (dt - ${TimeValues}(0, i)) *
-                                (${OutputValues}(0, i + 1) - ${OutputValues}(0, i)) /
-                                (${TimeValues}(0, i + 1) - ${TimeValues}(0, i));
-                    break;
-                }
-            }
-
-            $outputSignal = output_val;
-        }
-    #end
+#if($TimeValuesHeight == 1 && $TimeValuesWidth == 1)
+    ## Scalar repeating sequence - use simple value
+    ${outputVar} = ${OutputValues};
 #else
-    ## Fallback with default behavior
-    $outputSignal = 0.0; /* Default repeating sequence value */
+    ## Array-based repeating sequence with time wrapping and linear interpolation
+    #set($lastIndex = $TimeValuesWidth - 1)
+    {
+        /* Repeating sequence interpolation logic */
+        double dt = model.time;
+        double output_val;
+        int i;
+
+        /* Wrap time to be within sequence period */
+        while (dt > ${TimeValues}(0,${lastIndex})) {
+            dt -= ${TimeValues}(0,${lastIndex});
+        }
+
+        /* Default to first value */
+        output_val = ${OutputValues}(0,0);
+
+        /* Find the time interval and perform linear interpolation */
+        for (i = 0; i < ${lastIndex}; i++) {
+            if (dt >= ${TimeValues}(0,i) && dt < ${TimeValues}(0,i + 1)) {
+                /* Linear interpolation between points */
+                output_val = ${OutputValues}(0,i) + (dt - ${TimeValues}(0,i)) *
+                            (${OutputValues}(0,i + 1) - ${OutputValues}(0,i)) /
+                            (${TimeValues}(0,i + 1) - ${TimeValues}(0,i));
+                break;
+            }
+        }
+
+        ${outputVar} = output_val;
+    }
 #end

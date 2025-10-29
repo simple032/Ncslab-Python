@@ -1,3 +1,2 @@
-## Sum block initialization
-#set($block = $blockInfo)
-/* Sum operation: $parameterName */
+/* Initialization for Sum block: ($blockId) $blockName */
+${InputsObject.getInitCodeC()}
