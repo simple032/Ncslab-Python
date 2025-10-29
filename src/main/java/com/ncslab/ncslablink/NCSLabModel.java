@@ -3,13 +3,15 @@ package com.ncslab.ncslablink;
 import com.ncslab.block.io.State;
 import com.ncslab.block.route.From;
 import com.ncslab.block.route.To;
+import com.ncslab.block.source.Constant;
 import com.ncslab.circuit.block.electblock.ElectBlock;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
-import org.checkerframework.checker.units.qual.s;
 import org.json.JSONArray;
 import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.block.specialized.sink.TerminatorDto;
+import com.ncslab.dto.block.specialized.source.ConstantDto;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.model.LineDto;
 import com.ncslab.dto.model.SaveInfoDto;
@@ -21,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.Generated;
+import javax.annotation.Nullable;
 
 import com.greenpineyu.fel.function.operator.Sub;
 import com.ncslab.block.Block;
@@ -55,8 +58,10 @@ abstract public class NCSLabModel {
     private Config config; // config file for the model
 
 	@Getter
+	@Setter
     private int userId;
 	@Getter
+	@Setter
     private int modelId;
 	@Getter
     private int testRig;
@@ -71,9 +76,11 @@ abstract public class NCSLabModel {
     private int copyNum;
     
     @Getter
+	@Nullable
     private JSONObject option;
 
 	@Getter
+	@Nullable
     private JSONObject saveInfo;
 
 	private ModelMode mode;
@@ -937,16 +944,14 @@ abstract public class NCSLabModel {
 				if(input.getLinkedLine()==null) {
 					//如果输入端口没有连接，则连接到constant
 					// {"blockType": "Constant", "blockName": "Constant1", "position": [100, 400, 160, 460], "paramValues": {"Value": "10"}}
-					JSONObject blockJSON = new JSONObject();
-					blockJSON.put("blockType", "Constant");
-					blockJSON.put("blockName", "Auto_Constant"+(blockSeq));
-					JSONObject paramValues = new JSONObject();
-					paramValues.put("Value", "0");
-					blockJSON.put("paramValues", paramValues);
-                    blockJSON.put("blockPath", block.getBlockPath());
-                    blockJSON.put("blockUUID", UUID.randomUUID().toString());
+					ConstantDto constantDto = new ConstantDto();		
+					constantDto.setBlockName("Auto_Constant"+(blockSeq));
+					constantDto.setParameterValue("Value", "0");					
+					constantDto.setBlockPath(block.getBlockPath());
+					constantDto.setBlockUUID(UUID.randomUUID().toString());				
 
-                    Block newBlock = BlockType.createBlock(blockSeq+1,blockJSON,this);
+                    Block newBlock = OptimizedBlockFactory.createOptimizedBlock(blockSeq + 1, constantDto, this);
+					
 
                     blockSeq++;
 
@@ -955,17 +960,28 @@ abstract public class NCSLabModel {
                     fullBlockList.add(newBlock);
                     rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()
 
-                    JSONObject lineJSON = new JSONObject();
-                    lineJSON.put("fromBlockName", newBlock.getBlockName());
-                    lineJSON.put("fromBlockUUID", newBlock.getBlockUUID());
-                    lineJSON.put("fromPortNo", 1);
+                    // JSONObject lineJSON = new JSONObject();
 
-                    lineJSON.put("toBlockName", block.getBlockName());
-                    lineJSON.put("toBlockUUID", block.getBlockUUID());
-                    lineJSON.put("toPortNo", i+1);
-                    lineJSON.put("linePath", block.getBlockPath());					
+                    // lineJSON.put("fromBlockName", newBlock.getBlockName());
+                    // lineJSON.put("fromBlockUUID", newBlock.getBlockUUID());
+                    // lineJSON.put("fromPortNo", 1);
 
-                    Line line=Line.createLine(lineJSON, getBlockList());
+                    // lineJSON.put("toBlockName", block.getBlockName());
+                    // lineJSON.put("toBlockUUID", block.getBlockUUID());
+                    // lineJSON.put("toPortNo", i+1);
+                    // lineJSON.put("linePath", block.getBlockPath());					
+
+                    // Line line=Line.createLine(lineJSON, getBlockList());
+					LineDto lineDto = new LineDto();
+					lineDto.setFromBlockName(newBlock.getBlockName());
+					lineDto.setFromBlockUUID(newBlock.getBlockUUID());
+					lineDto.setFromPortNo(1);
+					lineDto.setToBlockName(block.getBlockName());
+					lineDto.setToBlockUUID(block.getBlockUUID());
+					lineDto.setToPortNo(i+1);
+					lineDto.setLinePath(block.getBlockPath());					
+					
+					Line line = Line.createLine(lineDto, getBlockList());
                     line.setLineId(lineSeq+1);
                     lineSeq++;
 
@@ -986,15 +1002,21 @@ abstract public class NCSLabModel {
                 if(output.getLinkedLineList().isEmpty()) {
                     //如果输入端口没有连接，则连接到constant
                     // {"blockType": "Terminator", "blockName": "Terminator1", "position": [100, 400, 160, 460], "paramValues": {}}
-                    JSONObject blockJSON = new JSONObject();
-                    blockJSON.put("blockType", "Terminator");
-                    blockJSON.put("blockName", "Auto_Terminator" + (blockSeq));
-                    JSONObject paramValues = new JSONObject();
-                    blockJSON.put("paramValues", paramValues);
-                    blockJSON.put("blockPath", block.getBlockPath());
-                    blockJSON.put("blockUUID", UUID.randomUUID().toString());
+                    // JSONObject blockJSON = new JSONObject();
+                    // blockJSON.put("blockType", "Terminator");
+                    // blockJSON.put("blockName", "Auto_Terminator" + (blockSeq));
+                    // JSONObject paramValues = new JSONObject();
+                    // blockJSON.put("paramValues", paramValues);
+                    // blockJSON.put("blockPath", block.getBlockPath());
+                    // blockJSON.put("blockUUID", UUID.randomUUID().toString());
+                    // Block newBlock = BlockType.createBlock(blockSeq+1, blockJSON, this);
 
-                    Block newBlock = BlockType.createBlock(blockSeq+1, blockJSON, this);
+					TerminatorDto terminatorDto = new TerminatorDto();		
+					terminatorDto.setBlockName("Auto_Terminator"+(blockSeq));					
+					terminatorDto.setBlockPath(block.getBlockPath());
+					terminatorDto.setBlockUUID(UUID.randomUUID().toString());				
+
+                    Block newBlock = OptimizedBlockFactory.createOptimizedBlock(blockSeq + 1, terminatorDto, this);
 
                     blockSeq++;
 
@@ -1003,17 +1025,29 @@ abstract public class NCSLabModel {
                     fullBlockList.add(newBlock);
                     rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()
 
-                    JSONObject lineJSON = new JSONObject();                    
-					lineJSON.put("fromBlockName", block.getBlockName());
-                    lineJSON.put("fromBlockUUID", block.getBlockUUID());
-                    lineJSON.put("fromPortNo", i + 1);
+                    // JSONObject lineJSON = new JSONObject();                    
+					// lineJSON.put("fromBlockName", block.getBlockName());
+                    // lineJSON.put("fromBlockUUID", block.getBlockUUID());
+                    // lineJSON.put("fromPortNo", i + 1);
 
-                    lineJSON.put("toBlockName", newBlock.getBlockName());
-                    lineJSON.put("toBlockUUID", newBlock.getBlockUUID());
-                    lineJSON.put("toPortNo", 1);
-                    lineJSON.put("linePath", block.getBlockPath());
+                    // lineJSON.put("toBlockName", newBlock.getBlockName());
+                    // lineJSON.put("toBlockUUID", newBlock.getBlockUUID());
+                    // lineJSON.put("toPortNo", 1);
+                    // lineJSON.put("linePath", block.getBlockPath());
 
-                    Line line = Line.createLine(lineJSON, getBlockList());
+                    // Line line = Line.createLine(lineJSON, getBlockList());
+
+					LineDto lineDto = new LineDto();
+					lineDto.setFromBlockName(block.getBlockName());
+					lineDto.setFromBlockUUID(block.getBlockUUID());
+					lineDto.setFromPortNo(i+1);
+					lineDto.setToBlockName(newBlock.getBlockName());
+					lineDto.setToBlockUUID(newBlock.getBlockUUID());
+					lineDto.setToPortNo(1);
+					lineDto.setLinePath(block.getBlockPath());					
+					
+					Line line = Line.createLine(lineDto, getBlockList());
+
                     line.setLineId(lineSeq + 1);
                     lineSeq++;
 

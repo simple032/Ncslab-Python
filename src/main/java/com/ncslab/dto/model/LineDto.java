@@ -2,6 +2,8 @@ package com.ncslab.dto.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
@@ -31,10 +33,10 @@ public class LineDto {
     private String linePath;
     
     @JsonProperty("fromBlockUUID")
-    private String fromBlockUUID;
+    private String fromBlockUUID = "null";
     
     @JsonProperty("toBlockUUID")
-    private String toBlockUUID;
+    private String toBlockUUID = "null";
     
     // Default constructor for Jackson
     public LineDto() {}
