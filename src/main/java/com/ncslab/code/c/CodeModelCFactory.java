@@ -3,6 +3,7 @@ package com.ncslab.code.c;
 
 import com.ncslab.code.c.linux.loong.CodeModelCLinuxLoong;
 import com.ncslab.code.c.linux.raspberry.CodeModelCLinuxRaspberry;
+import com.ncslab.code.c.windows.android.CodeModelCWindowsAndroid;
 import com.ncslab.code.c.windows.pc.CodeModelCWindowsPC;
 import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
 import com.ncslab.ncslablink.ModelException;
@@ -51,6 +52,8 @@ public class CodeModelCFactory {
             case "loong":
                 // Use native DTO method
                 return CodeModelCLinuxLoong.createFromDto(modelDto, mode);
+            case "android":
+                return CodeModelCWindowsAndroid.createFromDto(modelDto, mode);
             case "windows":
                 // Use native DTO method
                 return CodeModelCWindowsPC.createFromDto(modelDto, mode);

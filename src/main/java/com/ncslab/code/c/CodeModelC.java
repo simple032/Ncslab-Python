@@ -47,25 +47,30 @@ abstract public class CodeModelC extends CodeModel {
 	}
 
 	public String getIpAddress() {
-		if(getSaveInfo().has("ipAddress"))
-			return getSaveInfo().getString("ipAddress");
+		// 安卓客户端发过来的为空
+		JSONObject saveInfo = getSaveInfo();
+		if(saveInfo != null && saveInfo.has("ipAddress"))
+			return saveInfo.getString("ipAddress");
 		else return "192.168.46.34";
 	}
 	public String getNetmask() {
-		if(getSaveInfo().has("netmask"))
-			return getSaveInfo().getString("netmask");
+		JSONObject saveInfo = getSaveInfo();
+		if(saveInfo != null && saveInfo.has("netmask"))
+			return saveInfo.getString("netmask");
 		else return "255.255.255.0";
 	}
 	public String getGateway() {
 //		return getSaveInfo().getString("gateway");
-		if(getSaveInfo().has("gateway"))
-			return getSaveInfo().getString("gateway");
+		JSONObject saveInfo = getSaveInfo();
+		if(saveInfo != null && saveInfo.has("gateway"))
+			return saveInfo.getString("gateway");
 		else return "192.168.46.1";
 	}
 	public int getMonitorPort() {
 //		return getSaveInfo().getInt("monitorPort");
-		if(getSaveInfo().has("monitorPort"))
-			return getSaveInfo().getInt("monitorPort");
+		JSONObject saveInfo = getSaveInfo();
+		if(saveInfo != null && saveInfo.has("monitorPort"))
+			return saveInfo.getInt("monitorPort");
 		else return 27015;
 	}
 
@@ -238,32 +243,53 @@ abstract public class CodeModelC extends CodeModel {
         AlgorithmsMapper mapper = sqlSession.getMapper( AlgorithmsMapper.class);
         Algorithms algorithm = new Algorithms();
 
-        algorithm.setAuthor(getSaveInfo().getInt("userId"));
-        algorithm.setName(getSaveInfo().getString("modelRealName"));
-        algorithm.setBin(getCodeStructC().readExeFile());
+		JSONObject saveInfo = getSaveInfo();
+		if(saveInfo == null){
+			saveInfo = new JSONObject();
+			saveInfo.put("userId", getUserId());
+			saveInfo.put("modelId", getModelId());
+			saveInfo.put("modelRealName", getModelName());
+			saveInfo.put("publicFlag", 0);
+			saveInfo.put("stepTime", 0.04);
+			saveInfo.put("packetSize", 10);
+			saveInfo.put("testRig", 2);
+			saveInfo.put("uuid", System.currentTimeMillis());
+			saveInfo.put("targetPlatform", 1);
+		}
 
-        algorithm.setTestRig(getSaveInfo().getInt("testRig"));
-        algorithm.setModelId(getSaveInfo().getInt("modelId"));
-        algorithm.setLastUpdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+        algorithm.setAuthor(saveInfo.getInt("userId"));
+        algorithm.setName(saveInfo.getString("modelRealName"));
+        
+        algorithm.setTestRig(saveInfo.getInt("testRig"));
+        algorithm.setModelId(saveInfo.getInt("modelId"));
+        
+        algorithm.setStepTime((float) saveInfo.getDouble("stepTime"));
+        algorithm.setPacketSize(saveInfo.getInt("packetSize"));
 
-        algorithm.setStepTime((float) getSaveInfo().getDouble("stepTime"));
-        algorithm.setPacketSize(getSaveInfo().getInt("packetSize"));
+        algorithm.setUuid(saveInfo.getLong("uuid"));
+        algorithm.setPublicFlag(saveInfo.getInt("publicFlag"));
+        algorithm.setTargetPlatform(saveInfo.getInt("targetPlatform"));
+		
+		algorithm.setBin(getCodeStructC().readExeFile());
+		algorithm.setLastUpdate(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
 
-        algorithm.setUuid(getSaveInfo().getLong("uuid"));
-        algorithm.setPublicFlag(getSaveInfo().getInt("publicFlag"));
-        algorithm.setTargetPlatform(getSaveInfo().getInt("targetPlatform"));
-        mapper.insert(algorithm);
+        if(saveInfo.has("ipAddress")&&saveInfo.has("monitorPort")) {
+        	algorithm.setDescription(saveInfo.getString("ipAddress"),saveInfo.getString("monitorPort"));
+        }
+
+		mapper.insert(algorithm);
         sqlSession.commit();
         sqlSession.close();
-
-        if(getSaveInfo().has("ipAddress")&&getSaveInfo().has("monitorPort")) {
-        	algorithm.setDescription(getSaveInfo().getString("ipAddress"),getSaveInfo().getString("monitorPort"));
-        }
 	}
 
 
     public void simulate(Session session) throws ModelException{
 
+    }
+
+	public void preBuild(){        
+        //1.清除工作
+        cleanup();
     }
 
     public void postBuild(){

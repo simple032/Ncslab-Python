@@ -122,8 +122,9 @@ public class CodeStructCStm32 extends CodeStructC{
 		if("deploy".equals(Property.instance.getProperty("mode").trim())==true) {
 			try {
 				//Runtime.getRuntime().exec("python /home/pi/.config/antostart/GetPiId.py");
-				String command = "sudo chmod -R 777 " + codePathBase;
-				Runtime.getRuntime().exec(command);
+				// Use ProcessBuilder instead of deprecated Runtime.exec()
+				ProcessBuilder processBuilder = new ProcessBuilder("sudo", "chmod", "-R", "777", codePathBase);
+				processBuilder.start();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -188,12 +189,18 @@ public class CodeStructCStm32 extends CodeStructC{
 			Process process2;
 			ProcessBuilder pb;
 			if("deploy".equals(Property.instance.getProperty("mode").trim())==true) {
-				Process process= Runtime.getRuntime().exec("sudo make clean", null, new File(codePath));
+				// Use ProcessBuilder instead of deprecated Runtime.exec()
+				ProcessBuilder cleanBuilder = new ProcessBuilder("sudo", "make", "clean");
+				cleanBuilder.directory(new File(codePath));
+				Process process = cleanBuilder.start();
 				process.waitFor();
 //				process2=Runtime.getRuntime().exec("sudo make -j", null, new File(codePath));
-				pb = new ProcessBuilder("sudo make", "-j");
+				pb = new ProcessBuilder("sudo", "make", "-j");
 			}else {
-				Process process= Runtime.getRuntime().exec("make clean", null, new File(codePath));
+				// Use ProcessBuilder instead of deprecated Runtime.exec()
+				ProcessBuilder cleanBuilder = new ProcessBuilder("make", "clean");
+				cleanBuilder.directory(new File(codePath));
+				Process process = cleanBuilder.start();
 				process.waitFor();
 //				process2=Runtime.getRuntime().exec("make -j", null, new File(codePath));
 				pb = new ProcessBuilder("make", "-j");

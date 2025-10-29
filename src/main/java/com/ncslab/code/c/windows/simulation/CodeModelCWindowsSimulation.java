@@ -107,11 +107,13 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 //                }
 //            }
 
-            process = Runtime.getRuntime().exec(
-                exeFilePath + " " + this.getConfig().getStopTime(),
-                null, // 将环境变量映射转换为String数组
-                dir
+            // Use ProcessBuilder instead of deprecated Runtime.exec()
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                exeFilePath,
+                String.valueOf(this.getConfig().getStopTime())
             );
+            processBuilder.directory(dir);
+            process = processBuilder.start();
 
 			// read primitive Java data types from an underlying InputStream in a little-endian format
 			// This input stream is the stdout of the process

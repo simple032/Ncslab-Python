@@ -59,10 +59,13 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 		System.out.println("Executing simulation codes...");
 		try {
 			// run the executable ncslab file
-			process = Runtime.getRuntime().exec(
-				"./ncslab " + this.getConfig().getStopTime(),
-				null,
-				new File(codeRaspberry.getCodePath()));
+			// Use ProcessBuilder instead of deprecated Runtime.exec()
+			ProcessBuilder processBuilder = new ProcessBuilder(
+				"./ncslab",
+				String.valueOf(this.getConfig().getStopTime())
+			);
+			processBuilder.directory(new File(codeRaspberry.getCodePath()));
+			process = processBuilder.start();
 
 			// read primitive Java data types from an underlying InputStream in a little-endian format
 			// This input stream is the stdout of the process
@@ -97,10 +100,14 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 				throw new ModelException("Can not execute the exe file!");
 			}
 
-			process = Runtime.getRuntime().exec(
-				"sudo chown -R " + user +  ":" + group + " " + codeRaspberry.getCodePath(),
-				null,
-				new File(codeRaspberry.getCodePath()));
+			// Use ProcessBuilder instead of deprecated Runtime.exec()
+			ProcessBuilder chownBuilder = new ProcessBuilder(
+				"sudo", "chown", "-R",
+				user + ":" + group,
+				codeRaspberry.getCodePath()
+			);
+			chownBuilder.directory(new File(codeRaspberry.getCodePath()));
+			process = chownBuilder.start();
 
 			try {
 				process.waitFor();

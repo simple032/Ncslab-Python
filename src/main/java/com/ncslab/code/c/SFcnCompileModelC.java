@@ -179,7 +179,18 @@ public class SFcnCompileModelC extends SFcnModel{
 			System.out.println(codePath);
 			String exeString="g++ -D_S_COMPILE -I${M2PLAB_ROOT}/server/cruntime/include -fpermissive -o "+fileName+" "+fileName+".cpp";
 			System.out.println(exeString);
-			Process process=Runtime.getRuntime().exec(exeString,null,new File(codePath));
+
+			// Use ProcessBuilder instead of deprecated Runtime.exec()
+			ProcessBuilder processBuilder = new ProcessBuilder(
+				"g++",
+				"-D_S_COMPILE",
+				"-I${M2PLAB_ROOT}/server/cruntime/include",
+				"-fpermissive",
+				"-o", fileName,
+				fileName+".cpp"
+			);
+			processBuilder.directory(new File(codePath));
+			Process process = processBuilder.start();
 
             // 创建线程读取标准输出和错误输出
             StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
@@ -232,7 +243,10 @@ public class SFcnCompileModelC extends SFcnModel{
 		Process process = null;
 		System.out.println("Executing compile codes...");
 		try {
-			process = Runtime.getRuntime().exec(codePath+"\\"+fileName+".exe",null,new File(codePath));
+			// Use ProcessBuilder instead of deprecated Runtime.exec()
+			ProcessBuilder processBuilder = new ProcessBuilder(codePath+"\\"+fileName+".exe");
+			processBuilder.directory(new File(codePath));
+			process = processBuilder.start();
 //			LittleEndianDataInputStream out = new LittleEndianDataInputStream(process.getInputStream());
 //
 //			while(true) {

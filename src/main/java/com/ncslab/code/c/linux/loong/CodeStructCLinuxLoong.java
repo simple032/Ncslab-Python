@@ -118,12 +118,18 @@ public class CodeStructCLinuxLoong extends CodeStructC{
 		case ode4:
 			writeNCSLabFile("../../ode4.cpp","onestep.cpp",true);
 			break;
+		case ode5:
+                writeNCSLabFile("../../ode5.cpp","onestep.cpp",true);
+                break;
+		default:
+			break;
 		}
 
 		try {
 			//Runtime.getRuntime().exec("python /home/pi/.config/antostart/GetPiId.py");
-			String command = "sudo chmod -R 777 " + codePathBase;
-			Runtime.getRuntime().exec("sudo chmod -R 777 " + codePathBase);
+			// Use ProcessBuilder instead of deprecated Runtime.exec()
+			ProcessBuilder processBuilder = new ProcessBuilder("sudo", "chmod", "-R", "777", codePathBase);
+			processBuilder.start();
 //			Runtime.getRuntime().exec("sudo chmod -R 777 /home/pi/NetConTop/NCSLabLink/CCode");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -139,7 +145,10 @@ public class CodeStructCLinuxLoong extends CodeStructC{
 	public boolean makeExeFile() {
 		try {
 			//锟斤拷锟斤拷make锟斤拷锟斤拷锟缴匡拷执锟叫达拷锟斤拷
-			Process process=Runtime.getRuntime().exec("make -j8", null, new File(codePath));
+			// Use ProcessBuilder instead of deprecated Runtime.exec()
+			ProcessBuilder processBuilder = new ProcessBuilder("make", "-j8");
+			processBuilder.directory(new File(codePath));
+			Process process = processBuilder.start();
 			//锟斤拷取OutputStream锟斤拷errStream锟斤拷锟斤拷锟斤拷锟饺★拷锟斤拷锟绞憋拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷
 			BufferedReader in=new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			BufferedReader inOut=new BufferedReader(new InputStreamReader(process.getInputStream()));
