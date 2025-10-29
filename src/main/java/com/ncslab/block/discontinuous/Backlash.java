@@ -45,9 +45,6 @@ public class Backlash extends DiscontinuousBlock {
     // === SIMULINK-Compatible Parameters ===
     private final Parameter backlashWidthParam;
     private final Parameter initialOutputParam;
-    private final Parameter sampleTime;
-    private final Parameter outDataType;
-    private final Parameter saturateOnIntegerOverflow;
 
     // === Static Parameter Definitions ===
 
@@ -101,9 +98,6 @@ public class Backlash extends DiscontinuousBlock {
         // Assign parameters
         this.backlashWidthParam = Objects.requireNonNull(backlashWidth, "BacklashWidth parameter cannot be null");
         this.initialOutputParam = Objects.requireNonNull(initialOutput, "InitialOutput parameter cannot be null");
-        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
-        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
-        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
         // Legacy field mapping for backward compatibility
         this.backlashWidth = this.backlashWidthParam;
         this.initialOutput = this.initialOutputParam;
@@ -121,9 +115,6 @@ public class Backlash extends DiscontinuousBlock {
         // Create legacy parameters for backward compatibility
         this.backlashWidthParam = getParameterByName("BacklashWidth");
         this.initialOutputParam = getParameterByName("InitialOutput");
-        this.sampleTime = getParameterByName("SampleTime"); // -1 for inherited
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         
         // Add all parameters to parameter list
 
@@ -143,9 +134,6 @@ public class Backlash extends DiscontinuousBlock {
         // Initialize final parameters from DTO with fail-fast validation
         this.backlashWidthParam = getRequiredParameter("BacklashWidth");
         this.initialOutputParam = getRequiredParameter("InitialOutput");
-        this.sampleTime = getRequiredParameter("SampleTime");
-        this.outDataType = getRequiredParameter("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getRequiredParameter("SaturateOnIntegerOverflow");
 
         // Initialize ports
         initializePorts();

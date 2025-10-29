@@ -141,4 +141,19 @@ public class Matrix extends MathBlock {
         
         outputPortList.get(0).setData(outputData);
     }
+
+    @Override
+    public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add block-specific context - Matrix block is a source, outputs constant values
+        context.put("row", row);
+        context.put("column", column);
+        context.put("scalar", scalar);
+        context.put("elements", elements);
+
+        String codeStr = TemplateManager.renderTemplate("c/math/Matrix/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
 }

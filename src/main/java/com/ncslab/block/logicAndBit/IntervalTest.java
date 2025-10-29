@@ -292,14 +292,10 @@ public class IntervalTest extends LogicBlock {
         code.addInitCode(codeStr);
     }
 
+    @Override
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
-        context.put("lowLimit", lowLimit.getDouble());  // 直接传递Parameter对象
-        context.put("upLimit", upLimit.getDouble());    // 由模板处理参数值获取
-        OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("signal", signal);
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/IntervalTest/output.vm", context);
         code.addOutputCode(codeStr);

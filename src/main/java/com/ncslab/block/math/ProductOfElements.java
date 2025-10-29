@@ -149,4 +149,18 @@ public class ProductOfElements extends MathBlock {
         
         out.setData(outputData);
     }
+
+    @Override
+    public void generateOutputCodeC(com.ncslab.code.c.CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add block-specific context
+        context.put("sequence", seq);
+        context.put("allDimensions", allDimensions);
+        context.put("dimension", dimension);
+
+        String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/math/ProductOfElements/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
 }

@@ -87,6 +87,32 @@ public class Rounding extends MathBlock {
     }
     
     @Override
+    public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/math/Rounding/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    @Override
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
+
+    @Override
+    public void checkDimension() throws MatDimException {
+    }
+
+    @Override
     public void calculateOutput(double t) {
         // SIMULINK Rounding block: applies rounding function to input
         Data inputData = inputPortList.get(0).getData();

@@ -612,6 +612,8 @@ public class Block implements MCodeBlock, CCodeBlock {
 		for (GlobalVariable variable : globalVariableList) {
 			code.addGlobalVariable(variable);
 		}
+        // Populate all standard context variables
+        TemplateUtils.populateAllContext(context, this);  
 	}
 
 	//生成C语言的Output代码，供上一级调用

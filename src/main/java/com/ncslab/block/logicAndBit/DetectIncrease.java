@@ -323,14 +323,13 @@ public class DetectIncrease extends LogicBlock {
         }
     }
 
+    @Override
     public void generateOutputCodeC(CodeStructC code) {
-        try {
-            String templatePath = "c/logicAndBit/DetectIncrease/output.vm";
-            String codeStr = TemplateManager.renderTemplate(templatePath, context);
-            code.addOutputCode(codeStr);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectIncrease/output.vm", context);
+        code.addOutputCode(codeStr);
     }
 
     public void updateDimension() throws MatDimException{

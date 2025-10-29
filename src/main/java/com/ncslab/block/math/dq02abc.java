@@ -79,10 +79,10 @@ public class dq02abc extends MathBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add block-specific context
         context.put("function", getFunction());
 
         String codeStr = TemplateManager.renderTemplate("c/math/dq02abc/output.vm", context);

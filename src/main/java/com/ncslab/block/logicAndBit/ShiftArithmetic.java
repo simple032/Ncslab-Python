@@ -272,11 +272,10 @@ public class ShiftArithmetic extends LogicBlock {
         code.addInitCode(codeStr);
     }
 
+    @Override
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("value", bitShiftNumber);
-        context.put("signal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-        context.put("outputs", getOutputPortVariables());
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/ShiftArithmetic/output.vm", context);
         code.addOutputCode(codeStr);

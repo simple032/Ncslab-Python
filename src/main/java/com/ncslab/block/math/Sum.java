@@ -380,10 +380,23 @@ public class Sum extends MathBlock {
         OutputPort out = outputPortList.get(0);
         Data resultData = new Data(out.getHeight(), out.getWidth());
 
-        for (int i = 0; i < inputSequence.length(); i++) {
-            if (inputSequence.charAt(i) == '+') {
+        // Check if inputSequence is numeric (count) or operator string
+        boolean isNumericInput = inputSequence.length() < inputPortList.size();
+
+        for (int i = 0; i < inputPortList.size(); i++) {
+            char operation;
+
+            if (isNumericInput) {
+                // Numeric input: use default '+' operation
+                operation = '+';
+            } else {
+                // String input: get operation from sequence
+                operation = inputSequence.charAt(i);
+            }
+
+            if (operation == '+') {
                 resultData = resultData.plus(inputPortList.get(i).getData());
-            } else if (inputSequence.charAt(i) == '-') {
+            } else if (operation == '-') {
                 resultData = resultData.minus(inputPortList.get(i).getData());
             }
         }

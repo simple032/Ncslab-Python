@@ -455,11 +455,7 @@ public class Add extends MathBlock {
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Add Add-specific template context
-        context.put("sequence", getInputSequence());
-        context.put("inputs", this.inputs);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/math/Add/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -523,19 +519,30 @@ public class Add extends MathBlock {
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
         Data result = new Data(out.getHeight(), out.getWidth());
-        
+
+        // Check if inputSequence is numeric (count) or operator string
+        boolean isNumericInput = inputSequence.length() < inputPortList.size();
+
         // Process each input according to its operation sign
-        for (int i = 0; i < inputSequence.length(); i++) {
+        for (int i = 0; i < inputPortList.size(); i++) {
             Data inputData = inputPortList.get(i).getData();
-            char operation = inputSequence.charAt(i);
-            
+            char operation;
+
+            if (isNumericInput) {
+                // Numeric input: use default '+' operation
+                operation = '+';
+            } else {
+                // String input: get operation from sequence
+                operation = inputSequence.charAt(i);
+            }
+
             if (operation == '+') {
                 result = result.plus(inputData);
             } else if (operation == '-') {
                 result = result.minus(inputData);
             }
         }
-        
+
         out.setData(result);
     }
 }

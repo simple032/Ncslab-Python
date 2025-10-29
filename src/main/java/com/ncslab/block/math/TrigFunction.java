@@ -284,22 +284,12 @@ public class TrigFunction extends MathBlock {
 
     // === Code Generation Methods (using Velocity templates) ===
     public void generateOutputCodeC(CodeStructC code) {
-        super.generateOutputCodeC(code);
-        
-        context.put("block", this);
-        context.put("trigFunction", this.trigFunction);
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add block-specific context
         context.put("function", this.function);
-        context.put("sampleTime", this.sampleTime);
-        context.put("outDataType", this.outDataType);
-        context.put("saturateOnIntegerOverflow", this.saturateOnIntegerOverflow);
-        
-        // Add input signal and data type context
-        if (!inputPortList.isEmpty()) {
-            OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-            context.put("signal", signal);
-            context.put("realDataType", com.ncslab.block.data.DataType.REAL);
-        }
-        
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/math/TrigFunction/output.vm", context);
         code.addOutputCode(codeStr);
     }

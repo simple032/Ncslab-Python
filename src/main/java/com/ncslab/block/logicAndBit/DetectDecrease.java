@@ -313,10 +313,10 @@ public class DetectDecrease extends LogicBlock {
         code.addInitCode(initCode);
     }
 
+    @Override
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/DetectDecrease/output.vm", context);
         code.addOutputCode(codeStr);

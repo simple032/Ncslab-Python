@@ -279,4 +279,30 @@ public class DeadZone extends DiscontinuousBlock {
             return value - upperThreshold; // Above dead zone
         }
     }
+
+    @Override
+    public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/discontinuous/DeadZone/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    @Override
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
+
+    @Override
+    public void checkDimension() throws MatDimException {
+    }
 }

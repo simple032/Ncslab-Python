@@ -282,11 +282,38 @@ public class CompareToConstant extends LogicBlock {
     public double getConstantValue() {
         return constantValue.getData().getInitValue();
     }
-    
+
     public String getRelationalOperator() {
         return relationalOperator.getData().getInitString();
     }
-    
+
+    // === Code Generation Methods ===
+    @Override
+    public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/logicAndBit/CompareToConstant/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    @Override
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(DataType.REAL); // Logic output as REAL (0.0 or 1.0)
+    }
+
+    @Override
+    public void checkDimension() throws MatDimException {
+    }
+
     @Override
     public void calculateOutput(double t) {
         // SIMULINK CompareToConstant block: compares input to constant value

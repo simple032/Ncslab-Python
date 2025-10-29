@@ -326,16 +326,11 @@ public class CompareToZero extends LogicBlock{
         code.addInitCode(initCode);
     }
 
+    @Override
     public void generateOutputCodeC(CodeStructC code) {
-        super.generateOutputCodeC(code);
-        
-        context.put("block", this);
-        context.put("relationalOperator", relationalOperator.getInitString());
-        context.put("logicDataType", logicDataType);
-        context.put("sampleTime", sampleTime);
-        context.put("outDataType", outDataType);
-        context.put("saturateOnIntegerOverflow", saturateOnIntegerOverflow);
-        
+        // Populate all standard template variables first
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/logicAndBit/CompareToZero/output.vm", context);
         code.addOutputCode(codeStr);
     }
