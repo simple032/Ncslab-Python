@@ -1,0 +1,21 @@
+/* To Workspace output: (${blockId}) ${blockName} - Variable: ${variableName} */
+#if($scopeStruct)
+if (sfcnIsMajorStep()) {
+    /* Log time and data to workspace variable '${variableName}' */
+    ${scopeStruct.getName()}.timeList.push_back(sfcnGetT());
+
+    #if($inputSignal)
+    #if($inputSignalHeight == 1 && $inputSignalWidth == 1)
+    /* Scalar data logging */
+    ${scopeStruct.getName()}.dataList.push_back(${inputSignal});
+    #else
+    /* Matrix data logging - flatten matrix into vector */
+    for(int i = 0; i < ${inputSignalHeight}; i++) {
+        for(int j = 0; j < ${inputSignalWidth}; j++) {
+            ${scopeStruct.getName()}.dataList.push_back(${inputSignal}(i, j));
+        }
+    }
+    #end
+    #end
+}
+#end

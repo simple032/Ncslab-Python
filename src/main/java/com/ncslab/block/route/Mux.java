@@ -153,13 +153,13 @@ public class Mux extends RouteBlock {
         this.sampleTime = getParameterByName("SampleTime");
         String outDataTypeValue = muxDto.getOutDataTypeStr() != null ? muxDto.getOutDataTypeStr().getAsString() : "Inherit: Same as input";
         this.outDataType = getParameterByName("OutDataTypeStr");
-        
+
         String saturateValue = muxDto.getSaturateOnIntegerOverflow() != null ? muxDto.getSaturateOnIntegerOverflow().getAsString() : "off";
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
         // Parse number of inputs and create ports
-        this.num = muxDto.getInputsValue();
-        
+        // Read from parameterList (populated by parseParameterList), NOT from DTO TypedParameter
+        this.num = Integer.parseInt(this.inputs.getInitString());
         // Create input ports based on parameter
         for(int i=0; i<num; i++) {
             inputPortList.add(new InputPort(this, i+1));
@@ -315,6 +315,21 @@ public class Mux extends RouteBlock {
 	public void generateOutputCodeC(CodeStructC code) {
 		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
+		// Add input dimensions and data types for template
+		java.util.List<Integer> inputHeights = new java.util.ArrayList<>();
+		java.util.List<Integer> inputWidths = new java.util.ArrayList<>();
+		java.util.List<DataType> inputDataTypes = new java.util.ArrayList<>();
+
+		for (InputPort inputPort : inputPortList) {
+			inputHeights.add(inputPort.getHeight());
+			inputWidths.add(inputPort.getWidth());
+			inputDataTypes.add(inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getDataType());
+		}
+
+		context.put("inputHeights", inputHeights);
+		context.put("inputWidths", inputWidths);
+		context.put("inputDataTypes", inputDataTypes);
+
 		String codeStr = TemplateManager.renderTemplate("c/route/Mux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
@@ -336,13 +351,16 @@ public class Mux extends RouteBlock {
 	public void updateDimension() throws MatDimException {
 		//super.updateDimension();
 		int size=0;
-		for(InputPort inputPort:inputPortList) {
+		for(int i=0; i<inputPortList.size(); i++) {
+			InputPort inputPort = inputPortList.get(i);
 			if(inputPort.isVector()==true||inputPort.isReal()==true) {
 				size+=inputPort.getVectorSize();
 			}
 			else {
-				MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n Matrix is not applicable for demux\n");
-				throw(e);
+				// Matrix inputs are also supported - add all elements
+				int elements = inputPort.getHeight() * inputPort.getWidth();
+				size += elements;
+				System.out.println("MUX updateDimension: " + getBlockName() + " - Added " + elements + " matrix elements to size (now=" + size + ")");
 			}
 		}
 

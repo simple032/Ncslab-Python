@@ -13,12 +13,12 @@
     #set($wMax = $inputWidth - 1)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-    if(${inputVar}[$i][$j] < preValue_${blockId}[$i][$j]) {
-        ${outputVar}[$i][$j] = 1.0;
+    if(${inputVar}($i, $j) < preValue_${blockId}($i, $j)) {
+        ${outputVar}($i, $j) = 1.0;
     } else {
-        ${outputVar}[$i][$j] = 0.0;
+        ${outputVar}($i, $j) = 0.0;
     }
-    preValue_${blockId}[$i][$j] = ${inputVar}[$i][$j];
+    preValue_${blockId}($i, $j) = ${inputVar}($i, $j);
         #end
     #end
 #end

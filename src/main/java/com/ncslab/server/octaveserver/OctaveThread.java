@@ -137,7 +137,9 @@ public class OctaveThread extends BaseServerThread<OctaveThread, OctaveServer> {
                 String matline2 = "";
                 try {
                     // 树莓派上正式使用下面的命令
-                    proc = Runtime.getRuntime().exec("python /home/pi/NetConTop/NCSLabLink/octavecode/matload.py");// 执行py文件
+                    // Use ProcessBuilder instead of deprecated Runtime.exec()
+                    ProcessBuilder processBuilder = new ProcessBuilder("python", "/home/pi/NetConTop/NCSLabLink/octavecode/matload.py");
+                    proc = processBuilder.start();
                     // 本地调试使用下面的命令
                     // proc = Runtime.getRuntime().exec("python D:\\Project\\react_antd\\faker\\NetConTop\\ncslablink\\src\\octaveserver\\matload.py");
                     // 用输入输出流来获取结果

@@ -1,0 +1,57 @@
+## ByteUnpack block - C code generation
+## Unpack uint8 vector into multiple output signals with proper type casting
+## Input is a column vector where each element represents one byte (as double)
+{
+    int byte_offset = 0;
+
+#if($outputs && $outputs.size() > 0 && $outputCDataTypes && $outputCDataTypes.size() > 0)
+    ## Unpack byte array into each output based on its CDataType
+    #foreach($outputVar in $outputs)
+        #set($idx = $foreach.index)
+        #set($cDataType = $outputCDataTypes.get($idx))
+        #set($byteSize = $outputByteSizes.get($idx))
+        #set($cppType = $cDataType.getCppType())
+        #set($isMatrix = $outputIsMatrix.get($idx))
+        #set($height = $outputHeights.get($idx))
+        #set($width = $outputWidths.get($idx))
+
+    ## Handle scalar vs matrix output
+    #if($isMatrix)
+    ## Matrix output - iterate through all elements
+    for (int i = 0; i < ${height}; i++) {
+        for (int j = 0; j < ${width}; j++) {
+            ## Read individual bytes from input matrix elements and reconstruct value
+            ${cppType} temp_val = 0;
+            for (int b = 0; b < ${byteSize}; b++) {
+                unsigned char byte_val = (unsigned char)${input1}(byte_offset++, 0);
+                temp_val |= ((${cppType})byte_val << (b * 8));
+            }
+            ${outputVar}(i, j) = (double)temp_val;
+        }
+    }
+    #else
+    ## Scalar output - read bytes and reconstruct value
+    {
+        ${cppType} temp_val = 0;
+        ## Read individual bytes from input matrix elements
+        for (int b = 0; b < ${byteSize}; b++) {
+            unsigned char byte_val = (unsigned char)${input1}(byte_offset++, 0);
+            temp_val |= ((${cppType})byte_val << (b * 8));
+        }
+        ${outputVar} = (double)temp_val;
+    }
+    #end
+    #end
+#else
+    ## Single output fallback - read 8 bytes and treat as double
+    {
+        union { double d; uint64_t i; } temp;
+        temp.i = 0;
+        for (int b = 0; b < 8; b++) {
+            unsigned char byte_val = (unsigned char)${input1}(b, 0);
+            temp.i |= ((uint64_t)byte_val << (b * 8));
+        }
+        ${output1} = temp.d;
+    }
+#end
+}

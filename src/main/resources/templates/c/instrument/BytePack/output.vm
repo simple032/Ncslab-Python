@@ -1,0 +1,74 @@
+## BytePack block - C code generation
+## Pack multiple input signals into uint8 vector with proper type casting
+## Output is a column vector where each element represents one byte (as double)
+{
+    int byte_offset = 0;
+
+#if($inputs && $inputs.size() > 0 && $inputCDataTypes && $inputCDataTypes.size() > 0)
+    ## Pack each input into the byte array based on its CDataType
+    #foreach($inputVar in $inputs)
+        #set($idx = $foreach.index)
+        #set($cDataType = $inputCDataTypes.get($idx))
+        #set($byteSize = $inputByteSizes.get($idx))
+        #set($cppType = $cDataType.getCppType())
+        #set($isMatrix = $inputIsMatrix.get($idx))
+        #set($height = $inputHeights.get($idx))
+        #set($width = $inputWidths.get($idx))
+
+    ## Handle scalar vs matrix input
+    #if($isMatrix)
+    ## Matrix input - iterate through all elements
+    for (int i = 0; i < ${height}; i++) {
+        for (int j = 0; j < ${width}; j++) {
+            #if($cppType == "double" || $cppType == "float")
+            ## For floating point types, use union
+            union { ${cppType} val; #if($cppType == "double")uint64_t#else uint32_t#end bits; } temp;
+            temp.val = (${cppType})${inputVar}(i, j);
+            for (int b = 0; b < ${byteSize}; b++) {
+                unsigned char byte_val = (unsigned char)((temp.bits >> (b * 8)) & 0xFF);
+                ${output1}(byte_offset++, 0) = (double)byte_val;
+            }
+            #else
+            ## For integer types, use bitwise operations
+            #if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end temp_val = (#if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end)(${cppType})${inputVar}(i, j);
+            for (int b = 0; b < ${byteSize}; b++) {
+                unsigned char byte_val = (unsigned char)((temp_val >> (b * 8)) & 0xFF);
+                ${output1}(byte_offset++, 0) = (double)byte_val;
+            }
+            #end
+        }
+    }
+    #else
+    ## Scalar input - cast and extract bytes
+    {
+        #if($cppType == "double" || $cppType == "float")
+        ## For floating point types, use union to access bit pattern
+        union { ${cppType} val; #if($cppType == "double")uint64_t#else uint32_t#end bits; } temp;
+        temp.val = (${cppType})${inputVar};
+        for (int b = 0; b < ${byteSize}; b++) {
+            unsigned char byte_val = (unsigned char)((temp.bits >> (b * 8)) & 0xFF);
+            ${output1}(byte_offset++, 0) = (double)byte_val;
+        }
+        #else
+        ## For integer types, cast to appropriate unsigned type for bitwise operations
+        #if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end temp_val = (#if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end)(${cppType})${inputVar};
+        for (int b = 0; b < ${byteSize}; b++) {
+            unsigned char byte_val = (unsigned char)((temp_val >> (b * 8)) & 0xFF);
+            ${output1}(byte_offset++, 0) = (double)byte_val;
+        }
+        #end
+    }
+    #end
+    #end
+#else
+    ## Single input fallback - treat as double and extract 8 bytes
+    {
+        union { double d; uint64_t i; } temp;
+        temp.d = ${input1};
+        for (int b = 0; b < 8; b++) {
+            unsigned char byte_val = (unsigned char)((temp.i >> (b * 8)) & 0xFF);
+            ${output1}(b, 0) = (double)byte_val;
+        }
+    }
+#end
+}

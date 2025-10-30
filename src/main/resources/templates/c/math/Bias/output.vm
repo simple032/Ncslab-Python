@@ -3,10 +3,10 @@
     ## Scalar bias: output = input + bias
     ${outputVar} = ${inputVar} + ${Bias};
 #else
-    ## Matrix bias: element-wise addition
+    ## Matrix bias: element-wise addition (using Eigen indexing)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-        ${outputVar}[$i][$j] = ${inputVar}[$i][$j] + ${Bias};
+        ${outputVar}($i, $j) = ${inputVar}($i, $j) + ${Bias};
         #end
     #end
 #end

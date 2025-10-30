@@ -1,32 +1,45 @@
 /*Code for output of block Mux:($blockId)$blockName*/
-#if($inputs && $inputs.size() > 0)
+#if($inputs && $inputs.size() > 0 && $inputHeights && $inputWidths && $inputDataTypes)
     #set($outputIdx = 0)
     #set($outputVar = $output1)
-    
-    #foreach($input in $inputs)
-        #if($input.linkedLine.linkedOutputPort.outputSignalC.dataType == $realDataType)
-            ## Scalar input - place in output vector
-            ${outputVar}[${outputIdx}][0] = ${block.getInputPortVariable($foreach.index)};
+
+    #foreach($inputVar in $inputs)
+        #set($idx = $foreach.index)
+        #set($inputHeight = $inputHeights.get($idx))
+        #set($inputWidth = $inputWidths.get($idx))
+        #set($inputDataType = $inputDataTypes.get($idx))
+
+        #if($inputDataType == $realDataType)
+            ## Scalar input - place directly in output vector using Eigen indexing
+            ${outputVar}(${outputIdx}, 0) = ${inputVar};
             #set($outputIdx = $outputIdx + 1)
-        #elseif($input.linkedLine.linkedOutputPort.outputSignalC.height == 1)
-            ## Row vector input - concatenate columns
-            #set($inputWidth = $input.linkedLine.linkedOutputPort.outputSignalC.width)
+        #elseif($inputHeight == 1 && $inputWidth > 1)
+            ## Row vector input - concatenate columns using Eigen indexing
             #set($widthMax = $inputWidth - 1)
             #foreach($j in [0..$widthMax])
-            ${outputVar}[${outputIdx}][0] = ${block.getInputPortVariable($foreach.parent.index)}[0][${j}];
+            ${outputVar}(${outputIdx}, 0) = ${inputVar}(0, ${j});
             #set($outputIdx = $outputIdx + 1)
             #end
-        #elseif($input.linkedLine.linkedOutputPort.outputSignalC.width == 1)
-            ## Column vector input - concatenate rows
-            #set($inputHeight = $input.linkedLine.linkedOutputPort.outputSignalC.height)
+        #elseif($inputWidth == 1 && $inputHeight > 1)
+            ## Column vector input - concatenate rows using Eigen indexing
             #set($heightMax = $inputHeight - 1)
             #foreach($i in [0..$heightMax])
-            ${outputVar}[${outputIdx}][0] = ${block.getInputPortVariable($foreach.parent.index)}[${i}][0];
+            ${outputVar}(${outputIdx}, 0) = ${inputVar}(${i}, 0);
             #set($outputIdx = $outputIdx + 1)
+            #end
+        #else
+            ## General matrix input - concatenate in row-major order using Eigen indexing
+            #set($heightMax = $inputHeight - 1)
+            #set($widthMax = $inputWidth - 1)
+            #foreach($i in [0..$heightMax])
+                #foreach($j in [0..$widthMax])
+            ${outputVar}(${outputIdx}, 0) = ${inputVar}(${i}, ${j});
+                #set($outputIdx = $outputIdx + 1)
+                #end
             #end
         #end
     #end
 #else
-    ## No inputs - shouldn't happen but handle gracefully
-    /* Warning: Mux block $blockId has no inputs */
+    ## No inputs or missing dimension data - shouldn't happen but handle gracefully
+    /* Warning: Mux block $blockId has no inputs or missing dimension data */
 #end

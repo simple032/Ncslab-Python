@@ -45,6 +45,10 @@ public class SerialSender extends Block implements AutoCloseable {
      */
     public SerialSender(SerialSenderDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+
+        // Single input port (can be scalar or vector)
+        inputPortList.add(new InputPort(this, 1));
+
         System.out.println("DTO-NATIVE: SerialSender block created successfully - " + blockDto.getBlockName());
     }
 
@@ -191,6 +195,17 @@ public class SerialSender extends Block implements AutoCloseable {
     }
 
     /**
+     * Override checkDimension to allow both REAL and MATRIX inputs.
+     * SerialSender supports sending both scalar values and vector/matrix data.
+     */
+    @Override
+    public void checkDimension() throws com.ncslab.ncslablink.MatDimException {
+        // SerialSender accepts both REAL (scalar) and MATRIX (vector) inputs
+        // No dimension checking needed - both types are supported
+        // The C code uses function overloading to handle both cases
+    }
+
+    /**
      * Close the serial port when block is destroyed.
      * Implements AutoCloseable interface for proper resource management.
      */
@@ -227,7 +242,7 @@ public class SerialSender extends Block implements AutoCloseable {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         context.put("block", this);
-        context.put("inputs", getInputPortVariables());
+        // Don't override inputs - TemplateUtils already populated it as List<String>
 
         String codeStr = TemplateManager.renderTemplate("m/comm/SerialSender/output.vm", context);
         code.addOutputCode(codeStr);
@@ -256,7 +271,7 @@ public class SerialSender extends Block implements AutoCloseable {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("inputs", getInputPortVariables());
+        // Don't override inputs - TemplateUtils already populated it as List<String>
 
         String codeStr = TemplateManager.renderTemplate("c/comm/SerialSender/output.vm", context);
         code.addOutputCode(codeStr);

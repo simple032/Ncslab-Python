@@ -18,7 +18,6 @@ import lombok.experimental.SuperBuilder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import org.json.JSONObject;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -75,10 +74,13 @@ import java.util.*;
     // Additional Week 6 DTOs - Recently fixed imports
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.LogicalOperatorDto.class, name = "LogicalOperator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.LogicalOperatorDto.class, name = "Logical Operator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.BitwiseOperatorDto.class, name = "BitwiseOperator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.BitwiseOperatorDto.class, name = "Bitwise Operator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.RelationalOperatorDto.class, name = "RelationalOperator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.logic.RelationalOperatorDto.class, name = "Relational Operator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.SineWaveDto.class, name = "SineWave"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.SineWaveDto.class, name = "Sin"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.SineWaveDto.class, name = "Sine"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DelayDto.class, name = "Delay"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.DemuxDto.class, name = "Demux"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.MuxDto.class, name = "Mux"),
@@ -170,8 +172,25 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.function.SFunctionBuilderDto.class, name = "S-FunctionBuilder"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPSenderDto.class, name = "UDPSender"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPReceiverDto.class, name = "UDPReceiver"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.driver.UDPSendDto.class, name = "UDPSend"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.driver.UDPReceiveDto.class, name = "UDPReceive"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPSenderDto.class, name = "UDPSend"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPReceiverDto.class, name = "UDPReceive"),
+    // Serial communication blocks with aliases
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialSenderDto.class, name = "SerialSender"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialSenderDto.class, name = "SerialSend"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialReceiverDto.class, name = "SerialReceiver"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialReceiverDto.class, name = "SerialReceive"),
+    // Data blocks - byte packing and type conversion
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "BytePack"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.ByteUnpackDto.class, name = "Byte Unpack"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.ByteUnpackDto.class, name = "ByteUnpack"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.DataTypeConversionDto.class, name = "DataTypeConversion"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.DataTypeConversionDto.class, name = "Data Type Conversion"),
+    // Workspace blocks - data logging and playback
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.ToWorkspaceDto.class, name = "To Workspace"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.ToWorkspaceDto.class, name = "ToWorkspace"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.FromWorkspaceDto.class, name = "From Workspace"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.FromWorkspaceDto.class, name = "FromWorkspace"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.driver.EtherCATAIDto.class, name = "EtherCATAI"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.driver.EtherCATAODto.class, name = "EtherCATAO"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.driver.EtherCATDIDto.class, name = "EtherCATDI"),
@@ -263,7 +282,8 @@ public class BlockDto implements BaseDto {
      * Corresponds to Block.blockUUID
      */
     @JsonProperty("blockUUID")
-    protected String blockUUID;
+    @Builder.Default
+    protected String blockUUID = "null";
     
     /**
      * Path indicating this block's location in the model hierarchy.
@@ -271,7 +291,8 @@ public class BlockDto implements BaseDto {
      * Corresponds to Block.blockPath
      */
     @JsonProperty("blockPath")
-    protected String blockPath;
+    @Builder.Default
+    protected String blockPath = "";
     
     /**
      * Source block reference for library blocks.
@@ -774,8 +795,8 @@ public class BlockDto implements BaseDto {
             result.addError("blockName", "Block name cannot be null or empty");
         }
         
-        if (blockPath == null || blockPath.trim().isEmpty()) {
-            result.addError("blockPath", "Block path cannot be null or empty");
+        if (blockPath == null) {
+            result.addWarning("blockPath", "Block path is null");
         }
         
         // Validate position if present

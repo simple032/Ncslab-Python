@@ -19,25 +19,25 @@
     ${outputVar} = sin(${inputVar}); /* Default to sin function */
     #end
 #else
-    ## Matrix trigonometric function - element-wise
+    ## Matrix trigonometric function - element-wise (using Eigen indexing)
     #set($hMax = $inputHeight - 1)
     #set($wMax = $inputWidth - 1)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
             #if($function == "sin")
-    ${outputVar}[$i][$j] = sin(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = sin(${inputVar}($i, $j));
             #elseif($function == "cos")
-    ${outputVar}[$i][$j] = cos(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = cos(${inputVar}($i, $j));
             #elseif($function == "tan")
-    ${outputVar}[$i][$j] = tan(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = tan(${inputVar}($i, $j));
             #elseif($function == "asin")
-    ${outputVar}[$i][$j] = asin(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = asin(${inputVar}($i, $j));
             #elseif($function == "acos")
-    ${outputVar}[$i][$j] = acos(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = acos(${inputVar}($i, $j));
             #elseif($function == "atan")
-    ${outputVar}[$i][$j] = atan(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = atan(${inputVar}($i, $j));
             #else
-    ${outputVar}[$i][$j] = sin(${inputVar}[$i][$j]); /* Default to sin function */
+    ${outputVar}($i, $j) = sin(${inputVar}($i, $j)); /* Default to sin function */
             #end
         #end
     #end

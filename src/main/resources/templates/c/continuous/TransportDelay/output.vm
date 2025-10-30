@@ -10,10 +10,10 @@
       #set($delayTimeWidthMax = $delayTime.width - 1)
       #foreach($i in [0..$delayTimeHeightMax])
         #foreach($j in [0..$delayTimeWidthMax])
-          if(model.time < ${delayTime.name}[$i][$j]) {
-            ${outputSignal.name}[$i][$j] = ${initialOutput.name}[$i][$j];
+          if(model.time < ${delayTime.name}($i, $j)) {
+            ${outputSignal.name}($i, $j) = ${initialOutput.name}($i, $j);
           } else {
-            ${outputSignal.name}[$i][$j] = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
+            ${outputSignal.name}($i, $j) = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
           }
         #end
       #end
@@ -25,9 +25,9 @@
       #foreach($i in [0..$inputSignalHeightMax])
         #foreach($j in [0..$inputSignalWidthMax])
           if(model.time < ${delayTimeValue}) {
-            ${outputSignal.name}[$i][$j] = ${initialOutput.name};
+            ${outputSignal.name}($i, $j) = ${initialOutput.name};
           } else {
-            ${outputSignal.name}[$i][$j] = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
+            ${outputSignal.name}($i, $j) = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
           }
         #end
       #end
@@ -36,10 +36,10 @@
       #set($inputSignalWidthMax = $inputSignal.width - 1)
       #foreach($i in [0..$inputSignalHeightMax])
         #foreach($j in [0..$inputSignalWidthMax])
-          if(model.time < ${delayTime.name}[$i][$j]) {
-            ${outputSignal.name}[$i][$j] = ${initialOutput.name}[$i][$j];
+          if(model.time < ${delayTime.name}($i, $j)) {
+            ${outputSignal.name}($i, $j) = ${initialOutput.name}($i, $j);
           } else {
-            ${outputSignal.name}[$i][$j] = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
+            ${outputSignal.name}($i, $j) = Block${blockId}_transport_delay_savedata_${i}_${j}_[0];
           }
         #end
       #end
@@ -56,9 +56,9 @@
       #foreach($i in [0..$delayTimeHeightMax])
         #foreach($j in [0..$delayTimeWidthMax])
           #set($index = $i * $delayTime.width + $j)
-          double targetTime_${index} = model.time - ${delayTime.name}[$i][$j];
+          double targetTime_${index} = model.time - ${delayTime.name}($i, $j);
           if(targetTime_${index} <= 0 || Block${blockId}tout[${index}][0] < 0) {
-            ${outputSignal.name}[$i][$j] = ${initialOutput.name}[$i][$j];
+            ${outputSignal.name}($i, $j) = ${initialOutput.name}($i, $j);
           } else {
             int foundIndex_${index} = -1;
             #set($bufferSizeMax = $bufferSize.data.intValue - 1)
@@ -80,12 +80,12 @@
                 alpha = (targetTime_${index} - t2) / (t1 - t2);
                 alpha = fmax(0.0, fmin(1.0, alpha));
               }
-              ${outputSignal.name}[$i][$j] = alpha * y1 + (1.0 - alpha) * y2;
+              ${outputSignal.name}($i, $j) = alpha * y1 + (1.0 - alpha) * y2;
             } else {
               if(Block${blockId}tout[${index}][0] >= targetTime_${index}) {
-                ${outputSignal.name}[$i][$j] = Block${blockId}yout[${index}][0];
+                ${outputSignal.name}($i, $j) = Block${blockId}yout[${index}][0];
               } else {
-                ${outputSignal.name}[$i][$j] = ${initialOutput.name}[$i][$j];
+                ${outputSignal.name}($i, $j) = ${initialOutput.name}($i, $j);
               }
             }
           }
@@ -102,7 +102,7 @@
           #foreach($j in [0..$inputSignalWidthMax])
             #set($index = $i * $inputSignal.width + $j)
             if(targetTime <= 0 || Block${blockId}tout[${index}][0] < 0) {
-              ${outputSignal.name}[$i][$j] = ${initialOutput.name};
+              ${outputSignal.name}($i, $j) = ${initialOutput.name};
             } else {
               int foundIndex_${index} = -1;
               #set($bufferSizeMax = $bufferSize.data.intValue - 1)
@@ -124,12 +124,12 @@
                   alpha = (targetTime - t2) / (t1 - t2);
                   alpha = fmax(0.0, fmin(1.0, alpha));
                 }
-                ${outputSignal.name}[$i][$j] = alpha * y1 + (1.0 - alpha) * y2;
+                ${outputSignal.name}($i, $j) = alpha * y1 + (1.0 - alpha) * y2;
               } else {
                 if(Block${blockId}tout[${index}][0] >= targetTime) {
-                  ${outputSignal.name}[$i][$j] = Block${blockId}yout[${index}][0];
+                  ${outputSignal.name}($i, $j) = Block${blockId}yout[${index}][0];
                 } else {
-                  ${outputSignal.name}[$i][$j] = ${initialOutput.name};
+                  ${outputSignal.name}($i, $j) = ${initialOutput.name};
                 }
               }
             }
@@ -142,9 +142,9 @@
       #foreach($i in [0..$inputSignalHeightMax])
         #foreach($j in [0..$inputSignalWidthMax])
           #set($index = $i * $inputSignal.width + $j)
-          double targetTime_${index} = model.time - ${delayTime.name}[$i][$j];
+          double targetTime_${index} = model.time - ${delayTime.name}($i, $j);
           if(targetTime_${index} <= 0 || Block${blockId}tout[${index}][0] < 0) {
-            ${outputSignal.name}[$i][$j] = ${initialOutput.name}[$i][$j];
+            ${outputSignal.name}($i, $j) = ${initialOutput.name}($i, $j);
           } else {
             int foundIndex_${index} = -1;
             #set($bufferSizeMax = $bufferSize.data.intValue - 1)
@@ -166,12 +166,12 @@
                 alpha = (targetTime_${index} - t2) / (t1 - t2);
                 alpha = fmax(0.0, fmin(1.0, alpha));
               }
-              ${outputSignal.name}[$i][$j] = alpha * y1 + (1.0 - alpha) * y2;
+              ${outputSignal.name}($i, $j) = alpha * y1 + (1.0 - alpha) * y2;
             } else {
               if(Block${blockId}tout[${index}][0] >= targetTime_${index}) {
-                ${outputSignal.name}[$i][$j] = Block${blockId}yout[${index}][0];
+                ${outputSignal.name}($i, $j) = Block${blockId}yout[${index}][0];
               } else {
-                ${outputSignal.name}[$i][$j] = ${initialOutput.name}[$i][$j];
+                ${outputSignal.name}($i, $j) = ${initialOutput.name}($i, $j);
               }
             }
           }

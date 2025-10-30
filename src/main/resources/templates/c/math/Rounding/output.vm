@@ -19,15 +19,15 @@
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
             #if($OperatorValue == "floor")
-    ${outputVar}[$i][$j] = floor(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = floor(${inputVar}($i, $j));
             #elseif($OperatorValue == "ceil")
-    ${outputVar}[$i][$j] = ceil(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = ceil(${inputVar}($i, $j));
             #elseif($OperatorValue == "round")
-    ${outputVar}[$i][$j] = round(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = round(${inputVar}($i, $j));
             #elseif($OperatorValue == "fix" || $OperatorValue == "trunc")
-    ${outputVar}[$i][$j] = trunc(${inputVar}[$i][$j]);
+    ${outputVar}($i, $j) = trunc(${inputVar}($i, $j));
             #else
-    ${outputVar}[$i][$j] = floor(${inputVar}[$i][$j]); /* Default to floor */
+    ${outputVar}($i, $j) = floor(${inputVar}($i, $j)); /* Default to floor */
             #end
         #end
     #end

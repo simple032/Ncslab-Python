@@ -40,24 +40,24 @@
             #end
         #end
     #else
-        ## Matrix element-wise operations
+        ## Matrix element-wise operations (using Eigen indexing)
         ## Initialize each element to 1 and apply operations
         #foreach($m in [0..$hMax])
             #foreach($n in [0..$wMax])
-                ${outputVar}[$m][$n] = 1.0;
+                ${outputVar}($m, $n) = 1.0;
 
                 ## Apply operations for this element
                 #foreach($i in [0..$maxIndex])
                     #if($isNumericInput)
                         ## Numeric input: use default '*' for all
-            ${outputVar}[$m][$n] *= ${inputs.get($i)}[$m][$n];
+            ${outputVar}($m, $n) *= ${inputs.get($i)}($m, $n);
                     #else
                         ## String input: use charAt to get operator
                         #set($operation = $InputsValue.charAt($i))
                         #if($operation == '*')
-            ${outputVar}[$m][$n] *= ${inputs.get($i)}[$m][$n];
+            ${outputVar}($m, $n) *= ${inputs.get($i)}($m, $n);
                         #elseif($operation == '/')
-            ${outputVar}[$m][$n] /= ${inputs.get($i)}[$m][$n];
+            ${outputVar}($m, $n) /= ${inputs.get($i)}($m, $n);
                         #end
                     #end
                 #end

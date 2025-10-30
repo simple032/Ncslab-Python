@@ -327,16 +327,11 @@ public class Scope extends SinkBlock {
         if (model.getModelMode() == ModelMode.Simulation) {
             com.ncslab.util.TemplateUtils.populateAllContext(context, this);
             
-            context.put("blockId", getBlockId());
-            context.put("blockName", getBlockName());
-            context.put("scopeStruct", scopeStructs[0]);
-            
-            // TODO: Fix scopeStructName template variable not resolving properly
+            // FIXME: scopeStructName template variable not resolving properly
             // The template engine is not resolving $scopeStructName variable, appears to be
             // an issue with variable resolution order or template engine configuration
             String scopeStructName = scopeStructs[0].getName();
             context.put("scopeStructName", scopeStructName);
-            context.put("inputPortListSize", inputPortList.size());
 
             String initCode = TemplateManager.renderTemplate("c/sink/Scope/init.vm", context);
             code.addInitCode(initCode);

@@ -3,12 +3,12 @@
     ## Scalar absolute value
     $outputVar = fabs($inputVar);
 #else
-    ## Matrix absolute value: element-wise operation
+    ## Matrix absolute value: element-wise operation (using Eigen indexing)
     #set($hMax = $inputHeight - 1)
     #set($wMax = $inputWidth - 1)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-        ${outputVar}[$i][$j] = fabs(${inputVar}[$i][$j]);
+        ${outputVar}($i, $j) = fabs(${inputVar}($i, $j));
         #end
     #end
 #end

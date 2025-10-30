@@ -10,10 +10,10 @@
     ## Matrix step function
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-    if(model.time < ${Time}[$i][$j]) {
-        ${outputVar}[$i][$j] = ${InitialValue}[$i][$j];
+    if(model.time < ${Time}($i, $j)) {
+        ${outputVar}($i, $j) = ${InitialValue}($i, $j);
     } else {
-        ${outputVar}[$i][$j] = ${FinalValue}[$i][$j];
+        ${outputVar}($i, $j) = ${FinalValue}($i, $j);
     }
         #end
     #end

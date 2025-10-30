@@ -1,0 +1,25 @@
+## DataTypeConversion block - C code generation
+## Convert input data type with specified rounding method
+## Determine rounding function based on roundingMethod parameter
+#set($roundFunc = "floor")
+#if($roundingMethod == "Round" || $roundingMethod == "Nearest")
+    #set($roundFunc = "round")
+#elseif($roundingMethod == "Floor")
+    #set($roundFunc = "floor")
+#elseif($roundingMethod == "Ceiling" || $roundingMethod == "Ceil")
+    #set($roundFunc = "ceil")
+#elseif($roundingMethod == "Zero" || $roundingMethod == "Truncate")
+    #set($roundFunc = "trunc")
+#end
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar input - apply rounding function
+    ${outputVar} = ${roundFunc}(${inputVar});
+#else
+    ## Matrix input - apply rounding element-wise
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    ${outputVar}($i, $j) = ${roundFunc}(${inputVar}($i, $j));
+        #end
+    #end
+#end

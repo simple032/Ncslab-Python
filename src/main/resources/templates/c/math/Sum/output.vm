@@ -26,24 +26,24 @@
         #end
     #end
 #else
-    ## Matrix inputs - element-wise sum with signs
+    ## Matrix inputs - element-wise sum with signs (using Eigen indexing)
     #foreach($m in [0..$hMax])
         #foreach($n in [0..$wMax])
             ## Initialize element
-            ${outputVar}[$m][$n] = 0.0;
+            ${outputVar}($m, $n) = 0.0;
 
             ## Sum all inputs for this element
             #foreach($i in [0..$maxIndex])
                 #if($isNumericInput)
                     ## Numeric input: use default '+' for all
-            ${outputVar}[$m][$n] += ${inputs.get($i)}[$m][$n];
+            ${outputVar}($m, $n) += ${inputs.get($i)}($m, $n);
                 #else
                     ## String input: use charAt to get operator
                     #set($sign = $InputsValue.charAt($i))
                     #if($sign == '+')
-            ${outputVar}[$m][$n] += ${inputs.get($i)}[$m][$n];
+            ${outputVar}($m, $n) += ${inputs.get($i)}($m, $n);
                     #elseif($sign == '-')
-            ${outputVar}[$m][$n] -= ${inputs.get($i)}[$m][$n];
+            ${outputVar}($m, $n) -= ${inputs.get($i)}($m, $n);
                     #end
                 #end
             #end

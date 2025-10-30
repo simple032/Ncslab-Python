@@ -45,9 +45,9 @@
             #set($wMax = $gainvalWidth - 1)
             for(int i = 0; i <= $hMax; i++) {
                 for(int j = 0; j <= $wMax; j++) {
-                    #set($outputIdx = "${outputVar}[i][j]")
-                    #set($stateIdx = "${stateVar}[i][j]")
-                    #set($gainIdx = "${gainVar}[i][j]")
+                    #set($outputIdx = "${outputVar}(i, j)")
+                    #set($stateIdx = "${stateVar}(i, j)")
+                    #set($gainIdx = "${gainVar}(i, j)")
 
                     #if($option == "Integration: Forward Euler")
                         $outputIdx = $stateIdx;

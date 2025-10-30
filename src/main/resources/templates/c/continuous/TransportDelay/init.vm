@@ -12,7 +12,7 @@ ${delayTime.initCodeC}${initialOutput.initCodeC}${bufferSize.initCodeC}#if($isFi
         #foreach($j in [0..$delayWidthMax])
           #set($bufferLen = $bufferLengths.get($i).get($j))
           for(int m=0; m<$bufferLen; m++) {
-            Block${blockId}_transport_delay_savedata_${i}_${j}_[m] = ${initialOutput.name}[$i][$j];
+            Block${blockId}_transport_delay_savedata_${i}_${j}_[m] = ${initialOutput.name}($i, $j);
           }
         #end
       #end
@@ -36,7 +36,7 @@ ${delayTime.initCodeC}${initialOutput.initCodeC}${bufferSize.initCodeC}#if($isFi
         #foreach($j in [0..$inputWidthMax])
           #set($index = $i * $inputSignal.width + $j)
           for(int m=0; m<${bufferSize.data.intValue}; m++) {
-            Block${blockId}yout[${index}][m] = ${initialOutput.name}[$i][$j];
+            Block${blockId}yout[${index}][m] = ${initialOutput.name}($i, $j);
             Block${blockId}tout[${index}][m] = -1.0;
           }
         #end

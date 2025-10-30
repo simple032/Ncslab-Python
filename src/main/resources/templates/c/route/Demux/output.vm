@@ -1,17 +1,17 @@
 /*Code for output of block Demux:($blockId)$blockName*/
-#if($input && $outputNames && $outputNames.size() > 0)
+#if($inputName && $outputNames && $outputNames.size() > 0)
     #set($numOutputs = $outputNames.size())
     #set($maxOutputIdx = $numOutputs - 1)
-    
+
     #if($inputHeight == 1)
-        ## Row vector input - split columns to outputs
+        ## Row vector input - split columns to outputs using Eigen indexing
         #foreach($i in [0..$maxOutputIdx])
-        ${outputNames.get($i)} = $inputName[0][$i];
+        ${outputNames.get($i)} = ${inputName}(0, $i);
         #end
     #else
-        ## Column vector input - split rows to outputs
+        ## Column vector input - split rows to outputs using Eigen indexing
         #foreach($i in [0..$maxOutputIdx])
-        ${outputNames.get($i)} = $inputName[$i][0];
+        ${outputNames.get($i)} = ${inputName}($i, 0);
         #end
     #end
 #else

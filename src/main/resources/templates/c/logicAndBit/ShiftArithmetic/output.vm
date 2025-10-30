@@ -13,9 +13,9 @@
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
     #if($BitShiftNumberValue >= 0)
-    ${outputVar}[$i][$j] = ${inputVar}[$i][$j] * pow(2.0, ${BitShiftNumberValue});
+    ${outputVar}($i, $j) = ${inputVar}($i, $j) * pow(2.0, ${BitShiftNumberValue});
     #else
-    ${outputVar}[$i][$j] = ${inputVar}[$i][$j] / pow(2.0, ${math.abs($BitShiftNumberValue)});
+    ${outputVar}($i, $j) = ${inputVar}($i, $j) / pow(2.0, ${math.abs($BitShiftNumberValue)});
     #end
         #end
     #end

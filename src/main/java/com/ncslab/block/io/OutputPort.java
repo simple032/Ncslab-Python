@@ -78,6 +78,9 @@ public class OutputPort {
 			this.name = "out" + number;
 		}
 		this.isFeedThrough=isFeedThrough;
+		System.out.println("OutputPort created for block " + block.getBlockName() +
+		                 " port#" + number + ", isFeedThrough=" + isFeedThrough +
+		                 ", isDimThrough=" + this.isDimThrough);
 	}
 
 	public OutputPort(Block block,String name,int number,boolean isFeedThrough){

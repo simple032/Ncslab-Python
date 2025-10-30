@@ -3,6 +3,7 @@ package com.ncslab.block.io;
 import Jama.Matrix;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
+import com.ncslab.block.data.CDataType;
 import com.ncslab.block.Block;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,10 @@ public class OutputSignal {
     private int height=1;
 	@Setter
     @Getter
-    private DataType dataType = DataType.REAL;
+    private DataType dataType = DataType.REAL; // Dimension: REAL (scalar) or MATRIX (vector/matrix)
+    @Setter
+    @Getter
+    private CDataType cDataType = CDataType.DOUBLE; // Actual C data type: int8, int16, double, etc.
     @Getter
     private Block block;
 	private int outputPortId;
@@ -67,6 +71,8 @@ public class OutputSignal {
 
 	public String getDefineCodeC() {
 		String code="";
+		System.out.println("OutputSignal.getDefineCodeC: name=" + getName() +
+		                 ", dataType=" + dataType + ", height=" + height + ", width=" + width);
 		switch(dataType) {
 		case REAL:
 			code+="REAL "+getName()+";\n";

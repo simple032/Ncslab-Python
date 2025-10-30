@@ -150,6 +150,11 @@ public class BlockType{
         blockClassTree.put("UDPReceiver", com.ncslab.block.comm.UDPReceiver.class);
         blockClassTree.put("SerialSender", com.ncslab.block.comm.SerialSender.class);
         blockClassTree.put("SerialReceiver", com.ncslab.block.comm.SerialReceiver.class);
+        blockClassTree.put("SerialBidirectional", com.ncslab.block.comm.SerialBidirectional.class);
+        // Serial communication aliases (legacy names)
+        blockClassTree.put("SerialSend", com.ncslab.block.comm.SerialSender.class);
+        blockClassTree.put("SerialReceive", com.ncslab.block.comm.SerialReceiver.class);
+        blockClassTree.put("Serial", com.ncslab.block.comm.SerialBidirectional.class);  // Alias for bidirectional
 
         // Driver
         blockClassTree.put("UDPSend", com.ncslab.block.driver.UDPSend.class);
@@ -160,6 +165,20 @@ public class BlockType{
         blockClassTree.put("EtherCATDO", com.ncslab.block.driver.EtherCATDO.class);
         blockClassTree.put("EtherCATservo", com.ncslab.block.driver.EtherCATservo.class);
         blockClassTree.put("Observer", com.ncslab.block.driver.Observer.class);
+
+        // Data blocks - byte packing and type conversion
+        blockClassTree.put("Byte pack", com.ncslab.block.instrument.BytePack.class);
+        blockClassTree.put("BytePack", com.ncslab.block.instrument.BytePack.class);
+        blockClassTree.put("Byte Unpack", com.ncslab.block.instrument.ByteUnpack.class);
+        blockClassTree.put("ByteUnpack", com.ncslab.block.instrument.ByteUnpack.class);
+        blockClassTree.put("DataTypeConversion", com.ncslab.block.instrument.DataTypeConversion.class);
+        blockClassTree.put("Data Type Conversion", com.ncslab.block.instrument.DataTypeConversion.class);
+
+        // Workspace blocks - data logging and playback
+        blockClassTree.put("To Workspace", com.ncslab.block.sink.ToWorkspace.class);
+        blockClassTree.put("ToWorkspace", com.ncslab.block.sink.ToWorkspace.class);
+        blockClassTree.put("From Workspace", com.ncslab.block.source.FromWorkspace.class);
+        blockClassTree.put("FromWorkspace", com.ncslab.block.source.FromWorkspace.class);
 
         // Discrete
         blockClassTree.put("DiscreteStateSpace", com.ncslab.block.discrete.DiscreteStateSpace.class);
@@ -215,6 +234,7 @@ public class BlockType{
         blockClassTree.put("RelationalOperator", com.ncslab.block.logicAndBit.RelationalOperator.class);
         blockClassTree.put("ShiftArithmetic", com.ncslab.block.logicAndBit.ShiftArithmetic.class);
         blockClassTree.put("LogicalOperator", com.ncslab.block.logicAndBit.LogicOperator.class);
+        blockClassTree.put("BitwiseOperator", com.ncslab.block.logicAndBit.BitwiseOperator.class);
         blockClassTree.put("CompareToZero", com.ncslab.block.logicAndBit.CompareToZero.class);
         blockClassTree.put("Transpose", com.ncslab.block.matrix.Transpose.class);
 

@@ -3,12 +3,12 @@
     ## Scalar square root: output = sqrt(input)
     $outputVar = sqrt($inputVar);
 #else
-    ## Matrix square root: element-wise operation
+    ## Matrix square root: element-wise operation (using Eigen indexing)
     #set($hMax = $inputHeight - 1)
     #set($wMax = $inputWidth - 1)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-        ${outputVar}[$i][$j] = sqrt(${inputVar}[$i][$j]);
+        ${outputVar}($i, $j) = sqrt(${inputVar}($i, $j));
         #end
     #end
 #end

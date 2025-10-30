@@ -278,6 +278,11 @@ public class Demux extends RouteBlock {
 		// Add specific context for output names
 		context.put("outputNames", getOutputPortVariables());
 
+		// Add input variable name for the template
+		if (!inputPortList.isEmpty()) {
+			context.put("inputName", getInputPortVariable(0));
+		}
+
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
@@ -294,7 +299,52 @@ public class Demux extends RouteBlock {
 		code.addUpdateCode(codeStr);
 	}
 	public void updateDimension() throws MatDimException {
-		// Implementation left as is
+		// Demux splits a vector input into multiple scalar outputs
+		// Input: vector of size N
+		// Outputs: num outputs, each gets N/num elements (or 1 element if N == num)
+
+		InputPort inputPort = inputPortList.get(0);
+		int inputVectorSize = inputPort.getVectorSize();
+
+		// Calculate elements per output port
+		// For simple case: input vector size should equal number of outputs
+		// Each output gets 1 element
+		if (inputVectorSize == num) {
+			// Each output port gets a scalar (1x1)
+			for (OutputPort outputPort : outputPortList) {
+				outputPort.setHeight(1);
+				outputPort.setWidth(1);
+				outputPort.getOutputSignalC().setHeight(1);
+				outputPort.getOutputSignalC().setWidth(1);
+				outputPort.getOutputSignalC().setDataType(DataType.REAL);
+			}
+		} else {
+			// General case: distribute elements across outputs
+			// This could handle cases where vector size > num or vector size < num
+			int elementsPerOutput = inputVectorSize / num;
+			int remainingElements = inputVectorSize % num;
+
+			for (int i = 0; i < outputPortList.size(); i++) {
+				OutputPort outputPort = outputPortList.get(i);
+				int elements = elementsPerOutput + (i < remainingElements ? 1 : 0);
+
+				if (elements == 1) {
+					// Scalar output
+					outputPort.setHeight(1);
+					outputPort.setWidth(1);
+					outputPort.getOutputSignalC().setHeight(1);
+					outputPort.getOutputSignalC().setWidth(1);
+					outputPort.getOutputSignalC().setDataType(DataType.REAL);
+				} else {
+					// Vector output (column vector)
+					outputPort.setHeight(elements);
+					outputPort.setWidth(1);
+					outputPort.getOutputSignalC().setHeight(elements);
+					outputPort.getOutputSignalC().setWidth(1);
+					outputPort.getOutputSignalC().setDataType(DataType.MATRIX);
+				}
+			}
+		}
 	}
 	public void checkDimension() throws MatDimException {
 		if(this.getInputPortList().get(0).isVector()==false||this.getInputPortList().get(0).isReal()==true) {

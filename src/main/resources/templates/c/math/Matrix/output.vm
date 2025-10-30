@@ -9,7 +9,7 @@
     #set($colMax = $column - 1)
     #foreach($i in [0..$rowMax])
         #foreach($j in [0..$colMax])
-    ${outputVar}[$i][$j] = ${elements[$i][$j]};
+    ${outputVar}($i, $j) = ${elements[$i][$j]};
         #end
     #end
 #end

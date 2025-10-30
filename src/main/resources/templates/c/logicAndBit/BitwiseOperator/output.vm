@@ -1,0 +1,148 @@
+/*Code for output of block BitwiseOperator:($blockId)$blockName*/
+#if($inputs && $inputs.size() > 0 && $output1 && $operator)
+    #set($inputLength = $inputs.size() - 1)
+    #set($firstInput = $inputs.get(0))
+
+    ## Apply bit mask if enabled
+    #if($useBitMask && $useBitMask == "on")
+        #set($maskValue = $bitMask)
+    #else
+        #set($maskValue = "0xFFFFFFFF")
+    #end
+
+    #if($outputHeight == 1 && $outputWidth == 1)
+        ## Scalar bitwise operations
+        #if($operator == "AND")
+            long result${blockId} = (long)$input1 & $maskValue;
+            #foreach($i in [1..$inputLength])
+                #set($inputVar = $inputs.get($i))
+                result${blockId} &= ((long)${inputVar} & $maskValue);
+            #end
+            $output1 = (double)result${blockId};
+        #elseif($operator == "OR")
+            long result${blockId} = (long)$input1 & $maskValue;
+            #foreach($i in [1..$inputLength])
+                #set($inputVar = $inputs.get($i))
+                result${blockId} |= ((long)${inputVar} & $maskValue);
+            #end
+            $output1 = (double)result${blockId};
+        #elseif($operator == "XOR")
+            long result${blockId} = (long)$input1 & $maskValue;
+            #foreach($i in [1..$inputLength])
+                #set($inputVar = $inputs.get($i))
+                result${blockId} ^= ((long)${inputVar} & $maskValue);
+            #end
+            $output1 = (double)result${blockId};
+        #elseif($operator == "NOT")
+            #if($inputs.size() == 1)
+                long result${blockId} = (long)$input1 & $maskValue;
+                $output1 = (double)(~result${blockId} & $maskValue);
+            #else
+                $output1 = 0.0; /* NOT operator requires exactly one input */
+            #end
+        #elseif($operator == "NAND")
+            long result${blockId} = (long)$input1 & $maskValue;
+            #foreach($i in [1..$inputLength])
+                #set($inputVar = $inputs.get($i))
+                result${blockId} &= ((long)${inputVar} & $maskValue);
+            #end
+            $output1 = (double)(~result${blockId} & $maskValue);
+        #elseif($operator == "NOR")
+            long result${blockId} = (long)$input1 & $maskValue;
+            #foreach($i in [1..$inputLength])
+                #set($inputVar = $inputs.get($i))
+                result${blockId} |= ((long)${inputVar} & $maskValue);
+            #end
+            $output1 = (double)(~result${blockId} & $maskValue);
+        #else
+            $output1 = 0.0; /* Unknown operator */
+        #end
+    #else
+        ## Matrix bitwise operations
+        #set($hIndex = $outputHeight - 1)
+        #set($wIndex = $outputWidth - 1)
+
+        #if($operator == "AND")
+            for (int i = 0; i <= $hIndex; i++) {
+                for (int j = 0; j <= $wIndex; j++) {
+                    long result = (long)${input1}(i, j) & $maskValue;
+                    #foreach($idx in [1..$inputLength])
+                        #set($inputVar = $inputs.get($idx))
+                        result &= ((long)${inputVar}(i, j) & $maskValue);
+                    #end
+                    ${output1}(i, j) = (double)result;
+                }
+            }
+        #elseif($operator == "OR")
+            for (int i = 0; i <= $hIndex; i++) {
+                for (int j = 0; j <= $wIndex; j++) {
+                    long result = (long)${input1}(i, j) & $maskValue;
+                    #foreach($idx in [1..$inputLength])
+                        #set($inputVar = $inputs.get($idx))
+                        result |= ((long)${inputVar}(i, j) & $maskValue);
+                    #end
+                    ${output1}(i, j) = (double)result;
+                }
+            }
+        #elseif($operator == "XOR")
+            for (int i = 0; i <= $hIndex; i++) {
+                for (int j = 0; j <= $wIndex; j++) {
+                    long result = (long)${input1}(i, j) & $maskValue;
+                    #foreach($idx in [1..$inputLength])
+                        #set($inputVar = $inputs.get($idx))
+                        result ^= ((long)${inputVar}(i, j) & $maskValue);
+                    #end
+                    ${output1}(i, j) = (double)result;
+                }
+            }
+        #elseif($operator == "NOT")
+            #if($inputs.size() == 1)
+                for (int i = 0; i <= $hIndex; i++) {
+                    for (int j = 0; j <= $wIndex; j++) {
+                        long val = (long)${input1}(i, j) & $maskValue;
+                        ${output1}(i, j) = (double)(~val & $maskValue);
+                    }
+                }
+            #else
+                for (int i = 0; i <= $hIndex; i++) {
+                    for (int j = 0; j <= $wIndex; j++) {
+                        ${output1}(i, j) = 0.0; /* NOT operator requires exactly one input */
+                    }
+                }
+            #end
+        #elseif($operator == "NAND")
+            for (int i = 0; i <= $hIndex; i++) {
+                for (int j = 0; j <= $wIndex; j++) {
+                    long result = (long)${input1}(i, j) & $maskValue;
+                    #foreach($idx in [1..$inputLength])
+                        #set($inputVar = $inputs.get($idx))
+                        result &= ((long)${inputVar}(i, j) & $maskValue);
+                    #end
+                    ${output1}(i, j) = (double)(~result & $maskValue);
+                }
+            }
+        #elseif($operator == "NOR")
+            for (int i = 0; i <= $hIndex; i++) {
+                for (int j = 0; j <= $wIndex; j++) {
+                    long result = (long)${input1}(i, j) & $maskValue;
+                    #foreach($idx in [1..$inputLength])
+                        #set($inputVar = $inputs.get($idx))
+                        result |= ((long)${inputVar}(i, j) & $maskValue);
+                    #end
+                    ${output1}(i, j) = (double)(~result & $maskValue);
+                }
+            }
+        #else
+            for (int i = 0; i <= $hIndex; i++) {
+                for (int j = 0; j <= $wIndex; j++) {
+                    ${output1}(i, j) = 0.0; /* Unknown operator */
+                }
+            }
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    #if($output1)
+        $output1 = 0.0; /* BitwiseOperator block missing parameters */
+    #end
+#end

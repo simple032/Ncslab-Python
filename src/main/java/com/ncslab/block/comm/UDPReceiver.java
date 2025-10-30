@@ -103,6 +103,7 @@ public class UDPReceiver extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        context.put("port", port);
 
         String codeStr = TemplateManager.renderTemplate("c/comm/UDPReceiver/init.vm", context);
         code.addInitCode(codeStr);

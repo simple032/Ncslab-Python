@@ -1,2 +1,2 @@
 /*Code for output of block In:($blockId)$blockName*/
-$outputSignal=$inputSignal;
+// FIXME: 存储到临时缓存

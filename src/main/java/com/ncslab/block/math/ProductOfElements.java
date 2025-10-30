@@ -83,70 +83,133 @@ public class ProductOfElements extends MathBlock {
         Parameter inputsParam = getParameterByName("Inputs");
         seq = inputsParam.getInitString();
 
-        for (int i = 0; i < seq.length(); i++) {
-            inputPortList.add(new InputPort(this, i + 1));
-        }
+        // ProductOfElements has ONE input port (can be scalar/vector/matrix)
+        inputPortList.add(new InputPort(this, 1));
 
         Parameter multiplyOverParam = getParameterByName("MultiplyOver");
         allDimensions = "All dimensions".equals(multiplyOverParam.getInitString());
-        
+
         Parameter dimensionParam = getParameterByName("ElementsDimension");
         dimension = Integer.parseInt(dimensionParam.getInitString());
     }
     
     @Override
     public void calculateOutput(double t) {
-        // SIMULINK ProductOfElements block: multiplies elements together
+        // SIMULINK ProductOfElements block: multiplies/divides elements together
         OutputPort out = outputPortList.get(0);
         Data inputData = inputPortList.get(0).getData();
         Data outputData;
-        
+
+        // Determine operation: multiplication (*) or division (/)
+        boolean isMultiply = seq.length() == 1 && seq.charAt(0) == '*';
+        boolean isDivide = seq.length() == 1 && seq.charAt(0) == '/';
+
         if (inputData.getDataType() == DataType.MATRIX) {
             Jama.Matrix inputMatrix = inputData.getMatrix();
-            
+
             if (allDimensions) {
-                // Product of all elements in the matrix
-                double product = 1.0;
+                // Collapse all elements to scalar
+                double result = 1.0;
                 for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
                     for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
-                        product *= inputMatrix.get(i, j);
+                        if (isMultiply) {
+                            result *= inputMatrix.get(i, j);
+                        } else if (isDivide) {
+                            result /= inputMatrix.get(i, j);
+                        } else {
+                            // Apply sequence operators to each element
+                            for (int k = 0; k < seq.length(); k++) {
+                                char op = seq.charAt(k);
+                                if (op == '*') {
+                                    result *= inputMatrix.get(i, j);
+                                } else if (op == '/') {
+                                    result /= inputMatrix.get(i, j);
+                                }
+                            }
+                        }
                     }
                 }
                 outputData = new Data(1, 1);
-                outputData.setInitValue(product);
+                outputData.setInitValue(result);
             } else if (dimension == 1) {
-                // Product along rows (each column becomes one element)
+                // Product/division along rows (each column becomes one element)
                 int cols = inputMatrix.getColumnDimension();
                 Jama.Matrix outputMatrix = new Jama.Matrix(1, cols);
-                
+
                 for (int j = 0; j < cols; j++) {
-                    double product = 1.0;
+                    double result = 1.0;
                     for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
-                        product *= inputMatrix.get(i, j);
+                        if (isMultiply) {
+                            result *= inputMatrix.get(i, j);
+                        } else if (isDivide) {
+                            result /= inputMatrix.get(i, j);
+                        } else {
+                            for (int k = 0; k < seq.length(); k++) {
+                                char op = seq.charAt(k);
+                                if (op == '*') {
+                                    result *= inputMatrix.get(i, j);
+                                } else if (op == '/') {
+                                    result /= inputMatrix.get(i, j);
+                                }
+                            }
+                        }
                     }
-                    outputMatrix.set(0, j, product);
+                    outputMatrix.set(0, j, result);
                 }
                 outputData = new Data(outputMatrix);
             } else {
-                // Product along columns (each row becomes one element)
+                // Product/division along columns (each row becomes one element)
                 int rows = inputMatrix.getRowDimension();
                 Jama.Matrix outputMatrix = new Jama.Matrix(rows, 1);
-                
+
                 for (int i = 0; i < rows; i++) {
-                    double product = 1.0;
+                    double result = 1.0;
                     for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
-                        product *= inputMatrix.get(i, j);
+                        if (isMultiply) {
+                            result *= inputMatrix.get(i, j);
+                        } else if (isDivide) {
+                            result /= inputMatrix.get(i, j);
+                        } else {
+                            for (int k = 0; k < seq.length(); k++) {
+                                char op = seq.charAt(k);
+                                if (op == '*') {
+                                    result *= inputMatrix.get(i, j);
+                                } else if (op == '/') {
+                                    result /= inputMatrix.get(i, j);
+                                }
+                            }
+                        }
                     }
-                    outputMatrix.set(i, 0, product);
+                    outputMatrix.set(i, 0, result);
                 }
                 outputData = new Data(outputMatrix);
             }
         } else {
-            // Scalar input - just pass through
-            outputData = new Data(1, 1);
-            outputData.setInitValue(inputData.getInitValue());
+            // Scalar input
+            double value = inputData.getInitValue();
+            if (seq.length() == 1) {
+                if (seq.charAt(0) == '*') {
+                    // Copy unchanged
+                    outputData = new Data(value);
+                } else {
+                    // Invert (1 / value)
+                    outputData = new Data(1.0 / value);
+                }
+            } else {
+                // Apply sequence operators
+                double result = 1.0;
+                for (int k = 0; k < seq.length(); k++) {
+                    char op = seq.charAt(k);
+                    if (op == '*') {
+                        result *= value;
+                    } else if (op == '/') {
+                        result /= value;
+                    }
+                }
+                outputData = new Data(result);
+            }
         }
-        
+
         out.setData(outputData);
     }
 
@@ -162,5 +225,42 @@ public class ProductOfElements extends MathBlock {
 
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/math/ProductOfElements/output.vm", context);
         code.addOutputCode(codeStr);
+    }
+
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        int inputHeight = inputSignal.getHeight();
+        int inputWidth = inputSignal.getWidth();
+
+        if (allDimensions) {
+            // Collapse all dimensions to scalar
+            out.setHeight(1);
+            out.setWidth(1);
+            out.getOutputSignalC().setHeight(1);
+            out.getOutputSignalC().setWidth(1);
+            out.getOutputSignalC().setDataType(DataType.REAL);
+        } else {
+            // Product along specific dimension
+            if (dimension == 1) {
+                // Product along dimension 1 (down rows): output is row vector (1 x inputWidth)
+                out.setHeight(1);
+                out.setWidth(inputWidth);
+                out.getOutputSignalC().setHeight(1);
+                out.getOutputSignalC().setWidth(inputWidth);
+                out.getOutputSignalC().setDataType(inputWidth > 1 ? DataType.MATRIX : DataType.REAL);
+            } else {
+                // Product along dimension 2 (across columns): output is column vector (inputHeight x 1)
+                out.setHeight(inputHeight);
+                out.setWidth(1);
+                out.getOutputSignalC().setHeight(inputHeight);
+                out.getOutputSignalC().setWidth(1);
+                out.getOutputSignalC().setDataType(inputHeight > 1 ? DataType.MATRIX : DataType.REAL);
+            }
+        }
+    }
+
+    public void checkDimension() throws MatDimException {
     }
 }

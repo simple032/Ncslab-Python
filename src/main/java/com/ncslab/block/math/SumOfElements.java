@@ -9,6 +9,7 @@ import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.MatDimException;
@@ -23,12 +24,10 @@ import java.util.HashMap;
 
 public class SumOfElements extends MathBlock {
 
-    private String seq;
+    private Parameter sequence;
     boolean allDimensions = true;
-    private int dimension;
-
-    
-    
+    private Parameter dimension;    
+    private Parameter sumOver;
     
     /**
      * DTO-NATIVE Constructor - Creates SumOfElements block directly from BlockDto DTO
@@ -36,6 +35,12 @@ public class SumOfElements extends MathBlock {
     public SumOfElements(SumOfElementsDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SumOfElements block created successfully - " + blockDto.getBlockName());
+
+        OutputPort output = new OutputPort(this, 1, true);
+        output.setDimThrough(false);
+        outputPortList.add(output);
+
+        paraseParamValues();
     }
 
 
@@ -49,13 +54,10 @@ public class SumOfElements extends MathBlock {
         PARAMETER_DEFAULTS.put("Inputs", "+");
         PARAMETER_DEFAULTS.put("SumOver", "All dimensions");
         PARAMETER_DEFAULTS.put("ElementsDimension", "1");
-        PARAMETER_DEFAULTS.put("SampleTime", "-1");
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
-        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
     static {
-        
+        inputNames.add("in1");
         outputNames.add("out1");
     }
 
@@ -70,14 +72,13 @@ public class SumOfElements extends MathBlock {
     }
 
     private void paraseParamValues() {
-        seq = paramValues.getString("Inputs");
+        sequence = getParameterByName("Inputs");
 
-        for (int i = 0; i < seq.length(); i++) {
-            inputPortList.add(new InputPort(this, i + 1));
-        }
-
-        allDimensions = "All dimensions".equals(paramValues.getString("SumOver"));
-        dimension = paramValues.getInt("ElementsDimension");
+        // SumOfElements has ONE input port (can be scalar/vector/matrix)
+        inputPortList.add(new InputPort(this, 1));
+        sumOver = getParameterByName("SumOver");
+        allDimensions = "All dimensions".equals(sumOver.getInitString());
+        dimension = getParameterByName("ElementsDimension");
     }
 
     @Override
@@ -88,37 +89,122 @@ public class SumOfElements extends MathBlock {
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        Data resultData = new Data(out.getHeight(), out.getWidth());
+        Data inputData = inputPortList.get(0).getData();
+        Data outputData;
 
-        if (isAllDimensions()) {
-            for (int i = 0; i < seq.length(); i++) {
-                if (seq.charAt(i) == '+') {
-                    resultData = resultData.plus(inputPortList.get(i).getData());
-                } else if (seq.charAt(i) == '-') {
-                    resultData = resultData.minus(inputPortList.get(i).getData());
+        String seq = sequence.getInitString();
+
+        // Determine operations: addition (+) or subtraction (-)
+        boolean isAdd = seq.length() == 1 && seq.charAt(0) == '+';
+        boolean isSubtract = seq.length() == 1 && seq.charAt(0) == '-';
+
+        if (inputData.getDataType() == DataType.MATRIX) {
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+
+            if (allDimensions) {
+                // Collapse all elements to scalar with sum/subtraction
+                double result = 0.0;
+                for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                        if (isAdd) {
+                            result += inputMatrix.get(i, j);
+                        } else if (isSubtract) {
+                            result -= inputMatrix.get(i, j);
+                        } else {
+                            // Apply sequence operators to each element
+                            for (int k = 0; k < seq.length(); k++) {
+                                char op = seq.charAt(k);
+                                if (op == '+') {
+                                    result += inputMatrix.get(i, j);
+                                } else if (op == '-') {
+                                    result -= inputMatrix.get(i, j);
+                                }
+                            }
+                        }
+                    }
                 }
+                outputData = new Data(1, 1);
+                outputData.setInitValue(result);
+            } else if (dimension.getInitString() == "2") {
+                // Sum along columns (output is row vector)
+                int cols = inputMatrix.getColumnDimension();
+                Jama.Matrix outputMatrix = new Jama.Matrix(1, cols);
+
+                for (int j = 0; j < cols; j++) {
+                    double result = 0.0;
+                    for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                        if (isAdd) {
+                            result += inputMatrix.get(i, j);
+                        } else if (isSubtract) {
+                            result -= inputMatrix.get(i, j);
+                        } else {
+                            for (int k = 0; k < seq.length(); k++) {
+                                char op = seq.charAt(k);
+                                if (op == '+') {
+                                    result += inputMatrix.get(i, j);
+                                } else if (op == '-') {
+                                    result -= inputMatrix.get(i, j);
+                                }
+                            }
+                        }
+                    }
+                    outputMatrix.set(0, j, result);
+                }
+                outputData = new Data(outputMatrix);
+            } else {
+                // Sum along rows (output is column vector)
+                int rows = inputMatrix.getRowDimension();
+                Jama.Matrix outputMatrix = new Jama.Matrix(rows, 1);
+
+                for (int i = 0; i < rows; i++) {
+                    double result = 0.0;
+                    for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                        if (isAdd) {
+                            result += inputMatrix.get(i, j);
+                        } else if (isSubtract) {
+                            result -= inputMatrix.get(i, j);
+                        } else {
+                            for (int k = 0; k < seq.length(); k++) {
+                                char op = seq.charAt(k);
+                                if (op == '+') {
+                                    result += inputMatrix.get(i, j);
+                                } else if (op == '-') {
+                                    result -= inputMatrix.get(i, j);
+                                }
+                            }
+                        }
+                    }
+                    outputMatrix.set(i, 0, result);
+                }
+                outputData = new Data(outputMatrix);
             }
         } else {
-            if (getDimension() == 1) {
-                for (int i = 0; i < seq.length(); i++) {
-                    if (seq.charAt(i) == '+') {
-                        resultData = resultData.plus(extractRow(inputPortList.get(i).getData()));
-                    } else if (seq.charAt(i) == '-') {
-                        resultData = resultData.minus(extractRow(inputPortList.get(i).getData()));
+            // Scalar input
+            double value = inputData.getInitValue();
+            if (seq.length() == 1) {
+                if (seq.charAt(0) == '+') {
+                    // Copy unchanged
+                    outputData = new Data(value);
+                } else {
+                    // Negate
+                    outputData = new Data(-value);
+                }
+            } else {
+                // Apply sequence operators
+                double result = 0.0;
+                for (int k = 0; k < seq.length(); k++) {
+                    char op = seq.charAt(k);
+                    if (op == '+') {
+                        result += value;
+                    } else if (op == '-') {
+                        result -= value;
                     }
                 }
-            } else if (getDimension() == 2) {
-                for (int i = 0; i < seq.length(); i++) {
-                    if (seq.charAt(i) == '+') {
-                        resultData = resultData.plus(extractColumn(inputPortList.get(i).getData()));
-                    } else if (seq.charAt(i) == '-') {
-                        resultData = resultData.minus(extractColumn(inputPortList.get(i).getData()));
-                    }
-                }
+                outputData = new Data(result);
             }
         }
 
-        out.setData(resultData);
+        out.setData(outputData);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
@@ -126,109 +212,52 @@ public class SumOfElements extends MathBlock {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         // Add block-specific context
-        context.put("sequence", getSequence());
+        context.put("sequence", sequence.getInitString());
         context.put("allDimensions", isAllDimensions());
-        context.put("dimension", getDimension());
+        context.put("dimension", dimension.getInitString());
 
         String codeStr = TemplateManager.renderTemplate("c/math/SumOfElements/output.vm", context);
         code.addOutputCode(codeStr);
-    }
-
-    private String getSequence() {
-        return seq;
     }
 
     private boolean isAllDimensions() {
         return allDimensions;
     }
 
-    private int getDimension() {
-        return dimension;
-    }
-
     public void updateDimension() throws MatDimException {
         OutputPort out = outputPortList.get(0);
-        OutputSignal[] signal = new OutputSignal[seq.length()];
-        for (int i = 0; i < seq.length(); i++) {
-            signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        }
-        int m = signal[0].getHeight();
-        int n = signal[0].getWidth();
-        int v = 1;
+        OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 
-        if (!isAllDimensions()) {
-            if (getDimension() == 2) {
-                for (int i = 0; i < seq.length(); i++) {
-                    if ((signal[i].getWidth() != n) || (signal[i].getHeight() != m)) {
-                        v = 0;
-                        MatDimException e = new MatDimException("Block " + this.blockName + " " + seq.length() + " input dimensions doesn't match !\n \n");
-                        throw(e);
-                    }
-                }
+        int inputHeight = inputSignal.getHeight();
+        int inputWidth = inputSignal.getWidth();
+
+        if (isAllDimensions()) {
+            // Collapse all dimensions to scalar
+            out.setHeight(1);
+            out.setWidth(1);
+            out.getOutputSignalC().setHeight(1);
+            out.getOutputSignalC().setWidth(1);
+            out.getOutputSignalC().setDataType(DataType.REAL);
+        } else {
+            // Sum along specific dimension
+            if (dimension.getInitString() == "2") {
+                // Sum along columns: output is row vector (1 x inputWidth)
+                out.setHeight(1);
+                out.setWidth(inputWidth);
+                out.getOutputSignalC().setHeight(1);
+                out.getOutputSignalC().setWidth(inputWidth);
+                out.getOutputSignalC().setDataType(inputWidth > 1 ? DataType.MATRIX : DataType.REAL);
             } else {
-                for (int i = 0; i < seq.length(); i++) {
-                    if ((signal[i].getWidth() != n) || (signal[i].getHeight() != m)) {
-                        v = 0;
-                        MatDimException e = new MatDimException("Block " + this.blockName + " " + seq.length() + " input dimensions doesn't match !\n \n");
-                        throw(e);
-                    }
-                }
-            }
-        }
-
-        if (v == 1) {
-            if (seq.length() == 1) {
-                int height = 1, width = 1;
-                DataType type = DataType.REAL;
-
-                if (!isAllDimensions()) {
-                    if (getDimension() == 2) {
-                        width = signal[0].getWidth();
-                    } else {
-                        height = signal[0].getHeight();
-                    }
-                    type = DataType.MATRIX;
-                }
-
-                out.setHeight(height);
-                out.setWidth(width);
-                out.getOutputSignalC().setHeight(height);
-                out.getOutputSignalC().setWidth(width);
-                out.getOutputSignalC().setDataType(type);
-            } else {
-                out.setHeight(signal[0].getHeight());
-                out.setWidth(signal[0].getWidth());
-                out.getOutputSignalC().setHeight(signal[0].getHeight());
-                out.getOutputSignalC().setWidth(signal[0].getWidth());
-                out.getOutputSignalC().setDataType(signal[0].getDataType());
+                // Sum along rows: output is column vector (inputHeight x 1)
+                out.setHeight(inputHeight);
+                out.setWidth(1);
+                out.getOutputSignalC().setHeight(inputHeight);
+                out.getOutputSignalC().setWidth(1);
+                out.getOutputSignalC().setDataType(inputHeight > 1 ? DataType.MATRIX : DataType.REAL);
             }
         }
     }
 
     public void checkDimension() throws MatDimException {
-    }
-
-    private Data extractRow(Data data) {
-        double[] row = data.getMatrix().getRowPackedCopy();
-        String rowString = arrayToString(row);
-        return new Data(rowString);
-    }
-
-    private Data extractColumn(Data data) {
-        double[] column = data.getMatrix().getColumnPackedCopy();
-        String columnString = arrayToString(column);
-        return new Data(columnString);
-    }
-
-    private String arrayToString(double[] array) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < array.length; i++) {
-            if (i > 0) {
-                sb.append(",");
-            }
-            sb.append(array[i]);
-        }
-        sb.append("]");
-        return sb.toString();
     }
 }

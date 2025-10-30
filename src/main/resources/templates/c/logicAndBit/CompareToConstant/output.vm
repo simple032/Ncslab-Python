@@ -12,10 +12,10 @@
     #set($wMax = $inputWidth - 1)
     #foreach($i in [0..$hMax])
         #foreach($j in [0..$wMax])
-    if(${inputVar}[$i][$j] ${RelationalOperatorValue} ${ConstantValueValue}) {
-        ${outputVar}[$i][$j] = 1.0;
+    if(${inputVar}($i, $j) ${RelationalOperatorValue} ${ConstantValueValue}) {
+        ${outputVar}($i, $j) = 1.0;
     } else {
-        ${outputVar}[$i][$j] = 0.0;
+        ${outputVar}($i, $j) = 0.0;
     }
         #end
     #end

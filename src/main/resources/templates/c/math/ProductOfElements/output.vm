@@ -3,10 +3,16 @@
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar input
     #if($sequence.length() == 1)
+        ## Single operation: copy or invert
+        #if($sequence.charAt(0) == '*')
     ${outputVar} = ${inputVar};
+        #else
+    ${outputVar} = 1.0 / ${inputVar};
+        #end
     #else
-    ${outputVar} = 1;
-        #set($seqMax = $sequence.length() - 1)
+        ## Multiple operations: apply sequence operators
+    ${outputVar} = 1.0;
+        #set($seqMax = $math.sub($sequence.length(), 1))
         #foreach($i in [0..$seqMax])
     ${outputVar} $sequence.charAt($i)= ${inputVar};
         #end
@@ -14,39 +20,81 @@
 #else
     ## Matrix input
     #if($allDimensions)
-        ## Element-wise product over all dimensions
-    ${outputVar} = 1;
-        #set($hMax = $inputHeight - 1)
-        #set($wMax = $inputWidth - 1)
+        ## Collapse all elements to scalar with product/division
+    ${outputVar} = 1.0;
+        #set($hMax = $math.sub($inputHeight, 1))
+        #set($wMax = $math.sub($inputWidth, 1))
+        #if($sequence.length() == 1 && $sequence.charAt(0) == '*')
+            ## Multiply all elements together
         #foreach($m in [0..$hMax])
             #foreach($n in [0..$wMax])
-    ${outputVar}[$m][$n] = 1;
-                #set($seqMax = $sequence.length() - 1)
+    ${outputVar} *= ${inputVar}($m, $n);
+            #end
+        #end
+        #elseif($sequence.length() == 1 && $sequence.charAt(0) == '/')
+            ## Take successive inverses (1/a, 1/b, 1/c, ...)
+        #foreach($m in [0..$hMax])
+            #foreach($n in [0..$wMax])
+    ${outputVar} /= ${inputVar}($m, $n);
+            #end
+        #end
+        #else
+            ## Apply sequence operators to all elements
+            #set($seqMax = $math.sub($sequence.length(), 1))
+        #foreach($m in [0..$hMax])
+            #foreach($n in [0..$wMax])
                 #foreach($i in [0..$seqMax])
-    ${outputVar}[$m][$n] $sequence.charAt($i)= ${inputVar}[$m][$n];
+    ${outputVar} $sequence.charAt($i)= ${inputVar}($m, $n);
                 #end
             #end
         #end
+        #end
     #else
         ## Product along specific dimension
-        #if($dimension == 2)
-            ## Product along columns (output is row vector)
-            #set($mMax = $inputWidth - 1)
+        #if($dimension == 1)
+            ## Product along dimension 1 (down rows, output is row vector)
+            #set($mMax = $math.sub($inputWidth, 1))
             #foreach($m in [0..$mMax])
-    ${outputVar}[0][$m] = 1;
-                #set($nMax = $inputHeight - 1)
+    ${outputVar}(0, $m) = 1.0;
+                #set($nMax = $math.sub($inputHeight, 1))
+                #if($sequence.length() == 1 && $sequence.charAt(0) == '*')
                 #foreach($n in [0..$nMax])
-    ${outputVar}[0][$m] *= ${inputVar}[$n][$m];
+    ${outputVar}(0, $m) *= ${inputVar}($n, $m);
+                #end
+                #elseif($sequence.length() == 1 && $sequence.charAt(0) == '/')
+                #foreach($n in [0..$nMax])
+    ${outputVar}(0, $m) /= ${inputVar}($n, $m);
+                #end
+                #else
+                    #set($seqMax = $math.sub($sequence.length(), 1))
+                #foreach($n in [0..$nMax])
+                    #foreach($i in [0..$seqMax])
+    ${outputVar}(0, $m) $sequence.charAt($i)= ${inputVar}($n, $m);
+                    #end
+                #end
                 #end
             #end
         #else
-            ## Product along rows (output is column vector)
-            #set($mMax = $inputHeight - 1)
+            ## Product along dimension 2 (across columns, output is column vector)
+            #set($mMax = $math.sub($inputHeight, 1))
             #foreach($m in [0..$mMax])
-    ${outputVar}[$m][0] = 1;
-                #set($nMax = $inputWidth - 1)
+    ${outputVar}($m, 0) = 1.0;
+                #set($nMax = $math.sub($inputWidth, 1))
+                #if($sequence.length() == 1 && $sequence.charAt(0) == '*')
                 #foreach($n in [0..$nMax])
-    ${outputVar}[$m][0] *= ${inputVar}[$m][$n];
+    ${outputVar}($m, 0) *= ${inputVar}($m, $n);
+                #end
+                #elseif($sequence.length() == 1 && $sequence.charAt(0) == '/')
+                #foreach($n in [0..$nMax])
+    ${outputVar}($m, 0) /= ${inputVar}($m, $n);
+                #end
+                #else
+                    #set($seqMax = $math.sub($sequence.length(), 1))
+                #foreach($n in [0..$nMax])
+                    #foreach($i in [0..$seqMax])
+    ${outputVar}($m, 0) $sequence.charAt($i)= ${inputVar}($m, $n);
+                    #end
+                #end
                 #end
             #end
         #end
