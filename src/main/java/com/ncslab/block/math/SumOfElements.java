@@ -238,6 +238,8 @@ public class SumOfElements extends MathBlock {
             out.getOutputSignalC().setHeight(1);
             out.getOutputSignalC().setWidth(1);
             out.getOutputSignalC().setDataType(DataType.REAL);
+            // Pass through input CDataType (sum preserves data type)
+            out.getOutputSignalC().setCDataType(inputSignal.getCDataType());
         } else {
             // Sum along specific dimension
             if (dimension.getInitString() == "2") {
@@ -247,6 +249,8 @@ public class SumOfElements extends MathBlock {
                 out.getOutputSignalC().setHeight(1);
                 out.getOutputSignalC().setWidth(inputWidth);
                 out.getOutputSignalC().setDataType(inputWidth > 1 ? DataType.MATRIX : DataType.REAL);
+                // Pass through input CDataType
+                out.getOutputSignalC().setCDataType(inputSignal.getCDataType());
             } else {
                 // Sum along rows: output is column vector (inputHeight x 1)
                 out.setHeight(inputHeight);
@@ -254,6 +258,8 @@ public class SumOfElements extends MathBlock {
                 out.getOutputSignalC().setHeight(inputHeight);
                 out.getOutputSignalC().setWidth(1);
                 out.getOutputSignalC().setDataType(inputHeight > 1 ? DataType.MATRIX : DataType.REAL);
+                // Pass through input CDataType
+                out.getOutputSignalC().setCDataType(inputSignal.getCDataType());
             }
         }
     }

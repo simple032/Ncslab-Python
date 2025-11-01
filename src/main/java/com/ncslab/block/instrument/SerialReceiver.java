@@ -1,13 +1,12 @@
-package com.ncslab.block.comm;
+package com.ncslab.block.instrument;
 
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.comm.SerialSenderDto;
+import com.ncslab.dto.block.specialized.instrument.SerialReceiverDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
-import com.ncslab.block.data.DataType;
-import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -20,16 +19,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.nio.ByteBuffer;
+import Jama.Matrix;
 
 /**
- * SerialSender block for sending data over serial communication (RS232/UART).
+ * SerialReceiver block for receiving data over serial communication (RS232/UART).
  * Supports configurable baud rate, data bits, stop bits, and parity.
  * Implements AutoCloseable for proper resource management.
  */
 @Slf4j
-public class SerialSender extends Block implements AutoCloseable {
+public class SerialReceiver extends Block implements AutoCloseable {
 
-    private String name = "SerialSender";
+    private String name = "SerialReceiver";
 
     private String portName;
     private int baudRate;
@@ -40,25 +40,31 @@ public class SerialSender extends Block implements AutoCloseable {
     // Serial port instance
     private SerialPort serialPort;
 
+    // Buffer for received data
+    private byte[] receiveBuffer = new byte[8]; // 8 bytes for double
+
+    // Number of values to receive (determined by output port width)
+    private int outputWidth = 1;
+
     /**
-     * DTO-NATIVE Constructor - Creates SerialSender block directly from BlockDto DTO
+     * DTO-NATIVE Constructor - Creates SerialReceiver block directly from BlockDto DTO
      */
-    public SerialSender(SerialSenderDto blockDto, NCSLabModel model) {
+    public SerialReceiver(SerialReceiverDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Single input port (can be scalar or vector)
-        inputPortList.add(new InputPort(this, 1));
+        // Single output port (can be scalar or vector)
+        outputPortList.add(new OutputPort(this, 1, false));
 
-        System.out.println("DTO-NATIVE: SerialSender block created successfully - " + blockDto.getBlockName());
+        System.out.println("DTO-NATIVE: SerialReceiver block created successfully - " + blockDto.getBlockName());
     }
 
-    public static final List<String> inputNames = new ArrayList<>();
+    public static final List<String> outputNames = new ArrayList<>();
 
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
-        // Single input port that can handle vectors
-        inputNames.add("in");
+        // Single output port that can handle vectors
+        outputNames.add("out");
 
         PARAMETER_DEFAULTS.put("PortName", "COM1");
         PARAMETER_DEFAULTS.put("BaudRate", "9600");
@@ -67,7 +73,7 @@ public class SerialSender extends Block implements AutoCloseable {
         PARAMETER_DEFAULTS.put("Parity", "None");
     }
 
-    public SerialSender(JSONObject blockJSON, NCSLabModel model) {
+    public SerialReceiver(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
         portName = paramValues.optString("PortName", "COM1");
@@ -76,8 +82,8 @@ public class SerialSender extends Block implements AutoCloseable {
         stopBits = paramValues.optInt("StopBits", 1);
         parity = paramValues.optString("Parity", "None");
 
-        // Single input port (can be scalar or vector)
-        inputPortList.add(new InputPort(this, 1));
+        // Single output port (can be scalar or vector)
+        outputPortList.add(new OutputPort(this, 1, false));
     }
 
     @Override
@@ -113,17 +119,17 @@ public class SerialSender extends Block implements AutoCloseable {
                     log.warn("Unknown parity value: {}, using NO_PARITY", parity);
             }
 
-            // Set timeouts
-            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 1000, 0);
+            // Set timeouts for non-blocking read with 100ms timeout
+            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
 
             // Open the port
             if (serialPort.openPort()) {
-                log.info("Serial port {} opened successfully for SerialSender block {}", portName, blockId);
+                log.info("Serial port {} opened successfully for SerialReceiver block {}", portName, blockId);
             } else {
-                log.error("Failed to open serial port {} for SerialSender block {}", portName, blockId);
+                log.error("Failed to open serial port {} for SerialReceiver block {}", portName, blockId);
             }
         } catch (Exception e) {
-            log.error("Error initializing serial port {} for SerialSender block {}: {}",
+            log.error("Error initializing serial port {} for SerialReceiver block {}: {}",
                      portName, blockId, e.getMessage(), e);
         }
     }
@@ -131,78 +137,81 @@ public class SerialSender extends Block implements AutoCloseable {
     @Override
     public void calculateOutput(double t) {
         if (serialPort == null || !serialPort.isOpen()) {
-            log.warn("Serial port not open for SerialSender block {}, skipping send", blockId);
+            log.warn("Serial port not open for SerialReceiver block {}, skipping receive", blockId);
             return;
         }
 
         try {
-            // Get the input port (single port that can be vector)
-            InputPort inputPort = inputPortList.get(0);
-            Data inputData = inputPort.getData();
+            // Get the output port (single port that can be vector)
+            OutputPort outputPort = outputPortList.get(0);
 
-            // Handle both scalar and vector inputs
-            if (inputData.getDataType() == DataType.REAL) {
-                // Scalar - single value
-                double value = inputData.getInitValue();
-                sendValue(value);
-            } else {
-                // Matrix/Vector - send all elements
-                int height = inputData.getHeight();
+            // Determine the number of values to receive based on output port dimensions
+            outputWidth = outputPort.getHeight();  // Use height for column vector
+            if (outputWidth <= 0) {
+                outputWidth = 1;  // Default to scalar
+            }
 
-                // Send as column vector (height x 1)
-                for (int i = 0; i < height; i++) {
-                    double value = inputData.getMatrix().get(i, 0);
-                    sendValue(value);
+            // Check if enough data is available (8 bytes per value)
+            int requiredBytes = outputWidth * 8;
+            int available = serialPort.bytesAvailable();
+
+            if (available >= requiredBytes) {
+                if (outputWidth == 1) {
+                    // Scalar output - single value
+                    double value = receiveValue();
+                    outputPort.setData(new Data(value));
+                } else {
+                    // Vector output - multiple values (column vector)
+                    Matrix matrix = new Matrix(outputWidth, 1);
+                    for (int i = 0; i < outputWidth; i++) {
+                        double value = receiveValue();
+                        matrix.set(i, 0, value);
+                    }
+                    Data vectorData = new Data(matrix);
+                    outputPort.setData(vectorData);
+
+                    log.debug("SerialReceiver block {} received {} values as vector from port {}",
+                             blockId, outputWidth, portName);
                 }
-                log.debug("SerialSender block {} sent {} values as vector on port {}",
-                         blockId, height, portName);
             }
         } catch (Exception e) {
-            log.error("Error sending data on serial port {} for SerialSender block {}: {}",
+            log.error("Error receiving data on serial port {} for SerialReceiver block {}: {}",
                      portName, blockId, e.getMessage(), e);
         }
     }
 
     /**
-     * Helper method to send a single double value
+     * Helper method to receive a single double value
      */
-    private void sendValue(double value) {
+    private double receiveValue() {
         try {
-            // Convert double to bytes (8 bytes for double)
-            ByteBuffer buffer = ByteBuffer.allocate(8);
-            buffer.putDouble(value);
-            byte[] data = buffer.array();
+            // Read 8 bytes (double)
+            int bytesRead = serialPort.readBytes(receiveBuffer, 8);
 
-            // Write data to serial port
-            int bytesWritten = serialPort.writeBytes(data, data.length);
+            if (bytesRead == 8) {
+                // Convert bytes to double
+                ByteBuffer buffer = ByteBuffer.wrap(receiveBuffer);
+                double value = buffer.getDouble();
 
-            if (bytesWritten == data.length) {
-                log.debug("SerialSender block {} sent {} bytes (value: {}) on port {}",
-                         blockId, bytesWritten, value, portName);
+                log.debug("SerialReceiver block {} received {} bytes (value: {}) from port {}",
+                         blockId, bytesRead, value, portName);
+
+                return value;
             } else {
-                log.warn("SerialSender block {} failed to send all bytes. Sent {}/{} bytes",
-                        blockId, bytesWritten, data.length);
+                log.warn("SerialReceiver block {} received incomplete data. Expected 8 bytes, got {} bytes",
+                        blockId, bytesRead);
+                return 0.0;
             }
         } catch (Exception e) {
-            log.error("Error writing value {} to serial port {}: {}",
-                     value, portName, e.getMessage(), e);
+            log.error("Error reading value from serial port {}: {}",
+                     portName, e.getMessage(), e);
+            return 0.0;
         }
     }
 
     @Override
     public void calculateDerivative(double t) {
-        // No derivative calculation needed for SerialSender
-    }
-
-    /**
-     * Override checkDimension to allow both REAL and MATRIX inputs.
-     * SerialSender supports sending both scalar values and vector/matrix data.
-     */
-    @Override
-    public void checkDimension() throws com.ncslab.ncslablink.MatDimException {
-        // SerialSender accepts both REAL (scalar) and MATRIX (vector) inputs
-        // No dimension checking needed - both types are supported
-        // The C code uses function overloading to handle both cases
+        // No derivative calculation needed for SerialReceiver
     }
 
     /**
@@ -213,7 +222,7 @@ public class SerialSender extends Block implements AutoCloseable {
     public void close() {
         if (serialPort != null && serialPort.isOpen()) {
             serialPort.closePort();
-            log.info("Serial port {} closed for SerialSender block {}", portName, blockId);
+            log.info("Serial port {} closed for SerialReceiver block {}", portName, blockId);
         }
     }
 
@@ -235,16 +244,16 @@ public class SerialSender extends Block implements AutoCloseable {
         context.put("stopBits", stopBits);
         context.put("parity", parity);
 
-        String codeStr = TemplateManager.renderTemplate("m/comm/SerialSender/init.vm", context);
+        String codeStr = TemplateManager.renderTemplate("m/instrument/SerialReceiver/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         context.put("block", this);
-        // Don't override inputs - TemplateUtils already populated it as List<String>
+        context.put("outputs", getOutputPortVariables());
 
-        String codeStr = TemplateManager.renderTemplate("m/comm/SerialSender/output.vm", context);
+        String codeStr = TemplateManager.renderTemplate("m/instrument/SerialReceiver/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
@@ -252,7 +261,7 @@ public class SerialSender extends Block implements AutoCloseable {
         super.generateDerivativeCodeM(code);
         context.put("block", this);
 
-        String codeStr = TemplateManager.renderTemplate("m/comm/SerialSender/derivative.vm", context);
+        String codeStr = TemplateManager.renderTemplate("m/instrument/SerialReceiver/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
@@ -265,25 +274,15 @@ public class SerialSender extends Block implements AutoCloseable {
         context.put("stopBits", stopBits);
         context.put("parity", parity);
 
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialSender/init.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceiver/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        // Don't override inputs - TemplateUtils already populated it as List<String>
+        context.put("outputs", getOutputPortVariables());
 
-        // Add input CDataType information for proper byte sending
-        if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
-            com.ncslab.block.io.OutputSignal inputSignal =
-                inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-            context.put("inputCDataType", inputSignal.getCDataType());
-            context.put("inputDataType", inputSignal.getDataType());
-            context.put("inputHeight", inputSignal.getHeight());
-            context.put("inputWidth", inputSignal.getWidth());
-        }
-
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialSender/output.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceiver/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
@@ -291,22 +290,14 @@ public class SerialSender extends Block implements AutoCloseable {
         super.generateDerivativeCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialSender/derivative.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceiver/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add input CDataType information for proper function signature generation
-        if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
-            com.ncslab.block.io.OutputSignal inputSignal =
-                inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-            context.put("inputCDataType", inputSignal.getCDataType());
-            context.put("inputDataType", inputSignal.getDataType());
-        }
-
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialSender/statement.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceiver/statement.vm", context);
         code.addStatementCode(codeStr);
     }
 

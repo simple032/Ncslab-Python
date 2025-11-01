@@ -1,9 +1,9 @@
-package com.ncslab.block.comm;
+package com.ncslab.block.instrument;
 
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.comm.SerialBidirectionalDto;
+import com.ncslab.dto.block.specialized.instrument.SerialBidirectionalDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
@@ -317,7 +317,7 @@ public class SerialBidirectional extends Block implements AutoCloseable {
         context.put("stopBits", stopBits);
         context.put("parity", parity);
 
-        String codeStr = TemplateManager.renderTemplate("m/comm/SerialBidirectional/init.vm", context);
+        String codeStr = TemplateManager.renderTemplate("m/instrument/SerialBidirectional/init.vm", context);
         code.addInitCode(codeStr);
     }
 
@@ -326,7 +326,7 @@ public class SerialBidirectional extends Block implements AutoCloseable {
         context.put("block", this);
         // Don't override inputs/outputs - TemplateUtils already populated them as List<String>
 
-        String codeStr = TemplateManager.renderTemplate("m/comm/SerialBidirectional/output.vm", context);
+        String codeStr = TemplateManager.renderTemplate("m/instrument/SerialBidirectional/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
@@ -334,7 +334,7 @@ public class SerialBidirectional extends Block implements AutoCloseable {
         super.generateDerivativeCodeM(code);
         context.put("block", this);
 
-        String codeStr = TemplateManager.renderTemplate("m/comm/SerialBidirectional/derivative.vm", context);
+        String codeStr = TemplateManager.renderTemplate("m/instrument/SerialBidirectional/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
@@ -347,7 +347,7 @@ public class SerialBidirectional extends Block implements AutoCloseable {
         context.put("stopBits", stopBits);
         context.put("parity", parity);
 
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialBidirectional/init.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialBidirectional/init.vm", context);
         code.addInitCode(codeStr);
     }
 
@@ -355,7 +355,7 @@ public class SerialBidirectional extends Block implements AutoCloseable {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         // Don't override inputs/outputs - TemplateUtils already populated them as List<String>
 
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialBidirectional/output.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialBidirectional/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
@@ -363,14 +363,14 @@ public class SerialBidirectional extends Block implements AutoCloseable {
         super.generateDerivativeCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialBidirectional/derivative.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialBidirectional/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
     public void generateStatementCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String codeStr = TemplateManager.renderTemplate("c/comm/SerialBidirectional/statement.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/instrument/SerialBidirectional/statement.vm", context);
         code.addStatementCode(codeStr);
     }
 

@@ -1,4 +1,4 @@
-package com.ncslab.dto.block.specialized.comm;
+package com.ncslab.dto.block.specialized.instrument;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
@@ -12,17 +12,16 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO representation of SerialBidirectional block.
- * Provides bidirectional serial communication (RS232/UART).
- * Combines both send and receive functionality in a single block.
+ * DTO representation of SerialReceiver block.
+ * Receives data over serial communication (RS232/UART).
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("SerialBidirectional")
-@MigrationCompatible(originalClass = "com.ncslab.block.comm.SerialBidirectional")
-public class SerialBidirectionalDto extends BlockDto {
+@JsonTypeName("SerialReceiver")
+@MigrationCompatible(originalClass = "com.ncslab.block.comm.SerialReceiver")
+public class SerialReceiverDto extends BlockDto {
 
     @Builder.Default
     private TypedParameter portName = TypedParameter.of("COM1");

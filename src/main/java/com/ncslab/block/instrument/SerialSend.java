@@ -1,4 +1,4 @@
-package com.ncslab.block.comm;
+package com.ncslab.block.instrument;
 
 // Java standard imports
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import org.json.JSONObject;
 
 // Internal imports - DTO
 import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.comm.SerialSendDto;
+import com.ncslab.dto.block.specialized.instrument.SerialSendDto;
 
 // Internal imports - Core
 import com.ncslab.ncslablink.MatDimException;
@@ -319,7 +319,7 @@ public class SerialSend extends Block {
         context.put("Blocking", blocking.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialSend/init.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialSend/init.vm", context);
             code.addInitCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialSend init template: {}", e.getMessage(), e);
@@ -363,7 +363,7 @@ public class SerialSend extends Block {
         }
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialSend/output.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialSend/output.vm", context);
             code.addOutputCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialSend output template: {}", e.getMessage(), e);
@@ -397,7 +397,7 @@ public class SerialSend extends Block {
         context.put("Blocking", blocking.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("m/comm/SerialSend/output.vm", context);
+            String codeStr = TemplateManager.renderTemplate("m/instrument/SerialSend/output.vm", context);
             code.addOutputCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialSend MATLAB template: {}", e.getMessage(), e);
@@ -410,7 +410,7 @@ public class SerialSend extends Block {
         TemplateUtils.populateAllContext(context, this);
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialSend/statement.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialSend/statement.vm", context);
             code.addStatementCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialSend statement template: {}", e.getMessage(), e);

@@ -148,15 +148,17 @@ public class BlockType{
         // Comm
         blockClassTree.put("UDPSender", com.ncslab.block.comm.UDPSender.class);
         blockClassTree.put("UDPReceiver", com.ncslab.block.comm.UDPReceiver.class);
-        blockClassTree.put("SerialSender", com.ncslab.block.comm.SerialSender.class);
-        blockClassTree.put("SerialReceiver", com.ncslab.block.comm.SerialReceiver.class);
-        blockClassTree.put("SerialBidirectional", com.ncslab.block.comm.SerialBidirectional.class);
-        blockClassTree.put("SerialConfiguration", com.ncslab.block.comm.SerialConfiguration.class);
+
+        // Instrument (serial port blocks)
+        blockClassTree.put("SerialSender", com.ncslab.block.instrument.SerialSender.class);
+        blockClassTree.put("SerialReceiver", com.ncslab.block.instrument.SerialReceiver.class);
+        blockClassTree.put("SerialBidirectional", com.ncslab.block.instrument.SerialBidirectional.class);
+        blockClassTree.put("SerialConfiguration", com.ncslab.block.instrument.SerialConfiguration.class);
         // Refactored serial blocks following Simulink R2024b architecture
-        blockClassTree.put("SerialSend", com.ncslab.block.comm.SerialSend.class);
-        blockClassTree.put("SerialReceive", com.ncslab.block.comm.SerialReceive.class);
+        blockClassTree.put("SerialSend", com.ncslab.block.instrument.SerialSend.class);
+        blockClassTree.put("SerialReceive", com.ncslab.block.instrument.SerialReceive.class);
         // Legacy aliases for backward compatibility
-        blockClassTree.put("Serial", com.ncslab.block.comm.SerialBidirectional.class);  // Alias for bidirectional
+        blockClassTree.put("Serial", com.ncslab.block.instrument.SerialBidirectional.class);  // Alias for bidirectional
 
         // Driver
         blockClassTree.put("UDPSend", com.ncslab.block.driver.UDPSend.class);

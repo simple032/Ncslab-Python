@@ -24,6 +24,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 // Internal imports - Block components
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
+import com.ncslab.block.data.CDataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -351,6 +352,9 @@ public class Mux extends RouteBlock {
 	public void updateDimension() throws MatDimException {
 		//super.updateDimension();
 		int size=0;
+		CDataType outputCType = CDataType.DOUBLE; // Default
+		boolean firstInput = true;
+
 		for(int i=0; i<inputPortList.size(); i++) {
 			InputPort inputPort = inputPortList.get(i);
 			if(inputPort.isVector()==true||inputPort.isReal()==true) {
@@ -362,6 +366,18 @@ public class Mux extends RouteBlock {
 				size += elements;
 				System.out.println("MUX updateDimension: " + getBlockName() + " - Added " + elements + " matrix elements to size (now=" + size + ")");
 			}
+
+			// Determine output CDataType: if all inputs have same type, use that; otherwise use DOUBLE
+			if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
+				CDataType inputCType = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getCDataType();
+				if (firstInput) {
+					outputCType = inputCType;
+					firstInput = false;
+				} else if (outputCType != inputCType) {
+					// Mixed types - default to DOUBLE for safety
+					outputCType = CDataType.DOUBLE;
+				}
+			}
 		}
 
 		OutputPort output=getOutputPortList().get(0);
@@ -370,6 +386,9 @@ public class Mux extends RouteBlock {
 		output.getOutputSignalC().setHeight(size);
 		output.getOutputSignalC().setWidth(1);
 		output.getOutputSignalC().setDataType(DataType.MATRIX);
+		// Set output CDataType based on input analysis
+		output.getOutputSignalC().setCDataType(outputCType);
+		System.out.println("MUX updateDimension: " + getBlockName() + " - Output CDataType set to: " + outputCType);
 	}
 
 	public void checkDimension() throws MatDimException {

@@ -380,6 +380,8 @@ public class Gain extends MathBlock {
                     out.getOutputSignalC().setHeight(signal.getHeight());
                     out.getOutputSignalC().setWidth(signal.getWidth());
                     out.getOutputSignalC().setDataType(signal.getDataType());
+                    // Pass through input CDataType
+                    out.getOutputSignalC().setCDataType(signal.getCDataType());
                     break;
                 case MATRIX:
                     switch (signal.getDataType()) {
@@ -400,6 +402,8 @@ public class Gain extends MathBlock {
                             out.getOutputSignalC().setHeight(signal.getHeight());
                             out.getOutputSignalC().setWidth(signal.getWidth());
                             out.getOutputSignalC().setDataType(signal.getDataType());
+                            // Pass through input CDataType
+                            out.getOutputSignalC().setCDataType(signal.getCDataType());
                             break;
                     }
                     break;
@@ -414,6 +418,8 @@ public class Gain extends MathBlock {
             out.getOutputSignalC().setHeight(signal.getHeight());
             out.getOutputSignalC().setWidth(getGain().getWidth());
             out.getOutputSignalC().setDataType(DataType.MATRIX);
+            // Pass through input CDataType for matrix multiplication
+            out.getOutputSignalC().setCDataType(signal.getCDataType());
         }
     }
 

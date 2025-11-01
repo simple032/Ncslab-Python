@@ -1,4 +1,4 @@
-package com.ncslab.block.comm;
+package com.ncslab.block.instrument;
 
 // Java standard imports
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import Jama.Matrix;
 
 // Internal imports - DTO
 import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.comm.SerialReceiveDto;
+import com.ncslab.dto.block.specialized.instrument.SerialReceiveDto;
 
 // Internal imports - Core
 import com.ncslab.ncslablink.MatDimException;
@@ -382,7 +382,7 @@ public class SerialReceive extends Block {
         context.put("Blocking", blocking.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialReceive/init.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceive/init.vm", context);
             code.addInitCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialReceive init template: {}", e.getMessage(), e);
@@ -418,7 +418,7 @@ public class SerialReceive extends Block {
         context.put("Blocking", blocking.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialReceive/output.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceive/output.vm", context);
             code.addOutputCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialReceive output template: {}", e.getMessage(), e);
@@ -454,7 +454,7 @@ public class SerialReceive extends Block {
         context.put("Blocking", blocking.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("m/comm/SerialReceive/output.vm", context);
+            String codeStr = TemplateManager.renderTemplate("m/instrument/SerialReceive/output.vm", context);
             code.addOutputCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialReceive MATLAB template: {}", e.getMessage(), e);
@@ -467,7 +467,7 @@ public class SerialReceive extends Block {
         TemplateUtils.populateAllContext(context, this);
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialReceive/statement.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceive/statement.vm", context);
             code.addStatementCode(codeStr);
         } catch (Exception e) {
             log.error("Error rendering SerialReceive statement template: {}", e.getMessage(), e);

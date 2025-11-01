@@ -1,4 +1,4 @@
-package com.ncslab.dto.block.specialized.comm;
+package com.ncslab.dto.block.specialized.instrument;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;

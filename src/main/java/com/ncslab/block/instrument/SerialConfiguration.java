@@ -1,4 +1,4 @@
-package com.ncslab.block.comm;
+package com.ncslab.block.instrument;
 
 // Java standard imports
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 // Internal imports - DTO
 import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.comm.SerialConfigurationDto;
+import com.ncslab.dto.block.specialized.instrument.SerialConfigurationDto;
 
 // Internal imports - Core
 import com.ncslab.ncslablink.MatDimException;
@@ -386,7 +386,7 @@ public class SerialConfiguration extends Block {
         context.put("Timeout", timeout.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialConfiguration/init.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialConfiguration/init.vm", context);
             code.addInitCode(codeStr);
         } catch (Exception e) {
             System.err.println("Error rendering SerialConfiguration init template: " + e.getMessage());
@@ -410,7 +410,7 @@ public class SerialConfiguration extends Block {
         context.put("Timeout", timeout.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialConfiguration/output.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialConfiguration/output.vm", context);
             code.addOutputCode(codeStr);
         } catch (Exception e) {
             System.err.println("Error rendering SerialConfiguration output template: " + e.getMessage());
@@ -434,7 +434,7 @@ public class SerialConfiguration extends Block {
         context.put("Timeout", timeout.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("m/comm/SerialConfiguration/output.vm", context);
+            String codeStr = TemplateManager.renderTemplate("m/instrument/SerialConfiguration/output.vm", context);
             code.addOutputCode(codeStr);
         } catch (Exception e) {
             System.err.println("Error rendering SerialConfiguration MATLAB template: " + e.getMessage());
@@ -458,7 +458,7 @@ public class SerialConfiguration extends Block {
         context.put("Timeout", timeout.getInitString());
 
         try {
-            String codeStr = TemplateManager.renderTemplate("c/comm/SerialConfiguration/statement.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/instrument/SerialConfiguration/statement.vm", context);
             code.addStatementCode(codeStr);
         } catch (Exception e) {
             System.err.println("Error rendering SerialConfiguration statement template: " + e.getMessage());

@@ -174,14 +174,14 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPReceiverDto.class, name = "UDPReceiver"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPSenderDto.class, name = "UDPSend"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPReceiverDto.class, name = "UDPReceive"),
-    // Serial communication blocks (legacy)
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialSenderDto.class, name = "SerialSender"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialReceiverDto.class, name = "SerialReceiver"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialBidirectionalDto.class, name = "SerialBidirectional"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialConfigurationDto.class, name = "SerialConfiguration"),
+    // Serial communication blocks (legacy) - now in instrument package
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.instrument.SerialSenderDto.class, name = "SerialSender"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.instrument.SerialReceiverDto.class, name = "SerialReceiver"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.instrument.SerialBidirectionalDto.class, name = "SerialBidirectional"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.instrument.SerialConfigurationDto.class, name = "SerialConfiguration"),
     // Refactored serial blocks following Simulink R2024b architecture
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialSendDto.class, name = "SerialSend"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialReceiveDto.class, name = "SerialReceive"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.instrument.SerialSendDto.class, name = "SerialSend"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.instrument.SerialReceiveDto.class, name = "SerialReceive"),
     // Data blocks - byte packing and type conversion
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "BytePack"),

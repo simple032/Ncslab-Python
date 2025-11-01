@@ -125,7 +125,7 @@ public class Demux extends RouteBlock {
         
         // Parse number of outputs and create ports
         this.feedThrough = true;
-        this.num = demuxDto.getOutputsValue();
+        this.num = this.outputs.getData().getIntValue();
         
         // Create output ports based on parameter
         for(int i=0; i<num; i++) {
@@ -347,14 +347,32 @@ public class Demux extends RouteBlock {
 		}
 	}
 	public void checkDimension() throws MatDimException {
-		if(this.getInputPortList().get(0).isVector()==false||this.getInputPortList().get(0).isReal()==true) {
+		InputPort inputPort = this.getInputPortList().get(0);
+
+		// Check that input is a vector (not a scalar)
+		if(inputPort.isVector()==false || inputPort.isReal()==true) {
 			MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n Only a vector is applicable for demux\n");
 			throw(e);
 		}
-		if(this.getInputPortList().get(0).getVectorSize()!=num) {
-			MatDimException e=new MatDimException("Block "+this.blockName+" output dimension error!\n The input signal width is "+this.getInputPortList().get(0).getVectorSize()+", but the number of output is "+num+"\n");
+
+		int inputVectorSize = inputPort.getVectorSize();
+
+		// SIMULINK behavior: Allow flexible distribution
+		// - If inputVectorSize == num: Each output gets 1 element (strict mode)
+		// - If inputVectorSize > num: Elements are distributed across outputs (e.g., 6 elements into 2 outputs = 3 elements each)
+		// - If inputVectorSize < num: This is an error (can't split N elements into more than N outputs)
+
+		if(inputVectorSize < num) {
+			MatDimException e=new MatDimException("Block "+this.blockName+" output dimension error!\n " +
+				"The input signal width is "+inputVectorSize+", but the number of outputs is "+num+".\n" +
+				"Cannot split "+inputVectorSize+" elements into "+num+" outputs (insufficient elements).\n");
 			throw(e);
 		}
+
+		// Valid cases:
+		// - inputVectorSize == num: Each output gets 1 element
+		// - inputVectorSize > num: Elements distributed (e.g., 6 into 2 = 3 each)
+		// Both are valid in SIMULINK, no exception needed
 	}
 
     @Override

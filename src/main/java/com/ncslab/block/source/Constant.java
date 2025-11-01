@@ -251,6 +251,15 @@ public class Constant extends SourceBlock {
         // Set port dimensions based on value parameter
         outputPortList.get(0).setHeight(value.getHeight());
         outputPortList.get(0).setWidth(value.getWidth());
+
+        // Set output CDataType based on OutDataTypeStr parameter
+        Parameter outDataTypeParam = getOutDataType();
+        if (outDataTypeParam != null) {
+            String typeStr = outDataTypeParam.getInitString();
+            com.ncslab.block.data.CDataType cDataType = com.ncslab.block.data.CDataType.fromString(typeStr);
+            outputPortList.get(0).getOutputSignalC().setCDataType(cDataType);
+            System.out.println("Constant '" + blockName + "' output CDataType set to: " + cDataType);
+        }
     }
 
     // === Code Generation Methods (preserved from original) ===
