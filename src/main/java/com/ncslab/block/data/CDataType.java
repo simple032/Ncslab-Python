@@ -24,7 +24,10 @@ public enum CDataType {
     UINT64,     // 8 bytes - unsigned long long
 
     // Boolean type
-    BOOLEAN;    // 1 byte - bool
+    BOOLEAN,    // 1 byte - bool
+
+    // String type
+    STRING;     // Variable length - std::string
 
     /**
      * Get size in bytes for this data type
@@ -46,6 +49,8 @@ public enum CDataType {
             case UINT64:
             case DOUBLE:
                 return 8;
+            case STRING:
+                return -1; // Variable length
             default:
                 return 8; // Default to double
         }
@@ -78,6 +83,8 @@ public enum CDataType {
                 return "uint64_t";
             case BOOLEAN:
                 return "bool";
+            case STRING:
+                return "std::string";
             default:
                 return "double";
         }
@@ -120,6 +127,9 @@ public enum CDataType {
             case "boolean":
             case "bool":
                 return BOOLEAN;
+            case "string":
+            case "std::string":
+                return STRING;
             default:
                 // If not recognized, default to double
                 return DOUBLE;
@@ -152,5 +162,41 @@ public enum CDataType {
      */
     public boolean isFloatingPoint() {
         return this == DOUBLE || this == SINGLE;
+    }
+
+    /**
+     * Get the Matrix type alias name for typed matrices in generated C++ code.
+     * Returns the appropriate MatrixT type alias (MatrixU8, MatrixI16, etc.)
+     * defined in Matrix.hpp.
+     *
+     * @return Matrix type alias name (e.g., "MatrixU8", "MatrixI16", "Matrix")
+     */
+    public String getMatrixTypeName() {
+        switch (this) {
+            case DOUBLE:
+                return "Matrix";      // Default type (Matrix = MatrixD = MatrixT<double>)
+            case SINGLE:
+                return "MatrixF";     // MatrixT<float>
+            case INT8:
+                return "MatrixI8";    // MatrixT<int8_t>
+            case INT16:
+                return "MatrixI16";   // MatrixT<int16_t>
+            case INT32:
+                return "MatrixI32";   // MatrixT<int32_t>
+            case INT64:
+                return "MatrixI64";   // MatrixT<int64_t>
+            case UINT8:
+                return "MatrixU8";    // MatrixT<uint8_t>
+            case UINT16:
+                return "MatrixU16";   // MatrixT<uint16_t>
+            case UINT32:
+                return "MatrixU32";   // MatrixT<uint32_t>
+            case UINT64:
+                return "MatrixU64";   // MatrixT<uint64_t>
+            case BOOLEAN:
+                return "MatrixB";     // MatrixT<bool>
+            default:
+                return "Matrix";      // Default to Matrix (double)
+        }
     }
 }

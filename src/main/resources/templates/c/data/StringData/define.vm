@@ -1,0 +1,8 @@
+## Template for defining a string variable in C code
+## Variables available in context:
+## - $name: variable name
+## - $dataType: DataType enum value (should be STRING)
+## - $stringDataType: DataType.STRING constant for comparison
+## - $byteLength: current byte length including null terminator
+## - $maxLength: maximum length (0 = unlimited)
+uint8_t ${name}[${maxLength}];
