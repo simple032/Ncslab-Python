@@ -1,0 +1,10 @@
+## ComposeString block - C++ output code
+## Format multiple inputs into a string using printf-style format
+// Code for output of block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // Format string using snprintf
+    char buffer[1024];
+    snprintf(buffer, sizeof(buffer), "$Format"#foreach($input in $inputs), ${input}#end);
+    ${outputs.get(0)} = std::string(buffer);
+#end

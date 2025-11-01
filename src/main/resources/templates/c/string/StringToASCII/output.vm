@@ -1,0 +1,43 @@
+## StringToASCII block - C code generation
+## Convert string signal to uint8 vector of ASCII values
+/*Code for output of block $blockType:($blockId)$blockName*/
+
+#if($inputs && $inputs.size() > 0)
+    ## Convert entire string to ASCII byte array
+    ## Input: string signal (std::string)
+    ## Output: uint8 vector/Matrix - each character becomes one byte
+
+    ## CRITICAL: Always convert the ENTIRE string, not just first character
+    ## Resize output to match actual runtime string length
+    {
+        const std::string& input_str = ${inputSignal};
+        size_t str_len = input_str.length();
+
+        #if($outputHeight > 1)
+        ## Output is a MatrixU8 vector - resize to actual string length and populate
+        // Resize output to match actual string length
+        ${outputSignal}.resize(str_len, 1);
+
+        // Convert each character to ASCII value
+        for(size_t i = 0; i < str_len; i++) {
+            ${outputSignal}(i, 0) = static_cast<${outputCppType}>(input_str[i]);
+        }
+        #else
+        ## Output is a scalar uint8 - only if predefined size is 1
+        ## For dynamic strings, this should convert all characters
+        ## SIMULINK behavior: StringToASCII always outputs a vector for strings
+
+        // WARNING: Output was sized as scalar, but string may have multiple characters
+        // Convert entire string to dynamically-sized vector
+        if(str_len > 1) {
+            // Need to output as vector, but was declared as scalar
+            // For now, just output first character (this is a limitation)
+            ${outputSignal} = static_cast<${outputCppType}>(input_str[0]);
+        } else if(str_len == 1) {
+            ${outputSignal} = static_cast<${outputCppType}>(input_str[0]);
+        } else {
+            ${outputSignal} = 0;
+        }
+        #end
+    }
+#end

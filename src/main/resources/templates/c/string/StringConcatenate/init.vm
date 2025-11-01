@@ -1,0 +1,18 @@
+## Velocity template for StringConcatenate block initialization (C++)
+## Initializes string output to empty string
+##
+## Context variables (auto-populated by TemplateUtils):
+##   $outputs - List of output signal variable names
+##   $inputs - List of input signal variable names
+##   $NumberOfInputs - Number of input strings to concatenate
+##   $MaximumLength - Maximum length of output string (0 = unlimited)
+##   $OutputDimensionsMode - "Fixed-size" or "Variable-size"
+##   $blockId - Block ID
+##   $blockName - Block name
+##   $blockType - Block type ("StringConcatenate")
+
+/* Code for initialization of block ${blockType}:(${blockId})${blockName} */
+#if($outputs && $outputs.size() > 0)
+## Initialize output string as empty
+${outputs.get(0)}.clear();  // Initialize empty string
+#end

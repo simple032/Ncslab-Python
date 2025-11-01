@@ -1,0 +1,18 @@
+## StringCompare block - C++ output code
+## Compare two strings with case sensitivity option
+% Code for output of block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() >= 2)
+    // Compare two input strings
+#if($CaseSensitive && $CaseSensitive == "on")
+    // Case-sensitive comparison
+    ${outputs.get(0)} = (${inputs.get(0)} == ${inputs.get(1)}) ? 1 : 0;
+#else
+    // Case-insensitive comparison
+    std::string str1_lower = ${inputs.get(0)};
+    std::string str2_lower = ${inputs.get(1)};
+    std::transform(str1_lower.begin(), str1_lower.end(), str1_lower.begin(), ::tolower);
+    std::transform(str2_lower.begin(), str2_lower.end(), str2_lower.begin(), ::tolower);
+    ${outputs.get(0)} = (str1_lower == str2_lower) ? 1 : 0;
+#end
+#end

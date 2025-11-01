@@ -1,0 +1,7 @@
+## StringLower Block - C++ Output Code Template
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // StringLower: Convert to lowercase
+    ${outputs.get(0)} = ${inputs.get(0)};
+    std::transform(${outputs.get(0)}.begin(), ${outputs.get(0)}.end(), ${outputs.get(0)}.begin(), ::tolower);
+#end

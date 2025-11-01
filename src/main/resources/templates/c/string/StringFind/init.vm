@@ -1,0 +1,7 @@
+## StringFind block - C++ initialization code
+## Initialize output to 0 (not found)
+% Initialization for block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0)
+${outputs.get(0)} = 0;  // 0 means not found
+#end

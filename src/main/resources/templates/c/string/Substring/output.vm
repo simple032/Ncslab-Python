@@ -1,0 +1,20 @@
+## Substring block - C++ output code
+## Extract substring from input string using 1-based MATLAB indexing
+% Code for output of block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // Extract substring (convert 1-based MATLAB index to 0-based C++)
+    {
+        int start_idx = $StartIndex - 1;  // Convert to 0-based indexing
+        int substr_length = $Length;
+
+        // Check if start index is within bounds
+        if(start_idx >= 0 && start_idx < static_cast<int>(${inputs.get(0)}.length())) {
+            // Extract substring, automatically handles length exceeding string bounds
+            ${outputs.get(0)} = ${inputs.get(0)}.substr(start_idx, substr_length);
+        } else {
+            // Start index out of bounds - return empty string
+            ${outputs.get(0)}.clear();
+        }
+    }
+#end

@@ -1,0 +1,31 @@
+## Velocity template for StringConcatenate block output code (C++)
+## Concatenates multiple input strings into one output string
+##
+## Context variables (auto-populated by TemplateUtils):
+##   $outputs - List of output signal variable names
+##   $inputs - List of input signal variable names
+##   $NumberOfInputs - Number of input strings to concatenate
+##   $MaximumLength - Maximum length of output string (0 = unlimited)
+##   $OutputDimensionsMode - "Fixed-size" or "Variable-size"
+##   $blockId - Block ID
+##   $blockName - Block name
+##   $blockType - Block type ("StringConcatenate")
+
+/* Code for output of block ${blockType}:(${blockId})${blockName} */
+#if($outputs && $outputs.size() > 0)
+// Concatenate all input strings
+${outputs.get(0)}.clear();
+
+#foreach($input in $inputs)
+#if($input && $input != "")
+${outputs.get(0)} += ${input};
+#end
+#end
+
+#if($MaximumLength && $MaximumLength > 0)
+// Truncate to maximum length if specified
+if(${outputs.get(0)}.length() > ${MaximumLength}) {
+    ${outputs.get(0)} = ${outputs.get(0)}.substr(0, ${MaximumLength});
+}
+#end
+#end

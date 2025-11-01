@@ -174,11 +174,14 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPReceiverDto.class, name = "UDPReceiver"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPSenderDto.class, name = "UDPSend"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.UDPReceiverDto.class, name = "UDPReceive"),
-    // Serial communication blocks with aliases
+    // Serial communication blocks (legacy)
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialSenderDto.class, name = "SerialSender"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialSenderDto.class, name = "SerialSend"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialReceiverDto.class, name = "SerialReceiver"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialReceiverDto.class, name = "SerialReceive"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialBidirectionalDto.class, name = "SerialBidirectional"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialConfigurationDto.class, name = "SerialConfiguration"),
+    // Refactored serial blocks following Simulink R2024b architecture
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialSendDto.class, name = "SerialSend"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.comm.SerialReceiveDto.class, name = "SerialReceive"),
     // Data blocks - byte packing and type conversion
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "BytePack"),
@@ -242,7 +245,27 @@ import java.util.*;
     // Data processing blocks (added Week 6)
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.ByteUnpackDto.class, name = "Byte Unpack"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.DataTypeConversionDto.class, name = "DataTypeConversion")
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.DataTypeConversionDto.class, name = "DataTypeConversion"),
+    // String blocks - text manipulation and string operations (Phases 1-4)
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.ASCIIToStringDto.class, name = "ASCIIToString"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.ComposeStringDto.class, name = "ComposeString"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.ScanStringDto.class, name = "ScanString"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringCompareDto.class, name = "StringCompare"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringConcatenateDto.class, name = "StringConcatenate"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringConstantDto.class, name = "StringConstant"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringContainsDto.class, name = "StringContains"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringFindDto.class, name = "StringFind"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringLengthDto.class, name = "StringLength"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringLowerDto.class, name = "StringLower"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringReplaceDto.class, name = "StringReplace"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringToASCIIDto.class, name = "StringToASCII"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringToDoubleDto.class, name = "StringToDouble"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringToEnumDto.class, name = "StringToEnum"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringToSingleDto.class, name = "StringToSingle"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringTrimDto.class, name = "StringTrim"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringUpperDto.class, name = "StringUpper"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.SubstringDto.class, name = "Substring"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.ToStringDto.class, name = "ToString")
     // All DTOs with javax.validation issues now fixed!
 })
 @Data

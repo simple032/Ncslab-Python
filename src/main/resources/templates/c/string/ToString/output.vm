@@ -1,0 +1,8 @@
+## ToString block - C++ output code
+## Convert numeric value to string
+% Code for output of block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // Convert numeric input to string
+    ${outputs.get(0)} = std::to_string(${inputs.get(0)});
+#end

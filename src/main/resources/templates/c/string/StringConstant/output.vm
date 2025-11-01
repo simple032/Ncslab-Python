@@ -1,0 +1,15 @@
+## Velocity template for StringConstant block output code (C++)
+## For a constant block, the output value is set in init and never changes
+## This template generates no output code, as the value is already initialized
+##
+## Context variables (auto-populated by TemplateUtils):
+##   $outputSignal - Output signal variable name (std::string)
+##   $StringValue - The constant string value
+##   $StringObject - Parameter object for advanced access
+##   $blockId - Block ID
+##   $blockName - Block name
+##   $blockType - Block type ("StringConstant")
+
+/* Code for output of block ${blockType}:(${blockId})${blockName} */
+// String constant output is set in initialization and remains constant throughout simulation
+// No calculation needed in output phase

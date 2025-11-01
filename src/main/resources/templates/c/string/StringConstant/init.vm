@@ -1,0 +1,24 @@
+## Velocity template for StringConstant block initialization (C++)
+## Initializes string output to the constant string value
+##
+## Context variables (auto-populated by TemplateUtils):
+##   $outputSignal - Output signal variable name (std::string)
+##   $StringValue - The constant string value to output
+##   $StringObject - Parameter object for advanced access
+##   $blockId - Block ID
+##   $blockName - Block name
+##   $blockType - Block type ("StringConstant")
+
+/* Code for initialization of block ${blockType}:(${blockId})${blockName} */
+#if($outputs && $outputs.size() > 0)
+#set($stringValue = $StringValue)
+## For basic string constants, use direct assignment
+## TODO: Add proper C++ string literal escaping for special characters
+${outputs.get(0)} = "${stringValue}";
+#else
+## Fallback: use outputSignal if outputs list not available
+#if($outputSignal)
+#set($stringValue = $StringValue)
+${outputSignal} = "${stringValue}";
+#end
+#end

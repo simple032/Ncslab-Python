@@ -1,0 +1,3 @@
+## StringToDouble Block - C++ Initialization Template
+## Converts string to double numeric value
+## No initialization code required - conversion happens in output phase

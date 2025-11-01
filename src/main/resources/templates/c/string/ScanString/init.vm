@@ -1,0 +1,9 @@
+## ScanString block - C++ initialization code
+## Initialize outputs to 0
+% Initialization for block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0)
+#foreach($output in $outputs)
+${output} = 0;
+#end
+#end

@@ -1,0 +1,15 @@
+## StringLength block - C code generation
+## Calculate the length of input string signal
+/*Code for output of block $blockType:($blockId)$blockName*/
+
+#if($inputs && $inputs.size() > 0)
+    ## Get input string signal
+    ## Input: string signal (std::string)
+    ## Output: uint32 scalar (character count)
+
+    ## Calculate string length (number of characters, not including null terminator)
+    ${outputSignal} = static_cast<${outputCppType}>(${inputSignal}.length());
+#else
+    ## No input connected - output 0
+    ${outputSignal} = 0;
+#end

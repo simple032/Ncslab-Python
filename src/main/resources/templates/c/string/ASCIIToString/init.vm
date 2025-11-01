@@ -1,0 +1,10 @@
+## Velocity template for ASCIIToString block initialization (C++)
+## Initializes string output to empty string
+##
+## Context variables:
+##   $outputSignal - Output signal variable name (string)
+##   $blockId - Block ID
+##   $blockName - Block name
+
+/* Code for initialization of block ASCIIToString:(${blockId})${blockName} */
+${outputSignal} = "";  // Initialize string output to empty

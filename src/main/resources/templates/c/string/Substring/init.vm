@@ -1,0 +1,7 @@
+## Substring block - C++ initialization code
+## Initialize output string as empty
+% Initialization for block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0)
+    ${outputs.get(0)}.clear();  // Initialize empty string
+#end

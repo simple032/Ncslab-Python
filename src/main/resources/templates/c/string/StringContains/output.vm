@@ -1,0 +1,6 @@
+## StringContains Block - C++ Output Code Template
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() >= 2)
+    // StringContains: Check if string contains substring
+    ${outputs.get(0)} = (${inputs.get(0)}.find(${inputs.get(1)}) != std::string::npos) ? 1.0 : 0.0;
+#end

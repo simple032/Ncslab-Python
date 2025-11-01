@@ -1,0 +1,19 @@
+## StringReplace Block - C++ Output Code Template
+## Replaces all occurrences of OldSubstring with NewSubstring
+## Input: String signal
+## Output: String with replacements made
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0 && $OldSubstring && $NewSubstring)
+    // StringReplace: Replace all occurrences
+    {
+        std::string oldStr = "$OldSubstring";
+        std::string newStr = "$NewSubstring";
+        ${outputs.get(0)} = ${inputs.get(0)};
+
+        size_t pos = 0;
+        while ((pos = ${outputs.get(0)}.find(oldStr, pos)) != std::string::npos) {
+            ${outputs.get(0)}.replace(pos, oldStr.length(), newStr);
+            pos += newStr.length();
+        }
+    }
+#end

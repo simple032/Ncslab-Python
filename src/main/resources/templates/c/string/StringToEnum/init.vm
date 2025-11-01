@@ -1,0 +1,13 @@
+## StringToEnum Block - C++ Initialization Template
+## Converts string to enumeration value (0-based index)
+## Initializes the enum values array
+
+#if($EnumValuesList && $EnumValuesList.size() > 0)
+    // StringToEnum: Initialize enum values array
+    const std::vector<std::string> ${blockName}_enumValues = {
+#foreach($enumValue in $EnumValuesList)
+        "$enumValue"#if($foreach.hasNext),#end
+
+#end
+    };
+#end

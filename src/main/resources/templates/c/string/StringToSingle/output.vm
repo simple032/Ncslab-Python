@@ -1,0 +1,19 @@
+## StringToSingle Block - C++ Output Code Template
+## Converts string to single/float numeric value
+## Input: String signal
+## Output: Float numeric value (NaN if conversion fails)
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // StringToSingle: Convert string to float
+    try {
+        ${outputs.get(0)} = std::stof(${inputs.get(0)});
+    } catch (const std::invalid_argument& e) {
+        // Invalid string - return NaN (MATLAB behavior)
+        ${outputs.get(0)} = std::numeric_limits<float>::quiet_NaN();
+    } catch (const std::out_of_range& e) {
+        // Number too large/small - return infinity
+        ${outputs.get(0)} = (${inputs.get(0)}[0] == '-') ?
+            -std::numeric_limits<float>::infinity() :
+            std::numeric_limits<float>::infinity();
+    }
+#end

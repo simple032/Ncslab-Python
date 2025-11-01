@@ -1,0 +1,8 @@
+## ScanString block - C++ output code
+## Parse string into multiple outputs using scanf-style format
+% Code for output of block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // Parse string using sscanf
+    sscanf(${inputs.get(0)}.c_str(), "$Format"#foreach($output in $outputs), &${output}#end);
+#end

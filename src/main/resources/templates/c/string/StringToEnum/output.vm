@@ -1,0 +1,15 @@
+## StringToEnum Block - C++ Output Code Template
+## Converts string to enumeration value (0-based index)
+## Input: String signal
+## Output: Integer index of matching enum value (0 if no match)
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // StringToEnum: Find matching enum value
+    ${outputs.get(0)} = 0;  // Default to first enum value
+    for (size_t i = 0; i < ${blockName}_enumValues.size(); i++) {
+        if (${inputs.get(0)} == ${blockName}_enumValues[i]) {
+            ${outputs.get(0)} = static_cast<int32_t>(i);
+            break;
+        }
+    }
+#end

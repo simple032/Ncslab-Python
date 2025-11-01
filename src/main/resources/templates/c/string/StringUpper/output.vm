@@ -1,0 +1,8 @@
+## StringUpper Block - C++ Output Code Template
+## Converts string to uppercase using std::transform
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // StringUpper: Convert to uppercase
+    ${outputs.get(0)} = ${inputs.get(0)};
+    std::transform(${outputs.get(0)}.begin(), ${outputs.get(0)}.end(), ${outputs.get(0)}.begin(), ::toupper);
+#end

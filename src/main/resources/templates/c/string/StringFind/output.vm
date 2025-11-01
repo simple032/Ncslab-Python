@@ -1,0 +1,14 @@
+## StringFind block - C++ output code
+## Search for pattern in string, return 1-based index
+% Code for output of block $blockType:($blockId)$blockName
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() >= 2)
+    // Search for pattern in input string
+    size_t pos = ${inputs.get(0)}.find(${inputs.get(1)});
+
+    if(pos != std::string::npos) {
+        ${outputs.get(0)} = static_cast<int32_t>(pos + 1);  // Convert to 1-based index
+    } else {
+        ${outputs.get(0)} = 0;  // Not found
+    }
+#end

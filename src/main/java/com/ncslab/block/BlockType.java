@@ -151,9 +151,11 @@ public class BlockType{
         blockClassTree.put("SerialSender", com.ncslab.block.comm.SerialSender.class);
         blockClassTree.put("SerialReceiver", com.ncslab.block.comm.SerialReceiver.class);
         blockClassTree.put("SerialBidirectional", com.ncslab.block.comm.SerialBidirectional.class);
-        // Serial communication aliases (legacy names)
-        blockClassTree.put("SerialSend", com.ncslab.block.comm.SerialSender.class);
-        blockClassTree.put("SerialReceive", com.ncslab.block.comm.SerialReceiver.class);
+        blockClassTree.put("SerialConfiguration", com.ncslab.block.comm.SerialConfiguration.class);
+        // Refactored serial blocks following Simulink R2024b architecture
+        blockClassTree.put("SerialSend", com.ncslab.block.comm.SerialSend.class);
+        blockClassTree.put("SerialReceive", com.ncslab.block.comm.SerialReceive.class);
+        // Legacy aliases for backward compatibility
         blockClassTree.put("Serial", com.ncslab.block.comm.SerialBidirectional.class);  // Alias for bidirectional
 
         // Driver
@@ -270,6 +272,27 @@ public class BlockType{
         blockClassTree.put("MultilayerPerceptron", com.ncslab.block.machineLearning.pt.MultilayerPerceptron.class);
         blockClassTree.put("CNN1dModel", com.ncslab.block.machineLearning.pt.CNN.class);
         blockClassTree.put("A2CBlock", com.ncslab.block.machineLearning.pt.A2C.class);
+
+        // String - text manipulation and serial communication
+        blockClassTree.put("ASCIIToString", com.ncslab.block.string.ASCIIToString.class);
+        blockClassTree.put("ComposeString", com.ncslab.block.string.ComposeString.class);
+        blockClassTree.put("ScanString", com.ncslab.block.string.ScanString.class);
+        blockClassTree.put("StringCompare", com.ncslab.block.string.StringCompare.class);
+        blockClassTree.put("StringConcatenate", com.ncslab.block.string.StringConcatenate.class);
+        blockClassTree.put("StringConstant", com.ncslab.block.string.StringConstant.class);
+        blockClassTree.put("StringContains", com.ncslab.block.string.StringContains.class);
+        blockClassTree.put("StringFind", com.ncslab.block.string.StringFind.class);
+        blockClassTree.put("StringLength", com.ncslab.block.string.StringLength.class);
+        blockClassTree.put("StringLower", com.ncslab.block.string.StringLower.class);
+        blockClassTree.put("StringReplace", com.ncslab.block.string.StringReplace.class);
+        blockClassTree.put("StringToASCII", com.ncslab.block.string.StringToASCII.class);
+        blockClassTree.put("StringToDouble", com.ncslab.block.string.StringToDouble.class);
+        blockClassTree.put("StringToEnum", com.ncslab.block.string.StringToEnum.class);
+        blockClassTree.put("StringToSingle", com.ncslab.block.string.StringToSingle.class);
+        blockClassTree.put("StringTrim", com.ncslab.block.string.StringTrim.class);
+        blockClassTree.put("StringUpper", com.ncslab.block.string.StringUpper.class);
+        blockClassTree.put("Substring", com.ncslab.block.string.Substring.class);
+        blockClassTree.put("ToString", com.ncslab.block.string.ToString.class);
 
         // Hardware
         // Raspberry

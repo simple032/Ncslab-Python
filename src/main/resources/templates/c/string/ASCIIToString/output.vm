@@ -1,0 +1,53 @@
+## Velocity template for ASCIIToString block output code (C++)
+## Converts uint8 vector to string, escaping control characters as octals
+##
+## Context variables:
+##   $inputSignal - Input signal variable name (MatrixU8 or typed matrix)
+##   $outputSignal - Output signal variable name (std::string)
+##   $inputHeight - Input matrix height
+##   $inputWidth - Input matrix width
+##   $inputCDataType - Input C data type (CDataType enum)
+##   $inputMatrixType - Input matrix type name (e.g., "MatrixU8")
+##   $blockId - Block ID
+##   $blockName - Block name
+
+/* Code for output of block ASCIIToString:(${blockId})${blockName} */
+{
+    // Convert ASCII byte vector to string
+    ${outputSignal}.clear();
+    ${outputSignal}.reserve(${inputHeight} * ${inputWidth});
+
+#if $inputHeight == 1 && $inputWidth == 1
+    // Scalar input - single character
+    uint8_t ascii_val = (uint8_t)${inputSignal};
+
+    // Check if character should be escaped
+    if ((ascii_val >= 0x00 && ascii_val <= 0x1F) || (ascii_val >= 0x7F && ascii_val <= 0x9F)) {
+        // Escape control characters as octal
+        char octal_buf[5];
+        sprintf(octal_buf, "\\%03o", ascii_val);
+        ${outputSignal} += octal_buf;
+    } else {
+        // Append printable character
+        ${outputSignal} += (char)ascii_val;
+    }
+#else
+    // Vector or matrix input - process all elements
+    for (int i = 0; i < ${inputHeight}; i++) {
+        for (int j = 0; j < ${inputWidth}; j++) {
+            uint8_t ascii_val = (uint8_t)${inputSignal}(i, j);
+
+            // Check if character should be escaped
+            if ((ascii_val >= 0x00 && ascii_val <= 0x1F) || (ascii_val >= 0x7F && ascii_val <= 0x9F)) {
+                // Escape control characters as octal
+                char octal_buf[5];
+                sprintf(octal_buf, "\\%03o", ascii_val);
+                ${outputSignal} += octal_buf;
+            } else {
+                // Append printable character
+                ${outputSignal} += (char)ascii_val;
+            }
+        }
+    }
+#end
+}

@@ -1,0 +1,8 @@
+## StringLength block - C initialization code
+## Initialize output to 0 (length of empty string)
+/*Initialization for block $blockType:($blockId)$blockName*/
+
+#if($outputs && $outputs.size() > 0)
+    ## Initialize string length output to 0
+    ${outputs.get(0)} = 0;
+#end

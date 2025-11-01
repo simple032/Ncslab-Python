@@ -1,0 +1,19 @@
+## StringToDouble Block - C++ Output Code Template
+## Converts string to double numeric value
+## Input: String signal
+## Output: Double numeric value (NaN if conversion fails)
+
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
+    // StringToDouble: Convert string to double
+    try {
+        ${outputs.get(0)} = std::stod(${inputs.get(0)});
+    } catch (const std::invalid_argument& e) {
+        // Invalid string - return NaN (MATLAB str2double behavior)
+        ${outputs.get(0)} = std::numeric_limits<double>::quiet_NaN();
+    } catch (const std::out_of_range& e) {
+        // Number too large/small - return infinity
+        ${outputs.get(0)} = (${inputs.get(0)}[0] == '-') ?
+            -std::numeric_limits<double>::infinity() :
+            std::numeric_limits<double>::infinity();
+    }
+#end
