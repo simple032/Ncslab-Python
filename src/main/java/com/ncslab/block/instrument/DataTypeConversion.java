@@ -167,6 +167,10 @@ public class DataTypeConversion extends Block {
             context.put("outputSignal", out.getOutputSignalC().getName());
             context.put("inputSignal", ops.getOutputSignalC().getName());
             context.put("roundingMethod", getRoundingMethod());
+
+            // Add output CDataType for proper type casting
+            context.put("outputCDataType", out.getOutputSignalC().getCDataType());
+            context.put("outputCppType", out.getOutputSignalC().getCDataType().getCppType());
         }
 
         String codeStr = TemplateManager.renderTemplate("c/instrument/DataTypeConversion/output.vm", context);

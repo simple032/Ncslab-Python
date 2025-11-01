@@ -72,14 +72,47 @@ public class OutputSignal {
 	public String getDefineCodeC() {
 		String code="";
 		System.out.println("OutputSignal.getDefineCodeC: name=" + getName() +
-		                 ", dataType=" + dataType + ", height=" + height + ", width=" + width);
+		                 ", dataType=" + dataType + ", cDataType=" + cDataType +
+		                 ", height=" + height + ", width=" + width);
+
+		// CRITICAL FIX: Always check actual dimensions to determine scalar vs matrix
+		// Even if dataType is set to MATRIX, if dimensions are 1x1, use scalar type
+		boolean isActuallyScalar = (height == 1 && width == 1);
+
 		switch(dataType) {
 		case REAL:
-			code+="REAL "+getName()+";\n";
+			// Use C data type if specified, otherwise default to REAL (double)
+			if (cDataType != null && cDataType != CDataType.DOUBLE) {
+				code += cDataType.getCppType() + " " + getName() + ";\n";
+			} else {
+				code += "REAL " + getName() + ";\n";
+			}
 			break;
 		case MATRIX:
-			//code+="REAL "+name+"["+initMatrix.getRowDimension()+"]["+initMatrix.getColumnDimension()+"]"+";\n";
-			code+="Matrix "+getName()+"("+height+","+width+")"+";\n";
+			// CRITICAL: Check if this is actually a scalar (1x1)
+			if (isActuallyScalar) {
+				// Output as scalar, not matrix
+				if (cDataType != null && cDataType != CDataType.DOUBLE) {
+					code += cDataType.getCppType() + " " + getName() + ";\n";
+				} else {
+					code += "REAL " + getName() + ";\n";
+				}
+			} else {
+				// True matrix/vector - use Matrix type alias
+				// This uses the predefined type aliases from Matrix.hpp:
+				// MatrixU8 = MatrixT<uint8_t>, MatrixI16 = MatrixT<int16_t>, etc.
+				if (cDataType != null) {
+					code += cDataType.getMatrixTypeName() + " " + getName() +
+					        "(" + height + "," + width + ");\n";
+				} else {
+					// Default Matrix (Matrix = MatrixT<double>)
+					code += "Matrix " + getName() + "(" + height + "," + width + ");\n";
+				}
+			}
+			break;
+		case STRING:
+			// String type - use std::string
+			code += "std::string " + getName() + ";\n";
 			break;
 		}
 		return code;

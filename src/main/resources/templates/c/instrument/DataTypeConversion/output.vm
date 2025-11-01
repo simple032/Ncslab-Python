@@ -1,6 +1,6 @@
 ## DataTypeConversion block - C code generation
 ## Convert input data type with specified rounding method
-## Determine rounding function based on roundingMethod parameter
+/*Code for output of block $blockType:($blockId)$blockName*/
 #set($roundFunc = "floor")
 #if($roundingMethod == "Round" || $roundingMethod == "Nearest")
     #set($roundFunc = "round")
@@ -12,14 +12,21 @@
     #set($roundFunc = "trunc")
 #end
 
-#if($inputHeight == 1 && $inputWidth == 1)
-    ## Scalar input - apply rounding function
-    ${outputVar} = ${roundFunc}(${inputVar});
-#else
-    ## Matrix input - apply rounding element-wise
-    #foreach($i in [0..$hMax])
-        #foreach($j in [0..$wMax])
-    ${outputVar}($i, $j) = ${roundFunc}(${inputVar}($i, $j));
-        #end
+#if($inputs && $inputs.size() > 0)
+    #if($inputHeight > 1 || $inputWidth > 1)
+        ## Matrix input - apply rounding element-wise with explicit type conversion
+        ## Use outputCppType directly to avoid decltype reference type issues
+        for(int i = 0; i < ${inputHeight}; i++) {
+            #if($inputWidth > 1)
+            for(int j = 0; j < ${inputWidth}; j++) {
+                ${outputSignal}(i, j) = static_cast<${outputCppType}>(${roundFunc}(${inputSignal}(i, j)));
+            }
+            #else
+            ${outputSignal}(i, 0) = static_cast<${outputCppType}>(${roundFunc}(${inputSignal}(i, 0)));
+            #end
+        }
+    #else
+        ## Scalar input - apply rounding function and explicit type conversion
+        ${outputSignal} = static_cast<${outputCppType}>(${roundFunc}(${inputSignal}));
     #end
 #end

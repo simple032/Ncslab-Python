@@ -1,6 +1,7 @@
 ## BytePack block - C code generation
 ## Pack multiple input signals into uint8 vector with proper type casting
-## Output is a column vector where each element represents one byte (as double)
+## Output is a MatrixU8 column vector where each element represents one byte
+/*Code for output of block $blockType:($blockId)$blockName*/
 {
     int byte_offset = 0;
 
@@ -26,14 +27,14 @@
             temp.val = (${cppType})${inputVar}(i, j);
             for (int b = 0; b < ${byteSize}; b++) {
                 unsigned char byte_val = (unsigned char)((temp.bits >> (b * 8)) & 0xFF);
-                ${output1}(byte_offset++, 0) = (double)byte_val;
+                ${output1}(byte_offset++, 0) = byte_val;
             }
             #else
             ## For integer types, use bitwise operations
-            #if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end temp_val = (#if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end)(${cppType})${inputVar}(i, j);
+            #if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end temp_val = (#if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end)${inputVar}(i, j);
             for (int b = 0; b < ${byteSize}; b++) {
                 unsigned char byte_val = (unsigned char)((temp_val >> (b * 8)) & 0xFF);
-                ${output1}(byte_offset++, 0) = (double)byte_val;
+                ${output1}(byte_offset++, 0) = byte_val;
             }
             #end
         }
@@ -47,14 +48,14 @@
         temp.val = (${cppType})${inputVar};
         for (int b = 0; b < ${byteSize}; b++) {
             unsigned char byte_val = (unsigned char)((temp.bits >> (b * 8)) & 0xFF);
-            ${output1}(byte_offset++, 0) = (double)byte_val;
+            ${output1}(byte_offset++, 0) = byte_val;
         }
         #else
         ## For integer types, cast to appropriate unsigned type for bitwise operations
-        #if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end temp_val = (#if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end)(${cppType})${inputVar};
+        #if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end temp_val = (#if($cppType.contains("int64"))uint64_t#elseif($cppType.contains("int32"))uint32_t#elseif($cppType.contains("int16"))uint16_t#else uint8_t#end)${inputVar};
         for (int b = 0; b < ${byteSize}; b++) {
             unsigned char byte_val = (unsigned char)((temp_val >> (b * 8)) & 0xFF);
-            ${output1}(byte_offset++, 0) = (double)byte_val;
+            ${output1}(byte_offset++, 0) = byte_val;
         }
         #end
     }
@@ -67,7 +68,7 @@
         temp.d = ${input1};
         for (int b = 0; b < 8; b++) {
             unsigned char byte_val = (unsigned char)((temp.i >> (b * 8)) & 0xFF);
-            ${output1}(b, 0) = (double)byte_val;
+            ${output1}(b, 0) = byte_val;
         }
     }
 #end

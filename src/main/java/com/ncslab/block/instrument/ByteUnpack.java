@@ -163,6 +163,55 @@ public class ByteUnpack extends Block {
             } else {
                 out.getOutputSignalC().setDataType(DataType.REAL);
             }
+
+            // CRITICAL: Set output CDataType based on datatypes parameter
+            // Convert SIMULINK type string to CDataType enum
+            CDataType cDataType = convertDataTypeStringToCDataType(dataTypes[i]);
+            out.getOutputSignalC().setCDataType(cDataType);
+
+            System.out.println("ByteUnpack updateDimension: port=" + (i + 1) +
+                             ", dataType=" + out.getOutputSignalC().getDataType() +
+                             ", cDataType=" + cDataType +
+                             ", height=" + height + ", width=" + width);
+        }
+    }
+
+    /**
+     * Convert SIMULINK data type string to CDataType enum
+     */
+    private CDataType convertDataTypeStringToCDataType(String typeStr) {
+        if (typeStr == null || typeStr.isEmpty()) {
+            return CDataType.DOUBLE; // Default
+        }
+
+        switch (typeStr.toLowerCase().trim()) {
+            case "int8":
+                return CDataType.INT8;
+            case "int16":
+                return CDataType.INT16;
+            case "int32":
+                return CDataType.INT32;
+            case "int64":
+                return CDataType.INT64;
+            case "uint8":
+                return CDataType.UINT8;
+            case "uint16":
+                return CDataType.UINT16;
+            case "uint32":
+                return CDataType.UINT32;
+            case "uint64":
+                return CDataType.UINT64;
+            case "single":
+            case "float":
+                return CDataType.SINGLE;
+            case "double":
+                return CDataType.DOUBLE;
+            case "boolean":
+            case "bool":
+                return CDataType.BOOLEAN;
+            default:
+                System.out.println("ByteUnpack: Unknown data type '" + typeStr + "', defaulting to DOUBLE");
+                return CDataType.DOUBLE;
         }
     }
 

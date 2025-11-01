@@ -142,7 +142,12 @@ public class BytePack extends Block {
             // But explicitly set it to ensure correct behavior
             out.getOutputSignalC().setDataType(totalBytes > 1 ? DataType.MATRIX : DataType.REAL);
 
+            // CRITICAL: Set output CDataType to UINT8 since BytePack outputs byte array
+            // This allows SerialSender and other blocks to recognize it as byte data
+            out.getOutputSignalC().setCDataType(CDataType.UINT8);
+
             System.out.println("BytePack after setDataType: dataType=" + out.getOutputSignalC().getDataType() +
+                             ", cDataType=" + out.getOutputSignalC().getCDataType() +
                              ", height=" + out.getOutputSignalC().getHeight() +
                              ", width=" + out.getOutputSignalC().getWidth());
         }
