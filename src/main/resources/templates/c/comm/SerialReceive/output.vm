@@ -1,0 +1,7 @@
+/* Serial Receive output: (${blockId}) ${blockName} - Port ${PortConfigName} (ID: ${PortConfigId}) */
+if(model.majorStep == 1){
+    // Receive data from configured serial port
+    #if($outputs && $outputs.size() > 0)
+    Serial_Receive_${blockId}(SerialConfig_${PortConfigId}, &${outputs.get(0)}, ${DataSize}, "${Header}", "${Terminator}", "${Blocking}");
+    #end
+}

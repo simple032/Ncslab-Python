@@ -1,0 +1,14 @@
+/* Initialize UDP Sender: (${blockId}) ${blockName} */
+sockfd_udpsend${blockId} = socket(AF_INET, SOCK_DGRAM, 0);
+if (sockfd_udpsend${blockId} == -1) {
+    printf("UDP Sender ${blockId}: Cannot create socket\n");
+    CLOSE_SOCKET(sockfd_udpsend${blockId});
+}
+adr_serv_udpsend${blockId}.sin_family = AF_INET;
+adr_serv_udpsend${blockId}.sin_port = htons(${port});
+adr_serv_udpsend${blockId}.sin_addr.s_addr = inet_addr("${addr}");
+int udpret${blockId} = connect(sockfd_udpsend${blockId}, (struct sockaddr*)&adr_serv_udpsend${blockId}, sizeof(adr_serv_udpsend${blockId}));
+if (0 > udpret${blockId}) {
+    printf("UDP Sender ${blockId}: Connect error\n");
+    CLOSE_SOCKET(sockfd_udpsend${blockId});
+}

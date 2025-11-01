@@ -1,8 +1,170 @@
-## Serial communication function declarations and variables
+/* Serial Receiver ${blockId} - Platform-specific declarations and implementation */
+#[[#ifdef _WIN32
+#include <windows.h>
+#else
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
+#endif
+]]#
+/* Serial configuration parameters for block ${blockId} */
+static const char* serial_port_${blockId};
+static int serial_baud_${blockId};
+static int serial_databits_${blockId};
+static int serial_stopbits_${blockId};
+static const char* serial_parity_${blockId};
 
-int serial_fd_$blockId;
+#[[#ifdef _WIN32]]#
+static HANDLE serial_handle_${blockId};
+#[[#else]]#
+static int serial_fd_${blockId};
+#[[#endif]]#
 
-void Serial_Config_$blockId(const char* port, int baud, int databits, int stopbits, const char* parity);
-void Serial_Init_$blockId();
-double Serial_Receive_$blockId();
-void Serial_Close_$blockId();
+/* Serial configuration function */
+void Serial_Config_${blockId}(const char* port, int baud, int databits, int stopbits, const char* parity) {
+    serial_port_${blockId} = port;
+    serial_baud_${blockId} = baud;
+    serial_databits_${blockId} = databits;
+    serial_stopbits_${blockId} = stopbits;
+    serial_parity_${blockId} = parity;
+}
+
+/* Serial initialization function */
+void Serial_Init_${blockId}() {
+#[[#ifdef _WIN32]]#
+    /* Windows serial port initialization */
+    DCB dcb;
+    char portName[20];
+    sprintf(portName, "\\\\.\\%s", serial_port_${blockId});
+
+    serial_handle_${blockId} = CreateFile(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    if (serial_handle_${blockId} == INVALID_HANDLE_VALUE) {
+        printf("Serial Receiver ${blockId}: Cannot open port %s\n", serial_port_${blockId});
+        return;
+    }
+
+    memset(&dcb, 0, sizeof(dcb));
+    dcb.DCBlength = sizeof(dcb);
+    GetCommState(serial_handle_${blockId}, &dcb);
+    dcb.BaudRate = serial_baud_${blockId};
+    dcb.ByteSize = serial_databits_${blockId};
+    dcb.StopBits = (serial_stopbits_${blockId} == 1) ? ONESTOPBIT : TWOSTOPBITS;
+    dcb.Parity = NOPARITY;
+    SetCommState(serial_handle_${blockId}, &dcb);
+#[[#else]]#
+    /* Linux serial port initialization */
+    struct termios tty;
+
+    serial_fd_${blockId} = open(serial_port_${blockId}, O_RDWR | O_NOCTTY);
+    if (serial_fd_${blockId} < 0) {
+        printf("Serial Receiver ${blockId}: Cannot open port %s\n", serial_port_${blockId});
+        return;
+    }
+
+    if (tcgetattr(serial_fd_${blockId}, &tty) != 0) {
+        printf("Serial Receiver ${blockId}: Error from tcgetattr\n");
+        close(serial_fd_${blockId});
+        return;
+    }
+
+    /* Set baud rate */
+    speed_t speed = B9600;
+    switch (serial_baud_${blockId}) {
+        case 1200:    speed = B1200; break;
+        case 2400:    speed = B2400; break;
+        case 4800:    speed = B4800; break;
+        case 9600:    speed = B9600; break;
+        case 19200:   speed = B19200; break;
+        case 38400:   speed = B38400; break;
+        case 57600:   speed = B57600; break;
+        case 115200:  speed = B115200; break;
+        default:      speed = B9600; break;
+    }
+    cfsetospeed(&tty, speed);
+    cfsetispeed(&tty, speed);
+
+    /* Control modes - hardware settings */
+    tty.c_cflag &= ~CSIZE;  /* Clear data size bits */
+    /* Set data bits */
+    switch (serial_databits_${blockId}) {
+        case 5: tty.c_cflag |= CS5; break;
+        case 6: tty.c_cflag |= CS6; break;
+        case 7: tty.c_cflag |= CS7; break;
+        case 8:
+        default: tty.c_cflag |= CS8; break;
+    }
+
+    /* Set stop bits */
+    if (serial_stopbits_${blockId} == 2) {
+        tty.c_cflag |= CSTOPB;
+    } else {
+        tty.c_cflag &= ~CSTOPB;
+    }
+
+    /* Set parity */
+    if (strcmp(serial_parity_${blockId}, "even") == 0) {
+        tty.c_cflag |= PARENB;
+        tty.c_cflag &= ~PARODD;
+    } else if (strcmp(serial_parity_${blockId}, "odd") == 0) {
+        tty.c_cflag |= PARENB;
+        tty.c_cflag |= PARODD;
+    } else {
+        tty.c_cflag &= ~PARENB;  /* No parity */
+    }
+
+    tty.c_cflag |= (CLOCAL | CREAD);  /* Ignore modem controls, enable reading */
+    tty.c_cflag &= ~CRTSCTS;           /* Disable RTS/CTS hardware flow control */
+
+    /* Input modes - disable input processing */
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY);  /* Disable XON/XOFF flow control */
+    tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);  /* Disable special handling */
+
+    /* Output modes - disable output processing */
+    tty.c_oflag &= ~OPOST;  /* Prevent special interpretation of output bytes */
+    tty.c_oflag &= ~ONLCR;  /* Prevent conversion of newline to carriage return/line feed */
+
+    /* Local modes - disable canonical mode, echo, and signals */
+    tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
+
+    /* Set read timeout and minimum bytes */
+    tty.c_cc[VMIN] = 0;   /* Return immediately with any data */
+    tty.c_cc[VTIME] = 5;  /* 0.5 second timeout */
+
+    if (tcsetattr(serial_fd_${blockId}, TCSANOW, &tty) != 0) {
+        printf("Serial Receiver ${blockId}: Error from tcsetattr\n");
+        close(serial_fd_${blockId});
+        return;
+    }
+#[[#endif]]#
+}
+
+/* Serial receive function */
+double Serial_Receive_${blockId}() {
+    double value = 0.0;
+    unsigned char buffer[8];
+
+#[[#ifdef _WIN32]]#
+    DWORD bytesRead;
+    ReadFile(serial_handle_${blockId}, buffer, sizeof(double), &bytesRead, NULL);
+    if (bytesRead == sizeof(double)) {
+        memcpy(&value, buffer, sizeof(double));
+    }
+#[[#else]]#
+    ssize_t bytesRead = read(serial_fd_${blockId}, buffer, sizeof(double));
+    if (bytesRead == sizeof(double)) {
+        memcpy(&value, buffer, sizeof(double));
+    }
+#[[#endif]]#
+    return value;
+}
+
+/* Serial close function */
+void Serial_Close_${blockId}() {
+#[[#ifdef _WIN32]]#
+    CloseHandle(serial_handle_${blockId});
+#[[#else]]#
+    close(serial_fd_${blockId});
+#[[#endif]]#
+}

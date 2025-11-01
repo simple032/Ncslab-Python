@@ -31,6 +31,11 @@ public class UDPReceiver extends Block {
      */
     public UDPReceiver(UDPReceiverDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+
+        // Create output ports for received data
+        outputPortList.add(new OutputPort(this, 1, false));
+        outputPortList.add(new OutputPort(this, 2, false));
+
         System.out.println("DTO-NATIVE: UDPReceiver block created successfully - " + blockDto.getBlockName());
     }
 

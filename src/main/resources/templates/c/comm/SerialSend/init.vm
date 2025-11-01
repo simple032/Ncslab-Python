@@ -1,0 +1,7 @@
+## Variables populated in Java context: $PortConfigId, $PortConfigName, $Header, $Terminator, $Blocking
+## SerialSend initialization - reference the SerialConfiguration
+
+// SerialSend ${blockId} uses port configuration: ${PortConfigName} (ID: ${PortConfigId})
+// Header: ${Header}
+// Terminator: ${Terminator}
+// Blocking: ${Blocking}

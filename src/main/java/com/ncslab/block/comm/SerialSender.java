@@ -273,6 +273,16 @@ public class SerialSender extends Block implements AutoCloseable {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         // Don't override inputs - TemplateUtils already populated it as List<String>
 
+        // Add input CDataType information for proper byte sending
+        if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
+            com.ncslab.block.io.OutputSignal inputSignal =
+                inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            context.put("inputCDataType", inputSignal.getCDataType());
+            context.put("inputDataType", inputSignal.getDataType());
+            context.put("inputHeight", inputSignal.getHeight());
+            context.put("inputWidth", inputSignal.getWidth());
+        }
+
         String codeStr = TemplateManager.renderTemplate("c/comm/SerialSender/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -287,6 +297,14 @@ public class SerialSender extends Block implements AutoCloseable {
 
     public void generateStatementCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add input CDataType information for proper function signature generation
+        if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
+            com.ncslab.block.io.OutputSignal inputSignal =
+                inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            context.put("inputCDataType", inputSignal.getCDataType());
+            context.put("inputDataType", inputSignal.getDataType());
+        }
 
         String codeStr = TemplateManager.renderTemplate("c/comm/SerialSender/statement.vm", context);
         code.addStatementCode(codeStr);

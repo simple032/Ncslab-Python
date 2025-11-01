@@ -1,0 +1,7 @@
+/* Serial Send output: (${blockId}) ${blockName} - Port ${PortConfigName} (ID: ${PortConfigId}) */
+if(model.majorStep == 1){
+    // Send data through configured serial port
+    #if($inputs && $inputs.size() > 0)
+    Serial_Send_${blockId}(SerialConfig_${PortConfigId}, ${inputs.get(0)}, "${Header}", "${Terminator}", "${Blocking}");
+    #end
+}

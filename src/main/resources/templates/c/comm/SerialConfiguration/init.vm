@@ -1,0 +1,8 @@
+## Variables populated in Java context: $Port, $BaudRate, $DataBits, $Parity, $StopBits, $ByteOrder, $FlowControl, $Timeout
+## SerialConfiguration initialization - configure and open the serial port
+
+// Configure and open serial port ${Port} for block ${blockId}
+SerialConfig_${blockId} = Serial_Configure_${blockId}("${Port}", ${BaudRate}, ${DataBits}, "${Parity}", "${StopBits}", "${ByteOrder}", "${FlowControl}", ${Timeout});
+if (SerialConfig_${blockId} != NULL) {
+    Serial_Open_${blockId}(SerialConfig_${blockId});
+}

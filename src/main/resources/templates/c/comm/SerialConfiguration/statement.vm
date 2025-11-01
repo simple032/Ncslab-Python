@@ -1,0 +1,246 @@
+/* SerialConfiguration ${blockId} - Centralized serial port resource management */
+/* Following SIMULINK R2024b architecture pattern */
+/* Note: SerialPortHandle structure is defined in ncslabccode.hpp */
+
+/* Serial Port Handle for Block ${blockId} */
+static SerialPortHandle* SerialConfig_${blockId} = NULL;
+
+/* Configure serial port - create and initialize configuration */
+SerialPortHandle* Serial_Configure_${blockId}(const char* port, int baud, int databits,
+                                               const char* parity, const char* stopbits,
+                                               const char* byteorder, const char* flowcontrol,
+                                               double timeout) {
+    SerialPortHandle* config = (SerialPortHandle*)malloc(sizeof(SerialPortHandle));
+    if (config == NULL) {
+        printf("SerialConfig ${blockId}: Memory allocation failed\n");
+        return NULL;
+    }
+
+    config->portName = port;
+    config->baudRate = baud;
+    config->dataBits = databits;
+    config->parity = parity;
+    config->stopBits = stopbits;
+    config->byteOrder = byteorder;
+    config->flowControl = flowcontrol;
+    config->timeout = timeout;
+    config->isOpen = 0;
+
+#[[#ifdef _WIN32]]#
+    config->handle = INVALID_HANDLE_VALUE;
+#[[#else]]#
+    config->fd = -1;
+#[[#endif]]#
+
+    return config;
+}
+
+/* Open configured serial port */
+int Serial_Open_${blockId}(SerialPortHandle* config) {
+    if (config == NULL) {
+        printf("SerialConfig ${blockId}: NULL configuration\n");
+        return -1;
+    }
+
+    if (config->isOpen) {
+        return 0;  /* Already open */
+    }
+
+#[[#ifdef _WIN32]]#
+    /* Windows serial port opening */
+    DCB dcb;
+    COMMTIMEOUTS timeouts;
+    char portName[20];
+    sprintf(portName, "\\\\.\\%s", config->portName);
+
+    config->handle = CreateFile(portName,
+                                GENERIC_READ | GENERIC_WRITE,
+                                0, NULL, OPEN_EXISTING, 0, NULL);
+
+    if (config->handle == INVALID_HANDLE_VALUE) {
+        printf("SerialConfig ${blockId}: Cannot open port %s\n", config->portName);
+        return -1;
+    }
+
+    /* Configure port settings */
+    memset(&dcb, 0, sizeof(dcb));
+    dcb.DCBlength = sizeof(dcb);
+    GetCommState(config->handle, &dcb);
+    dcb.BaudRate = config->baudRate;
+    dcb.ByteSize = config->dataBits;
+
+    /* Set stop bits */
+    if (strcmp(config->stopBits, "2") == 0) {
+        dcb.StopBits = TWOSTOPBITS;
+    } else if (strcmp(config->stopBits, "1.5") == 0) {
+        dcb.StopBits = ONE5STOPBITS;
+    } else {
+        dcb.StopBits = ONESTOPBIT;
+    }
+
+    /* Set parity */
+    if (strcmp(config->parity, "even") == 0) {
+        dcb.Parity = EVENPARITY;
+    } else if (strcmp(config->parity, "odd") == 0) {
+        dcb.Parity = ODDPARITY;
+    } else if (strcmp(config->parity, "mark") == 0) {
+        dcb.Parity = MARKPARITY;
+    } else if (strcmp(config->parity, "space") == 0) {
+        dcb.Parity = SPACEPARITY;
+    } else {
+        dcb.Parity = NOPARITY;
+    }
+
+    /* Set flow control */
+    if (strcmp(config->flowControl, "hardware") == 0) {
+        dcb.fRtsControl = RTS_CONTROL_HANDSHAKE;
+        dcb.fOutxCtsFlow = TRUE;
+    } else if (strcmp(config->flowControl, "software") == 0) {
+        dcb.fOutX = TRUE;
+        dcb.fInX = TRUE;
+    } else {
+        dcb.fRtsControl = RTS_CONTROL_DISABLE;
+        dcb.fOutxCtsFlow = FALSE;
+        dcb.fOutX = FALSE;
+        dcb.fInX = FALSE;
+    }
+
+    SetCommState(config->handle, &dcb);
+
+    /* Set timeouts */
+    timeouts.ReadIntervalTimeout = (DWORD)(config->timeout * 1000);
+    timeouts.ReadTotalTimeoutMultiplier = 0;
+    timeouts.ReadTotalTimeoutConstant = (DWORD)(config->timeout * 1000);
+    timeouts.WriteTotalTimeoutMultiplier = 0;
+    timeouts.WriteTotalTimeoutConstant = (DWORD)(config->timeout * 1000);
+    SetCommTimeouts(config->handle, &timeouts);
+
+#[[#else]]#
+    /* Linux serial port opening */
+    struct termios tty;
+
+    config->fd = open(config->portName, O_RDWR | O_NOCTTY);
+    if (config->fd < 0) {
+        printf("SerialConfig ${blockId}: Cannot open port %s\n", config->portName);
+        return -1;
+    }
+
+    if (tcgetattr(config->fd, &tty) != 0) {
+        printf("SerialConfig ${blockId}: Error from tcgetattr\n");
+        close(config->fd);
+        config->fd = -1;
+        return -1;
+    }
+
+    /* Set baud rate */
+    speed_t speed = B9600;
+    switch (config->baudRate) {
+        case 110:     speed = B110; break;
+        case 300:     speed = B300; break;
+        case 600:     speed = B600; break;
+        case 1200:    speed = B1200; break;
+        case 2400:    speed = B2400; break;
+        case 4800:    speed = B4800; break;
+        case 9600:    speed = B9600; break;
+        case 19200:   speed = B19200; break;
+        case 38400:   speed = B38400; break;
+        case 57600:   speed = B57600; break;
+        case 115200:  speed = B115200; break;
+        case 230400:  speed = B230400; break;
+        default:      speed = B9600; break;
+    }
+    cfsetospeed(&tty, speed);
+    cfsetispeed(&tty, speed);
+
+    /* Control modes - hardware settings */
+    tty.c_cflag &= ~CSIZE;  /* Clear data size bits */
+
+    /* Set data bits */
+    switch (config->dataBits) {
+        case 5: tty.c_cflag |= CS5; break;
+        case 6: tty.c_cflag |= CS6; break;
+        case 7: tty.c_cflag |= CS7; break;
+        case 8:
+        default: tty.c_cflag |= CS8; break;
+    }
+
+    /* Set stop bits */
+    if (strcmp(config->stopBits, "2") == 0) {
+        tty.c_cflag |= CSTOPB;
+    } else {
+        tty.c_cflag &= ~CSTOPB;
+    }
+
+    /* Set parity */
+    if (strcmp(config->parity, "even") == 0) {
+        tty.c_cflag |= PARENB;
+        tty.c_cflag &= ~PARODD;
+    } else if (strcmp(config->parity, "odd") == 0) {
+        tty.c_cflag |= PARENB;
+        tty.c_cflag |= PARODD;
+    } else {
+        tty.c_cflag &= ~PARENB;  /* No parity */
+    }
+
+    tty.c_cflag |= (CLOCAL | CREAD);  /* Ignore modem controls, enable reading */
+
+    /* Set flow control */
+    if (strcmp(config->flowControl, "hardware") == 0) {
+        tty.c_cflag |= CRTSCTS;
+    } else {
+        tty.c_cflag &= ~CRTSCTS;
+    }
+
+    /* Input modes - disable input processing */
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY);  /* Disable XON/XOFF flow control */
+    tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);
+
+    if (strcmp(config->flowControl, "software") == 0) {
+        tty.c_iflag |= (IXON | IXOFF);
+    }
+
+    /* Output modes - disable output processing */
+    tty.c_oflag &= ~OPOST;
+    tty.c_oflag &= ~ONLCR;
+
+    /* Local modes - disable canonical mode, echo, and signals */
+    tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
+
+    /* Set timeout */
+    tty.c_cc[VMIN] = 0;
+    tty.c_cc[VTIME] = (cc_t)(config->timeout * 10);  /* Tenths of seconds */
+
+    if (tcsetattr(config->fd, TCSANOW, &tty) != 0) {
+        printf("SerialConfig ${blockId}: Error from tcsetattr\n");
+        close(config->fd);
+        config->fd = -1;
+        return -1;
+    }
+#[[#endif]]#
+
+    config->isOpen = 1;
+    printf("SerialConfig ${blockId}: Port %s opened successfully at %d bps\n",
+           config->portName, config->baudRate);
+    return 0;
+}
+
+/* Close serial port */
+void Serial_Close_${blockId}(SerialPortHandle* config) {
+    if (config == NULL || !config->isOpen) {
+        return;
+    }
+
+#[[#ifdef _WIN32]]#
+    if (config->handle != INVALID_HANDLE_VALUE) {
+        CloseHandle(config->handle);
+        config->handle = INVALID_HANDLE_VALUE;
+    }
+#[[#else]]#
+    if (config->fd >= 0) {
+        close(config->fd);
+        config->fd = -1;
+    }
+#[[#endif]]#
+
+    config->isOpen = 0;
+}

@@ -51,6 +51,10 @@ public class SerialReceiver extends Block implements AutoCloseable {
      */
     public SerialReceiver(SerialReceiverDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+
+        // Single output port (can be scalar or vector)
+        outputPortList.add(new OutputPort(this, 1, false));
+
         System.out.println("DTO-NATIVE: SerialReceiver block created successfully - " + blockDto.getBlockName());
     }
 

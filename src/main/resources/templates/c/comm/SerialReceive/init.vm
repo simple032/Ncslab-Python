@@ -1,0 +1,6 @@
+## Variables populated in Java context: $PortConfigId, $PortConfigName, $SampleTime, $DataSize, $Header, $Terminator, $Blocking
+## SerialReceive initialization - reference the SerialConfiguration
+
+// SerialReceive ${blockId} uses port configuration: ${PortConfigName} (ID: ${PortConfigId})
+// Sample Time: ${SampleTime}, Data Size: ${DataSize}
+// Header: ${Header}, Terminator: ${Terminator}, Blocking: ${Blocking}

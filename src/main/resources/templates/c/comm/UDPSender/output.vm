@@ -1,0 +1,12 @@
+/* UDP Sender output: (${blockId}) ${blockName} */
+{
+    union data_union_double data_union_send${blockId};
+
+    if (model.majorStep == 1) {
+        #if($blockInputPortList && $blockInputPortList.size() > 0)
+        data_union_send${blockId}.v = ${blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
+        #end
+        sendto(sockfd_udpsend${blockId}, (const char*)&data_union_send${blockId}, sizeof(data_union_send${blockId}), 0,
+               (struct sockaddr*)&adr_serv_udpsend${blockId}, sizeof(adr_serv_udpsend${blockId}));
+    }
+}

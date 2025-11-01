@@ -1,0 +1,10 @@
+/* Initialize UDP Receiver: (${blockId}) ${blockName} */
+sockfd_udprecv${blockId} = socket(AF_INET, SOCK_DGRAM, 0);
+if (sockfd_udprecv${blockId} == -1) {
+    printf("UDP Receiver ${blockId}: Cannot create socket\n");
+    CLOSE_SOCKET(sockfd_udprecv${blockId});
+}
+adr_serv_udprecv${blockId}.sin_family = AF_INET;
+adr_serv_udprecv${blockId}.sin_port = htons(${port});
+adr_serv_udprecv${blockId}.sin_addr.s_addr = INADDR_ANY;
+bind(sockfd_udprecv${blockId}, (struct sockaddr*)&adr_serv_udprecv${blockId}, sizeof(adr_serv_udprecv${blockId}));

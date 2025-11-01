@@ -1,0 +1,2 @@
+/* Serial Configuration: (${blockId}) ${blockName} - Port ${Port} configured at ${BaudRate} bps */
+// SerialConfiguration block has no runtime operations - configuration is done during initialization

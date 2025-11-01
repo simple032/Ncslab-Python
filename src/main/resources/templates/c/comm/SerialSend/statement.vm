@@ -1,0 +1,163 @@
+/* SerialSend ${blockId} - Send data through configured serial port */
+/* References SerialConfiguration block for centralized port management */
+
+/* Send function for block ${blockId} - accepts port handle, data, header, terminator, blocking mode */
+void Serial_Send_${blockId}(SerialPortHandle* port, double data, const char* header,
+                            const char* terminator, const char* blocking) {
+    if (port == NULL || !port->isOpen) {
+        return;
+    }
+
+    unsigned char buffer[8];
+    int littleEndian = (strcmp(port->byteOrder, "LittleEndian") == 0);
+
+    /* Convert double to bytes based on byte order */
+    if (littleEndian) {
+        memcpy(buffer, &data, sizeof(double));
+    } else {
+        /* Big endian - reverse bytes */
+        unsigned char* src = (unsigned char*)&data;
+        for (int i = 0; i < 8; i++) {
+            buffer[i] = src[7 - i];
+        }
+    }
+
+    /* Send header if present */
+    if (header != NULL && strlen(header) > 0) {
+        /* Parse header bytes (format: "0xFF,0xFE") */
+        char headerCopy[256];
+        strncpy(headerCopy, header, 255);
+        headerCopy[255] = '\0';
+
+        char* token = strtok(headerCopy, ",");
+        while (token != NULL) {
+            unsigned char headerByte = (unsigned char)strtol(token, NULL, 0);
+#[[#ifdef _WIN32]]#
+            DWORD bytesWritten;
+            WriteFile(port->handle, &headerByte, 1, &bytesWritten, NULL);
+#[[#else]]#
+            write(port->fd, &headerByte, 1);
+#[[#endif]]#
+            token = strtok(NULL, ",");
+        }
+    }
+
+    /* Send data */
+#[[#ifdef _WIN32]]#
+    DWORD bytesWritten;
+    WriteFile(port->handle, buffer, sizeof(double), &bytesWritten, NULL);
+    if (strcmp(blocking, "on") == 0) {
+        FlushFileBuffers(port->handle);
+    }
+#[[#else]]#
+    ssize_t bytesWritten = write(port->fd, buffer, sizeof(double));
+    (void)bytesWritten;  /* Suppress unused variable warning */
+    if (strcmp(blocking, "on") == 0) {
+        tcdrain(port->fd);
+    }
+#[[#endif]]#
+
+    /* Send terminator if present */
+    if (terminator != NULL && strlen(terminator) > 0) {
+        /* Parse terminator bytes (format: "0xFF,0xFE") */
+        char terminatorCopy[256];
+        strncpy(terminatorCopy, terminator, 255);
+        terminatorCopy[255] = '\0';
+
+        char* token = strtok(terminatorCopy, ",");
+        while (token != NULL) {
+            unsigned char terminatorByte = (unsigned char)strtol(token, NULL, 0);
+#[[#ifdef _WIN32]]#
+            DWORD bytesWritten;
+            WriteFile(port->handle, &terminatorByte, 1, &bytesWritten, NULL);
+#[[#else]]#
+            write(port->fd, &terminatorByte, 1);
+#[[#endif]]#
+            token = strtok(NULL, ",");
+        }
+    }
+}
+
+/* Send function overload for matrix data */
+template<typename T>
+void Serial_Send_${blockId}(SerialPortHandle* port, const MatrixT<T>& data, const char* header,
+                            const char* terminator, const char* blocking) {
+    if (port == NULL || !port->isOpen) {
+        return;
+    }
+
+    int numElements = data.rows() * data.cols();
+    int littleEndian = (strcmp(port->byteOrder, "LittleEndian") == 0);
+
+    /* Send header if present */
+    if (header != NULL && strlen(header) > 0) {
+        char headerCopy[256];
+        strncpy(headerCopy, header, 255);
+        headerCopy[255] = '\0';
+
+        char* token = strtok(headerCopy, ",");
+        while (token != NULL) {
+            unsigned char headerByte = (unsigned char)strtol(token, NULL, 0);
+#[[#ifdef _WIN32]]#
+            DWORD bytesWritten;
+            WriteFile(port->handle, &headerByte, 1, &bytesWritten, NULL);
+#[[#else]]#
+            write(port->fd, &headerByte, 1);
+#[[#endif]]#
+            token = strtok(NULL, ",");
+        }
+    }
+
+    /* Send each element as double */
+    unsigned char buffer[8];
+    for (int i = 0; i < numElements; i++) {
+        int row = i % data.rows();
+        int col = i / data.rows();
+        double element = (double)data(row, col);
+
+        /* Convert to bytes based on byte order */
+        if (littleEndian) {
+            memcpy(buffer, &element, sizeof(double));
+        } else {
+            /* Big endian - reverse bytes */
+            unsigned char* src = (unsigned char*)&element;
+            for (int j = 0; j < 8; j++) {
+                buffer[j] = src[7 - j];
+            }
+        }
+
+#[[#ifdef _WIN32]]#
+        DWORD bytesWritten;
+        WriteFile(port->handle, buffer, sizeof(double), &bytesWritten, NULL);
+#[[#else]]#
+        write(port->fd, buffer, sizeof(double));
+#[[#endif]]#
+    }
+
+    if (strcmp(blocking, "on") == 0) {
+#[[#ifdef _WIN32]]#
+        FlushFileBuffers(port->handle);
+#[[#else]]#
+        tcdrain(port->fd);
+#[[#endif]]#
+    }
+
+    /* Send terminator if present */
+    if (terminator != NULL && strlen(terminator) > 0) {
+        char terminatorCopy[256];
+        strncpy(terminatorCopy, terminator, 255);
+        terminatorCopy[255] = '\0';
+
+        char* token = strtok(terminatorCopy, ",");
+        while (token != NULL) {
+            unsigned char terminatorByte = (unsigned char)strtol(token, NULL, 0);
+#[[#ifdef _WIN32]]#
+            DWORD bytesWritten;
+            WriteFile(port->handle, &terminatorByte, 1, &bytesWritten, NULL);
+#[[#else]]#
+            write(port->fd, &terminatorByte, 1);
+#[[#endif]]#
+            token = strtok(NULL, ",");
+        }
+    }
+}

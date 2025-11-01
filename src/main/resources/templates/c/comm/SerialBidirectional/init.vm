@@ -1,0 +1,3 @@
+/* Initialize Serial Bidirectional block ${blockId} */
+Serial_Config_${blockId}("${portName}", ${baudRate}, ${dataBits}, ${stopBits}, "${parity}");
+Serial_Init_${blockId}();

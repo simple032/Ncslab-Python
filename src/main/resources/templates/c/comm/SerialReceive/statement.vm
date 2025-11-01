@@ -1,0 +1,228 @@
+/* SerialReceive ${blockId} - Receive data from configured serial port */
+/* References SerialConfiguration block for centralized port management */
+
+/* Receive function for block ${blockId} - accepts port handle, buffer, data size, header, terminator, blocking mode */
+void Serial_Receive_${blockId}(SerialPortHandle* port, double* outputBuffer, int dataSize,
+                               const char* header, const char* terminator, const char* blocking) {
+    if (port == NULL || !port->isOpen || outputBuffer == NULL) {
+        return;
+    }
+
+    int littleEndian = (strcmp(port->byteOrder, "LittleEndian") == 0);
+
+    /* Skip header if present */
+    if (header != NULL && strlen(header) > 0) {
+        /* Parse header bytes to know how many bytes to skip */
+        char headerCopy[256];
+        strncpy(headerCopy, header, 255);
+        headerCopy[255] = '\0';
+
+        int headerLength = 0;
+        char* token = strtok(headerCopy, ",");
+        while (token != NULL) {
+            headerLength++;
+            token = strtok(NULL, ",");
+        }
+
+        /* Skip header bytes */
+        unsigned char headerBuffer[256];
+#[[#ifdef _WIN32]]#
+        DWORD bytesRead;
+        ReadFile(port->handle, headerBuffer, headerLength, &bytesRead, NULL);
+#[[#else]]#
+        read(port->fd, headerBuffer, headerLength);
+#[[#endif]]#
+    }
+
+    /* Receive data elements */
+    for (int i = 0; i < dataSize; i++) {
+        unsigned char buffer[8];
+
+#[[#ifdef _WIN32]]#
+        DWORD bytesRead;
+        if (strcmp(blocking, "on") == 0) {
+            /* Blocking read - wait for all bytes */
+            DWORD totalRead = 0;
+            while (totalRead < sizeof(double)) {
+                ReadFile(port->handle, buffer + totalRead, sizeof(double) - totalRead, &bytesRead, NULL);
+                totalRead += bytesRead;
+            }
+        } else {
+            /* Non-blocking read */
+            ReadFile(port->handle, buffer, sizeof(double), &bytesRead, NULL);
+            if (bytesRead != sizeof(double)) {
+                outputBuffer[i] = 0.0;
+                continue;
+            }
+        }
+#[[#else]]#
+        ssize_t bytesRead;
+        if (strcmp(blocking, "on") == 0) {
+            /* Blocking read - wait for all bytes */
+            ssize_t totalRead = 0;
+            while (totalRead < (ssize_t)sizeof(double)) {
+                bytesRead = read(port->fd, buffer + totalRead, sizeof(double) - totalRead);
+                if (bytesRead > 0) {
+                    totalRead += bytesRead;
+                }
+            }
+        } else {
+            /* Non-blocking read */
+            bytesRead = read(port->fd, buffer, sizeof(double));
+            if (bytesRead != sizeof(double)) {
+                outputBuffer[i] = 0.0;
+                continue;
+            }
+        }
+#[[#endif]]#
+
+        /* Convert bytes to double based on byte order */
+        double value;
+        if (littleEndian) {
+            memcpy(&value, buffer, sizeof(double));
+        } else {
+            /* Big endian - reverse bytes */
+            unsigned char reversed[8];
+            for (int j = 0; j < 8; j++) {
+                reversed[j] = buffer[7 - j];
+            }
+            memcpy(&value, reversed, sizeof(double));
+        }
+
+        outputBuffer[i] = value;
+    }
+
+    /* Skip terminator if present */
+    if (terminator != NULL && strlen(terminator) > 0) {
+        /* Parse terminator bytes to know how many bytes to skip */
+        char terminatorCopy[256];
+        strncpy(terminatorCopy, terminator, 255);
+        terminatorCopy[255] = '\0';
+
+        int terminatorLength = 0;
+        char* token = strtok(terminatorCopy, ",");
+        while (token != NULL) {
+            terminatorLength++;
+            token = strtok(NULL, ",");
+        }
+
+        /* Skip terminator bytes */
+        unsigned char terminatorBuffer[256];
+#[[#ifdef _WIN32]]#
+        DWORD bytesRead;
+        ReadFile(port->handle, terminatorBuffer, terminatorLength, &bytesRead, NULL);
+#[[#else]]#
+        read(port->fd, terminatorBuffer, terminatorLength);
+#[[#endif]]#
+    }
+}
+
+/* Receive function overload for matrix output */
+template<typename T>
+void Serial_Receive_${blockId}(SerialPortHandle* port, MatrixT<T>* outputMatrix, int dataSize,
+                               const char* header, const char* terminator, const char* blocking) {
+    if (port == NULL || !port->isOpen || outputMatrix == NULL) {
+        return;
+    }
+
+    int littleEndian = (strcmp(port->byteOrder, "LittleEndian") == 0);
+
+    /* Skip header if present */
+    if (header != NULL && strlen(header) > 0) {
+        char headerCopy[256];
+        strncpy(headerCopy, header, 255);
+        headerCopy[255] = '\0';
+
+        int headerLength = 0;
+        char* token = strtok(headerCopy, ",");
+        while (token != NULL) {
+            headerLength++;
+            token = strtok(NULL, ",");
+        }
+
+        unsigned char headerBuffer[256];
+#[[#ifdef _WIN32]]#
+        DWORD bytesRead;
+        ReadFile(port->handle, headerBuffer, headerLength, &bytesRead, NULL);
+#[[#else]]#
+        read(port->fd, headerBuffer, headerLength);
+#[[#endif]]#
+    }
+
+    /* Receive data elements */
+    for (int i = 0; i < dataSize; i++) {
+        unsigned char buffer[8];
+        int row = i % outputMatrix->rows();
+        int col = i / outputMatrix->rows();
+
+#[[#ifdef _WIN32]]#
+        DWORD bytesRead;
+        if (strcmp(blocking, "on") == 0) {
+            DWORD totalRead = 0;
+            while (totalRead < sizeof(double)) {
+                ReadFile(port->handle, buffer + totalRead, sizeof(double) - totalRead, &bytesRead, NULL);
+                totalRead += bytesRead;
+            }
+        } else {
+            ReadFile(port->handle, buffer, sizeof(double), &bytesRead, NULL);
+            if (bytesRead != sizeof(double)) {
+                (*outputMatrix)(row, col) = (T)0.0;
+                continue;
+            }
+        }
+#[[#else]]#
+        ssize_t bytesRead;
+        if (strcmp(blocking, "on") == 0) {
+            ssize_t totalRead = 0;
+            while (totalRead < (ssize_t)sizeof(double)) {
+                bytesRead = read(port->fd, buffer + totalRead, sizeof(double) - totalRead);
+                if (bytesRead > 0) {
+                    totalRead += bytesRead;
+                }
+            }
+        } else {
+            bytesRead = read(port->fd, buffer, sizeof(double));
+            if (bytesRead != sizeof(double)) {
+                (*outputMatrix)(row, col) = (T)0.0;
+                continue;
+            }
+        }
+#[[#endif]]#
+
+        /* Convert bytes to double based on byte order */
+        double value;
+        if (littleEndian) {
+            memcpy(&value, buffer, sizeof(double));
+        } else {
+            unsigned char reversed[8];
+            for (int j = 0; j < 8; j++) {
+                reversed[j] = buffer[7 - j];
+            }
+            memcpy(&value, reversed, sizeof(double));
+        }
+
+        (*outputMatrix)(row, col) = (T)value;
+    }
+
+    /* Skip terminator if present */
+    if (terminator != NULL && strlen(terminator) > 0) {
+        char terminatorCopy[256];
+        strncpy(terminatorCopy, terminator, 255);
+        terminatorCopy[255] = '\0';
+
+        int terminatorLength = 0;
+        char* token = strtok(terminatorCopy, ",");
+        while (token != NULL) {
+            terminatorLength++;
+            token = strtok(NULL, ",");
+        }
+
+        unsigned char terminatorBuffer[256];
+#[[#ifdef _WIN32]]#
+        DWORD bytesRead;
+        ReadFile(port->handle, terminatorBuffer, terminatorLength, &bytesRead, NULL);
+#[[#else]]#
+        read(port->fd, terminatorBuffer, terminatorLength);
+#[[#endif]]#
+    }
+}

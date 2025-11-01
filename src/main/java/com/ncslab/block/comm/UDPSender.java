@@ -31,6 +31,11 @@ public class UDPSender extends Block {
      */
     public UDPSender(UDPSenderDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+
+        // Create input ports (can accept scalar or vector data)
+        inputPortList.add(new InputPort(this, 1));
+        inputPortList.add(new InputPort(this, 2));
+
         System.out.println("DTO-NATIVE: UDPSender block created successfully - " + blockDto.getBlockName());
     }
 
@@ -73,6 +78,16 @@ public class UDPSender extends Block {
     @Override
     public void calculateDerivative(double t) {
         // No derivative calculation needed for UDPSender
+    }
+
+    /**
+     * Override checkDimension to allow both REAL and MATRIX inputs.
+     * UDPSender supports sending both scalar values and vector/matrix data.
+     */
+    @Override
+    public void checkDimension() throws com.ncslab.ncslablink.MatDimException {
+        // UDPSender accepts both REAL (scalar) and MATRIX (vector) inputs
+        // No dimension checking needed - both types are supported
     }
 
     public void generateInitCodeM(CodeStructM code) {

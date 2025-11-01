@@ -1,4 +1,4 @@
-/* Serial Sender ${blockId} - Platform-specific declarations and implementation */
+/* Serial Bidirectional ${blockId} - Platform-specific declarations and implementation */
 #[[#ifdef _WIN32
 #include <windows.h>
 #else
@@ -41,7 +41,7 @@ void Serial_Init_${blockId}() {
 
     serial_handle_${blockId} = CreateFile(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (serial_handle_${blockId} == INVALID_HANDLE_VALUE) {
-        printf("Serial Sender ${blockId}: Cannot open port %s\n", serial_port_${blockId});
+        printf("Serial Bidirectional ${blockId}: Cannot open port %s\n", serial_port_${blockId});
         return;
     }
 
@@ -53,18 +53,27 @@ void Serial_Init_${blockId}() {
     dcb.StopBits = (serial_stopbits_${blockId} == 1) ? ONESTOPBIT : TWOSTOPBITS;
     dcb.Parity = NOPARITY;
     SetCommState(serial_handle_${blockId}, &dcb);
+
+    /* Set timeouts for bidirectional communication */
+    COMMTIMEOUTS timeouts;
+    timeouts.ReadIntervalTimeout = 50;
+    timeouts.ReadTotalTimeoutConstant = 50;
+    timeouts.ReadTotalTimeoutMultiplier = 10;
+    timeouts.WriteTotalTimeoutConstant = 50;
+    timeouts.WriteTotalTimeoutMultiplier = 10;
+    SetCommTimeouts(serial_handle_${blockId}, &timeouts);
 #[[#else]]#
     /* Linux serial port initialization */
     struct termios tty;
 
     serial_fd_${blockId} = open(serial_port_${blockId}, O_RDWR | O_NOCTTY);
     if (serial_fd_${blockId} < 0) {
-        printf("Serial Sender ${blockId}: Cannot open port %s\n", serial_port_${blockId});
+        printf("Serial Bidirectional ${blockId}: Cannot open port %s\n", serial_port_${blockId});
         return;
     }
 
     if (tcgetattr(serial_fd_${blockId}, &tty) != 0) {
-        printf("Serial Sender ${blockId}: Error from tcgetattr\n");
+        printf("Serial Bidirectional ${blockId}: Error from tcgetattr\n");
         close(serial_fd_${blockId});
         return;
     }
@@ -128,19 +137,19 @@ void Serial_Init_${blockId}() {
     /* Local modes - disable canonical mode, echo, and signals */
     tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
 
-    /* Set write timeout and minimum bytes */
-    tty.c_cc[VMIN] = 0;   /* Return immediately */
+    /* Set timeout and minimum bytes for bidirectional communication */
+    tty.c_cc[VMIN] = 0;   /* Return immediately with any data */
     tty.c_cc[VTIME] = 5;  /* 0.5 second timeout */
 
     if (tcsetattr(serial_fd_${blockId}, TCSANOW, &tty) != 0) {
-        printf("Serial Sender ${blockId}: Error from tcsetattr\n");
+        printf("Serial Bidirectional ${blockId}: Error from tcsetattr\n");
         close(serial_fd_${blockId});
         return;
     }
 #[[#endif]]#
 }
 
-/* Serial send function - scalar version */
+/* Serial send function */
 void Serial_Send_${blockId}(double value) {
     unsigned char buffer[8];
     memcpy(buffer, &value, sizeof(double));
@@ -154,51 +163,24 @@ void Serial_Send_${blockId}(double value) {
 #[[#endif]]#
 }
 
-/* Serial send function - matrix version (templated to accept any Matrix type) */
-template<typename T>
-void Serial_Send_${blockId}(MatrixT<T> value) {
-    int numElements = value.rows() * value.cols();
-
-#if($inputCDataType && ($inputCDataType.toString() == "UINT8" || $inputCDataType.toString() == "INT8"))
-    // For byte arrays (uint8/int8), send each element as 1 byte
-    unsigned char* buffer = (unsigned char*)malloc(numElements);
-    for(int i = 0; i < numElements; i++) {
-        int row = i % value.rows();
-        int col = i / value.rows();
-        buffer[i] = (unsigned char)value(row, col);
-    }
+/* Serial receive function */
+double Serial_Receive_${blockId}() {
+    double value = 0.0;
+    unsigned char buffer[8];
 
 #[[#ifdef _WIN32]]#
-    DWORD bytesWritten;
-    WriteFile(serial_handle_${blockId}, buffer, numElements, &bytesWritten, NULL);
-#[[#else]]#
-    ssize_t bytesWritten = write(serial_fd_${blockId}, buffer, numElements);
-    (void)bytesWritten;  /* Suppress unused variable warning */
-#[[#endif]]#
-
-    free(buffer);
-#else
-    // For other types, send as doubles (8 bytes each)
-    unsigned char* buffer = (unsigned char*)malloc(numElements * sizeof(double));
-
-    // Copy matrix elements to buffer (column-major order for Eigen compatibility)
-    for(int i = 0; i < numElements; i++) {
-        int row = i % value.rows();
-        int col = i / value.rows();
-        double element = value(row, col);
-        memcpy(buffer + i * sizeof(double), &element, sizeof(double));
+    DWORD bytesRead;
+    ReadFile(serial_handle_${blockId}, buffer, sizeof(double), &bytesRead, NULL);
+    if (bytesRead == sizeof(double)) {
+        memcpy(&value, buffer, sizeof(double));
     }
-
-#[[#ifdef _WIN32]]#
-    DWORD bytesWritten;
-    WriteFile(serial_handle_${blockId}, buffer, numElements * sizeof(double), &bytesWritten, NULL);
 #[[#else]]#
-    ssize_t bytesWritten = write(serial_fd_${blockId}, buffer, numElements * sizeof(double));
-    (void)bytesWritten;  /* Suppress unused variable warning */
+    ssize_t bytesRead = read(serial_fd_${blockId}, buffer, sizeof(double));
+    if (bytesRead == sizeof(double)) {
+        memcpy(&value, buffer, sizeof(double));
+    }
 #[[#endif]]#
-
-    free(buffer);
-#end
+    return value;
 }
 
 /* Serial close function */

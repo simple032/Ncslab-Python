@@ -51,6 +51,13 @@ public class SerialBidirectional extends Block implements AutoCloseable {
      */
     public SerialBidirectional(SerialBidirectionalDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+
+        // Input port for TX data (can be scalar or vector)
+        inputPortList.add(new InputPort(this, 1));
+
+        // Output port for RX data (can be scalar or vector)
+        outputPortList.add(new OutputPort(this, 1, false));
+
         System.out.println("DTO-NATIVE: SerialBidirectional block created successfully - " + blockDto.getBlockName());
     }
 
@@ -268,6 +275,16 @@ public class SerialBidirectional extends Block implements AutoCloseable {
     @Override
     public void calculateDerivative(double t) {
         // No derivative calculation needed for SerialBidirectional
+    }
+
+    /**
+     * Override checkDimension to allow both REAL and MATRIX inputs.
+     * SerialBidirectional supports sending both scalar values and vector/matrix data.
+     */
+    @Override
+    public void checkDimension() throws com.ncslab.ncslablink.MatDimException {
+        // SerialBidirectional accepts both REAL (scalar) and MATRIX (vector) inputs
+        // No dimension checking needed - both types are supported
     }
 
     /**
