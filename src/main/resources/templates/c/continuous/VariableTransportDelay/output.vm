@@ -1,26 +1,45 @@
-/* 可变传输延迟模块输出: ($blockId) $blockName */
-#set($delayTime = $block.getDelayTimeExpression())
-#set($bufferIndex = $currentIndexName)
+/*Code for output of block VariableTransportDelay:(${blockId})${blockName}*/
+#set($signal = $inputs.get(0))
+#set($signal2 = $inputs.get(1))
+#set($output = $outputs.get(0))
+/* Add current data to circular buffer */
+Block${blockId}VariableTransportDelay_saveData[${block.getCurrentIndexName()}] = ${signal};
+Block${blockId}VariableTransport_Ti_saveData[${block.getCurrentIndexName()}] = model.time;
+${block.getCurrentIndexName()} = (${block.getCurrentIndexName()} + 1) % VariableTransportDelay${blockId}BuffSize;
 
-/* 查找最近的时间点 */
-#set($foundIndex = -1)
-#foreach($i in $block.calculateBufferIndices($bufferSize))
-    #set($timeDiff = $model.time - ${block.getTimeBufferName($i)})
-    #if($timeDiff >= $delayTime && $timeDiff >= 0)
-        #set($foundIndex = $i)
-        #break
-    #end
-#end
+/* Calculate delayed output using linear interpolation */
+double Block${blockId}_target_time = model.time - ${signal2};
+double Block${blockId}_delayed_value = ${InitialOutput};
 
-/* 线性插值计算 */
-#if($foundIndex != -1)
-    #set($prevIndex = ($foundIndex + 1) % $bufferSize)
-    #set($t1 = ${block.getTimeBufferName($foundIndex)})
-    #set($t2 = ${block.getTimeBufferName($prevIndex)})
-    #set($u1 = ${block.getInputBufferName($foundIndex)})
-    #set($u2 = ${block.getInputBufferName($prevIndex)})
-    
-    $outputSignal = $u1 + (($delayTime - ($model.time - $t1)) * ($u2 - $u1)) / ($t2 - $t1);
-#else
-    $outputSignal = 0; /* 未找到有效数据 */
-#end
+/* Find the two closest time points for interpolation */
+int Block${blockId}_found = 0;
+for(int i = 0; i < VariableTransportDelay${blockId}BuffSize - 1; i++) {
+    int idx1 = (${block.getCurrentIndexName()} + VariableTransportDelay${blockId}BuffSize - 1 - i) % VariableTransportDelay${blockId}BuffSize;
+    int idx2 = (${block.getCurrentIndexName()} + VariableTransportDelay${blockId}BuffSize - 2 - i) % VariableTransportDelay${blockId}BuffSize;
+
+    double t1 = Block${blockId}VariableTransport_Ti_saveData[idx1];
+    double t2 = Block${blockId}VariableTransport_Ti_saveData[idx2];
+
+    /* Check if target time is between these two points */
+    if(t2 >= 0 && Block${blockId}_target_time >= t2 && Block${blockId}_target_time <= t1) {
+        double u1 = Block${blockId}VariableTransportDelay_saveData[idx1];
+        double u2 = Block${blockId}VariableTransportDelay_saveData[idx2];
+
+        /* Linear interpolation */
+        if(fabs(t1 - t2) > 1e-10) {
+            double alpha = (Block${blockId}_target_time - t2) / (t1 - t2);
+            Block${blockId}_delayed_value = u2 + alpha * (u1 - u2);
+        } else {
+            Block${blockId}_delayed_value = u1;
+        }
+        Block${blockId}_found = 1;
+        break;
+    }
+}
+
+/* If no valid data found, use initial output */
+if(!Block${blockId}_found || Block${blockId}_target_time < 0) {
+    Block${blockId}_delayed_value = ${InitialOutput};
+}
+
+${output} = Block${blockId}_delayed_value;

@@ -1,8 +1,11 @@
-/* 初始化可变传输延迟模块: ($blockId) $blockName */
-/* 初始化历史缓冲区 */
+/*Code for initialization of block VariableTransportDelay:(${blockId})${blockName}*/
+/* Allocate memory for circular buffer */
+Block${blockId}VariableTransportDelay_saveData = (double*)malloc(VariableTransportDelay${blockId}BuffSize * sizeof(double));
+Block${blockId}VariableTransport_Ti_saveData = (double*)malloc(VariableTransportDelay${blockId}BuffSize * sizeof(double));
 
-#foreach($i in $bufferIndices)
-    ${block.getInputBufferName($i)} = 0;
-    ${block.getTimeBufferName($i)} = -1.0; 
-#end
+/* Initialize circular buffer for variable transport delay */
+for(int i = 0; i < VariableTransportDelay${blockId}BuffSize; i++) {
+    Block${blockId}VariableTransportDelay_saveData[i] = ${InitialOutput};
+    Block${blockId}VariableTransport_Ti_saveData[i] = -1.0; /* -1 indicates uninitialized */
+}
 ${block.getCurrentIndexName()} = 0;

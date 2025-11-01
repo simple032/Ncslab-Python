@@ -1,5 +1,5 @@
-/*Define arrays for block VariableTransportDelay:($blockId)$blockName*/
-int VariableTransportDelay${blockId}BuffSize=($maxDelayTime/STEP_SIZE+1>$initialBufferSize)?((int)($maxDelayTime/STEP_SIZE+1)):$initialBufferSize;
+/*Define arrays for block VariableTransportDelay:(${blockId})${blockName}*/
+int VariableTransportDelay${blockId}BuffSize = ($MaximumDelayTimeValue/STEP_SIZE+1 > $InitialBufferSizeValue) ? ((int)($MaximumDelayTimeValue/STEP_SIZE+1)) : $InitialBufferSizeValue;
 double *Block${blockId}VariableTransportDelay_saveData;
 double *Block${blockId}VariableTransport_Ti_saveData;
 int ${block.getCurrentIndexName()} = 0;

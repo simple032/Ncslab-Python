@@ -1,12 +1,11 @@
 /*Code for Derivative of block Transport Delay:($blockId)$blockName*/
 #set($signal = $inputSignal)
-#set($solverType = $block.model.config.solver)
-#set($bufferSize = $block.bufferSize)
+#set($solverType = $solver)
 
 #if($block.isFixedStepSolver($solverType))
   #if($signalDataType == $realDataType)
-    #if($block.delaytime.dataType == $realDataType)
-      #set($bufferLength = $block.calculateBufferLength($delayTimeValue))
+    #if($DelayTimeObject.dataType == $realDataType)
+      #set($bufferLength = $block.calculateBufferLength($DelayTimeValue))
       #set($bufferLengthMinus1 = $bufferLength - 1)
       for(int i=0; i<${bufferLengthMinus1}; i++) {
         #set($blockPrefix = "Block${blockId}_transport_delay_savedata")
@@ -14,12 +13,12 @@
       }
       #set($blockPrefix = "Block${blockId}_transport_delay_savedata")
       ${blockPrefix}[${bufferLengthMinus1}] = $signal.name;
-    #elseif($block.delaytime.dataType == $matrixDataType)
-      #set($delayTimeHeightMax = $block.delaytime.height - 1)
-      #set($delayTimeWidthMax = $block.delaytime.width - 1)
+    #elseif($DelayTimeObject.dataType == $matrixDataType)
+      #set($delayTimeHeightMax = $DelayTimeObject.height - 1)
+      #set($delayTimeWidthMax = $DelayTimeObject.width - 1)
       #foreach($i in [0..$delayTimeHeightMax])
         #foreach($j in [0..$delayTimeWidthMax])
-          #set($bufferLen = $block.calculateBufferLength($block.test.get[$i][$j]))
+          #set($bufferLen = $block.calculateBufferLength($test.get($i, $j)))
           #set($bufferLenMinus1 = $bufferLen - 1)
           for(int m=0; m<${bufferLenMinus1}; m++) {
             #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
@@ -31,12 +30,12 @@
       #end
     #end
   #elseif($signalDataType == $matrixDataType)
-    #if($block.delaytime.dataType == $realDataType)
+    #if($DelayTimeObject.dataType == $realDataType)
       #set($signalHeightMax = $signalHeight - 1)
       #set($signalWidthMax = $signalWidth - 1)
       #foreach($i in [0..$signalHeightMax])
         #foreach($j in [0..$signalWidthMax])
-          #set($bufferLen = $block.calculateBufferLength($delayTimeValue))
+          #set($bufferLen = $block.calculateBufferLength($DelayTimeValue))
           #set($bufferLenMinus1 = $bufferLen - 1)
           for(int m=0; m<${bufferLenMinus1}; m++) {
             #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
@@ -46,12 +45,12 @@
           ${blockArray}[${bufferLenMinus1}] = $signal.name[${i}][${j}];
         #end
       #end
-    #elseif($block.delaytime.dataType == $matrixDataType)
+    #elseif($DelayTimeObject.dataType == $matrixDataType)
       #set($signalHeightMax = $signalHeight - 1)
       #set($signalWidthMax = $signalWidth - 1)
       #foreach($i in [0..$signalHeightMax])
         #foreach($j in [0..$signalWidthMax])
-          #set($bufferLen = $block.calculateBufferLength($block.test.get[$i][$j]))
+          #set($bufferLen = $block.calculateBufferLength($test.get($i, $j)))
           #set($bufferLenMinus1 = $bufferLen - 1)
           for(int m=0; m<${bufferLenMinus1}; m++) {
             #set($blockArray = "Block${blockId}_transport_delay_savedata_${i}_${j}_")
@@ -65,15 +64,15 @@
   #end
 #else
   #if($signalDataType == $realDataType)
-    #if($block.delaytime.dataType == $realDataType)
+    #if($DelayTimeObject.dataType == $realDataType)
       insert_to_buffer(&${bufferName}, model.time, $signal.name);
-    #elseif($block.delaytime.dataType == $matrixDataType)
-      #set($delayTimeHeightMax = $block.delaytime.height - 1)
-      #set($delayTimeWidthMax = $block.delaytime.width - 1)
+    #elseif($DelayTimeObject.dataType == $matrixDataType)
+      #set($delayTimeHeightMax = $DelayTimeObject.height - 1)
+      #set($delayTimeWidthMax = $DelayTimeObject.width - 1)
       #foreach($i in [0..$delayTimeHeightMax])
         #foreach($j in [0..$delayTimeWidthMax])
-          #set($index = $i * $block.delaytime.width + $j)
-          #set($bufferSizeMinus2 = $bufferSize.data.intValue - 2)
+          #set($index = $i * $DelayTimeObject.width + $j)
+          #set($bufferSizeMinus2 = $BufferSizeObject.data.intValue - 2)
           for(int m=${bufferSizeMinus2}; m>=0; m--) {
             Block${blockId}yout[${index}][m+1] = Block${blockId}yout[${index}][m];
             Block${blockId}tout[${index}][m+1] = Block${blockId}tout[${index}][m];
@@ -84,13 +83,13 @@
       #end
     #end
   #elseif($signalDataType == $matrixDataType)
-    #if($block.delaytime.dataType == $realDataType || $block.delaytime.dataType == $matrixDataType)
+    #if($DelayTimeObject.dataType == $realDataType || $DelayTimeObject.dataType == $matrixDataType)
       #set($signalHeightMax = $signalHeight - 1)
       #set($signalWidthMax = $signalWidth - 1)
       #foreach($i in [0..$signalHeightMax])
         #foreach($j in [0..$signalWidthMax])
           #set($index = $i * $signalWidth + $j)
-          #set($bufferSizeMinus2 = $bufferSize.data.intValue - 2)
+          #set($bufferSizeMinus2 = $BufferSizeObject.data.intValue - 2)
           for(int m=${bufferSizeMinus2}; m>=0; m--) {
             Block${blockId}yout[${index}][m+1] = Block${blockId}yout[${index}][m];
             Block${blockId}tout[${index}][m+1] = Block${blockId}tout[${index}][m];
