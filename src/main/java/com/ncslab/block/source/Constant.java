@@ -163,25 +163,60 @@ public class Constant extends SourceBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
+
+    /**
+     * Create a Constant block with simple scalar value (DTO-based approach)
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param constantValue Constant value
+     * @param model Parent model
+     * @return Constant block instance
+     */
     public static Constant create(String name, String path, double constantValue, NCSLabModel model) {
         return create(name, path, constantValue, 0.0, "Inherit: Same as parameter", false, model);
     }
-    
-    public static Constant create(String name, String path, double constantValue, double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        // Create parameters
-        Parameter valueParam = new Parameter(null, 1, "Value", String.valueOf(constantValue));
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
 
-        Constant block = new Constant(valueParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                                     name, path, "null", model);
-        
-        // Set block reference in parameters
-        setParameterBlockReference(block, valueParam, sampleTimeParam, outDataTypeParam, saturateParam);
+    /**
+     * Create a Constant block with full parameters (DTO-based approach)
+     *
+     * This modern implementation uses DTOs instead of JSONObject manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param constantValue Constant value
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Constant block instance
+     */
+    public static Constant create(String name, String path, double constantValue,
+                                 double sampleTime, String outDataType,
+                                 boolean saturateOnOverflow, NCSLabModel model) {
+        // Build DTO using type-safe builder pattern
+        // Note: blockType is automatically inferred from DTO class type by Jackson's @JsonTypeInfo
+        com.ncslab.dto.block.specialized.source.ConstantDto dto =
+            com.ncslab.dto.block.specialized.source.ConstantDto.builder()
+                .blockName(name)
+                .blockPath(path)
+                .blockUUID("null")
+                .value(com.ncslab.dto.common.TypedParameter.of(constantValue))
+                .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+                .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+                .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+                .build();
 
-        return block;
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Constant parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Constant(dto, model);
     }
     
     // === Parameter Validation ===
@@ -252,13 +287,19 @@ public class Constant extends SourceBlock {
         outputPortList.get(0).setHeight(value.getHeight());
         outputPortList.get(0).setWidth(value.getWidth());
 
-        // Set output CDataType based on OutDataTypeStr parameter
+        // Set output CDataType based on OutDataTypeStr parameter (only if OutputSignal exists)
         Parameter outDataTypeParam = getOutDataType();
         if (outDataTypeParam != null) {
             String typeStr = outDataTypeParam.getInitString();
             com.ncslab.block.data.CDataType cDataType = com.ncslab.block.data.CDataType.fromString(typeStr);
-            outputPortList.get(0).getOutputSignalC().setCDataType(cDataType);
-            System.out.println("Constant '" + blockName + "' output CDataType set to: " + cDataType);
+
+            // Defensive check: Only set CDataType if OutputSignal has been initialized
+            OutputPort outputPort = outputPortList.get(0);
+            if (outputPort.getOutputSignalC() != null) {
+                outputPort.getOutputSignalC().setCDataType(cDataType);
+                System.out.println("Constant '" + blockName + "' output CDataType set to: " + cDataType);
+            }
+            // If OutputSignal doesn't exist yet, it will be set during calculateInit()
         }
     }
 
@@ -310,7 +351,18 @@ public class Constant extends SourceBlock {
 
     @Override
     public void calculateInit(){
-        outputPortList.get(0).getOutputSignalC().setData(value.getData());
+        OutputPort outputPort = outputPortList.get(0);
+
+        // Set CDataType if it wasn't set during construction (e.g., in test scenarios)
+        Parameter outDataTypeParam = getOutDataType();
+        if (outDataTypeParam != null && outputPort.getOutputSignalC() != null) {
+            String typeStr = outDataTypeParam.getInitString();
+            com.ncslab.block.data.CDataType cDataType = com.ncslab.block.data.CDataType.fromString(typeStr);
+            outputPort.getOutputSignalC().setCDataType(cDataType);
+        }
+
+        // Set initial output data
+        outputPort.getOutputSignalC().setData(value.getData());
     }
 }
 

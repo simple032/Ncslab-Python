@@ -160,26 +160,51 @@ public class Ramp extends SourceBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Ramp create(String name, String path, double slope, double start, double initialOutput, NCSLabModel model) {
         return create(name, path, slope, start, initialOutput, 0.0, "Inherit: Same as parameter", false, model);
     }
-    
+
+    /**
+     * Create a Ramp block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param slope Rate of change of the ramp signal
+     * @param start Time when ramp starts
+     * @param initialOutput Initial output value before ramp starts
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Ramp block instance
+     */
     public static Ramp create(String name, String path, double slope, double start, double initialOutput,
                              double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter slopeParam = new Parameter(null, 1, "Slope", String.valueOf(slope));
-        Parameter startParam = new Parameter(null, 2, "Start", String.valueOf(start));
-        Parameter initialOutputParam = new Parameter(null, 3, "InitialOutput", String.valueOf(initialOutput));
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        Ramp block = new Ramp(slopeParam, startParam, initialOutputParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                             name, path, "null", model);
-        
-        setParameterBlockReference(block, slopeParam, startParam, initialOutputParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        RampDto dto = RampDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .slope(com.ncslab.dto.common.TypedParameter.of(slope))
+            .start(com.ncslab.dto.common.TypedParameter.of(start))
+            .initialOutput(com.ncslab.dto.common.TypedParameter.of(initialOutput))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Ramp parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Ramp(dto, model);
     }
     
     // === Parameter Validation ===

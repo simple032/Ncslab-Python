@@ -191,26 +191,51 @@ public class Step extends SourceBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Step create(String name, String path, double stepTime, double initialValue, double finalValue, NCSLabModel model) {
         return create(name, path, stepTime, initialValue, finalValue, 0.0, "Inherit: Same as parameter", false, model);
     }
-    
+
+    /**
+     * Create a Step block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param stepTime Time when step transition occurs
+     * @param initialValue Initial value before step time
+     * @param finalValue Final value after step time
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Step block instance
+     */
     public static Step create(String name, String path, double stepTime, double initialValue, double finalValue,
                              double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter time = new Parameter(null, 1, "Time", String.valueOf(stepTime));
-        Parameter initialValueParam = new Parameter(null, 2, "InitialValue", String.valueOf(initialValue));
-        Parameter finalValueParam = new Parameter(null, 3, "FinalValue", String.valueOf(finalValue));
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        Step block = new Step(time, initialValueParam, finalValueParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                             name, path, "null", model);
-        
-        setParameterBlockReference(block, time, initialValueParam, finalValueParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        StepDto dto = StepDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .time(com.ncslab.dto.common.TypedParameter.of(stepTime))
+            .initialValue(com.ncslab.dto.common.TypedParameter.of(initialValue))
+            .finalValue(com.ncslab.dto.common.TypedParameter.of(finalValue))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Step parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Step(dto, model);
     }
     
     // === Parameter Validation ===

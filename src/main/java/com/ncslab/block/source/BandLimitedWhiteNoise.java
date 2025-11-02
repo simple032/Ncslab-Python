@@ -109,7 +109,7 @@ public class BandLimitedWhiteNoise extends SourceBlock {
         // Initialize final parameters from DTO
         this.seed = getParameterByName("Seed");
         this.cov = getParameterByName("Cov");
-        this.samplePeriod = getParameterByName("Sampleperiod");
+        this.samplePeriod = getParameterByName("Ts");
 
         // Initialize ports
         initializePorts();
@@ -148,26 +148,51 @@ public class BandLimitedWhiteNoise extends SourceBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static BandLimitedWhiteNoise create(String name, String path, int seed, double cov, double samplePeriod, NCSLabModel model) {
         return create(name, path, seed, cov, samplePeriod, 0.0, "double", false, model);
     }
-    
+
+    /**
+     * Create a BandLimitedWhiteNoise block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param seed Random number generator seed
+     * @param cov Noise power/covariance (variance)
+     * @param samplePeriod Sample period (Ts) for noise correlation time
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return BandLimitedWhiteNoise block instance
+     */
     public static BandLimitedWhiteNoise create(String name, String path, int seed, double cov, double samplePeriod,
                                               double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter seedParam = new Parameter(null, 1, "Seed", String.valueOf(seed));
-        Parameter covParam = new Parameter(null, 2, "Cov", String.valueOf(cov));
-        Parameter samplePeriodParam = new Parameter(null, 3, "Ts", String.valueOf(samplePeriod));
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        BandLimitedWhiteNoise block = new BandLimitedWhiteNoise(seedParam, covParam, samplePeriodParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                                                               name, path, "null", model);
-        
-        setParameterBlockReference(block, seedParam, covParam, samplePeriodParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        BandLimitedWhiteNoiseDto dto = BandLimitedWhiteNoiseDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .seed(com.ncslab.dto.common.TypedParameter.of(seed))
+            .cov(com.ncslab.dto.common.TypedParameter.of(cov))
+            .ts(com.ncslab.dto.common.TypedParameter.of(samplePeriod))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid BandLimitedWhiteNoise parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new BandLimitedWhiteNoise(dto, model);
     }
     
     // === Parameter Validation ===

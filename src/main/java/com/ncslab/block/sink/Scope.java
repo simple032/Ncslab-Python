@@ -214,25 +214,49 @@ public class Scope extends SinkBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Scope create(String name, String path, int numberOfInputs, NCSLabModel model) {
         return create(name, path, String.valueOf(numberOfInputs), "-1", "ScopeData", "Array", "100000", model);
     }
-    
-    public static Scope create(String name, String path, String numberOfInputs, String sampleTime, 
+
+    /**
+     * Create a Scope block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param numberOfInputs Number of input ports (1-10)
+     * @param sampleTime Sample time (-1 for inherited, 0 for continuous, >0 for discrete)
+     * @param saveName Variable name to save scope data
+     * @param saveFormat Data save format ("Array", "Structure", or "Structure with time")
+     * @param bufferSize Data buffer size (positive integer, typically 100000)
+     * @param model Parent model
+     * @return Scope block instance
+     */
+    public static Scope create(String name, String path, String numberOfInputs, String sampleTime,
                               String saveName, String saveFormat, String bufferSize, NCSLabModel model) {
-        Parameter numberOfInputsParam = new Parameter(null, 1, "NumberOfInputs", numberOfInputs);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", sampleTime);
-        Parameter saveNameParam = new Parameter(null, 3, "SaveName", saveName);
-        Parameter saveFormatParam = new Parameter(null, 4, "SaveFormat", saveFormat);
-        Parameter bufferSizeParam = new Parameter(null, 5, "BufferSize", bufferSize);
-        
-        Scope block = new Scope(numberOfInputsParam, sampleTimeParam, saveNameParam, saveFormatParam, bufferSizeParam,
-                               name, path, "null", model);
-        
-        setParameterBlockReference(block, numberOfInputsParam, sampleTimeParam, saveNameParam, saveFormatParam, bufferSizeParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        ScopeDto dto = ScopeDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .numberOfInputs(com.ncslab.dto.common.TypedParameter.of(numberOfInputs))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .saveName(com.ncslab.dto.common.TypedParameter.of(saveName))
+            .saveFormat(com.ncslab.dto.common.TypedParameter.of(saveFormat))
+            .bufferSize(com.ncslab.dto.common.TypedParameter.of(bufferSize))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Scope parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Scope(dto, model);
     }
     
     // === Helper Methods for JSON Parameter Creation ===

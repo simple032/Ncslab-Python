@@ -186,27 +186,53 @@ public class Pulse extends SourceBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Pulse create(String name, String path, double amplitude, double period, double pulseWidth, NCSLabModel model) {
         return create(name, path, amplitude, period, pulseWidth, 0.0, 0.0, "Inherit: Same as parameter", false, model);
     }
-    
+
+    /**
+     * Create a Pulse block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param amplitude Pulse amplitude
+     * @param period Period of the pulse train
+     * @param pulseWidth Width of the pulse (% of period or absolute time)
+     * @param phaseDelay Phase delay (time offset)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Pulse block instance
+     */
     public static Pulse create(String name, String path, double amplitude, double period, double pulseWidth,
                               double phaseDelay, double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter amplitudeParam = new Parameter(null, 1, "Amplitude", String.valueOf(amplitude));
-        Parameter periodParam = new Parameter(null, 2, "Period", String.valueOf(period));
-        Parameter pulseWidthParam = new Parameter(null, 3, "PulseWidth", String.valueOf(pulseWidth));
-        Parameter phaseDelayParam = new Parameter(null, 4, "PhaseDelay", String.valueOf(phaseDelay));
-        Parameter sampleTimeParam = new Parameter(null, 5, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 6, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 7, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        Pulse block = new Pulse(amplitudeParam, periodParam, pulseWidthParam, phaseDelayParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                               name, path, "null", model);
-        
-        setParameterBlockReference(block, amplitudeParam, periodParam, pulseWidthParam, phaseDelayParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        PulseDto dto = PulseDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .amplitude(com.ncslab.dto.common.TypedParameter.of(amplitude))
+            .period(com.ncslab.dto.common.TypedParameter.of(period))
+            .pulseWidth(com.ncslab.dto.common.TypedParameter.of(pulseWidth))
+            .phaseDelay(com.ncslab.dto.common.TypedParameter.of(phaseDelay))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Pulse parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Pulse(dto, model);
     }
     
     // === Parameter Validation ===

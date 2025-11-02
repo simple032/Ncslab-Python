@@ -221,25 +221,49 @@ public class Switch extends RouteBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Switch create(String name, String path, double threshold, String criteria, NCSLabModel model) {
         return create(name, path, threshold, criteria, -1.0, "Inherit: Inherit via internal rule", false, model);
     }
 
+    /**
+     * Create a Switch block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param threshold Threshold value for switching condition
+     * @param criteria Switching criteria (>=, >, ~=)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Switch block instance
+     */
     public static Switch create(String name, String path, double threshold, String criteria, double sampleTime,
                                String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter thresholdParam = new Parameter(null, 1, "Threshold", String.valueOf(threshold));
-        Parameter criteriaParam = new Parameter(null, 2, "Criteria", criteria);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        SwitchDto dto = SwitchDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .threshold(com.ncslab.dto.common.TypedParameter.of(threshold))
+            .criteria(com.ncslab.dto.common.TypedParameter.of(criteria))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        Switch block = new Switch(thresholdParam, criteriaParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                                 name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Switch parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, thresholdParam, criteriaParam, sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Switch(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===
@@ -298,6 +322,7 @@ public class Switch extends RouteBlock {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to avoid JSONException
         return identity;
     }
 

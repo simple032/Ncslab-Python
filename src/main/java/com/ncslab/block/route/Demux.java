@@ -173,24 +173,49 @@ public class Demux extends RouteBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Demux create(String name, String path, int numberOfOutputs, NCSLabModel model) {
-        return create(name, path, String.valueOf(numberOfOutputs), "1:N", -1.0, "Inherit: Inherit via internal rule", false, model);
+        return create(name, path, numberOfOutputs, "1:N", -1.0, "Inherit: Inherit via internal rule", false, model);
     }
-    public static Demux create(String name, String path, String outputs, String displayOrder, double sampleTime,
+
+    /**
+     * Create a Demux block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param numberOfOutputs Number of output ports (minimum 2)
+     * @param displayOrder Display order of output ports (1:N, N:1, or custom)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Demux block instance
+     */
+    public static Demux create(String name, String path, int numberOfOutputs, String displayOrder, double sampleTime,
                               String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter outputsParam = new Parameter(null, 1, "Outputs", outputs);
-        Parameter displayOrderParam = new Parameter(null, 2, "DisplayOrder", displayOrder);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Demux block = new Demux(outputsParam, displayOrderParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                               name, path, "null", model);
-        
-        setParameterBlockReference(block, outputsParam, displayOrderParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        DemuxDto dto = DemuxDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .outputs(com.ncslab.dto.common.TypedParameter.of(numberOfOutputs))
+            .displayOrder(com.ncslab.dto.common.TypedParameter.of(displayOrder))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Demux parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Demux(dto, model);
     }
     // === Helper Methods for JSON Parameter Creation ===
     private static Parameter createOutputsFromJSON(JSONObject paramValues, String blockName) {

@@ -204,34 +204,59 @@ public class SineWave extends SourceBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static SineWave create(String name, String path, double amplitude, double frequency, NCSLabModel model) {
-        return create(name, path, amplitude, 0.0, frequency, 0.0, 0.0, 1, "Use simulation time", 
+        return create(name, path, amplitude, 0.0, frequency, 0.0, 0.0, 1, "Use simulation time",
                      "Inherit: Same as parameter", false, model);
     }
-    public static SineWave create(String name, String path, double amplitude, double bias, double frequency, 
+
+    /**
+     * Create a SineWave block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param amplitude Amplitude of sine wave
+     * @param bias DC offset (bias) of the signal
+     * @param frequency Frequency of sine wave in rad/s
+     * @param phase Phase shift in radians
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param samples Number of samples per frame
+     * @param timeSource Time source (Use simulation time, Use external signal)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return SineWave block instance
+     */
+    public static SineWave create(String name, String path, double amplitude, double bias, double frequency,
                                  double phase, double sampleTime, int samples, String timeSource,
                                  String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        // Create parameters
-        Parameter amplitudeParam = new Parameter(null, 1, "Amplitude", String.valueOf(amplitude));
-        Parameter biasParam = new Parameter(null, 2, "Bias", String.valueOf(bias));
-        Parameter frequencyParam = new Parameter(null, 3, "Frequency", String.valueOf(frequency));
-        Parameter phaseParam = new Parameter(null, 4, "Phase", String.valueOf(phase));
-        Parameter sampleTimeParam = new Parameter(null, 5, "SampleTime", String.valueOf(sampleTime));
-        Parameter samplesParam = new Parameter(null, 6, "Samples", String.valueOf(samples));
-        Parameter timeSourceParam = new Parameter(null, 7, "TimeSource", timeSource);
-        Parameter outDataTypeParam = new Parameter(null, 8, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 9, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        SineWave block = new SineWave(amplitudeParam, biasParam, frequencyParam, phaseParam, sampleTimeParam,
-                                     samplesParam, timeSourceParam, outDataTypeParam, saturateParam,
-                                     name, path, "null", model);
-        
-        // Set block reference in parameters
-        setParameterBlockReference(block, amplitudeParam, biasParam, frequencyParam, phaseParam, sampleTimeParam,
-                                  samplesParam, timeSourceParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        SineWaveDto dto = SineWaveDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .amplitude(com.ncslab.dto.common.TypedParameter.of(amplitude))
+            .bias(com.ncslab.dto.common.TypedParameter.of(bias))
+            .frequency(com.ncslab.dto.common.TypedParameter.of(frequency))
+            .phase(com.ncslab.dto.common.TypedParameter.of(phase))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .samples(com.ncslab.dto.common.TypedParameter.of(samples))
+            .timeSource(com.ncslab.dto.common.TypedParameter.of(timeSource))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid SineWave parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new SineWave(dto, model);
     }
 
     // === Parameter Validation ===

@@ -156,25 +156,42 @@ public class To extends RouteBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static To create(String name, String path, String gotoTag, NCSLabModel model) {
-        return create(name, path, gotoTag, "Tag", -1.0, "Inherit: auto", false, model);
+        return create(name, path, gotoTag, "scoped", model);
     }
 
-    public static To create(String name, String path, String gotoTag, String iconDisplay, double sampleTime,
-                           String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter gotoTagParam = new Parameter(null, 1, "GotoTag", gotoTag);
-        Parameter iconDisplayParam = new Parameter(null, 2, "IconDisplay", iconDisplay);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+    /**
+     * Create a To block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param gotoTag Tag name for the Goto/From pair
+     * @param tagVisibility Tag visibility (local, scoped, global)
+     * @param model Parent model
+     * @return To block instance
+     */
+    public static To create(String name, String path, String gotoTag, String tagVisibility, NCSLabModel model) {
+        // Build DTO using type-safe builder pattern
+        GotoDto dto = GotoDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .gotoTag(com.ncslab.dto.common.TypedParameter.of(gotoTag))
+            .tagVisibility(com.ncslab.dto.common.TypedParameter.of(tagVisibility))
+            .build();
 
-        To block = new To(gotoTagParam, iconDisplayParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                         name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid To parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, gotoTagParam, iconDisplayParam, sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new To(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===
