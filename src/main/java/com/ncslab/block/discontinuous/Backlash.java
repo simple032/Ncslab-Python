@@ -193,27 +193,49 @@ public class Backlash extends DiscontinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Backlash create(String name, String path, String backlashWidth, String initialOutput, NCSLabModel model) {
         return create(name, path, backlashWidth, initialOutput, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a Backlash block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param backlashWidth Width of the backlash gap
+     * @param initialOutput Initial output value
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Backlash block instance
+     */
     public static Backlash create(String name, String path, String backlashWidth, String initialOutput,
                                  double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter backlashWidthParam = new Parameter(null, 1, "BacklashWidth", backlashWidth);
-        Parameter initialOutputParam = new Parameter(null, 2, "InitialOutput", initialOutput);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Backlash block = new Backlash(backlashWidthParam, initialOutputParam, sampleTimeParam,
-                                     outDataTypeParam, saturateParam,
-                                     name, path, "null", model);
-        
-        setParameterBlockReference(block, backlashWidthParam, initialOutputParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        BacklashDto dto = BacklashDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .backlashWidth(com.ncslab.dto.common.TypedParameter.of(backlashWidth))
+            .initialOutput(com.ncslab.dto.common.TypedParameter.of(initialOutput))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Backlash parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Backlash(dto, model);
     }
     
     // === Helper Methods for JSON Parameter Creation ===

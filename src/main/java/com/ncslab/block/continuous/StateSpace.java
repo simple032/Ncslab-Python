@@ -265,36 +265,60 @@ public class StateSpace extends ContinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static StateSpace create(String name, String path, String A, String B, String C, String D, String X0, NCSLabModel model) {
         return create(name, path, A, B, C, D, X0, "auto", "'''", 0.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a StateSpace block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param A State matrix (n x n)
+     * @param B Input matrix (n x m)
+     * @param C Output matrix (p x n)
+     * @param D Feedthrough matrix (p x m)
+     * @param X0 Initial state vector (n x 1)
+     * @param absoluteTolerance Absolute tolerance for simulation
+     * @param continuousStateAttributes Attributes for continuous states
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return StateSpace block instance
+     */
     public static StateSpace create(String name, String path, String A, String B, String C, String D, String X0,
                                    String absoluteTolerance, String continuousStateAttributes,
                                    double sampleTime, String outDataType, boolean saturateOnOverflow,
                                    NCSLabModel model) {
-        Parameter stateMatrixParam = new Parameter(null, 1, "A", A);
-        Parameter inputMatrixParam = new Parameter(null, 2, "B", B);
-        Parameter outputMatrixParam = new Parameter(null, 3, "C", C);
-        Parameter feedthroughMatrixParam = new Parameter(null, 4, "D", D);
-        Parameter initialStateParam = new Parameter(null, 5, "X0", X0);
-        Parameter absoluteToleranceParam = new Parameter(null, 6, "AbsoluteTolerance", absoluteTolerance);
-        Parameter continuousStateAttributesParam = new Parameter(null, 7, "ContinuousStateAttributes", continuousStateAttributes);
-        Parameter sampleTimeParam = new Parameter(null, 8, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 9, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 10, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        StateSpace block = new StateSpace(stateMatrixParam, inputMatrixParam, outputMatrixParam,
-                                         feedthroughMatrixParam, initialStateParam, absoluteToleranceParam,
-                                         continuousStateAttributesParam, sampleTimeParam, outDataTypeParam,
-                                         saturateParam, name, path, "null", model);
-        
-        setParameterBlockReference(block, stateMatrixParam, inputMatrixParam, outputMatrixParam,
-                                 feedthroughMatrixParam, initialStateParam, absoluteToleranceParam,
-                                 continuousStateAttributesParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        StateSpaceDto dto = StateSpaceDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .stateMatrix(com.ncslab.dto.common.TypedParameter.of(A))
+            .inputMatrix(com.ncslab.dto.common.TypedParameter.of(B))
+            .outputMatrix(com.ncslab.dto.common.TypedParameter.of(C))
+            .feedthroughMatrix(com.ncslab.dto.common.TypedParameter.of(D))
+            .initialState(com.ncslab.dto.common.TypedParameter.of(X0))
+            .absoluteTolerance(com.ncslab.dto.common.TypedParameter.of(absoluteTolerance))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid StateSpace parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new StateSpace(dto, model);
     }
     
     // === Parameter Validation ===

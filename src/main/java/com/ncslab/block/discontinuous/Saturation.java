@@ -198,25 +198,49 @@ public class Saturation extends DiscontinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Saturation create(String name, String path, String upperLimit, String lowerLimit, NCSLabModel model) {
         return create(name, path, upperLimit, lowerLimit, -1.0, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a Saturation block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param upperLimit Upper saturation limit
+     * @param lowerLimit Lower saturation limit
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Saturation block instance
+     */
     public static Saturation create(String name, String path, String upperLimit, String lowerLimit,
                                    double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        // Create a JSONObject with parameter values for centralized parsing
-        JSONObject paramValues = new JSONObject();
-        paramValues.put("UpperLimit", upperLimit);
-        paramValues.put("LowerLimit", lowerLimit);
-        paramValues.put("SampleTime", String.valueOf(sampleTime));
-        paramValues.put("OutDataTypeStr", outDataType);
-        paramValues.put("SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        JSONObject blockJSON = createBlockIdentity(name, path, "null");
-        blockJSON.put("paramValues", paramValues);
-        
-        return new Saturation(blockJSON, model);
+        // Build DTO using type-safe builder pattern
+        SaturationDto dto = SaturationDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .upperLimit(com.ncslab.dto.common.TypedParameter.of(upperLimit))
+            .lowerLimit(com.ncslab.dto.common.TypedParameter.of(lowerLimit))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Saturation parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Saturation(dto, model);
     }
     
     // === Utility Methods ===
@@ -237,6 +261,7 @@ public class Saturation extends DiscontinuousBlock {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to avoid JSONException
         return identity;
     }
     

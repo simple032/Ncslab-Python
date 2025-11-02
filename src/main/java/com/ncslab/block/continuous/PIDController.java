@@ -337,48 +337,73 @@ public class PIDController extends ContinuousBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static PIDController create(String name, String path, double P, double I, double D, NCSLabModel model) {
         return create(name, path, P, I, D, 100.0, "parallel", "none",
                      0.0, 0.0, false, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
                      0.0, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a PIDController block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param P Proportional gain
+     * @param I Integral gain
+     * @param D Derivative gain
+     * @param N Filter coefficient for derivative term
+     * @param formulationType PID form (parallel, standard)
+     * @param externalReset External reset mode (none, rising, falling, either, level)
+     * @param initialConditionForIntegrator Initial condition for integrator
+     * @param initialConditionForFilter Initial condition for filter
+     * @param limitOutput Whether to limit output values
+     * @param upperLimit Upper limit for output
+     * @param lowerLimit Lower limit for output
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return PIDController block instance
+     */
     public static PIDController create(String name, String path, double P, double I, double D, double N,
                                       String formulationType, String externalReset,
                                       double initialConditionForIntegrator, double initialConditionForFilter,
                                       boolean limitOutput, double upperLimit, double lowerLimit,
                                       double sampleTime, String outDataType, boolean saturateOnOverflow,
                                       NCSLabModel model) {
-        Parameter proportionalGainParam = new Parameter(null, 1, "P", String.valueOf(P));
-        Parameter integralGainParam = new Parameter(null, 2, "I", String.valueOf(I));
-        Parameter derivativeGainParam = new Parameter(null, 3, "D", String.valueOf(D));
-        Parameter filterCoefficientParam = new Parameter(null, 4, "N", String.valueOf(N));
-        Parameter formulationTypeParam = new Parameter(null, 5, "FormulationType", formulationType);
-        Parameter externalResetParam = new Parameter(null, 6, "ExternalReset", externalReset);
-        Parameter initialConditionForIntegratorParam = new Parameter(null, 7, "InitialConditionForIntegrator", String.valueOf(initialConditionForIntegrator));
-        Parameter initialConditionForFilterParam = new Parameter(null, 8, "InitialConditionForFilter", String.valueOf(initialConditionForFilter));
-        Parameter limitOutputParam = new Parameter(null, 9, "LimitOutput", limitOutput ? "on" : "off");
-        Parameter upperSaturationLimitParam = new Parameter(null, 10, "UpperSaturationLimit", String.valueOf(upperLimit));
-        Parameter lowerSaturationLimitParam = new Parameter(null, 11, "LowerSaturationLimit", String.valueOf(lowerLimit));
-        Parameter sampleTimeParam = new Parameter(null, 12, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 13, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 14, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        PIDControllerDto dto = PIDControllerDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .proportionalGain(com.ncslab.dto.common.TypedParameter.of(P))
+            .integralGain(com.ncslab.dto.common.TypedParameter.of(I))
+            .derivativeGain(com.ncslab.dto.common.TypedParameter.of(D))
+            .filterCoefficient(com.ncslab.dto.common.TypedParameter.of(N))
+            .formulationType(com.ncslab.dto.common.TypedParameter.of(formulationType))
+            .externalReset(com.ncslab.dto.common.TypedParameter.of(externalReset))
+            .initialConditionForIntegrator(com.ncslab.dto.common.TypedParameter.of(initialConditionForIntegrator))
+            .initialConditionForFilter(com.ncslab.dto.common.TypedParameter.of(initialConditionForFilter))
+            .limitOutput(com.ncslab.dto.common.TypedParameter.of(limitOutput ? "on" : "off"))
+            .upperSaturationLimit(com.ncslab.dto.common.TypedParameter.of(upperLimit))
+            .lowerSaturationLimit(com.ncslab.dto.common.TypedParameter.of(lowerLimit))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
 
-        PIDController block = new PIDController(proportionalGainParam, integralGainParam, derivativeGainParam,
-                                               filterCoefficientParam, formulationTypeParam, externalResetParam,
-                                               initialConditionForIntegratorParam, initialConditionForFilterParam,
-                                               limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
-                                               sampleTimeParam, outDataTypeParam, saturateParam,
-                                               name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid PIDController parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, proportionalGainParam, integralGainParam, derivativeGainParam,
-                                 filterCoefficientParam, formulationTypeParam, externalResetParam,
-                                 initialConditionForIntegratorParam, initialConditionForFilterParam,
-                                 limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new PIDController(dto, model);
     }
 
     // === Parameter Validation ===

@@ -291,43 +291,67 @@ public class Integrator extends ContinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Integrator create(String name, String path, double initialCondition, NCSLabModel model) {
-        return create(name, path, initialCondition, "none", "internal", false, 
-                     Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 
+        return create(name, path, initialCondition, "none", "internal", false,
+                     Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
                      false, false, 0.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create an Integrator block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param initialCondition Initial output value at t=0
+     * @param externalReset External reset mode (none, rising, falling, either, level, sampled level)
+     * @param conditionSource Source of initial condition (internal, external)
+     * @param limitOutput Whether to limit output values
+     * @param upperLimit Upper limit for output
+     * @param lowerLimit Lower limit for output
+     * @param showSaturationPort Show saturation status port
+     * @param showStatePort Show state output port
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Integrator block instance
+     */
     public static Integrator create(String name, String path, double initialCondition,
                                    String externalReset, String conditionSource, boolean limitOutput,
                                    double upperLimit, double lowerLimit,
                                    boolean showSaturationPort, boolean showStatePort,
                                    double sampleTime, String outDataType, boolean saturateOnOverflow,
                                    NCSLabModel model) {
-        Parameter initialConditionParam = new Parameter(null, 1, "InitialCondition", String.valueOf(initialCondition));
-        Parameter externalResetParam = new Parameter(null, 2, "ExternalReset", externalReset);
-        Parameter conditionSourceParam = new Parameter(null, 3, "InitialConditionSource", conditionSource);
-        Parameter limitOutputParam = new Parameter(null, 4, "LimitOutput", limitOutput ? "on" : "off");
-        Parameter upperSaturationLimitParam = new Parameter(null, 5, "UpperSaturationLimit", String.valueOf(upperLimit));
-        Parameter lowerSaturationLimitParam = new Parameter(null, 6, "LowerSaturationLimit", String.valueOf(lowerLimit));
-        Parameter showSaturationPortParam = new Parameter(null, 7, "ShowSaturationPort", showSaturationPort ? "on" : "off");
-        Parameter showStatePortParam = new Parameter(null, 8, "ShowStatePort", showStatePort ? "on" : "off");
-        Parameter sampleTimeParam = new Parameter(null, 9, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 10, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 11, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Integrator block = new Integrator(initialConditionParam, externalResetParam, conditionSourceParam,
-                                         limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
-                                         showSaturationPortParam, showStatePortParam,
-                                         sampleTimeParam, outDataTypeParam, saturateParam,
-                                         name, path, "null", model);
-        
-        setParameterBlockReference(block, initialConditionParam, externalResetParam, conditionSourceParam,
-                                 limitOutputParam, upperSaturationLimitParam, lowerSaturationLimitParam,
-                                 showSaturationPortParam, showStatePortParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        IntegratorDto dto = IntegratorDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
+            .externalReset(com.ncslab.dto.common.TypedParameter.of(externalReset))
+            .initialConditionSource(com.ncslab.dto.common.TypedParameter.of(conditionSource))
+            .limitOutput(com.ncslab.dto.common.TypedParameter.of(limitOutput ? "on" : "off"))
+            .upperSaturationLimit(com.ncslab.dto.common.TypedParameter.of(upperLimit))
+            .lowerSaturationLimit(com.ncslab.dto.common.TypedParameter.of(lowerLimit))
+            .showSaturationPort(com.ncslab.dto.common.TypedParameter.of(showSaturationPort ? "on" : "off"))
+            .showStatePort(com.ncslab.dto.common.TypedParameter.of(showStatePort ? "on" : "off"))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Integrator parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Integrator(dto, model);
     }
     
     // === Parameter Validation ===
@@ -445,6 +469,7 @@ public class Integrator extends ContinuousBlock {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to avoid JSONException
         return identity;
     }
     

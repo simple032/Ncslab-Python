@@ -171,25 +171,49 @@ public class RateLimiter extends DiscontinuousBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static RateLimiter create(String name, String path, String risingSlew, String fallingSlew, NCSLabModel model) {
         return create(name, path, risingSlew, fallingSlew, -1.0, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a RateLimiter block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param risingSlew Rising slew rate limit (units per second)
+     * @param fallingSlew Falling slew rate limit (units per second, negative value)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return RateLimiter block instance
+     */
     public static RateLimiter create(String name, String path, String risingSlew, String fallingSlew,
                                     double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        // Create a JSONObject with parameter values for centralized parsing
-        JSONObject paramValues = new JSONObject();
-        paramValues.put("UpperLimit", risingSlew);
-        paramValues.put("LowerLimit", fallingSlew);
-        paramValues.put("SampleTime", String.valueOf(sampleTime));
-        paramValues.put("OutDataTypeStr", outDataType);
-        paramValues.put("SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        JSONObject blockJSON = createBlockIdentity(name, path, "null");
-        blockJSON.put("paramValues", paramValues);
-        
-        return new RateLimiter(blockJSON, model);
+        // Build DTO using type-safe builder pattern
+        RateLimiterDto dto = RateLimiterDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .upperLimit(com.ncslab.dto.common.TypedParameter.of(risingSlew))
+            .lowerLimit(com.ncslab.dto.common.TypedParameter.of(fallingSlew))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid RateLimiter parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new RateLimiter(dto, model);
     }
 
     // === Utility Methods ===

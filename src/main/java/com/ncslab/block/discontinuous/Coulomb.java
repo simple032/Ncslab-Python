@@ -189,25 +189,49 @@ public class Coulomb extends DiscontinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Coulomb create(String name, String path, String offset, String gain, NCSLabModel model) {
         return create(name, path, offset, gain, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a Coulomb block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param offset Offset value for Coulomb friction
+     * @param gain Gain value for Coulomb friction
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Coulomb block instance
+     */
     public static Coulomb create(String name, String path, String offset, String gain,
                                 double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter offsetParam = new Parameter(null, 1, "Offset", offset);
-        Parameter gainParam = new Parameter(null, 2, "Gain", gain);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Coulomb block = new Coulomb(offsetParam, gainParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                                   name, path, "null", model);
-        
-        setParameterBlockReference(block, offsetParam, gainParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        CoulombDto dto = CoulombDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .offset(com.ncslab.dto.common.TypedParameter.of(offset))
+            .gain(com.ncslab.dto.common.TypedParameter.of(gain))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Coulomb parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Coulomb(dto, model);
     }
     
     // === Helper Methods for JSON Parameter Creation ===

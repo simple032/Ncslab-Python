@@ -204,29 +204,56 @@ public class Relay extends DiscontinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Relay create(String name, String path, String switchOnPoint, String switchOffPoint,
                               String outputWhenOn, String outputWhenOff, NCSLabModel model) {
         return create(name, path, switchOnPoint, switchOffPoint, outputWhenOn, outputWhenOff,
                      -1.0, "Inherit: Same as input", false, model);
     }
+
+    /**
+     * Create a Relay block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param switchOnPoint Input value at which the relay switches on
+     * @param switchOffPoint Input value at which the relay switches off
+     * @param outputWhenOn Output value when relay is on
+     * @param outputWhenOff Output value when relay is off
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Relay block instance
+     */
     public static Relay create(String name, String path, String switchOnPoint, String switchOffPoint,
-                              String outputWhenOn, String outputWhenOff, double sampleTime, 
+                              String outputWhenOn, String outputWhenOff, double sampleTime,
                               String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        // Create a JSONObject with parameter values for centralized parsing
-        JSONObject paramValues = new JSONObject();
-        paramValues.put("OnSwitchValue", switchOnPoint);
-        paramValues.put("OffSwitchValue", switchOffPoint);
-        paramValues.put("OnOutputValue", outputWhenOn);
-        paramValues.put("OffOutputValue", outputWhenOff);
-        paramValues.put("SampleTime", String.valueOf(sampleTime));
-        paramValues.put("OutDataTypeStr", outDataType);
-        paramValues.put("SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        JSONObject blockJSON = createBlockIdentity(name, path, "null");
-        blockJSON.put("paramValues", paramValues);
-        
-        return new Relay(blockJSON, model);
+        // Build DTO using type-safe builder pattern
+        RelayDto dto = RelayDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .onSwitchValue(com.ncslab.dto.common.TypedParameter.of(switchOnPoint))
+            .offSwitchValue(com.ncslab.dto.common.TypedParameter.of(switchOffPoint))
+            .onOutputValue(com.ncslab.dto.common.TypedParameter.of(outputWhenOn))
+            .offOutputValue(com.ncslab.dto.common.TypedParameter.of(outputWhenOff))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Relay parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Relay(dto, model);
     }
     
     // === Utility Methods ===

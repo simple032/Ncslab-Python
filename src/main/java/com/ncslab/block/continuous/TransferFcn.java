@@ -244,35 +244,58 @@ public class TransferFcn extends ContinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static TransferFcn create(String name, String path, String numerator, String denominator, NCSLabModel model) {
-        return create(name, path, numerator, denominator, "auto", "'''", "off", 
+        return create(name, path, numerator, denominator, "auto", "'''", "off",
                      0.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a TransferFcn block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param numerator Numerator coefficients in descending powers of s
+     * @param denominator Denominator coefficients in descending powers of s
+     * @param absoluteTolerance Absolute tolerance for simulation
+     * @param continuousStateAttributes Attributes for continuous states
+     * @param realizeZeroPoleGain Realization method for zero-pole-gain
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return TransferFcn block instance
+     */
     public static TransferFcn create(String name, String path, String numerator, String denominator,
                                    String absoluteTolerance, String continuousStateAttributes, String realizeZeroPoleGain,
                                    double sampleTime, String outDataType, boolean saturateOnOverflow,
                                    NCSLabModel model) {
-        Parameter numeratorParam = new Parameter(null, 1, "Numerator", numerator);
-        Parameter denominatorParam = new Parameter(null, 2, "Denominator", denominator);
-        Parameter absoluteToleranceParam = new Parameter(null, 3, "AbsoluteTolerance", absoluteTolerance);
-        Parameter continuousStateAttributesParam = new Parameter(null, 4, "ContinuousStateAttributes", continuousStateAttributes);
-        Parameter realizeZeroPoleGainParam = new Parameter(null, 5, "RealizeZeroPoleGain", realizeZeroPoleGain);
-        Parameter sampleTimeParam = new Parameter(null, 6, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 7, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 8, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        TransferFcn block = new TransferFcn(numeratorParam, denominatorParam, absoluteToleranceParam,
-                                          continuousStateAttributesParam, realizeZeroPoleGainParam,
-                                          sampleTimeParam, outDataTypeParam, saturateParam,
-                                          name, path, "null", model);
-        
-        setParameterBlockReference(block, numeratorParam, denominatorParam, absoluteToleranceParam,
-                                 continuousStateAttributesParam, realizeZeroPoleGainParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        TransferFcnDto dto = TransferFcnDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .numerator(com.ncslab.dto.common.TypedParameter.of(numerator))
+            .denominator(com.ncslab.dto.common.TypedParameter.of(denominator))
+            .absoluteTolerance(com.ncslab.dto.common.TypedParameter.of(absoluteTolerance))
+            .continuousStateAttributes(com.ncslab.dto.common.TypedParameter.of(continuousStateAttributes))
+            .realizeZeroPoleGain(com.ncslab.dto.common.TypedParameter.of(realizeZeroPoleGain))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid TransferFcn parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new TransferFcn(dto, model);
     }
     
     // === Parameter Validation ===

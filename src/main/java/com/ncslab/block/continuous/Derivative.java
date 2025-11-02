@@ -245,35 +245,60 @@ public class Derivative extends ContinuousBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Derivative create(String name, String path, double filterCoefficient, NCSLabModel model) {
         return create(name, path, filterCoefficient, 0.0, "internal", "none", "internal",
                      false, 0.0, "Inherit: Same as input", false, model);
     }
+
+    /**
+     * Create a Derivative block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param filterCoefficient Filter coefficient for filtered derivative (T in s/(Ts+1))
+     * @param initialCondition Initial condition for internal state
+     * @param coefficientSource Source of filter coefficient (internal, external)
+     * @param externalReset External reset mode (none, rising, falling, either, level)
+     * @param conditionSource Source of initial condition (internal, external)
+     * @param showStatePort Show state output port
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Derivative block instance
+     */
     public static Derivative create(String name, String path, double filterCoefficient, double initialCondition,
                                    String coefficientSource, String externalReset, String conditionSource,
                                    boolean showStatePort, double sampleTime, String outDataType,
                                    boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter filterCoefficientParam = new Parameter(null, 1, "FilterCoefficient", String.valueOf(filterCoefficient));
-        Parameter initialConditionParam = new Parameter(null, 2, "InitialCondition", String.valueOf(initialCondition));
-        Parameter coefficientSourceParam = new Parameter(null, 3, "CoefficientSource", coefficientSource);
-        Parameter externalResetParam = new Parameter(null, 4, "ExternalReset", externalReset);
-        Parameter conditionSourceParam = new Parameter(null, 5, "InitialConditionSource", conditionSource);
-        Parameter showStatePortParam = new Parameter(null, 6, "ShowStatePort", showStatePort ? "on" : "off");
-        Parameter sampleTimeParam = new Parameter(null, 7, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 8, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 9, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        DerivativeDto dto = DerivativeDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .filterCoefficient(com.ncslab.dto.common.TypedParameter.of(filterCoefficient))
+            .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
+            .coefficientSource(com.ncslab.dto.common.TypedParameter.of(coefficientSource))
+            .externalReset(com.ncslab.dto.common.TypedParameter.of(externalReset))
+            .initialConditionSource(com.ncslab.dto.common.TypedParameter.of(conditionSource))
+            .showStatePort(com.ncslab.dto.common.TypedParameter.of(showStatePort ? "on" : "off"))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
 
-        Derivative block = new Derivative(filterCoefficientParam, initialConditionParam, coefficientSourceParam,
-                                        externalResetParam, conditionSourceParam, showStatePortParam,
-                                        sampleTimeParam, outDataTypeParam, saturateParam,
-                                        name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Derivative parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, filterCoefficientParam, initialConditionParam, coefficientSourceParam,
-                                 externalResetParam, conditionSourceParam, showStatePortParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Derivative(dto, model);
     }
     // === Parameter Validation ===
     private static void validateParameters(Parameter filterCoefficient, Parameter sampleTime) {

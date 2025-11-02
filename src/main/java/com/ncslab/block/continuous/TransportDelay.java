@@ -50,12 +50,19 @@ public class TransportDelay extends ContinuousBlock {
     private FifoBufferExtended<Data> buffer;
 
     // === SIMULINK-Compatible Parameters ===
+    @Getter
     private final Parameter delayTime;
+    // Note: No @Getter on initialOutput to avoid conflict with ContinuousBlock.getInitialOutput()
     private final Parameter initialOutput;
+    @Getter
     private final Parameter bufferSize;
+    @Getter
     private final Parameter padeOrder;
+    @Getter
     private final Parameter sampleTime;
+    @Getter
     private final Parameter outDataType;
+    @Getter
     private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
@@ -193,30 +200,54 @@ public class TransportDelay extends ContinuousBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static TransportDelay create(String name, String path, double delayTime, double initialOutput, NCSLabModel model) {
         return create(name, path, delayTime, initialOutput, 1024, 0, 0.0, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a TransportDelay block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param delayTime Delay time (scalar or matrix)
+     * @param initialOutput Initial output value before delay takes effect
+     * @param bufferSize Size of the delay buffer for variable step solvers
+     * @param padeOrder Order of Pade approximation (for approximation methods)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return TransportDelay block instance
+     */
     public static TransportDelay create(String name, String path, double delayTime, double initialOutput,
                                        int bufferSize, int padeOrder, double sampleTime, String outDataType,
                                        boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter delayTimeParam = new Parameter(null, 1, "DelayTime", String.valueOf(delayTime));
-        Parameter initialOutputParam = new Parameter(null, 2, "InitialOutput", String.valueOf(initialOutput));
-        Parameter bufferSizeParam = new Parameter(null, 3, "BufferSize", String.valueOf(bufferSize));
-        Parameter padeOrderParam = new Parameter(null, 4, "PadeOrder", String.valueOf(padeOrder));
-        Parameter sampleTimeParam = new Parameter(null, 5, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 6, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 7, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        TransportDelayDto dto = TransportDelayDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .delayTime(com.ncslab.dto.common.TypedParameter.of(delayTime))
+            .initialOutput(com.ncslab.dto.common.TypedParameter.of(initialOutput))
+            .bufferSize(com.ncslab.dto.common.TypedParameter.of(bufferSize))
+            .padeOrder(com.ncslab.dto.common.TypedParameter.of(padeOrder))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
 
-        TransportDelay block = new TransportDelay(delayTimeParam, initialOutputParam, bufferSizeParam,
-                                                 padeOrderParam, sampleTimeParam, outDataTypeParam,
-                                                 saturateParam, name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid TransportDelay parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, delayTimeParam, initialOutputParam, bufferSizeParam,
-                                 padeOrderParam, sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new TransportDelay(dto, model);
     }
 
     // === Parameter Validation ===
@@ -317,12 +348,24 @@ public class TransportDelay extends ContinuousBlock {
         outputPortList.add(output);
     }
 
-    private boolean isFixedStepSolver(String solver) {
+    /**
+     * Check if the given solver is a fixed-step solver.
+     * Made public for Velocity template access.
+     * @param solver The solver name
+     * @return true if fixed-step solver, false if variable-step
+     */
+    public boolean isFixedStepSolver(String solver) {
         return solver.equals("ode1") || solver.equals("ode2") || solver.equals("ode3") ||
             solver.equals("ode4") || solver.equals("ode5") || solver.equals("ode6");
     }
 
-    private int calculateBufferLength(double delay) {
+    /**
+     * Calculate buffer length based on delay time.
+     * Made public for Velocity template access.
+     * @param delay The delay time
+     * @return The required buffer length
+     */
+    public int calculateBufferLength(double delay) {
         // Ensure buffer has enough space with a generous safety margin
         return Math.max(20, (int)(delay / model.getConfig().getFixedStep()) + 5);
     }

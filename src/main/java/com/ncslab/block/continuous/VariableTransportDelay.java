@@ -39,13 +39,21 @@ import com.ncslab.util.TemplateManager;
 public class VariableTransportDelay extends ContinuousBlock {
 
     // === SIMULINK-Compatible Parameters ===
+    @Getter
     private final Parameter delayType;
+    @Getter
     private final Parameter maximumDelayTime;
+    // Note: No @Getter on initialOutput to avoid conflict with ContinuousBlock.getInitialOutput()
     private final Parameter initialOutput;
+    @Getter
     private final Parameter initialBufferSize;
+    @Getter
     private final Parameter padeOrder;
+    @Getter
     private final Parameter sampleTime;
+    @Getter
     private final Parameter outDataType;
+    @Getter
     private final Parameter saturateOnIntegerOverflow;
     
     // === Port References ===
@@ -187,35 +195,56 @@ public class VariableTransportDelay extends ContinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
-    public static VariableTransportDelay create(String name, String path, String delayType, double maxDelayTime, 
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
+    public static VariableTransportDelay create(String name, String path, String delayType, double maxDelayTime,
                                                double initialOutput, int initialBufferSize, NCSLabModel model) {
-        return create(name, path, delayType, maxDelayTime, initialOutput, initialBufferSize, 0, 
+        return create(name, path, delayType, maxDelayTime, initialOutput, initialBufferSize, 0,
                      0.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a VariableTransportDelay block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param delayType Type of variable delay
+     * @param maxDelayTime Maximum delay time
+     * @param initialOutput Initial output value before delay takes effect
+     * @param initialBufferSize Initial size of the delay buffer
+     * @param padeOrder Order of Pade approximation (for approximation methods)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return VariableTransportDelay block instance
+     */
     public static VariableTransportDelay create(String name, String path, String delayType, double maxDelayTime,
                                                double initialOutput, int initialBufferSize, int padeOrder,
                                                double sampleTime, String outDataType, boolean saturateOnOverflow,
                                                NCSLabModel model) {
-        Parameter delayTypeParam = new Parameter(null, 1, "DelayType", delayType);
-        Parameter maxDelayTimeParam = new Parameter(null, 2, "MaximumDelayTime", String.valueOf(maxDelayTime));
-        Parameter initialOutputParam = new Parameter(null, 3, "InitialOutput", String.valueOf(initialOutput));
-        Parameter initialBufferSizeParam = new Parameter(null, 4, "InitialBufferSize", String.valueOf(initialBufferSize));
-        Parameter padeOrderParam = new Parameter(null, 5, "PadeOrder", String.valueOf(padeOrder));
-        Parameter sampleTimeParam = new Parameter(null, 6, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 7, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 8, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        VariableTransportDelay block = new VariableTransportDelay(delayTypeParam, maxDelayTimeParam, initialOutputParam,
-                                                                  initialBufferSizeParam, padeOrderParam, sampleTimeParam,
-                                                                  outDataTypeParam, saturateParam,
-                                                                  name, path, "null", model);
-        
-        setParameterBlockReference(block, delayTypeParam, maxDelayTimeParam, initialOutputParam,
-                                 initialBufferSizeParam, padeOrderParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        VariableTransportDelayDto dto = VariableTransportDelayDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .maximumDelay(com.ncslab.dto.common.TypedParameter.of(maxDelayTime))
+            .initialInput(com.ncslab.dto.common.TypedParameter.of(initialOutput))
+            .bufferSize(com.ncslab.dto.common.TypedParameter.of(initialBufferSize))
+            .padeOrder(com.ncslab.dto.common.TypedParameter.of(padeOrder))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid VariableTransportDelay parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new VariableTransportDelay(dto, model);
     }
     
     // === Parameter Validation ===
@@ -325,12 +354,9 @@ public class VariableTransportDelay extends ContinuousBlock {
         outputPortList.add(output);
     }
 
-    public void generateArraysCodeC(CodeStructC code) {        
-        context.put("block", this);
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("maxDelayTime", maximumDelayTime.getData().getInitValue());
-        context.put("initialBufferSize", initialBufferSize.getData().getInitValue());
+    public void generateArraysCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+        // Now using standardized $MaximumDelayTimeValue and $InitialBufferSizeValue from populateAllContext
 
         String arraysCode = TemplateManager.renderTemplate("c/continuous/VariableTransportDelay/arrays.vm", context);
         code.addArraysCode(arraysCode);
@@ -338,14 +364,18 @@ public class VariableTransportDelay extends ContinuousBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("MaximumDelayTime", maximumDelayTime);
-        context.put("PadeOrder", padeOrder);
-        context.put("InitialOutput", initialOutput);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // The parameter objects are now available as $MaximumDelayTimeObject, $InitialOutputObject, etc.
+        // through populateAllContext, but keep legacy names temporarily for compatibility
         String codeStr = TemplateManager.renderTemplate("c/continuous/VariableTransportDelay/init.vm", context);
         code.addInitCode(codeStr);
     }
 
+    /**
+     * Get the current index variable name for the circular buffer.
+     * Made public for Velocity template access.
+     */
     public String getCurrentIndexName(){
         return "currentIndex_VariableTransportDelay" + getBlockId();
     }

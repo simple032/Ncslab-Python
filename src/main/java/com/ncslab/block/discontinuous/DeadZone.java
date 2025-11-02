@@ -185,25 +185,49 @@ public class DeadZone extends DiscontinuousBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static DeadZone create(String name, String path, String startOfDeadZone, String endOfDeadZone, NCSLabModel model) {
         return create(name, path, startOfDeadZone, endOfDeadZone, -1.0, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a DeadZone block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param startOfDeadZone Lower boundary of the dead zone
+     * @param endOfDeadZone Upper boundary of the dead zone
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return DeadZone block instance
+     */
     public static DeadZone create(String name, String path, String startOfDeadZone, String endOfDeadZone,
                                  double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        // Create a JSONObject with parameter values for centralized parsing
-        JSONObject paramValues = new JSONObject();
-        paramValues.put("LowerValue", startOfDeadZone);
-        paramValues.put("UpperValue", endOfDeadZone);
-        paramValues.put("SampleTime", String.valueOf(sampleTime));
-        paramValues.put("OutDataTypeStr", outDataType);
-        paramValues.put("SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        JSONObject blockJSON = createBlockIdentity(name, path, "null");
-        blockJSON.put("paramValues", paramValues);
-        
-        return new DeadZone(blockJSON, model);
+        // Build DTO using type-safe builder pattern
+        DeadZoneDto dto = DeadZoneDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .lowerValue(com.ncslab.dto.common.TypedParameter.of(startOfDeadZone))
+            .upperValue(com.ncslab.dto.common.TypedParameter.of(endOfDeadZone))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid DeadZone parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new DeadZone(dto, model);
     }
     
     // === Utility Methods ===
