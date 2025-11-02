@@ -169,22 +169,45 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Discrete_Transfer_Fcnz create(String name, String path, double sampleTime, NCSLabModel model) {
         return create(name, path, sampleTime, "Inherit: Same as input", false, model);
     }
+
+    /**
+     * Create a Discrete_Transfer_Fcnz block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param sampleTime Sample time for discrete operation
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Discrete_Transfer_Fcnz block instance
+     */
     public static Discrete_Transfer_Fcnz create(String name, String path, double sampleTime, String outDataType,
                                                boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter sampleTimeParam = new Parameter(null, 1, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 2, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 3, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Discrete_Transfer_Fcnz block = new Discrete_Transfer_Fcnz(sampleTimeParam, outDataTypeParam, saturateParam,
-                                                                 name, path, "null", model);
-        
-        setParameterBlockReference(block, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        Discrete_Transfer_FcnzDto dto = Discrete_Transfer_FcnzDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Discrete_Transfer_Fcnz parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Discrete_Transfer_Fcnz(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===

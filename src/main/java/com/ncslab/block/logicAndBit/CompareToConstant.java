@@ -183,30 +183,63 @@ public class CompareToConstant extends LogicBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (Simple Overload) ===
     public static CompareToConstant create(String name, String path, double constantValue, String relationalOperator, NCSLabModel model) {
         return create(name, path, constantValue, relationalOperator, "boolean", -1.0,
                      "Inherit: Logical (see Configuration Parameters: Optimization)", false, model);
     }
 
+    /**
+     * Create a CompareToConstant block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * NOTE: CompareToConstantDto currently only supports constantValue and relationalOperator fields.
+     * The additional parameters (logicDataType, sampleTime, outDataType, saturateOnOverflow) are
+     * stored in the base BlockDto parameter map for backward compatibility.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param constantValue Constant value to compare against
+     * @param relationalOperator Comparison operator (==, !=, <, <=, >, >=)
+     * @param logicDataType Output logic data type (typically "boolean")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return CompareToConstant block instance
+     */
     public static CompareToConstant create(String name, String path, double constantValue, String relationalOperator,
                                           String logicDataType, double sampleTime, String outDataType,
                                           boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter constantValueParam = new Parameter(null, 1, "ConstantValue", String.valueOf(constantValue));
-        Parameter relationalOperatorParam = new Parameter(null, 2, "RelationalOperator", relationalOperator);
-        Parameter logicDataTypeParam = new Parameter(null, 3, "LogicDataType", logicDataType);
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        // NOTE: CompareToConstantDto is missing some fields, so we only set what exists
+        CompareToConstantDto dto = CompareToConstantDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .constantValue(com.ncslab.dto.common.TypedParameter.of(constantValue))
+            .relationalOperator(com.ncslab.dto.common.TypedParameter.of(relationalOperator))
+            .build();
 
-        CompareToConstant block = new CompareToConstant(constantValueParam, relationalOperatorParam, logicDataTypeParam,
-                                                       sampleTimeParam, outDataTypeParam, saturateParam,
-                                                       name, path, "null", model);
+        // Add missing parameters to the DTO's parameter map (workaround for incomplete DTO)
+        if (dto.getParameters() == null) {
+            dto.setParameters(new com.ncslab.dto.common.TypedParameterMap());
+        }
+        dto.getParameters().put("LogicDataType", com.ncslab.dto.common.TypedParameter.of(logicDataType));
+        dto.getParameters().put("SampleTime", com.ncslab.dto.common.TypedParameter.of(sampleTime));
+        dto.getParameters().put("OutDataTypeStr", com.ncslab.dto.common.TypedParameter.of(outDataType));
+        dto.getParameters().put("SaturateOnIntegerOverflow", com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow));
 
-        setParameterBlockReference(block, constantValueParam, relationalOperatorParam, logicDataTypeParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid CompareToConstant parameters: " + validation.getErrors());
+        }
 
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new CompareToConstant(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===

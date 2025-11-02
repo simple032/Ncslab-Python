@@ -185,24 +185,47 @@ public class UnitDelay extends DiscreteBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static UnitDelay create(String name, String path, double initialCondition, double sampleTime, NCSLabModel model) {
         return create(name, path, initialCondition, sampleTime, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a UnitDelay block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param initialCondition Initial condition for the delay
+     * @param sampleTime Sample time for discrete operation
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return UnitDelay block instance
+     */
     public static UnitDelay create(String name, String path, double initialCondition, double sampleTime,
                                   String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter initialConditionParam = new Parameter(null, 1, "InitialCondition", String.valueOf(initialCondition));
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        UnitDelayDto dto = UnitDelayDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        UnitDelay block = new UnitDelay(initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                                       name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid UnitDelay parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new UnitDelay(dto, model);
     }
 
     // === Parameter Validation ===

@@ -153,24 +153,66 @@ public class ShiftArithmetic extends LogicBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (Simple Overload) ===
     public static ShiftArithmetic create(String name, String path, int bitShiftNumber, NCSLabModel model) {
         return create(name, path, String.valueOf(bitShiftNumber), -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a ShiftArithmetic block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * NOTE: ShiftArithmeticDto supports shiftDirection, numberOfBits, and arithmeticShift fields.
+     * The bitShiftNumber parameter is converted to direction and numberOfBits.
+     * The additional parameters (sampleTime, outDataType, saturateOnOverflow) are
+     * stored in the base BlockDto parameter map for backward compatibility.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param bitShiftNumber Number of bits to shift (positive for left, negative for right)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return ShiftArithmetic block instance
+     */
     public static ShiftArithmetic create(String name, String path, String bitShiftNumber, double sampleTime,
                                         String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter bitShiftNumberParam = new Parameter(null, 1, "BitShiftNumber", bitShiftNumber);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        ShiftArithmetic block = new ShiftArithmetic(bitShiftNumberParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                                                    name, path, "null", model);
-        
-        setParameterBlockReference(block, bitShiftNumberParam, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Parse bitShiftNumber to determine direction and number of bits
+        int shiftValue = Integer.parseInt(bitShiftNumber);
+        String direction = shiftValue >= 0 ? "Left" : "Right";
+        int numberOfBits = Math.abs(shiftValue);
+
+        // Build DTO using type-safe builder pattern
+        // NOTE: ShiftArithmeticDto has shiftDirection, numberOfBits, arithmeticShift but missing some fields
+        ShiftArithmeticDto dto = ShiftArithmeticDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .shiftDirection(com.ncslab.dto.common.TypedParameter.of(direction))
+            .numberOfBits(com.ncslab.dto.common.TypedParameter.of(numberOfBits))
+            .arithmeticShift(com.ncslab.dto.common.TypedParameter.of(true))  // Default to arithmetic shift
+            .build();
+
+        // Add missing parameters to the DTO's parameter map (workaround for incomplete DTO)
+        if (dto.getParameters() == null) {
+            dto.setParameters(new com.ncslab.dto.common.TypedParameterMap());
+        }
+        dto.getParameters().put("BitShiftNumber", com.ncslab.dto.common.TypedParameter.of(shiftValue));
+        dto.getParameters().put("SampleTime", com.ncslab.dto.common.TypedParameter.of(sampleTime));
+        dto.getParameters().put("OutDataTypeStr", com.ncslab.dto.common.TypedParameter.of(outDataType));
+        dto.getParameters().put("SaturateOnIntegerOverflow", com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow));
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid ShiftArithmetic parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new ShiftArithmetic(dto, model);
     }
     
     // === Helper Methods for JSON Parameter Creation ===
@@ -265,7 +307,11 @@ public class ShiftArithmetic extends LogicBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add ShiftArithmetic-specific variables for backward compatibility
         context.put("value", bitShiftNumber);
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/ShiftArithmetic/init.vm", context);

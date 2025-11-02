@@ -184,29 +184,52 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Discrete_Time_Integrator create(String name, String path, double gain, double initialCondition, double sampleTime, NCSLabModel model) {
         return create(name, path, gain, initialCondition, "Integration: Forward Euler", sampleTime, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a Discrete_Time_Integrator block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param gain Integrator gain value
+     * @param initialCondition Initial condition value
+     * @param integratorMethod Integration method (Forward Euler, Backward Euler, Trapezoidal)
+     * @param sampleTime Sample time for discrete operation
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Discrete_Time_Integrator block instance
+     */
     public static Discrete_Time_Integrator create(String name, String path, double gain, double initialCondition,
                                                   String integratorMethod, double sampleTime, String outDataType,
                                                   boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter gainParam = new Parameter(null, 1, "Gain", String.valueOf(gain));
-        Parameter initialConditionParam = new Parameter(null, 2, "InitialCondition", String.valueOf(initialCondition));
-        Parameter integratorMethodParam = new Parameter(null, 3, "IntegratorMethod", integratorMethod);
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        Discrete_Time_IntegratorDto dto = Discrete_Time_IntegratorDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .gain(com.ncslab.dto.common.TypedParameter.of(gain))
+            .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
+            .integratorMethod(com.ncslab.dto.common.TypedParameter.of(integratorMethod))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        Discrete_Time_Integrator block = new Discrete_Time_Integrator(gainParam, initialConditionParam, integratorMethodParam,
-                                                                      sampleTimeParam, outDataTypeParam, saturateParam,
-                                                                      name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Discrete_Time_Integrator parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, gainParam, initialConditionParam, integratorMethodParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Discrete_Time_Integrator(dto, model);
     }
 
     // === Parameter Validation ===

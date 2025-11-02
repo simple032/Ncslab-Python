@@ -163,29 +163,62 @@ public class DetectDecrease extends LogicBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (Simple Overload) ===
     public static DetectDecrease create(String name, String path, NCSLabModel model) {
         return create(name, path, "0", "1", -1.0, "Inherit: Logical (see Configuration Parameters: Optimization)", false, "0", model);
     }
 
+    /**
+     * Create a DetectDecrease block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * NOTE: DetectDecreaseDto currently only supports initialValue field.
+     * The additional parameters (vinWhenRising, vinWhenFalling, sampleTime, outDataType, saturateOnOverflow)
+     * are stored in the base BlockDto parameter map for backward compatibility.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param vinWhenRising Output value when rising edge is detected (no decrease)
+     * @param vinWhenFalling Output value when falling edge is detected (decrease detected)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param initialState Initial value for edge detection
+     * @param model Parent model
+     * @return DetectDecrease block instance
+     */
     public static DetectDecrease create(String name, String path, String vinWhenRising, String vinWhenFalling,
                                        double sampleTime, String outDataType, boolean saturateOnOverflow,
                                        String initialState, NCSLabModel model) {
-        Parameter vinWhenRisingParam = new Parameter(null, 1, "VinWhenRising", vinWhenRising);
-        Parameter vinWhenFallingParam = new Parameter(null, 2, "VinWhenFalling", vinWhenFalling);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        Parameter initialStateParam = new Parameter(null, 6, "InitialState", initialState);
+        // Build DTO using type-safe builder pattern
+        // NOTE: DetectDecreaseDto is missing most fields, so we only set initialValue
+        DetectDecreaseDto dto = DetectDecreaseDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .initialValue(com.ncslab.dto.common.TypedParameter.of(Double.parseDouble(initialState)))
+            .build();
 
-        DetectDecrease block = new DetectDecrease(vinWhenRisingParam, vinWhenFallingParam, sampleTimeParam,
-                                                 outDataTypeParam, saturateParam, initialStateParam,
-                                                 name, path, "null", model);
+        // Add missing parameters to the DTO's parameter map (workaround for incomplete DTO)
+        if (dto.getParameters() == null) {
+            dto.setParameters(new com.ncslab.dto.common.TypedParameterMap());
+        }
+        dto.getParameters().put("VinWhenRising", com.ncslab.dto.common.TypedParameter.of(vinWhenRising));
+        dto.getParameters().put("VinWhenFalling", com.ncslab.dto.common.TypedParameter.of(vinWhenFalling));
+        dto.getParameters().put("SampleTime", com.ncslab.dto.common.TypedParameter.of(sampleTime));
+        dto.getParameters().put("OutDataTypeStr", com.ncslab.dto.common.TypedParameter.of(outDataType));
+        dto.getParameters().put("SaturateOnIntegerOverflow", com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow));
 
-        setParameterBlockReference(block, vinWhenRisingParam, vinWhenFallingParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam, initialStateParam);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid DetectDecrease parameters: " + validation.getErrors());
+        }
 
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new DetectDecrease(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===
@@ -299,7 +332,10 @@ public class DetectDecrease extends LogicBlock {
     }
 
     public void generateArraysCodeC(CodeStructC code) {
-        context.put("block", this);
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add DetectDecrease-specific variables
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         context.put("signal", signal);
 
@@ -309,6 +345,10 @@ public class DetectDecrease extends LogicBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         String initCode="";
         code.addInitCode(initCode);
     }

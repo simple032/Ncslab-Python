@@ -183,28 +183,50 @@ public class CompareToZero extends LogicBlock{
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (Simple Overload) ===
     public static CompareToZero create(String name, String path, String relationalOperator, NCSLabModel model) {
         return create(name, path, relationalOperator, "boolean", -1.0,
                      "Inherit: Logical (see Configuration Parameters: Optimization)", false, model);
     }
 
+    /**
+     * Create a CompareToZero block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param relationalOperator Comparison operator (==, !=, <, <=, >, >=)
+     * @param logicDataType Output logic data type (typically "boolean")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return CompareToZero block instance
+     */
     public static CompareToZero create(String name, String path, String relationalOperator, String logicDataType,
                                       double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter relationalOperatorParam = new Parameter(null, 1, "RelationalOperator", relationalOperator);
-        Parameter logicDataTypeParam = new Parameter(null, 2, "LogicDataType", logicDataType);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        CompareToZeroDto dto = CompareToZeroDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .relationalOperator(com.ncslab.dto.common.TypedParameter.of(relationalOperator))
+            .logicDataType(com.ncslab.dto.common.TypedParameter.of(logicDataType))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        CompareToZero block = new CompareToZero(relationalOperatorParam, logicDataTypeParam, sampleTimeParam,
-                                               outDataTypeParam, saturateParam,
-                                               name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid CompareToZero parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, relationalOperatorParam, logicDataTypeParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new CompareToZero(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===
@@ -322,6 +344,10 @@ public class CompareToZero extends LogicBlock{
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         String initCode="";
         code.addInitCode(initCode);
     }

@@ -233,25 +233,49 @@ public class Delay extends DiscreteBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Delay create(String name, String path, int delayLength, double initialCondition, double sampleTime, NCSLabModel model) {
         return create(name, path, delayLength, initialCondition, sampleTime, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a Delay block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param delayLength Number of samples to delay (n in z^-n)
+     * @param initialCondition Initial condition for delay buffer
+     * @param sampleTime Sample time for discrete operation
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Delay block instance
+     */
     public static Delay create(String name, String path, int delayLength, double initialCondition, double sampleTime,
                               String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter delayLengthParam = new Parameter(null, 1, "DelayLength", String.valueOf(delayLength));
-        Parameter initialConditionParam = new Parameter(null, 2, "InitialCondition", String.valueOf(initialCondition));
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        DelayDto dto = DelayDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .delayLength(com.ncslab.dto.common.TypedParameter.of(delayLength))
+            .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        Delay block = new Delay(delayLengthParam, initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam,
-                              name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Delay parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, delayLengthParam, initialConditionParam, sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Delay(dto, model);
     }
 
     // === Parameter Validation ===

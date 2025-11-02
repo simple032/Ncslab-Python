@@ -190,29 +190,53 @@ public class LogicOperator extends LogicBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (Simple Overload) ===
     public static LogicOperator create(String name, String path, String operator, int numberOfInputs, NCSLabModel model) {
-        return create(name, path, operator, String.valueOf(numberOfInputs), "on", -1.0, 
+        return create(name, path, operator, String.valueOf(numberOfInputs), "on", -1.0,
                      "Inherit: Logical (see Configuration Parameters: Optimization)", false, model);
     }
-    
+
+    /**
+     * Create a LogicOperator block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param operator Logic operation to perform (AND, OR, NAND, NOR, XOR, NOT)
+     * @param inputs Number of input ports (as string for backward compatibility)
+     * @param allPortsSameDT Force all ports to have same data type ("on"/"off")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return LogicOperator block instance
+     */
     public static LogicOperator create(String name, String path, String operator, String inputs, String allPortsSameDT,
                                       double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter operatorParam = new Parameter(null, 1, "Operator", operator);
-        Parameter inputsParam = new Parameter(null, 2, "Inputs", inputs);
-        Parameter allPortsSameDTParam = new Parameter(null, 3, "AllPortsSameDT", allPortsSameDT);
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        LogicOperator block = new LogicOperator(operatorParam, inputsParam, allPortsSameDTParam, sampleTimeParam,
-                                               outDataTypeParam, saturateParam,
-                                               name, path, "null", model);
-        
-        setParameterBlockReference(block, operatorParam, inputsParam, allPortsSameDTParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        // IMPORTANT: Use LogicalOperatorDto (with "al") not LogicOperatorDto
+        LogicalOperatorDto dto = LogicalOperatorDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .operator(com.ncslab.dto.common.TypedParameter.of(operator))
+            .inputs(com.ncslab.dto.common.TypedParameter.of(Integer.parseInt(inputs)))
+            .allPortsSameDT(com.ncslab.dto.common.TypedParameter.of(allPortsSameDT))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid LogicOperator parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new LogicOperator(dto, model);
     }
     
     // === Helper Methods for JSON Parameter Creation ===

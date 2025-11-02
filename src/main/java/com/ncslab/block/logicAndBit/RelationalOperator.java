@@ -201,28 +201,50 @@ public class RelationalOperator extends LogicBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (Simple Overload) ===
     public static RelationalOperator create(String name, String path, String operator, NCSLabModel model) {
-        return create(name, path, operator, "boolean", -1.0, 
+        return create(name, path, operator, "boolean", -1.0,
                      "Inherit: Logical (see Configuration Parameters: Optimization)", false, model);
     }
-    
+
+    /**
+     * Create a RelationalOperator block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param operator Relational operation to perform (==, !=, <, <=, >, >=)
+     * @param logicDataType Output logic data type (typically "boolean")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return RelationalOperator block instance
+     */
     public static RelationalOperator create(String name, String path, String operator, String logicDataType,
                                            double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter operatorParam = new Parameter(null, 1, "Operator", operator);
-        Parameter logicDataTypeParam = new Parameter(null, 2, "LogicDataType", logicDataType);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        RelationalOperator block = new RelationalOperator(operatorParam, logicDataTypeParam, sampleTimeParam,
-                                                          outDataTypeParam, saturateParam,
-                                                          name, path, "null", model);
-        
-        setParameterBlockReference(block, operatorParam, logicDataTypeParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        RelationalOperatorDto dto = RelationalOperatorDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .operator(com.ncslab.dto.common.TypedParameter.of(operator))
+            .logicDataType(com.ncslab.dto.common.TypedParameter.of(logicDataType))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow ? "on" : "off"))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid RelationalOperator parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new RelationalOperator(dto, model);
     }
     
     // === Helper Methods for JSON Parameter Creation ===

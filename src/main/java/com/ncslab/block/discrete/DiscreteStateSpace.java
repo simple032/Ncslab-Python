@@ -234,32 +234,57 @@ public class DiscreteStateSpace extends DiscreteBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static DiscreteStateSpace create(String name, String path, String A, String B, String C, String D,
                                            String initialCondition, double sampleTime, NCSLabModel model) {
         return create(name, path, A, B, C, D, initialCondition, sampleTime, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a DiscreteStateSpace block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param A System matrix A
+     * @param B Input matrix B
+     * @param C Output matrix C
+     * @param D Feedthrough matrix D
+     * @param initialCondition Initial condition of state variables
+     * @param sampleTime Sample time for discrete operation
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return DiscreteStateSpace block instance
+     */
     public static DiscreteStateSpace create(String name, String path, String A, String B, String C, String D,
                                            String initialCondition, double sampleTime, String outDataType,
                                            boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter AParam = new Parameter(null, 1, "A", A);
-        Parameter BParam = new Parameter(null, 2, "B", B);
-        Parameter CParam = new Parameter(null, 3, "C", C);
-        Parameter DParam = new Parameter(null, 4, "D", D);
-        Parameter initialConditionParam = new Parameter(null, 5, "InitialCondition", initialCondition);
-        Parameter sampleTimeParam = new Parameter(null, 6, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 7, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 8, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        DiscreteStateSpaceDto dto = DiscreteStateSpaceDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .A(com.ncslab.dto.common.TypedParameter.of(A))
+            .B(com.ncslab.dto.common.TypedParameter.of(B))
+            .C(com.ncslab.dto.common.TypedParameter.of(C))
+            .D(com.ncslab.dto.common.TypedParameter.of(D))
+            .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        DiscreteStateSpace block = new DiscreteStateSpace(AParam, BParam, CParam, DParam, initialConditionParam,
-                                                          sampleTimeParam, outDataTypeParam, saturateParam,
-                                                          name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid DiscreteStateSpace parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, AParam, BParam, CParam, DParam, initialConditionParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new DiscreteStateSpace(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===

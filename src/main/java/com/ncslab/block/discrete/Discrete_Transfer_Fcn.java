@@ -216,29 +216,53 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Discrete_Transfer_Fcn create(String name, String path, String numerator, String denominator,
                                                String initialStates, double sampleTime, NCSLabModel model) {
         return create(name, path, numerator, denominator, initialStates, sampleTime, "Inherit: Same as input", false, model);
     }
+
+    /**
+     * Create a Discrete_Transfer_Fcn block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param numerator Numerator coefficients of the transfer function
+     * @param denominator Denominator coefficients of the transfer function
+     * @param initialStates Initial states of the transfer function
+     * @param sampleTime Sample time for discrete operation
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Discrete_Transfer_Fcn block instance
+     */
     public static Discrete_Transfer_Fcn create(String name, String path, String numerator, String denominator,
                                                String initialStates, double sampleTime, String outDataType,
                                                boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter numeratorParam = new Parameter(null, 1, "Numerator", numerator);
-        Parameter denominatorParam = new Parameter(null, 2, "Denominator", denominator);
-        Parameter initialStatesParam = new Parameter(null, 3, "InitialStates", initialStates);
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
+        // Build DTO using type-safe builder pattern
+        DiscreteTransferFcnDto dto = DiscreteTransferFcnDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .numerator(com.ncslab.dto.common.TypedParameter.of(numerator))
+            .denominator(com.ncslab.dto.common.TypedParameter.of(denominator))
+            .initialStates(com.ncslab.dto.common.TypedParameter.of(initialStates))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        Discrete_Transfer_Fcn block = new Discrete_Transfer_Fcn(numeratorParam, denominatorParam, initialStatesParam,
-            sampleTimeParam, outDataTypeParam, saturateParam,
-            name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Discrete_Transfer_Fcn parameters: " + validation.getErrors());
+        }
 
-        setParameterBlockReference(block, numeratorParam, denominatorParam, initialStatesParam,
-            sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Discrete_Transfer_Fcn(dto, model);
     }
 
     // === Helper Methods for JSON Parameter Creation ===

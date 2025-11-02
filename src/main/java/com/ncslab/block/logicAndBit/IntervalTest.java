@@ -165,28 +165,61 @@ public class IntervalTest extends LogicBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (Simple Overload) ===
     public static IntervalTest create(String name, String path, double lowerLimit, double upperLimit, NCSLabModel model) {
-        return create(name, path, String.valueOf(lowerLimit), String.valueOf(upperLimit), -1.0, 
+        return create(name, path, String.valueOf(lowerLimit), String.valueOf(upperLimit), -1.0,
                      "Inherit: Logical (see Configuration Parameters: Optimization)", false, model);
     }
-    
-    public static IntervalTest create(String name, String path, String lowerLimit, String upperLimit, 
+
+    /**
+     * Create an IntervalTest block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * NOTE: IntervalTestDto supports lowerBound, upperBound, and intervalClosing fields.
+     * The additional parameters (sampleTime, outDataType, saturateOnOverflow) are
+     * stored in the base BlockDto parameter map for backward compatibility.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param lowerLimit Lower bound of the interval
+     * @param upperLimit Upper bound of the interval
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return IntervalTest block instance
+     */
+    public static IntervalTest create(String name, String path, String lowerLimit, String upperLimit,
                                      double sampleTime, String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter upperLimitParam = new Parameter(null, 1, "UpperLimit", upperLimit);
-        Parameter lowerLimitParam = new Parameter(null, 2, "LowerLimit", lowerLimit);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        IntervalTest block = new IntervalTest(upperLimitParam, lowerLimitParam, sampleTimeParam,
-                                             outDataTypeParam, saturateParam,
-                                             name, path, "null", model);
-        
-        setParameterBlockReference(block, upperLimitParam, lowerLimitParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        // NOTE: IntervalTestDto has lowerBound, upperBound, intervalClosing but missing some fields
+        IntervalTestDto dto = IntervalTestDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .lowerBound(com.ncslab.dto.common.TypedParameter.of(Double.parseDouble(lowerLimit)))
+            .upperBound(com.ncslab.dto.common.TypedParameter.of(Double.parseDouble(upperLimit)))
+            .intervalClosing(com.ncslab.dto.common.TypedParameter.of("[]"))  // Default closed interval
+            .build();
+
+        // Add missing parameters to the DTO's parameter map (workaround for incomplete DTO)
+        if (dto.getParameters() == null) {
+            dto.setParameters(new com.ncslab.dto.common.TypedParameterMap());
+        }
+        dto.getParameters().put("SampleTime", com.ncslab.dto.common.TypedParameter.of(sampleTime));
+        dto.getParameters().put("OutDataTypeStr", com.ncslab.dto.common.TypedParameter.of(outDataType));
+        dto.getParameters().put("SaturateOnIntegerOverflow", com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow));
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid IntervalTest parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new IntervalTest(dto, model);
     }
     
     // === Helper Methods for JSON Parameter Creation ===
@@ -284,10 +317,14 @@ public class IntervalTest extends LogicBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
+
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add IntervalTest-specific variables for backward compatibility
         context.put("lowLimit", lowLimit);
         context.put("upLimit", upLimit);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/IntervalTest/init.vm", context);
         code.addInitCode(codeStr);
     }
