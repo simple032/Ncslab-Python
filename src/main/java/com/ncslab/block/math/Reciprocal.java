@@ -125,32 +125,62 @@ public class Reciprocal extends MathBlock {
         }
     }
     
+    /**
+     * Create a Reciprocal block with default parameters using DTO-based construction.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param enableSaturation Enable output saturation
+     * @param model Parent model
+     * @return Configured Reciprocal block instance
+     */
     public static Reciprocal create(String name, String path, boolean enableSaturation, NCSLabModel model) {
-        return create(name, path, enableSaturation, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 
+        return create(name, path, enableSaturation, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
                      -1.0, "Inherit: Same as input", false, model);
     }
-    
-    public static Reciprocal create(String name, String path, boolean enableSaturation, 
+
+    /**
+     * Create a Reciprocal block with full parameters using DTO-based construction.
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param enableSaturation Enable output saturation
+     * @param upperLimit Upper saturation limit
+     * @param lowerLimit Lower saturation limit
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Configured Reciprocal block instance
+     */
+    public static Reciprocal create(String name, String path, boolean enableSaturation,
                                    double upperLimit, double lowerLimit,
                                    double sampleTime, String outDataType, boolean saturateOnOverflow,
                                    NCSLabModel model) {
-        Parameter enableSaturationParam = new Parameter(null, 1, "EnableSaturation", enableSaturation ? "on" : "off");
-        Parameter upperLimitParam = new Parameter(null, 2, "UpperLimit", 
-            upperLimit == Double.POSITIVE_INFINITY ? "inf" : String.valueOf(upperLimit));
-        Parameter lowerLimitParam = new Parameter(null, 3, "LowerLimit", 
-            lowerLimit == Double.NEGATIVE_INFINITY ? "-inf" : String.valueOf(lowerLimit));
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Reciprocal block = new Reciprocal(enableSaturationParam, upperLimitParam, lowerLimitParam,
-                                         sampleTimeParam, outDataTypeParam, saturateParam,
-                                         name, path, "null", model);
-        
-        setParameterBlockReference(block, enableSaturationParam, upperLimitParam, lowerLimitParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        com.ncslab.dto.block.specialized.math.ReciprocalDto dto = com.ncslab.dto.block.specialized.math.ReciprocalDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .enableSaturation(com.ncslab.dto.common.TypedParameter.of(enableSaturation))
+            .upperLimit(com.ncslab.dto.common.TypedParameter.of(upperLimit))
+            .lowerLimit(com.ncslab.dto.common.TypedParameter.of(lowerLimit))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Reciprocal parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Reciprocal(dto, model);
     }
     
     /**

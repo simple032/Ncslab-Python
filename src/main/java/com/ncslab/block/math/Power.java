@@ -144,28 +144,44 @@ public class Power extends MathBlock {
     public static Power create(String name, String path, String powerMethod, NCSLabModel model) {
         return create(name, path, powerMethod, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a Power block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param powerMethod Power method ("Element-wise(.^)" or "Matrix(^)")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Power block instance
+     */
     public static Power create(String name, String path, String powerMethod,
                               double sampleTime, String outDataType, boolean saturateOnOverflow,
                               NCSLabModel model) {
-        Parameter powerMethodParam = new Parameter(null, 1, "PowerMethod", powerMethod);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        // Create block using existing constructor
-        JSONObject blockIdentity = createBlockIdentity(name, path, "null");
-        blockIdentity.getJSONObject("paramValues").put("PowerMethod", powerMethodParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("SampleTime", sampleTimeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("OutDataTypeStr", outDataTypeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("SaturateOnIntegerOverflow", saturateParam.getInitString());
-        
-        Power block = new Power(blockIdentity, model);
-        
-        setParameterBlockReference(block, powerMethodParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        PowerDto dto = PowerDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .powerMethod(com.ncslab.dto.common.TypedParameter.of(powerMethod))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Power parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Power(dto, model);
     }
     
     // === Utility Methods ===

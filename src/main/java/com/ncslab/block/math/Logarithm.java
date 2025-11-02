@@ -162,32 +162,47 @@ public class Logarithm extends MathBlock {
     public static Logarithm create(String name, String path, String logType, NCSLabModel model) {
         return create(name, path, logType, 10.0, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a Logarithm block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param logType Logarithm type (ln, log10, log2, logn)
+     * @param customBase Custom base value (used when logType is "logn")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Logarithm block instance
+     */
     public static Logarithm create(String name, String path, String logType, double customBase,
                                   double sampleTime, String outDataType, boolean saturateOnOverflow,
                                   NCSLabModel model) {
-        Parameter logTypeParam = new Parameter(null, 1, "LogType", logType);
-        Parameter customBaseParam = new Parameter(null, 2, "CustomBase", String.valueOf(customBase));
-        Parameter zeroCrossingParam = new Parameter(null, 3, "ZeroCrossing", "on");
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        // Create block using existing constructor
-        JSONObject blockIdentity = createBlockIdentity(name, path, "null");
-        blockIdentity.getJSONObject("paramValues").put("LogType", logTypeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("CustomBase", customBaseParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("ZeroCrossing", zeroCrossingParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("SampleTime", sampleTimeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("OutDataTypeStr", outDataTypeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("SaturateOnIntegerOverflow", saturateParam.getInitString());
-        
-        Logarithm block = new Logarithm(blockIdentity, model);
-        
-        setParameterBlockReference(block, logTypeParam, customBaseParam, zeroCrossingParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        LogarithmDto dto = LogarithmDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .logType(com.ncslab.dto.common.TypedParameter.of(logType))
+            .customBase(com.ncslab.dto.common.TypedParameter.of(customBase))
+            .zeroCrossing(com.ncslab.dto.common.TypedParameter.of(true))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Logarithm parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Logarithm(dto, model);
     }
     
     // === Utility Methods ===

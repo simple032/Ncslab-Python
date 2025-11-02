@@ -175,24 +175,45 @@ public class MathFunction extends MathBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static MathFunction create(String name, String path, String mathOperator, NCSLabModel model) {
         return create(name, path, mathOperator, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a MathFunction block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param mathOperator Mathematical operator (sin, cos, tan, sqrt, exp, log, abs, floor, ceil, round, sign, pow, transpose)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return MathFunction block instance
+     */
     public static MathFunction create(String name, String path, String mathOperator, double sampleTime,
                                      String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter operator = new Parameter(null, 1, "Operator", mathOperator);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        MathFunction block = new MathFunction(operator, sampleTimeParam, outDataTypeParam, saturateParam,
-                                             name, path, "null", model);
-        
-        setParameterBlockReference(block, operator, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        MathFunctionDto dto = MathFunctionDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .functionType(com.ncslab.dto.common.TypedParameter.of(mathOperator))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid MathFunction parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new MathFunction(dto, model);
     }
     
     // === Parameter Validation ===

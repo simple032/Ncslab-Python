@@ -4,6 +4,7 @@ import com.ncslab.block.math.MathBlock;
 import com.ncslab.block.data.Data;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.dto.block.specialized.math.MinMaxDto;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
 import lombok.Getter;
@@ -146,24 +147,46 @@ public class MinMax extends MathBlock {
     public static MinMax create(String name, String path, String function, int numInputs, NCSLabModel model) {
         return create(name, path, function, numInputs, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a MinMax block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param function Function type ("min" or "max")
+     * @param numInputs Number of input ports
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return MinMax block instance
+     */
     public static MinMax create(String name, String path, String function, int numInputs,
                                double sampleTime, String outDataType, boolean saturateOnOverflow,
                                NCSLabModel model) {
-        Parameter functionParam = new Parameter(null, 1, "Function", function);
-        Parameter numInputsParam = new Parameter(null, 2, "NumInputs", String.valueOf(numInputs));
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        MinMax block = new MinMax(functionParam, numInputsParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam,
-                                 name, path, "null", model);
-        
-        setParameterBlockReference(block, functionParam, numInputsParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        MinMaxDto dto = MinMaxDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .function(com.ncslab.dto.common.TypedParameter.of(function))
+            .numInputs(com.ncslab.dto.common.TypedParameter.of(numInputs))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid MinMax parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new MinMax(dto, model);
     }
     
     // === Utility Methods ===

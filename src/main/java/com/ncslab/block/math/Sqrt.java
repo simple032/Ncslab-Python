@@ -197,24 +197,56 @@ public class Sqrt extends MathBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
+    /**
+     * Create a Sqrt block with default parameters using DTO-based construction.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param sqrtFunction Sqrt function type ("sqrt", "rSqrt", "signedSqrt")
+     * @param model Parent model
+     * @return Configured Sqrt block instance
+     */
     public static Sqrt create(String name, String path, String sqrtFunction, NCSLabModel model) {
         return create(name, path, sqrtFunction, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a Sqrt block with full parameters using DTO-based construction.
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param sqrtFunction Sqrt function type ("sqrt", "rSqrt", "signedSqrt")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Configured Sqrt block instance
+     */
     public static Sqrt create(String name, String path, String sqrtFunction, double sampleTime,
                              String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter function = new Parameter(null, 1, "Function", sqrtFunction);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        Sqrt block = new Sqrt(function, sampleTimeParam, outDataTypeParam, saturateParam,
-                             name, path, "null", model);
-        
-        setParameterBlockReference(block, function, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        SqrtDto dto = SqrtDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .function(com.ncslab.dto.common.TypedParameter.of(sqrtFunction))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Sqrt parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Sqrt(dto, model);
     }
     
     // === Parameter Validation ===

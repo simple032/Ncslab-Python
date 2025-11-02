@@ -244,28 +244,58 @@ public class Add extends MathBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
+    /**
+     * Create an Add block with default parameters using DTO-based construction.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param inputSequence Input sequence defining signs (e.g., "++", "+-", "++--")
+     * @param model Parent model
+     * @return Configured Add block instance
+     */
     public static Add create(String name, String path, String inputSequence, NCSLabModel model) {
         return create(name, path, inputSequence, -1.0, true, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create an Add block with full parameters using DTO-based construction.
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param inputSequence Input sequence defining signs (e.g., "++", "+-", "++--")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param inputSameDT Require inputs to have same data type
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Configured Add block instance
+     */
     public static Add create(String name, String path, String inputSequence,
                             double sampleTime, boolean inputSameDT, String outDataType,
                             boolean saturateOnOverflow, NCSLabModel model) {
-        // Create parameters
-        Parameter inputs = new Parameter(null, 1, "Inputs", inputSequence);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter inputSameDTParam = new Parameter(null, 3, "InputSameDT", inputSameDT ? "on" : "off");
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
+        // Build DTO using type-safe builder pattern
+        AddDto dto = AddDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .inputs(com.ncslab.dto.common.TypedParameter.of(inputSequence))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        Add block = new Add(inputs, sampleTimeParam, inputSameDTParam, outDataTypeParam, saturateParam,
-                           name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Add parameters: " + validation.getErrors());
+        }
 
-        // Set block reference in parameters
-        setParameterBlockReference(block, inputs, sampleTimeParam, inputSameDTParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Add(dto, model);
     }
 
     // === Parameter Validation ===

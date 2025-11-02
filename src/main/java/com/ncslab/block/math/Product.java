@@ -185,31 +185,62 @@ public class Product extends MathBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
+    /**
+     * Create a Product block with default parameters using DTO-based construction.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param inputSequence Input sequence defining operations
+     * @param model Parent model
+     * @return Configured Product block instance
+     */
     public static Product create(String name, String path, String inputSequence, NCSLabModel model) {
         return create(name, path, inputSequence, "Element-wise(*)", -1.0, true,
                      "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a Product block with full parameters using DTO-based construction.
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param inputSequence Input sequence defining operations
+     * @param multiplicationMode Element-wise or Matrix multiplication mode
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, greater than 0 for discrete)
+     * @param inputSameDT Require inputs to have same data type
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Configured Product block instance
+     */
     public static Product create(String name, String path, String inputSequence, String multiplicationMode,
                                 double sampleTime, boolean inputSameDT, String outDataType,
                                 boolean saturateOnOverflow, NCSLabModel model) {
-        // Create parameters
-        Parameter inputs = new Parameter(null, 1, "Inputs", inputSequence);
-        Parameter multiplication = new Parameter(null, 2, "Multiplication", multiplicationMode);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter inputSameDTParam = new Parameter(null, 4, "InputSameDT", inputSameDT ? "on" : "off");
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
+        // Build DTO using type-safe builder pattern
+        ProductDto dto = ProductDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .inputs(com.ncslab.dto.common.TypedParameter.of(inputSequence))
+            .multiplication(com.ncslab.dto.common.TypedParameter.of(multiplicationMode))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .inputSameDT(com.ncslab.dto.common.TypedParameter.of(inputSameDT))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        Product block = new Product(inputs, multiplication, sampleTimeParam, inputSameDTParam,
-                                   outDataTypeParam, saturateParam, name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Product parameters: " + validation.getErrors());
+        }
 
-        // Set block reference in parameters
-        setParameterBlockReference(block, inputs, multiplication, sampleTimeParam, inputSameDTParam,
-                                  outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Product(dto, model);
     }
 
     // === Parameter Validation ===

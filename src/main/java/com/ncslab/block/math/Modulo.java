@@ -6,6 +6,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.ncslablink.BlockCreationException;
+import com.ncslab.dto.block.specialized.math.ModuloDto;
 import lombok.Getter;
 import org.json.JSONObject;
 
@@ -158,25 +159,48 @@ public class Modulo extends MathBlock {
     public static Modulo create(String name, String path, String moduloType, String divisorSource, double divisor, NCSLabModel model) {
         return create(name, path, moduloType, divisorSource, divisor, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a Modulo block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param moduloType Type of modulo operation ("fmod" or "rem")
+     * @param divisorSource Source of divisor ("Internal" or "External")
+     * @param divisor Divisor value when divisorSource is "Internal"
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Modulo block instance
+     */
     public static Modulo create(String name, String path, String moduloType, String divisorSource, double divisor,
                                double sampleTime, String outDataType, boolean saturateOnOverflow,
                                NCSLabModel model) {
-        Parameter moduloTypeParam = new Parameter(null, 1, "ModuloType", moduloType);
-        Parameter divisorSourceParam = new Parameter(null, 2, "DivisorSource", divisorSource);
-        Parameter divisorParam = new Parameter(null, 3, "Divisor", String.valueOf(divisor));
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Modulo block = new Modulo(moduloTypeParam, divisorSourceParam, divisorParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam,
-                                 name, path, "null", model);
-        
-        setParameterBlockReference(block, moduloTypeParam, divisorSourceParam, divisorParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        ModuloDto dto = ModuloDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .moduloType(com.ncslab.dto.common.TypedParameter.of(moduloType))
+            .divisorSource(com.ncslab.dto.common.TypedParameter.of(divisorSource))
+            .divisor(com.ncslab.dto.common.TypedParameter.of(divisor))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Modulo parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Modulo(dto, model);
     }
     
     // === Utility Methods ===

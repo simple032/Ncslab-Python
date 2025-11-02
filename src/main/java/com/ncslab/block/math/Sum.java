@@ -203,28 +203,53 @@ public class Sum extends MathBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Sum create(String name, String path, String inputSequence, NCSLabModel model) {
         return create(name, path, inputSequence, -1.0, true, "Inherit: Same as input", false, "rectangular", model);
     }
+
+    /**
+     * Create a Sum block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of JSONObject manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param inputSequence Input sequence (e.g., "++", "+-", "+--")
+     * @param sampleTime Sample time (-1 for inherited)
+     * @param inputSameDT Require same data type for all inputs
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param iconShape Icon shape ("round" or "rectangular")
+     * @param model Parent model
+     * @return Sum block instance
+     */
     public static Sum create(String name, String path, String inputSequence,
-                            double sampleTime, boolean inputSameDT, String outDataType, 
+                            double sampleTime, boolean inputSameDT, String outDataType,
                             boolean saturateOnOverflow, String iconShape, NCSLabModel model) {
-        // Create parameters
-        Parameter inputs = new Parameter(null, 1, "Inputs", inputSequence);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter inputSameDTParam = new Parameter(null, 3, "InputSameDT", inputSameDT ? "on" : "off");
-        Parameter outDataTypeParam = new Parameter(null, 4, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 5, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        Parameter icon = new Parameter(null, 6, "Icon", iconShape);
-        
-        Sum block = new Sum(inputs, sampleTimeParam, inputSameDTParam, outDataTypeParam, saturateParam, icon,
-                           name, path, "null", model);
-        
-        // Set block reference in parameters
-        setParameterBlockReference(block, inputs, sampleTimeParam, inputSameDTParam, outDataTypeParam, saturateParam, icon);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        com.ncslab.dto.block.specialized.math.SumDto dto =
+            com.ncslab.dto.block.specialized.math.SumDto.builder()
+                .blockName(name)
+                .blockPath(path)
+                .blockUUID("null")
+                .inputs(com.ncslab.dto.common.TypedParameter.of(inputSequence))
+                .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+                .inputSameDT(com.ncslab.dto.common.TypedParameter.of(inputSameDT))
+                .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+                .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+                .icon(com.ncslab.dto.common.TypedParameter.of(iconShape))
+                .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Sum parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Sum(dto, model);
     }
     // === Parameter Validation ===
     private static void validateParameters(Parameter inputs, Parameter sampleTime) {
@@ -303,6 +328,7 @@ public class Sum extends MathBlock {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to avoid JSONException
         return identity;
     }
     // === Port Initialization ===

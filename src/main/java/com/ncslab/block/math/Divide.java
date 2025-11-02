@@ -144,26 +144,57 @@ public class Divide extends MathBlock {
         }
     }
     
+    /**
+     * Create a Divide block with default parameters using DTO-based construction.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param divideMethod Division method ("Element-wise(./.)" or "Matrix(/)")
+     * @param model Parent model
+     * @return Configured Divide block instance
+     */
     public static Divide create(String name, String path, String divideMethod, NCSLabModel model) {
         return create(name, path, divideMethod, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a Divide block with full parameters using DTO-based construction.
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param divideMethod Division method ("Element-wise(./.)" or "Matrix(/)")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Configured Divide block instance
+     */
     public static Divide create(String name, String path, String divideMethod,
                                double sampleTime, String outDataType, boolean saturateOnOverflow,
                                NCSLabModel model) {
-        Parameter divideMethodParam = new Parameter(null, 1, "DivideMethod", divideMethod);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        Divide block = new Divide(divideMethodParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam,
-                                 name, path, "null", model);
-        
-        setParameterBlockReference(block, divideMethodParam, sampleTimeParam,
-                                 outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        // Note: DivideDto uses numInputs instead of divideMethod
+        com.ncslab.dto.block.specialized.math.DivideDto dto = com.ncslab.dto.block.specialized.math.DivideDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .numInputs(com.ncslab.dto.common.TypedParameter.of(2))  // Divide block always has 2 inputs
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Divide parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Divide(dto, model);
     }
     
     // === Utility Methods ===

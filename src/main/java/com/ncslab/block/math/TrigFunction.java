@@ -163,24 +163,45 @@ public class TrigFunction extends MathBlock {
         }
     }
     
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static TrigFunction create(String name, String path, String trigFunction, NCSLabModel model) {
         return create(name, path, trigFunction, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create a TrigFunction block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param trigFunction Trigonometric function type (sin, cos, tan, asin, acos, atan, atan2)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return TrigFunction block instance
+     */
     public static TrigFunction create(String name, String path, String trigFunction, double sampleTime,
                                      String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
-        Parameter function = new Parameter(null, 1, "Function", trigFunction);
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
-        
-        TrigFunction block = new TrigFunction(function, sampleTimeParam, outDataTypeParam, saturateParam,
-                                             name, path, "null", model);
-        
-        setParameterBlockReference(block, function, sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        TrigFunctionDto dto = TrigFunctionDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .functionType(com.ncslab.dto.common.TypedParameter.of(trigFunction))
+            .outputSignalType(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid TrigFunction parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new TrigFunction(dto, model);
     }
     
     // === Parameter Validation ===

@@ -210,28 +210,51 @@ public class Gain extends MathBlock {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Gain create(String name, String path, double gainValue, NCSLabModel model) {
         return create(name, path, gainValue, false, -1.0, "Inherit: Same as input", false, model);
     }
 
+    /**
+     * Create a Gain block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param gainValue Gain multiplier value
+     * @param matrixMultiplication True for matrix multiplication (K*u), false for element-wise (K.*u)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Gain block instance
+     */
     public static Gain create(String name, String path, double gainValue,
                              boolean matrixMultiplication, double sampleTime,
                              String outDataType, boolean saturateOnOverflow,
                              NCSLabModel model) {
-        // Create parameters
-        Parameter gain = new Parameter(null, 1, "Gain", String.valueOf(gainValue));
-        Parameter sampleTimeParam = new Parameter(null, 2, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 3, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 4, "SaturateOnIntegerOverflow", String.valueOf(saturateOnOverflow));
+        // Build DTO using type-safe builder pattern
+        GainDto dto = GainDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .gain(com.ncslab.dto.common.TypedParameter.of(gainValue))
+            .multiplication(com.ncslab.dto.common.TypedParameter.of(matrixMultiplication ? "Matrix(K*u)" : "Element-wise(K.*u)"))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
 
-        Gain block = new Gain(gain, sampleTimeParam, outDataTypeParam, saturateParam,
-                             matrixMultiplication, name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Gain parameters: " + validation.getErrors());
+        }
 
-        // Set block reference in parameters
-        setParameterBlockReference(block, gain, sampleTimeParam, outDataTypeParam, saturateParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Gain(dto, model);
     }
 
     // === Parameter Validation ===
@@ -304,6 +327,7 @@ public class Gain extends MathBlock {
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to avoid JSONException
         return identity;
     }
 

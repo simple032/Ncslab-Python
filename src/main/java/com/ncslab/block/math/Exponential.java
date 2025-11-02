@@ -160,32 +160,47 @@ public class Exponential extends MathBlock {
     public static Exponential create(String name, String path, String expType, NCSLabModel model) {
         return create(name, path, expType, 10.0, -1.0, "Inherit: Same as input", false, model);
     }
-    
+
+    /**
+     * Create an Exponential block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param expType Exponential type (exp, exp10, exp2, expn)
+     * @param customBase Custom base value (used when expType is "expn")
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Exponential block instance
+     */
     public static Exponential create(String name, String path, String expType, double customBase,
                                     double sampleTime, String outDataType, boolean saturateOnOverflow,
                                     NCSLabModel model) {
-        Parameter expTypeParam = new Parameter(null, 1, "ExpType", expType);
-        Parameter customBaseParam = new Parameter(null, 2, "CustomBase", String.valueOf(customBase));
-        Parameter zeroCrossingParam = new Parameter(null, 3, "ZeroCrossing", "on");
-        Parameter sampleTimeParam = new Parameter(null, 4, "SampleTime", String.valueOf(sampleTime));
-        Parameter outDataTypeParam = new Parameter(null, 5, "OutDataTypeStr", outDataType);
-        Parameter saturateParam = new Parameter(null, 6, "SaturateOnIntegerOverflow", saturateOnOverflow ? "on" : "off");
-        
-        // Create block using existing constructor
-        JSONObject blockIdentity = createBlockIdentity(name, path, "null");
-        blockIdentity.getJSONObject("paramValues").put("ExpType", expTypeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("CustomBase", customBaseParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("ZeroCrossing", zeroCrossingParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("SampleTime", sampleTimeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("OutDataTypeStr", outDataTypeParam.getInitString());
-        blockIdentity.getJSONObject("paramValues").put("SaturateOnIntegerOverflow", saturateParam.getInitString());
-        
-        Exponential block = new Exponential(blockIdentity, model);
-        
-        setParameterBlockReference(block, expTypeParam, customBaseParam, zeroCrossingParam,
-                                 sampleTimeParam, outDataTypeParam, saturateParam);
-        
-        return block;
+        // Build DTO using type-safe builder pattern
+        ExponentialDto dto = ExponentialDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .expType(com.ncslab.dto.common.TypedParameter.of(expType))
+            .customBase(com.ncslab.dto.common.TypedParameter.of(customBase))
+            .zeroCrossing(com.ncslab.dto.common.TypedParameter.of(true))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Exponential parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Exponential(dto, model);
     }
     
     // === Utility Methods ===
