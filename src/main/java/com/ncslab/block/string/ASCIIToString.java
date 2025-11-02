@@ -9,7 +9,6 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
-import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.string.ASCIIToStringDto;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -110,13 +109,6 @@ public class ASCIIToString extends Block {
 
         // Single output port for string scalar
         outputPortList.add(new OutputPort(this, 1, true));
-    }
-
-    /**
-     * Generic DTO constructor for factory compatibility
-     */
-    public ASCIIToString(BlockDto blockDto, NCSLabModel model) {
-        this((ASCIIToStringDto) blockDto, model);
     }
 
     @Override

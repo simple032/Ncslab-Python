@@ -141,24 +141,48 @@ public class In extends Block {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static In create(String name, String path, int portNumber, NCSLabModel model) {
         return create(name, path, portNumber, "-1", -1.0, "Inherit: auto", model);
     }
 
+    /**
+     * Create an In block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param portNumber Port number for subsystem input (>= 1)
+     * @param portDimensions Port dimensions specification ("-1" for inherited)
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outputDataType Output data type specification
+     * @param model Parent model
+     * @return In block instance
+     */
     public static In create(String name, String path, int portNumber, String portDimensions,
                            double sampleTime, String outputDataType, NCSLabModel model) {
-        Parameter portParam = new Parameter(null, 1, "No", String.valueOf(portNumber));
-        Parameter portDimensionsParam = new Parameter(null, 2, "PortDimensions", portDimensions);
-        Parameter sampleTimeParam = new Parameter(null, 3, "SampleTime", String.valueOf(sampleTime));
-        Parameter outputDataTypeParam = new Parameter(null, 4, "OutputDataTypeStr", outputDataType);
+        // Build DTO using constructor with individual parameters
+        InDto dto = new InDto(
+            name,
+            path,
+            com.ncslab.dto.common.TypedParameter.of(portNumber),
+            com.ncslab.dto.common.TypedParameter.of(portDimensions),
+            com.ncslab.dto.common.TypedParameter.of(sampleTime),
+            com.ncslab.dto.common.TypedParameter.of(outputDataType)
+        );
 
-        In block = new In(portParam, portDimensionsParam, sampleTimeParam, outputDataTypeParam,
-                         name, path, "null", model);
+        // Set blockUUID
+        dto.setBlockUUID("null");
 
-        setParameterBlockReference(block, portParam, portDimensionsParam, sampleTimeParam, outputDataTypeParam);
+        // Validate DTO (automatic validation)
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid In parameters: " + dto.getValidationErrors());
+        }
 
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new In(dto, model);
     }
 
     // === Code Generation Methods ===

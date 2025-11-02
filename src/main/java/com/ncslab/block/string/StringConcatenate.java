@@ -203,26 +203,47 @@ public class StringConcatenate extends Block {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static StringConcatenate create(String name, String path, int numberOfInputs, NCSLabModel model) {
         return create(name, path, numberOfInputs, 0, "Fixed-size", model);
     }
 
+    /**
+     * Create a StringConcatenate block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param numberOfInputs Number of input strings to concatenate (1-32)
+     * @param maximumLength Maximum output length in bytes (0 = unlimited)
+     * @param outputDimensionsMode Output dimensions mode ("Fixed-size" or "Variable-size")
+     * @param model Parent model
+     * @return StringConcatenate block instance
+     */
     public static StringConcatenate create(String name, String path, int numberOfInputs,
                                           int maximumLength, String outputDimensionsMode,
                                           NCSLabModel model) {
-        // Create parameters
-        Parameter numInputsParam = new Parameter(null, 1, "NumberOfInputs", String.valueOf(numberOfInputs));
-        Parameter maxLengthParam = new Parameter(null, 2, "MaximumLength", String.valueOf(maximumLength));
-        Parameter outputModeParam = new Parameter(null, 3, "OutputDimensionsMode", outputDimensionsMode);
+        // Build DTO using type-safe builder pattern
+        StringConcatenateDto dto = StringConcatenateDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .numberOfInputs(numberOfInputs)
+            .maximumLength(maximumLength)
+            .outputDimensionsMode(outputDimensionsMode)
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(-1.0))
+            .build();
 
-        StringConcatenate block = new StringConcatenate(numInputsParam, maxLengthParam, outputModeParam,
-                                                       name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid StringConcatenate parameters: " + validation.getErrors());
+        }
 
-        // Set block reference in parameters
-        setParameterBlockReference(block, numInputsParam, maxLengthParam, outputModeParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new StringConcatenate(dto, model);
     }
 
     // === Parameter Validation ===

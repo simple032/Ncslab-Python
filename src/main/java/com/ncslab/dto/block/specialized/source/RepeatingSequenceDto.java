@@ -18,18 +18,30 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class RepeatingSequenceDto extends BlockDto {
-    
+
     /**
      * Time values for the sequence points.
      * Default: [0 1]
      */
     private TypedParameter timeValues;
-    
+
     /**
      * Output values corresponding to time points.
      * Default: [0 1]
      */
     private TypedParameter outputValues;
+
+    /**
+     * Output data type specification.
+     * Default: "Inherit: Same as parameter"
+     */
+    private TypedParameter outDataTypeStr;
+
+    /**
+     * Handle integer overflow by saturation.
+     * Default: false (off)
+     */
+    private TypedParameter saturateOnIntegerOverflow;
     
     public RepeatingSequenceDto(String blockName, String blockPath) {
         super(blockName,blockPath);
@@ -42,6 +54,12 @@ public class RepeatingSequenceDto extends BlockDto {
         }
         if (outputValues == null) {
             outputValues = TypedParameter.of("[0 1]");
+        }
+        if (outDataTypeStr == null) {
+            outDataTypeStr = TypedParameter.of("Inherit: Same as parameter");
+        }
+        if (saturateOnIntegerOverflow == null) {
+            saturateOnIntegerOverflow = TypedParameter.of(false);
         }
     }
 }

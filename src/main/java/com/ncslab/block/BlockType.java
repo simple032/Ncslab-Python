@@ -52,6 +52,7 @@ public class BlockType{
         blockClassTree.put("Terminator", com.ncslab.block.sink.Terminator.class);
         blockClassTree.put("Display", com.ncslab.block.sink.Display.class);
         blockClassTree.put("Matplotlib", com.ncslab.block.sink.Matplotlib.class);
+        blockClassTree.put("XYGraph", com.ncslab.block.sink.XYGraph.class);
 
         // Source
         blockClassTree.put("Constant", com.ncslab.block.source.Constant.class);
@@ -91,6 +92,9 @@ public class BlockType{
         blockClassTree.put("Exponential", com.ncslab.block.math.Exponential.class);
         blockClassTree.put("Modulo", com.ncslab.block.math.Modulo.class);
         blockClassTree.put("Reciprocal", com.ncslab.block.math.Reciprocal.class);
+        blockClassTree.put("ReciprocalSqrt", com.ncslab.block.math.ReciprocalSqrt.class);
+        blockClassTree.put("DotProduct", com.ncslab.block.math.DotProduct.class);
+        blockClassTree.put("ComplexToMagnitudeAngle", com.ncslab.block.math.ComplexToMagnitudeAngle.class);
 
         // Continuous
         blockClassTree.put("Derivative", com.ncslab.block.continuous.Derivative.class);

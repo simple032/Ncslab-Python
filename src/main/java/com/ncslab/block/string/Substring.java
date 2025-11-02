@@ -192,23 +192,43 @@ public class Substring extends Block {
         }
     }
 
-    // === Static Factory Method for Programmatic Creation ===
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Substring create(String name, String path, NCSLabModel model) {
         return create(name, path, 1, 1, model);
     }
 
+    /**
+     * Create a Substring block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param startIndex Starting character index (1-based MATLAB convention, >= 1)
+     * @param length Number of characters to extract (>= 1)
+     * @param model Parent model
+     * @return Substring block instance
+     */
     public static Substring create(String name, String path, int startIndex, int length, NCSLabModel model) {
-        // Create parameters
-        Parameter startIndexParam = new Parameter(null, 1, "StartIndex", String.valueOf(startIndex));
-        Parameter lengthParam = new Parameter(null, 2, "Length", String.valueOf(length));
+        // Build DTO using type-safe builder pattern
+        SubstringDto dto = SubstringDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .startIndex(startIndex)
+            .length(length)
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(-1.0))
+            .build();
 
-        Substring block = new Substring(startIndexParam, lengthParam,
-                                       name, path, "null", model);
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Substring parameters: " + validation.getErrors());
+        }
 
-        // Set block reference in parameters
-        setParameterBlockReference(block, startIndexParam, lengthParam);
-
-        return block;
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Substring(dto, model);
     }
 
     // === Parameter Validation ===

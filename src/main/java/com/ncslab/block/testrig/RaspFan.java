@@ -70,22 +70,27 @@ public class RaspFan extends Block {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        
+
+        // Populate all standard context variables (blockId, block, inputs, outputs, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         hardwareDefineName = "Block" + this.getBlockId() + "_RaspFan";
-        
-        context.put("block", this);
+
+        // Add RaspFan-specific variables
         context.put("modelMode", model.getModelMode().name());
         context.put("hardwareDefineName", hardwareDefineName);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/testrig/RaspFan/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
+        // Populate all standard context variables (blockId, block, inputs, outputs, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         hardwareDefineName = "Block" + this.getBlockId() + "_RaspFan";
 
-        context.put("block", this);
-        context.put("blockId", this.getBlockId());
+        // Add RaspFan-specific variables
         context.put("blockStateList", stateList);
         context.put("blockOutputPortVariables", java.util.Arrays.asList(getOutputPortVariables()));
         context.put("modelMode", model.getModelMode().name());

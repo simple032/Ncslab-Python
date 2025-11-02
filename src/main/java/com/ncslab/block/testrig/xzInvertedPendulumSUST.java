@@ -106,6 +106,10 @@ public class xzInvertedPendulumSUST extends Block {
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
 
+		// Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+		// Add xzInvertedPendulumSUST-specific variables
 		context.put("ENAOrDIS", ENAOrDIS);
 
 		String initCode = TemplateManager.renderTemplate("c/testrig/xzInvertedPendulumSUST/init.vm", context);
@@ -122,6 +126,10 @@ public class xzInvertedPendulumSUST extends Block {
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
+		// Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+		// Add xzInvertedPendulumSUST-specific variables for backward compatibility
 		context.put("inputPortVariable1", getInputPortVariable(0));
 		context.put("inputPortVariable2", getInputPortVariable(1));
 		context.put("outputPortVariable1", outputPortList.get(0).getOutputSignalC().getName());
@@ -139,6 +147,9 @@ public class xzInvertedPendulumSUST extends Block {
 	}
 
 	public void generateStatementCodeC(CodeStructC code) {
+		// Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
 		String statementCode = TemplateManager.renderTemplate("c/testrig/xzInvertedPendulumSUST/statement.vm", context);
 		code.addStatementCode(statementCode);
 	}

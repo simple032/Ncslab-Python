@@ -7,6 +7,8 @@ import com.ncslab.dto.common.TypedParameterMap;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Data Transfer Object for Clock source block.
@@ -17,8 +19,10 @@ import lombok.NoArgsConstructor;
  * @since 2025
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Clock")
 public class ClockDto extends BlockDto {
 

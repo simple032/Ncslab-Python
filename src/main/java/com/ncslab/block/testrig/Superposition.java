@@ -101,8 +101,10 @@ public class Superposition extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
-        context.put("parameterList", parameterList);
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add Superposition-specific variables
         context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/Superposition/init.vm", context);
@@ -110,34 +112,20 @@ public class Superposition extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputPortVariables", getInputPortVariables());
-        context.put("outputPortVariables", getOutputPortVariables());
-        context.put("modelMode", model.getModelMode().name());
-        
-        // Add necessary variables for template
-        context.put("blockOutputPortVariables", getOutputPortVariables());
-        
-        // Add parameter values that template expects
-        context.put("BCM1", BCM1.getDouble());
-        context.put("BCM2", BCM2.getDouble());
-        context.put("BCM3", BCM3.getDouble());
-        context.put("AD1", AD1.getDouble());
-        context.put("AD2", AD2.getDouble());
-        context.put("AD3", AD3.getDouble());
-        context.put("AD4", AD4.getDouble());
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add output variable names
+        // Add Superposition-specific variables
+        context.put("modelMode", model.getModelMode().name());
+        context.put("blockOutputPortVariables", getOutputPortVariables());
+
+        // Output variable names for backward compatibility with existing templates
         if (getOutputPortVariables().length >= 4) {
             context.put("outputAD1", getOutputPortVariables()[0]);
             context.put("outputAD2", getOutputPortVariables()[1]);
             context.put("outputAD3", getOutputPortVariables()[2]);
             context.put("outputAD4", getOutputPortVariables()[3]);
         }
-        
-        // TODO:Add mode constants for template comparison
-        // context.put("compilationMode", com.ncslab.ncslablink.ModelMode.COMPILATION);
-        // context.put("simulationMode", com.ncslab.ncslablink.ModelMode.SIMULATION);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/Superposition/output.vm", context);
         code.addOutputCode(codeStr);

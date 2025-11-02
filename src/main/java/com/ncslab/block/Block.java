@@ -253,8 +253,8 @@ public class Block implements MCodeBlock, CCodeBlock {
         this.blockName = blockDto.getBlockName();
         this.model = model;
         this.blockPath = blockDto.getBlockPath();
-        this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";       
-        
+        this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";
+
         // Initialize paramValues for legacy compatibility
         this.paramValues = new JSONObject();
         if (blockDto.getParamValues() != null) {
@@ -263,10 +263,14 @@ public class Block implements MCodeBlock, CCodeBlock {
                 this.paramValues.put(entry.getKey(), entry.getValue());
             }
         }
- 
+
+        // Convert DTO's TypedParameter fields to Parameter objects using reflection
+        // This enables DTO-based factory methods to work seamlessly
+        com.ncslab.dto.mapper.TypedParameterConverter.convertAndAddParameters(blockDto, this, 1);
+
         parseParameterList(blockDto);
         // parseInputOutputPorts(blockDto);
-        // postConstructionInitialization();        
+        // postConstructionInitialization();
         TemplateUtils.populateAllContext(context, this);
     }
 
@@ -797,17 +801,23 @@ public class Block implements MCodeBlock, CCodeBlock {
     /**
      * Parses the parameter list from default values and actual parameter values.
      * Creates Parameter objects with proper indexing and default value fallback.
+     * Skips parameters that were already added by TypedParameterConverter.
      */
     private void parseParameterList(BlockDto blockDto) {
         Map<String, String> defaults = getParameterDefaults();
-        
-        int paramIndex = 1;
+
+        int paramIndex = parameterList.size() + 1; // Start after existing parameters
         Map<String, Object> paramValues = blockDto.getParamValues();
 
         for (Map.Entry<String, String> entry : defaults.entrySet()) {
             String paramName = entry.getKey();
             String defaultValue = entry.getValue();
-            
+
+            // Skip if parameter already exists (added by TypedParameterConverter)
+            if (getParameterByName(paramName) != null) {
+                continue;
+            }
+
             // Safe parameter value extraction with default fallback and type conversion
             String actualValue = defaultValue;
             if (paramValues != null) {

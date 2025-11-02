@@ -2,7 +2,6 @@ package com.ncslab.block.testrig;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.testrig.SecondOrderRotaryInvertedPendulumDto;
 
 import com.ncslab.block.Block;
@@ -44,14 +43,6 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
         
         System.out.println("DTO-NATIVE: SecondOrderRotaryInvertedPendulum block created successfully - " + blockDto.getBlockName());
     }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public SecondOrderRotaryInvertedPendulum(BlockDto blockDto, NCSLabModel model) {
-        this((SecondOrderRotaryInvertedPendulumDto) blockDto, model);
-    }
-
 
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
@@ -69,6 +60,7 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
+    @Deprecated
     public SecondOrderRotaryInvertedPendulum(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
@@ -113,7 +105,10 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
 
-        context.put("block", this);
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add SecondOrderRotaryInvertedPendulum-specific variables
         context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/SecondOrderRotaryInvertedPendulum/init.vm", context);
@@ -129,9 +124,10 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("inputPortVariables", getInputPortVariables());
-        context.put("outputPortVariables", getOutputPortVariables());
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add SecondOrderRotaryInvertedPendulum-specific variables
         context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/SecondOrderRotaryInvertedPendulum/output.vm", context);
@@ -139,7 +135,10 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
-        context.put("block", this);
+        // Populate all standard context variables (blockId, block, inputs, outputs, parameters, etc.)
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Add SecondOrderRotaryInvertedPendulum-specific variables
         context.put("modelMode", model.getModelMode().name());
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/SecondOrderRotaryInvertedPendulum/derivative.vm", context);

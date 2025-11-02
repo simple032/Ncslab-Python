@@ -18,24 +18,36 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class BandLimitedWhiteNoiseDto extends BlockDto {
-    
-    /**
-     * Noise power (variance) of the generated white noise.
-     * Default: 1.0
-     */
-    private TypedParameter noisePower;
-    
-    /**
-     * Sample time for noise generation.
-     * Default: inherited (-1)
-     */
-    private TypedParameter sampleTime;
-    
+
     /**
      * Seed for random number generation.
      * Default: 0 (auto-generated)
      */
     private TypedParameter seed;
+
+    /**
+     * Noise power/covariance (variance) of the generated white noise.
+     * Default: 1.0
+     */
+    private TypedParameter cov;
+
+    /**
+     * Sample period (Ts) for the noise correlation time.
+     * Default: 0.1
+     */
+    private TypedParameter ts;
+
+    /**
+     * Output data type specification.
+     * Default: "double"
+     */
+    private TypedParameter outDataTypeStr;
+
+    /**
+     * Handle integer overflow by saturation.
+     * Default: false (off)
+     */
+    private TypedParameter saturateOnIntegerOverflow;
     
     public BandLimitedWhiteNoiseDto(String blockName, String blockPath) {
         super(blockName, blockPath);
@@ -43,14 +55,20 @@ public class BandLimitedWhiteNoiseDto extends BlockDto {
     }
     
     private void initializeDefaults() {
-        if (noisePower == null) {
-            noisePower = TypedParameter.of(1.0);
-        }
-        if (sampleTime == null) {
-            sampleTime = TypedParameter.of(-1.0);
-        }
         if (seed == null) {
             seed = TypedParameter.of(0);
+        }
+        if (cov == null) {
+            cov = TypedParameter.of(1.0);
+        }
+        if (ts == null) {
+            ts = TypedParameter.of(0.1);
+        }
+        if (outDataTypeStr == null) {
+            outDataTypeStr = TypedParameter.of("double");
+        }
+        if (saturateOnIntegerOverflow == null) {
+            saturateOnIntegerOverflow = TypedParameter.of(false);
         }
     }
 }
