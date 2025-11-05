@@ -1,0 +1,21 @@
+## Function-Call Subsystem - Initialization Template
+##
+## This template generates C initialization code for function-call subsystem state variables.
+##
+## Context variables:
+##   $block - FunctionCallSubsystem block instance
+##   $blockId - Unique block identifier
+##
+## Generated initialization:
+##   - Initialize function-call state to inactive
+##   - Reset previous signal value to 0
+
+// Function-Call Subsystem: ${block.blockName} (ID: ${blockId})
+// Initialize function-call state variables
+
+// Initialize function-call state to inactive
+fcPreviousSignal_${blockId} = 0.0;
+fcActive_${blockId} = false;
+
+// Note: Internal blocks will be initialized on first function-call event
+// This ensures proper event-driven behavior

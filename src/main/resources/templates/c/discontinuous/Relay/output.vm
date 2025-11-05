@@ -1,4 +1,4 @@
-/*Code for output of block Relay:($blockId)$blockName*/
+
 #if($signal && $onSwitchValue && $offSwitchValue && $onOutputValue && $offOutputValue && $xState && $outputs && $outputs.size() > 0)
     #set($inputVar = $signalName)
     #set($outputVar = $output1)

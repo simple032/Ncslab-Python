@@ -1,4 +1,4 @@
-/*Code for output of block DetectIncrease:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar detect increase
     if(${inputVar} > preValue_${blockId}) {

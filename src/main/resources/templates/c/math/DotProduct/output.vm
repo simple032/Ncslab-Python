@@ -1,0 +1,15 @@
+
+#if($input1Height == 1 && $input1Width == 1)
+    ## Both scalar inputs: simple multiplication
+    $outputVar = ${input1Var} * ${input2Var};
+#else
+    ## Vector/Matrix inputs: compute dot product (sum of element-wise products)
+    $outputVar = 0.0;
+    #set($hMax = $input1Height - 1)
+    #set($wMax = $input1Width - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+        $outputVar += ${input1Var}($i, $j) * ${input2Var}($i, $j);
+        #end
+    #end
+#end

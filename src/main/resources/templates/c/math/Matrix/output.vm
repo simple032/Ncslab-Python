@@ -1,4 +1,4 @@
-/*Code for output of block Matrix:($blockId)$blockName*/
+
 ## Matrix block is a source block that outputs constant values
 #if($scalar)
     ## Scalar output

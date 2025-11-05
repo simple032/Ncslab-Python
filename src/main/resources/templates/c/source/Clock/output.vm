@@ -1,2 +1,2 @@
-/*Code for output of block Clock:($blockId)$blockName*/
+
 ${outputVar} = model.time;

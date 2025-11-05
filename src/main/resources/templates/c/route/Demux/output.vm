@@ -1,4 +1,4 @@
-/*Code for output of block Demux:($blockId)$blockName*/
+
 #if($inputName && $outputNames && $outputNames.size() > 0)
     #set($numOutputs = $outputNames.size())
     #set($maxOutputIdx = $numOutputs - 1)

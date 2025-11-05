@@ -1,4 +1,4 @@
-/*Code for output of block Switch:($blockId)$blockName*/
+
 #if($inputPortListSize >= 3 && $threshold)
     #set($input1 = $inputPort0SignalName)
     #set($input2 = $inputPort1SignalName)

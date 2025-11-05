@@ -3,11 +3,11 @@
 ## Input: String signal
 ## Output: String with replacements made
 
-#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0 && $OldSubstring && $NewSubstring)
+#if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0 && $OldSubstringValue && $NewSubstringValue)
     // StringReplace: Replace all occurrences
     {
-        std::string oldStr = "$OldSubstring";
-        std::string newStr = "$NewSubstring";
+        std::string oldStr = "$OldSubstringValue";
+        std::string newStr = "$NewSubstringValue";
         ${outputs.get(0)} = ${inputs.get(0)};
 
         size_t pos = 0;

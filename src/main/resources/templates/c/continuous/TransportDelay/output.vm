@@ -1,4 +1,4 @@
-/*Code for output of block TransportDelay:(${blockId})${blockName}*/
+
 #if($isFixedStepSolver)
   #if($inputSignal.dataType == $realDataType)
     #if($delayTime.dataType == $realDataType)

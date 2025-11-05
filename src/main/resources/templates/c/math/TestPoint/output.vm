@@ -1,2 +1,2 @@
-/*Code for output of block TestPoint:($blockId)$blockName*/
+
 ${outputVar} = ${inputVar};

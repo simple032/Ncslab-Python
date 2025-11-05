@@ -1,0 +1,84 @@
+## Trigger Block Output Code Template
+##
+## This template generates C code for the Trigger block which controls
+## event-driven subsystem execution based on signal edge detection.
+##
+## Available context variables:
+## - block: The Trigger block instance
+## - blockId: Unique block identifier
+## - triggerType: Type of trigger ("rising", "falling", "either", "function-call")
+## - hasOutputPort: Whether output port is enabled (boolean)
+## - zeroCrossingEnabled: Whether zero-crossing detection is enabled (boolean)
+## - inputSignal: Name of the input trigger signal
+## - outputSignal: Name of the optional output signal (if hasOutputPort=true)
+## - subsystem: Reference to parent subsystem
+##
+## Edge Detection Logic:
+## - Rising edge: previousValue <= 0 && currentValue > 0
+## - Falling edge: previousValue > 0 && currentValue <= 0
+## - Either edge: rising OR falling edge detected
+##
+## Generated code performs:
+## 1. Read current trigger signal value
+## 2. Compare with previous value to detect edge
+## 3. Set trigger flag if edge detected
+## 4. Optionally pass through signal to output
+## 5. Store current value for next comparison
+
+// Trigger Block: ${block.blockName} (ID: ${blockId})
+// Trigger Type: ${triggerType}
+#if($hasOutputPort)
+// Output Port: Enabled
+#else
+// Output Port: Disabled
+#end
+#if($zeroCrossingEnabled)
+// Zero-Crossing Detection: Enabled
+#else
+// Zero-Crossing Detection: Disabled
+#end
+
+{
+    // Read current trigger signal value
+    double currentTriggerValue = ${inputSignal};
+    double previousTriggerValue = triggerState_${blockId};
+    bool edgeDetected = false;
+
+    // Perform edge detection based on trigger type
+#if($triggerType == "rising")
+    // Rising edge detection: 0 to positive transition
+    if (previousTriggerValue <= 0.0 && currentTriggerValue > 0.0) {
+        edgeDetected = true;
+    }
+#elseif($triggerType == "falling")
+    // Falling edge detection: positive to 0 transition
+    if (previousTriggerValue > 0.0 && currentTriggerValue <= 0.0) {
+        edgeDetected = true;
+    }
+#elseif($triggerType == "either")
+    // Either edge detection: rising OR falling
+    if ((previousTriggerValue <= 0.0 && currentTriggerValue > 0.0) ||
+        (previousTriggerValue > 0.0 && currentTriggerValue <= 0.0)) {
+        edgeDetected = true;
+    }
+#elseif($triggerType == "function-call")
+    // Function-call trigger (handled externally)
+    edgeDetected = false;
+#end
+
+    // Update trigger flag for subsystem execution control
+    triggerFlag_${blockId} = edgeDetected;
+
+#if($hasOutputPort && $outputSignal)
+    // Pass through trigger signal to output
+    ${outputSignal} = currentTriggerValue;
+#end
+
+    // Store current value for next comparison
+    triggerState_${blockId} = currentTriggerValue;
+
+#if($zeroCrossingEnabled)
+    // Zero-crossing detection enabled - mark for precise event detection
+    // (Implementation depends on solver configuration)
+#end
+}

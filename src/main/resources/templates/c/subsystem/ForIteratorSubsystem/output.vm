@@ -1,0 +1,100 @@
+## For Iterator Subsystem Block - C Code Generation Template
+## Fixed iteration count subsystem execution with for-loop pattern
+##
+## Context variables:
+##   $block - ForIteratorSubsystem block instance
+##   $iterationLimit - Number of iterations per time step
+##   $showIterationNumber - Boolean indicating if iteration output port is present
+##   $resetState - State reset behavior ("each time step" or "at start of simulation")
+##   $indexMode - Iteration index mode ("Zero-based" or "One-based")
+##   $isZeroBasedIndex - Boolean indicating zero-based index mode
+##   $isOneBasedIndex - Boolean indicating one-based index mode
+##   $startIndex - Starting iteration index value
+##   $endIndex - Ending iteration index value
+##   $resetsEachTimeStep - Boolean indicating state reset at each time step
+##   $resetsAtSimulationStart - Boolean indicating state reset at simulation start
+##   $iterationOutputSignal - Output signal name for iteration index (if enabled)
+##   $containedBlocks - List of blocks within the subsystem
+##   $containedLines - List of lines within the subsystem
+##   $inBlockList - List of In blocks
+##   $outBlockList - List of Out blocks
+
+// For Iterator Subsystem: $block.blockName
+// Iteration limit: $iterationLimit
+// Index mode: $indexMode (start=$startIndex, end=$endIndex)
+#if($showIterationNumber)
+// Iteration output: enabled (provides current iteration index)
+#else
+// Iteration output: disabled
+#end
+#if($resetsEachTimeStep)
+// State reset: each time step (states reset before each time step)
+#elseif($resetsAtSimulationStart)
+// State reset: at simulation start (states reset only during initialization)
+#end
+
+// For-loop iteration structure
+// Loop executes exactly $iterationLimit times per time step
+#if($isZeroBasedIndex)
+// Zero-based indexing: i = 0 to ${iterationLimit - 1}
+#else
+// One-based indexing: i = 1 to $iterationLimit
+#end
+
+{
+    // For iterator subsystem execution
+    int iteration_index_${block.blockId};
+
+#if($resetsEachTimeStep)
+    // Reset subsystem states at the start of each time step
+    // This ensures consistent initial conditions for each iteration cycle
+    // TODO: Insert subsystem state reset code here
+#end
+
+    // Execute for-loop iterations
+    for (iteration_index_${block.blockId} = $startIndex;
+         iteration_index_${block.blockId} <= $endIndex;
+         iteration_index_${block.blockId}++) {
+
+#if($showIterationNumber && $iterationOutputSignal)
+        // Provide current iteration index to output port
+        ${iterationOutputSignal} = (double)iteration_index_${block.blockId};
+#end
+
+        // Execute subsystem for current iteration
+        // The subsystem's internal blocks execute with the current iteration context
+        {
+#foreach($inBlock in $inBlockList)
+            // In block: $inBlock.blockName (port $inBlock.portNumber)
+            // Maps subsystem input to internal signal
+#end
+#foreach($outBlock in $outBlockList)
+            // Out block: $outBlock.blockName (port $outBlock.portNumber)
+            // Maps internal signal to subsystem output
+#end
+
+            // Internal block execution
+            // Each contained block executes once per iteration
+#foreach($block in $containedBlocks)
+#if(!($block.class.simpleName == "In" || $block.class.simpleName == "Out"))
+            // Block: $block.blockName (type: $block.blockType)
+            // Iteration-aware execution: can access iteration_index_${block.blockId} if needed
+#end
+#end
+        }
+
+#if($showIterationNumber)
+        // Iteration $${iteration_index_${block.blockId}} completed
+#end
+    }
+
+    // All $iterationLimit iterations completed for this time step
+}
+
+// For Iterator Subsystem: $block.blockName - execution complete
+// Total iterations per time step: $iterationLimit
+#if($isZeroBasedIndex)
+// Final iteration index: ${endIndex} (zero-based)
+#else
+// Final iteration index: ${endIndex} (one-based)
+#end

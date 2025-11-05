@@ -1,0 +1,3 @@
+/*Terminate code for XYGraph block:($blockId)$blockName*/
+${xScopeStruct.getName()}.save("${blockName}_X.dat");
+${yScopeStruct.getName()}.save("${blockName}_Y.dat");

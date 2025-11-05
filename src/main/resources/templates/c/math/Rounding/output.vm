@@ -1,4 +1,4 @@
-/*Code for output of block Rounding:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar rounding function
     #if($OperatorValue == "floor")

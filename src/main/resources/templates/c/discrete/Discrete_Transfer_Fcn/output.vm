@@ -1,4 +1,4 @@
-/*Code for output of block Discrete_Transfer_Fcn:(${blockId})${blockName}*/
+
 #if($num && $den && $states && $outputs && $outputs.size() > 0)
     #set($outputVar = $output1)
     

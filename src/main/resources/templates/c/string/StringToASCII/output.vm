@@ -1,6 +1,6 @@
 ## StringToASCII block - C code generation
 ## Convert string signal to uint8 vector of ASCII values
-/*Code for output of block $blockType:($blockId)$blockName*/
+
 
 #if($inputs && $inputs.size() > 0)
     ## Convert entire string to ASCII byte array

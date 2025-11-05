@@ -1,4 +1,4 @@
-/*Code for output of block RepeatingSequence:($blockId)$blockName*/
+
 #if($TimeValuesHeight == 1 && $TimeValuesWidth == 1)
     ## Scalar repeating sequence - use simple value
     ${outputVar} = ${OutputValues};

@@ -1,4 +1,4 @@
-/*Code for output of block Sqrt:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar square root: output = sqrt(input)
     $outputVar = sqrt($inputVar);

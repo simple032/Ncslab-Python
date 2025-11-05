@@ -5,6 +5,6 @@
 #if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
     // Format string using snprintf
     char buffer[1024];
-    snprintf(buffer, sizeof(buffer), "$Format"#foreach($input in $inputs), ${input}#end);
+    snprintf(buffer, sizeof(buffer), "$FormatValue"#foreach($input in $inputs), ${input}#end);
     ${outputs.get(0)} = std::string(buffer);
 #end

@@ -1,4 +1,4 @@
-/*Code for output of block CompareToConstant:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar comparison
     if(${inputVar} ${RelationalOperatorValue} ${ConstantValueValue}) {

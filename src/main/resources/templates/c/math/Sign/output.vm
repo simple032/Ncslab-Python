@@ -1,4 +1,4 @@
-/*Code for output of block Sign:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar sign function
     if(${inputVar} > 0.0) {

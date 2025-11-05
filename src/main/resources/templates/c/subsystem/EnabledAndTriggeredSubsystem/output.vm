@@ -1,0 +1,158 @@
+## EnabledAndTriggeredSubsystem Block - C Code Generation Template
+## Combined enable and trigger control for conditional subsystem execution
+##
+## Context variables:
+##   $block - EnabledAndTriggeredSubsystem block instance
+##   $blockId - Unique block identifier
+##   $statesWhenEnabling - State handling mode ("held" or "reset")
+##   $triggerType - Trigger type ("rising", "falling", "either", "function-call")
+##   $showEnablePort - Boolean indicating if enable port is shown
+##   $showTriggerPort - Boolean indicating if trigger port is shown
+##   $zeroCross - Boolean indicating if zero-crossing detection is enabled
+##   $isHeldMode - Boolean indicating "held" mode
+##   $isResetMode - Boolean indicating "reset" mode
+##   $enableBlock - Internal Enable block reference
+##   $triggerBlock - Internal Trigger block reference
+##   $subsystem - Subsystem reference
+##
+## Execution Logic:
+## 1. Check enable signal (> 0 means enabled)
+## 2. Detect trigger event based on trigger type
+## 3. Execute subsystem ONLY if BOTH enabled AND triggered
+## 4. Handle state management based on StatesWhenEnabling parameter
+
+// EnabledAndTriggeredSubsystem Block: $block.blockName (ID: ${blockId})
+// Combined enable and trigger control for subsystem execution
+//
+// Configuration:
+//   State Handling: $statesWhenEnabling
+//   Trigger Type: $triggerType
+#if($showEnablePort)
+//   Enable Port: shown
+#else
+//   Enable Port: hidden
+#end
+#if($showTriggerPort)
+//   Trigger Port: shown
+#else
+//   Trigger Port: hidden
+#end
+#if($zeroCross)
+//   Zero-Crossing Detection: enabled
+#else
+//   Zero-Crossing Detection: disabled
+#end
+
+{
+    // ====================================================================
+    // STEP 1: Check Enable Signal
+    // ====================================================================
+    // Enable signal determines if subsystem can execute
+    // Subsystem is enabled when enable signal > 0
+
+#if($enableBlock)
+    bool subsystem_enabled_${blockId} = enableFlag_${enableBlock.blockId};
+#else
+    bool subsystem_enabled_${blockId} = true; // Default enabled if no enable block
+#end
+
+    // ====================================================================
+    // STEP 2: Detect Trigger Event
+    // ====================================================================
+    // Trigger event detection based on configured trigger type
+    // Only the occurrence of a trigger event allows execution
+
+#if($triggerBlock)
+    bool subsystem_triggered_${blockId} = triggerFlag_${triggerBlock.blockId};
+#else
+    bool subsystem_triggered_${blockId} = true; // Default triggered if no trigger block
+#end
+
+    // ====================================================================
+    // STEP 3: Combined Enable AND Trigger Logic
+    // ====================================================================
+    // Subsystem executes ONLY when BOTH conditions are true:
+    //   1. Enable signal is active (enabled == true)
+    //   2. Trigger event occurred (triggered == true)
+
+    bool should_execute_${blockId} = subsystem_enabled_${blockId} && subsystem_triggered_${blockId};
+
+    if (should_execute_${blockId}) {
+        // ================================================================
+        // SUBSYSTEM EXECUTION - Both enabled AND triggered
+        // ================================================================
+
+#if($isResetMode)
+        // RESET MODE: Check if transitioning from disabled to enabled
+        // If so, reset subsystem states to initial conditions
+        static bool was_enabled_${blockId} = false;
+
+        if (!was_enabled_${blockId} && subsystem_enabled_${blockId}) {
+            // Transitioning from disabled to enabled - RESET STATES
+            // Call subsystem initialization to reset all states
+            // (Implementation depends on subsystem initialization function)
+        }
+
+        was_enabled_${blockId} = subsystem_enabled_${blockId};
+#elseif($isHeldMode)
+        // HELD MODE: States maintain their values when disabled
+        // No special handling needed - states naturally hold their values
+        // When re-enabled, execution resumes from held state values
+#end
+
+        // Execute subsystem internal logic
+        // (Actual subsystem execution code will be inserted here by subsystem code generator)
+
+        // Note: Subsystem execution includes:
+        //   - Processing all internal blocks in dependency order
+        //   - Updating internal states and outputs
+        //   - Propagating data through internal connections
+
+    } else {
+        // ================================================================
+        // SUBSYSTEM DISABLED - Either not enabled OR not triggered
+        // ================================================================
+
+#if($isHeldMode)
+        // HELD MODE: States are frozen at current values
+        // No computation occurs, but state values are preserved
+        // When conditions are met again, execution resumes from held values
+#elseif($isResetMode)
+        // RESET MODE: States will reset when next enabled
+        // Current state values will be discarded
+        // Next execution will start from initial conditions
+#end
+
+        // No subsystem execution - conditions not met
+        // Enable: subsystem_enabled_${blockId}
+        // Trigger: subsystem_triggered_${blockId}
+    }
+}
+
+// ========================================================================
+// Combined Enable AND Trigger Control Summary
+// ========================================================================
+// This subsystem uses BOTH enable and trigger control mechanisms:
+//
+// Enable Control:
+//   - Enable signal > 0: Subsystem is allowed to execute
+//   - Enable signal <= 0: Subsystem is disabled
+//
+// Trigger Control:
+//   - Trigger event detected: Subsystem can execute (if also enabled)
+//   - No trigger event: Subsystem does not execute
+//
+// Combined Logic:
+//   - Execution requires: isEnabled() AND isTriggered()
+//   - Both conditions must be TRUE simultaneously
+//   - Either condition FALSE prevents execution
+//
+// State Management ($statesWhenEnabling mode):
+#if($isHeldMode)
+//   - HELD: States maintain values when disabled
+//   - States resume from held values when re-enabled and triggered
+#elseif($isResetMode)
+//   - RESET: States reset to initial conditions when re-enabled
+//   - Previous state values are discarded
+#end
+// ========================================================================

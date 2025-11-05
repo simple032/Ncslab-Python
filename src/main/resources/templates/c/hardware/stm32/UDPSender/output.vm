@@ -1,5 +1,5 @@
-## Variables now populated directly in Java context: $remoteIp, $remotePort, $inputSignal
+## Variables now populated directly in Java context: $remoteIpValue, $remotePortValue, $inputSignal
 
 if(model.majorStep == 1){
-	UDP_Send_double("$remoteIp", $remotePort, $inputSignal);
+	UDP_Send_double("$remoteIpValue", $remotePortValue, $inputSignal);
 }

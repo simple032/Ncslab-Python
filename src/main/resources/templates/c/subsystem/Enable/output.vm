@@ -1,0 +1,43 @@
+## Enable Block - C Code Generation Template
+## Conditional subsystem execution control based on enable signal
+##
+## Context variables:
+##   $block - Enable block instance
+##   $enableSignal - Input enable signal name
+##   $outputSignal - Output signal name (if ShowOutputPort="on")
+##   $statesWhenEnabling - State handling mode ("held" or "reset")
+##   $showOutputPort - Boolean indicating if output port is present
+##   $zeroCross - Boolean indicating if zero-crossing detection is enabled
+##   $isHeldMode - Boolean indicating "held" mode
+##   $isResetMode - Boolean indicating "reset" mode
+##   $subsystem - Parent subsystem reference
+
+// Enable Block: $block.blockName
+// State handling: $statesWhenEnabling
+#if($showOutputPort)
+// Output port: enabled (enable signal passthrough)
+#else
+// Output port: disabled
+#end
+#if($zeroCross)
+// Zero-crossing detection: enabled
+#end
+
+// Check enable signal and control subsystem execution
+double enable_signal_${block.blockId} = ${enableSignal};
+bool subsystem_enabled_${block.blockId} = (enable_signal_${block.blockId} > 0.0);
+
+#if($showOutputPort && $outputSignal)
+// Pass enable signal to output port
+${outputSignal} = enable_signal_${block.blockId};
+#end
+
+// Enable state management
+// Current mode: $statesWhenEnabling
+#if($isHeldMode)
+// HELD mode: States maintain their values when subsystem is disabled
+// Subsystem execution continues only when enable signal > 0
+#elseif($isResetMode)
+// RESET mode: States reset to initial conditions when subsystem is re-enabled
+// Previous state values are discarded on enable transitions
+#end

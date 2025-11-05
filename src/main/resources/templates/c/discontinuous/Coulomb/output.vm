@@ -1,4 +1,4 @@
-/*Code for output of block Coulomb:($blockId)$blockName*/
+
 
 #set($out = $outputPortList[0])
 #set($outputSignal = $outputPortList[0].outputSignalC)

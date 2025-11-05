@@ -1,4 +1,4 @@
-/*Code for output of block CompareToZero:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar comparison to zero
     if(${inputVar} ${RelationalOperatorValue} 0.0) {

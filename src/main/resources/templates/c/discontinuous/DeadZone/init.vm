@@ -1,5 +1,5 @@
 /* Code for initialization of block Dead Zone:(${block.blockId}) ${block.blockName} */
 #if($UpperValueObject)
-${UpperValueObject.initCodeC}#end
+${UpperValueObject.getInitCodeC()}#end
 #if($LowerValueObject)
-${LowerValueObject.initCodeC}#end
+${LowerValueObject.getInitCodeC()}#end

@@ -1,4 +1,4 @@
-/*Code for output of block Mux:($blockId)$blockName*/
+
 #if($inputs && $inputs.size() > 0 && $inputHeights && $inputWidths && $inputDataTypes)
     #set($outputIdx = 0)
     #set($outputVar = $output1)

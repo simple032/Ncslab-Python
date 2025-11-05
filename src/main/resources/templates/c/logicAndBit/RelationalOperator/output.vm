@@ -1,4 +1,4 @@
-/*Code for output of block RelationalOperator:($blockId)$blockName*/
+
 #if($signal1 && $signal2 && $ops && $relop)
     #if($signal1.dataType == $realDataType)
         ## Scalar relational operation

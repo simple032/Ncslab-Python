@@ -1,7 +1,7 @@
 ## BytePack block - C code generation
 ## Pack multiple input signals into uint8 vector with proper type casting
 ## Output is a MatrixU8 column vector where each element represents one byte
-/*Code for output of block $blockType:($blockId)$blockName*/
+
 {
     int byte_offset = 0;
 

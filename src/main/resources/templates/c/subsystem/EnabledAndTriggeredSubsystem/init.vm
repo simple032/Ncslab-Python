@@ -1,0 +1,95 @@
+## EnabledAndTriggeredSubsystem Initialization Template
+##
+## This template generates initialization code for the EnabledAndTriggeredSubsystem block.
+## It initializes state variables for enable/trigger detection and sets initial conditions.
+##
+## Context variables:
+##   $block - EnabledAndTriggeredSubsystem block instance
+##   $blockId - Unique block identifier
+##   $enableBlock - Internal Enable block reference
+##   $triggerBlock - Internal Trigger block reference
+##   $statesWhenEnabling - State handling mode ("held" or "reset")
+##   $triggerType - Trigger type ("rising", "falling", "either", "function-call")
+
+// EnabledAndTriggeredSubsystem Initialization: ${block.blockName} (ID: ${blockId})
+// Configuration: State Mode = $statesWhenEnabling, Trigger Type = $triggerType
+
+{
+#if($enableBlock)
+    // Initialize enable state variables
+    // Enable signal is initially checked and state flag is set accordingly
+    enableFlag_${enableBlock.blockId} = false;
+    previousEnableSignal_${enableBlock.blockId} = 0.0;
+
+    // Check initial enable signal value
+    // If enable signal > 0 initially, subsystem starts in enabled state
+    // (Actual enable signal connection will be checked at runtime)
+#end
+
+#if($triggerBlock)
+    // Initialize trigger state variables
+    // Trigger state starts with no event detected
+    triggerFlag_${triggerBlock.blockId} = false;
+    triggerState_${triggerBlock.blockId} = 0.0;
+
+    // Trigger detection initialized for $triggerType edge detection
+    // First edge will be detected relative to initial zero state
+#end
+
+#if($block.isResetMode())
+    // Initialize state management for RESET mode
+    // Tracks enable transitions to trigger state reset
+    was_enabled_${blockId} = false;
+#end
+
+    // Initialize combined execution state
+    subsystem_execute_${blockId} = false;
+
+    // Note: Subsystem internal blocks will be initialized separately
+    // Initial execution only occurs if BOTH initially enabled AND triggered
+    // Otherwise, subsystem waits for both conditions to be met
+
+#if($block.isHeldMode())
+    // HELD MODE initialization:
+    // - States are initialized to their initial conditions
+    // - If disabled, states will hold these initial values
+    // - When enabled AND triggered, execution proceeds normally
+#elseif($block.isResetMode())
+    // RESET MODE initialization:
+    // - States are initialized to their initial conditions
+    // - On each enable transition, states will reset to these initial values
+    // - Trigger events are only processed when enabled
+#end
+}
+
+// ========================================================================
+// EnabledAndTriggeredSubsystem Initialization Summary
+// ========================================================================
+// This subsystem uses combined enable AND trigger control:
+//
+// Enable Initialization:
+//   - Enable flag initialized to false (disabled)
+//   - Previous enable signal initialized to 0.0
+//   - Enable state will be checked on first execution
+//
+// Trigger Initialization:
+//   - Trigger flag initialized to false (no event)
+//   - Trigger state initialized to 0.0
+//   - First $triggerType edge will be detected relative to zero
+//
+// Execution Condition:
+//   - Requires BOTH enable=true AND trigger=true
+//   - Both conditions must be met simultaneously
+//   - Subsystem internal blocks initialized when conditions first met
+//
+// State Management ($statesWhenEnabling):
+#if($block.isHeldMode())
+//   - HELD: States hold their values when disabled
+//   - States initialized to initial conditions
+//   - Execution resumes from held values when re-enabled and triggered
+#elseif($block.isResetMode())
+//   - RESET: States reset to initial conditions on each enable transition
+//   - Previous state values discarded when re-enabled
+//   - Fresh initialization occurs with each enable event
+#end
+// ========================================================================

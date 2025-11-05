@@ -1,2 +1,2 @@
-/*Code for output of block ${name}:($blockId)$blockName*/
+
 close(sockfd_netrecv$blockId);

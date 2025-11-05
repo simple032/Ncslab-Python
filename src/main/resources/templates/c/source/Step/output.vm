@@ -1,4 +1,4 @@
-/*Code for output of block Step:($blockId)$blockName*/
+
 #if($TimeHeight == 1 && $TimeWidth == 1)
     ## Scalar step function
     if(model.time < ${Time}) {

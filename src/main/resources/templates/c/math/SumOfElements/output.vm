@@ -1,10 +1,10 @@
-/*Code for output of block SumOfElements:($blockId)$blockName*/
+
 ## SumOfElements: sum/subtract elements based on sequence parameter
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar input
-    #if($sequence.length() == 1)
+    #if($sequenceValue.length() == 1)
         ## Single operation: copy or negate
-        #if($sequence.charAt(0) == '+')
+        #if($sequenceValue.charAt(0) == '+')
     ${outputVar} = ${inputVar};
         #else
     ${outputVar} = -${inputVar};
@@ -12,9 +12,9 @@
     #else
         ## Multiple operations: apply sequence operators
     ${outputVar} = 0.0;
-        #set($iMax = $math.sub($sequence.length(), 1))
+        #set($iMax = $math.sub($sequenceValue.length(), 1))
         #foreach($i in [0..$iMax])
-    ${outputVar} $sequence.charAt($i)= ${inputVar};
+    ${outputVar} $sequenceValue.charAt($i)= ${inputVar};
         #end
     #end
 #else
@@ -24,14 +24,14 @@
     ${outputVar} = 0.0;
         #set($mMax = $math.sub($inputHeight, 1))
         #set($nMax = $math.sub($inputWidth, 1))
-        #if($sequence.length() == 1 && $sequence.charAt(0) == '+')
+        #if($sequenceValue.length() == 1 && $sequenceValue.charAt(0) == '+')
             ## Add all elements together
         #foreach($m in [0..$mMax])
             #foreach($n in [0..$nMax])
     ${outputVar} += ${inputVar}($m, $n);
             #end
         #end
-        #elseif($sequence.length() == 1 && $sequence.charAt(0) == '-')
+        #elseif($sequenceValue.length() == 1 && $sequenceValue.charAt(0) == '-')
             ## Successive subtraction (0 - a - b - c...)
         #foreach($m in [0..$mMax])
             #foreach($n in [0..$nMax])
@@ -40,36 +40,36 @@
         #end
         #else
             ## Apply sequence operators to all elements
-            #set($iMax = $math.sub($sequence.length(), 1))
+            #set($iMax = $math.sub($sequenceValue.length(), 1))
         #foreach($m in [0..$mMax])
             #foreach($n in [0..$nMax])
                 #foreach($i in [0..$iMax])
-    ${outputVar} $sequence.charAt($i)= ${inputVar}($m, $n);
+    ${outputVar} $sequenceValue.charAt($i)= ${inputVar}($m, $n);
                 #end
             #end
         #end
         #end
     #else
         ## Sum along specific dimension
-        #if($dimension == 1)
+        #if($dimensionValue == 1)
             ## Sum along dimension 1 (down rows, output is row vector)
             #set($mMax = $math.sub($inputWidth, 1))
             #foreach($m in [0..$mMax])
     ${outputVar}(0, $m) = 0.0;
                 #set($nMax = $math.sub($inputHeight, 1))
-                #if($sequence.length() == 1 && $sequence.charAt(0) == '+')
+                #if($sequenceValue.length() == 1 && $sequenceValue.charAt(0) == '+')
                 #foreach($n in [0..$nMax])
     ${outputVar}(0, $m) += ${inputVar}($n, $m);
                 #end
-                #elseif($sequence.length() == 1 && $sequence.charAt(0) == '-')
+                #elseif($sequenceValue.length() == 1 && $sequenceValue.charAt(0) == '-')
                 #foreach($n in [0..$nMax])
     ${outputVar}(0, $m) -= ${inputVar}($n, $m);
                 #end
                 #else
-                    #set($iMax = $math.sub($sequence.length(), 1))
+                    #set($iMax = $math.sub($sequenceValue.length(), 1))
                 #foreach($n in [0..$nMax])
                     #foreach($i in [0..$iMax])
-    ${outputVar}(0, $m) $sequence.charAt($i)= ${inputVar}($n, $m);
+    ${outputVar}(0, $m) $sequenceValue.charAt($i)= ${inputVar}($n, $m);
                     #end
                 #end
                 #end
@@ -80,19 +80,19 @@
             #foreach($m in [0..$mMax])
     ${outputVar}($m, 0) = 0.0;
                 #set($nMax = $math.sub($inputWidth, 1))
-                #if($sequence.length() == 1 && $sequence.charAt(0) == '+')
+                #if($sequenceValue.length() == 1 && $sequenceValue.charAt(0) == '+')
                 #foreach($n in [0..$nMax])
     ${outputVar}($m, 0) += ${inputVar}($m, $n);
                 #end
-                #elseif($sequence.length() == 1 && $sequence.charAt(0) == '-')
+                #elseif($sequenceValue.length() == 1 && $sequenceValue.charAt(0) == '-')
                 #foreach($n in [0..$nMax])
     ${outputVar}($m, 0) -= ${inputVar}($m, $n);
                 #end
                 #else
-                    #set($iMax = $math.sub($sequence.length(), 1))
+                    #set($iMax = $math.sub($sequenceValue.length(), 1))
                 #foreach($n in [0..$nMax])
                     #foreach($i in [0..$iMax])
-    ${outputVar}($m, 0) $sequence.charAt($i)= ${inputVar}($m, $n);
+    ${outputVar}($m, 0) $sequenceValue.charAt($i)= ${inputVar}($m, $n);
                     #end
                 #end
                 #end

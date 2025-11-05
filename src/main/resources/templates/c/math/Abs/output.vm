@@ -1,4 +1,4 @@
-/*Code for output of block Abs:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar absolute value
     $outputVar = fabs($inputVar);

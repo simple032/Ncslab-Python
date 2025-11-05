@@ -1,4 +1,4 @@
-/*Code for output of block ${name}:($blockId)$blockName*/
+
 union data_union data_union_send$blockId;if(model.majorStep==1){
 data_union_send$blockId.v = ${inputSignal};
 sendto(sockfd_netsend$blockId,&data_union_send$blockId,sizeof(data_union_send$blockId),0,(struct sockaddr*)&adr_serv_netsend$blockId,sizeof(adr_serv_netsend$blockId));

@@ -1,0 +1,28 @@
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar complex to polar conversion
+    ## Magnitude = sqrt(re^2 + im^2)
+    $outputMagVar = sqrt(${inputReVar} * ${inputReVar} + ${inputImVar} * ${inputImVar});
+    ## Angle = atan2(im, re)
+    #if($useDegrees)
+    $outputAngleVar = atan2(${inputImVar}, ${inputReVar}) * 180.0 / M_PI;  // Convert to degrees
+    #else
+    $outputAngleVar = atan2(${inputImVar}, ${inputReVar});  // Radians
+    #end
+#else
+    ## Matrix complex to polar conversion: element-wise operation
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+        ## Magnitude for element (i,j)
+        ${outputMagVar}($i, $j) = sqrt(${inputReVar}($i, $j) * ${inputReVar}($i, $j) + ${inputImVar}($i, $j) * ${inputImVar}($i, $j));
+        ## Angle for element (i,j)
+        #if($useDegrees)
+        ${outputAngleVar}($i, $j) = atan2(${inputImVar}($i, $j), ${inputReVar}($i, $j)) * 180.0 / M_PI;  // Degrees
+        #else
+        ${outputAngleVar}($i, $j) = atan2(${inputImVar}($i, $j), ${inputReVar}($i, $j));  // Radians
+        #end
+        #end
+    #end
+#end

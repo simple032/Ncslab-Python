@@ -1,4 +1,4 @@
-/*Code for output of block pll3ph:($blockId)$blockName*/
+
 // PLL 3-Phase algorithm implementation
 // Inputs: A, B, C phases
 // Outputs: Frequency, Phase

@@ -4,7 +4,7 @@
 
 #if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() >= 2)
     // Compare two input strings
-#if($CaseSensitive && $CaseSensitive == "on")
+#if($CaseSensitiveValue && $CaseSensitiveValue == "on")
     // Case-sensitive comparison
     ${outputs.get(0)} = (${inputs.get(0)} == ${inputs.get(1)}) ? 1 : 0;
 #else

@@ -1,4 +1,4 @@
-/*Code for output of block Sum:($blockId)$blockName*/
+
 #set($numInputs = $inputs.size())
 #set($maxIndex = $numInputs - 1)
 

@@ -1,4 +1,4 @@
-/*Code for output of block DeadZone:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar dead zone
     if(${inputVar} >= ${LowerValueValue} && ${inputVar} <= ${UpperValueValue}) {

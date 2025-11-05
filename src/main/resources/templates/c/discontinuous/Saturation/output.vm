@@ -1,4 +1,4 @@
-/*Code for output of block Saturation:($blockId)$blockName*/
+
 #if($inputVar && $outputVar && $upperLimitName && $lowerLimitName)
     ## Use standardized template variables for robust saturation logic
     #if($inputHeight == 1 && $inputWidth == 1)

@@ -1,14 +1,14 @@
 ## DataTypeConversion block - C code generation
 ## Convert input data type with specified rounding method
-/*Code for output of block $blockType:($blockId)$blockName*/
+
 #set($roundFunc = "floor")
-#if($roundingMethod == "Round" || $roundingMethod == "Nearest")
+#if(${RndMethValue} == "Round" || ${RndMethValue} == "Nearest")
     #set($roundFunc = "round")
-#elseif($roundingMethod == "Floor")
+#elseif(${RndMethValue} == "Floor")
     #set($roundFunc = "floor")
-#elseif($roundingMethod == "Ceiling" || $roundingMethod == "Ceil")
+#elseif(${RndMethValue} == "Ceiling" || ${RndMethValue} == "Ceil")
     #set($roundFunc = "ceil")
-#elseif($roundingMethod == "Zero" || $roundingMethod == "Truncate")
+#elseif(${RndMethValue} == "Zero" || ${RndMethValue} == "Truncate")
     #set($roundFunc = "trunc")
 #end
 
@@ -19,14 +19,14 @@
         for(int i = 0; i < ${inputHeight}; i++) {
             #if($inputWidth > 1)
             for(int j = 0; j < ${inputWidth}; j++) {
-                ${outputSignal}(i, j) = static_cast<${outputCppType}>(${roundFunc}(${inputSignal}(i, j)));
+                ${output1}(i, j) = static_cast<${outputCppType}>(${roundFunc}(${input1}(i, j)));
             }
             #else
-            ${outputSignal}(i, 0) = static_cast<${outputCppType}>(${roundFunc}(${inputSignal}(i, 0)));
+            ${output1}(i, 0) = static_cast<${outputCppType}>(${roundFunc}(${input1}(i, 0)));
             #end
         }
     #else
         ## Scalar input - apply rounding function and explicit type conversion
-        ${outputSignal} = static_cast<${outputCppType}>(${roundFunc}(${inputSignal}));
+        ${output1} = static_cast<${outputCppType}>(${roundFunc}(${input1}));
     #end
 #end

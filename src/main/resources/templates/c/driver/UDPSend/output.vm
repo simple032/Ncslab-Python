@@ -1,4 +1,4 @@
-/*Code for output of block UDPSend:($blockId)$blockName*/
+
 union data_union_double data_union_send$blockId;if(model.majorStep==1){
 data_union_send$blockId.v = ${blockInputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName()};
 sendto(sockfd_netsend$blockId,&data_union_send$blockId,sizeof(data_union_send$blockId),0,(struct sockaddr*)&adr_serv_netsend$blockId,sizeof(adr_serv_netsend$blockId));

@@ -1,53 +1,53 @@
-/*Code for output of block BitwiseOperator:($blockId)$blockName*/
-#if($inputs && $inputs.size() > 0 && $output1 && $operator)
+
+#if($inputs && $inputs.size() > 0 && $output1 && $operatorValue)
     #set($inputLength = $inputs.size() - 1)
     #set($firstInput = $inputs.get(0))
 
     ## Apply bit mask if enabled
-    #if($useBitMask && $useBitMask == "on")
-        #set($maskValue = $bitMask)
+    #if($useBitMaskValue && $useBitMaskValue == "on")
+        #set($maskValue = $bitMaskValue)
     #else
         #set($maskValue = "0xFFFFFFFF")
     #end
 
     #if($outputHeight == 1 && $outputWidth == 1)
         ## Scalar bitwise operations
-        #if($operator == "AND")
+        #if($operatorValue == "AND")
             long result${blockId} = (long)$input1 & $maskValue;
             #foreach($i in [1..$inputLength])
                 #set($inputVar = $inputs.get($i))
                 result${blockId} &= ((long)${inputVar} & $maskValue);
             #end
             $output1 = (double)result${blockId};
-        #elseif($operator == "OR")
+        #elseif($operatorValue == "OR")
             long result${blockId} = (long)$input1 & $maskValue;
             #foreach($i in [1..$inputLength])
                 #set($inputVar = $inputs.get($i))
                 result${blockId} |= ((long)${inputVar} & $maskValue);
             #end
             $output1 = (double)result${blockId};
-        #elseif($operator == "XOR")
+        #elseif($operatorValue == "XOR")
             long result${blockId} = (long)$input1 & $maskValue;
             #foreach($i in [1..$inputLength])
                 #set($inputVar = $inputs.get($i))
                 result${blockId} ^= ((long)${inputVar} & $maskValue);
             #end
             $output1 = (double)result${blockId};
-        #elseif($operator == "NOT")
+        #elseif($operatorValue == "NOT")
             #if($inputs.size() == 1)
                 long result${blockId} = (long)$input1 & $maskValue;
                 $output1 = (double)(~result${blockId} & $maskValue);
             #else
                 $output1 = 0.0; /* NOT operator requires exactly one input */
             #end
-        #elseif($operator == "NAND")
+        #elseif($operatorValue == "NAND")
             long result${blockId} = (long)$input1 & $maskValue;
             #foreach($i in [1..$inputLength])
                 #set($inputVar = $inputs.get($i))
                 result${blockId} &= ((long)${inputVar} & $maskValue);
             #end
             $output1 = (double)(~result${blockId} & $maskValue);
-        #elseif($operator == "NOR")
+        #elseif($operatorValue == "NOR")
             long result${blockId} = (long)$input1 & $maskValue;
             #foreach($i in [1..$inputLength])
                 #set($inputVar = $inputs.get($i))
@@ -62,7 +62,7 @@
         #set($hIndex = $outputHeight - 1)
         #set($wIndex = $outputWidth - 1)
 
-        #if($operator == "AND")
+        #if($operatorValue == "AND")
             for (int i = 0; i <= $hIndex; i++) {
                 for (int j = 0; j <= $wIndex; j++) {
                     long result = (long)${input1}(i, j) & $maskValue;
@@ -73,7 +73,7 @@
                     ${output1}(i, j) = (double)result;
                 }
             }
-        #elseif($operator == "OR")
+        #elseif($operatorValue == "OR")
             for (int i = 0; i <= $hIndex; i++) {
                 for (int j = 0; j <= $wIndex; j++) {
                     long result = (long)${input1}(i, j) & $maskValue;
@@ -84,7 +84,7 @@
                     ${output1}(i, j) = (double)result;
                 }
             }
-        #elseif($operator == "XOR")
+        #elseif($operatorValue == "XOR")
             for (int i = 0; i <= $hIndex; i++) {
                 for (int j = 0; j <= $wIndex; j++) {
                     long result = (long)${input1}(i, j) & $maskValue;
@@ -95,7 +95,7 @@
                     ${output1}(i, j) = (double)result;
                 }
             }
-        #elseif($operator == "NOT")
+        #elseif($operatorValue == "NOT")
             #if($inputs.size() == 1)
                 for (int i = 0; i <= $hIndex; i++) {
                     for (int j = 0; j <= $wIndex; j++) {
@@ -110,7 +110,7 @@
                     }
                 }
             #end
-        #elseif($operator == "NAND")
+        #elseif($operatorValue == "NAND")
             for (int i = 0; i <= $hIndex; i++) {
                 for (int j = 0; j <= $wIndex; j++) {
                     long result = (long)${input1}(i, j) & $maskValue;
@@ -121,7 +121,7 @@
                     ${output1}(i, j) = (double)(~result & $maskValue);
                 }
             }
-        #elseif($operator == "NOR")
+        #elseif($operatorValue == "NOR")
             for (int i = 0; i <= $hIndex; i++) {
                 for (int j = 0; j <= $wIndex; j++) {
                     long result = (long)${input1}(i, j) & $maskValue;

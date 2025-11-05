@@ -1,4 +1,4 @@
-/*Code for output of block Ramp:($blockId)$blockName*/
+
 #if($SlopeHeight == 1 && $SlopeWidth == 1)
     ## Scalar ramp function
     if(model.time < ${Start}) {

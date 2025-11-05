@@ -1,1 +1,3 @@
+/* Code for initialization of block Constant:($blockId) $blockName */
 ${ValueObject.getInitCodeC()}
+${outputVar} = ${Value};

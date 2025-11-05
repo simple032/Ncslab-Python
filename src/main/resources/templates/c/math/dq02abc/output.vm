@@ -1,4 +1,4 @@
-/*Code for output of block dq02abc:($blockId)$blockName*/
+
 ## dq02abc transformation: 4 inputs (d, q, 0, theta), 3 outputs (a, b, c)
 #set($in_d = $inputs.get(0))
 #set($in_q = $inputs.get(1))

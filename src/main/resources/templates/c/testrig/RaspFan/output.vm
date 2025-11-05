@@ -2,23 +2,21 @@
 #set($outputPort1 = $blockOutputPortVariables.get(0))
 
 #if ($modelMode == $compilationMode)
-#set($hardwareDefineName = "Block" + $blockId + "_RaspFan")
-#if (true) ## This represents the C condition: if (mp->majorStep > 0)
 if (mp->majorStep > 0) {
-        int sendLength = 0;
+    int sendLength = 0;
 
-        ${hardwareDefineName}.raspFanPWM = 1.0 / 3000.0 * $inputPort1;
-        ${hardwareDefineName}.raspFanPWM = ${hardwareDefineName}.raspFanPWM > 1.0 ? 1.0 : ${hardwareDefineName}.raspFanPWM;
-        ${hardwareDefineName}.raspFanPWM = ${hardwareDefineName}.raspFanPWM < 0 ? 0 : ${hardwareDefineName}.raspFanPWM;
+    ${hardwareDefineName}.raspFanPWM = 1.0 / 3000.0 * $inputPort1;
+    ${hardwareDefineName}.raspFanPWM = ${hardwareDefineName}.raspFanPWM > 1.0 ? 1.0 : ${hardwareDefineName}.raspFanPWM;
+    ${hardwareDefineName}.raspFanPWM = ${hardwareDefineName}.raspFanPWM < 0 ? 0 : ${hardwareDefineName}.raspFanPWM;
 
-        outputRaspFan(&$hardwareDefineName);
-        $outputPort1 = 2 * ${hardwareDefineName}.fanspeed_output;
-        int speed = ${hardwareDefineName}.fanspeed_output * 2;
+    outputRaspFan(&$hardwareDefineName);
+    $outputPort1 = 2 * ${hardwareDefineName}.fanspeed_output;
+    int speed = ${hardwareDefineName}.fanspeed_output * 2;
 
-        char sendData[1024];
-        sprintf(sendData, "$001,%02d#", speed);
-        sendLength = strlen(sendData);
-        Serialport_Send(hComm, sendData, sendLength);
-    }
-#end
+    char sendData[1024];
+    sprintf(sendData, "$001,%02d#", speed);
+    sendLength = strlen(sendData);
+    Serialport_Send(hComm, sendData, sendLength);
+}
+
 #end

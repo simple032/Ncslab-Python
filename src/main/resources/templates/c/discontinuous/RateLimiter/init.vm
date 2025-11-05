@@ -1,2 +1,3 @@
-$lowerLimitInitCodeC
-$upperLimitInitCodeC
+/* Code for initialization of block RateLimiter:($blockId) $blockName */
+${LowerLimitObject.getInitCodeC()}
+${UpperLimitObject.getInitCodeC()}

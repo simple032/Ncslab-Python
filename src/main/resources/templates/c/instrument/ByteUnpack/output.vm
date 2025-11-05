@@ -1,7 +1,7 @@
 ## ByteUnpack block - C code generation
 ## Unpack uint8 vector into multiple output signals with proper type casting
 ## Input is a column vector where each element represents one byte (as double)
-/*Code for output of block $blockType:($blockId)$blockName*/
+
 {
     int byte_offset = 0;
 

@@ -1,4 +1,4 @@
-/*Code for output of block $blockType: ($blockId) $blockName*/
+
 auto $modelVariableName_mat = ${inputSignal};
 
 {

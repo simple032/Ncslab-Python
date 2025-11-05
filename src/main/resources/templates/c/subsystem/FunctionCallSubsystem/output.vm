@@ -1,0 +1,136 @@
+## Function-Call Subsystem - Output Code Template
+##
+## This template generates C code for function-call subsystem execution control.
+##
+## Context variables:
+##   $block - FunctionCallSubsystem block instance
+##   $blockId - Unique block identifier
+##   $functionCallSignal - Input function-call signal name
+##   $functionCallActive - Current function-call active state (boolean)
+##   $containedBlocks - List of blocks within the subsystem
+##   $containedLines - List of lines within the subsystem
+##   $inBlockList - List of Inport blocks
+##   $outBlockList - List of Outport blocks
+##   $boundaryLines - Lines connecting to In/Out blocks
+##   $pureInternalLines - Purely internal lines
+##
+## Execution Logic:
+##   1. Read function-call signal from input port
+##   2. Detect rising edge (0 to positive transition)
+##   3. If rising edge detected:
+##      - Set function-call active flag
+##      - Execute all internal blocks in dependency order
+##      - Update outputs via Outport blocks
+##      - Reset function-call active flag
+##   4. Store current signal for next comparison
+##
+## Generated code provides:
+##   - Function-call event detection
+##   - Rising edge detection logic
+##   - Conditional execution of subsystem contents
+##   - Proper state management for event-driven execution
+
+// ============================================================================
+// Function-Call Subsystem: ${block.blockName} (ID: ${blockId})
+// ============================================================================
+// This subsystem executes only when triggered by a function-call event.
+// Execution is atomic and completes within a single time step.
+//
+// Port Configuration:
+//   - Port 1: Function-call input (special event port)
+#if($inBlockList.size() > 0)
+//   - Data Inputs: ${inBlockList.size()} port(s) via Inport blocks
+#end
+#if($outBlockList.size() > 0)
+//   - Data Outputs: ${outBlockList.size()} port(s) via Outport blocks
+#end
+//
+// Internal Structure:
+//   - Contained Blocks: ${containedBlocks.size()}
+//   - Internal Lines: ${containedLines.size()}
+//   - Boundary Lines: ${boundaryLines.size()}
+//   - Pure Internal Lines: ${pureInternalLines.size()}
+//
+// Execution Model:
+//   - Inactive by default (no continuous execution)
+//   - Executes on rising edge of function-call signal
+//   - All internal blocks execute once per function-call event
+//   - Outputs updated after internal execution completes
+// ============================================================================
+
+{
+    // Read function-call signal from input port
+    double currentFcSignal_${blockId} = ${functionCallSignal};
+    double previousFcSignal_${blockId} = fcPreviousSignal_${blockId};
+
+    // Detect rising edge: transition from 0 (or negative) to positive
+    // Rising edge indicates function-call event
+    bool risingEdgeDetected_${blockId} = (previousFcSignal_${blockId} <= 0.0) &&
+                                         (currentFcSignal_${blockId} > 0.0);
+
+    // Check if function-call event occurred
+    if (risingEdgeDetected_${blockId}) {
+        // Function-call event detected - execute subsystem atomically
+        fcActive_${blockId} = true;
+
+        // ====================================================================
+        // BEGIN FUNCTION-CALL SUBSYSTEM EXECUTION
+        // ====================================================================
+        // Execute all internal blocks in dependency order
+        // This section contains the generated code for internal blocks
+        //
+        // NOTE: Internal block code is generated separately by the code generator
+        // and will be conditionally executed when fcActive_${blockId} is true.
+        //
+        // The following comment markers indicate where internal block code
+        // should be inserted during the full code generation process:
+        //
+        // /* INTERNAL_BLOCKS_START_${blockId} */
+        // [Internal block execution code inserted here by code generator]
+        // /* INTERNAL_BLOCKS_END_${blockId} */
+        //
+        // For now, we'll include a placeholder comment:
+
+#if($containedBlocks.size() > 0)
+        // Execute ${containedBlocks.size()} internal block(s):
+#foreach($internalBlock in $containedBlocks)
+#if(!($internalBlock.class.simpleName == "In" || $internalBlock.class.simpleName == "Out"))
+        //   - ${internalBlock.blockName} (${internalBlock.class.simpleName})
+#end
+#end
+
+        // Internal block execution (code generated separately)
+        // This includes:
+        //   - Data flow through internal lines
+        //   - Block calculations via calculateOutput()
+        //   - State updates for discrete blocks
+        //   - Output port updates via Outport blocks
+#end
+
+        // ====================================================================
+        // END FUNCTION-CALL SUBSYSTEM EXECUTION
+        // ====================================================================
+
+        // Reset function-call active flag after execution
+        fcActive_${blockId} = false;
+    }
+
+    // Store current function-call signal value for next comparison
+    fcPreviousSignal_${blockId} = currentFcSignal_${blockId};
+
+#if($inBlockList.size() > 0 || $outBlockList.size() > 0)
+    // Data port processing:
+#if($inBlockList.size() > 0)
+    //   - ${inBlockList.size()} input port(s) provide data when subsystem executes
+#end
+#if($outBlockList.size() > 0)
+    //   - ${outBlockList.size()} output port(s) update values when subsystem executes
+#end
+#end
+}
+
+// Function-Call Subsystem Execution Summary:
+//   - Function-call signal: ${functionCallSignal}
+//   - Rising edge detection: previousValue <= 0.0 && currentValue > 0.0
+//   - Execution: Atomic (all blocks execute once per function-call)
+//   - State: Event-driven (no continuous execution)

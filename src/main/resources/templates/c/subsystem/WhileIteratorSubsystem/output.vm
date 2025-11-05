@@ -1,0 +1,55 @@
+
+{
+    /* While Iterator Subsystem - Execute while condition is true */
+    int iteration_$blockId = 1;
+    int max_iterations_$blockId = $maxIterations;
+    double condition_$blockId = 0.0;
+
+#if($showIterationNumber)
+    /* Initialize iteration number output */
+    double iteration_output_$blockId = 0.0;
+#end
+
+    /* While loop: execute while condition is true AND iterations < max */
+    while (iteration_$blockId <= max_iterations_$blockId) {
+        /* Evaluate condition from internal condition block */
+#foreach($outBlock in $outBlockList)
+#if($outBlock.blockName == "condition")
+        /* Get condition value from condition output block */
+        condition_$blockId = $outBlock.getInputPortList().get(0).getData().getInitValue();
+        if (fabs(condition_$blockId) < 1e-10) {
+            /* Condition is false (zero), exit loop */
+            break;
+        }
+#end
+#end
+
+        /* Execute subsystem contents for this iteration */
+#foreach($block in $containedBlocks)
+#if(!($block.class.simpleName == "In" || $block.class.simpleName == "Out"))
+        /* Execute block: $block.blockName ($block.blockType) */
+        /* Note: Actual block execution code is generated separately */
+#end
+#end
+
+#if($showIterationNumber)
+        /* Update iteration number output */
+        iteration_output_$blockId = (double)iteration_$blockId;
+#end
+
+        /* Increment iteration counter */
+        iteration_$blockId++;
+    }
+
+#if($showIterationNumber)
+    /* Set final iteration count to output port */
+#foreach($outputPort in $outputPortList)
+#if($foreach.last)
+    $outputPort.getOutputSignalC().getName() = iteration_output_$blockId;
+#end
+#end
+#end
+
+    /* Debug output */
+    // printf("WhileIteratorSubsystem '$blockName': Executed %d iterations\n", iteration_$blockId - 1);
+}

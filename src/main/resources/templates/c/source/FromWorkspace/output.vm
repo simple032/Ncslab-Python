@@ -1,6 +1,6 @@
-/* From Workspace output: (${blockId}) ${blockName} - Variable: ${variableName} */
+/* From Workspace output: (${blockId}) ${blockName} - Variable: ${variableNameValue} */
 {
-    /* Read data from workspace variable '${variableName}' */
+    /* Read data from workspace variable '${variableNameValue}' */
     /* TODO: Implement workspace data lookup and interpolation */
 
     /* For now, output zero until workspace interface is implemented */
@@ -8,7 +8,7 @@
 
     /* Future implementation will:
      * 1. Look up time in workspace data
-     * 2. Interpolate between points if ${interpolate} is enabled
-     * 3. Handle end-of-data behavior: ${outputAfterFinalValue}
+     * 2. Interpolate between points if ${interpolateValue} is enabled
+     * 3. Handle end-of-data behavior: ${outputAfterFinalValueValue}
      */
 }

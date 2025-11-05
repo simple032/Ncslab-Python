@@ -1,0 +1,95 @@
+## Triggered Subsystem Output Code Template
+##
+## This template generates C code for the Triggered Subsystem block which
+## executes internal blocks only when a trigger event occurs.
+##
+## Available context variables:
+## - block: The TriggeredSubsystem block instance
+## - blockId: Unique block identifier
+## - blockName: Block name
+## - triggerType: Type of trigger ("rising", "falling", "either", "function-call")
+## - hasOutputPort: Whether trigger output port is enabled (boolean)
+## - zeroCrossingEnabled: Whether zero-crossing detection is enabled (boolean)
+## - initialCondition: Initial output value before first trigger
+## - triggerBlock: Internal Trigger block instance
+## - containedBlocks: List of blocks within subsystem
+## - containedLines: List of lines connecting internal blocks
+## - inBlockList: List of Inport blocks
+## - outBlockList: List of Outport blocks
+## - boundaryLines: Lines connecting to subsystem boundary
+## - pureInternalLines: Lines purely internal to subsystem
+##
+## Execution Logic:
+## 1. Check trigger block for edge detection
+## 2. If triggered, execute all internal blocks in dependency order
+## 3. Propagate data through In/Out boundary blocks
+## 4. Update output ports with calculated values
+##
+
+/*==============================================================================
+ * Triggered Subsystem: ${blockName} (ID: ${blockId})
+ * Trigger Type: ${triggerType}
+ * Zero-Crossing: #if($zeroCrossingEnabled)Enabled#{else}Disabled#end
+ * Initial Condition: ${initialCondition}
+ *============================================================================*/
+
+{
+#if($triggerBlock)
+    // Check if trigger event occurred (handled by internal Trigger block)
+    if (triggerFlag_${triggerBlock.blockId}) {
+
+        /* =====================================================================
+         * TRIGGERED EXECUTION - Execute subsystem blocks
+         * ===================================================================== */
+
+        // Propagate input data from subsystem boundary to internal In blocks
+#foreach($inBlock in $inBlockList)
+        // Inport ${inBlock.portNumber}: ${inBlock.blockName}
+        // Data flows from subsystem input port ${inBlock.portNumber} to internal blocks
+#end
+
+        // Execute internal blocks in dependency order
+#foreach($block in $containedBlocks)
+#if(!($block.getClass().getSimpleName() == "In" || $block.getClass().getSimpleName() == "Out" || $block.getClass().getSimpleName() == "Trigger"))
+        // Internal Block: ${block.blockName} (Type: ${block.blockType}, ID: ${block.blockId})
+        // (Actual block execution code generated separately)
+#end
+#end
+
+        // Propagate output data from internal Out blocks to subsystem boundary
+#foreach($outBlock in $outBlockList)
+        // Outport ${outBlock.portNumber}: ${outBlock.blockName}
+        // Data flows from internal blocks to subsystem output port ${outBlock.portNumber}
+#end
+
+#if($hasOutputPort)
+        // Trigger output port enabled - signal passed through from Trigger block
+#end
+
+        // Reset trigger flag after execution
+        triggerFlag_${triggerBlock.blockId} = false;
+
+    } else {
+        /* =====================================================================
+         * NO TRIGGER EVENT - Subsystem not executed this time step
+         * ===================================================================== */
+
+        // Maintain previous output values or hold initial conditions
+#foreach($outBlock in $outBlockList)
+        // Outport ${outBlock.portNumber}: Holding previous value
+#end
+    }
+#else
+    // ERROR: No trigger block found for triggered subsystem
+    // This should not happen - trigger block is automatically created
+#end
+}
+
+/* Subsystem Statistics:
+ * - Input ports: ${inputPortList.size()}
+ * - Output ports: ${outputPortList.size()}
+ * - Internal blocks: ${containedBlocks.size()}
+ * - Internal lines: ${containedLines.size()}
+ * - Boundary lines: ${boundaryLines.size()}
+ * - Pure internal lines: ${pureInternalLines.size()}
+ */

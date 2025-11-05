@@ -1,2 +1,2 @@
-/*Code for output of block 2-D Lookup table:($blockId)$blockName*/
+
 ${outputSignal} = bilinear_interpolation(&${tableName}, ${inputSignal1}, ${inputSignal2});

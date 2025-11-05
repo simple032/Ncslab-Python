@@ -1,10 +1,9 @@
 
-#set($path = $blockPath + "/" + $blockName + "/" + $name)
 signal${blockId}_In${number}.vp=&$signalName;
 signal${blockId}_In${number}.width=$signalWidth;
 signal${blockId}_In${number}.height=$signalHeight;
 signal${blockId}_In${number}.name=(char *)"$name";
-signal${blockId}_In${number}.path=(char *)"$path";
+signal${blockId}_In${number}.path=(char *)"$blockPath/$blockName/$name";
 #if($signalDataType == $realDataType)
 signal${blockId}_In${number}.type=SINGLE;
 #else

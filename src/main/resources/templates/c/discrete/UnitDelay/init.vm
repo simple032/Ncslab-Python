@@ -1,5 +1,5 @@
 /* Code for initialization of block Unit Delay: (${blockId}) ${blockName} */
-${sampleTime.initCodeC}
-${initialCondition.initCodeC}
+${sampleTime.getInitCodeC()}
+${initialCondition.getInitCodeC()}
 sample_time[sample_i] = ${SampleTimeName};
 sample_i = sample_i + 1;

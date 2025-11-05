@@ -1,2 +1,2 @@
-/*Code for output of block 1-D Lookup table:($blockId)$blockName*/
+
 ${outputSignal} = linear_interpolation_1d(&${tableName}, ${inputSignal});

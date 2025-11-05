@@ -1,0 +1,65 @@
+## ActionPort block output code template
+## Generates code for action port execution control in Action Subsystems
+##
+## Context variables:
+##   $block - ActionPort block instance
+##   $actionSignal - Input action signal variable name
+##   $actionPortType - Type of action port ("default", "error", "message")
+##   $initializeStates - State handling mode ("held", "reset")
+##   $isStatesReset - Boolean flag for reset mode
+##   $isStatesHeld - Boolean flag for held mode
+##   $subsystem - Parent Action Subsystem reference
+
+/* Code for ActionPort block ($block.BlockId): $block.BlockName */
+/* Action Port Type: $actionPortType, Initialize States: $initializeStates */
+
+#if($actionSignal && $actionSignal != "0")
+/* Check if action is active (function-call signal received) */
+if ($actionSignal != 0.0) {
+    /* Action is active - execute subsystem */
+
+#if($isStatesReset)
+    /* State handling: reset mode - reset states on first activation */
+    static int ${block.BlockId}_firstActivation = 1;
+    if (${block.BlockId}_firstActivation) {
+        /* Initialize/reset subsystem states */
+#foreach($stateBlock in $subsystem.ContainedBlocks)
+#foreach($state in $stateBlock.StateList)
+        $state.Name = $state.InitValue; /* Reset state: $stateBlock.BlockName */
+#end
+#end
+        ${block.BlockId}_firstActivation = 0;
+    }
+#end
+
+    /* Execute internal subsystem blocks */
+    /* Note: Actual subsystem execution is handled by the subsystem's output chain */
+
+#if($actionPortType == "error")
+    /* Error action port - this branch handles error conditions */
+    /* Error handling logic would be inserted here by the parent If/Switch block */
+#elseif($actionPortType == "message")
+    /* Message action port - receives message data from parent block */
+    /* Message data handling logic would be inserted here */
+#else
+    /* Default action port - standard conditional execution */
+#end
+
+} else {
+    /* Action is inactive */
+#if($isStatesReset)
+    /* Reset first activation flag for next activation */
+    ${block.BlockId}_firstActivation = 1;
+
+    /* Reset all subsystem states */
+#foreach($stateBlock in $subsystem.ContainedBlocks)
+#foreach($state in $stateBlock.StateList)
+    $state.Name = $state.InitValue; /* Reset state: $stateBlock.BlockName */
+#end
+#end
+#end
+}
+#else
+/* Warning: ActionPort '$block.BlockName' has no input connection */
+/* Action subsystem will not execute */
+#end

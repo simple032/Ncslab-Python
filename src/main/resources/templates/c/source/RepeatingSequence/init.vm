@@ -1,4 +1,6 @@
 /* Code for initialization of block RepeatingSequence:($blockId) $blockName */
+## Note: TimeValuesObject and OutputValuesObject are Parameter objects from TemplateUtils
+## Parameter.getInitCodeC() is a convenience method that calls data.getInitCodeC(this.getName())
 ${TimeValuesObject.getInitCodeC()}
 ${OutputValuesObject.getInitCodeC()}
 ## Initialize output to first value

@@ -14,9 +14,9 @@
 
         // FIXED: Send PWM command first, then receive response
         uint8_t cmd[] = {0xAA, 0xAA, 0x01, 0x01, 0x00, 0x00, 0x00};
-        int pwm = $inputPort1 * 10000;
-        pwm = pwm >= 10000 ? 10000 : pwm;
-        pwm = pwm <= -10000 ? -10000 : pwm;
+        int pwm = $inputPort1 * 5000;
+        pwm = pwm >= 5000 ? 5000 : pwm;
+        pwm = pwm <= -5000 ? -5000 : pwm;
         cmd[4] = (pwm & 0xFF);
         cmd[5] = (pwm & 0xFF00) >> 8;
         cmd[6] = calcSum(cmd);
@@ -35,5 +35,5 @@
         Serialport_Send(hComm1, (uint8_t*)sendData, sendLength);
     }
 #elseif ($modelMode == $simulationMode)
-    $outputPort1 = 10000 * $stateSpeed;
+    $outputPort1 = 5000 * $stateSpeed;
 #end

@@ -1,0 +1,20 @@
+## Trigger Block Arrays Declaration Template
+##
+## This template generates C code for declaring state variables needed
+## by the Trigger block for edge detection.
+##
+## Available context variables:
+## - block: The Trigger block instance
+## - blockId: Unique block identifier
+##
+## Generated state variables:
+## - triggerState_${blockId}: Stores previous trigger signal value for edge detection
+## - triggerFlag_${blockId}: Boolean flag indicating if trigger event occurred
+
+// Trigger Block State Variables: ${block.blockName} (ID: ${blockId})
+
+// Previous trigger signal value for edge detection
+double triggerState_${blockId};
+
+// Trigger event flag (true when edge detected)
+bool triggerFlag_${blockId};

@@ -1,0 +1,14 @@
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar reciprocal square root: output = 1 / sqrt(input)
+    $outputVar = 1.0 / sqrt($inputVar);
+#else
+    ## Matrix reciprocal square root: element-wise operation
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+        ${outputVar}($i, $j) = 1.0 / sqrt(${inputVar}($i, $j));
+        #end
+    #end
+#end

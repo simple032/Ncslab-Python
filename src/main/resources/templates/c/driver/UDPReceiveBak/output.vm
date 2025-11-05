@@ -1,4 +1,4 @@
-/*Code for output of block ${name}:($blockId)$blockName*/
+
 int recvbuf = 0;
 socklen_t len = sizeof(adr_serv_netrecv$blockId);
 union data_union data_union_recv$blockId;if(model.majorStep==1){

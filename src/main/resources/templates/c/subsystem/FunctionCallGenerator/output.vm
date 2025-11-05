@@ -1,0 +1,80 @@
+## Function-Call Generator Block - C Code Generation Template
+## Generates function-call events at specified sample intervals
+##
+## Context variables:
+##   $block - FunctionCallGenerator block instance
+##   $sampleTimeValue - Sample time for function-call generation (positive value)
+##   $initFcnCallInput - Initial function-call state ("on" or "off")
+##   $isInitialCallEnabled - Boolean indicating if initial call is enabled
+##   $outputSignal - Output function-call signal name
+
+// ============================================================================
+// Function-Call Generator: $block.blockName
+// ============================================================================
+// Sample Time: ${sampleTimeValue} seconds
+// Initial Call: ${initFcnCallInput}
+#if($isInitialCallEnabled)
+// Initial function-call event will be generated at t=0
+#else
+// No initial function-call event at t=0
+#end
+//
+// This block generates function-call events at regular intervals to trigger
+// execution of connected function-call subsystems.
+
+// Static variables for function-call event tracking
+static double fcg_last_event_time_${block.blockId} = -1.0;
+static double fcg_current_state_${block.blockId} = 0.0;
+static int fcg_init_event_generated_${block.blockId} = 0;
+
+// Function-call event generation logic
+{
+    double current_time = t;  // Current simulation time
+    double sample_time = ${sampleTimeValue};
+    int should_generate_call = 0;
+
+#if($isInitialCallEnabled)
+    // Check for initial function-call event at t=0
+    if (current_time == 0.0 && !fcg_init_event_generated_${block.blockId}) {
+        should_generate_call = 1;
+        fcg_init_event_generated_${block.blockId} = 1;
+        fcg_last_event_time_${block.blockId} = 0.0;
+    }
+#end
+
+    // Check for periodic function-call events
+    if (!should_generate_call) {
+        if (fcg_last_event_time_${block.blockId} < 0.0 && current_time > 0.0) {
+            // First event after initialization
+            should_generate_call = 1;
+        } else if (fcg_last_event_time_${block.blockId} >= 0.0) {
+            // Periodic event generation based on sample time
+            double elapsed_time = current_time - fcg_last_event_time_${block.blockId};
+
+            // Generate event if elapsed time >= sample time
+            // (with small tolerance for floating-point precision)
+            if (elapsed_time >= (sample_time - 1e-9)) {
+                should_generate_call = 1;
+            }
+        }
+    }
+
+    // Generate function-call signal (rising edge)
+    if (should_generate_call) {
+        // Rising edge: function-call event occurs
+        fcg_current_state_${block.blockId} = 1.0;
+        ${outputSignal} = 1.0;
+        fcg_last_event_time_${block.blockId} = current_time;
+
+        // DEBUG: Uncomment to trace function-call events
+        // printf("FCG[$block.blockName]: Event generated at t=%.6f\n", current_time);
+    } else {
+        // Inactive: no function-call event
+        fcg_current_state_${block.blockId} = 0.0;
+        ${outputSignal} = 0.0;
+    }
+}
+
+// ============================================================================
+// End Function-Call Generator: $block.blockName
+// ============================================================================

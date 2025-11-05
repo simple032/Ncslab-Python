@@ -1,2 +1,2 @@
-/*Code for output of block To:($blockId)$blockName*/
+
 $outputSignal=$inputSignal;

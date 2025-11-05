@@ -1,4 +1,4 @@
-/*Code for output of block ALP:($blockId)$blockName*/
+
 #set($inputPort1 = $block.getInputPortVariable(0))
 #set($outputPort1 = $blockOutputPortVariables.get(0))
 #set($outputPort2 = $blockOutputPortVariables.get(1))

@@ -1,4 +1,4 @@
-/*Code for output of block LogicOperator:($blockId)$blockName*/
+
 #if($inputs && $inputs.size() > 0 && $opsName && $operator)
     #set($inputLength = $inputs.size() - 1)
     #set($signal1 = $inputs.get(0).linkedLine.linkedOutputPort.outputSignalC)

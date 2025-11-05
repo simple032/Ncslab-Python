@@ -1,4 +1,4 @@
-/*Code for output of block Scope:($blockId)$blockName*/
+
 #if($inputPortList && $inputPortListSize > 0 && $scopeStruct)    
     ## Scope data logging - only on major time steps
     if (sfcnIsMajorStep()) {

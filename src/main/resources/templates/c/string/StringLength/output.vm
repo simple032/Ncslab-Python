@@ -1,6 +1,6 @@
 ## StringLength block - C code generation
 ## Calculate the length of input string signal
-/*Code for output of block $blockType:($blockId)$blockName*/
+
 
 #if($inputs && $inputs.size() > 0)
     ## Get input string signal

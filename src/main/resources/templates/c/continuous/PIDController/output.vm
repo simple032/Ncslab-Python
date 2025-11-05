@@ -1,4 +1,4 @@
-/*Code for output of block PID Controller:($blockId)$blockName*/
+
 #set($m5 = 5)  // 矩阵间隔因子
 
 #if($proportionalGainDataType == $realDataType)

@@ -1,4 +1,4 @@
-/*Code for output of block Bias:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar bias: output = input + bias
     ${outputVar} = ${inputVar} + ${Bias};

@@ -1,4 +1,4 @@
-/*Code for output of block EtherCAT_AO:($blockId)$blockName*/
+
 if(model.majorStep==1){
     double output_value = ${inputSignal};
     auto* analogOutput = AnalogIOManager::getAnalogOutput(${slaveId});

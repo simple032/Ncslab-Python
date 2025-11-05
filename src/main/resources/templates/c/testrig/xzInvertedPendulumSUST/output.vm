@@ -1,6 +1,6 @@
 #if ($modelMode == $compilationMode)
     // Compilation mode - Hardware operation for actual xz inverted pendulum SUST system
-    /*Code for output of block xzInvertedPendulumSUST:(${block.blockId})${block.blockName}*/
+    
     if(mp->majorStep>0){
     char recvBuffXzIPSUST[255]={0};
     char sendBuffXzIPSUST[]={"GZ999POS*=?\r\n"};

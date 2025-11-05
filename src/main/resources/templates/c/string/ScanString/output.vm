@@ -4,5 +4,5 @@
 
 #if($outputs && $outputs.size() > 0 && $inputs && $inputs.size() > 0)
     // Parse string using sscanf
-    sscanf(${inputs.get(0)}.c_str(), "$Format"#foreach($output in $outputs), &${output}#end);
+    sscanf(${inputs.get(0)}.c_str(), "$FormatValue"#foreach($output in $outputs), &${output}#end);
 #end

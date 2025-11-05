@@ -1,0 +1,5 @@
+/*Output code for XYGraph block:($blockId)$blockName*/
+#if($inputPortList.size() >= 2)
+${xScopeStructName}.addData($inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+${yScopeStructName}.addData($inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+#end

@@ -1,4 +1,4 @@
-/*Code for output of block BallPlateSUST:($blockId)$blockName*/
+
 
 #if ($modelMode == $compilationMode)
     // Compilation mode - Hardware operation for actual ball plate SUST system

@@ -1,4 +1,4 @@
-/*Code for output of block IntervalTest:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar interval test
     if(${inputVar} >= ${LowerLimitValue} && ${inputVar} <= ${UpperLimitValue}) {

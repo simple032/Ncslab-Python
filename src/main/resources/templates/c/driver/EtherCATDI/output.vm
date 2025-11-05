@@ -1,4 +1,4 @@
-/*Code for output of block EtherCAT_DI:($blockId)$blockName*/
+
 if(model.majorStep==1){
     bool value = false;
     auto* digitalInput = DigitalIOManager::getDigitalInput(${slaveId}, ${channel});

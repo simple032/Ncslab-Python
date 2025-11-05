@@ -1,4 +1,4 @@
-/*Code for output of block VariableTransportDelay:(${blockId})${blockName}*/
+
 #set($signal = $inputs.get(0))
 #set($signal2 = $inputs.get(1))
 #set($output = $outputs.get(0))

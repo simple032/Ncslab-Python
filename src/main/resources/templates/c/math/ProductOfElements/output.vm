@@ -1,4 +1,4 @@
-/*Code for output of block ProductOfElements:($blockId)$blockName*/
+
 ## ProductOfElements: multiply/divide elements based on sequence parameter
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar input

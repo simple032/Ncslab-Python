@@ -1,0 +1,80 @@
+## EnabledSubsystem Block - C Code Generation Template
+## Pre-configured subsystem with automatic Enable port integration
+##
+## Context variables:
+##   $block - EnabledSubsystem block instance
+##   $enableSignal - Input enable signal name from enable port
+##   $enableBlock - Internal Enable block reference
+##   $statesWhenEnabling - State handling mode ("held" or "reset")
+##   $showOutputPort - Boolean indicating if enable output port is present
+##   $zeroCross - Boolean indicating if zero-crossing detection is enabled
+##   $isHeldMode - Boolean indicating "held" mode
+##   $isResetMode - Boolean indicating "reset" mode
+##   $containedBlocks - List of blocks inside the subsystem
+##   $containedLines - List of lines inside the subsystem
+##   $inBlockList - List of Inport blocks
+##   $outBlockList - List of Outport blocks
+
+// ============================================================================
+// Enabled Subsystem: $block.blockName (ID: $block.blockId)
+// Path: $block.blockPath
+// ============================================================================
+// Configuration:
+//   State handling: $statesWhenEnabling
+#if($showOutputPort)
+//   Enable output port: enabled
+#else
+//   Enable output port: disabled
+#end
+#if($zeroCross)
+//   Zero-crossing detection: enabled
+#end
+// ============================================================================
+
+// Enable signal check for subsystem execution
+double enable_signal_${block.blockId} = ${enableSignal};
+bool subsystem_enabled_${block.blockId} = (enable_signal_${block.blockId} > 0.0);
+
+#if($showOutputPort && $enableBlock)
+// Pass enable signal to Enable block output port (if configured)
+#end
+
+// Conditional subsystem execution based on enable signal
+if (subsystem_enabled_${block.blockId}) {
+    // ========================================================================
+    // SUBSYSTEM ENABLED: Execute internal blocks
+    // ========================================================================
+
+#if($isResetMode)
+    // RESET mode: Check for rising edge transition to reset states
+    static bool prev_enabled_${block.blockId} = false;
+    if (!prev_enabled_${block.blockId}) {
+        // Rising edge detected: Reset subsystem states to initial conditions
+        // (State reset logic would be generated here if subsystem has states)
+    }
+    prev_enabled_${block.blockId} = true;
+#end
+
+    // Execute subsystem internal logic
+    // (Internal block execution code is generated separately by parent Subsystem class)
+
+} else {
+    // ========================================================================
+    // SUBSYSTEM DISABLED: Handle state preservation
+    // ========================================================================
+
+#if($isHeldMode)
+    // HELD mode: States maintain their current values (frozen)
+    // No action needed - states are simply not updated
+#elseif($isResetMode)
+    // RESET mode: Track disable state for next enable transition
+    static bool prev_enabled_${block.blockId} = true;
+    prev_enabled_${block.blockId} = false;
+#end
+
+    // Subsystem outputs retain their last values when disabled
+}
+
+// ============================================================================
+// End of Enabled Subsystem: $block.blockName
+// ============================================================================

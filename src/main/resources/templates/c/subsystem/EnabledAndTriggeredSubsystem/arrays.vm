@@ -1,0 +1,40 @@
+## EnabledAndTriggeredSubsystem Arrays Template
+##
+## This template generates array declarations for state variables used by
+## the EnabledAndTriggeredSubsystem block. These variables track enable state,
+## trigger state, and previous signal values for edge detection.
+##
+## Context variables:
+##   $block - EnabledAndTriggeredSubsystem block instance
+##   $blockId - Unique block identifier
+##   $enableBlock - Internal Enable block reference
+##   $triggerBlock - Internal Trigger block reference
+
+// EnabledAndTriggeredSubsystem State Variables: ${block.blockName} (ID: ${blockId})
+
+#if($enableBlock)
+// Enable state flag - tracks whether subsystem is currently enabled
+bool enableFlag_${enableBlock.blockId} = false;
+
+// Previous enable signal value for detecting enable state transitions
+double previousEnableSignal_${enableBlock.blockId} = 0.0;
+#end
+
+#if($triggerBlock)
+// Trigger state flag - indicates if trigger event occurred in current time step
+bool triggerFlag_${triggerBlock.blockId} = false;
+
+// Previous trigger signal value for edge detection
+double triggerState_${triggerBlock.blockId} = 0.0;
+#end
+
+#if($block.isResetMode())
+// State management flag for RESET mode
+// Tracks whether subsystem was enabled in previous time step
+// Used to detect enable transitions and trigger state reset
+bool was_enabled_${blockId} = false;
+#end
+
+// Combined execution state
+// True only when BOTH enabled AND triggered conditions are met
+bool subsystem_execute_${blockId} = false;

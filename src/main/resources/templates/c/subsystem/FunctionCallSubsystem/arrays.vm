@@ -1,0 +1,20 @@
+## Function-Call Subsystem - Array Declarations Template
+##
+## This template generates C array declarations for function-call subsystem state variables.
+##
+## Context variables:
+##   $block - FunctionCallSubsystem block instance
+##   $blockId - Unique block identifier
+##
+## Generated declarations:
+##   - Previous function-call signal value (for edge detection)
+##   - Function-call active flag
+
+// Function-Call Subsystem: ${block.blockName} (ID: ${blockId})
+// State variables for function-call detection and execution control
+
+// Previous function-call signal value (for rising edge detection)
+static double fcPreviousSignal_${blockId} = 0.0;
+
+// Function-call active flag (true when function-call event is active)
+static bool fcActive_${blockId} = false;

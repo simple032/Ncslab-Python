@@ -1,4 +1,4 @@
-/*Code for output of block Scope:($blockId)$blockName*/
+
 if(sfcnIsMajorStep()){
 #if($signalDataType.name() == "REAL")
 ## Handle REAL data type

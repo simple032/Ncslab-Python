@@ -1,4 +1,4 @@
-/*Code for output of block ShiftArithmetic:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar arithmetic shift
     #if($BitShiftNumberValue >= 0)

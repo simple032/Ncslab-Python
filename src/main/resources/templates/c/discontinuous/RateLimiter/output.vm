@@ -1,13 +1,13 @@
-/*Code for output of block RateLimiter:($blockId)$blockName*/
+
 
 
 #set($dataVar = "Block${blockId}RateLimiter_data")
 
 if(mp->majorStep > 0) {
-    if($signalName - ${dataVar} > $upperLimitName * STEP_SIZE) {
-        $outputSignalName = $upperLimitName * STEP_SIZE + ${dataVar};
-    } else if($signalName - ${dataVar} < $lowerLimitName * STEP_SIZE) {
-        $outputSignalName = $lowerLimitName * STEP_SIZE + ${dataVar};
+    if($signalName - ${dataVar} > ${UpperLimit} * STEP_SIZE) {
+        $outputSignalName = ${UpperLimit} * STEP_SIZE + ${dataVar};
+    } else if($signalName - ${dataVar} < ${LowerLimit} * STEP_SIZE) {
+        $outputSignalName = ${LowerLimit} * STEP_SIZE + ${dataVar};
     } else {
         $outputSignalName = $signalName;
     }

@@ -1,4 +1,4 @@
-/*Code for output of block DetectDecrease:($blockId)$blockName*/
+
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar detect decrease
     if(${inputVar} < preValue_${blockId}) {

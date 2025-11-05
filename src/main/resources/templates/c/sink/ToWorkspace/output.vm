@@ -1,7 +1,7 @@
-/* To Workspace output: (${blockId}) ${blockName} - Variable: ${variableName} */
+/* To Workspace output: (${blockId}) ${blockName} - Variable: ${variableNameValue} */
 #if($scopeStruct)
 if (sfcnIsMajorStep()) {
-    /* Log time and data to workspace variable '${variableName}' */
+    /* Log time and data to workspace variable '${variableNameValue}' */
     ${scopeStruct.getName()}.timeList.push_back(sfcnGetT());
 
     #if($inputSignal)

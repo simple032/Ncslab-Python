@@ -1,4 +1,4 @@
-/*Code for output of block EtherCAT_AI:($blockId)$blockName*/
+
 if(model.majorStep==1){
     double value = 0.0f;
     auto* analogInput = AnalogIOManager::getAnalogInput(${slaveId});

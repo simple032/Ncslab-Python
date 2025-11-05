@@ -1,4 +1,4 @@
-/*Code for output of block Pulse:($blockId)$blockName*/
+
 #if($AmplitudeHeight == 1 && $AmplitudeWidth == 1)
     ## Scalar pulse generation
     if(model.time < ${PhaseDelay}) {

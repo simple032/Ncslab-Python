@@ -1,0 +1,19 @@
+## Trigger Block Initialization Template
+##
+## This template generates C code for initializing Trigger block state variables.
+##
+## Available context variables:
+## - block: The Trigger block instance
+## - blockId: Unique block identifier
+##
+## Initialization:
+## - triggerState initialized to 0.0 (no previous trigger signal)
+## - triggerFlag initialized to false (no trigger event)
+
+// Trigger Block Initialization: ${block.blockName} (ID: ${blockId})
+
+// Initialize previous trigger signal value to zero
+triggerState_${blockId} = 0.0;
+
+// Initialize trigger flag to false
+triggerFlag_${blockId} = false;

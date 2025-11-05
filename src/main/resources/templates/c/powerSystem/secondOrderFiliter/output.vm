@@ -1,4 +1,4 @@
-/*Code for output of block Second-Order Filter:($blockId)$blockName*/
+
 if(mp->majorStep>0) {
 {real_T currentTime = model.time;
 real_T sampleTimeTmp = $sampleTimeName==-1?model.stepSize:$sampleTimeName;

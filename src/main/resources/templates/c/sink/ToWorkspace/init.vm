@@ -1,4 +1,4 @@
-/* Initialize To Workspace block: (${blockId}) ${blockName} - Variable: ${variableName} */
+/* Initialize To Workspace block: (${blockId}) ${blockName} - Variable: ${variableNameValue} */
 #if($scopeStruct)
 ${scopeStruct.getName()}.cursor=0;
 ${scopeStruct.getName()}.isFull=0;

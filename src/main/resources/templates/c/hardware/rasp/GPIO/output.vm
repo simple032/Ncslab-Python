@@ -1,5 +1,5 @@
 ## Variables now populated directly in Java context: $inputSignal, $Bcm
-/*Code for output of block GPIO:($blockId)$blockName*/
+
 #if($inputSignal && $Bcm)
     if(${inputSignal}) {
         digitalWrite(${Bcm}, HIGH);
