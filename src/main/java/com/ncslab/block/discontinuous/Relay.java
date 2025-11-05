@@ -280,11 +280,7 @@ public class Relay extends DiscontinuousBlock {
     // === Code Generation Methods ===
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("onSwitchValue", onSwitchValue);
-        context.put("offSwitchValue", offSwitchValue);
-        context.put("onOutputValue", onOutputValue);
-        context.put("offOutputValue", offOutputValue);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/Relay/init.vm", context);
         code.addInitCode(codeStr);
@@ -292,13 +288,7 @@ public class Relay extends DiscontinuousBlock {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
-        context.put("onSwitchValue", onSwitchValue);
-        context.put("offSwitchValue", offSwitchValue);
-        context.put("onOutputValue", onOutputValue);
-        context.put("offOutputValue", offOutputValue);
-        context.put("outputs", getOutputPortVariables());
-        context.put("inputs", getInputPortVariables());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/Relay/output.vm", context);
         code.addOutputCode(codeStr);
@@ -307,7 +297,7 @@ public class Relay extends DiscontinuousBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Fail fast - validate required parameters exist
         if (switchOnPoint == null) {
             throw new BlockCreationException("Relay block requires switch on point parameter for initialization");
@@ -321,21 +311,6 @@ public class Relay extends DiscontinuousBlock {
         if (outputWhenOff == null) {
             throw new BlockCreationException("Relay block requires output when off parameter for initialization");
         }
-        
-        // Use legacy fields if available, otherwise use SIMULINK parameters
-        Parameter onSwitchParam = (onSwitchValue != null) ? onSwitchValue : switchOnPoint;
-        Parameter offSwitchParam = (offSwitchValue != null) ? offSwitchValue : switchOffPoint;
-        Parameter onOutputParam = (onOutputValue != null) ? onOutputValue : outputWhenOn;
-        Parameter offOutputParam = (offOutputValue != null) ? offOutputValue : outputWhenOff;
-        
-        context.put("onSwitchValue", onSwitchParam);
-        // onSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("offSwitchValue", offSwitchParam);
-        // offSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("onOutputValue", onOutputParam);
-        // onOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("offOutputValue", offOutputParam);
-        // offOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/init.vm", context);
         code.addInitCode(codeStr);
@@ -344,7 +319,7 @@ public class Relay extends DiscontinuousBlock {
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Fail fast - validate required parameters exist
         if (switchOnPoint == null) {
             throw new BlockCreationException("Relay block requires switch on point parameter for code generation");
@@ -358,28 +333,6 @@ public class Relay extends DiscontinuousBlock {
         if (outputWhenOff == null) {
             throw new BlockCreationException("Relay block requires output when off parameter for code generation");
         }
-        
-        // Use legacy fields if available, otherwise use SIMULINK parameters
-        Parameter onSwitchParam = (onSwitchValue != null) ? onSwitchValue : switchOnPoint;
-        Parameter offSwitchParam = (offSwitchValue != null) ? offSwitchValue : switchOffPoint;
-        Parameter onOutputParam = (onOutputValue != null) ? onOutputValue : outputWhenOn;
-        Parameter offOutputParam = (offOutputValue != null) ? offOutputValue : outputWhenOff;
-        
-        context.put("onSwitchValue", onSwitchParam);
-        // onSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("offSwitchValue", offSwitchParam);
-        // offSwitchValueName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("onOutputValue", onOutputParam);
-        // onOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("offOutputValue", offOutputParam);
-        // offOutputValueName is already set by TemplateUtils.populateAllContext() with correct prefix
-        
-        // Add input/output signal names
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
-        
-        // Add the missing output1 variable
-        context.put("output1", getOutputPortVariable(0));
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Relay/output.vm", context);
         code.addOutputCode(codeStr);

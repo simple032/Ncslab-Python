@@ -372,17 +372,16 @@ public class Coulomb extends DiscontinuousBlock {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("offset", offset);
-        context.put("gain", gain);
-        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/Coulomb/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         // Fail fast - validate required ports and connections exist
         if (outputPortList == null || outputPortList.isEmpty()) {
             throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: no output ports configured");
@@ -390,35 +389,21 @@ public class Coulomb extends DiscontinuousBlock {
         if (inputPortList == null || inputPortList.isEmpty()) {
             throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: no input ports configured");
         }
-        
-        OutputPort out = outputPortList.get(0);
+
         InputPort inputPort = inputPortList.get(0);
-        
-        if (out == null) {
-            throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: output port is null");
-        }
-        if (inputPort == null || inputPort.getLinkedLine() == null || 
+
+        if (inputPort == null || inputPort.getLinkedLine() == null ||
             inputPort.getLinkedLine().getLinkedOutputPort() == null) {
             throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: input port not properly connected");
         }
-        
+
         OutputPort ops = inputPort.getLinkedLine().getLinkedOutputPort();
         OutputSignal signal = ops.getOutputSignalC();
-        
+
         if (signal == null) {
             throw new BlockCreationException("Coulomb block cannot generate MATLAB output code: input signal is null");
         }
-        
-        context.put("block", this);
-        context.put("outputSignal", out.getOutputSignalC().getName()); // Use signal name, not object
-        context.put("inputSignal", signal);
-        context.put("gain", gain);
-        context.put("offset", offset);
-        context.put("inputHeight", ops.getHeight());
-        context.put("inputWidth", ops.getWidth());
-        context.put("gainHeight", gain.getHeight());
-        context.put("gainWidth", gain.getWidth());
-        
+
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/Coulomb/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -426,12 +411,7 @@ public class Coulomb extends DiscontinuousBlock {
     public void generateInitCodeC(CodeStructC code){
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        prepareContext();
-        
-        // Add initialization code variables for Coulomb template
-        context.put("offsetInitCodeC", "/* Offset initialization for " + offset.getName() + " */");
-        context.put("gainInitCodeC", "/* Gain initialization for " + gain.getName() + " */");
-        
+
         String initCode = TemplateManager.renderTemplate("c/discontinuous/Coulomb/init.vm", context);
         code.addInitCode(initCode);
     }
@@ -439,23 +419,7 @@ public class Coulomb extends DiscontinuousBlock {
     public void generateOutputCodeC(CodeStructC code){
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        prepareContext();  // Add the prepareContext call to provide all necessary template variables
-        
-        // Add specific template variables needed for Coulomb
-        if (inputPortList != null && !inputPortList.isEmpty()) {
-            InputPort inputPort = inputPortList.get(0);
-            if (inputPort != null && inputPort.getLinkedLine() != null && 
-                inputPort.getLinkedLine().getLinkedOutputPort() != null) {
-                OutputPort ops = inputPort.getLinkedLine().getLinkedOutputPort();
-                context.put("opsHeight", ops.getHeight());
-                context.put("opsWidth", ops.getWidth());
-                context.put("signalName", getInputPortVariable(0));
-                context.put("gainName", context.get(gain.getLocalName())); // Use parameter local name mapped by TemplateUtils // C variable name
-                context.put("offsetName", context.get(offset.getLocalName())); // Use parameter local name mapped by TemplateUtils
-                context.put("outputSignalName", getOutputPortVariable(0));
-            }
-        }
-        
+
         String outputCode = TemplateManager.renderTemplate("c/discontinuous/Coulomb/output.vm", context);
         code.addOutputCode(outputCode);
     }

@@ -2,7 +2,6 @@ package com.ncslab.block.comm;
 
 import lombok.Getter;
 import org.json.JSONObject;
-import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.comm.UDPReceiverDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.OutputPort;

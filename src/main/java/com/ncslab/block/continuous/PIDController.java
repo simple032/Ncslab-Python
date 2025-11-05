@@ -827,7 +827,6 @@ public class PIDController extends ContinuousBlock {
         );
 
         // Add missing template variables that aren't in populateAllContext
-        context.put("outputVar", outputPortList.get(0).getOutputSignalC().getName());
         context.put("signalName", signal.getName()); // Already includes full block prefix like Block2_Output1
         context.put("signalDataType", signal.getDataType());
         context.put("signalHeight", signal.getHeight());

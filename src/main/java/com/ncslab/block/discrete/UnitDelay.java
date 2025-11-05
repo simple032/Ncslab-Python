@@ -326,23 +326,6 @@ public class UnitDelay extends DiscreteBlock {
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Add dimension variables for arrays
-        InputPort inputPort = inputPortList.get(0);
-        if (inputPort.getLinkedLine() == null) {
-            // Use default values if no line is linked (shouldn't happen in normal cases)
-            context.put("signalHeight", 1);
-            context.put("signalWidth", 1);
-        } else {
-            OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-            context.put("signalHeight", signal.getHeight());
-            context.put("signalWidth", signal.getWidth());
-        }
-        
-        // Use proper C variable name instead of Java object reference
-        String inputSignalName = getInputPortVariable(0);
-        context.put("signal", inputSignalName);
-        context.put("signalName", inputSignalName);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/arrays.vm", context);
         code.addArraysCode(codeStr);
@@ -359,13 +342,6 @@ public class UnitDelay extends DiscreteBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // FIXED: Use C variable names from TemplateUtils context, no manual prefix generation
-        // TemplateUtils already generates "Block{id}_{paramName}" format
-        context.put("sampleTime", sampleTimeParam);
-        // sampleTimeName is already set by TemplateUtils.populateAllContext()
-        context.put("initialCondition", initialCondition);
-        // initialConditionName is already set by TemplateUtils.populateAllContext()
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/init.vm", context);
         code.addInitCode(codeStr);
@@ -373,30 +349,6 @@ public class UnitDelay extends DiscreteBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Get input port and signal information
-        InputPort inputPort = inputPortList.get(0);
-        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        
-        // Use proper C variable name instead of Java object reference
-        String inputSignalName = getInputPortVariable(0);
-        context.put("signal", inputSignalName);
-        context.put("signalName", inputSignalName);
-        context.put("output1", getOutputPortVariable(0));
-        
-        // Add parameter objects and their values for template - use C variable names
-        context.put("sampleTime", sampleTimeParam);
-        // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("initialCondition", initialCondition);
-        // initialConditionName is already set by TemplateUtils.populateAllContext() with correct prefix
-        
-        // Add dimension variables for template loops
-        context.put("signalHeight", signal.getHeight());
-        context.put("signalWidth", signal.getWidth());
-        
-        // Add data type information for template conditional logic
-        context.put("signalDataType", signal.getDataType());
-        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/output.vm", context);
         code.addOutputCode(codeStr);
@@ -465,30 +417,6 @@ public class UnitDelay extends DiscreteBlock {
      */
     public void generateDiscreteUpdateCodeCInside(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Get input port and signal information
-        InputPort inputPort = inputPortList.get(0);
-        OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        
-        // Use proper C variable name instead of Java object reference
-        String inputSignalName = getInputPortVariable(0);
-        context.put("signal", inputSignalName);
-        context.put("signalName", inputSignalName);
-        context.put("output1", getOutputPortVariable(0));
-        
-        // Add parameter objects and their values for template - use C variable names
-        context.put("sampleTime", sampleTimeParam);
-        // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
-        context.put("initialCondition", initialCondition);
-        // initialConditionName is already set by TemplateUtils.populateAllContext() with correct prefix
-        
-        // Add dimension variables for template loops
-        context.put("signalHeight", signal.getHeight());
-        context.put("signalWidth", signal.getWidth());
-        
-        // Add data type information for template conditional logic
-        context.put("signalDataType", signal.getDataType());
-        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
 
         // Check if discrete update template exists, otherwise use inline code
         try {
@@ -496,12 +424,12 @@ public class UnitDelay extends DiscreteBlock {
             code.addDiscreteUpdateCode(codeStr);
         } catch (Exception e) {
             // Fallback to manual discrete update code if no template exists
-            String discreteUpdateCode = String.format("/* Discrete update for UnitDelay block %d: %s */\n", 
+            String discreteUpdateCode = String.format("/* Discrete update for UnitDelay block %d: %s */\n",
                                                     getBlockId(), getBlockName());
             discreteUpdateCode += String.format("Block%d_unit_delay_savedata[0][1] = Block%d_unit_delay_savedata[0][0];\n", 
                                                getBlockId(), getBlockId());
             discreteUpdateCode += String.format("Block%d_unit_delay_savedata[0][0] = %s;\n", 
-                                               getBlockId(), inputSignalName);
+                                               getBlockId(), input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
             code.addDiscreteUpdateCode(discreteUpdateCode);
         }
     }

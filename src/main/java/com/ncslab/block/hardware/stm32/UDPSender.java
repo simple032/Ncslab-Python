@@ -75,21 +75,17 @@ public class UDPSender extends com.ncslab.block.Block{
 		super.generateInitCodeC(code);
 
 		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-		// Add UDPSender-specific variables
-		context.put("remoteIp", remoteIp.getInitString());
-		context.put("remotePort", remotePort.getData().getIntValue());
+		// Add computed signal name
 		context.put("inputSignal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-		
+
 		code.addInitCode(TemplateManager.renderTemplate("c/hardware/stm32/UDPSender/init.vm", context));
 	}
 
 	public void generateOutputCodeC(CodeStructC code) {
 		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-		// Add UDPSender-specific variables
-		context.put("remoteIp", remoteIp.getInitString());
-		context.put("remotePort", remotePort.getData().getIntValue());
+		// Add computed signal name
 		context.put("inputSignal", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-		
+
 		code.addOutputCode(TemplateManager.renderTemplate("c/hardware/stm32/UDPSender/output.vm", context));
 	}
 }

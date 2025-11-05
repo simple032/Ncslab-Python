@@ -351,13 +351,12 @@ public class Saturation extends DiscontinuousBlock {
     // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Fail fast - validate required ports exist
         if (inputPortList == null || inputPortList.isEmpty()) {
             throw new BlockCreationException("Saturation block requires input port for code generation");
         }
-        context.put("inputPortListSize", inputPortList.size());
-        
+
         // Fail fast - validate required parameters exist
         if (lowerSaturationLimit == null) {
             throw new BlockCreationException("Saturation block requires lower saturation limit parameter");
@@ -365,21 +364,6 @@ public class Saturation extends DiscontinuousBlock {
         if (upperSaturationLimit == null) {
             throw new BlockCreationException("Saturation block requires upper saturation limit parameter");
         }
-        
-        // Use legacy fields if available, otherwise use SIMULINK parameters
-        Parameter lowerParam = (lowerLimit != null) ? lowerLimit : lowerSaturationLimit;
-        Parameter upperParam = (upperLimit != null) ? upperLimit : upperSaturationLimit;
-        
-        context.put("lowerLimit", lowerParam);
-        context.put("lowerLimitName", context.get(lowerParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
-        context.put("upperLimit", upperParam);
-        context.put("upperLimitName", context.get(upperParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
-        
-        // Add port signal names
-        context.put("inputPort0SignalName", getInputPortVariable(0));
-        context.put("outputPort0SignalName", getOutputPortVariable(0));
-        context.put("inputSignalName", getInputPortVariable(0));
-        context.put("outputSignalName", getOutputPortVariable(0));
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/output.vm", context);
         code.addOutputCode(codeStr);
@@ -388,7 +372,7 @@ public class Saturation extends DiscontinuousBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Fail fast - validate required parameters exist
         if (lowerSaturationLimit == null) {
             throw new BlockCreationException("Saturation block requires lower saturation limit parameter for initialization");
@@ -396,15 +380,6 @@ public class Saturation extends DiscontinuousBlock {
         if (upperSaturationLimit == null) {
             throw new BlockCreationException("Saturation block requires upper saturation limit parameter for initialization");
         }
-        
-        // Use legacy fields if available, otherwise use SIMULINK parameters
-        Parameter lowerParam = (lowerLimit != null) ? lowerLimit : lowerSaturationLimit;
-        Parameter upperParam = (upperLimit != null) ? upperLimit : upperSaturationLimit;
-
-        context.put("lowerLimit", lowerParam);
-        context.put("lowerLimitName", context.get(lowerParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
-        context.put("upperLimit", upperParam);
-        context.put("upperLimitName", context.get(upperParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/Saturation/init.vm", context);
         code.addInitCode(codeStr);

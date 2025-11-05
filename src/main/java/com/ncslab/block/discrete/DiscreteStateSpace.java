@@ -480,18 +480,13 @@ public class DiscreteStateSpace extends DiscreteBlock {
     
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        
+
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        context.put("block", this);
-        context.put("A", A);
-        context.put("B", B);
-        context.put("C", C);
-        context.put("D", D);
-        context.put("X0", initialCondition);
+
+        // Add computed state list for template
         context.put("stateList", xStateList);
-        
+
         // Add stateName variable for template
         if (!xStateList.isEmpty()) {
             context.put("stateName", xStateList.get(0).getName());

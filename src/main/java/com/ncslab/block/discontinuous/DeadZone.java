@@ -150,9 +150,9 @@ public class DeadZone extends DiscontinuousBlock {
     public DeadZone(DeadZoneDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
-        this.startOfDeadZone = getParameterByName("Startofdeadzone");
-        this.endOfDeadZone = getParameterByName("Endofdeadzone");
+        // Initialize final parameters from DTO - use correct parameter names matching JSON constructor
+        this.startOfDeadZone = getParameterByName("LowerValue");
+        this.endOfDeadZone = getParameterByName("UpperValue");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");

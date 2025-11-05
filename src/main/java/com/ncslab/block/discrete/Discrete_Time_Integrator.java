@@ -370,22 +370,21 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
 
     public void generateArraysCodeC(CodeStructC code) {
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        context.put("block", this);
+
+        // Computed values (keep)
         context.put("signal", signal);
+
         String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        context.put("block", this);
-        context.put("blockId", blockId);
-        context.put("blockName", blockName);
-        context.put("gain", gain);
-        context.put("sampleTime", sampleTimeParam);
-        context.put("initialCondition", initialCondition);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Computed values (keep)
         context.put("xState", xState);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/init.vm", context);
         code.addInitCode(codeStr);
     }
@@ -394,31 +393,26 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Get the actual signal data object for dataType checking
+        // Get the actual signal data object for dataType checking (computed - keep)
         InputPort in = inputPortList.get(0);
         Data signalData = in.getData();
 
-        // Ensure all required template variables are set with non-null values
+        // Ensure all required template variables are set with non-null values (computed - keep)
         String outputVarName = getOutputPortVariable(0);
         String inputVarName = getInputPortVariable(0);
-        // Use template context variables populated by TemplateUtils to avoid double prefixing
         String xStateVarName = xState != null ? xState.getName() : "Block" + blockId + "_xState";
 
-        // Use proper C variable names instead of Java object references
-        context.put("block", this);
+        // Computed values (keep)
         context.put("out", outputVarName);
         context.put("outputSignal", outputVarName);
         context.put("signal", signalData);  // Use actual Data object for dataType checking
         context.put("signalName", inputVarName);
         context.put("xState", xState);  // Use the State object itself
         context.put("xStateName", xStateVarName);
-        context.put("gainval", gain);  // Use actual Parameter object for dataType checking
         context.put("gainvalName", context.get(gain.getLocalName())); // Use parameter local name mapped by TemplateUtils
-        context.put("sampleTime", sampleTimeParam);  // Use the Parameter object itself
         context.put("sampleTimeName", context.get(sampleTimeParam.getLocalName())); // Use parameter local name mapped by TemplateUtils
-        context.put("option", integratorMethod.getInitString());
 
-        // Add missing dimension variables for matrix operations
+        // Add missing dimension variables for matrix operations (computed - keep)
         context.put("gainvalHeight", gain != null ? gain.getHeight() : 1);
         context.put("gainvalWidth", gain != null ? gain.getWidth() : 1);
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
@@ -430,15 +424,15 @@ public class Discrete_Time_Integrator extends DiscreteBlock {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         super.generateDerivativeCodeC(code);
-        context.put("block", this);
-        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }
 
     public void generateUpdateCodeC(CodeStructC code) {
-        context.put("block", this);
-        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         String codeStr = TemplateManager.renderTemplate("c/discrete/Discrete_Time_Integrator/update.vm", context);
         code.addUpdateCode(codeStr);
     }

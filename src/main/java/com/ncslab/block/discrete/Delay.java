@@ -374,48 +374,39 @@ public class Delay extends DiscreteBlock {
 
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("blockId", getBlockId());
-        
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         // Fail fast - validate required connections exist
         if (inputPortList == null || inputPortList.isEmpty()) {
             throw new BlockCreationException("Delay block requires input port for code generation");
         }
-        
+
         InputPort inputPort = inputPortList.get(0);
         if (inputPort == null) {
             throw new BlockCreationException("Delay block input port cannot be null");
         }
-        
+
         if (inputPort.getLinkedLine() == null || inputPort.getLinkedLine().getLinkedOutputPort() == null) {
             throw new BlockCreationException("Delay block requires valid input signal connection for code generation");
         }
-        
+
         OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         if (signal == null) {
             throw new BlockCreationException("Delay block requires valid output signal for code generation");
         }
-        
-        context.put("signal", signal);
-        context.put("signalHeight", signal.getHeight());
-        context.put("signalWidth", signal.getWidth());
-        
+
         // Fail fast - validate delay length parameter exists
         if (delayLength == null || delayLength.getData() == null) {
             throw new BlockCreationException("Delay block requires valid delay length parameter");
         }
-        context.put("delayLength", delayLength.getData().getIntValue()); 
-        
+
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("sampleTime", sampleTimeParam);
-        context.put("initialCondition", initialCondition);
-        context.put("delayLength", delayLength);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/discrete/Delay/init.vm", context);
         code.addInitCode(codeStr);
@@ -424,16 +415,14 @@ public class Delay extends DiscreteBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("sampleTime", sampleTimeParam);
-        context.put("initialCondition", initialCondition);
-        context.put("delayLength", delayLength);
+
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Fail fast - validate required ports exist
         if (outputPortList == null || outputPortList.isEmpty()) {
             throw new BlockCreationException("Delay block requires output port for code generation");
@@ -441,10 +430,7 @@ public class Delay extends DiscreteBlock {
         if (inputPortList == null || inputPortList.isEmpty()) {
             throw new BlockCreationException("Delay block requires input port for code generation");
         }
-        
-        context.put("outputPortList", outputPortList);
-        context.put("inputPortList", inputPortList);
-        
+
         // Fail fast - validate required parameters exist
         if (sampleTimeParam == null) {
             throw new BlockCreationException("Delay block requires sample time parameter");
@@ -455,13 +441,6 @@ public class Delay extends DiscreteBlock {
         if (delayLength == null || delayLength.getData() == null) {
             throw new BlockCreationException("Delay block requires valid delay length parameter");
         }
-        
-        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Add block-specific context
-        context.put("delayLength", delayLength.getData().getIntValue());
-        context.put("sampleTime", sampleTimeParam);
-        // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
 
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/output.vm", context);
         code.addOutputCode(codeStr);

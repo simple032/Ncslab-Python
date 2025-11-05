@@ -520,8 +520,9 @@ public class Integrator extends ContinuousBlock {
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Computed values (keep)
         context.put("state", state);
-        context.put("initialCondition", initialCondition);
 
         String codeStr = TemplateManager.renderTemplate("m/continuous/Integrator/init.vm", context);
         code.addInitCode(codeStr);
@@ -530,6 +531,8 @@ public class Integrator extends ContinuousBlock {
     public void generateDerivativeCodeM(CodeStructM code) {
         super.generateDerivativeCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Computed values (keep)
         context.put("state", state);
         context.put("input", getInputPortVariables()[0]);
 
@@ -539,20 +542,15 @@ public class Integrator extends ContinuousBlock {
 
     public void generateArraysCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Basic template variables
-        context.put("externalReset", externalReset.getData().getInitString());
-        context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("ConditionSource", conditionSource.getData().getInitString());
-        
-        // State variables - both forms for template compatibility
+
+        // Computed values (keep)
         context.put("state", state.getName());
         context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
-        
-        // Data type constants for template conditionals
+
+        // Data type constants for template conditionals (keep)
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
         context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
-        
+
         String arraysCode = TemplateManager.renderTemplate("c/continuous/Integrator/arrays.vm", context);
         code.addArraysCode(arraysCode);
     }
@@ -560,6 +558,8 @@ public class Integrator extends ContinuousBlock {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Computed values (keep)
         context.put("state", state);
         context.put("output", getOutputPortVariables()[0]);
 
@@ -570,17 +570,15 @@ public class Integrator extends ContinuousBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Basic template variables
-        context.put("externalReset", externalReset.getData().getInitString());
-        context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("ConditionSource", conditionSource.getData().getInitString());
-        
-        // Data type constants for template conditionals
-        context.put("realDataType", com.ncslab.block.data.DataType.REAL);
-        context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
-        
-        // Handle external condition source input
+        // Output signal object for template (computed - keep)
+        if (outputPortList != null && !outputPortList.isEmpty()) {
+            context.put("outputSignalObject", outputPortList.get(0).getOutputSignalC());
+        }
+
+        // State variable for template (computed - keep)
+        context.put("state", state.getName());
+
+        // Handle external condition source input (computed - keep)
         if (conditionSource.getInitString().equals("external")) {
             InputPort inputPort;
             if (externalReset.getInitString().equals("none")) {
@@ -590,59 +588,49 @@ public class Integrator extends ContinuousBlock {
             }
             context.put("input", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
         }
-        
+
         String initCode = TemplateManager.renderTemplate("c/continuous/Integrator/init.vm", context);
         code.addInitCode(initCode);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Basic template variables
-        context.put("externalReset", externalReset.getData().getInitString());
-        context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("ConditionSource", conditionSource.getData().getInitString());
-        
-        // State variables - both forms for template compatibility
+
+        // State variables - both forms for template compatibility (computed - keep)
         context.put("state", state.getName());
         context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
-        
-        // Output variables
+
+        // Output variables (computed - keep)
         context.put("outputs", getOutputPortVariables());
         context.put("output", getOutputPortVariable(0));
-        
-        // Data type constants for template conditionals
+
+        // Data type constants for template conditionals (keep)
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
         context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
-        
+
         String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Basic template variables
-        context.put("externalReset", externalReset.getData().getInitString());
-        context.put("conditionSource", conditionSource.getData().getInitString());
-        context.put("ConditionSource", conditionSource.getData().getInitString());
-        
-        // State variables - both forms for template compatibility
+
+        // State variables - both forms for template compatibility (computed - keep)
         context.put("state", state.getName());
         context.put("stateName", context.get(state.getLocalName())); // Use state local name mapped by TemplateUtils
         context.put("stateDerivative", state.getDerivativeName());
         context.put("stateDerivativeName", state.getDerivativeName());
-        
-        // Input/output variables
+
+        // Input/output variables (computed - keep)
         context.put("inputSignal", getInputPortVariable(0));
         context.put("inputs", getInputPortVariables());
         context.put("input", getInputPortVariable(0));
-        
-        // Data type constants for template conditionals
+
+        // Data type constants for template conditionals (keep)
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
         context.put("matrixDataType", com.ncslab.block.data.DataType.MATRIX);
-        
-        // Get actual data types for template conditionals
+
+        // Get actual data types for template conditionals (computed - keep)
         InputPort inputPort = inputPortList.get(0);
         if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
             OutputSignal signal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -651,8 +639,8 @@ public class Integrator extends ContinuousBlock {
             context.put("signalDataType", com.ncslab.block.data.DataType.REAL);
         }
         context.put("initialConditionDataType", initialCondition.getData().getDataType());
-        
-        // Add dimension variables for template loops
+
+        // Add dimension variables for template loops (computed - keep)
         if (state.getHeight() > 1 || state.getWidth() > 1) {
             context.put("signalHeight", state.getHeight());
             context.put("signalWidth", state.getWidth());
@@ -661,7 +649,7 @@ public class Integrator extends ContinuousBlock {
             context.put("initialConditionHeight", initialCondition.getHeight());
             context.put("initialConditionWidth", initialCondition.getWidth());
         }
-        
+
         String codeStr = TemplateManager.renderTemplate("c/continuous/Integrator/derivative.vm", context);
         code.addDerivativeCode(codeStr);
     }

@@ -249,9 +249,7 @@ public class RateLimiter extends DiscontinuousBlock {
 
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("upperLimit", upperLimit);
-        context.put("lowerLimit", lowerLimit);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/RateLimiter/init.vm", context);
         code.addInitCode(codeStr);
@@ -259,11 +257,7 @@ public class RateLimiter extends DiscontinuousBlock {
 
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
-        context.put("block", this);
-        context.put("upperLimit", upperLimit);
-        context.put("lowerLimit", lowerLimit);
-        context.put("outputs", getOutputPortVariables());
-        context.put("inputs", getInputPortVariables());
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/discontinuous/RateLimiter/output.vm", context);
         code.addOutputCode(codeStr);
@@ -272,8 +266,6 @@ public class RateLimiter extends DiscontinuousBlock {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("upperLimit", upperLimit);
-        context.put("lowerLimit", lowerLimit);
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/RateLimiter/init.vm", context);
         code.addInitCode(codeStr);
@@ -282,16 +274,12 @@ public class RateLimiter extends DiscontinuousBlock {
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
+        // Add computed signal objects for template
         OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal outputSignal = outputPortList.get(0).getOutputSignalC();
-        
-        context.put("upperLimit", upperLimit);
-        context.put("lowerLimit", lowerLimit);
         context.put("signal", signal);
         context.put("outputSignal", outputSignal);
-        context.put("outputs", getOutputPortVariables());
-        context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/discontinuous/RateLimiter/output.vm", context);
         code.addOutputCode(codeStr);
