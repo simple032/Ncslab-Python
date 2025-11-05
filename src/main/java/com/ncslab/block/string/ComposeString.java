@@ -231,11 +231,6 @@ public class ComposeString extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add ComposeString-specific context
-        if (format != null) {
-            context.put("Format", format.getInitString());
-        }
-
         try {
             String codeStr = TemplateManager.renderTemplate("c/string/ComposeString/output.vm", context);
             code.addOutputCode(codeStr);
@@ -249,11 +244,6 @@ public class ComposeString extends Block {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         TemplateUtils.populateAllContext(context, this);
-
-        // Add ComposeString-specific context
-        if (format != null) {
-            context.put("Format", format.getInitString());
-        }
 
         try {
             String codeStr = TemplateManager.renderTemplate("m/string/ComposeString/output.vm", context);

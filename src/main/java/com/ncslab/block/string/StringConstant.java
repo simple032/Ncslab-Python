@@ -286,11 +286,12 @@ public class StringConstant extends SourceBlock {
         outputPortList.get(0).setHeight(1);
         outputPortList.get(0).setWidth(1);
 
-        // Set output to string data type
-        // Note: String data type implementation may need to be added to CDataType enum
-        // For now, we'll use a special marker or custom data type
-        outputPortList.get(0).getOutputSignalC().setCDataType(com.ncslab.block.data.CDataType.STRING);
-        System.out.println("StringConstant '" + blockName + "' output CDataType set to: STRING");
+        // Set output to string data type (only if OutputSignal is already initialized)
+        // Note: OutputSignal might not be created yet during construction
+        if (outputPortList.get(0).getOutputSignalC() != null) {
+            outputPortList.get(0).getOutputSignalC().setCDataType(com.ncslab.block.data.CDataType.STRING);
+            System.out.println("StringConstant '" + blockName + "' output CDataType set to: STRING");
+        }
     }
 
     // === Runtime Simulation Methods ===
@@ -301,26 +302,37 @@ public class StringConstant extends SourceBlock {
      */
     @Override
     public void calculateInit() {
-        // Create StringData with the constant string value
-        String str = value.getInitString();
-        StringData stringData = new StringData(str);
-
-        // Set the output signal data
-        outputPortList.get(0).getOutputSignalC().setData(stringData);
-
-        System.out.println("StringConstant '" + blockName + "' initialized with value: \"" + str + "\"");
+        // Set the constant value on first initialization
+        setConstantOutput();
     }
 
     /**
      * Calculates the output of the string constant block.
      * For a constant block, the output never changes - it's set in calculateInit().
+     * However, for testing purposes, we also set it here to ensure output is available.
      *
      * @param t Current simulation time (unused for constant blocks)
      */
     @Override
     public void calculateOutput(double t) {
-        // String constant output is set in calculateInit() and never changes
-        // No calculation needed during simulation
+        // For constant blocks, output is the same at all times
+        setConstantOutput();
+    }
+
+    /**
+     * Helper method to set the constant string output
+     */
+    private void setConstantOutput() {
+        if (!outputPortList.isEmpty() && outputPortList.get(0).getOutputSignalC() != null) {
+            // Create StringData with the constant string value
+            String str = value.getInitString();
+            StringData stringData = new StringData(str);
+
+            // Set the output signal data
+            outputPortList.get(0).getOutputSignalC().setData(stringData);
+
+            System.out.println("StringConstant '" + blockName + "' set output value: \"" + str + "\"");
+        }
     }
 
     // === Code Generation Methods ===

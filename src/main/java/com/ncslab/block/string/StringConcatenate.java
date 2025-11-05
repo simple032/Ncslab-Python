@@ -335,14 +335,15 @@ public class StringConcatenate extends Block {
             // String signals are scalar (1x1) with string data type
             out.setHeight(1);
             out.setWidth(1);
-            out.getOutputSignalC().setHeight(1);
-            out.getOutputSignalC().setWidth(1);
 
-            // Set output to string data type
-            out.getOutputSignalC().setCDataType(com.ncslab.block.data.CDataType.STRING);
-            out.getOutputSignalC().setDataType(DataType.STRING);
-
-            System.out.println("StringConcatenate '" + blockName + "' output CDataType set to: STRING");
+            // Set output to string data type (only if OutputSignal is initialized)
+            if (out.getOutputSignalC() != null) {
+                out.getOutputSignalC().setHeight(1);
+                out.getOutputSignalC().setWidth(1);
+                out.getOutputSignalC().setCDataType(com.ncslab.block.data.CDataType.STRING);
+                out.getOutputSignalC().setDataType(DataType.STRING);
+                System.out.println("StringConcatenate '" + blockName + "' output CDataType set to: STRING");
+            }
         }
     }
 
@@ -445,10 +446,7 @@ public class StringConcatenate extends Block {
      */
     public void generateInitCodeM(CodeStructM code) {
         super.generateInitCodeM(code);
-        context.put("block", this);
-        context.put("numberOfInputs", numberOfInputs);
-        context.put("maximumLength", maximumLength);
-        context.put("outputDimensionsMode", outputDimensionsMode);
+        TemplateUtils.populateAllContext(context, this);
 
         String codeStr = TemplateManager.renderTemplate("m/string/StringConcatenate/init.vm", context);
         code.addInitCode(codeStr);
@@ -463,13 +461,8 @@ public class StringConcatenate extends Block {
         super.generateOutputCodeM(code);
         TemplateUtils.populateAllContext(context, this);
 
-        context.put("block", this);
-        context.put("numberOfInputs", numberOfInputs);
-        context.put("maximumLength", maximumLength);
+        // Add special computed values
         context.put("MaximumLength", Integer.parseInt(maximumLength.getInitString()));
-        context.put("outputDimensionsMode", outputDimensionsMode);
-        context.put("outputs", getOutputPortVariables());
-        context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("m/string/StringConcatenate/output.vm", context);
         code.addOutputCode(codeStr);
@@ -483,11 +476,6 @@ public class StringConcatenate extends Block {
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         TemplateUtils.populateAllContext(context, this);
-
-        context.put("block", this);
-        context.put("numberOfInputs", numberOfInputs);
-        context.put("maximumLength", maximumLength);
-        context.put("outputDimensionsMode", outputDimensionsMode);
 
         String codeStr = TemplateManager.renderTemplate("c/string/StringConcatenate/init.vm", context);
         code.addInitCode(codeStr);
@@ -503,13 +491,8 @@ public class StringConcatenate extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        context.put("block", this);
-        context.put("numberOfInputs", numberOfInputs);
-        context.put("maximumLength", maximumLength);
+        // Add special computed values
         context.put("MaximumLength", Integer.parseInt(maximumLength.getInitString()));
-        context.put("outputDimensionsMode", outputDimensionsMode);
-        context.put("outputs", getOutputPortVariables());
-        context.put("inputs", getInputPortVariables());
 
         String codeStr = TemplateManager.renderTemplate("c/string/StringConcatenate/output.vm", context);
         code.addOutputCode(codeStr);

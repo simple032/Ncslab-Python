@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.discrete;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("UnitDelay")
 @MigrationCompatible(originalClass = "com.ncslab.block.discrete.UnitDelay")
 public class UnitDelayDto extends DiscreteBlockDto {
     

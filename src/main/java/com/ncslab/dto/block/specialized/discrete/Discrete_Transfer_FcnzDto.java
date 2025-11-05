@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.discrete;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.discrete.DiscreteBlockDto;
 import com.ncslab.dto.common.TypedParameter;
@@ -38,6 +39,7 @@ import java.util.HashMap;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Discrete_Transfer_Fcnz")
 @MigrationCompatible(originalClass = "com.ncslab.block.discrete.Discrete_Transfer_Fcnz")
 public class Discrete_Transfer_FcnzDto extends DiscreteBlockDto {
 

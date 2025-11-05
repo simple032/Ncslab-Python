@@ -209,11 +209,6 @@ public class StringCompare extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add StringCompare-specific context
-        if (caseSensitive != null) {
-            context.put("CaseSensitive", caseSensitive.getInitString());
-        }
-
         try {
             String codeStr = TemplateManager.renderTemplate("c/string/StringCompare/output.vm", context);
             code.addOutputCode(codeStr);
@@ -227,11 +222,6 @@ public class StringCompare extends Block {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         TemplateUtils.populateAllContext(context, this);
-
-        // Add StringCompare-specific context
-        if (caseSensitive != null) {
-            context.put("CaseSensitive", caseSensitive.getInitString());
-        }
 
         try {
             String codeStr = TemplateManager.renderTemplate("m/string/StringCompare/output.vm", context);

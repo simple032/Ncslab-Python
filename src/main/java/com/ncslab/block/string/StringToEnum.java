@@ -172,16 +172,15 @@ public class StringToEnum extends Block {
         super.generateInitCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add enum values to context
+        // Add computed enum values list (keep)
         if (enumValues != null) {
-            context.put("EnumValues", enumValues.getInitString());
             String enumValuesStr = enumValues.getInitString();
             List<String> enumList = Arrays.asList(enumValuesStr.split(","));
             List<String> trimmedEnumList = new ArrayList<>();
             for (String enumValue : enumList) {
                 trimmedEnumList.add(enumValue.trim());
             }
-            context.put("EnumValuesList", trimmedEnumList);
+            context.put("EnumValuesList", trimmedEnumList);  // COMPUTED - split, trim, collect
         }
 
         try {
@@ -196,16 +195,15 @@ public class StringToEnum extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add enum values to context
+        // Add computed enum values list (keep)
         if (enumValues != null) {
-            context.put("EnumValues", enumValues.getInitString());
             String enumValuesStr = enumValues.getInitString();
             List<String> enumList = Arrays.asList(enumValuesStr.split(","));
             List<String> trimmedEnumList = new ArrayList<>();
             for (String enumValue : enumList) {
                 trimmedEnumList.add(enumValue.trim());
             }
-            context.put("EnumValuesList", trimmedEnumList);
+            context.put("EnumValuesList", trimmedEnumList);  // COMPUTED - split, trim, collect
         }
 
         try {
@@ -217,20 +215,21 @@ public class StringToEnum extends Block {
     }
 
     public void generateOutputCodeM(CodeStructM code) {
-        context.put("block", this);
+        TemplateUtils.populateAllContext(context, this);
+
+        // Computed values for MATLAB (keep)
         context.put("inputs", getInputPortVariables());
         context.put("outputs", getOutputPortVariables());
 
-        // Add enum values to context
+        // Add computed enum values list (keep)
         if (enumValues != null) {
-            context.put("EnumValues", enumValues.getInitString());
             String enumValuesStr = enumValues.getInitString();
             List<String> enumList = Arrays.asList(enumValuesStr.split(","));
             List<String> trimmedEnumList = new ArrayList<>();
             for (String enumValue : enumList) {
                 trimmedEnumList.add(enumValue.trim());
             }
-            context.put("EnumValuesList", trimmedEnumList);
+            context.put("EnumValuesList", trimmedEnumList);  // COMPUTED - split, trim, collect
         }
 
         try {

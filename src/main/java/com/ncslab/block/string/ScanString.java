@@ -279,11 +279,6 @@ public class ScanString extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add ScanString-specific context
-        if (format != null) {
-            context.put("Format", format.getInitString());
-        }
-
         try {
             String codeStr = TemplateManager.renderTemplate("c/string/ScanString/output.vm", context);
             code.addOutputCode(codeStr);
@@ -297,11 +292,6 @@ public class ScanString extends Block {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         TemplateUtils.populateAllContext(context, this);
-
-        // Add ScanString-specific context
-        if (format != null) {
-            context.put("Format", format.getInitString());
-        }
 
         try {
             String codeStr = TemplateManager.renderTemplate("m/string/ScanString/output.vm", context);

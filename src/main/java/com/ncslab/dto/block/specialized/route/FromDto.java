@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.route;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import lombok.Data;
@@ -17,6 +18,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("From")
 public class FromDto extends BlockDto {
     
     /**

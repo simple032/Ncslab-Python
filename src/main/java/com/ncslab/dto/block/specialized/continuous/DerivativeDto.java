@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.continuous;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -17,10 +18,10 @@ import java.util.List;
 
 /**
  * DTO representation of Derivative block with SIMULINK-compatible parameters.
- * 
+ *
  * This DTO provides a modern, type-safe interface for the Derivative block
  * and supports migration from the legacy JSONObject-based approach.
- * 
+ *
  * SIMULINK Parameters:
  * - FilterCoefficient: Filter coefficient for filtered derivative (T in s/(Ts+1))
  * - InitialCondition: Initial condition for internal state
@@ -31,9 +32,9 @@ import java.util.List;
  * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
- * 
+ *
  * Note: Implements filtered derivative G=s/(Ts+1) where T->0 gives ideal derivative
- * 
+ *
  * @author BlockMigrationAutomation
  * @version 1.0
  * @since DTO Migration Week 6
@@ -43,6 +44,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Derivative")
 @MigrationCompatible(originalClass = "com.ncslab.block.continuous.Derivative")
 public class DerivativeDto extends BlockDto {
     

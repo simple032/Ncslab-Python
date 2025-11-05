@@ -2,6 +2,7 @@ package com.ncslab.dto.block.specialized.math;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -17,10 +18,10 @@ import java.util.ArrayList;
 
 /**
  * DTO representation of Sum block with SIMULINK-compatible parameters.
- * 
+ *
  * This DTO provides a modern, type-safe interface for the Sum block
  * and supports migration from the legacy JSONObject-based approach.
- * 
+ *
  * SIMULINK Parameters:
  * - Inputs: String sequence defining input signs (e.g., "++", "+-", "++--")
  * - SampleTime: Sample time for discrete operation (-1 for inherited)
@@ -28,7 +29,7 @@ import java.util.ArrayList;
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
  * - Icon: Icon shape representation
- * 
+ *
  * @author BlockMigrationAutomation
  * @version 1.0
  * @since DTO Migration Week 5
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Sum")
 @MigrationCompatible(originalClass = "com.ncslab.block.math.Sum")
 public class SumDto extends BlockDto {
     

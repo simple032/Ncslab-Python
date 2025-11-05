@@ -2,6 +2,7 @@ package com.ncslab.dto.block.specialized.continuous;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -20,10 +21,10 @@ import java.util.ArrayList;
 
 /**
  * DTO representation of Integrator block with SIMULINK-compatible parameters.
- * 
+ *
  * This DTO provides a modern, type-safe interface for the Integrator block
  * and supports migration from the legacy JSONObject-based approach.
- * 
+ *
  * SIMULINK Parameters:
  * - InitialCondition: Initial output value at t=0
  * - ExternalReset: External reset mode (none, rising, falling, either, level, sampled level)
@@ -36,7 +37,7 @@ import java.util.ArrayList;
  * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
- * 
+ *
  * @author BlockMigrationAutomation
  * @version 1.0
  * @since DTO Migration Week 5
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Integrator")
 @MigrationCompatible(originalClass = "com.ncslab.block.continuous.Integrator")
 public class IntegratorDto extends BlockDto {
     

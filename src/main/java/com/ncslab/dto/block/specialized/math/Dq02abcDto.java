@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.math;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import lombok.Data;
@@ -17,6 +18,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Dq02abc")
 public class Dq02abcDto extends BlockDto {
     
     /**

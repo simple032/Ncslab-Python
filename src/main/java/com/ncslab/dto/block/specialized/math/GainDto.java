@@ -1,6 +1,8 @@
 package com.ncslab.dto.block.specialized.math;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
@@ -33,39 +35,79 @@ public class GainDto extends BlockDto {
     /**
      * Gain value (scalar or matrix)
      * Default: 1.0
+     * Note: No @Builder.Default - values populated from paramValues during deserialization
      */
-    @Builder.Default
-    private TypedParameter gain = TypedParameter.of(1.0);
-    
+    private TypedParameter gain;
+
     /**
      * Multiplication mode
      * Default: "Element-wise(K.*u)"
      * Options: "Element-wise(K.*u)", "Matrix(K*u)"
+     * Note: No @Builder.Default - values populated from paramValues during deserialization
      */
-    @Builder.Default
-    private TypedParameter multiplication = TypedParameter.of("Element-wise(K.*u)");
-    
+    private TypedParameter multiplication;
+
     /**
      * Sample time for the block operation
      * Default: -1 (inherited)
+     * Note: No @Builder.Default - values populated from paramValues during deserialization
      */
-    @Builder.Default
-    private TypedParameter sampleTime = TypedParameter.of(-1.0);
-    
+    private TypedParameter sampleTime;
+
     /**
      * Output data type specification
      * Default: "Inherit: Same as input"
+     * Note: No @Builder.Default - values populated from paramValues during deserialization
      */
-    @Builder.Default
-    private TypedParameter outDataTypeStr = TypedParameter.of("Inherit: Same as input");
-    
+    private TypedParameter outDataTypeStr;
+
     /**
      * Handle integer overflow by saturation
      * Default: false (off)
+     * Note: No @Builder.Default - values populated from paramValues during deserialization
      */
-    @Builder.Default
-    private TypedParameter saturateOnIntegerOverflow = TypedParameter.of(false);
-    
+    private TypedParameter saturateOnIntegerOverflow;
+
+    /**
+     * Post-deserialization hook to populate typed fields from paramValues Map.
+     * This method is called automatically after Jackson finishes deserializing the JSON.
+     * It extracts values from the legacy paramValues Map and converts them to TypedParameters.
+     */
+    @com.fasterxml.jackson.annotation.JsonSetter("paramValues")
+    public void populateFromParamValues(java.util.Map<String, Object> paramValues) {
+        super.setParamValues(paramValues);  // Call parent setter to maintain compatibility
+
+        if (paramValues == null) {
+            return;
+        }
+
+        // Extract and convert each parameter from paramValues
+        if (paramValues.containsKey("Gain")) {
+            Object gainValue = paramValues.get("Gain");
+            this.gain = TypedParameter.of(gainValue);
+        }
+
+        if (paramValues.containsKey("Multiplication")) {
+            Object multValue = paramValues.get("Multiplication");
+            this.multiplication = TypedParameter.of(multValue);
+        }
+
+        if (paramValues.containsKey("SampleTime")) {
+            Object stValue = paramValues.get("SampleTime");
+            this.sampleTime = TypedParameter.of(stValue);
+        }
+
+        if (paramValues.containsKey("OutDataTypeStr")) {
+            Object outDtValue = paramValues.get("OutDataTypeStr");
+            this.outDataTypeStr = TypedParameter.of(outDtValue);
+        }
+
+        if (paramValues.containsKey("SaturateOnIntegerOverflow")) {
+            Object satValue = paramValues.get("SaturateOnIntegerOverflow");
+            this.saturateOnIntegerOverflow = TypedParameter.of(satValue);
+        }
+    }
+
     // ===== PARAMETER ACCESS HELPERS =====
     
     public Double getGainValue() {

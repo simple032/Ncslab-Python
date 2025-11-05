@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.sink;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.sink.SinkDto;
 import com.ncslab.dto.common.TypedParameter;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Scope")
 @MigrationCompatible(originalClass = "com.ncslab.block.sink.Scope")
 public class ScopeDto extends SinkDto {
     

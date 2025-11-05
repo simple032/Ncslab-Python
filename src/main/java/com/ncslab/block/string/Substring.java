@@ -303,14 +303,15 @@ public class Substring extends Block {
             // String signals are scalar (1x1) with string data type
             out.setHeight(1);
             out.setWidth(1);
-            out.getOutputSignalC().setHeight(1);
-            out.getOutputSignalC().setWidth(1);
 
-            // Set output to string data type
-            out.getOutputSignalC().setCDataType(com.ncslab.block.data.CDataType.STRING);
-            out.getOutputSignalC().setDataType(DataType.STRING);
-
-            System.out.println("Substring '" + blockName + "' output CDataType set to: STRING");
+            // Set output to string data type (only if OutputSignal is initialized)
+            if (out.getOutputSignalC() != null) {
+                out.getOutputSignalC().setHeight(1);
+                out.getOutputSignalC().setWidth(1);
+                out.getOutputSignalC().setCDataType(com.ncslab.block.data.CDataType.STRING);
+                out.getOutputSignalC().setDataType(DataType.STRING);
+                System.out.println("Substring '" + blockName + "' output CDataType set to: STRING");
+            }
         }
     }
 

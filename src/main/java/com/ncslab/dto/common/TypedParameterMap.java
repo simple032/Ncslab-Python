@@ -284,7 +284,7 @@ public class TypedParameterMap extends HashMap<String, TypedParameter> {
         
         /**
          * Add a parameter with specified type.
-         * 
+         *
          * @param key Parameter name
          * @param value Parameter value
          * @param type Parameter type
@@ -294,10 +294,23 @@ public class TypedParameterMap extends HashMap<String, TypedParameter> {
             map.put(key, TypedParameter.of(value, type));
             return this;
         }
-        
+
+        /**
+         * Add all parameters from another TypedParameterMap.
+         *
+         * @param otherMap TypedParameterMap to copy parameters from
+         * @return This builder instance
+         */
+        public TypedParameterMapBuilder putAll(TypedParameterMap otherMap) {
+            if (otherMap != null) {
+                map.putAll(otherMap);
+            }
+            return this;
+        }
+
         /**
          * Build the TypedParameterMap.
-         * 
+         *
          * @return Configured TypedParameterMap instance
          */
         public TypedParameterMap build() {

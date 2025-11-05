@@ -176,14 +176,6 @@ public class StringReplace extends Block {
         super.generateInitCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add parameters to context
-        if (oldSubstring != null) {
-            context.put("OldSubstring", oldSubstring.getInitString());
-        }
-        if (newSubstring != null) {
-            context.put("NewSubstring", newSubstring.getInitString());
-        }
-
         try {
             String codeStr = TemplateManager.renderTemplate("c/string/StringReplace/init.vm", context);
             code.addInitCode(codeStr);
@@ -196,14 +188,6 @@ public class StringReplace extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add parameters to context
-        if (oldSubstring != null) {
-            context.put("OldSubstring", oldSubstring.getInitString());
-        }
-        if (newSubstring != null) {
-            context.put("NewSubstring", newSubstring.getInitString());
-        }
-
         try {
             String codeStr = TemplateManager.renderTemplate("c/string/StringReplace/output.vm", context);
             code.addOutputCode(codeStr);
@@ -213,17 +197,7 @@ public class StringReplace extends Block {
     }
 
     public void generateOutputCodeM(CodeStructM code) {
-        context.put("block", this);
-        context.put("inputs", getInputPortVariables());
-        context.put("outputs", getOutputPortVariables());
-
-        // Add parameters to context
-        if (oldSubstring != null) {
-            context.put("OldSubstring", oldSubstring.getInitString());
-        }
-        if (newSubstring != null) {
-            context.put("NewSubstring", newSubstring.getInitString());
-        }
+        TemplateUtils.populateAllContext(context, this);
 
         try {
             String codeStr = TemplateManager.renderTemplate("m/string/StringReplace/output.vm", context);

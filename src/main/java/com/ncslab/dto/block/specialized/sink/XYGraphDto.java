@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.sink;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.block.sink.SinkDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -34,6 +35,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("XYGraph")
 @MigrationCompatible(originalClass = "com.ncslab.block.sink.XYGraph")
 public class XYGraphDto extends SinkDto {
 

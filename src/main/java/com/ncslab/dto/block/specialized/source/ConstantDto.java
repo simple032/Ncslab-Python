@@ -1,5 +1,6 @@
 package com.ncslab.dto.block.specialized.source;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.mapper.validation.ValidationResult;
@@ -13,17 +14,17 @@ import lombok.AllArgsConstructor;
 
 /**
  * DTO representation of Constant block with SIMULINK-compatible parameters.
- * 
+ *
  * This DTO provides a modern, type-safe interface for the Constant block
  * and supports migration from the legacy JSONObject-based approach.
- * 
+ *
  * SIMULINK Parameters:
  * - Value: Constant value (scalar or matrix)
  * - SampleTime: Sample time for discrete operation (-1 for inherited, 0 for continuous)
  * - FramePeriod: Frame period for frame-based operations
  * - OutDataTypeStr: Output data type specification
  * - SaturateOnIntegerOverflow: Handle integer overflow
- * 
+ *
  * @author BlockMigrationAutomation
  * @version 1.0
  * @since DTO Migration Week 5
@@ -33,6 +34,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonTypeName("Constant")
 @MigrationCompatible(originalClass = "com.ncslab.block.source.Constant")
 public class ConstantDto extends BlockDto {
     
