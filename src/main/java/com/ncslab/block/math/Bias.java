@@ -326,13 +326,6 @@ public class Bias extends MathBlock {
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
-        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        // TemplateUtils already creates proper C variable names for parameters
-        // bias parameter will be available as context.get("Bias") with proper Block{id}_Bias format
 
         String codeStr = TemplateManager.renderTemplate("c/math/Bias/output.vm", context);
         code.addOutputCode(codeStr);

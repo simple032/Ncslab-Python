@@ -358,8 +358,7 @@ public class SerialReceive extends Block {
         super.generateInitCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Resolve Port parameter to SerialConfiguration block ID
-        // Port parameter contains the port name (e.g., "/dev/ttyUSB0"), not block name
+        // Resolve Port parameter to SerialConfiguration block ID (computed - keep)
         String portName = port.getInitString();
         SerialConfiguration portConfigBlock = null;
         int portConfigId = -1;
@@ -372,14 +371,8 @@ public class SerialReceive extends Block {
                     blockId, portName);
         }
 
-        // Add SerialReceive-specific context
-        context.put("PortConfigId", portConfigId);  // Pass block ID for C code generation
-        context.put("PortName", portName);  // Keep port name for reference
-        context.put("SampleTime", sampleTime.getInitString());
-        context.put("DataSize", dataSize.getInitString());
-        context.put("Header", header.getInitString());
-        context.put("Terminator", terminator.getInitString());
-        context.put("Blocking", blocking.getInitString());
+        // Computed values (keep)
+        context.put("PortConfigId", portConfigId);  // COMPUTED from SerialConfiguration lookup
 
         try {
             String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceive/init.vm", context);
@@ -394,8 +387,7 @@ public class SerialReceive extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Resolve Port parameter to SerialConfiguration block ID
-        // Port parameter contains the port name (e.g., "/dev/ttyUSB0"), not block name
+        // Resolve Port parameter to SerialConfiguration block ID (computed - keep)
         String portName = port.getInitString();
         SerialConfiguration portConfigBlock = null;
         int portConfigId = -1;
@@ -408,14 +400,8 @@ public class SerialReceive extends Block {
                     blockId, portName);
         }
 
-        // Add SerialReceive-specific context
-        context.put("PortConfigId", portConfigId);  // Pass block ID for C code generation
-        context.put("PortName", portName);  // Keep port name for reference
-        context.put("SampleTime", sampleTime.getInitString());
-        context.put("DataSize", dataSize.getInitString());
-        context.put("Header", header.getInitString());
-        context.put("Terminator", terminator.getInitString());
-        context.put("Blocking", blocking.getInitString());
+        // Computed values (keep)
+        context.put("PortConfigId", portConfigId);  // COMPUTED from SerialConfiguration lookup
 
         try {
             String codeStr = TemplateManager.renderTemplate("c/instrument/SerialReceive/output.vm", context);
@@ -430,8 +416,7 @@ public class SerialReceive extends Block {
         super.generateOutputCodeM(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Resolve Port parameter to SerialConfiguration block ID
-        // Port parameter contains the port name (e.g., "/dev/ttyUSB0"), not block name
+        // Resolve Port parameter to SerialConfiguration block ID (computed - keep)
         String portName = port.getInitString();
         SerialConfiguration portConfigBlock = null;
         int portConfigId = -1;
@@ -444,14 +429,8 @@ public class SerialReceive extends Block {
                     blockId, portName);
         }
 
-        // Add SerialReceive-specific context
-        context.put("PortConfigId", portConfigId);  // Pass block ID for MATLAB code generation
-        context.put("PortName", portName);  // Keep port name for reference
-        context.put("SampleTime", sampleTime.getInitString());
-        context.put("DataSize", dataSize.getInitString());
-        context.put("Header", header.getInitString());
-        context.put("Terminator", terminator.getInitString());
-        context.put("Blocking", blocking.getInitString());
+        // Computed values (keep)
+        context.put("PortConfigId", portConfigId);  // COMPUTED from SerialConfiguration lookup
 
         try {
             String codeStr = TemplateManager.renderTemplate("m/instrument/SerialReceive/output.vm", context);

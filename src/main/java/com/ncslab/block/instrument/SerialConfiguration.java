@@ -375,16 +375,6 @@ public class SerialConfiguration extends Block {
         super.generateInitCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add SerialConfiguration-specific context
-        context.put("Port", port.getInitString());
-        context.put("BaudRate", baudRate.getInitString());
-        context.put("DataBits", dataBits.getInitString());
-        context.put("Parity", parity.getInitString());
-        context.put("StopBits", stopBits.getInitString());
-        context.put("ByteOrder", byteOrder.getInitString());
-        context.put("FlowControl", flowControl.getInitString());
-        context.put("Timeout", timeout.getInitString());
-
         try {
             String codeStr = TemplateManager.renderTemplate("c/instrument/SerialConfiguration/init.vm", context);
             code.addInitCode(codeStr);
@@ -398,16 +388,6 @@ public class SerialConfiguration extends Block {
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
-
-        // Add SerialConfiguration-specific context
-        context.put("Port", port.getInitString());
-        context.put("BaudRate", baudRate.getInitString());
-        context.put("DataBits", dataBits.getInitString());
-        context.put("Parity", parity.getInitString());
-        context.put("StopBits", stopBits.getInitString());
-        context.put("ByteOrder", byteOrder.getInitString());
-        context.put("FlowControl", flowControl.getInitString());
-        context.put("Timeout", timeout.getInitString());
 
         try {
             String codeStr = TemplateManager.renderTemplate("c/instrument/SerialConfiguration/output.vm", context);
@@ -423,16 +403,6 @@ public class SerialConfiguration extends Block {
         super.generateOutputCodeM(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Add SerialConfiguration-specific context
-        context.put("Port", port.getInitString());
-        context.put("BaudRate", baudRate.getInitString());
-        context.put("DataBits", dataBits.getInitString());
-        context.put("Parity", parity.getInitString());
-        context.put("StopBits", stopBits.getInitString());
-        context.put("ByteOrder", byteOrder.getInitString());
-        context.put("FlowControl", flowControl.getInitString());
-        context.put("Timeout", timeout.getInitString());
-
         try {
             String codeStr = TemplateManager.renderTemplate("m/instrument/SerialConfiguration/output.vm", context);
             code.addOutputCode(codeStr);
@@ -446,16 +416,6 @@ public class SerialConfiguration extends Block {
     public void generateStatementCodeC(CodeStructC code) {
         super.generateStatementCodeC(code);
         TemplateUtils.populateAllContext(context, this);
-
-        // Add SerialConfiguration-specific context
-        context.put("Port", port.getInitString());
-        context.put("BaudRate", baudRate.getInitString());
-        context.put("DataBits", dataBits.getInitString());
-        context.put("Parity", parity.getInitString());
-        context.put("StopBits", stopBits.getInitString());
-        context.put("ByteOrder", byteOrder.getInitString());
-        context.put("FlowControl", flowControl.getInitString());
-        context.put("Timeout", timeout.getInitString());
 
         try {
             String codeStr = TemplateManager.renderTemplate("c/instrument/SerialConfiguration/statement.vm", context);

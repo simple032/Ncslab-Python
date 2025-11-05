@@ -333,27 +333,7 @@ public class Sqrt extends MathBlock {
 
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeC(CodeStructC code) {
-        // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        context.put("blockId", getBlockId());
-        context.put("blockName", getBlockName());
-        context.put("inputPortList", getInputPortList());
-        context.put("outputPortList", getOutputPortList());
-        context.put("function", function);
-
-        // Add input/output variables for template (${outputVar}, ${inputVar} pattern)
-        if (inputPortList != null && !inputPortList.isEmpty() && 
-            inputPortList.get(0).getLinkedLine() != null &&
-            inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
-            String inputVar = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
-            context.put("inputVar", inputVar);
-        }
-        
-        if (outputPortList != null && !outputPortList.isEmpty()) {
-            String outputVar = outputPortList.get(0).getOutputSignalC().getName();
-            context.put("outputVar", outputVar);
-        }
 
         String codeStr = TemplateManager.renderTemplate("c/math/Sqrt/output.vm", context);
         code.addOutputCode(codeStr);

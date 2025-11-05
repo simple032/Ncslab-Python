@@ -297,8 +297,7 @@ public class SerialSend extends Block {
         super.generateInitCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Resolve Port parameter to SerialConfiguration block ID
-        // Port parameter contains the port name (e.g., "/dev/ttyUSB0"), not block name
+        // Resolve Port parameter to SerialConfiguration block ID (computed - keep)
         String portName = port.getInitString();
         SerialConfiguration portConfigBlock = null;
         int portConfigId = -1;
@@ -311,12 +310,8 @@ public class SerialSend extends Block {
                     blockId, portName);
         }
 
-        // Add SerialSend-specific context
-        context.put("PortConfigId", portConfigId);  // Pass block ID for C code generation
-        context.put("PortName", portName);  // Keep port name for reference
-        context.put("Header", header.getInitString());
-        context.put("Terminator", terminator.getInitString());
-        context.put("Blocking", blocking.getInitString());
+        // Computed values (keep)
+        context.put("PortConfigId", portConfigId);  // COMPUTED from SerialConfiguration lookup
 
         try {
             String codeStr = TemplateManager.renderTemplate("c/instrument/SerialSend/init.vm", context);
@@ -331,8 +326,7 @@ public class SerialSend extends Block {
         super.generateOutputCodeC(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Resolve Port parameter to SerialConfiguration block ID
-        // Port parameter contains the port name (e.g., "/dev/ttyUSB0"), not block name
+        // Resolve Port parameter to SerialConfiguration block ID (computed - keep)
         String portName = port.getInitString();
         SerialConfiguration portConfigBlock = null;
         int portConfigId = -1;
@@ -345,14 +339,10 @@ public class SerialSend extends Block {
                     blockId, portName);
         }
 
-        // Add SerialSend-specific context
-        context.put("PortConfigId", portConfigId);  // Pass block ID for C code generation
-        context.put("PortName", portName);  // Keep port name for reference
-        context.put("Header", header.getInitString());
-        context.put("Terminator", terminator.getInitString());
-        context.put("Blocking", blocking.getInitString());
+        // Computed values (keep)
+        context.put("PortConfigId", portConfigId);  // COMPUTED from SerialConfiguration lookup
 
-        // Add input signal information
+        // Add input signal information (computed - keep)
         if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
             com.ncslab.block.io.OutputSignal inputSignal =
                 inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -375,8 +365,7 @@ public class SerialSend extends Block {
         super.generateOutputCodeM(code);
         TemplateUtils.populateAllContext(context, this);
 
-        // Resolve Port parameter to SerialConfiguration block ID
-        // Port parameter contains the port name (e.g., "/dev/ttyUSB0"), not block name
+        // Resolve Port parameter to SerialConfiguration block ID (computed - keep)
         String portName = port.getInitString();
         SerialConfiguration portConfigBlock = null;
         int portConfigId = -1;
@@ -389,12 +378,8 @@ public class SerialSend extends Block {
                     blockId, portName);
         }
 
-        // Add SerialSend-specific context
-        context.put("PortConfigId", portConfigId);  // Pass block ID for MATLAB code generation
-        context.put("PortName", portName);  // Keep port name for reference
-        context.put("Header", header.getInitString());
-        context.put("Terminator", terminator.getInitString());
-        context.put("Blocking", blocking.getInitString());
+        // Computed values (keep)
+        context.put("PortConfigId", portConfigId);  // COMPUTED from SerialConfiguration lookup
 
         try {
             String codeStr = TemplateManager.renderTemplate("m/instrument/SerialSend/output.vm", context);

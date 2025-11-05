@@ -127,20 +127,24 @@ public class MathFunction extends MathBlock {
     public MathFunction(MathFunctionDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Extract legacy operator
-        String operatorValue;
-        if (paramValues.has("Operator"))
-            operatorValue = paramValues.getString("Operator");
-        else
-            operatorValue = paramValues.getString("MathFunctionOperator");
-        this.mathOperator = operatorValue;
+        // Validate DTO
+        com.ncslab.dto.mapper.validation.ValidationResult validation = blockDto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
 
-        // Initialize final parameters from DTO
-        this.operator = getParameterByName("Operator");
+        // Retrieve parameters initialized by base class
+        // Note: MathFunctionDto uses "FunctionType" parameter name
+        this.operator = getParameterByName("FunctionType");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
+        // CRITICAL: Extract operator value BEFORE initializePorts()
+        // initializePorts() needs mathOperator to create correct number of inputs for pow
+        this.mathOperator = this.operator.getInitString();
+
+        // Now initialize ports with correct mathOperator value
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -303,36 +307,32 @@ public class MathFunction extends MathBlock {
     
     // === Port Initialization ===
     private void initializePorts() {
+        System.out.println("DEBUG MathFunction.initializePorts(): mathOperator = '" + mathOperator + "'");
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));
-        
+
         // Add second input port for pow operation
         if (Objects.equals(mathOperator, "pow")) {
+            System.out.println("DEBUG: Adding second input port for pow operation");
             inputPortList.add(new InputPort(this, 2));
             inputNames.clear();
             inputNames.add("in1");
             inputNames.add("in2");
         }
+        System.out.println("DEBUG: Final input port count = " + inputPortList.size());
     }
 
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Add MathFunction-specific context variables
-        context.put("mathOperator", mathOperator);
-        
+
         String codeStr = TemplateManager.renderTemplate("m/math/MathFunction/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
-        // Add MathFunction-specific context variables
-        context.put("function", mathOperator);
-        context.put("mathOperator", mathOperator);
 
         String codeStr = TemplateManager.renderTemplate("c/math/MathFunction/output.vm", context);
         code.addOutputCode(codeStr);

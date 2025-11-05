@@ -312,27 +312,46 @@ public class LogicOperator extends LogicBlock {
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
         Data resultData = null;
+        String op = operator.getInitString();
 
         switch (out.getOutputSignalC().getDataType()) {
             case REAL:
                 double firstValue = inputPortList.get(0).getData().getInitValue();
-                for (int i = 1; i < num; i++) {
-                    Data inputData = inputPortList.get(i).getData();
-                    if (inputData.getDataType() != DataType.REAL) {
-                        break;
+                // For NOT operator with single input, apply the operator directly
+                if ("NOT".equals(op) && num == 1) {
+                    firstValue = applyOperator(firstValue, 0.0, op);
+                } else {
+                    // For other operators, combine all inputs
+                    for (int i = 1; i < num; i++) {
+                        Data inputData = inputPortList.get(i).getData();
+                        if (inputData.getDataType() != DataType.REAL) {
+                            break;
+                        }
+                        firstValue = applyOperator(firstValue, inputData.getInitValue(), op);
                     }
-                    firstValue = applyOperator(firstValue, inputData.getInitValue(), operator.getInitString());
                 }
                 resultData = new Data(firstValue);
                 break;
             case MATRIX:
                 Matrix firstMatrix = inputPortList.get(0).getData().getMatrix();
-                for (int i = 1; i < num; i++) {
-                    Data inputData = inputPortList.get(i).getData();
-                    if (inputData.getDataType() != DataType.MATRIX) {
-                        break;
+                // For NOT operator with single input, apply the operator directly
+                if ("NOT".equals(op) && num == 1) {
+                    Matrix result = new Matrix(firstMatrix.getRowDimension(), firstMatrix.getColumnDimension());
+                    for (int i = 0; i < firstMatrix.getRowDimension(); i++) {
+                        for (int j = 0; j < firstMatrix.getColumnDimension(); j++) {
+                            result.set(i, j, applyOperator(firstMatrix.get(i, j), 0.0, op));
+                        }
                     }
-                    firstMatrix = applyMatrixOperator(firstMatrix, inputData.getMatrix(), operator.getInitString());
+                    firstMatrix = result;
+                } else {
+                    // For other operators, combine all inputs
+                    for (int i = 1; i < num; i++) {
+                        Data inputData = inputPortList.get(i).getData();
+                        if (inputData.getDataType() != DataType.MATRIX) {
+                            break;
+                        }
+                        firstMatrix = applyMatrixOperator(firstMatrix, inputData.getMatrix(), op);
+                    }
                 }
                 resultData = new Data(firstMatrix);
                 break;

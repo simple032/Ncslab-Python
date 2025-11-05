@@ -77,23 +77,24 @@ public class MinMax extends MathBlock {
     
     // === DTO Constructor ===
     public MinMax(com.ncslab.dto.block.specialized.math.MinMaxDto dto, NCSLabModel model) {
-        super(createBlockIdentity(dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID()), model);
-        
-        // Create parameters from DTO
+        super(dto, model);
+
+        // Validate DTO
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+
+        // Retrieve parameters initialized by base class
         this.function = getParameterByName("Function");
         this.numInputs = getParameterByName("NumInputs");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
-        // Add parameters to parameter list
-        parameterList.add(function);
-        parameterList.add(numInputs);
-        parameterList.add(sampleTime);
-        parameterList.add(outDataType);
-        parameterList.add(saturateOnIntegerOverflow);
-        
+
         initializePorts();
+
+        System.out.println("DTO-NATIVE: MinMax block created successfully - " + dto.getBlockName());
     }
     
     private void initializePorts() {

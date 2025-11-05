@@ -121,13 +121,23 @@ public class TrigFunction extends MathBlock {
     public TrigFunction(TrigFunctionDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
-        // Initialize final parameters from DTO
+        // Validate DTO
+        com.ncslab.dto.mapper.validation.ValidationResult validation = blockDto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+
+        // Retrieve parameters initialized by base class
+        // Note: TrigFunctionDto uses "FunctionType" parameter name
         this.function = getParameterByName("Function");
-        this.trigFunction = "sin"; // Initialize final field
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
+        // CRITICAL: Extract function value BEFORE initializePorts()
+        // initializePorts() needs trigFunction to create correct number of inputs for atan2
+        this.trigFunction = this.function.getInitString();
+
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
@@ -305,11 +315,7 @@ public class TrigFunction extends MathBlock {
 
     // === Code Generation Methods (using Velocity templates) ===
     public void generateOutputCodeC(CodeStructC code) {
-        // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
-        // Add block-specific context
-        context.put("function", this.function);
 
         String codeStr = com.ncslab.util.TemplateManager.renderTemplate("c/math/TrigFunction/output.vm", context);
         code.addOutputCode(codeStr);

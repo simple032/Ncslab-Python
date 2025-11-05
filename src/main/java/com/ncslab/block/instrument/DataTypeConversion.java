@@ -160,16 +160,9 @@ public class DataTypeConversion extends Block {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add DataTypeConversion-specific context
-        if (!inputPortList.isEmpty() && !outputPortList.isEmpty()) {
+        // Add derived output C++ type for proper type casting in template
+        if (!outputPortList.isEmpty()) {
             OutputPort out = outputPortList.get(0);
-            OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-            context.put("outputSignal", out.getOutputSignalC().getName());
-            context.put("inputSignal", ops.getOutputSignalC().getName());
-            context.put("roundingMethod", getRoundingMethod());
-
-            // Add output CDataType for proper type casting
-            context.put("outputCDataType", out.getOutputSignalC().getCDataType());
             context.put("outputCppType", out.getOutputSignalC().getCDataType().getCppType());
         }
 
@@ -181,15 +174,6 @@ public class DataTypeConversion extends Block {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
-        // Add DataTypeConversion-specific context
-        if (!inputPortList.isEmpty() && !outputPortList.isEmpty()) {
-            OutputPort out = outputPortList.get(0);
-            OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-            context.put("outputSignal", out.getOutputSignalC().getName());
-            context.put("inputSignal", ops.getOutputSignalC().getName());
-            context.put("roundingMethod", getRoundingMethod());
-        }
 
         String codeStr = TemplateManager.renderTemplate("m/instrument/DataTypeConversion/output.vm", context);
         code.addOutputCode(codeStr);

@@ -40,8 +40,8 @@ public abstract class MathBlock extends Block {
         super(blockJson, model);
     }
 
-        public void calculateInit() {
-        // Initialize output to zero for mathematical operations
+    public void calculateInit() {
+        // FIXME:Initialize output to zero for mathematical operations
         if (!outputPortList.isEmpty()) {
             OutputPort output = outputPortList.get(0);
             output.setData(new Data(0.0));

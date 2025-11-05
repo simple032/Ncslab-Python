@@ -368,10 +368,6 @@ public class Product extends MathBlock {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add Product-specific context variables
-        context.put("sequence", getInputSequence());
-        context.put("matrixMultiplication", this.matrixMultiplication);
-
         String codeStr = TemplateManager.renderTemplate("c/math/Product/output.vm", context);
         code.addOutputCode(codeStr);
     }

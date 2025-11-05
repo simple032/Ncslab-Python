@@ -211,10 +211,8 @@ public class SumOfElements extends MathBlock {
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add block-specific context
-        context.put("sequence", sequence.getInitString());
+        // Add block-specific computed context
         context.put("allDimensions", isAllDimensions());
-        context.put("dimension", dimension.getInitString());
 
         String codeStr = TemplateManager.renderTemplate("c/math/SumOfElements/output.vm", context);
         code.addOutputCode(codeStr);

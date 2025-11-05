@@ -461,18 +461,17 @@ public class Add extends MathBlock {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Add Add-specific template context
         OutputPort out = outputPortList.get(0);
         OutputPort firstInput = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        context.put("sequence", inputSequence);
         // For C templates - use string variable names, not objects
         context.put("outputSignal", out.getOutputSignalC().getName());
         context.put("firstInputSignal", firstInput.getOutputSignalC().getName());
         // For MATLAB templates that need objects - provide separate object references
         context.put("outputSignalObject", out.getOutputSignalC());
         context.put("firstInputSignalObject", firstInput.getOutputSignalC());
-        
+
         String codeStr = TemplateManager.renderTemplate("m/math/Add/output.vm", context);
         code.addOutputCode(codeStr);
     }

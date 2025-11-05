@@ -9,6 +9,9 @@ import java.util.Objects;
 
 // External libraries
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.parquet.Log;
 import org.json.JSONObject;
 
 // Internal imports - DTO
@@ -49,6 +52,7 @@ import com.ncslab.util.TemplateManager;
  * @author NCSLab Team
  * @version 2025
  */
+@Slf4j
 public class Gain extends MathBlock {
 
     // === SIMULINK-Compatible Parameters ===
@@ -67,6 +71,7 @@ public class Gain extends MathBlock {
     
     // === Operational Settings ===
     /** True for matrix multiplication (K*u), false for element-wise (K.*u) */
+    @Getter
     private final boolean matrixMultiplication;
 
     // === Static Parameter Definitions ===
@@ -159,6 +164,7 @@ public class Gain extends MathBlock {
 
         // Use centralized parameter management via getParameterByName
         this.gain = getParameterByName("Gain");
+        log.debug("Gain: init:{}, parsed:{}", gain.getInitString(), gain.getDataString());
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
@@ -351,7 +357,7 @@ public class Gain extends MathBlock {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Add Gain-specific context
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
@@ -361,8 +367,7 @@ public class Gain extends MathBlock {
         // For MATLAB templates that need objects - provide separate object references
         context.put("outputSignalObject", out.getOutputSignalC());
         context.put("inputSignalObject", ops.getOutputSignalC());
-        context.put("matrixMultiplication", this.matrixMultiplication);
-        
+
         String codeStr = TemplateManager.renderTemplate("m/math/Gain/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -375,17 +380,9 @@ public class Gain extends MathBlock {
         // code.addInitCode(codeStr);
     }
 
-    private boolean isMatrixMultiplication() {
-        return matrixMultiplication;
-    }
-
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Add Gain-specific context
-        context.put("multiplication", isMatrixMultiplication());
-        context.put("matrixMultiplication", isMatrixMultiplication());
 
         String codeStr = TemplateManager.renderTemplate("c/math/Gain/output.vm", context);
         code.addOutputCode(codeStr);
@@ -454,7 +451,9 @@ public class Gain extends MathBlock {
     // === Runtime Simulation API (restored) ===
     @Override
     public void calculateInit() {
-        
+        OutputPort out = outputPortList.get(0);
+        Data data = inputPortList.get(0).getData().times(gain.getData());        
+        out.setData(data);
     }
 
     @Override

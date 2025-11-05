@@ -54,9 +54,11 @@ public class RepeatingSequence extends SourceBlock {
         outputNames.add("out1");
         // No input ports for repeating sequence block
         
-        // Parameter defaults
-        PARAMETER_DEFAULTS.put("TimeValues", "[0 1]");
-        PARAMETER_DEFAULTS.put("OutputValues", "[0 1]");
+        // TODO:现在还使用旧版参数Parameter defaults
+        // PARAMETER_DEFAULTS.put("TimeValues", "[0 1]");
+        // PARAMETER_DEFAULTS.put("OutputValues", "[0 1]");
+        PARAMETER_DEFAULTS.put("rep_seq_t", "[0 1]");
+        PARAMETER_DEFAULTS.put("rep_seq_y", "[0 1]");
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "double");
         PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
@@ -94,14 +96,30 @@ public class RepeatingSequence extends SourceBlock {
     public RepeatingSequence(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
-        // Create legacy parameters for backward compatibility
-        this.timeValues = getParameterByName("TimeValues");
-        this.outputValues = getParameterByName("OutputValues");
-        
+        // Try to get parameters by new names first, then legacy names
+        Parameter timeValuesParam = getParameterByName("TimeValues");
+        if (timeValuesParam == null) {
+            timeValuesParam = getParameterByName("rep_seq_t");
+            if (timeValuesParam == null) {
+                throw new BlockCreationException("RepeatingSequence block is missing required parameter 'TimeValues' (or legacy 'rep_seq_t')");
+            }
+        }
+        this.timeValues = timeValuesParam;
+
+        Parameter outputValuesParam = getParameterByName("OutputValues");
+        if (outputValuesParam == null) {
+            outputValuesParam = getParameterByName("rep_seq_y");
+            if (outputValuesParam == null) {
+                throw new BlockCreationException("RepeatingSequence block is missing required parameter 'OutputValues' (or legacy 'rep_seq_y')");
+            }
+        }
+        this.outputValues = outputValuesParam;
+
         // Create missing SIMULINK parameters with defaults
-        this.sampleTime = getParameterByName("SampleTime"); // 0 for continuous sequence
+        this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
         // Initialize ports
         initializePorts();
     }    /**
@@ -113,9 +131,23 @@ public class RepeatingSequence extends SourceBlock {
         // Initialize final parameters from DTO with proper values
         String timeValuesStr = blockDto.getTimeValues() != null ? blockDto.getTimeValues().getValue(String.class) : "[0 1]";
         String outputValuesStr = blockDto.getOutputValues() != null ? blockDto.getOutputValues().getValue(String.class) : "[0 1]";
-        
-        this.timeValues = getParameterByName("TimeValues");
-        this.outputValues = getParameterByName("OutputValues");
+                
+        if(getParameterByName("TimeValues") != null){
+            this.timeValues = getParameterByName("TimeValues");
+        } else if(getParameterByName("rep_seq_t") != null){
+            this.timeValues = getParameterByName("rep_seq_t");
+        } else{
+            throw new BlockCreationException("RepeatingSequence block is missing required parameter 'TimeValues' (or legacy 'rep_seq_t')");
+        }
+       
+        if(getParameterByName("OutputValues") != null){
+            this.outputValues = getParameterByName("OutputValues");
+        } else if(getParameterByName("rep_seq_y") != null){
+            this.outputValues = getParameterByName("rep_seq_y");
+        } else{
+            throw new BlockCreationException("RepeatingSequence block is missing required parameter 'OutputValues' (or legacy 'rep_seq_y')");
+        }
+
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
@@ -224,12 +256,30 @@ public class RepeatingSequence extends SourceBlock {
     
     // === Helper Methods for JSON Parameter Creation ===
     private static Parameter createTimeValuesFromJSON(JSONObject paramValues, String blockName) {
-        String timeValuesStr = paramValues.optString("rep_seq_t", "[0 1]");
+        // Check new name first, then legacy name, then fail
+        String timeValuesStr;
+        if (paramValues.has("TimeValues")) {
+            timeValuesStr = paramValues.getString("TimeValues");
+        } else if (paramValues.has("rep_seq_t")) {
+            timeValuesStr = paramValues.getString("rep_seq_t");
+        } else {
+            throw new BlockCreationException("RepeatingSequence block '" + blockName +
+                "' is missing required parameter 'TimeValues' (or legacy 'rep_seq_t')");
+        }
         return new Parameter(null, 1, "TimeValues", timeValuesStr);
     }
-    
+
     private static Parameter createOutputValuesFromJSON(JSONObject paramValues, String blockName) {
-        String outputValuesStr = paramValues.optString("rep_seq_y", "[0 1]");
+        // Check new name first, then legacy name, then fail
+        String outputValuesStr;
+        if (paramValues.has("OutputValues")) {
+            outputValuesStr = paramValues.getString("OutputValues");
+        } else if (paramValues.has("rep_seq_y")) {
+            outputValuesStr = paramValues.getString("rep_seq_y");
+        } else {
+            throw new BlockCreationException("RepeatingSequence block '" + blockName +
+                "' is missing required parameter 'OutputValues' (or legacy 'rep_seq_y')");
+        }
         return new Parameter(null, 2, "OutputValues", outputValuesStr);
     }
     
@@ -289,8 +339,10 @@ public class RepeatingSequence extends SourceBlock {
 
     // === Code Generation Methods (preserved from original) ===
     public void generateArraysCodeC(CodeStructC code) {
-        context.put("block", this);
-        context.put("rep_seq_t", timeValues);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Note: TemplateUtils.populateAllContext() already adds Parameter objects as *Object variables
+        // No need to manually add them - they're already in context
 
         String codeStr = TemplateManager.renderTemplate("c/source/RepeatingSequence/arrays.vm", context);
         code.addArraysCode(codeStr);
@@ -300,12 +352,34 @@ public class RepeatingSequence extends SourceBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
+        // Note: TemplateUtils.populateAllContext() already adds:
+        // - $TimeValuesObject → Parameter object (has .getInitCodeC() method)
+        // - $OutputValuesObject → Parameter object (has .getInitCodeC() method)
+        // - $TimeValues → C variable name string
+        // - $OutputValues → C variable name string
+        // So we don't need to manually add them here.
+        
+        context.put("TimeValuesObject", timeValues);
+        context.put("OutputValuesObject", outputValues);
+
+        context.put("OutputValues", outputValues.getName());
+        context.put("TimeValues", timeValues.getName());
+
         String codeStr = TemplateManager.renderTemplate("c/source/RepeatingSequence/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        context.put("TimeValuesObject", timeValues);
+        context.put("OutputValuesObject", outputValues);
+
+        context.put("OutputValues", outputValues.getName());
+        context.put("TimeValues", timeValues.getName());
+
+        context.put("TimeValuesHeight", timeValues.getHeight());
+        context.put("TimeValuesWidth", timeValues.getWidth());
 
         String codeStr = TemplateManager.renderTemplate("c/source/RepeatingSequence/output.vm", context);
         code.addOutputCode(codeStr);
@@ -340,13 +414,15 @@ public class RepeatingSequence extends SourceBlock {
         while (dt > times[times.length - 1]) {
             dt -= times[times.length - 1];
         }
-        
+
         double output = values[0]; // Default to first value
         for (int i = 0; i < times.length - 1; i++) {
             if (dt >= times[i] && dt < times[i + 1]) {
                 // Linear interpolation between points
-                output = values[i] + (dt - times[i]) *
-                    (values[i + 1] - values[i]) / (times[i + 1] - times[i]);
+                double numerator = (dt - times[i]) * (values[i + 1] - values[i]);
+                double denominator = times[i + 1] - times[i];
+
+                output = values[i] + numerator / denominator;
                 break;
             }
         }
@@ -355,6 +431,7 @@ public class RepeatingSequence extends SourceBlock {
 
     @Override
     public void calculateInit() {
+        double[] times = timeValues.getData().getDoubleArray();
         double[] values = outputValues.getData().getDoubleArray();
         double initialOutput = values[0];
         outputPortList.get(0).getOutputSignalC().setValue(initialOutput);

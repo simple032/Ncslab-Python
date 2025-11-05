@@ -294,9 +294,10 @@ public class Sign extends MathBlock {
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         OutputPort ops1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
-        
-        context.put("block", this);
+
         // For C templates - use string variable names, not objects
         context.put("inputSignal", ops1.getOutputSignalC().getName());
         context.put("outputSignal", getOutputPortList().get(0).getOutputSignalC().getName());
@@ -305,7 +306,7 @@ public class Sign extends MathBlock {
         context.put("outputSignalObject", getOutputPortList().get(0).getOutputSignalC());
         context.put("inputHeight", ops1.getHeight());
         context.put("inputWidth", ops1.getWidth());
-        
+
         String codeStr = TemplateManager.renderTemplate("m/math/Sign/output.vm", context);
         code.addOutputCode(codeStr);
     }

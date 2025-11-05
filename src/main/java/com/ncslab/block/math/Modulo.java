@@ -102,18 +102,26 @@ public class Modulo extends MathBlock {
      * DTO-NATIVE Constructor - Creates Modulo block directly from ModuloDto DTO
      */
     public Modulo(com.ncslab.dto.block.specialized.math.ModuloDto moduloDto, NCSLabModel model) {
-        this(
-            createParameterFromTyped(moduloDto.getModuloType(), 1, "ModuloType"),
-            createParameterFromTyped(moduloDto.getDivisorSource(), 2, "DivisorSource"),
-            createParameterFromTyped(moduloDto.getDivisor(), 3, "Divisor"),
-            createParameterFromTyped(moduloDto.getSampleTime(), 4, "SampleTime"),
-            createParameterFromTyped(moduloDto.getOutDataTypeStr(), 5, "OutDataTypeStr"),
-            createParameterFromTyped(moduloDto.getSaturateOnIntegerOverflow(), 6, "SaturateOnIntegerOverflow"),
-            moduloDto.getBlockName(),
-            moduloDto.getBlockPath(),
-            moduloDto.getBlockUUID() != null ? moduloDto.getBlockUUID() : "null",
-            model
-        );
+        super(moduloDto, model);
+
+        // Validate DTO
+        com.ncslab.dto.mapper.validation.ValidationResult validation = moduloDto.validate();
+        if (!validation.isValid()) {
+            throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
+        }
+
+        // Retrieve parameters initialized by base class
+        this.moduloType = getParameterByName("ModuloType");
+        this.divisorSource = getParameterByName("DivisorSource");
+        this.divisor = getParameterByName("Divisor");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        this.useDivisorPort = "External".equals(divisorSource.getData().getInitString());
+
+        initializePorts();
+
         System.out.println("DTO-NATIVE: Modulo block created successfully from ModuloDto - " + moduloDto.getBlockName());
     }
     

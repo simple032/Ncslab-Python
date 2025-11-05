@@ -135,9 +135,9 @@ public class CompareToConstant extends LogicBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.constantValue = getParameterByName("Constantvalue");
-        this.relationalOperator = getParameterByName("Relationaloperator");
-        this.logicDataType = getParameterByName("Logicdatatype");
+        this.constantValue = getParameterByName("ConstantValue");
+        this.relationalOperator = getParameterByName("RelationalOperator");
+        this.logicDataType = getParameterByName("LogicDataType");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");

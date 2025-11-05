@@ -79,11 +79,7 @@ public class abc2dq0 extends MathBlock{
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
-        // Add block-specific context
-        context.put("function", getFunction());
 
         String codeStr = TemplateManager.renderTemplate("c/math/abc2dq0/output.vm", context);
         code.addOutputCode(codeStr);

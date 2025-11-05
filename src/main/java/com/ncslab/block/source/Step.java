@@ -130,26 +130,22 @@ public class Step extends SourceBlock {
      * DTO Constructor - Creates Step block from StepDto
      */
     public Step(StepDto dto, NCSLabModel model) {
-        super("Step", 
-              createParameterFromDto("SampleTime", dto.getSampleTime(), dto), 
-              createParameterFromDto("OutDataTypeStr", dto.getOutDataTypeStr(), dto),
-              createParameterFromDto("SaturateOnIntegerOverflow", dto.getSaturateOnIntegerOverflow(), dto),
-              dto.getBlockName(), dto.getBlockPath(), dto.getBlockUUID(), model);
-        
+        super(dto, model);
+
         // Validate DTO before initialization
         com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
         if (!validation.isValid()) {
             throw new BlockCreationException("DTO validation failed: " + validation.getErrors());
         }
-        
-        // Initialize from DTO parameters
+
+        // Retrieve Step-specific parameters (initialized centrally by base Block class)
         this.time = getParameterByName("Time");
         this.initialValue = getParameterByName("InitialValue");
         this.finalValue = getParameterByName("FinalValue");
 
         // Complete initialization
         // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor
-        
+
         System.out.println("Enhanced DTO: Step block created successfully - " + dto.getBlockName());
     }
 

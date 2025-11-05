@@ -275,11 +275,6 @@ public class DotProduct extends MathBlock {
             context.put("input1Width", signal1.getWidth());
         }
 
-        if (outputPortList != null && !outputPortList.isEmpty()) {
-            String outputVar = outputPortList.get(0).getOutputSignalC().getName();
-            context.put("outputVar", outputVar);
-        }
-
         String codeStr = TemplateManager.renderTemplate("c/math/DotProduct/output.vm", context);
         code.addOutputCode(codeStr);
     }

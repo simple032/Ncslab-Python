@@ -244,8 +244,6 @@ public class Clock extends SourceBlock {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         // Add Clock-specific context variables
-        context.put("block", this);
-        context.put("outputVar", getOutputPortVariable(0));
         context.put("outputSignal", getOutputPortVariable(0));
         context.put("outputSignalName", getOutputPortVariable(0));
         

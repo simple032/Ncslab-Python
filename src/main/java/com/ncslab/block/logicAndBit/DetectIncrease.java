@@ -212,6 +212,7 @@ public class DetectIncrease extends LogicBlock {
         dto.getParameters().put("SampleTime", com.ncslab.dto.common.TypedParameter.of(sampleTime));
         dto.getParameters().put("OutDataTypeStr", com.ncslab.dto.common.TypedParameter.of(outDataType));
         dto.getParameters().put("SaturateOnIntegerOverflow", com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow));
+        dto.getParameters().put("InitialState", com.ncslab.dto.common.TypedParameter.of(initialState));
 
         // Validate DTO (automatic validation)
         com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
@@ -298,13 +299,13 @@ public class DetectIncrease extends LogicBlock {
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
         Data inputData = inputPortList.get(0).getData();
-        
+
         double risingValue = Double.parseDouble(vinWhenRising.getInitString());
         double fallingValue = Double.parseDouble(vinWhenFalling.getInitString());
 
         Data resultData;
         if (previousData == null) {
-            // First run, use initial state
+            // First run - no previous value to compare, always output fallingValue
             resultData = new Data(fallingValue);
         } else {
             switch (inputData.getDataType()) {
@@ -315,11 +316,23 @@ public class DetectIncrease extends LogicBlock {
                     break;
                 case MATRIX:
                     Matrix currentMatrix = inputData.getMatrix();
-                    Matrix previousMatrix = previousData.getDataType() == DataType.MATRIX ? previousData.getMatrix() : currentMatrix; // Use current as fallback
                     Matrix matrixResult = new Matrix(currentMatrix.getRowDimension(), currentMatrix.getColumnDimension());
-                    for (int i = 0; i < currentMatrix.getRowDimension(); i++) {
-                        for (int j = 0; j < currentMatrix.getColumnDimension(); j++) {
-                            matrixResult.set(i, j, currentMatrix.get(i, j) > previousMatrix.get(i, j) ? risingValue : fallingValue);
+
+                    if (previousData.getDataType() == DataType.MATRIX) {
+                        // Previous was matrix - element-wise comparison
+                        Matrix previousMatrix = previousData.getMatrix();
+                        for (int i = 0; i < currentMatrix.getRowDimension(); i++) {
+                            for (int j = 0; j < currentMatrix.getColumnDimension(); j++) {
+                                matrixResult.set(i, j, currentMatrix.get(i, j) > previousMatrix.get(i, j) ? risingValue : fallingValue);
+                            }
+                        }
+                    } else {
+                        // Previous was scalar - compare each element to scalar value
+                        double previousScalarValue = previousData.getInitValue();
+                        for (int i = 0; i < currentMatrix.getRowDimension(); i++) {
+                            for (int j = 0; j < currentMatrix.getColumnDimension(); j++) {
+                                matrixResult.set(i, j, currentMatrix.get(i, j) > previousScalarValue ? risingValue : fallingValue);
+                            }
                         }
                     }
                     resultData = new Data(matrixResult);
@@ -330,7 +343,13 @@ public class DetectIncrease extends LogicBlock {
         }
 
         out.setData(resultData);
-        previousData = new Data(inputData.getMatrix()); // Store copy for next comparison
+
+        // Store copy of current input for next comparison - handle both scalar and matrix
+        if (inputData.getDataType() == DataType.REAL) {
+            previousData = new Data(inputData.getInitValue());
+        } else {
+            previousData = new Data(inputData.getMatrix());
+        }
     }
 
     public void generateArraysCodeC(CodeStructC code) {

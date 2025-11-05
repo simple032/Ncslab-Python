@@ -12,7 +12,6 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 // Internal imports - DTO
-import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.source.ConstantDto;
 
 // Internal imports - Core
@@ -119,6 +118,7 @@ public class Constant extends SourceBlock {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName
+        // Note: Parameter is already added to parameterList by Block.parseParameterList(blockDto)
         this.value = getParameterByName("Value");
 
         // Initialize ports
@@ -324,6 +324,11 @@ public class Constant extends SourceBlock {
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
+        TemplateUtils.populateAllContext(context, this);
+
+        // Explicitly add Parameter objects to context (same pattern as RepeatingSequence)
+        context.put("ValueObject", this.value);
+        context.put("Value", this.value.getName());
 
         String codeStr = TemplateManager.renderTemplate("c/source/Constant/init.vm", context);
         code.addInitCode(codeStr);
@@ -331,21 +336,9 @@ public class Constant extends SourceBlock {
 
     public void generateOutputCodeC(CodeStructC code) {                    
         super.generateOutputCodeC(code);
+        TemplateUtils.populateAllContext(context, this);
         // Use the improved template (now updated directly)
         String codeStr = TemplateManager.renderTemplate("c/source/Constant/output.vm", context);
-        code.addOutputCode(codeStr);
-    }
-
-    public void generateUpdateCodePLC(CodeStructC code) {
-        // No update code needed for Constant
-    }
-
-    public void generateOutputCodePLC(CodeStructC code) {
-        context.put("block", this);
-        context.put("value", value);
-        context.put("outputs", getOutputPortVariables());
-
-        String codeStr = TemplateManager.renderTemplate("c/source/Constant/output_plc.vm", context);
         code.addOutputCode(codeStr);
     }
 

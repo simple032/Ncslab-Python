@@ -95,7 +95,7 @@ public class BitwiseOperator extends Block {
 
     private void parseParamValues() {
         try {
-            num = (int) Math.round(Double.parseDouble(inputs.getInitString()));
+            num = inputs.getData().getIntValue();
         } catch (NumberFormatException e) {
             num = 2; // Default to 2 inputs
         }
@@ -273,11 +273,8 @@ public class BitwiseOperator extends Block {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add BitwiseOperator-specific context
-        context.put("operator", operator.getInitString());
+        // Add BitwiseOperator-specific computed context
         context.put("inputLength", num);
-        context.put("useBitMask", useBitMask.getInitString());
-        context.put("bitMask", bitMask.getInitString());
 
         String codeStr = TemplateManager.renderTemplate("c/logicAndBit/BitwiseOperator/output.vm", context);
         code.addOutputCode(codeStr);
@@ -288,11 +285,8 @@ public class BitwiseOperator extends Block {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Add BitwiseOperator-specific context
-        context.put("operator", operator.getInitString());
+        // Add BitwiseOperator-specific computed context
         context.put("inputLength", num);
-        context.put("useBitMask", useBitMask.getInitString());
-        context.put("bitMask", bitMask.getInitString());
 
         String codeStr = TemplateManager.renderTemplate("m/logicAndBit/BitwiseOperator/output.vm", context);
         code.addOutputCode(codeStr);
