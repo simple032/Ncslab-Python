@@ -43,7 +43,7 @@ public class TemplateUtils {
             String paramName = param.getName(); // Already includes Block{id}_ prefix
             String paramLocalName = param.getLocalName(); // Local name without prefix
             String paramVar = paramName; // Use the full name as-is, already properly prefixed
-            Object paramValue = param.getData().getInitValue();
+            Object paramValue = param.getData().getDataString();
 
             paramNames.add(paramName);
             paramVariables.add(paramVar);
@@ -56,10 +56,6 @@ public class TemplateUtils {
             context.put(paramLocalName + "Object", param); // Keep object for advanced access if needed
 
             // Add generic template variable names for backward compatibility using local name
-            if ("Gain".equals(paramLocalName)) {
-                context.put("parameterName", paramVar); // For Gain block templates
-                context.put("gainName", paramVar);
-            }
             if ("SampleTime".equals(paramLocalName)) {
                 context.put("sampleTimeName", paramVar); // For discrete block templates
             }
@@ -127,12 +123,26 @@ public class TemplateUtils {
 
         // Add standardized input/output signal variable names (C variable names as strings)
         if (!block.getInputPortList().isEmpty()) {
-            context.put("inputVar", block.getInputPortVariable(0));
-            context.put("inputSignal", block.getInputPortVariable(0));  // Backward compatibility
+            String inputVar = block.getInputPortVariable(0);
+            if (inputVar == null || inputVar.isEmpty()) {
+                // Fallback: generate a default name if signal not initialized
+                inputVar = "Block" + block.getBlockId() + "_Input1";
+                System.err.println("WARNING: Input signal not initialized for block " + block.getBlockName() +
+                                 ", using fallback: " + inputVar);
+            }
+            context.put("inputVar", inputVar);
+            context.put("inputSignal", inputVar);  // Backward compatibility
         }
         if (!block.getOutputPortList().isEmpty()) {
-            context.put("outputVar", block.getOutputPortVariable(0));
-            context.put("outputSignal", block.getOutputPortVariable(0));  // Backward compatibility
+            String outputVar = block.getOutputPortVariable(0);
+            if (outputVar == null || outputVar.isEmpty()) {
+                // Fallback: generate a default name if signal not initialized
+                outputVar = "Block" + block.getBlockId() + "_Output1";
+                System.err.println("WARNING: Output signal not initialized for block " + block.getBlockName() +
+                                 ", using fallback: " + outputVar);
+            }
+            context.put("outputVar", outputVar);
+            context.put("outputSignal", outputVar);  // Backward compatibility
         }
 
         // Add block-specific configuration
@@ -178,6 +188,67 @@ public class TemplateUtils {
 
         // Add common template variables
         context.put("matrixMultiplication", false); // Default for most blocks
+    }
+
+    /**
+     * Populates the VelocityContext with detailed port information including
+     * CDataType, dimensions, and matrix flags for all input/output ports.
+     * This is useful for blocks that need to handle different data types and dimensions
+     * (e.g., BytePack, ByteUnpack, DataTypeConversion).
+     *
+     * @param context The VelocityContext to populate
+     * @param block The block instance for context-specific information
+     */
+    public static void populatePortDataTypeContext(VelocityContext context, Block block) {
+        // Input port data type information
+        java.util.List<com.ncslab.block.data.CDataType> inputCDataTypes = new java.util.ArrayList<>();
+        java.util.List<Integer> inputByteSizes = new java.util.ArrayList<>();
+        java.util.List<Integer> inputHeights = new java.util.ArrayList<>();
+        java.util.List<Integer> inputWidths = new java.util.ArrayList<>();
+        java.util.List<Boolean> inputIsMatrix = new java.util.ArrayList<>();
+
+        for (com.ncslab.block.io.InputPort inputPort : block.getInputPortList()) {
+            if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
+                com.ncslab.block.io.OutputSignal inputSignal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+                com.ncslab.block.data.CDataType cType = inputSignal.getCDataType();
+
+                inputCDataTypes.add(cType);
+                inputByteSizes.add(cType.getByteSize());
+                inputHeights.add(inputSignal.getHeight());
+                inputWidths.add(inputSignal.getWidth());
+                inputIsMatrix.add(inputSignal.getDataType() == DataType.MATRIX);
+            }
+        }
+
+        context.put("inputCDataTypes", inputCDataTypes);
+        context.put("inputByteSizes", inputByteSizes);
+        context.put("inputHeights", inputHeights);
+        context.put("inputWidths", inputWidths);
+        context.put("inputIsMatrix", inputIsMatrix);
+
+        // Output port data type information
+        java.util.List<com.ncslab.block.data.CDataType> outputCDataTypes = new java.util.ArrayList<>();
+        java.util.List<Integer> outputByteSizes = new java.util.ArrayList<>();
+        java.util.List<Integer> outputHeights = new java.util.ArrayList<>();
+        java.util.List<Integer> outputWidths = new java.util.ArrayList<>();
+        java.util.List<Boolean> outputIsMatrix = new java.util.ArrayList<>();
+
+        for (com.ncslab.block.io.OutputPort outputPort : block.getOutputPortList()) {
+            com.ncslab.block.io.OutputSignal outputSignal = outputPort.getOutputSignalC();
+            com.ncslab.block.data.CDataType cType = outputSignal.getCDataType();
+
+            outputCDataTypes.add(cType);
+            outputByteSizes.add(cType.getByteSize());
+            outputHeights.add(outputSignal.getHeight());
+            outputWidths.add(outputSignal.getWidth());
+            outputIsMatrix.add(outputSignal.getDataType() == DataType.MATRIX);
+        }
+
+        context.put("outputCDataTypes", outputCDataTypes);
+        context.put("outputByteSizes", outputByteSizes);
+        context.put("outputHeights", outputHeights);
+        context.put("outputWidths", outputWidths);
+        context.put("outputIsMatrix", outputIsMatrix);
     }
 
     /**

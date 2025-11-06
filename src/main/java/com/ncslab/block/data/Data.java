@@ -5,54 +5,50 @@ import Jama.Matrix;
 import com.ncslab.code.m.MfcalcClient;
 import com.ncslab.code.m.MfcalcClientManager;
 import com.ncslab.dto.communication.MfcalcResponseDto;
+import com.ncslab.dto.communication.MfcalcVariableDto;
 import com.ncslab.util.TemplateManager;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.jexl3.JexlException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.velocity.VelocityContext;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /*所有数据的通用类，包括Signal, Parameter和State，支持标量和Matrix*/
+@Slf4j
 public class Data {
+    private Object value;
 
     @Getter
     private DataType dataType = DataType.REAL;
-    @Setter
-    @Getter
-    private double initValue = 0;
-    @Setter
-    @Getter
-    private int intValue = 0;
+    public void setInitValue(double initValue) {
+        value = initValue;
+	}
+    public double getInitValue() {
+		return parseDoubleWithInfinity(value.toString());
+	}
+    public int getIntValue() {
+		return parseIntegerWithInfinity(value.toString());
+	}    
 
 	private Matrix initMatrix = null;
     @Setter
     @Getter
 	private String initString = "";
-    @Setter
-    @Getter
     private String dataString = "";
+    public String getDataString() {
+        return value.toString();
+    }
+    public void setDataString(String dataString) {
+        value = dataString;
+    }
 
     @Setter
     @Getter
     private static List<String> temp_variable_names = new ArrayList<>();
 
     VelocityContext context = new VelocityContext();
-
-//	static FelEngine fel = new FelEngineImpl();
-//	static {
-//		setupFel();
-//	}
-//
-//	static private void setupFel() {
-//		fel.getContext().set("pi", 3.1415926);
-//	}
 
 	public Data() {
 		this(1, 1);
@@ -64,61 +60,66 @@ public class Data {
 		if (height > 1 || width > 1) {
 			this.dataType = DataType.MATRIX;
 			initMatrix = new Matrix(height, width);
+            value = initMatrix;
 		} else {
-			initValue = 0;
+            value = 0;
 		}
 
 	}
 
 	/* 根据从前端传递来的字符串建立数据 */
+	// public Data(String inString) {
+
+    //     initString = inString.trim();
+
+    //     dataString = initString;
+    //     if (isStringMatrix(dataString)) {
+    //         System.out.println("Matrix: " + dataString);
+    //         dataType = DataType.MATRIX;
+    //         initMatrix = parseMatrix(dataString);
+    //     } else {
+    //         try {
+    //             getInitValue() = Double.parseDouble(dataString);
+    //             intValue = (int) getInitValue();
+    //         } catch (NumberFormatException ee) {
+    //             // 如果解析失败，将 initString 设置为 dataString
+    //             initString = dataString;
+    //         }
+    //     }
+	// }
+
+    /* 根据从前端传递来的字符串建立数据 */
 	public Data(String inString) {
 
         initString = inString.trim();
 
-        dataString = initString;
-        if (isStringMatrix(dataString)) {
-            System.out.println("Matrix: " + dataString);
-            dataType = DataType.MATRIX;
-            initMatrix = parseMatrix(dataString);
-        } else {
-            try {
-                initValue = Double.parseDouble(dataString);
-                intValue = (int) initValue;
-            } catch (NumberFormatException | JexlException ee) {
-                // 如果解析失败，将 initString 设置为 dataString
-                initString = dataString;
-            }
-        }
-	}
-
-    /* 根据从前端传递来的字符串建立数据 */
-	public Data(String inString, boolean parsedAuto) {
-
-        initString = inString.trim();
-
         dataString = parseExpression(inString);
+
         if (isStringMatrix(dataString)) {
             System.out.println("Matrix: " + dataString);
             dataType = DataType.MATRIX;
             initMatrix = parseMatrix(dataString);
-        } else {
-            try {
-                initValue = Double.parseDouble(dataString);
-                intValue = (int) initValue;
-            } catch (NumberFormatException | JexlException ee) {
-                // 如果解析失败，将 initString 设置为 dataString
-                initString = dataString;
-            }
+            value = initMatrix;
+            return;
+        }
+
+        // FIX: Parse scalar numeric value and set getInitValue() for C code generation
+        try {
+            value = parseDoubleWithInfinity(dataString);
+        } catch (NumberFormatException e) {
+            // If not parseable as number, keep as string (for expressions, variable names, etc.)
+            value = dataString;
         }
 	}
 
     public Data(Matrix initMatrix) {
         this.initMatrix = initMatrix;
         this.dataType = DataType.MATRIX;
+        value = initMatrix;
     }
 
     public Data(double initValue) {
-        this.initValue = initValue;
+        value = initValue;
     }
 
     private static String generateRandomVariableName() {
@@ -127,18 +128,26 @@ public class Data {
     }
 
 	private static String parseExpression(String dataString) {
-		// TODO:使用M2PCode解析表达式，将硬编码18替换为实际用户ID
-        MfcalcClient client = MfcalcClientManager.getClientForUser("18");
+		// Get user ID from thread-local context (set by WebSocket endpoint)
+        String userId = com.ncslab.util.UserContext.getUserId();
+        if (userId == null) {
+            // Fallback to default user ID for backward compatibility
+            userId = "18";
+            // Note: Consider adding logging here for debugging in production
+            System.out.println("Warning: No user context set in Data.parseExpression(), using default user ID: 18");
+        }
+
+        MfcalcClient client = MfcalcClientManager.getClientForUser(userId);
         String result = dataString;
 
         boolean founded = false;
         if (client != null) {
-            List<Map<String, Object>> variables = MfcalcClient.getLocalVariables(); 
+            List<MfcalcVariableDto> variables = MfcalcClient.getLocalVariables(); 
             if (variables != null) {
-                for (Map<String, Object> variable : variables) {
-                    if (variable.get("name").equals(dataString)) {
+                for (MfcalcVariableDto variable : variables) {
+                    if (variable.getName().equals(dataString)) {
                         founded = true;
-                        result = variable.containsKey("value") ? variable.get("value").toString() : dataString;
+                        result = variable.getValue().toString();
                         break;
                     }
                 }
@@ -146,19 +155,22 @@ public class Data {
             if(!founded) {
                 String variableName = generateRandomVariableName();
                 MfcalcResponseDto commandResponse = client.runCommand(variableName + "=" + dataString + ";");
-
                 if (commandResponse != null && commandResponse.isSuccess()) {
                     MfcalcResponseDto variableResponse = client.getVariable(variableName);
-                    if (variableResponse != null && variableResponse.getData() instanceof JSONObject) {
-                        JSONObject variable = (JSONObject) variableResponse.getData();
-                        if (variable.getString("name").equals(variableName)) {
-                            result = variable.has("value") ? variable.getString("value") : dataString;
+                    // log.debug("Get variable '{}' response: {}", variableName, variableResponse);
+                    if (variableResponse != null && variableResponse.getMessageType().equals("variable_value")){
+                        List<MfcalcVariableDto> latestVariables =  variableResponse.getVariables();
+                        for(MfcalcVariableDto variableDto : latestVariables) {                            
+                            if(variableDto != null && variableDto.getName().equals(variableName)) {
+                                result = variableDto.getValue().toString();
+                                log.debug("Parsed expression '{}' to value: {}", dataString, result);
+                                break;
+                            }
                         }
+                        
                     }
-                } else {
-                    result = dataString;
-                }
-                client.runCommand("clear " + variableName);
+                    client.runCommand("clear " + variableName);
+                }                 
                 // TODO:将变量名添加到临时变量列表中，以便在程序结束时批量清除，但是M2PCode还无法实现
                 // temp_variable_names.add(variableName);
             }
@@ -204,18 +216,93 @@ public class Data {
 			childMat[i] = new double[child.length];
 			for (int j = 0; j < child.length; j++) {
 				String doubleString = child[j].replaceAll("\\s+", "");
-				 childMat[i][j] = Double.parseDouble(doubleString);
+				childMat[i][j] = parseDoubleWithInfinity(doubleString);
 			}
 		}
 
 		return new Matrix(childMat);
 	}
 
+	/**
+	 * Parse a string to double, handling special infinity values.
+	 * Converts "inf", "-inf", "Inf", "-Inf" to proper Java infinity constants.
+	 *
+	 * @param str String representation of a number or infinity
+	 * @return Parsed double value
+	 * @throws NumberFormatException if string cannot be parsed
+	 */
+	private static double parseDoubleWithInfinity(String str) {
+		if (str == null || str.isEmpty()) {
+			throw new NumberFormatException("Empty string cannot be parsed as double");
+		}
+
+		// Normalize the string
+		String normalized = str.trim().toLowerCase();
+
+		// Handle infinity cases
+		if (normalized.equals("inf") || normalized.equals("infinity") || normalized.equals("+inf")) {
+			return Double.POSITIVE_INFINITY;
+		} else if (normalized.equals("-inf") || normalized.equals("-infinity")) {
+			return Double.NEGATIVE_INFINITY;
+		} else if (normalized.equals("nan")) {
+			return Double.NaN;
+		}
+
+		// Standard parsing for regular numbers
+		return Double.parseDouble(str);
+	}
+
+	/**
+	 * Parse a string to integer, handling special infinity and NaN values.
+	 * Converts "inf", "-inf", "nan" to appropriate integer representations.
+	 *
+	 * Note: Since integers cannot represent infinity or NaN, we map them to:
+	 * - "inf" / "+inf" / "Infinity" → Integer.MAX_VALUE
+	 * - "-inf" / "-Infinity" → Integer.MIN_VALUE
+	 * - "nan" / "NaN" → 0
+	 *
+	 * @param str String representation of a number or infinity
+	 * @return Parsed integer value
+	 * @throws NumberFormatException if string cannot be parsed
+	 */
+	private static int parseIntegerWithInfinity(String str) {
+		if (str == null || str.isEmpty()) {
+			throw new NumberFormatException("Empty string cannot be parsed as integer");
+		}
+
+		// Normalize the string
+		String normalized = str.trim().toLowerCase();
+
+		// Handle infinity cases - map to integer bounds
+		if (normalized.equals("inf") || normalized.equals("infinity") || normalized.equals("+inf")) {
+			return Integer.MAX_VALUE;
+		} else if (normalized.equals("-inf") || normalized.equals("-infinity")) {
+			return Integer.MIN_VALUE;
+		} else if (normalized.equals("nan")) {
+			return 0; // NaN maps to 0 for integers
+		}
+
+		// Try to parse as double first (handles scientific notation, then convert to int)
+		try {
+			double doubleValue = Double.parseDouble(str);
+			// Check if the double value is within integer range
+			if (doubleValue > Integer.MAX_VALUE) {
+				return Integer.MAX_VALUE;
+			} else if (doubleValue < Integer.MIN_VALUE) {
+				return Integer.MIN_VALUE;
+			}
+			return (int) doubleValue;
+		} catch (NumberFormatException e) {
+			// Fall back to direct integer parsing
+			return Integer.parseInt(str);
+		}
+	}
+
     public String getInitCodeM(String name) {
 		String code = "";
 		switch (this.dataType) {
 			case REAL:
-				code += name + "=" + initValue + ";\n";
+				code += name + "=" + value.toString() + ";\n";
 				break;
 			case MATRIX:
 				for (int i = 0; i < initMatrix.getRowDimension(); i++) {
@@ -233,7 +320,7 @@ public class Data {
 		boolean zero = true;
 		switch (this.getDataType()) {
 			case REAL:
-				if (initValue == 0) {
+				if (getInitValue() == 0) {
 					zero = true;
 				} else {
 					zero = false;
@@ -258,7 +345,7 @@ public class Data {
 
 		switch (this.dataType) {
 			case REAL:
-				code.append(String.format("%s = %f;\n", name, initValue));
+				code.append(String.format("%s = %f;\n", name, getInitValue()));
 				break;
 			case MATRIX:
 				for (int i = 0; i < initMatrix.getRowDimension(); i++) {
@@ -310,7 +397,7 @@ public class Data {
         Data result = null;
         switch (this.getDataType()) {
             case REAL:
-                result = new Data(-initValue);
+                result = new Data(-getInitValue());
                 break;
             case MATRIX:
                 result = new Data(initMatrix.times(-1));
@@ -322,11 +409,11 @@ public class Data {
     public Data times(Data data){
         Data result;
         if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
-            result = new Data(initValue * data.getInitValue());
+            result = new Data(getInitValue() * data.getInitValue());
         }else if(getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL){
             result = new Data(initMatrix.times(data.getInitValue()));
         } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
-            result = new Data(data.getMatrix().times(initValue));
+            result = new Data(data.getMatrix().times(getInitValue()));
         } else {
             result = new Data(initMatrix.times(data.getMatrix()));
         }
@@ -336,11 +423,11 @@ public class Data {
     public Data arrayTimes(Data data){
         Data result;
         if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
-            result = new Data(initValue * data.getInitValue());
+            result = new Data(getInitValue() * data.getInitValue());
         }else if(getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL){
             result = new Data(initMatrix.times(data.getInitValue()));
         } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
-            result = new Data(data.getMatrix().times(initValue));
+            result = new Data(data.getMatrix().times(getInitValue()));
         } else {
             result = new Data(initMatrix.arrayTimes(data.getMatrix()));
         }
@@ -350,13 +437,13 @@ public class Data {
     public Data plus(Data data) {
         Data result;
         if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
-            result = new Data(initValue + data.getInitValue());
+            result = new Data(getInitValue() + data.getInitValue());
         } else if (getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL) {
             // 修复：手动实现矩阵加标量
             result = new Data(addScalar(initMatrix, data.getInitValue()));
         } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
             // 修复：手动实现标量加矩阵
-            result = new Data(addScalar(data.getMatrix(), initValue));
+            result = new Data(addScalar(data.getMatrix(), getInitValue()));
         } else {
             result = new Data(initMatrix.plus(data.getMatrix()));
         }
@@ -366,13 +453,13 @@ public class Data {
     public Data minus(Data data) {
         Data result;
         if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
-            result = new Data(initValue - data.getInitValue());
+            result = new Data(getInitValue() - data.getInitValue());
         } else if (getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL) {
             // 修复：手动实现矩阵减标量
             result = new Data(subtractScalar(initMatrix, data.getInitValue()));
         } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
             // 修复：手动实现标量减矩阵
-            result = new Data(subtractMatrixFromScalar(initValue, data.getMatrix()));
+            result = new Data(subtractMatrixFromScalar(getInitValue(), data.getMatrix()));
         } else {
             result = new Data(initMatrix.minus(data.getMatrix()));
         }
@@ -415,7 +502,7 @@ public class Data {
     public Data divide(Data data) {
         Data result;
         if (getDataType() == DataType.REAL && data.getDataType() == DataType.REAL) {
-            result = new Data(initValue / data.getInitValue());
+            result = new Data(getInitValue() / data.getInitValue());
         } else if (getDataType() == DataType.MATRIX && data.getDataType() == DataType.REAL) {
             result = new Data(initMatrix.times(1.0 / data.getInitValue()));
         } else if (getDataType() == DataType.REAL && data.getDataType() == DataType.MATRIX) {
@@ -423,7 +510,7 @@ public class Data {
             Matrix reciprocal = data.getMatrix().copy();
             for (int i = 0; i < reciprocal.getRowDimension(); i++) {
                 for (int j = 0; j < reciprocal.getColumnDimension(); j++) {
-                    reciprocal.set(i, j, initValue / reciprocal.get(i, j));
+                    reciprocal.set(i, j, getInitValue() / reciprocal.get(i, j));
                 }
             }
             result = new Data(reciprocal);
@@ -437,7 +524,7 @@ public class Data {
     public Data power(double exponent) {
         Data result;
         if (getDataType() == DataType.REAL) {
-            result = new Data(Math.pow(initValue, exponent));
+            result = new Data(Math.pow(getInitValue(), exponent));
         } else {
             // 矩阵的幂运算：对每个元素进行幂运算
             Matrix matrix = initMatrix.copy();
@@ -461,7 +548,7 @@ public class Data {
 
     public Data inverse() {
         if (getDataType() == DataType.REAL) {
-            return new Data(1.0 / initValue);
+            return new Data(1.0 / getInitValue());
         } else {
             return new Data(initMatrix.inverse());
         }
@@ -469,7 +556,7 @@ public class Data {
 
     public double determinant() {
         if (getDataType() == DataType.REAL) {
-            return initValue;
+            return getInitValue();
         } else {
             return initMatrix.det();
         }
@@ -477,7 +564,7 @@ public class Data {
 
     public double trace() {
         if (getDataType() == DataType.REAL) {
-            return initValue;
+            return getInitValue();
         } else {
             return initMatrix.trace();
         }
@@ -493,7 +580,7 @@ public class Data {
 
     public Data abs(){
         if(getDataType() == DataType.REAL){
-            return new Data(Math.abs(initValue));
+            return new Data(Math.abs(getInitValue()));
         }else{
             Data result = new Data(initMatrix.copy());
             for(int i = 0; i < initMatrix.getRowDimension(); i++){

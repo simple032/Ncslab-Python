@@ -101,6 +101,8 @@ abstract public class NCSLabModel {
 
     // output chain
     private boolean isAlgebraicLoop=false;
+
+	@Deprecated
     private List<Block> terminalBlockList = new ArrayList<>();
 
     private List<Block> scanBlockList = new ArrayList<>();
@@ -119,7 +121,7 @@ abstract public class NCSLabModel {
     protected List<ErrorMessage> errorList = new CopyOnWriteArrayList<>();
 
 	@Getter
-    protected List<Terminal> terminalList = new ArrayList<>();
+    private List<Terminal> terminalList = new ArrayList<>();
 
 	private int blockSeq=0;
 	private int lineSeq=0;
@@ -1088,6 +1090,9 @@ abstract public class NCSLabModel {
 		//如果没有生成，那就遍历block，生成这个block的代码
 		Block block = outputPort.getBlock();
 
+		System.out.println("DimScan: Scanning output port of block " + block.getBlockName() +
+		                 " (type=" + block.getBlockType() + ", id=" + block.getBlockId() + ")");
+
 		boolean isDimThroughBlock = false;
 		List<OutputPort> outputPortList = block.getOutputPortList();
 		for (OutputPort output : outputPortList) {
@@ -1096,6 +1101,8 @@ abstract public class NCSLabModel {
                 break;
             }
 		}
+
+		System.out.println("DimScan: Block " + block.getBlockName() + " isDimThroughBlock=" + isDimThroughBlock);
 
 		//如果有Feedthrough的模块，则要遍历整个模块的InputPort
 		if(isDimThroughBlock) {
@@ -1107,6 +1114,7 @@ abstract public class NCSLabModel {
 			}
 			//遍历完成，也要生成模块的输出代码
 			//generateBlockOutputCode(block);
+			System.out.println("DimScan: Adding block " + block.getBlockName() + " to dimensionList");
 			dimensionList.add(block);
 			//block.setIsDimScaned(true);
 		}
@@ -1420,6 +1428,34 @@ abstract public class NCSLabModel {
 			blockList.addAll(subsystem.getContainedBlocks());
 		}
 		return blockList;
+	}
+
+	/**
+	 * Find a block by its name in the model (searches rootSystem and subsystems)
+	 *
+	 * @param blockName The name of the block to find
+	 * @return The block if found, null otherwise
+	 */
+	public Block findBlockByName(String blockName) {
+		if (blockName == null) {
+			return null;
+		}
+
+		// Search in root system
+		Block block = rootSystem.findBlockByName(blockName);
+		if (block != null) {
+			return block;
+		}
+
+		// Search in subsystems
+		for (Subsystem subsystem : subsystemBlockList) {
+			block = subsystem.findBlockByName(blockName);
+			if (block != null) {
+				return block;
+			}
+		}
+
+		return null;
 	}
 
     public List<Line> getLineList() {

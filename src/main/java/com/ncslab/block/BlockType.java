@@ -252,6 +252,27 @@ public class BlockType{
         blockClassTree.put("Inport", com.ncslab.block.subsystem.In.class);
         blockClassTree.put("Outport", com.ncslab.block.subsystem.Out.class);
         blockClassTree.put("Subsystem", com.ncslab.block.subsystem.Subsystem.class);
+        blockClassTree.put("Enable", com.ncslab.block.subsystem.Enable.class);
+        blockClassTree.put("Trigger", com.ncslab.block.subsystem.Trigger.class);
+        blockClassTree.put("ActionPort", com.ncslab.block.subsystem.ActionPort.class);
+        blockClassTree.put("FunctionCallGenerator", com.ncslab.block.subsystem.FunctionCallGenerator.class);
+        blockClassTree.put("FunctionCallSubsystem", com.ncslab.block.subsystem.FunctionCallSubsystem.class);
+        blockClassTree.put("ForIteratorSubsystem", com.ncslab.block.subsystem.ForIteratorSubsystem.class);
+        blockClassTree.put("WhileIteratorSubsystem", com.ncslab.block.subsystem.WhileIteratorSubsystem.class);
+        blockClassTree.put("EnabledSubsystem", com.ncslab.block.subsystem.EnabledSubsystem.class);
+        blockClassTree.put("TriggeredSubsystem", com.ncslab.block.subsystem.TriggeredSubsystem.class);
+        blockClassTree.put("EnabledAndTriggeredSubsystem", com.ncslab.block.subsystem.EnabledAndTriggeredSubsystem.class);
+        // Subsystem aliases for alternative naming conventions
+        blockClassTree.put("EnableBlock", com.ncslab.block.subsystem.Enable.class);
+        blockClassTree.put("TriggerBlock", com.ncslab.block.subsystem.Trigger.class);
+        blockClassTree.put("ActionPortBlock", com.ncslab.block.subsystem.ActionPort.class);
+        blockClassTree.put("FunctionCallGeneratorBlock", com.ncslab.block.subsystem.FunctionCallGenerator.class);
+        blockClassTree.put("FunctionCallSubsystemBlock", com.ncslab.block.subsystem.FunctionCallSubsystem.class);
+        blockClassTree.put("ForIteratorSubsystemBlock", com.ncslab.block.subsystem.ForIteratorSubsystem.class);
+        blockClassTree.put("WhileIteratorSubsystemBlock", com.ncslab.block.subsystem.WhileIteratorSubsystem.class);
+        blockClassTree.put("EnabledSubsystemBlock", com.ncslab.block.subsystem.EnabledSubsystem.class);
+        blockClassTree.put("TriggeredSubsystemBlock", com.ncslab.block.subsystem.TriggeredSubsystem.class);
+        blockClassTree.put("EnabledAndTriggeredSubsystemBlock", com.ncslab.block.subsystem.EnabledAndTriggeredSubsystem.class);
         // Matrix
         blockClassTree.put("CreateDiagonalMatrix", com.ncslab.block.matrix.CreateDiagonalMatrix.class);
         blockClassTree.put("CrossProduct", com.ncslab.block.matrix.CrossProduct.class);

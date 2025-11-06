@@ -60,6 +60,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.DiscreteIntegratorDto.class, name = "DiscreteIntegrator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.ScopeDto.class, name = "Scope"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.TerminatorDto.class, name = "Terminator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.XYGraphDto.class, name = "XYGraph"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.SwitchDto.class, name = "Switch"),
     @JsonSubTypes.Type(value = com.ncslab.dto.communication.CircuitBlockDto.class, name = "CircuitBlock"),
     // New block DTOs - Week 6 Update
@@ -94,6 +95,10 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.InDto.class, name = "In"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.OutportDto.class, name = "Outport"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.OutDto.class, name = "Out"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.EnableDto.class, name = "Enable"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.TriggerDto.class, name = "Trigger"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.ForIteratorSubsystemDto.class, name = "ForIteratorSubsystem"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.subsystem.ForIteratorSubsystemDto.class, name = "For Iterator Subsystem"),
     // Additional block types from BlockType.java
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller (s)"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller"),

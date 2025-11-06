@@ -126,6 +126,32 @@ public class StringConstantDto extends BlockDto {
         return params;
     }
 
+    /**
+     * Get parameter values as Map<String, Object> for Block constructor compatibility
+     */
+    @Override
+    public java.util.Map<String, Object> getParamValues() {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+
+        if (stringValue != null) {
+            params.put("String", stringValue);
+        }
+
+        if (getSampleTime() != null) {
+            params.put("SampleTime", getSampleTime().getAsString());
+        }
+
+        if (outDataType != null) {
+            params.put("OutDataTypeStr", outDataType);
+        }
+
+        if (saturate != null) {
+            params.put("SaturateOnIntegerOverflow", saturate ? "on" : "off");
+        }
+
+        return params;
+    }
+
     @Override
     public String toString() {
         return String.format("StringConstantDto{id=%d, name='%s', type='%s', stringValue='%s'}",

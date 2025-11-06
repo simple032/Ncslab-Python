@@ -21,9 +21,12 @@ import java.util.Map;
 @Setter
 public class ModelDto {
     
+    @JsonProperty("userName")
+    private String userName;
+
     @JsonProperty("userId")
     private int userId;
-    
+
     @JsonProperty("testRig")
     private int testRig;
     

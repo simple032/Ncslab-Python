@@ -24,13 +24,13 @@ import java.util.List;
 public class Subsystem extends Block{
 
     @Getter
-    private List<In> inBlockList;
+    protected List<In> inBlockList;
     @Getter
-    private List<Out> outBlockList;
-    
+    protected List<Out> outBlockList;
+
     // NCSLabSystem manages all blocks and lines within this subsystem
     @Getter
-    private NCSLabSystem innerSystem;
+    protected NCSLabSystem innerSystem;
     // Static parameter defaults for consistency with other blocks
     
     public String getFullPath(){

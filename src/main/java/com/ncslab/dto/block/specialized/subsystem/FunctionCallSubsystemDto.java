@@ -1,6 +1,7 @@
 package com.ncslab.dto.block.specialized.subsystem;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.greenpineyu.fel.function.operator.Sub;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.common.TypedParameter;
 import com.ncslab.dto.common.TypedParameterMap;
@@ -12,59 +13,78 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 /**
- * DTO for Subsystem block - Hierarchical block grouping container.
- * 
- * <p>This block represents a subsystem that contains other blocks and lines,
- * providing hierarchical modeling capabilities. Subsystems can contain:</p>
+ * DTO for Function-Call Subsystem block - Event-driven subsystem execution.
+ *
+ * <p>This block represents a specialized subsystem that executes only when
+ * triggered by a function-call event from a connected block. Unlike regular
+ * subsystems that execute continuously, function-call subsystems are
+ * event-driven and execute atomically when triggered.</p>
+ *
+ * <p><b>Key Characteristics:</b></p>
  * <ul>
- *   <li><b>Internal Blocks</b>: Any block types within the subsystem boundary</li>
- *   <li><b>Internal Lines</b>: Connections between blocks within the subsystem</li>
- *   <li><b>Inport Blocks</b>: Input interfaces to the subsystem</li>
- *   <li><b>Outport Blocks</b>: Output interfaces from the subsystem</li>
- * </ul>
- * 
- * <p><b>Parameters:</b></p>
- * <ul>
- *   <li><b>Name</b>: Subsystem name for identification</li>
- *   <li><b>Description</b>: Optional description of subsystem functionality</li>
- *   <li><b>ShowPortLabels</b>: Display port labels on subsystem block</li>
- *   <li><b>SampleTime</b>: Sample time inheritance mode (-1 for inherited)</li>
- * </ul>
- * 
- * <p><b>Hierarchical Features:</b></p>
- * <ul>
- *   <li>Encapsulates complex functionality as reusable components</li>
- *   <li>Supports nested subsystems for multi-level hierarchy</li>
- *   <li>Maintains boundary interface through Inport/Outport blocks</li>
- *   <li>Enables modular design and organization of large models</li>
- * </ul>
- * 
- * <p><b>Validation Rules:</b></p>
- * <ul>
- *   <li>Must contain at least one block or be marked as placeholder</li>
- *   <li>Inport/Outport blocks must have valid port numbers</li>
- *   <li>Internal connections must be valid and complete</li>
- *   <li>No circular dependencies in hierarchical structure</li>
+ *   <li><b>Event-Driven</b>: Executes only when function-call signal is active</li>
+ *   <li><b>Atomic Execution</b>: Completes execution within single time step</li>
+ *   <li><b>Function-Call Port</b>: Special input port for function-call events</li>
+ *   <li><b>No Continuous States</b>: Cannot contain continuous-time blocks</li>
  * </ul>
  *
- * @author NCSLab DTO Generator
+ * <p><b>Parameters:</b></p>
+ * <ul>
+ *   <li>Inherits all parameters from Subsystem base class</li>
+ *   <li>No additional specialized parameters (function-call behavior is implicit)</li>
+ * </ul>
+ *
+ * <p><b>Port Configuration:</b></p>
+ * <ul>
+ *   <li>1 special function-call input port (not a regular data port)</li>
+ *   <li>Additional data input/output ports via In/Out blocks</li>
+ *   <li>Function-call port triggers subsystem execution</li>
+ * </ul>
+ *
+ * <p><b>Execution Model:</b></p>
+ * <ul>
+ *   <li>Subsystem remains inactive until function-call received</li>
+ *   <li>Upon function-call: Execute all internal blocks once</li>
+ *   <li>Complete execution atomically within caller's time step</li>
+ *   <li>Reset function-call flag after execution</li>
+ * </ul>
+ *
+ * <p><b>Common Use Cases:</b></p>
+ * <ul>
+ *   <li>Interrupt service routines (ISR) modeling</li>
+ *   <li>Event-driven state machines</li>
+ *   <li>Callback function implementations</li>
+ *   <li>Scheduled task execution</li>
+ *   <li>Function-call generator triggered operations</li>
+ * </ul>
+ *
+ * <p><b>Validation Rules:</b></p>
+ * <ul>
+ *   <li>Must have valid function-call input connection</li>
+ *   <li>Cannot contain continuous-time blocks (integrators, derivatives)</li>
+ *   <li>Sample time must be inherited or discrete</li>
+ *   <li>All internal blocks must support discrete execution</li>
+ * </ul>
+ *
+ * <p><b>Simulink Compatibility:</b></p>
+ * <p>This block is compatible with MATLAB/Simulink Function-Call Subsystem
+ * block, supporting the same execution semantics and port configuration.</p>
+ *
+ * @author NCSLab Team
  * @version 1.0
- * @since 2025-01-22
+ * @since 2025-01-03
  */
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("Subsystem")
-public class SubsystemDto extends BlockDto {
-    
-    // Constructor to set blockType for Jackson deserialization
+@JsonTypeName("FunctionCallSubsystem")
+public class FunctionCallSubsystemDto extends SubsystemDto {
 
     /**
      * Subsystem description parameter.
-     * Optional textual description of the subsystem's purpose and functionality.
+     * Optional textual description of the function-call subsystem's purpose.
      */
     private TypedParameter subsystemDescription = TypedParameter.of("");
 
@@ -87,7 +107,7 @@ public class SubsystemDto extends BlockDto {
     private TypedParameter maskType = TypedParameter.of("");
 
     /**
-     * Number of input ports.
+     * Number of data input ports (excluding function-call port).
      * Dynamically determined by contained Inport blocks.
      */
     private TypedParameter numInputPorts = TypedParameter.of(0);
@@ -99,30 +119,21 @@ public class SubsystemDto extends BlockDto {
     private TypedParameter numOutputPorts = TypedParameter.of(0);
 
     /**
-     * Constructs SubsystemDto with basic parameters.
-     */
-    public SubsystemDto(String blockName, String blockPath) {
-        super(blockName, blockPath);
-        this.numInputPorts = TypedParameter.of(0);
-        this.numOutputPorts = TypedParameter.of(0);
-    }
-
-    /**
-     * Constructs SubsystemDto with individual parameters.
+     * Constructs FunctionCallSubsystemDto with individual parameters.
      *
-     * @param blockName     Name of the subsystem
-     * @param blockPath     Path of the subsystem in the model hierarchy
+     * @param blockName              Name of the function-call subsystem
+     * @param blockPath              Path of the subsystem in the model hierarchy
      * @param subsystemDescription   Optional description
-     * @param showPortLabels Flag to show port labels
-     * @param readOnly      Flag for read-only mode
-     * @param sampleTime    Sample time parameter
+     * @param showPortLabels         Flag to show port labels
+     * @param readOnly               Flag for read-only mode
+     * @param sampleTime             Sample time parameter
      */
-    public SubsystemDto(String blockName, String blockPath,
-                       TypedParameter subsystemDescription,
-                       TypedParameter showPortLabels,
-                       TypedParameter readOnly,
-                       TypedParameter sampleTime) {
-        super(blockName,blockPath);
+    public FunctionCallSubsystemDto(String blockName, String blockPath,
+                                   TypedParameter subsystemDescription,
+                                   TypedParameter showPortLabels,
+                                   TypedParameter readOnly,
+                                   TypedParameter sampleTime) {
+        super(blockName, blockPath);
         this.subsystemDescription = subsystemDescription;
         this.showPortLabels = showPortLabels;
         this.readOnly = readOnly;
@@ -132,14 +143,14 @@ public class SubsystemDto extends BlockDto {
     }
 
     /**
-     * Constructs SubsystemDto with typed parameter map.
+     * Constructs FunctionCallSubsystemDto with typed parameter map.
      *
-     * @param blockName  Name of the subsystem
+     * @param blockName  Name of the function-call subsystem
      * @param blockPath  Path of the subsystem in the model hierarchy
      * @param parameters Map of typed parameters
      */
-    public SubsystemDto(String blockName, String blockPath, TypedParameterMap parameters) {
-        super(blockName,blockPath);
+    public FunctionCallSubsystemDto(String blockName, String blockPath, TypedParameterMap parameters) {
+        super(blockName, blockPath);
         this.subsystemDescription = parameters.getTypedParameter("Description", String.class, "");
         this.showPortLabels = parameters.getTypedParameter("ShowPortLabels", Boolean.class, true);
         this.readOnly = parameters.getTypedParameter("ReadOnly", Boolean.class, false);
@@ -150,15 +161,15 @@ public class SubsystemDto extends BlockDto {
     }
 
     /**
-     * Creates SubsystemDto with specified block metadata and default parameters.
+     * Creates FunctionCallSubsystemDto with specified block metadata and default parameters.
      *
      * @param blockName Block instance name
      * @param blockPath Hierarchical path in model
-     * @param position Block position in diagram
+     * @param position  Block position in diagram
      * @param dimension Block visual dimensions
      */
-    public SubsystemDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
-        super(blockName,blockPath, position, dimension);
+    public FunctionCallSubsystemDto(String blockName, String blockPath, BlockPositionDto position, BlockDimensionDto dimension) {
+        super(blockName, blockPath, position, dimension);
         this.subsystemDescription = TypedParameter.of("");
         this.showPortLabels = TypedParameter.of(true);
         this.readOnly = TypedParameter.of(false);
@@ -176,15 +187,26 @@ public class SubsystemDto extends BlockDto {
             return false;
         }
 
-        // Validate sample time
+        // Validate sample time - function-call subsystems should not be continuous
         if (sampleTime == null || sampleTime.getAsDouble() == null) {
             addValidationError("Sample time cannot be null");
             return false;
         }
 
         double sampleTimeValue = getSampleTimeValue();
-        if (sampleTimeValue < -1.0 || Double.isNaN(sampleTimeValue) || Double.isInfinite(sampleTimeValue)) {
-            addValidationError("Sample time must be >= -1.0 and finite");
+        if (Double.isNaN(sampleTimeValue) || Double.isInfinite(sampleTimeValue)) {
+            addValidationError("Sample time must be finite");
+            return false;
+        }
+
+        // Function-call subsystems should be inherited (-1) or discrete (>0)
+        if (sampleTimeValue == 0.0) {
+            addValidationError("Function-call subsystems cannot be continuous (sample time = 0)");
+            return false;
+        }
+
+        if (sampleTimeValue < -1.0) {
+            addValidationError("Sample time must be >= -1.0");
             return false;
         }
 
@@ -222,15 +244,21 @@ public class SubsystemDto extends BlockDto {
     @Override
     public List<String> validateParameters() {
         List<String> errors = super.validateParameters();
-        
+
         // Validate sample time
         if (sampleTime != null && sampleTime.getAsDouble() != null) {
             double stValue = getSampleTimeValue();
-            if (stValue < -1.0 || Double.isNaN(stValue) || Double.isInfinite(stValue)) {
-                errors.add("Sample time must be >= -1.0 and finite");
+            if (Double.isNaN(stValue) || Double.isInfinite(stValue)) {
+                errors.add("Sample time must be finite");
+            }
+            if (stValue == 0.0) {
+                errors.add("Function-call subsystems cannot be continuous (sample time = 0)");
+            }
+            if (stValue < -1.0) {
+                errors.add("Sample time must be >= -1.0");
             }
         }
-        
+
         // Validate port counts
         if (numInputPorts != null && numInputPorts.getAsInteger() != null) {
             int inputCount = getNumInputPortsValue();
@@ -241,7 +269,7 @@ public class SubsystemDto extends BlockDto {
                 errors.add("Number of input ports exceeds reasonable limit (100)");
             }
         }
-        
+
         if (numOutputPorts != null && numOutputPorts.getAsInteger() != null) {
             int outputCount = getNumOutputPortsValue();
             if (outputCount < 0) {
@@ -251,7 +279,7 @@ public class SubsystemDto extends BlockDto {
                 errors.add("Number of output ports exceeds reasonable limit (100)");
             }
         }
-        
+
         return errors;
     }
 
@@ -318,9 +346,9 @@ public class SubsystemDto extends BlockDto {
     }
 
     /**
-     * Gets the number of input ports.
+     * Gets the number of data input ports (excluding function-call port).
      *
-     * @return Number of input ports
+     * @return Number of data input ports
      */
     public int getNumInputPortsValue() {
         if (numInputPorts != null && numInputPorts.getAsInteger() != null) {
@@ -344,16 +372,8 @@ public class SubsystemDto extends BlockDto {
     // === Helper Methods ===
 
     /**
-     * Checks if the subsystem is configured for continuous time operation.
-     *
-     * @return true if sample time is 0 (continuous)
-     */
-    public boolean isContinuous() {
-        return getSampleTimeValue() == 0.0;
-    }
-
-    /**
      * Checks if the subsystem inherits its sample time.
+     * This is the typical configuration for function-call subsystems.
      *
      * @return true if sample time is -1 (inherited)
      */
@@ -371,11 +391,11 @@ public class SubsystemDto extends BlockDto {
     }
 
     /**
-     * Checks if the subsystem has any inputs.
+     * Checks if the subsystem has any data inputs (excluding function-call port).
      *
-     * @return true if there are input ports
+     * @return true if there are data input ports
      */
-    public boolean hasInputs() {
+    public boolean hasDataInputs() {
         return getNumInputPortsValue() > 0;
     }
 
@@ -390,26 +410,38 @@ public class SubsystemDto extends BlockDto {
 
     /**
      * Checks if the subsystem is a sink (has inputs but no outputs).
+     * For function-call subsystems, this means it only consumes function calls and data.
      *
      * @return true if subsystem is a sink
      */
     public boolean isSink() {
-        return hasInputs() && !hasOutputs();
+        return !hasOutputs();
     }
 
     /**
-     * Checks if the subsystem is a source (has outputs but no inputs).
+     * Checks if the subsystem is a source (has outputs but no data inputs).
+     * For function-call subsystems, this means it only produces outputs when called.
      *
      * @return true if subsystem is a source
      */
     public boolean isSource() {
-        return !hasInputs() && hasOutputs();
+        return !hasDataInputs() && hasOutputs();
     }
 
     /**
-     * Updates the number of input ports.
+     * Checks if the subsystem is purely event-driven (no data inputs or outputs).
+     * This is useful for modeling ISRs or pure event handlers.
      *
-     * @param count New input port count
+     * @return true if subsystem has no data ports
+     */
+    public boolean isPureEventDriven() {
+        return !hasDataInputs() && !hasOutputs();
+    }
+
+    /**
+     * Updates the number of data input ports.
+     *
+     * @param count New data input port count
      */
     public void setNumInputPortsValue(int count) {
         this.numInputPorts = TypedParameter.of(Math.max(0, count));
@@ -425,11 +457,11 @@ public class SubsystemDto extends BlockDto {
     }
 
     // === Factory Methods ===
-    
+
     @Override
-    public SubsystemDto copy() {
-        SubsystemDto copy = new SubsystemDto();
-        
+    public FunctionCallSubsystemDto copy() {
+        FunctionCallSubsystemDto copy = new FunctionCallSubsystemDto();
+
         // Copy base fields
         copy.setBlockId(getBlockId());
         copy.setBlockName(getBlockName());
@@ -438,7 +470,7 @@ public class SubsystemDto extends BlockDto {
         copy.setPosition(getPosition());
         copy.setDimension(getDimension());
         copy.setSampleTime(getSampleTime());
-        
+
         // Copy DTO-specific fields
         copy.subsystemDescription = subsystemDescription != null ? subsystemDescription.copy() : null;
         copy.showPortLabels = showPortLabels != null ? showPortLabels.copy() : null;
@@ -446,10 +478,10 @@ public class SubsystemDto extends BlockDto {
         copy.maskType = maskType != null ? maskType.copy() : null;
         copy.numInputPorts = numInputPorts != null ? numInputPorts.copy() : null;
         copy.numOutputPorts = numOutputPorts != null ? numOutputPorts.copy() : null;
-        
+
         return copy;
     }
-    
+
     /**
      * Creates a TypedParameterMap from this DTO's parameters.
      *
@@ -475,20 +507,20 @@ public class SubsystemDto extends BlockDto {
      */
     public static Map<String, String> getParameterDescriptions() {
         return Map.of(
-            "Description", "Optional description of subsystem functionality",
+            "Description", "Optional description of function-call subsystem functionality",
             "ShowPortLabels", "Display port labels on subsystem block",
             "ReadOnly", "Subsystem contents cannot be modified when true",
             "MaskType", "Optional mask type for custom appearance",
-            "SampleTime", "Sample time for subsystem (-1 for inherited, 0 for continuous)",
-            "NumInputPorts", "Number of input ports (determined by Inport blocks)",
+            "SampleTime", "Sample time for subsystem (-1 for inherited, >0 for discrete, NOT 0 for function-call)",
+            "NumInputPorts", "Number of data input ports (determined by Inport blocks, excludes function-call port)",
             "NumOutputPorts", "Number of output ports (determined by Outport blocks)"
         );
     }
 
     @Override
     public String toString() {
-        return String.format("SubsystemDto{blockName='%s', inputs=%d, outputs=%d, description='%s', readOnly=%s, sampleTime=%.3f}",
-                           getBlockName(), getNumInputPortsValue(), getNumOutputPortsValue(), 
+        return String.format("FunctionCallSubsystemDto{blockName='%s', dataInputs=%d, outputs=%d, description='%s', readOnly=%s, sampleTime=%.3f}",
+                           getBlockName(), getNumInputPortsValue(), getNumOutputPortsValue(),
                            getSubsystemDescriptionValue(), getReadOnlyValue(), getSampleTimeValue());
     }
 }

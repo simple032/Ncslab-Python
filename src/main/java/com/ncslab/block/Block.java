@@ -49,9 +49,11 @@ public class Block implements MCodeBlock, CCodeBlock {
     @Getter
     protected String blockType;
     
-    /** Block name identifier */
-    @Getter
+    /** Block name identifier */    
     protected String blockName;
+    public String getBlockName() {
+        return this.blockName.replace("\t", "").replace("\n", "");
+    }
     
     /** Unique block ID within the model */
     @Setter
@@ -62,8 +64,10 @@ public class Block implements MCodeBlock, CCodeBlock {
      * Block canvas position path.
      * Format: modelName for top-level blocks, modelName/subsystem for subsystem blocks
      */
-    @Getter
     protected String blockPath;
+    public String getBlockPath() {
+        return this.blockPath.replace("\t", "").replace("\n", "");
+    }
     
     /** Block UUID for unique identification (only BlockCId has true uniqueness) */
     @Getter
@@ -266,7 +270,7 @@ public class Block implements MCodeBlock, CCodeBlock {
 
         // Convert DTO's TypedParameter fields to Parameter objects using reflection
         // This enables DTO-based factory methods to work seamlessly
-        com.ncslab.dto.mapper.TypedParameterConverter.convertAndAddParameters(blockDto, this, 1);
+        // com.ncslab.dto.mapper.TypedParameterConverter.convertAndAddParameters(blockDto, this, 1);
 
         parseParameterList(blockDto);
         // parseInputOutputPorts(blockDto);
@@ -637,8 +641,10 @@ public class Block implements MCodeBlock, CCodeBlock {
 	//生成C语言的Output代码,不同的Block类型，重载这个方法，生成自己的代码
 	@Override
 	public void generateOutputCodeC(CodeStructC code) {
+        String outputCode="/*Code for output of block "+ getBlockType() +":("+getBlockId()+")"+getBlockName()+"*/\n";
 //        code.addOutputCode("/*Code for output of block "+ this.blockType + " :("
 //            + getBlockId() + ")" + getBlockPath() + "/" + getBlockName() +"*/\n");
+        code.addOutputCode(outputCode);
     }
 
 	public void generateBlockSinkOutputCodeC(CodeStructC code) {
@@ -822,7 +828,7 @@ public class Block implements MCodeBlock, CCodeBlock {
             String actualValue = defaultValue;
             if (paramValues != null) {
                 Object paramValue = paramValues.getOrDefault(paramName, defaultValue);
-                actualValue = (paramValue != null) ? String.valueOf(paramValue) : defaultValue;
+                actualValue = String.valueOf(paramValue);
             }
 
             parameterList.add(new Parameter(this, paramIndex++, paramName, actualValue));
