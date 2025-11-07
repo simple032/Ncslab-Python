@@ -32,7 +32,7 @@ public abstract class MachineLearning extends MLBlock{
     /**
      * DTO-NATIVE Constructor - Creates MachineLearning block directly from BlockDto DTO
      */
-    public MachineLearning(MachineLearningDto blockDto, NCSLabModel model) {
+    public MachineLearning(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MachineLearning block created successfully - " + blockDto.getBlockName());
     }

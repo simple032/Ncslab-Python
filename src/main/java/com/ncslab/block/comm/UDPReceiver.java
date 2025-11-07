@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import com.ncslab.dto.core.BlockDto;
 
 public class UDPReceiver extends Block {
 
@@ -28,7 +29,7 @@ public class UDPReceiver extends Block {
     /**
      * DTO-NATIVE Constructor - Creates UDPReceiver block directly from BlockDto DTO
      */
-    public UDPReceiver(UDPReceiverDto blockDto, NCSLabModel model) {
+    public UDPReceiver(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Create output ports for received data

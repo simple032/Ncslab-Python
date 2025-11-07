@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * EnabledAndTriggeredSubsystem block - Combined enable and trigger control with SIMULINK-compatible parameters.
@@ -143,7 +144,7 @@ public class EnabledAndTriggeredSubsystem extends Subsystem {
      * @param blockDto EnabledAndTriggeredSubsystem block DTO with validated parameters
      * @param model Parent model
      */
-    public EnabledAndTriggeredSubsystem(EnabledAndTriggeredSubsystemDto blockDto, NCSLabModel model) {
+    public EnabledAndTriggeredSubsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

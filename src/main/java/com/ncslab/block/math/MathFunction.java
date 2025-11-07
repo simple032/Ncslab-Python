@@ -124,7 +124,7 @@ public class MathFunction extends MathBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates MathFunction block directly from BlockDto DTO
      */
-    public MathFunction(MathFunctionDto blockDto, NCSLabModel model) {
+    public MathFunction(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Validate DTO

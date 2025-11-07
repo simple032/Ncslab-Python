@@ -103,7 +103,7 @@ public class BandLimitedWhiteNoise extends SourceBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates BandLimitedWhiteNoise block directly from BlockDto DTO
      */
-    public BandLimitedWhiteNoise(BandLimitedWhiteNoiseDto blockDto, NCSLabModel model) {
+    public BandLimitedWhiteNoise(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

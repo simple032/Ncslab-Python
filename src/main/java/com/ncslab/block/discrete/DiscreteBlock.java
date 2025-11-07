@@ -31,7 +31,7 @@ abstract public class DiscreteBlock extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DiscreteBlock block directly from BlockDto DTO
      */
-    public DiscreteBlock(DiscreteBlockDto blockDto, NCSLabModel model) {
+    public DiscreteBlock(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DiscreteBlock block created successfully - " + blockDto.getBlockName());
     }

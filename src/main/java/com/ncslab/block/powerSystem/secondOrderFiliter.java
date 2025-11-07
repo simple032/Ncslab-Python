@@ -40,7 +40,7 @@ public class secondOrderFiliter extends Block{
     /**
      * DTO-NATIVE Constructor - Creates secondOrderFiliter block directly from BlockDto DTO
      */
-    public secondOrderFiliter(SecondOrderFiliterDto blockDto, NCSLabModel model) {
+    public secondOrderFiliter(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: secondOrderFiliter block created successfully - " + blockDto.getBlockName());
     }

@@ -138,7 +138,7 @@ public class UnitDelay extends DiscreteBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates UnitDelay block directly from BlockDto DTO
      */
-    public UnitDelay(UnitDelayDto blockDto, NCSLabModel model) {
+    public UnitDelay(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
        
         // Get parameters by name from the automatically populated parameterList

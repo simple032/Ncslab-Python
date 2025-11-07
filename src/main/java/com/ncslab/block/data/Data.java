@@ -96,7 +96,6 @@ public class Data {
         dataString = parseExpression(inString);
 
         if (isStringMatrix(dataString)) {
-            System.out.println("Matrix: " + dataString);
             dataType = DataType.MATRIX;
             initMatrix = parseMatrix(dataString);
             value = initMatrix;
@@ -157,13 +156,13 @@ public class Data {
                 MfcalcResponseDto commandResponse = client.runCommand(variableName + "=" + dataString + ";");
                 if (commandResponse != null && commandResponse.isSuccess()) {
                     MfcalcResponseDto variableResponse = client.getVariable(variableName);
-                    // log.debug("Get variable '{}' response: {}", variableName, variableResponse);
+                    log.debug("Get variable '{}' response: {}", variableName, variableResponse);
                     if (variableResponse != null && variableResponse.getMessageType().equals("variable_value")){
                         List<MfcalcVariableDto> latestVariables =  variableResponse.getVariables();
                         for(MfcalcVariableDto variableDto : latestVariables) {                            
                             if(variableDto != null && variableDto.getName().equals(variableName)) {
                                 result = variableDto.getValue().toString();
-                                log.debug("Parsed expression '{}' to value: {}", dataString, result);
+                                log.info("Parsed expression '{}' to value: {}", dataString, result);
                                 break;
                             }
                         }

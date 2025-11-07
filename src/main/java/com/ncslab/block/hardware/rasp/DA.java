@@ -28,7 +28,7 @@ public class DA extends HardwareBlock{
     /**
      * DTO-NATIVE Constructor - Creates DA block directly from BlockDto DTO
      */
-    public DA(DADto blockDto, NCSLabModel model) {
+    public DA(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DA block created successfully - " + blockDto.getBlockName());
     }

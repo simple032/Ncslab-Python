@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.ncslab.block.continuous.ContinuousBlock;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.State;
@@ -176,7 +175,7 @@ public class TransferFcn extends ContinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates TransferFcn block directly from BlockDto DTO
      */
-    public TransferFcn(TransferFcnDto blockDto, NCSLabModel model) {
+    public TransferFcn(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

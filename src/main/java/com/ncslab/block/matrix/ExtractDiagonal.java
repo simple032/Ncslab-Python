@@ -28,7 +28,7 @@ public class ExtractDiagonal extends Block {
     /**
      * DTO-NATIVE Constructor - Creates ExtractDiagonal block directly from BlockDto DTO
      */
-    public ExtractDiagonal(ExtractDiagonalDto blockDto, NCSLabModel model) {
+    public ExtractDiagonal(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ExtractDiagonal block created successfully - " + blockDto.getBlockName());
     }

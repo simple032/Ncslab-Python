@@ -28,7 +28,7 @@ public class AD extends HardwareBlock{
     /**
      * DTO-NATIVE Constructor - Creates AD block directly from BlockDto DTO
      */
-    public AD(ADDto blockDto, NCSLabModel model) {
+    public AD(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: AD block created successfully - " + blockDto.getBlockName());
     }

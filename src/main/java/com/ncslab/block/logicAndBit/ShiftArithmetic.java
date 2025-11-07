@@ -108,7 +108,7 @@ public class ShiftArithmetic extends LogicBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates ShiftArithmetic block directly from BlockDto DTO
      */
-    public ShiftArithmetic(ShiftArithmeticDto blockDto, NCSLabModel model) {
+    public ShiftArithmetic(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

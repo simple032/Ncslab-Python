@@ -65,7 +65,7 @@ public class Fcn extends Block{
     /**
      * DTO-NATIVE Constructor - Creates Fcn block directly from BlockDto DTO
      */
-    public Fcn(FcnDto blockDto, NCSLabModel model) {
+    public Fcn(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         expression = paramValues.getString("Expression");

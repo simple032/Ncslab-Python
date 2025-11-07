@@ -161,7 +161,7 @@ public class Scope extends SinkBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Scope block directly from BlockDto DTO
      */
-    public Scope(ScopeDto blockDto, NCSLabModel model) {
+    public Scope(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

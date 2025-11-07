@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * For Iterator Subsystem block for fixed-count iteration with SIMULINK-compatible parameters.
@@ -165,7 +166,7 @@ public class ForIteratorSubsystem extends Subsystem {
      * @param blockDto For Iterator Subsystem block DTO with validated parameters
      * @param model Parent model
      */
-    public ForIteratorSubsystem(ForIteratorSubsystemDto blockDto, NCSLabModel model) {
+    public ForIteratorSubsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

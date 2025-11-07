@@ -28,7 +28,7 @@ public class TestPoint extends MathBlock {
     /**
      * DTO-NATIVE Constructor - Creates TestPoint block directly from BlockDto DTO
      */
-    public TestPoint(TestPointDto blockDto, NCSLabModel model) {
+    public TestPoint(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         initializePorts();
         System.out.println("DTO-NATIVE: TestPoint block created successfully - " + blockDto.getBlockName());

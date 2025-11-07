@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Function-Call Generator block for triggering function-call subsystems.
@@ -158,7 +159,7 @@ public class FunctionCallGenerator extends Block {
      * @param blockDto Function-call generator block DTO with validated parameters
      * @param model Parent model
      */
-    public FunctionCallGenerator(FunctionCallGeneratorDto blockDto, NCSLabModel model) {
+    public FunctionCallGenerator(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

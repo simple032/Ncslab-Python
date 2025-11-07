@@ -110,7 +110,7 @@ public class To extends RouteBlock {
 	}    /**
      * DTO-NATIVE Constructor - Creates To block directly from BlockDto DTO
      */
-    public To(GotoDto blockDto, NCSLabModel model) {
+    public To(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -1,11 +1,13 @@
 package com.ncslab.block.subsystem;
 
+import com.google.protobuf.ByteString.Output;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -96,7 +98,7 @@ public class Out extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates Out block directly from BlockDto DTO
      */
-    public Out(OutDto blockDto, NCSLabModel model) {
+    public Out(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Create SIMULINK parameters with defaults
@@ -195,20 +197,17 @@ public class Out extends Block {
         
         // Safely handle signal connection chain with null checks
         InputPort inputPort = inputPortList.get(0);
+        OutputPort outputPort = this.getSubsystem().getOutputPortList().get(getPortNumber() - 1);
+        String outputVar = outputPort.getOutputSignalC().getName();
+        String inputVar = "0";
         if (inputPort != null && inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
-            context.put("inputSignal", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-        } else {
-            context.put("inputSignal", null);
-        }
-        if (outputPortList.size() > 0) {
-            context.put("outputSignal", outputPortList.get(0).getOutputSignalC().getName());
-        } else {
-            context.put("outputSignal", null);
-        }
-
-        String outputCode = TemplateManager.renderTemplate("c/subsystem/Out/output.vm", context);
+            inputVar = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+        }         
+        String outputCode = String.format("%s = %s;\n", outputVar, inputVar);
         code.addOutputCode(outputCode);
     }
+
+    @Override
     public void updateDimension() throws MatDimException {
         // Out block passes dimensions from internal input to subsystem output
         if(this.subsystem == null) return;

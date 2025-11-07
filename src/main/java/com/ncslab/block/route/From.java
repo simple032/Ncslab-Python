@@ -113,7 +113,7 @@ public class From extends RouteBlock {
 	}    /**
      * DTO-NATIVE Constructor - Creates From block directly from BlockDto DTO
      */
-    public From(FromDto blockDto, NCSLabModel model) {
+    public From(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

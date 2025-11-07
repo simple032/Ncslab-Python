@@ -164,7 +164,7 @@ public class Relay extends DiscontinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Relay block directly from BlockDto DTO
      */
-    public Relay(RelayDto blockDto, NCSLabModel model) {
+    public Relay(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO - use correct parameter names matching JSON constructor

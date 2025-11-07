@@ -228,7 +228,7 @@ public class PIDController extends ContinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates PIDController block directly from BlockDto DTO
      */
-    public PIDController(PIDControllerDto blockDto, NCSLabModel model) {
+    public PIDController(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO with proper null checking and correct names
@@ -260,17 +260,10 @@ public class PIDController extends ContinuousBlock {
             stateList.add(stateIntegral);
             stateList.add(stateFilter);
         }
-        
+
         System.out.println("DTO-NATIVE: PIDController block created successfully - " + blockDto.getBlockName());
     }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public PIDController(BlockDto blockDto, NCSLabModel model) {
-        this(castToPIDControllerDto(blockDto), model);
-    }
-    
+
     private static PIDControllerDto castToPIDControllerDto(BlockDto blockDto) {
         if (blockDto instanceof PIDControllerDto) {
             return (PIDControllerDto) blockDto;

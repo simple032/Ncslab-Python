@@ -26,7 +26,7 @@ public class PermuteMatrix extends Block {
     /**
      * DTO-NATIVE Constructor - Creates PermuteMatrix block directly from BlockDto DTO
      */
-    public PermuteMatrix(PermuteMatrixDto blockDto, NCSLabModel model) {
+    public PermuteMatrix(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: PermuteMatrix block created successfully - " + blockDto.getBlockName());
     }

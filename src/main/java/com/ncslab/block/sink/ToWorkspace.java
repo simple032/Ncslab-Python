@@ -80,7 +80,7 @@ public class ToWorkspace extends SinkBlock {
     /**
      * DTO-NATIVE Constructor - Creates ToWorkspace block directly from BlockDto DTO
      */
-    public ToWorkspace(ToWorkspaceDto blockDto, NCSLabModel model) {
+    public ToWorkspace(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

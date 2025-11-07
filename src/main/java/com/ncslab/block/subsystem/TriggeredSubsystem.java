@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Triggered Subsystem block - Event-driven subsystem with automatic trigger port.
@@ -134,7 +135,7 @@ public class TriggeredSubsystem extends Subsystem {
     /**
      * DTO-NATIVE Constructor - Creates TriggeredSubsystem block directly from TriggeredSubsystemDto DTO
      */
-    public TriggeredSubsystem(TriggeredSubsystemDto blockDto, NCSLabModel model) {
+    public TriggeredSubsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -158,7 +158,7 @@ public class DiscreteStateSpace extends DiscreteBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates DiscreteStateSpace block directly from BlockDto DTO
      */
-    public DiscreteStateSpace(DiscreteStateSpaceDto blockDto, NCSLabModel model) {
+    public DiscreteStateSpace(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

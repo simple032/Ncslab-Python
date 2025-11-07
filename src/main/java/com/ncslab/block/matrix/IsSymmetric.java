@@ -26,7 +26,7 @@ public class IsSymmetric extends Block {
     /**
      * DTO-NATIVE Constructor - Creates IsSymmetric block directly from BlockDto DTO
      */
-    public IsSymmetric(IsSymmetricDto blockDto, NCSLabModel model) {
+    public IsSymmetric(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IsSymmetric block created successfully - " + blockDto.getBlockName());
     }

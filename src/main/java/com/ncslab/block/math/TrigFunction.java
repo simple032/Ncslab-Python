@@ -118,7 +118,7 @@ public class TrigFunction extends MathBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates TrigFunction block directly from BlockDto DTO
      */
-    public TrigFunction(TrigFunctionDto blockDto, NCSLabModel model) {
+    public TrigFunction(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Validate DTO

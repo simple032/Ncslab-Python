@@ -30,7 +30,7 @@ public class UDPSend extends com.ncslab.block.Block{
     /**
      * DTO-NATIVE Constructor - Creates UDPSend block directly from BlockDto DTO
      */
-    public UDPSend(UDPSendDto blockDto, NCSLabModel model) {
+    public UDPSend(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: UDPSend block created successfully - " + blockDto.getBlockName());
     }

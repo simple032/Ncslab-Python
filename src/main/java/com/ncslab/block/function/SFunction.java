@@ -52,7 +52,7 @@ public class SFunction extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SFunction block directly from BlockDto DTO
      */
-    public SFunction(SFunctionDto blockDto, NCSLabModel model) throws ModelException{
+    public SFunction(BlockDto blockDto, NCSLabModel model) throws ModelException{
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SFunction block created successfully - " + blockDto.getBlockName());
     }

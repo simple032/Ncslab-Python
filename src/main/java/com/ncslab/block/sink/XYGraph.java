@@ -160,7 +160,7 @@ public class XYGraph extends SinkBlock {
     /**
      * DTO-NATIVE Constructor - Creates XYGraph block directly from XYGraphDto DTO
      */
-    public XYGraph(com.ncslab.dto.block.specialized.sink.XYGraphDto blockDto, NCSLabModel model) {
+    public XYGraph(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

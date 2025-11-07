@@ -114,7 +114,7 @@ public class IntervalTest extends LogicBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates IntervalTest block directly from BlockDto DTO
      */
-    public IntervalTest(IntervalTestDto blockDto, NCSLabModel model) {
+    public IntervalTest(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

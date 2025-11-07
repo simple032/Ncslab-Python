@@ -30,6 +30,7 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.util.TemplateUtils;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Constant block with SIMULINK-compatible parameters and type-safe constructors.
@@ -114,7 +115,7 @@ public class Constant extends SourceBlock {
     /**
      * DTO-NATIVE Constructor - Creates Constant block directly from BlockDto DTO
      */
-    public Constant(ConstantDto blockDto, NCSLabModel model) {
+    public Constant(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName
@@ -127,7 +128,21 @@ public class Constant extends SourceBlock {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
-    
+    /**
+     * DTO-NATIVE Constructor - Creates Constant block directly from BlockDto DTO
+     */
+    public Constant(ConstantDto blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Use centralized parameter management via getParameterByName
+        // Note: Parameter is already added to parameterList by Block.parseParameterList(blockDto)
+        this.value = getParameterByName("Value");
+
+        // Initialize ports
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
 
     
     // === Static Factory Method for JSON Deserialization ===

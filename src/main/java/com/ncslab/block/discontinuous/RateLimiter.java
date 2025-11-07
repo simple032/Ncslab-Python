@@ -135,7 +135,7 @@ public class RateLimiter extends DiscontinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates RateLimiter block directly from BlockDto DTO
      */
-    public RateLimiter(RateLimiterDto blockDto, NCSLabModel model) {
+    public RateLimiter(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

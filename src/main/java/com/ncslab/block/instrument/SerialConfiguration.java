@@ -143,7 +143,7 @@ public class SerialConfiguration extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SerialConfiguration block directly from BlockDto DTO
      */
-    public SerialConfiguration(SerialConfigurationDto blockDto, NCSLabModel model) {
+    public SerialConfiguration(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Get parameters using correct pattern

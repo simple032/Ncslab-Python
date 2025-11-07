@@ -31,7 +31,7 @@ public class MatrixConcatenate extends Block {
     /**
      * DTO-NATIVE Constructor - Creates MatrixConcatenate block directly from BlockDto DTO
      */
-    public MatrixConcatenate(MatrixConcatenateDto blockDto, NCSLabModel model) {
+    public MatrixConcatenate(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixConcatenate block created successfully - " + blockDto.getBlockName());
     }

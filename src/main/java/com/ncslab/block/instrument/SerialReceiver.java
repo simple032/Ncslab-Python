@@ -49,7 +49,7 @@ public class SerialReceiver extends Block implements AutoCloseable {
     /**
      * DTO-NATIVE Constructor - Creates SerialReceiver block directly from BlockDto DTO
      */
-    public SerialReceiver(SerialReceiverDto blockDto, NCSLabModel model) {
+    public SerialReceiver(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Single output port (can be scalar or vector)

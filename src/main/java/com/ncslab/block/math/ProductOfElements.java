@@ -37,7 +37,7 @@ public class ProductOfElements extends MathBlock {
     /**
      * DTO-NATIVE Constructor - Creates ProductOfElements block directly from BlockDto DTO
      */
-    public ProductOfElements(ProductOfElementsDto blockDto, NCSLabModel model) {
+    public ProductOfElements(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ProductOfElements block created successfully - " + blockDto.getBlockName());
     }

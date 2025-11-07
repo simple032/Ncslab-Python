@@ -32,7 +32,7 @@ public class DataCollector extends MLBlock{
     /**
      * DTO-NATIVE Constructor - Creates DataCollector block directly from BlockDto DTO
      */
-    public DataCollector(DataCollectorDto blockDto, NCSLabModel model) {
+    public DataCollector(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DataCollector block created successfully - " + blockDto.getBlockName());
     }

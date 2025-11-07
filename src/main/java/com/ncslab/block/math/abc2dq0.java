@@ -28,7 +28,7 @@ public class abc2dq0 extends MathBlock{
     /**
      * DTO-NATIVE Constructor - Creates abc2dq0 block directly from BlockDto DTO
      */
-    public abc2dq0(Abc2dq0Dto blockDto, NCSLabModel model) {
+    public abc2dq0(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: abc2dq0 block created successfully - " + blockDto.getBlockName());
     }

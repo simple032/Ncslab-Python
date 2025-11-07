@@ -83,7 +83,7 @@ public class FromWorkspace extends SourceBlock {
     /**
      * DTO-NATIVE Constructor - Creates FromWorkspace block directly from BlockDto DTO
      */
-    public FromWorkspace(FromWorkspaceDto blockDto, NCSLabModel model) {
+    public FromWorkspace(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

@@ -26,7 +26,7 @@ public class PWM extends com.ncslab.block.Block{
     /**
      * DTO-NATIVE Constructor - Creates PWM block directly from BlockDto DTO
      */
-    public PWM(PWMDto blockDto, NCSLabModel model) {
+    public PWM(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: PWM block created successfully - " + blockDto.getBlockName());
     }

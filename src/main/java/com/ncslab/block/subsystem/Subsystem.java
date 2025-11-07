@@ -59,7 +59,7 @@ public class Subsystem extends Block{
         // Initialize with empty collections - blocks and lines will be added via management methods
     }
 
-    public Subsystem(SubsystemDto blockDto, NCSLabModel model) {
+    public Subsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inBlockList = new ArrayList<>();
         outBlockList = new ArrayList<>();
@@ -71,35 +71,27 @@ public class Subsystem extends Block{
     }
 
     @Override
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        for (Block block : innerSystem.getOutputChain()) {                       
+            block.generateInitCodeC(code);                
+        } 
+        
+    }
+
+    @Override
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
 
-        // Populate template context with subsystem-specific data
-        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
-        // Add subsystem-specific context
-        context.put("containedBlocks", innerSystem.getBlocks());
-        context.put("containedLines", innerSystem.getLines());
-        context.put("inBlockList", inBlockList);
-        context.put("outBlockList", outBlockList);
-        context.put("boundaryLines", getBoundaryLines());
-        context.put("pureInternalLines", getPureInternalLines());
+        // Populate template context with subsystem-specific data       
+        code.addOutputCode(String.format("// =======================Start Output In Subsystem: %s============================\n", getBlockPath()));
 
-        // Generate subsystem wrapper code using template
-        String outputCode = com.ncslab.util.TemplateManager.renderTemplate("c/subsystem/Subsystem/output.vm", context);
-        code.addOutputCode(outputCode);
-        
         // Generate code for all contained blocks (except In/Out which are handled by boundary)
-        for (Block block : innerSystem.getBlocks()) {
-            try {
-                if (!(block instanceof In || block instanceof Out)) {
-                    // Generate code for internal blocks
-                    block.generateOutputCodeC(code);
-                }
-            } catch (Exception e) {
-                System.err.println("Error generating code for block " + block.getBlockName() + ": " + e.getMessage());
-            }
-        }
+        for (Block block : innerSystem.getOutputChain()) {                       
+            block.generateOutputCodeC(code);                
+        }        
+
+        code.addOutputCode(String.format("// =======================End Output In Subsystem: %s============================\n", getBlockPath()));
     }
     
     @Override
@@ -289,6 +281,7 @@ public class Subsystem extends Block{
         // Delegate output calculation to NCSLabSystem with proper dependency ordering
         innerSystem.calculateOutput(t);
     }
+
     
     
     // Get subsystem path for hierarchical identification

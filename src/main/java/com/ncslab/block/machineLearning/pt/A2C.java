@@ -25,7 +25,7 @@ public class A2C extends PTModel {
     /**
      * DTO-NATIVE Constructor - Creates A2C block directly from BlockDto DTO
      */
-    public A2C(A2CDto blockDto, NCSLabModel model) {
+    public A2C(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: A2C block created successfully - " + blockDto.getBlockName());
     }

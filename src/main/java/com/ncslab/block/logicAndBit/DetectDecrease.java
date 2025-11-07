@@ -110,7 +110,7 @@ public class DetectDecrease extends LogicBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates DetectDecrease block directly from BlockDto DTO
      */
-    public DetectDecrease(DetectDecreaseDto blockDto, NCSLabModel model) {
+    public DetectDecrease(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

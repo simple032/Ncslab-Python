@@ -159,7 +159,7 @@ public class Gain extends MathBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Gain block directly from BlockDto DTO
      */
-    public Gain(GainDto blockDto, NCSLabModel model) {
+    public Gain(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

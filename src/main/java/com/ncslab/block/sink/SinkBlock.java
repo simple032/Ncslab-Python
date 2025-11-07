@@ -15,7 +15,7 @@ public class SinkBlock extends Block {
 	/**
 	 * DTO-NATIVE Constructor for SinkBlock - Uses DTO directly without conversion
 	 */
-	public SinkBlock(SinkDto blockDto, NCSLabModel model) {
+	public SinkBlock(BlockDto blockDto, NCSLabModel model) {
 		super(blockDto, model);
 	}
 }

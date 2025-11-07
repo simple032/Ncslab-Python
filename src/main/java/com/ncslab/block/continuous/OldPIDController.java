@@ -37,7 +37,7 @@ public class OldPIDController extends ContinuousBlock {
     /**
      * DTO-NATIVE Constructor - Creates OldPIDController block directly from BlockDto DTO
      */
-    public OldPIDController(OldPIDControllerDto blockDto, NCSLabModel model) {
+    public OldPIDController(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: OldPIDController block created successfully - " + blockDto.getBlockName());
     }

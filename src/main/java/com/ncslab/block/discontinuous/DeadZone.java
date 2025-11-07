@@ -147,7 +147,7 @@ public class DeadZone extends DiscontinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates DeadZone block directly from BlockDto DTO
      */
-    public DeadZone(DeadZoneDto blockDto, NCSLabModel model) {
+    public DeadZone(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO - use correct parameter names matching JSON constructor

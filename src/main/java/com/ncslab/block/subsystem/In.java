@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Input port block for subsystems with SIMULINK-compatible parameters.
@@ -97,7 +98,7 @@ public class In extends Block {
     }    /**
      * DTO-NATIVE Constructor - Creates In block directly from BlockDto DTO
      */
-    public In(InDto blockDto, NCSLabModel model) {
+    public In(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -192,19 +193,15 @@ public class In extends Block {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
         // Add In-specific context
-        context.put("portNumber", port.getData().getInitValue());
-        context.put("subsystem", subsystem);
         
         // Safely handle signal connection chain with null checks
         InputPort inputPort = this.getSubsystem().getInputPortList().get(getPortNumber() - 1);
+        String inputVar = "0";
         if (inputPort != null && inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
-            context.put("inputSignal", inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-        } else {
-            context.put("inputSignal", "0.0"); // Default value when no input connected
-        }
-        context.put("outputSignal", outputPortList.get(0).getOutputSignalC().getName());
-
-        String outputCode = TemplateManager.renderTemplate("c/subsystem/In/output.vm", context);
+            inputVar = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+        } 
+        String outputVar = getOutputPortVariable(0);
+        String outputCode = String.format("%s = %s;\n", outputVar, inputVar);
         code.addOutputCode(outputCode);
     }
     public void updateDimension() throws MatDimException {

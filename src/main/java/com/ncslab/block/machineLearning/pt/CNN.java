@@ -30,7 +30,7 @@ public class CNN extends MachineLearning {
     /**
      * DTO-NATIVE Constructor - Creates CNN block directly from BlockDto DTO
      */
-    public CNN(CNNDto blockDto, NCSLabModel model) {
+    public CNN(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: CNN block created successfully - " + blockDto.getBlockName());
     }

@@ -26,7 +26,7 @@ public class CreateDiagonalMatrix extends Block{
     /**
      * DTO-NATIVE Constructor - Creates CreateDiagonalMatrix block directly from BlockDto DTO
      */
-    public CreateDiagonalMatrix(CreateDiagonalMatrixDto blockDto, NCSLabModel model) {
+    public CreateDiagonalMatrix(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: CreateDiagonalMatrix block created successfully - " + blockDto.getBlockName());
     }

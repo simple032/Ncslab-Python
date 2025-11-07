@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Trigger block for event-driven subsystem execution with SIMULINK-compatible parameters.
@@ -138,7 +139,7 @@ public class Trigger extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Trigger block directly from TriggerDto DTO
      */
-    public Trigger(TriggerDto blockDto, NCSLabModel model) {
+    public Trigger(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

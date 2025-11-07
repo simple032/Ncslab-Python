@@ -26,20 +26,11 @@ public class UDPReceive extends com.ncslab.block.Block{
     /**
      * DTO-NATIVE Constructor - Creates UDPReceive block directly from BlockDto DTO
      */
-    public UDPReceive(UDPReceiveDto blockDto, NCSLabModel model) {
+    public UDPReceive(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         initializePorts();
         System.out.println("DTO-NATIVE: UDPReceive block created successfully - " + blockDto.getBlockName());
     }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public UDPReceive(BlockDto blockDto, NCSLabModel model) {
-        this((UDPReceiveDto) blockDto, model);
-    }
-
-
 
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {

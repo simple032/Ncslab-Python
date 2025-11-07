@@ -39,7 +39,7 @@ public class pll3ph extends Block{
     /**
      * DTO-NATIVE Constructor - Creates pll3ph block directly from BlockDto DTO
      */
-    public pll3ph(PLL3phDto blockDto, NCSLabModel model) {
+    public pll3ph(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: pll3ph block created successfully - " + blockDto.getBlockName());
     }

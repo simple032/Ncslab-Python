@@ -20,7 +20,7 @@ public class EtherCATAO extends com.ncslab.block.Block {
     /**
      * DTO-NATIVE Constructor - Creates EtherCATAO block directly from BlockDto DTO
      */
-    public EtherCATAO(EtherCATAODto blockDto, NCSLabModel model) {
+    public EtherCATAO(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EtherCATAO block created successfully - " + blockDto.getBlockName());
     }

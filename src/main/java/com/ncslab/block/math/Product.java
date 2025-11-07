@@ -134,7 +134,7 @@ public class Product extends MathBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Product block directly from BlockDto DTO
      */
-    public Product(ProductDto blockDto, NCSLabModel model) {
+    public Product(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
         // Use centralized parameter management via getParameterByName

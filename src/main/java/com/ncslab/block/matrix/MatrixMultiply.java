@@ -30,7 +30,7 @@ public class MatrixMultiply extends Block {
     /**
      * DTO-NATIVE Constructor - Creates MatrixMultiply block directly from BlockDto DTO
      */
-    public MatrixMultiply(MatrixMultiplyDto blockDto, NCSLabModel model) {
+    public MatrixMultiply(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixMultiply block created successfully - " + blockDto.getBlockName());
     }

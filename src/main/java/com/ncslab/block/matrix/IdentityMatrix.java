@@ -29,7 +29,7 @@ public class IdentityMatrix extends Block {
     /**
      * DTO-NATIVE Constructor - Creates IdentityMatrix block directly from BlockDto DTO
      */
-    public IdentityMatrix(IdentityMatrixDto blockDto, NCSLabModel model) {
+    public IdentityMatrix(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IdentityMatrix block created successfully - " + blockDto.getBlockName());
     }

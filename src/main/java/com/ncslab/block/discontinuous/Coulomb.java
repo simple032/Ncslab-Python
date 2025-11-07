@@ -135,7 +135,7 @@ public class Coulomb extends DiscontinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Coulomb block directly from BlockDto DTO
      */
-    public Coulomb(CoulombDto blockDto, NCSLabModel model) {
+    public Coulomb(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

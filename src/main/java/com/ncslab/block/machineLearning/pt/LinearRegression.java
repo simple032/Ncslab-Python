@@ -30,7 +30,7 @@ public class LinearRegression extends PTModel{
     /**
      * DTO-NATIVE Constructor - Creates LinearRegression block directly from BlockDto DTO
      */
-    public LinearRegression(LinearRegressionDto blockDto, NCSLabModel model) {
+    public LinearRegression(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LinearRegression block created successfully - " + blockDto.getBlockName());
     }

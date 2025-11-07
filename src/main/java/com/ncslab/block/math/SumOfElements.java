@@ -32,7 +32,7 @@ public class SumOfElements extends MathBlock {
     /**
      * DTO-NATIVE Constructor - Creates SumOfElements block directly from BlockDto DTO
      */
-    public SumOfElements(SumOfElementsDto blockDto, NCSLabModel model) {
+    public SumOfElements(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SumOfElements block created successfully - " + blockDto.getBlockName());
 

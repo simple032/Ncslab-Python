@@ -28,7 +28,7 @@ public class GPIO extends HardwareBlock{
     /**
      * DTO-NATIVE Constructor - Creates GPIO block directly from BlockDto DTO
      */
-    public GPIO(GPIODto blockDto, NCSLabModel model) {
+    public GPIO(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: GPIO block created successfully - " + blockDto.getBlockName());
     }

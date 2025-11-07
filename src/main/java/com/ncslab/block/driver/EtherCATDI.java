@@ -22,7 +22,7 @@ public class EtherCATDI extends com.ncslab.block.Block {
     /**
      * DTO-NATIVE Constructor - Creates EtherCATDI block directly from BlockDto DTO
      */
-    public EtherCATDI(EtherCATDIDto blockDto, NCSLabModel model) {
+    public EtherCATDI(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EtherCATDI block created successfully - " + blockDto.getBlockName());
     }

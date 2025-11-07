@@ -28,7 +28,7 @@ public class DAC extends com.ncslab.block.Block{
     /**
      * DTO-NATIVE Constructor - Creates DAC block directly from BlockDto DTO
      */
-    public DAC(DACDto blockDto, NCSLabModel model) {
+    public DAC(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DAC block created successfully - " + blockDto.getBlockName());
     }

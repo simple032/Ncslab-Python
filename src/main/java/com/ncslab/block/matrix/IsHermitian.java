@@ -28,7 +28,7 @@ public class IsHermitian extends Block {
     /**
      * DTO-NATIVE Constructor - Creates IsHermitian block directly from BlockDto DTO
      */
-    public IsHermitian(IsHermitianDto blockDto, NCSLabModel model) {
+    public IsHermitian(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IsHermitian block created successfully - " + blockDto.getBlockName());
     }

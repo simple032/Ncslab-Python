@@ -131,7 +131,7 @@ public class CompareToConstant extends LogicBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates CompareToConstant block directly from BlockDto DTO
      */
-    public CompareToConstant(CompareToConstantDto blockDto, NCSLabModel model) {
+    public CompareToConstant(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

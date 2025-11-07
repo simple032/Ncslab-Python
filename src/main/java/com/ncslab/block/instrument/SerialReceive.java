@@ -137,7 +137,7 @@ public class SerialReceive extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SerialReceive block directly from BlockDto DTO
      */
-    public SerialReceive(SerialReceiveDto blockDto, NCSLabModel model) {
+    public SerialReceive(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Get parameters using correct pattern

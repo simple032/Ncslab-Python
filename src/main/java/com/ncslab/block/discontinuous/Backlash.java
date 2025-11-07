@@ -128,7 +128,7 @@ public class Backlash extends DiscontinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Backlash block directly from BlockDto DTO
      */
-    public Backlash(BacklashDto blockDto, NCSLabModel model) {
+    public Backlash(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO with fail-fast validation

@@ -141,7 +141,7 @@ public class VariableTransportDelay extends ContinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates VariableTransportDelay block directly from BlockDto DTO
      */
-    public VariableTransportDelay(VariableTransportDelayDto blockDto, NCSLabModel model) {
+    public VariableTransportDelay(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

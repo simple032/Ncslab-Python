@@ -129,7 +129,7 @@ public class Sign extends MathBlock {
     /**
      * DTO-NATIVE Constructor - Creates Sign block directly from BlockDto DTO
      */
-    public Sign(SignDto blockDto, NCSLabModel model) {
+    public Sign(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

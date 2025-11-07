@@ -33,7 +33,7 @@ public class Submatrix extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Submatrix block directly from BlockDto DTO
      */
-    public Submatrix(SubmatrixDto blockDto, NCSLabModel model) {
+    public Submatrix(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Submatrix block created successfully - " + blockDto.getBlockName());
     }

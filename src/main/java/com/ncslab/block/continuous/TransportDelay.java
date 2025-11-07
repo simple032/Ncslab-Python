@@ -145,7 +145,7 @@ public class TransportDelay extends ContinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates TransportDelay block directly from BlockDto DTO
      */
-    public TransportDelay(TransportDelayDto blockDto, NCSLabModel model) {
+    public TransportDelay(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

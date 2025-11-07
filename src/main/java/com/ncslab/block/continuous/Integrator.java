@@ -705,7 +705,7 @@ public class Integrator extends ContinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Integrator block directly from BlockDto DTO
      */
-    public Integrator(IntegratorDto blockDto, NCSLabModel model) {
+    public Integrator(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

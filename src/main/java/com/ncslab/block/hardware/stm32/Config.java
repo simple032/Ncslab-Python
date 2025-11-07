@@ -30,7 +30,7 @@ public class Config extends com.ncslab.block.Block{
     /**
      * DTO-NATIVE Constructor - Creates Config block directly from BlockDto DTO
      */
-    public Config(ConfigDto blockDto, NCSLabModel model) {
+    public Config(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Config block created successfully - " + blockDto.getBlockName());
     }

@@ -183,13 +183,6 @@ public class Switch extends RouteBlock {
         // Complete initialization
         System.out.println("Enhanced DTO: " + getClass().getSimpleName() + " block created successfully - " + dto.getBlockName());
     }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public Switch(BlockDto blockDto, NCSLabModel model) {
-        this((SwitchDto) blockDto, model);
-    }
 
     // === Static Factory Method for JSON Deserialization ===
     public static Switch fromJSON(JSONObject blockJSON, NCSLabModel model) {

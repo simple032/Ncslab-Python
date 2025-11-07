@@ -28,7 +28,7 @@ public class LimitingLink extends Block{
     /**
      * DTO-NATIVE Constructor - Creates LimitingLink block directly from BlockDto DTO
      */
-    public LimitingLink(LimitingLinkDto blockDto, NCSLabModel model) {
+    public LimitingLink(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LimitingLink block created successfully - " + blockDto.getBlockName());
     }

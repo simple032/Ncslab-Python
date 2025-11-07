@@ -43,7 +43,7 @@ public class SerialSender extends Block implements AutoCloseable {
     /**
      * DTO-NATIVE Constructor - Creates SerialSender block directly from BlockDto DTO
      */
-    public SerialSender(SerialSenderDto blockDto, NCSLabModel model) {
+    public SerialSender(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Single input port (can be scalar or vector)

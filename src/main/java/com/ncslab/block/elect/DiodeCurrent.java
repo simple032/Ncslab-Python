@@ -31,7 +31,7 @@ public class DiodeCurrent extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DiodeCurrent block directly from BlockDto DTO
      */
-    public DiodeCurrent(DiodeCurrentDto blockDto, NCSLabModel model) {
+    public DiodeCurrent(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DiodeCurrent block created successfully - " + blockDto.getBlockName());
     }

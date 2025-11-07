@@ -75,7 +75,7 @@ public class LQRController extends Block {
     /**
      * DTO-NATIVE Constructor - Creates LQRController block directly from BlockDto DTO
      */
-    public LQRController(LQRControllerDto blockDto, NCSLabModel model) {
+    public LQRController(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         // TODO: Add specific initialization if needed
         System.out.println("DTO-NATIVE: LQRController block created successfully - " + blockDto.getBlockName());

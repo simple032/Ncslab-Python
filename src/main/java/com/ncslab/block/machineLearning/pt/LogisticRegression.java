@@ -30,7 +30,7 @@ public class LogisticRegression extends PTModel {
     /**
      * DTO-NATIVE Constructor - Creates LogisticRegression block directly from BlockDto DTO
      */
-    public LogisticRegression(LogisticRegressionDto blockDto, NCSLabModel model) {
+    public LogisticRegression(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LogisticRegression block created successfully - " + blockDto.getBlockName());
     }

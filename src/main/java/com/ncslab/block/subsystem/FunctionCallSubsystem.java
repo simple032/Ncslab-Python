@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Function-Call Subsystem block for event-driven subsystem execution.
@@ -136,7 +137,7 @@ public class FunctionCallSubsystem extends Subsystem {
      * @param blockDto Function-Call Subsystem DTO with validated parameters
      * @param model Parent model
      */
-    public FunctionCallSubsystem(FunctionCallSubsystemDto blockDto, NCSLabModel model) {
+    public FunctionCallSubsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         initializeFunctionCallPort();
 

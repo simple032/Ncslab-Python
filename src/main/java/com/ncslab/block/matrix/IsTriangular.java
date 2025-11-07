@@ -26,7 +26,7 @@ public class IsTriangular extends Block {
     /**
      * DTO-NATIVE Constructor - Creates IsTriangular block directly from BlockDto DTO
      */
-    public IsTriangular(IsTriangularDto blockDto, NCSLabModel model) {
+    public IsTriangular(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IsTriangular block created successfully - " + blockDto.getBlockName());
     }

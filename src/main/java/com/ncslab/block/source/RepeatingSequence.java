@@ -125,12 +125,8 @@ public class RepeatingSequence extends SourceBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates RepeatingSequence block directly from BlockDto DTO
      */
-    public RepeatingSequence(RepeatingSequenceDto blockDto, NCSLabModel model) {
+    public RepeatingSequence(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
-
-        // Initialize final parameters from DTO with proper values
-        String timeValuesStr = blockDto.getTimeValues() != null ? blockDto.getTimeValues().getValue(String.class) : "[0 1]";
-        String outputValuesStr = blockDto.getOutputValues() != null ? blockDto.getOutputValues().getValue(String.class) : "[0 1]";
                 
         if(getParameterByName("TimeValues") != null){
             this.timeValues = getParameterByName("TimeValues");
@@ -155,7 +151,7 @@ public class RepeatingSequence extends SourceBlock {
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName() + 
-                          " with timeValues=" + timeValuesStr + " outputValues=" + outputValuesStr);
+                          " with timeValues=" + timeValues + " outputValues=" + outputValues + " sampleTime=" + sampleTime + " outDataType=" + outDataType + " saturateOnIntegerOverflow=" + saturateOnIntegerOverflow);
     }
 
 // === Static Factory Method for JSON Deserialization ===

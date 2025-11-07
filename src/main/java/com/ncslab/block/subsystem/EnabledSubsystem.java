@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Enabled Subsystem block - Pre-configured subsystem with automatic Enable port integration.
@@ -182,7 +183,7 @@ public class EnabledSubsystem extends Subsystem {
      * @param blockDto EnabledSubsystem block DTO with validated parameters
      * @param model Parent model
      */
-    public EnabledSubsystem(EnabledSubsystemDto blockDto, NCSLabModel model) {
+    public EnabledSubsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

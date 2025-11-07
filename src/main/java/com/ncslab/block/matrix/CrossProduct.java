@@ -28,7 +28,7 @@ public class CrossProduct extends Block {
     /**
      * DTO-NATIVE Constructor - Creates CrossProduct block directly from BlockDto DTO
      */
-    public CrossProduct(CrossProductDto blockDto, NCSLabModel model) {
+    public CrossProduct(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: CrossProduct block created successfully - " + blockDto.getBlockName());
     }

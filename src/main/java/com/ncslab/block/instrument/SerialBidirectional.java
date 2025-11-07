@@ -49,7 +49,7 @@ public class SerialBidirectional extends Block implements AutoCloseable {
     /**
      * DTO-NATIVE Constructor - Creates SerialBidirectional block directly from BlockDto DTO
      */
-    public SerialBidirectional(SerialBidirectionalDto blockDto, NCSLabModel model) {
+    public SerialBidirectional(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Input port for TX data (can be scalar or vector)

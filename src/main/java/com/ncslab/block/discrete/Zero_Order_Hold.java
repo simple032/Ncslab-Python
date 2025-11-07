@@ -143,14 +143,7 @@ public class Zero_Order_Hold extends DiscreteBlock {
         setSampleTime(sampleTimeParam);
         System.out.println("DTO-NATIVE: Zero_Order_Hold block created successfully - " + dto.getBlockName());
     }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public Zero_Order_Hold(BlockDto blockDto, NCSLabModel model) {
-        this((ZeroOrderHoldDto) blockDto, model);
-    }
-    
+
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, feedthrough));

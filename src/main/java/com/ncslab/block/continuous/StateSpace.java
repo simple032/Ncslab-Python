@@ -195,7 +195,7 @@ public class StateSpace extends ContinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates StateSpace block directly from BlockDto DTO
      */
-    public StateSpace(StateSpaceDto blockDto, NCSLabModel model) {
+    public StateSpace(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

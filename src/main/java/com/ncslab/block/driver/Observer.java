@@ -21,7 +21,7 @@ public class Observer extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Observer block directly from BlockDto DTO
      */
-    public Observer(ObserverDto blockDto, NCSLabModel model) {
+    public Observer(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Observer block created successfully - " + blockDto.getBlockName());
     }

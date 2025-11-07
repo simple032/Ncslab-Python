@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Action Port block for If/Switch Action Subsystems with SIMULINK-compatible parameters.
@@ -193,7 +194,7 @@ public class ActionPort extends Block {
      * @param blockDto DTO containing action port configuration data
      * @param model Parent model reference
      */
-    public ActionPort(ActionPortDto blockDto, NCSLabModel model) {
+    public ActionPort(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

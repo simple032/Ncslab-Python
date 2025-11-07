@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * While Iterator Subsystem block - Executes while a condition is true.
@@ -94,7 +95,7 @@ public class WhileIteratorSubsystem extends Subsystem {
      * @param blockDto DTO containing block configuration
      * @param model Parent model reference
      */
-    public WhileIteratorSubsystem(WhileIteratorSubsystemDto blockDto, NCSLabModel model) {
+    public WhileIteratorSubsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize parameters from DTO

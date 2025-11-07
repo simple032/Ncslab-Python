@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 public class EnsembleModel extends Block{
     private Parameter m0, m1, l, initState, g;
@@ -37,7 +38,7 @@ public class EnsembleModel extends Block{
     /**
      * DTO-NATIVE Constructor - Creates EnsembleModel block directly from BlockDto DTO
      */
-    public EnsembleModel(EnsembleModelDto blockDto, NCSLabModel model) {
+    public EnsembleModel(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EnsembleModel block created successfully - " + blockDto.getBlockName());
     }

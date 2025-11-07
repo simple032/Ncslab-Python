@@ -27,7 +27,7 @@ public class MultilayerPerceptron extends PTModel {
     /**
      * DTO-NATIVE Constructor - Creates MultilayerPerceptron block directly from BlockDto DTO
      */
-    public MultilayerPerceptron(MultilayerPerceptronDto blockDto, NCSLabModel model) {
+    public MultilayerPerceptron(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MultilayerPerceptron block created successfully - " + blockDto.getBlockName());
     }

@@ -29,7 +29,7 @@ public class Limiting extends Block{
     /**
      * DTO-NATIVE Constructor - Creates Limiting block directly from BlockDto DTO
      */
-    public Limiting(LimitingDto blockDto, NCSLabModel model) {
+    public Limiting(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Limiting block created successfully - " + blockDto.getBlockName());
     }

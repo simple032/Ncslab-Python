@@ -30,7 +30,7 @@ public class MatrixSquare extends Block {
     /**
      * DTO-NATIVE Constructor - Creates MatrixSquare block directly from BlockDto DTO
      */
-    public MatrixSquare(MatrixSquareDto blockDto, NCSLabModel model) {
+    public MatrixSquare(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixSquare block created successfully - " + blockDto.getBlockName());
     }

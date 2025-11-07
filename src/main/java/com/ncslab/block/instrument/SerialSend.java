@@ -119,7 +119,7 @@ public class SerialSend extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SerialSend block directly from BlockDto DTO
      */
-    public SerialSend(SerialSendDto blockDto, NCSLabModel model) {
+    public SerialSend(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Get parameters using correct pattern

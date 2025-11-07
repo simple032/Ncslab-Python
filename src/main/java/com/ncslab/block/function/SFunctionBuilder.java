@@ -40,7 +40,7 @@ public class SFunctionBuilder extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SFunctionBuilder block directly from BlockDto DTO
      */
-    public SFunctionBuilder(SFunctionBuilderDto blockDto, NCSLabModel model) {
+    public SFunctionBuilder(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: SFunctionBuilder block created successfully - " + blockDto.getBlockName());
     }

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
+import com.ncslab.dto.core.BlockDto;
 
 /**
  * Enable block for conditional subsystem execution with SIMULINK-compatible parameters.
@@ -166,7 +167,7 @@ public class Enable extends Block {
      * @param blockDto Enable block DTO with validated parameters
      * @param model Parent model
      */
-    public Enable(EnableDto blockDto, NCSLabModel model) {
+    public Enable(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

@@ -23,7 +23,7 @@ public class EtherCATservo extends com.ncslab.block.Block {
     /**
      * DTO-NATIVE Constructor - Creates EtherCATservo block directly from BlockDto DTO
      */
-    public EtherCATservo(EtherCATServoDto blockDto, NCSLabModel model) {
+    public EtherCATservo(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EtherCATservo block created successfully - " + blockDto.getBlockName());
     }

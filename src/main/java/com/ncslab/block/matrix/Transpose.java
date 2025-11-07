@@ -27,7 +27,7 @@ public class Transpose extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Transpose block directly from BlockDto DTO
      */
-    public Transpose(TransposeDto blockDto, NCSLabModel model) {
+    public Transpose(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Transpose block created successfully - " + blockDto.getBlockName());
     }

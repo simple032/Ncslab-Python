@@ -150,7 +150,7 @@ public class Sum extends MathBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Sum block directly from BlockDto DTO
      */
-    public Sum(SumDto blockDto, NCSLabModel model) {
+    public Sum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

@@ -147,7 +147,7 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Discrete_Transfer_Fcn block directly from BlockDto DTO
      */
-    public Discrete_Transfer_Fcn(DiscreteTransferFcnDto blockDto, NCSLabModel model) {
+    public Discrete_Transfer_Fcn(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO

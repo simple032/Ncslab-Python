@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import com.ncslab.dto.core.BlockDto;
 
 public class UDPSender extends Block {
 
@@ -28,7 +29,7 @@ public class UDPSender extends Block {
     /**
      * DTO-NATIVE Constructor - Creates UDPSender block directly from BlockDto DTO
      */
-    public UDPSender(UDPSenderDto blockDto, NCSLabModel model) {
+    public UDPSender(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Create input ports (can accept scalar or vector data)

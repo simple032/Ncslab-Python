@@ -23,7 +23,7 @@ public abstract class PTModel extends MachineLearning {
     /**
      * DTO-NATIVE Constructor - Creates A2C block directly from BlockDto DTO
      */
-    public PTModel(PTModelDto blockDto, NCSLabModel model) {
+    public PTModel(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: PTModel block created successfully - " + blockDto.getBlockName());
     }

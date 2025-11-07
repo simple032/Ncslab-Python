@@ -113,7 +113,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     }    /**
      * DTO-NATIVE Constructor - Creates Discrete_Transfer_Fcnz block directly from BlockDto DTO
      */
-    public Discrete_Transfer_Fcnz(Discrete_Transfer_FcnzDto blockDto, NCSLabModel model) {
+    public Discrete_Transfer_Fcnz(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
@@ -127,14 +127,8 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public Discrete_Transfer_Fcnz(BlockDto blockDto, NCSLabModel model) {
-        this((Discrete_Transfer_FcnzDto) blockDto, model);
-    }
-    
+
+
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));  // Input signal
         inputPortList.add(new InputPort(this, 2));  // Numerator coefficients

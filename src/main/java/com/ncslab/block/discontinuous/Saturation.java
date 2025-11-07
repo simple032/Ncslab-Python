@@ -162,7 +162,7 @@ public class Saturation extends DiscontinuousBlock {
     }    /**
      * DTO-NATIVE Constructor - Creates Saturation block directly from BlockDto DTO
      */
-    public Saturation(SaturationDto blockDto, NCSLabModel model) {
+    public Saturation(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Initialize final parameters from DTO - use correct parameter names matching JSON constructor
