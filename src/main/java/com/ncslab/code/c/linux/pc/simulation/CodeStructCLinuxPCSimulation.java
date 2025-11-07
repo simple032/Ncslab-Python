@@ -50,7 +50,7 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		writeNCSLabFile("../../../results.cpp","results.cpp",true);
 		writeNCSLabFile("../../../results.hpp","results.hpp",true);
 
-		writeNCSLabFile("../../../Matrix.cpp","Matrix.cpp", true);
+		// Matrix.cpp removed - Matrix.hpp is now header-only template
 		writeNCSLabFile("../../../Matrix.hpp","Matrix.hpp", true);
 		writeNCSLabFile("../../../ricatti.cpp","ricatti.cpp", true);
 		writeNCSLabFile("../../../ricatti.hpp","ricatti.hpp", true);

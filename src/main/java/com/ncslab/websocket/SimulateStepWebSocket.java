@@ -15,6 +15,7 @@ import com.ncslab.dto.core.ModelDto;
 import com.ncslab.dto.communication.WebSocketMessageDto;
 import com.ncslab.dto.model.MdlDataDto;
 import com.ncslab.util.JsonUtils;
+import com.ncslab.util.UserContext;
 import com.utils.Property;
 import org.json.JSONObject;
 
@@ -187,6 +188,16 @@ public class SimulateStepWebSocket {
 			MdlDataDto mdlData = wsMessage.getMdlData();
 			if (mdlData != null) {
 				jsonDataString = mdlData.getJsonDataString();
+
+				// ==================== SET USER CONTEXT FOR MULTI-USER SUPPORT ====================
+				// Extract user ID and set in ThreadLocal context for expression parsing
+				Integer userId = mdlData.getUserId();
+				if (userId != null) {
+					UserContext.setUserId(userId);
+					System.out.println("SimulateStepWebSocket: Set user context to user ID: " + userId);
+				} else {
+					System.out.println("Warning: No user ID in mdlData, expression parsing will use default user ID");
+				}
 			} else {
 				jsonDataString = null;
 			}
@@ -255,7 +266,12 @@ public class SimulateStepWebSocket {
 			catch (Exception ee) {
 				ee.printStackTrace();
 			}
-		}			
+		}
+		finally {
+			// ==================== CLEAR USER CONTEXT ====================
+			// Critical: Clear ThreadLocal to prevent memory leaks and context bleeding
+			UserContext.clear();
+		}
 	}
 
 	/**

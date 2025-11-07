@@ -239,6 +239,15 @@ abstract public class CodeStructC{
 		derivativeCode+=code;
 	}
 
+	/**
+	 * Get the derivative code section.
+	 * TODO: This is a stub method added for test compatibility.
+	 * @return The derivative code as a string
+	 */
+	public String getDerivativeCode() {
+		return derivativeCode;
+	}
+
 	public void generateIncludeCode() {
 		includeCode+=""
 				+"#include\"ncslabccode.hpp\"\n"
@@ -911,7 +920,7 @@ abstract public class CodeStructC{
         writeNCSLabFile("results.cpp","results.cpp",true);
         writeNCSLabFile("results.hpp","results.hpp",true);
 
-        writeNCSLabFile("Matrix.cpp","Matrix.cpp", true);
+        // Matrix.cpp removed - Matrix.hpp is now header-only template
         writeNCSLabFile("Matrix.hpp","Matrix.hpp", true);
         writeNCSLabFile("ricatti.cpp","ricatti.cpp", true);
         writeNCSLabFile("ricatti.hpp","ricatti.hpp", true);
@@ -920,7 +929,7 @@ abstract public class CodeStructC{
         writeNCSLabFile("util.cpp");
         writeNCSLabFile("util.hpp");
 
-        writeNCSLabFile("Matrix.cpp");
+        // Matrix.cpp removed - Matrix.hpp is now header-only template
         writeNCSLabFile("Matrix.hpp");
 
         writeNCSLabFile("mainccode.hpp");

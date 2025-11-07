@@ -13,6 +13,7 @@ import com.ncslab.dto.core.ModelDto;
 import com.ncslab.dto.communication.WebSocketMessageDto;
 import com.ncslab.dto.model.MdlDataDto;
 import com.ncslab.util.JsonUtils;
+import com.ncslab.util.UserContext;
 import com.utils.Property;
 import org.json.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,35 +54,24 @@ public class SimulateRTWebSocket {
 
         // Try to parse as DTO first, fall back to legacy JSONObject
         WebSocketMessageDto wsMessage = null;
-        JSONObject msg = null;
-        String com = null;
+        String com = null;        
         
-        try {
-        	// Direct ObjectMapper parsing
-        	try {
-        		wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
-        		if (wsMessage != null && wsMessage.getCom() != null) {
-        			com = wsMessage.getCom();
-        			System.out.println("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);
-        		} else {
-        			throw new Exception("Parsed message or command is null");
-        		}
-        	} catch (JsonProcessingException e) {
-        		// If Jackson parsing fails, log error and return
-        		System.err.println("Failed to parse WebSocket message with Jackson: " + e.getMessage());
-        		try {
-        			sendMessage(session, "error");
-        		} catch (IOException ioEx) {
-        			System.err.println("Failed to send error message: " + ioEx.getMessage());
-        		}
-        		return;
-        	}
-        } catch (Exception e) {
-        	// Final fall back to direct JSONObject parsing
-        	System.out.println("All DTO parsing failed, using direct JSONObject: " + e.getMessage());
-        	msg = new JSONObject(msgString);
-        	com = msg.getString("com");
-        }
+		// Direct ObjectMapper parsing
+		try {
+			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
+			com = wsMessage.getCom();
+			System.out.println("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);				
+		} catch (JsonProcessingException e) {
+			// If Jackson parsing fails, log error and return
+			System.err.println("Failed to parse WebSocket message with Jackson: " + e.getMessage());
+			try {
+				sendMessage(session, "error");
+			} catch (IOException ioEx) {
+				System.err.println("Failed to send error message: " + ioEx.getMessage());
+			}
+			return;
+		}
+        
         SimulationModel model = null;
         if(com.equals("start")) {
 			try {
@@ -89,15 +79,20 @@ public class SimulateRTWebSocket {
 				
 				// Extract mdlData using DTO or legacy approach
 				String jsonDataString;
-				if (wsMessage != null && wsMessage.getMdlData() != null) {
-					// Use DTO approach
-					MdlDataDto mdlData = wsMessage.getMdlData();
-					jsonDataString = mdlData.getJsonDataString();
+				// Use DTO approach
+				MdlDataDto mdlData = wsMessage.getMdlData();
+				jsonDataString = mdlData.getJsonDataString();
+
+				// ==================== SET USER CONTEXT FOR MULTI-USER SUPPORT ====================
+				// Extract user ID and set in ThreadLocal context for expression parsing
+				Integer userId = mdlData.getUserId();
+				if (userId != null) {
+					UserContext.setUserId(userId);
+					System.out.println("SimulateRTWebSocket: Set user context to user ID: " + userId);
 				} else {
-					// Use legacy approach
-					JSONObject mdlData = msg.getJSONObject("mdlData");
-					jsonDataString = mdlData.getString("jsonData");
+					System.out.println("Warning: No user ID in mdlData, expression parsing will use default user ID");
 				}
+
 				String errorMsgs="";
 
 				sendMessage(session,"generating");
@@ -176,6 +171,10 @@ public class SimulateRTWebSocket {
                 }
 			}
 			finally {
+				// ==================== CLEAR USER CONTEXT ====================
+				// Critical: Clear ThreadLocal to prevent memory leaks and context bleeding
+				UserContext.clear();
+
                 try {
                     if(session != null)
 					    session.close();

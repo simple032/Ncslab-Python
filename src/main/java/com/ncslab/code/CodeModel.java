@@ -133,8 +133,7 @@ abstract public class CodeModel extends NCSLabModel {
 	public void generate() {
 
 		CodeGenerationOption option = new CodeGenerationOption();
-
-		System.out.println("generate option is: "+option);
+		
 		System.out.println("Generating codes......");
 
 		//首先生成初始化代码

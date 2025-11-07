@@ -62,7 +62,7 @@ public class CodeStructCLinuxRaspberry extends CodeStructCLinux {
 		writeNCSLabFile("../../ncs_serialport_pi.c", "ncs_serialport_pi.c");
 		writeNCSLabFile("../../ncs_serialport.h", "ncs_serialport.h");
 
-		writeNCSLabFile("../../Matrix.cpp", "Matrix.cpp");
+		// Matrix.cpp removed - Matrix.hpp is now header-only template
 		writeNCSLabFile("../../Matrix.hpp", "Matrix.hpp");
 		writeNCSLabFile("../../ricatti.cpp", "ricatti.cpp");
 		writeNCSLabFile("../../ricatti.hpp", "ricatti.hpp");

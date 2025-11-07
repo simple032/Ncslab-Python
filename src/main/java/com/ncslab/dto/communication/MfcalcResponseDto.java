@@ -52,10 +52,7 @@ public class MfcalcResponseDto {
     private String outputLog; // Log messages (which will be replaced by output in future)
     
     @JsonProperty("variables")
-    private List<Map<String, Object>> variables; // For getVariables() response
-    
-    @JsonProperty("variable_value")
-    private Object variableValue; // For getVariable() response
+    private List<MfcalcVariableDto> variables; // For getVariables() response
     
     @JsonProperty("execution_time")
     private Long executionTime;
@@ -150,15 +147,7 @@ public class MfcalcResponseDto {
                         .status("error")
                         .error("Failed to parse response: deserialization returned null")
                         .build();
-            }
-            
-            // Post-process variables if data is a List
-            if (dto.getData() instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> varList = (List<Map<String, Object>>) dto.getData();
-                dto.setVariables(varList);
-            }
-            
+            }            
             return dto;
         } catch (Exception e) {
             log.error("Failed to parse MFCalc response: {}", e.getMessage());
@@ -204,7 +193,7 @@ public class MfcalcResponseDto {
      * @param output Console output
      * @return Success MfcalcResponseDto
      */
-    public static MfcalcResponseDto createScriptSuccess(String messageType, String messageId, JSONObject result, String output) {
+    public static MfcalcResponseDto createScriptSuccess(String messageType, String messageId, Map<String, Object> result, String output) {
         return MfcalcResponseDto.builder()
                 .messageType(messageType)
                 .messageId(messageId)

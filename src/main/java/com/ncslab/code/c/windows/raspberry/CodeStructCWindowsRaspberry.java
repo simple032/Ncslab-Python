@@ -72,7 +72,7 @@ public class CodeStructCWindowsRaspberry extends CodeStructCWindows {
 		writeNCSLabFile("include/ncs_serialport.h", "ncs_serialport.h");
 
 //		writeNCSLabFile("lib/Matrix.o", "Matrix.o");
-        writeNCSLabFile("src/Matrix.cpp", "Matrix.cpp");
+        // Matrix.cpp removed - Matrix.hpp is now header-only template
 		writeNCSLabFile("include/Matrix.hpp", "Matrix.hpp");
 //		writeNCSLabFile("lib/ricatti.o", "ricatti.o");
 //		writeNCSLabFile("../../ricatti.hpp", "ricatti.hpp");

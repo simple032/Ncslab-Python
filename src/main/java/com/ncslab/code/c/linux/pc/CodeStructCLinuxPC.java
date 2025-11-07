@@ -54,7 +54,7 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		writeNCSLabFile("../UploadThread.cpp","UploadThread.cpp");
 		writeNCSLabFile("../UploadThread.hpp","UploadThread.hpp");
 
-		writeNCSLabFile("../../Matrix.cpp","Matrix.cpp");
+		// Matrix.cpp removed - Matrix.hpp is now header-only template
         writeNCSLabFile("../../Matrix.hpp", "Matrix.hpp");
 
 //		writeNCSLabFile("../../Debug.h","Debug.h");

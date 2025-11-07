@@ -143,9 +143,9 @@ public class MfcalcClient {
     private MfcalcResponseDto sendRequestWithRetry(MfcalcRequestDto request, boolean allowRetry) {
         try {
             String requestJson = request.toJsonString();
-            log.info("=== Sending request to MFCalc server ===");
-            log.info("Request type: {}", request.getMessageType());
-            log.info("User ID: {}", request.getUserId());
+            log.debug("=== Sending request to MFCalc server ===");
+            log.debug("Request type: {}", request.getMessageType());
+            log.debug("User ID: {}", request.getUserId());
             log.debug("Full request JSON: {}", requestJson);
 
             outputStream.write((requestJson + "\n").getBytes("UTF-8"));
@@ -236,13 +236,13 @@ public class MfcalcClient {
             }
 
             // Print the raw response from server
-            log.info("Response received - length: {} bytes", responseStr.length());
+            log.debug("Response received - length: {} bytes", responseStr.length());
             // System.out.println("Raw response from MFCalc server: " + responseStr);
             log.debug("Full response: {}", responseStr.length() > 500 ? responseStr.substring(0, 500) + "..." : responseStr);
 
             MfcalcResponseDto dto = MfcalcResponseDto.fromJsonString(responseStr);
-            log.info("Response parsed successfully - status: {}", dto != null ? dto.getStatus() : "null");
-            log.info("=== MFCalc server communication completed ===");
+            log.debug("Response parsed successfully - status: {}", dto != null ? dto.getStatus() : "null");
+            log.debug("=== MFCalc server communication completed ===");
             return dto;
         } catch (IOException e) {
             // Check if this is a connection reset or similar connection error
