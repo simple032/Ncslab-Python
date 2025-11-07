@@ -108,7 +108,7 @@ public class ComposeString extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
     }
 
-    public ComposeString(ComposeStringDto blockDto, NCSLabModel model) {
+    public ComposeString(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         this.format = getParameterByName("Format");

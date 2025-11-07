@@ -28,17 +28,10 @@ public class InvertedPendulum extends Block {
     /**
      * DTO-NATIVE Constructor - Creates InvertedPendulum block directly from BlockDto DTO
      */
-    public InvertedPendulum(InvertedPendulumDto blockDto, NCSLabModel model) {
+    public InvertedPendulum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         initializeBlock();
         System.out.println("DTO-NATIVE: InvertedPendulum block created successfully - " + blockDto.getBlockName());
-    }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public InvertedPendulum(BlockDto blockDto, NCSLabModel model) {
-        this((InvertedPendulumDto) blockDto, model);
     }
     
     private void initializeBlock() {

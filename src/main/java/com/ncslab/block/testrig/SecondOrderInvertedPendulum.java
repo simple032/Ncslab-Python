@@ -31,7 +31,7 @@ public class SecondOrderInvertedPendulum extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SecondOrderInvertedPendulum block directly from SecondOrderInvertedPendulumDto DTO
      */
-    public SecondOrderInvertedPendulum(SecondOrderInvertedPendulumDto blockDto, NCSLabModel model) {
+    public SecondOrderInvertedPendulum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
         inputPortList.add(new InputPort(this, 1));
@@ -41,15 +41,8 @@ public class SecondOrderInvertedPendulum extends Block {
 
         spState = new State(this, 1, "SerialPortState");
         stateList.add(spState);
-        
+
         System.out.println("DTO-NATIVE: SecondOrderInvertedPendulum block created successfully - " + blockDto.getBlockName());
-    }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public SecondOrderInvertedPendulum(BlockDto blockDto, NCSLabModel model) {
-        this((SecondOrderInvertedPendulumDto) blockDto, model);
     }
 
 

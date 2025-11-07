@@ -29,7 +29,7 @@ public class ServoMotorSlider extends Block {
     /**
      * DTO-NATIVE Constructor - Creates ServoMotorSlider block directly from BlockDto DTO
      */
-    public ServoMotorSlider(ServoMotorSliderDto blockDto, NCSLabModel model) {
+    public ServoMotorSlider(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ServoMotorSlider block created successfully - " + blockDto.getBlockName());
     }

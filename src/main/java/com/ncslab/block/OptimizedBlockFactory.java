@@ -50,7 +50,12 @@ public class OptimizedBlockFactory {
      * @return Block instance
      * @throws ModelException if block creation fails
      */
-    public static Block createOptimizedBlock(int id, BlockDto blockDto, NCSLabModel model) throws ModelException {
+    public static Block createOptimizedBlock(int blockId, BlockDto blockDto, NCSLabModel model) throws ModelException { 
+        // Normalize block type efficiently
+        return createOptimizedBlock(blockId, normalizeBlockType(blockDto.getBlockType()), blockDto, model);
+    }
+
+    public static Block createOptimizedBlock(int id, String blockType, BlockDto blockDto, NCSLabModel model) throws ModelException {
         if (blockDto == null) {
             throw new ModelException("BlockDto DTO cannot be null");
         }
@@ -59,7 +64,6 @@ public class OptimizedBlockFactory {
         }
         
         // Normalize block type efficiently
-        String blockType = normalizeBlockType(blockDto.getBlockType());
         if (blockType.isEmpty()) {
             throw new ModelException("Block type cannot be empty");
         }
@@ -305,7 +309,7 @@ public class OptimizedBlockFactory {
         jsonConstructorCache.clear();
         classCache.clear();
         constructorCache.clear();
-        log.info("OptimizedBlockFactory caches cleared");
+        log.debug("OptimizedBlockFactory caches cleared");
     }
     
     /**
@@ -318,7 +322,7 @@ public class OptimizedBlockFactory {
         // Clear DTO constructor cache entries
         dtoConstructorCache.entrySet().removeIf(entry -> entry.getKey().startsWith(blockType + "_"));
         
-        log.info("Cleared caches for block type: {}", blockType);
+        log.debug("Cleared caches for block type: {}", blockType);
     }
     
 }

@@ -31,7 +31,7 @@ public class Alp extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Alp block directly from BlockDto DTO
      */
-    public Alp(AlpDto blockDto, NCSLabModel model) {
+    public Alp(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
         // Initialize ports and states same as JSON constructor

@@ -124,7 +124,7 @@ public class StringFind extends Block {
     /**
      * DTO-NATIVE Constructor - Creates StringFind block directly from BlockDto DTO
      */
-    public StringFind(StringFindDto blockDto, NCSLabModel model) {
+    public StringFind(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Two inputs (str, pattern) and single output (index)

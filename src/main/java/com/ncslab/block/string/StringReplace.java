@@ -92,7 +92,7 @@ public class StringReplace extends Block {
     /**
      * DTO-NATIVE Constructor
      */
-    public StringReplace(StringReplaceDto blockDto, NCSLabModel model) {
+    public StringReplace(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model); // Parent Block class handles DTO parameters
 
         // Get parameters by name from the automatically populated parameterList

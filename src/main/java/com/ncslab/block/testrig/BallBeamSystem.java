@@ -33,7 +33,7 @@ public class BallBeamSystem extends Block {
     /**
      * DTO-NATIVE Constructor - Creates BallBeamSystem block directly from BlockDto DTO
      */
-    public BallBeamSystem(BallBeamSystemDto blockDto, NCSLabModel model) {
+    public BallBeamSystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: BallBeamSystem block created successfully - " + blockDto.getBlockName());
     }

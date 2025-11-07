@@ -66,7 +66,7 @@ public class StringLower extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
     }
 
-    public StringLower(StringLowerDto blockDto, NCSLabModel model) {
+    public StringLower(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));

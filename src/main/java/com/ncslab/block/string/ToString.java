@@ -114,7 +114,7 @@ public class ToString extends Block {
     /**
      * DTO-NATIVE Constructor - Creates ToString block directly from BlockDto DTO
      */
-    public ToString(ToStringDto blockDto, NCSLabModel model) {
+    public ToString(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Single input (numeric) and single output (string)

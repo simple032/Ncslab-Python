@@ -28,17 +28,10 @@ public class NewMotor extends Block {
     /**
      * DTO-NATIVE Constructor - Creates NewMotor block directly from BlockDto DTO
      */
-    public NewMotor(NewMotorDto blockDto, NCSLabModel model) {
+    public NewMotor(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         initializeBlock();
         System.out.println("DTO-NATIVE: NewMotor block created successfully - " + blockDto.getBlockName());
-    }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public NewMotor(BlockDto blockDto, NCSLabModel model) {
-        this((NewMotorDto) blockDto, model);
     }
     
     private void initializeBlock() {

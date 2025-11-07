@@ -110,7 +110,7 @@ public class ScanString extends Block {
         }
     }
 
-    public ScanString(ScanStringDto blockDto, NCSLabModel model) {
+    public ScanString(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         this.format = getParameterByName("Format");

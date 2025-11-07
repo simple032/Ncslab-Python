@@ -29,7 +29,7 @@ public class MagneticLevitationSystem extends Block {
     /**
      * DTO-NATIVE Constructor - Creates MagneticLevitationSystem block directly from BlockDto DTO
      */
-    public MagneticLevitationSystem(MagneticLevitationSystemDto blockDto, NCSLabModel model) {
+    public MagneticLevitationSystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MagneticLevitationSystem block created successfully - " + blockDto.getBlockName());
 

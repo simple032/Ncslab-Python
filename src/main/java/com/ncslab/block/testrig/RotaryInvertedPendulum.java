@@ -31,7 +31,7 @@ public class RotaryInvertedPendulum extends Block {
     /**
      * DTO-NATIVE Constructor - Creates RotaryInvertedPendulum block directly from BlockDto DTO
      */
-    public RotaryInvertedPendulum(RotaryInvertedPendulumDto blockDto, NCSLabModel model) {
+    public RotaryInvertedPendulum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: RotaryInvertedPendulum block created successfully - " + blockDto.getBlockName());
     }

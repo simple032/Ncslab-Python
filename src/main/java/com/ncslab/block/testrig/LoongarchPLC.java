@@ -29,7 +29,7 @@ public class LoongarchPLC extends Block {
     /**
      * DTO-NATIVE Constructor - Creates LoongarchPLC block directly from BlockDto DTO
      */
-    public LoongarchPLC(LoongarchPLCDto blockDto, NCSLabModel model) {
+    public LoongarchPLC(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: LoongarchPLC block created successfully - " + blockDto.getBlockName());
     }

@@ -113,7 +113,7 @@ public class StringCompare extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
     }
 
-    public StringCompare(StringCompareDto blockDto, NCSLabModel model) {
+    public StringCompare(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         this.caseSensitive = getParameterByName("CaseSensitive");

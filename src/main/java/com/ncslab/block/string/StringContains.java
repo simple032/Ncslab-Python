@@ -69,7 +69,7 @@ public class StringContains extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
     }
 
-    public StringContains(StringContainsDto blockDto, NCSLabModel model) {
+    public StringContains(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inputPortList.add(new InputPort(this, 1));
         inputPortList.add(new InputPort(this, 2));

@@ -125,7 +125,7 @@ public class StringConstant extends SourceBlock {
     /**
      * DTO-NATIVE Constructor - Creates StringConstant block directly from BlockDto DTO
      */
-    public StringConstant(StringConstantDto blockDto, NCSLabModel model) {
+    public StringConstant(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

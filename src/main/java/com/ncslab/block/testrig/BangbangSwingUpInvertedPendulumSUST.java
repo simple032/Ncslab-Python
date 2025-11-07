@@ -30,7 +30,7 @@ public class BangbangSwingUpInvertedPendulumSUST extends Block {
     /**
      * DTO-NATIVE Constructor - Creates BangbangSwingUpInvertedPendulumSUST block directly from BlockDto DTO
      */
-    public BangbangSwingUpInvertedPendulumSUST(BangbangSwingUpInvertedPendulumSUSTDto blockDto, NCSLabModel model) {
+    public BangbangSwingUpInvertedPendulumSUST(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: BangbangSwingUpInvertedPendulumSUST block created successfully - " + blockDto.getBlockName());
     }

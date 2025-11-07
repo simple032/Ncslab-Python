@@ -29,17 +29,10 @@ public class DoubleTank extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DoubleTank block directly from BlockDto DTO
      */
-    public DoubleTank(DoubleTankDto blockDto, NCSLabModel model) {
+    public DoubleTank(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         initializeBlock();
         System.out.println("DTO-NATIVE: DoubleTank block created successfully - " + blockDto.getBlockName());
-    }
-    
-    /**
-     * Generic DTO Constructor for factory compatibility
-     */
-    public DoubleTank(BlockDto blockDto, NCSLabModel model) {
-        this((DoubleTankDto) blockDto, model);
     }
     
     private void initializeBlock() {

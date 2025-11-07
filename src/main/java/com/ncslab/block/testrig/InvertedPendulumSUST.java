@@ -31,7 +31,7 @@ public class InvertedPendulumSUST extends Block {
     /**
      * DTO-NATIVE Constructor - Creates InvertedPendulumSUST block directly from BlockDto DTO
      */
-    public InvertedPendulumSUST(InvertedPendulumSUSTDto blockDto, NCSLabModel model) {
+    public InvertedPendulumSUST(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: InvertedPendulumSUST block created successfully - " + blockDto.getBlockName());
     }

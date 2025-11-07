@@ -3,7 +3,7 @@ package com.ncslab.block.testrig;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.block.specialized.testrig.SecondOrderRotaryInvertedPendulumDto;
-
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
@@ -30,7 +30,7 @@ public class SecondOrderRotaryInvertedPendulum extends Block {
     /**
      * DTO-NATIVE Constructor - Creates SecondOrderRotaryInvertedPendulum block directly from SecondOrderRotaryInvertedPendulumDto DTO
      */
-    public SecondOrderRotaryInvertedPendulum(SecondOrderRotaryInvertedPendulumDto blockDto, NCSLabModel model) {
+    public SecondOrderRotaryInvertedPendulum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
         inputPortList.add(new InputPort(this, 1));

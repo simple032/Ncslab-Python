@@ -36,7 +36,7 @@ public class Telegenic extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Telegenic block directly from BlockDto DTO
      */
-    public Telegenic(TelegenicDto blockDto, NCSLabModel model) {
+    public Telegenic(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Telegenic block created successfully - " + blockDto.getBlockName());
     }

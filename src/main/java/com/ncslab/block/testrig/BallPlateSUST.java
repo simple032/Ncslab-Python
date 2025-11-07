@@ -29,7 +29,7 @@ public class BallPlateSUST extends Block {
     /**
      * DTO-NATIVE Constructor - Creates BallPlateSUST block directly from BlockDto DTO
      */
-    public BallPlateSUST(BallPlateSUSTDto blockDto, NCSLabModel model) {
+    public BallPlateSUST(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: BallPlateSUST block created successfully - " + blockDto.getBlockName());
     }

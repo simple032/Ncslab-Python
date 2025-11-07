@@ -144,7 +144,7 @@ public class Substring extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Substring block directly from BlockDto DTO
      */
-    public Substring(SubstringDto blockDto, NCSLabModel model) {
+    public Substring(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

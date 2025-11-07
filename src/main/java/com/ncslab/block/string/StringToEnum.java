@@ -82,7 +82,7 @@ public class StringToEnum extends Block {
     /**
      * DTO-NATIVE Constructor
      */
-    public StringToEnum(StringToEnumDto blockDto, NCSLabModel model) {
+    public StringToEnum(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model); // Parent Block class handles DTO parameters
 
         // Get parameter by name from the automatically populated parameterList

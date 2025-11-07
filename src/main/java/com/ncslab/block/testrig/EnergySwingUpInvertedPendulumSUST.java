@@ -31,7 +31,7 @@ public class EnergySwingUpInvertedPendulumSUST extends Block {
     /**
      * DTO-NATIVE Constructor - Creates EnergySwingUpInvertedPendulumSUST block directly from BlockDto DTO
      */
-    public EnergySwingUpInvertedPendulumSUST(EnergySwingUpInvertedPendulumSUSTDto blockDto, NCSLabModel model) {
+    public EnergySwingUpInvertedPendulumSUST(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: EnergySwingUpInvertedPendulumSUST block created successfully - " + blockDto.getBlockName());
     }

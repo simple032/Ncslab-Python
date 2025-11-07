@@ -72,7 +72,7 @@ public class StringUpper extends Block {
     /**
      * DTO-NATIVE Constructor
      */
-    public StringUpper(StringUpperDto blockDto, NCSLabModel model) {
+    public StringUpper(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true)); // Has feedthrough

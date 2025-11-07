@@ -48,7 +48,7 @@ public class DCMotorAngle extends Block {
     /**
      * DTO-NATIVE Constructor - Creates DCMotorAngle block directly from BlockDto DTO
      */
-    public DCMotorAngle(DCMotorAngleDto blockDto, NCSLabModel model) {
+    public DCMotorAngle(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: DCMotorAngle block created successfully - " + blockDto.getBlockName());
     }

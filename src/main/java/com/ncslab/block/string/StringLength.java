@@ -111,7 +111,7 @@ public class StringLength extends Block {
     /**
      * DTO-NATIVE Constructor - Creates StringLength block directly from BlockDto DTO
      */
-    public StringLength(StringLengthDto blockDto, NCSLabModel model) {
+    public StringLength(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Single input (string) and single output (uint32 scalar)

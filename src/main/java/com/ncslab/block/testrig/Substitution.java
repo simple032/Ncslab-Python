@@ -37,7 +37,7 @@ public class Substitution extends Block {
     /**
      * DTO-NATIVE Constructor - Creates Substitution block directly from BlockDto DTO
      */
-    public Substitution(SubstitutionDto blockDto, NCSLabModel model) {
+    public Substitution(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Substitution block created successfully - " + blockDto.getBlockName());
     }

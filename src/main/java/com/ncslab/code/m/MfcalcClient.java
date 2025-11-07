@@ -10,18 +10,20 @@ import java.util.Optional;
 
 import com.utils.Property;
 import com.ncslab.dto.communication.MfcalcResponseDto;
+import com.ncslab.dto.communication.MfcalcVariableDto;
 import com.ncslab.dto.communication.MfcalcRequestDto;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 public class MfcalcClient {
-    private static final String SERVER_HOST = "localhost";
-    private static final int SERVER_PORT = 9090;
-    private static final int MAX_RECONNECT_ATTEMPTS = 3;
-    private static final long RECONNECT_DELAY_MS = 1000; // 1 second delay between retries
+    private static final String SERVER_HOST = Property.instance.getProperty("mfcalc.server.host", "localhost");
+    private static final int SERVER_PORT = Integer.parseInt(Property.instance.getProperty("mfcalc.server.port", "9090"));
+    private static final int MAX_RECONNECT_ATTEMPTS = Integer.parseInt(Property.instance.getProperty("mfcalc.max.reconnection.attempts", "3"));
+    private static final long RECONNECT_DELAY_MS = Long.parseLong(Property.instance.getProperty("mfcalc.reconnection.delay.ms", "3000")); // 3 seconds delay between retries
 
     private Socket socket;
     private OutputStream outputStream;
@@ -31,21 +33,18 @@ public class MfcalcClient {
     private final int serverPort;
 
     @Getter
+    @Setter
     private String userId; // User ID for maintaining user-specific context on server
 
-    // 单例实例
-    private static MfcalcClient instance;
-    private static boolean initialized = false;
     @Getter
-    private static List<Map<String, Object>> localVariables;
+    private static List<MfcalcVariableDto> localVariables;
 
     public MfcalcClient(Socket socket) throws IOException {
         this(socket, null);
     }
 
     public MfcalcClient(Socket socket, String userId) throws IOException {
-        this.serverHost = Optional.ofNullable(System.getenv("MfcalcServerHost"))
-            .orElse(SERVER_HOST);
+        this.serverHost = SERVER_HOST;
         this.serverPort = SERVER_PORT;
         this.userId = userId;
 
@@ -58,13 +57,6 @@ public class MfcalcClient {
         initializeStreams();
     }
 
-    /**
-     * Set the user ID for this client
-     * @param userId User ID to associate with this connection
-     */
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
     /**
      * Initialize or reinitialize the streams from the socket
@@ -158,13 +150,10 @@ public class MfcalcClient {
 
             outputStream.write((requestJson + "\n").getBytes("UTF-8"));
             outputStream.flush();
-            log.info("Request sent successfully, waiting for response...");
 
             // Read response - MFCalc server sends length-prefixed response
             // Format: "<length>\n<json_data>"
             // IMPORTANT: Use ONLY InputStream, not BufferedReader, to avoid buffering issues
-            log.info("Reading response from MFCalc server...");
-            System.out.println("[MFCALC-CLIENT-INFO] Reading response from MFCalc server...");
 
             // Set reasonable timeout for reading
             int originalTimeout = socket.getSoTimeout();
@@ -173,8 +162,6 @@ public class MfcalcClient {
             String responseStr = "";
             try {
                 // Read the length prefix line using raw InputStream (not BufferedReader!)
-                System.out.println("[MFCALC-CLIENT-DEBUG] Reading length prefix from InputStream...");
-                System.out.flush();
 
                 // Read bytes until we hit '\n' to get the length
                 StringBuilder lengthBuilder = new StringBuilder();
@@ -188,9 +175,6 @@ public class MfcalcClient {
 
                 String lengthLine = lengthBuilder.toString();
 
-                System.out.println("[MFCALC-CLIENT-DEBUG] Length prefix read: '" + lengthLine + "'");
-                System.out.flush();
-
                 if (lengthLine.isEmpty()) {
                     System.err.println("[MFCALC-CLIENT-ERROR] Failed to read length prefix from MFCalc server");
                     System.err.flush();
@@ -200,25 +184,16 @@ public class MfcalcClient {
                 // Parse the length
                 int expectedLength;
                 try {
-                    expectedLength = Integer.parseInt(lengthLine.trim());
-                    System.out.println("[MFCALC-CLIENT-INFO] Expecting " + expectedLength + " bytes of JSON data");
-                    System.out.flush();
+                    expectedLength = Integer.parseInt(lengthLine.trim());                    
                 } catch (NumberFormatException e) {
                     System.err.println("[MFCALC-CLIENT-ERROR] Invalid length prefix: '" + lengthLine + "' - " + e.getMessage());
                     System.err.flush();
                     throw new IOException("Invalid length prefix: " + lengthLine, e);
-                }
-
-                // Read exactly expectedLength BYTES using InputStream only
-                System.out.println("[MFCALC-CLIENT-DEBUG] Allocating buffer for " + expectedLength + " BYTES");
-                System.out.flush();
+                }                
 
                 byte[] buffer = new byte[expectedLength];
                 int totalRead = 0;
                 int bytesRead;
-
-                System.out.println("[MFCALC-CLIENT-DEBUG] Starting to read JSON data from InputStream...");
-                System.out.flush();
 
                 while (totalRead < expectedLength) {
                     bytesRead = inputStream.read(buffer, totalRead, expectedLength - totalRead);
@@ -227,27 +202,19 @@ public class MfcalcClient {
                         System.err.flush();
                         break;
                     }
-                    totalRead += bytesRead;
-                    if (totalRead % 100 == 0 || totalRead == expectedLength) {
-                        System.out.println("[MFCALC-CLIENT-DEBUG] Read " + bytesRead + " bytes, total: " + totalRead + "/" + expectedLength);
-                        System.out.flush();
-                    }
+                    totalRead += bytesRead;                    
                 }
 
                 // Convert bytes to String using UTF-8 encoding
-                responseStr = new String(buffer, 0, totalRead, "UTF-8");
-                System.out.println("[MFCALC-CLIENT-INFO] Successfully read " + totalRead + " bytes");
-                System.out.println("[MFCALC-CLIENT-DEBUG] Response preview: " + (responseStr.length() > 200 ? responseStr.substring(0, 200) + "..." : responseStr));
-                System.out.flush();
+                responseStr = new String(buffer, 0, totalRead, "UTF-8");                
+                log.debug("Response preview: {}", responseStr.length() > 200 ? responseStr.substring(0, 200) + "..." : responseStr);
 
             } catch (java.net.SocketTimeoutException e) {
-                System.err.println("[MFCALC-CLIENT-ERROR] Timeout reading response from MFCalc server: " + e.getMessage());
-                System.err.flush();
+                log.error("Timeout reading response from MFCalc server: {}", e.getMessage());
                 throw e;
             } catch (Exception e) {
-                System.err.println("[MFCALC-CLIENT-ERROR] Exception reading response: " + e.getClass().getName() + ": " + e.getMessage());
+                log.error("Exception reading response: {}: {}", e.getClass().getName(), e.getMessage());
                 e.printStackTrace(System.err);
-                System.err.flush();
                 throw e;
             } finally {
                 // Restore original timeout

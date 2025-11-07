@@ -153,7 +153,7 @@ public class StringConcatenate extends Block {
     /**
      * DTO-NATIVE Constructor - Creates StringConcatenate block directly from BlockDto DTO
      */
-    public StringConcatenate(StringConcatenateDto blockDto, NCSLabModel model) {
+    public StringConcatenate(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
 
         // Use centralized parameter management via getParameterByName

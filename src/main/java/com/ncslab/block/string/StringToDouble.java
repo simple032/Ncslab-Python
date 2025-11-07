@@ -68,7 +68,7 @@ public class StringToDouble extends Block {
     /**
      * DTO-NATIVE Constructor
      */
-    public StringToDouble(StringToDoubleDto blockDto, NCSLabModel model) {
+    public StringToDouble(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true)); // Has feedthrough

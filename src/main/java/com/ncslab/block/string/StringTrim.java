@@ -66,7 +66,7 @@ public class StringTrim extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
     }
 
-    public StringTrim(StringTrimDto blockDto, NCSLabModel model) {
+    public StringTrim(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true));

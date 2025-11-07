@@ -33,7 +33,7 @@ public class BallPlateSystem extends Block {
     /**
      * DTO-NATIVE Constructor - Creates BallPlateSystem block directly from BlockDto DTO
      */
-    public BallPlateSystem(BallPlateSystemDto blockDto, NCSLabModel model) {
+    public BallPlateSystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         
         // Initialize ports and states (same as JSON constructor)

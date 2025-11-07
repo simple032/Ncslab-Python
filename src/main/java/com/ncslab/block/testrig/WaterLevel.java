@@ -36,7 +36,7 @@ public class WaterLevel extends Block {
     /**
      * DTO-NATIVE Constructor - Creates WaterLevel block directly from BlockDto DTO
      */
-    public WaterLevel(WaterLevelDto blockDto, NCSLabModel model) {
+    public WaterLevel(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: WaterLevel block created successfully - " + blockDto.getBlockName());
     }
