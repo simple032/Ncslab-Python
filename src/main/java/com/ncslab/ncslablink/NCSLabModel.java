@@ -3,7 +3,6 @@ package com.ncslab.ncslablink;
 import com.ncslab.block.io.State;
 import com.ncslab.block.route.From;
 import com.ncslab.block.route.To;
-import com.ncslab.block.source.Constant;
 import com.ncslab.circuit.block.electblock.ElectBlock;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,10 +25,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
-import com.greenpineyu.fel.function.operator.Sub;
 import com.ncslab.block.Block;
 import com.ncslab.block.BlockType;
 import com.ncslab.block.OptimizedBlockFactory;
@@ -223,7 +220,7 @@ abstract public class NCSLabModel {
 		
 		// 使用增强的DTO解析blocks和lines
 		try {
-			if(modelDto.getGraphData()==null){ // If graphData is null, fallback to use the mdlData parse
+			if(modelDto.getGraphData()==null){ // If graphData is null, fallback to use the 
 				parseBlocksFromDto(modelDto.getBlocks());
 				handleSubsystemRelationships();
 				parseLinesFromDto(modelDto.getLines());
@@ -282,9 +279,7 @@ abstract public class NCSLabModel {
 		if (graphData == null) {
 			System.out.println("GraphData is null, skipping graphData parsing");
 			return;
-		}
-
-		System.out.println("Starting parseModelFromGraphData (delegating to NCSLabSystem)...");
+		}		
 
 		// Use AtomicInteger for thread-safe counter updates during recursive parsing
 		java.util.concurrent.atomic.AtomicInteger blockSeqCounter = new java.util.concurrent.atomic.AtomicInteger(blockSeq);
@@ -735,7 +730,7 @@ abstract public class NCSLabModel {
 	 * 将Block按类型分类到相应的列表中
 	 * 从parseBlocks()方法中提取出来的通用逻辑
 	 */
-	private void categorizeBlock(Block block) {
+	public void categorizeBlock(Block block) {
 		if(block instanceof From){
 			if(fromBlockList.contains(block)){
 				log.error("from block list alreadty contains {}", block);
@@ -1487,6 +1482,7 @@ abstract public class NCSLabModel {
 		blockList.addAll(rootSystem.getBlocks());
 		for(Subsystem subsystem:subsystemBlockList){
 			blockList.addAll(subsystem.getContainedBlocks());
+			// blockList.addAll(getSubsystemInnerBlocks(subsystem));
 		}
 		return blockList;
 	}

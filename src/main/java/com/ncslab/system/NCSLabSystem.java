@@ -6,9 +6,13 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.sink.Scope;
 import com.ncslab.block.subsystem.Subsystem;
+import com.ncslab.dto.model.GraphDataDto;
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.NCSLabModel;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,6 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * - Centralizes core simulation logic for easier maintenance
  * - Enables easy testing of system logic independently
  */
+@Slf4j
 public class NCSLabSystem {
     
     // ===== CORE SYSTEM COMPONENTS =====
@@ -1053,20 +1058,15 @@ public class NCSLabSystem {
                                    java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
                                    java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
             throws com.ncslab.ncslablink.ModelException {
-        if (graphData == null) {
-            System.out.println("GraphData is null, skipping graphData parsing");
-            return;
-        }
-
-        System.out.println("NCSLabSystem: Starting parseFromGraphData...");
+        log.info("NCSLabSystem: Starting parseFromGraphData...");
 
         // Process root level cells into this system
         if (graphData.getCells() != null && graphData.getCells().length > 0) {
-            System.out.println("NCSLabSystem: Processing " + graphData.getCells().length + " cells from graphData");
+            log.info("NCSLabSystem: Processing " + graphData.getCells().length + " cells from graphData");
             processGraphCells(graphData.getCells(), this, null, model, modelName, blockSeqCounter, lineSeqCounter);
         }
 
-        System.out.println("NCSLabSystem: Completed parseFromGraphData - " +
+        log.info("NCSLabSystem: Completed parseFromGraphData - " +
                            blocks.size() + " blocks, " + lines.size() + " lines in this system");
     }
 
@@ -1083,10 +1083,10 @@ public class NCSLabSystem {
      * @param lineSeqCounter Line sequence counter
      * @throws com.ncslab.ncslablink.ModelException if cell processing fails
      */
-    private void processGraphCells(com.ncslab.dto.model.GraphDataDto.CellDataDto[] cells,
+    private void processGraphCells(GraphDataDto.CellDataDto[] cells,
                                    NCSLabSystem targetSystem,
                                    String parentPath,
-                                   com.ncslab.ncslablink.NCSLabModel model,
+                                   NCSLabModel model,
                                    String modelName,
                                    java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
                                    java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
@@ -1148,7 +1148,7 @@ public class NCSLabSystem {
      * @param lineSeqCounter Line sequence counter
      * @throws com.ncslab.ncslablink.ModelException if block creation fails
      */
-    private void processBlockCell(com.ncslab.dto.model.GraphDataDto.CellDataDto cell,
+    private void processBlockCell(GraphDataDto.CellDataDto cell,
                                   NCSLabSystem targetSystem,
                                   String parentPath,
                                   com.ncslab.ncslablink.NCSLabModel model,
@@ -1188,6 +1188,7 @@ public class NCSLabSystem {
 
             // Add block to the target system (could be rootSystem or a subsystem's innerSystem)
             targetSystem.addBlock(block);
+            model.categorizeBlock(block);
 
             System.out.println("NCSLabSystem: Created block from graphData: " + blockType + "/" + blockName +
                                " at path: " + blockPath + " in system: " +
