@@ -1,9 +1,5 @@
 /* Code for initialization of block RaspFan:($blockId)$blockName */
-#if ($modelMode == $simulationMode)
-    // Simulation mode - No hardware initialization needed
-    // Mathematical model initialization would go here if needed
-#elseif($modelMode == $compilationMode)
+/* Hardware mode - Initialize RaspFan driver */
 initRaspFan(&${hardwareDefineName});
 char msg[255];
 hComm = Serialport_Open((char *)"/dev/ttyUSB0", 9600,(char *)msg);
-#end

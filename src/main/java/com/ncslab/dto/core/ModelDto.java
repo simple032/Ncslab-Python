@@ -3,22 +3,25 @@ package com.ncslab.dto.core;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ncslab.dto.model.ConfigDto;
+import com.ncslab.dto.model.GraphDataDto;
 import com.ncslab.dto.model.LineDto;
 import com.ncslab.dto.model.SaveInfoDto;
-import lombok.Getter;
-import lombok.Setter;
-import org.json.JSONObject;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * DTO for the main model JSON structure with Jackson annotations.
  * Minimal implementation to support existing NCSLabModel functionality.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
 public class ModelDto {
     
     @JsonProperty("userName")
@@ -62,9 +65,11 @@ public class ModelDto {
     
     @JsonProperty("saveInfo")
     private SaveInfoDto saveInfo;
-    
-    // Default constructor for Jackson
-    public ModelDto() {}
+
+    @JsonProperty("graphData")
+    @Nullable
+    private GraphDataDto graphData;
+
     
     // Convenience methods
     public boolean hasBlocks() {

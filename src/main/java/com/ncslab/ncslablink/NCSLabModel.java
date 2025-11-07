@@ -7,17 +7,21 @@ import com.ncslab.block.source.Constant;
 import com.ncslab.circuit.block.electblock.ElectBlock;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
 import org.json.JSONObject;
 import org.json.JSONArray;
 import com.ncslab.dto.core.ModelDto;
 import com.ncslab.dto.block.specialized.sink.TerminatorDto;
 import com.ncslab.dto.block.specialized.source.ConstantDto;
 import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.model.GraphDataDto;
 import com.ncslab.dto.model.LineDto;
 import com.ncslab.dto.model.SaveInfoDto;
 import com.ncslab.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -40,6 +44,7 @@ import com.ncslab.circuit.loop.CircuitLoopException;
 
 import com.ncslab.block.subsystem.*;
 
+@Slf4j
 abstract public class NCSLabModel {
 
 	private static int modelSeqCount=0;
@@ -218,13 +223,18 @@ abstract public class NCSLabModel {
 		
 		// 使用增强的DTO解析blocks和lines
 		try {
-			parseBlocksFromDto(modelDto.getBlocks());
-			handleSubsystemRelationships();
-			parseLinesFromDto(modelDto.getLines());
-			moveSubsystemBlockLine();
+			if(modelDto.getGraphData()==null){ // If graphData is null, fallback to use the mdlData parse
+				parseBlocksFromDto(modelDto.getBlocks());
+				handleSubsystemRelationships();
+				parseLinesFromDto(modelDto.getLines());
+				moveSubsystemBlockLine();
+			}
+			else{
+				parseModelFromGraphData(modelDto.getGraphData());
+			}
 		} catch (Exception e) {
 			throw new ModelException("Failed to parse blocks/lines from DTO: " + e.getMessage());
-		}		
+		}
 		
 		// IMPORTANT: Add missing connection auto-generation for DTO path
 		// This ensures DTO parsing has the same auto-generation behavior as JSON parsing
@@ -259,6 +269,37 @@ abstract public class NCSLabModel {
 		
 		System.out.println("Successfully initialized model from DTO: " + modelName + 
 		                   " with " + getBlockList().size() + " blocks and " + getLineList().size() + " lines");
+	}
+
+	/**
+	 * Parse blocks and lines from JointJS GraphData structure
+	 * This method delegates to NCSLabSystem for hierarchical graph data processing
+	 *
+	 * @param graphData The graph data containing cells (blocks and links)
+	 * @throws ModelException if parsing fails
+	 */
+	private void parseModelFromGraphData(GraphDataDto graphData) throws ModelException {
+		if (graphData == null) {
+			System.out.println("GraphData is null, skipping graphData parsing");
+			return;
+		}
+
+		System.out.println("Starting parseModelFromGraphData (delegating to NCSLabSystem)...");
+
+		// Use AtomicInteger for thread-safe counter updates during recursive parsing
+		java.util.concurrent.atomic.AtomicInteger blockSeqCounter = new java.util.concurrent.atomic.AtomicInteger(blockSeq);
+		java.util.concurrent.atomic.AtomicInteger lineSeqCounter = new java.util.concurrent.atomic.AtomicInteger(lineSeq);
+
+		// Delegate to rootSystem for parsing
+		rootSystem.parseFromGraphData(graphData, this, modelName, blockSeqCounter, lineSeqCounter);
+
+		// Update sequence counters after parsing
+		blockSeq = blockSeqCounter.get();
+		lineSeq = lineSeqCounter.get();
+
+		System.out.println("Completed parseModelFromGraphData - " +
+		                   getBlockList().size() + " blocks, " +
+		                   getLineList().size() + " lines");
 	}
 
 	private void handleSubsystemRelationships() {
@@ -678,16 +719,16 @@ abstract public class NCSLabModel {
 				blockSeq++;
 				rootSystem.addBlock(block);
 				categorizeBlock(block);
-				
-				System.out.println("Successfully created block: " + block.getBlockType() + "/" + block.getBlockName());
-				
+
+				log.info("Successfully created block: " + block.getBlockType() + "/" + block.getBlockName());
+
 			} catch (Exception e) {
-				System.err.println("Error parsing block DTO: " + blockDto.getBlockName() + " - " + e.getMessage());
+				log.error("Error parsing block DTO: " + blockDto.getBlockName() + " - " + e.getMessage());
 				// 继续处理其他块，不中断整个解析过程
 			}
 		}
 		
-		System.out.println("Successfully parsed " + getBlockList().size() + " blocks from DTO");
+		log.info("Successfully parsed " + getBlockList().size() + " blocks from DTO");
 	}
 	
 	/**
@@ -696,14 +737,34 @@ abstract public class NCSLabModel {
 	 */
 	private void categorizeBlock(Block block) {
 		if(block instanceof From){
+			if(fromBlockList.contains(block)){
+				log.error("from block list alreadty contains {}", block);
+				return;
+			}
 			fromBlockList.add((From) block);
 		}else if(block instanceof To){
+			if(gotoBlockList.contains(block)){
+				log.error("goto block list alreadty contains {}", block);
+				return;
+			}
 			gotoBlockList.add((To) block);
 		}else if(block instanceof Subsystem){
+			if(subsystemBlockList.contains(block)){
+				log.error("subsystem block list alreadty contains {}", block);
+				return;
+			}
 			subsystemBlockList.add((Subsystem) block);
 		}else if(block instanceof In){
+			if (inBlockList.contains(block)) {
+				log.error("in block list alreadty contains {}", block);
+				return;
+			}
 			inBlockList.add((In) block);
 		}else if(block instanceof Out){
+			if(outBlockList.contains(block)){
+				log.error("out block list alreadty contains {}", block);
+				return;
+			}
 			outBlockList.add((Out) block);
 		}
 	}
@@ -957,7 +1018,7 @@ abstract public class NCSLabModel {
 
                     blockSeq++;
 
-					System.out.println("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
+					log.info("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
 
                     fullBlockList.add(newBlock);
                     rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()
@@ -1022,7 +1083,7 @@ abstract public class NCSLabModel {
 
                     blockSeq++;
 
-                    System.out.println("Parsing block (" + newBlock.getBlockId() + "): '" + newBlock.getBlockName() + "'...");
+                    log.info("Parsing block (" + newBlock.getBlockId() + "): '" + newBlock.getBlockName() + "'...");
 
                     fullBlockList.add(newBlock);
                     rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()

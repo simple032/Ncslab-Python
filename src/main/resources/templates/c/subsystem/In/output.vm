@@ -1,2 +1,1 @@
-
-// FIXME: 存储到临时缓存
+${outputVar} = ${inputVar};

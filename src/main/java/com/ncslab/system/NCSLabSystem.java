@@ -390,16 +390,7 @@ public class NCSLabSystem {
     
 
     public List<Block> getOutputChain() {
-        List<Block> fullOutputChain = new ArrayList<>();
-        for(Block block: outputChain) {
-			if(block instanceof Subsystem) {
-				fullOutputChain.addAll(((Subsystem) block).getInnerSystem().getOutputChain());
-			}
-			else{
-				fullOutputChain.add(block);
-			}
-		}
-		return fullOutputChain;
+		return outputChain;
     }
     /**
      * Sort output chain by dependency order using proper topological sorting
@@ -903,33 +894,43 @@ public class NCSLabSystem {
     
     /**
      * Recursively scan input ports for dimension processing dependencies
-     * 
+     *
      * @param inputPort The input port to scan for dimension dependencies
      */
     private void scanDimInputPort(InputPort inputPort) {
         Line line = inputPort.getLinkedLine();
-        if (line == null) return;
-        
-        OutputPort outputPort = line.getLinkedOutputPort();
-        if (outputPort == null) return;
-        
-        // If output port already processed for dimensions, skip this branch
-        if (outputPort.getIsDimScaned()) {
+        if (line == null) {
+            System.out.println("DimScan: InputPort has no linked line, returning");
             return;
         }
-        
+
+        OutputPort outputPort = line.getLinkedOutputPort();
+        if (outputPort == null) {
+            System.out.println("DimScan: Line has no linked output port, returning");
+            return;
+        }
+
+        Block block = outputPort.getBlock();
+        System.out.println("DimScan: Processing block " + block.getBlockName() +
+                         " (type=" + block.getBlockType() + ", id=" + block.getBlockId() + ")");
+
+        // If output port already processed for dimensions, skip this branch
+        if (outputPort.getIsDimScaned()) {
+            System.out.println("DimScan: OutputPort already scanned for block " + block.getBlockName() + ", skipping");
+            return;
+        }
+
         // Check for dimension processing loops
         for (OutputPort output : dimOutputPortPathList) {
             if (output == outputPort) {
+                System.out.println("DimScan: Loop detected for block " + block.getBlockName() + ", skipping");
                 return; // Skip to avoid infinite loops
             }
         }
-        
+
         // Add to path for loop detection
         dimOutputPortPathList.add(outputPort);
-        
-        Block block = outputPort.getBlock();
-        
+
         // Check if this block has dimension feedthrough behavior
         boolean isDimThroughBlock = false;
         List<OutputPort> outputPortList = block.getOutputPortList();
@@ -939,43 +940,60 @@ public class NCSLabSystem {
                 break;
             }
         }
-        
+
+        System.out.println("DimScan: Block " + block.getBlockName() +
+                         " isDimThroughBlock=" + isDimThroughBlock +
+                         ", outputPorts=" + outputPortList.size());
+
         if (isDimThroughBlock) {
             // Block with dimension feedthrough - must process all inputs
+            System.out.println("DimScan: Processing all " + block.getInputPortList().size() +
+                             " input ports for dimThrough block " + block.getBlockName());
             block.setIsDimScaned(true);
+            outputPort.setIsDimScaned(true);
             List<InputPort> inputPortList = block.getInputPortList();
             for (InputPort input : inputPortList) {
                 scanDimInputPort(input);
             }
+            System.out.println("DimScan: Adding dimThrough block " + block.getBlockName() + " to dimensionList");
             dimensionList.add(block);
         } else {
             // Block without dimension feedthrough - process first input, queue others
+            System.out.println("DimScan: Processing first input port for non-dimThrough block " +
+                             block.getBlockName());
             block.setIsDimScaned(true);
+            outputPort.setIsDimScaned(true);
             List<InputPort> inputPortList = block.getInputPortList();
-            
+
             // Process first input for dimension compatibility
             if (!inputPortList.isEmpty()) {
                 scanDimInputPort(inputPortList.get(0));
             }
-            
+
             // Queue remaining inputs for second pass
             if (inputPortList.size() > 1) {
+                System.out.println("DimScan: Queuing " + (inputPortList.size() - 1) +
+                                 " remaining inputs for second pass");
                 for (int i = 1; i < inputPortList.size(); i++) {
                     InputPort input = inputPortList.get(i);
                     if (input.getLinkedLine() != null && input.getLinkedLine().getLinkedOutputPort() != null) {
                         Block linkedBlock = input.getLinkedLine().getLinkedOutputPort().getBlock();
                         if (!linkedBlock.getIsDimScaned()) {
+                            System.out.println("DimScan: Queuing block " + linkedBlock.getBlockName() +
+                                             " for second pass");
                             scanDimList.add(linkedBlock);
                         }
                     }
                 }
             }
-            
+
+            System.out.println("DimScan: Adding non-dimThrough block " + block.getBlockName() + " to dimensionList");
             dimensionList.add(block);
         }
-        
+
         // Remove from path (backtrack)
         dimOutputPortPathList.remove(dimOutputPortPathList.size() - 1);
+        System.out.println("DimScan: Finished processing block " + block.getBlockName());
     }
     
     /**
@@ -1015,10 +1033,354 @@ public class NCSLabSystem {
             }
         }
     }
-    
+
+    // ===== GRAPHDATA PARSING METHODS =====
+
+    /**
+     * Parse blocks and lines from JointJS GraphData structure into this system
+     * This method processes the hierarchical graph data including nested subsystems
+     *
+     * @param graphData The graph data containing cells (blocks and links)
+     * @param model Parent model reference for block creation
+     * @param modelName Model name for default paths
+     * @param blockSeqCounter Block sequence counter (will be updated)
+     * @param lineSeqCounter Line sequence counter (will be updated)
+     * @throws com.ncslab.ncslablink.ModelException if parsing fails
+     */
+    public void parseFromGraphData(com.ncslab.dto.model.GraphDataDto graphData,
+                                   com.ncslab.ncslablink.NCSLabModel model,
+                                   String modelName,
+                                   java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
+                                   java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
+            throws com.ncslab.ncslablink.ModelException {
+        if (graphData == null) {
+            System.out.println("GraphData is null, skipping graphData parsing");
+            return;
+        }
+
+        System.out.println("NCSLabSystem: Starting parseFromGraphData...");
+
+        // Process root level cells into this system
+        if (graphData.getCells() != null && graphData.getCells().length > 0) {
+            System.out.println("NCSLabSystem: Processing " + graphData.getCells().length + " cells from graphData");
+            processGraphCells(graphData.getCells(), this, null, model, modelName, blockSeqCounter, lineSeqCounter);
+        }
+
+        System.out.println("NCSLabSystem: Completed parseFromGraphData - " +
+                           blocks.size() + " blocks, " + lines.size() + " lines in this system");
+    }
+
+    /**
+     * Recursively process graph cells (blocks and links) into the appropriate NCSLabSystem
+     * Handles both blocks and connection links, including nested subsystem graphs
+     *
+     * @param cells Array of cell data to process
+     * @param targetSystem The NCSLabSystem to add blocks/lines to (could be this or subsystem's innerSystem)
+     * @param parentPath Path of parent subsystem (null for root level)
+     * @param model Parent model reference for block creation
+     * @param modelName Model name for default paths
+     * @param blockSeqCounter Block sequence counter
+     * @param lineSeqCounter Line sequence counter
+     * @throws com.ncslab.ncslablink.ModelException if cell processing fails
+     */
+    private void processGraphCells(com.ncslab.dto.model.GraphDataDto.CellDataDto[] cells,
+                                   NCSLabSystem targetSystem,
+                                   String parentPath,
+                                   com.ncslab.ncslablink.NCSLabModel model,
+                                   String modelName,
+                                   java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
+                                   java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
+            throws com.ncslab.ncslablink.ModelException {
+        if (cells == null || cells.length == 0) {
+            return;
+        }
+
+        // First pass: Create all blocks in the target system
+        for (com.ncslab.dto.model.GraphDataDto.CellDataDto cell : cells) {
+            if (cell == null) continue;
+
+            String cellType = cell.getType();
+            if (cellType == null) continue;
+
+            // Skip link cells in first pass
+            if (isLinkCell(cellType)) {
+                continue;
+            }
+
+            // Process block cell into the target system
+            processBlockCell(cell, targetSystem, parentPath, model, modelName, blockSeqCounter, lineSeqCounter);
+        }
+
+        // Second pass: Create all connections after blocks exist
+        for (com.ncslab.dto.model.GraphDataDto.CellDataDto cell : cells) {
+            if (cell == null) continue;
+
+            String cellType = cell.getType();
+            if (cellType == null) continue;
+
+            // Only process link cells in second pass
+            if (isLinkCell(cellType)) {
+                processLinkCell(cell, targetSystem, parentPath, lineSeqCounter);
+            }
+        }
+    }
+
+    /**
+     * Check if a cell represents a connection link
+     *
+     * @param cellType The type string from the cell
+     * @return true if this is a link cell
+     */
+    private boolean isLinkCell(String cellType) {
+        return cellType != null && cellType.equals("standard.Link");
+    }
+
+    /**
+     * Process a block cell from the graph data into the specified system
+     * Creates the block and recursively handles nested subsystem graphs
+     *
+     * @param cell The cell data representing a block
+     * @param targetSystem The NCSLabSystem to add this block to
+     * @param parentPath Path of parent subsystem
+     * @param model Parent model reference for block creation
+     * @param modelName Model name for default paths
+     * @param blockSeqCounter Block sequence counter
+     * @param lineSeqCounter Line sequence counter
+     * @throws com.ncslab.ncslablink.ModelException if block creation fails
+     */
+    private void processBlockCell(com.ncslab.dto.model.GraphDataDto.CellDataDto cell,
+                                  NCSLabSystem targetSystem,
+                                  String parentPath,
+                                  com.ncslab.ncslablink.NCSLabModel model,
+                                  String modelName,
+                                  java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
+                                  java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
+            throws com.ncslab.ncslablink.ModelException {
+        try {
+            com.ncslab.dto.model.GraphDataDto.PropDataDto props = cell.getProps();
+            if (props == null) {
+                System.err.println("Cell has no props, skipping: " + cell.getId());
+                return;
+            }
+
+            // Extract block information from props
+            String blockType = props.getBlockType();
+            String blockName = props.getBlockName();
+
+            if (blockType == null || blockName == null) {
+                System.err.println("Cell missing blockType or blockName, skipping: " + cell.getId());
+                return;
+            }
+
+            // Determine block path
+            String blockPath = determineBlockPath(cell, parentPath, modelName);
+
+            // Create JSONObject from graph cell props (legacy approach)
+            org.json.JSONObject blockJSON = createBlockJSONFromProps(props, cell.getId(), blockPath);
+
+            // Create the block using legacy BlockType factory
+            com.ncslab.block.Block block = com.ncslab.block.BlockType.createBlock(
+                blockSeqCounter.incrementAndGet(), blockJSON, model);
+            if (block == null) {
+                System.err.println("Failed to create block from graphData: " + blockType + "/" + blockName);
+                return;
+            }
+
+            // Add block to the target system (could be rootSystem or a subsystem's innerSystem)
+            targetSystem.addBlock(block);
+
+            System.out.println("NCSLabSystem: Created block from graphData: " + blockType + "/" + blockName +
+                               " at path: " + blockPath + " in system: " +
+                               (targetSystem == this ? "THIS" : "SUBSYSTEM"));
+
+            // If this is a subsystem with subGraph, recursively process it into the subsystem's innerSystem
+            if (block instanceof com.ncslab.block.subsystem.Subsystem && cell.getSubGraph() != null) {
+                com.ncslab.block.subsystem.Subsystem subsystem = (com.ncslab.block.subsystem.Subsystem) block;
+                com.ncslab.dto.model.GraphDataDto.SubGraphDataDto subGraph = cell.getSubGraph();
+
+                if (subGraph.getCells() != null && subGraph.getCells().length > 0) {
+                    String subsystemPath = blockPath + "/" + blockName;
+                    System.out.println("NCSLabSystem: Processing subsystem subGraph: " + subsystemPath +
+                                       " with " + subGraph.getCells().length + " cells into subsystem's innerSystem");
+
+                    // Recursively process cells into the subsystem's inner system
+                    processGraphCells(subGraph.getCells(), subsystem.getInnerSystem(), subsystemPath,
+                                      model, modelName, blockSeqCounter, lineSeqCounter);
+
+                    // Add all inner system in/out to subsystem
+                    subsystem.getInnerSystem().getBlocks().forEach(b -> {
+                        if (b instanceof com.ncslab.block.subsystem.In) {
+                            subsystem.addIn((com.ncslab.block.subsystem.In) b);
+                        } else if (b instanceof com.ncslab.block.subsystem.Out) {
+                            subsystem.addOut((com.ncslab.block.subsystem.Out) b);
+                        }
+                    });
+
+                    subsystem.updateBlock();
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("NCSLabSystem: Error processing block cell: " + e.getMessage());
+            e.printStackTrace();
+            throw new com.ncslab.ncslablink.ModelException("Failed to process block cell: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Create JSONObject from graph cell props (legacy approach for compatibility)
+     *
+     * @param props Property data from graph cell
+     * @param id Cell ID (used as blockUUID)
+     * @param blockPath Block path in hierarchy
+     * @return JSONObject instance compatible with BlockType.createBlock
+     */
+    private org.json.JSONObject createBlockJSONFromProps(com.ncslab.dto.model.GraphDataDto.PropDataDto props,
+                                                         String id,
+                                                         String blockPath) {
+        org.json.JSONObject blockJSON = new org.json.JSONObject();
+
+        // Set block identification fields
+        blockJSON.put("blockType", props.getBlockType());
+        blockJSON.put("blockName", props.getBlockName());
+        blockJSON.put("srcBlock", props.getSrcBlock());
+        blockJSON.put("blockPath", blockPath);
+        blockJSON.put("blockUUID", id);
+
+        // Set parameter values
+        if (props.getParamValues() != null) {
+            blockJSON.put("paramValues", props.getParamValues());
+        } else {
+            blockJSON.put("paramValues", new org.json.JSONObject());
+        }
+
+        return blockJSON;
+    }
+
+    /**
+     * Process a link (connection) cell from the graph data into the specified system
+     * Creates the line connecting two blocks within the same system
+     *
+     * @param cell The cell data representing a link
+     * @param targetSystem The NCSLabSystem to add this line to
+     * @param parentPath Path of parent subsystem
+     * @param lineSeqCounter Line sequence counter
+     */
+    private void processLinkCell(com.ncslab.dto.model.GraphDataDto.CellDataDto cell,
+                                 NCSLabSystem targetSystem,
+                                 String parentPath,
+                                 java.util.concurrent.atomic.AtomicInteger lineSeqCounter) {
+        try {
+            com.ncslab.dto.model.GraphDataDto.LinkDto source = cell.getSource();
+            com.ncslab.dto.model.GraphDataDto.LinkDto target = cell.getTarget();
+
+            if (source == null || target == null) {
+                System.err.println("Link cell missing source or target, skipping: " + cell.getId());
+                return;
+            }
+
+            String linePath = cell.getPath();
+            if (linePath == null && parentPath != null) {
+                linePath = parentPath;
+            }
+
+            // Find source and target blocks by UUID within the target system
+            com.ncslab.block.Block sourceBlock = targetSystem.findBlockByUUID(source.getId());
+            com.ncslab.block.Block targetBlock = targetSystem.findBlockByUUID(target.getId());
+
+            if (sourceBlock == null || targetBlock == null) {
+                System.err.println("NCSLabSystem: Could not find source or target block for link in system: " +
+                                   source.getId() + " -> " + target.getId());
+                return;
+            }
+
+            // Parse port numbers
+            int fromPortNo = parsePortNumber(source.getPort());
+            int toPortNo = parsePortNumber(target.getPort());
+
+            // Create LineDto
+            com.ncslab.dto.model.LineDto lineDto = new com.ncslab.dto.model.LineDto();
+            lineDto.setFromBlockName(sourceBlock.getBlockName());
+            lineDto.setFromBlockUUID(sourceBlock.getBlockUUID());
+            lineDto.setFromPortNo(fromPortNo);
+            lineDto.setToBlockName(targetBlock.getBlockName());
+            lineDto.setToBlockUUID(targetBlock.getBlockUUID());
+            lineDto.setToPortNo(toPortNo);
+            lineDto.setLinePath(linePath);
+
+            // Create and add line to the target system's block list
+            com.ncslab.line.Line line = com.ncslab.line.Line.createLine(lineDto, new ArrayList<>(targetSystem.getBlocks()));
+            line.setLineId(lineSeqCounter.incrementAndGet());
+            targetSystem.addLine(line);
+
+            System.out.println("NCSLabSystem: Created link in " + (targetSystem == this ? "THIS" : "SUBSYSTEM") +
+                               ": " + sourceBlock.getBlockName() + "(" + fromPortNo + ") -> " +
+                               targetBlock.getBlockName() + "(" + toPortNo + ")");
+
+        } catch (Exception e) {
+            System.err.println("NCSLabSystem: Error processing link cell: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Determine the block path from cell data and parent path
+     *
+     * @param cell The cell data
+     * @param parentPath Parent subsystem path
+     * @param modelName Model name for default root path
+     * @return The block path
+     */
+    private String determineBlockPath(com.ncslab.dto.model.GraphDataDto.CellDataDto cell,
+                                     String parentPath,
+                                     String modelName) {
+        // First try explicit path from props
+        if (cell.getProps() != null && cell.getProps().getPath() != null) {
+            return cell.getProps().getPath();
+        }
+
+        // Then try cell path
+        if (cell.getPath() != null) {
+            return cell.getPath();
+        }
+
+        // Use parent path if available
+        if (parentPath != null) {
+            return parentPath;
+        }
+
+        // Default to model name for root level
+        return modelName;
+    }
+
+    /**
+     * Parse port number from port ID string
+     * Port IDs are typically like "i1", "o2", etc.
+     *
+     * @param portId The port ID string
+     * @return The port number (1-based)
+     */
+    private int parsePortNumber(String portId) {
+        if (portId == null || portId.isEmpty()) {
+            return 1; // Default to port 1
+        }
+
+        try {
+            // Extract number from port ID (e.g., "i1" -> 1, "o2" -> 2)
+            String numStr = portId.replaceAll("[^0-9]", "");
+            if (!numStr.isEmpty()) {
+                return Integer.parseInt(numStr);
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("Could not parse port number from: " + portId);
+        }
+
+        return 1; // Default to port 1
+    }
+
     @Override
     public String toString() {
-        return String.format("NCSLabSystem[blocks=%d, lines=%d, executionOrder=%d, algebraicLoop=%s, states=%d, signals=%d]", 
+        return String.format("NCSLabSystem[blocks=%d, lines=%d, executionOrder=%d, algebraicLoop=%s, states=%d, signals=%d]",
             blocks.size(), lines.size(), outputChain.size(), isAlgebraicLoop, stateNum, signalNum);
     }
 }
