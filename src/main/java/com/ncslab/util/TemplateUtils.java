@@ -113,6 +113,7 @@ public class TemplateUtils {
             context.put(stateLocalName, stateVar); // Map local name to full C variable name
             context.put(stateLocalName + "Name", stateVar); // Explicit mapping for template access
             context.put(stateLocalName + "Value", stateValue);
+            context.put(stateLocalName + "DerivativeName", stateDerivativeName);
 
             // Add generic template variable names for backward compatibility
             if (stateName.contains("stateX") || stateName.contains("stateOutput")) {

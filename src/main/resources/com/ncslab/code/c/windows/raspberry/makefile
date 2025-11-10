@@ -1,5 +1,6 @@
 SFCNOBJS=
-OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o Matrix.o ncslabmain.o  util.o onestep.o \
+# Matrix.o removed - Matrix.hpp is now header-only template
+OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o ncslabmain.o  util.o onestep.o \
   DAC8532.o DEV_Config.o  ADS1256.o ncs_serialport_pi.o hardware.o
 
 CC=arm-none-linux-gnueabihf-g++
@@ -41,8 +42,7 @@ DataApi.o: DataApi.cpp
 UploadThread.o: UploadThread.cpp
 	$(CC) $(CCFLAGS)  -c UploadThread.cpp
 
-Matrix.o: Matrix.cpp
-	$(CC) $(CCFLAGS)  -c Matrix.cpp
+# Matrix.o build rule removed - Matrix.hpp is now header-only template
 
 ncslabmain.o: ncslabmain.cpp
 	$(CC) $(CCFLAGS)  -c ncslabmain.cpp

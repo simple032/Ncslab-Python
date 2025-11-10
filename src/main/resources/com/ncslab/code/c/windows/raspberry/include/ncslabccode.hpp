@@ -78,6 +78,8 @@ typedef struct {
 typedef struct {
 	char *type;
 	char *name;
+	char *path;
+	char *uuid;
 	int inputPortNum;
 	int outputPortNum;
 	int parameterNum;
