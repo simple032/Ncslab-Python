@@ -1,6 +1,3 @@
-/* Initialize TransferFcn block: (${blockId}) ${blockName} */
-#if($states)
 #foreach($state in $states)
 ${state.getName()} = 0.0;
-#end
 #end

@@ -1,4 +1,3 @@
-/* Code for initialization of block RaspFan:($blockId)$blockName */
 /* Hardware mode - Initialize RaspFan driver */
 initRaspFan(&${hardwareDefineName});
 char msg[255];

@@ -576,9 +576,7 @@ public class TransferFcn extends ContinuousBlock {
 
     @Override
     public void calculateInit() {
-        OutputPort out = outputPortList.get(0);
-        // TODO:还需要调试
-//        Data data = new Data(num.length > 0 ? num[0] : 0);
+        OutputPort out = outputPortList.get(0);        
         Data data = new Data(0);
         for (State state : xStateList) {
             state.setData(data);
@@ -657,9 +655,6 @@ public class TransferFcn extends ContinuousBlock {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         // Fail fast - validate required states exist
-        if (xStateList == null) {
-            throw new BlockCreationException("TransferFcn block requires state list for initialization");
-        }
         context.put("states", xStateList);
         
         // Add individual state names for easy template access
@@ -685,15 +680,9 @@ public class TransferFcn extends ContinuousBlock {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         // Fail fast - validate required states exist
-        if (xStateList == null) {
-            throw new BlockCreationException("TransferFcn block requires state list for output code generation");
-        }
         context.put("states", xStateList);
         
         // Fail fast - validate numerator array exists
-        if (num == null) {
-            throw new BlockCreationException("TransferFcn block requires valid numerator coefficients");
-        }
         context.put("num", Arrays.stream(num).boxed().collect(Collectors.toList()));
         
         context.put("feedThrough", feedThrough);
@@ -722,15 +711,9 @@ public class TransferFcn extends ContinuousBlock {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
         // Fail fast - validate required states exist
-        if (xStateList == null) {
-            throw new BlockCreationException("TransferFcn block requires state list for derivative code generation");
-        }
         context.put("states", xStateList);
         
         // Fail fast - validate denominator array exists
-        if (den == null) {
-            throw new BlockCreationException("TransferFcn block requires valid denominator coefficients");
-        }
         context.put("den", Arrays.stream(den).boxed().collect(Collectors.toList()));
         
         // Add individual state names for easy template access
