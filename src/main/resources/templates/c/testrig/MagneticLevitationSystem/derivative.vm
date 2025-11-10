@@ -10,8 +10,8 @@ double Ks = -4.5871056; /* transducer voltage constant */
 double Ka = 5.8929; /* input resistance */
 
 /* Current input signal */
-#if($inputPortVariable)
-double u = ${inputPortVariable};
+#if($inputVar)
+double u = ${inputVar};
 #end
 
 /* State variables: position (x0) and velocity (x1) */
@@ -27,7 +27,7 @@ ${positionDerivative} = v;
 
 /* Velocity derivative - magnetic force vs gravity */
 /* Simplified magnetic force model: F_mag = K * i^2 / x^2 */
-#if($velocityDerivative && $inputPortVariable)
+#if($velocityDerivative && $inputVar)
 double K_mag = 0.001; /* magnetic force constant */
 double current = u;   /* input current */
 double mag_force = (x > 0.01) ? K_mag * current * current / (x * x) : 0;
@@ -39,8 +39,8 @@ ${velocityDerivative} = g - mag_force;
 #if($positionDerivative && $velocity)
 ${positionDerivative} = ${velocity};
 #end
-#if($velocityDerivative && $inputPortVariable)
-${velocityDerivative} = ${inputPortVariable} - 9.8;
+#if($velocityDerivative && $inputVar)
+${velocityDerivative} = ${inputVar} - 9.8;
 #end
 #end
 }

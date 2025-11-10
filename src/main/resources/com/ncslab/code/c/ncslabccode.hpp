@@ -5,6 +5,7 @@
 #include "stdlib.h"
 
 #include <list>
+#include <string>
 
 // Hardware-specific includes - only include when explicitly enabled for hardware builds
 #ifdef _ENABLE_PI
@@ -21,6 +22,16 @@
 #endif
 #endif
 
+// Serial port includes for SerialConfiguration blocks
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+#include <string.h>
+#endif
+
 // Constants for testrig blocks
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -29,6 +40,27 @@
 #ifndef AERO_PI
 #define AERO_PI M_PI
 #endif
+
+/* Serial Port Handle Structure for centralized serial port management */
+/* Following SIMULINK R2024b architecture pattern */
+typedef struct {
+    const char* portName;
+    int baudRate;
+    int dataBits;
+    const char* parity;
+    const char* stopBits;
+    const char* byteOrder;
+    const char* flowControl;
+    double timeout;
+
+#ifdef _WIN32
+    HANDLE handle;
+#else
+    int fd;
+#endif
+
+    int isOpen;
+} SerialPortHandle;
 
 
 enum DATA_TYPE {SINGLE,MATRIX};

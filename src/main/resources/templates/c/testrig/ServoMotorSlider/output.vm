@@ -1,3 +1,7 @@
+/* Velocity template for ServoMotorSlider output code */
+#set($inputPort = $block.getInputPortVariable(0))
+#set($outputPort = $blockOutputPortVariables.get(0))
+
 #if ($modelMode == $compilationMode)
     initServoMotorSlider(&$hardwareDefineName);
 
@@ -5,7 +9,7 @@
         int bufLen = 1024;
         char recvBuff[bufLen] = {0};
 
-        double da = $input;
+        double da = $inputPort;
         da = da > 2.5 ? 2.5 : da;
         da = da < -2.5 ? -2.5 : da;
 
@@ -28,20 +32,25 @@
         printf("\n");
 
         if ((Read > 0.5) || (Read < -0.5)) {
-            $output = (-0.0039 * Read);
-            printf("out=%f", $output);
+            $outputPort = (-0.0039 * Read);
+            printf("out=%f", $outputPort);
             servodata = Read;
             servodata1 = (-0.0039 * Read);
         } else {
-            $output = (-0.0039 * servodata);
+            $outputPort = (-0.0039 * servodata);
         }
 
         servodata1 = (-0.0039 * servodata);
     }
 #elseif ($modelMode == $simulationMode)
-    #foreach($i in [0..2])
-    #set($stateX = $blockStateList.get($i).getName())
-    #set($numValue = $block.getParameter("num").getValue($i))
-    $output += $stateX * $numValue;
+    #if($blockStateList && $num)
+    ## Initialize output to zero
+    $outputPort = 0.0;
+    ## Calculate output using numerator coefficients: y = num[0]*x1 + num[1]*x2 + num[2]*x3
+    #foreach($state in $blockStateList)
+    #if($foreach.index < $num.size())
+    $outputPort += $state.getName() * $num.get($foreach.index);
+    #end
+    #end
     #end
 #end

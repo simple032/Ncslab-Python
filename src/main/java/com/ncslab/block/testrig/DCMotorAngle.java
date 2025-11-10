@@ -50,6 +50,22 @@ public class DCMotorAngle extends Block {
      */
     public DCMotorAngle(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+
+        inputPortList.add(new InputPort(this,1));
+        outputPortList.add(new OutputPort(this,"Speed",1,false));
+        outputPortList.add(new OutputPort(this,"Angle",2,false));
+        this.isHardware=true;
+
+        switch(model.getModelMode()) {
+        case Simulation:
+            speedState=new State(this,1,"speedState");
+            stateList.add(speedState);
+            angleState=new State(this,2,"angleState");
+            stateList.add(angleState);
+            break;
+        case Compilation:
+            break;
+        }
         System.out.println("DTO-NATIVE: DCMotorAngle block created successfully - " + blockDto.getBlockName());
     }
 

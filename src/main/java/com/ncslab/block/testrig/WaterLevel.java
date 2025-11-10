@@ -38,6 +38,7 @@ public class WaterLevel extends Block {
      */
     public WaterLevel(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+        initializeBlock();
         System.out.println("DTO-NATIVE: WaterLevel block created successfully - " + blockDto.getBlockName());
     }
 
@@ -59,6 +60,10 @@ public class WaterLevel extends Block {
     public WaterLevel(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
+        initializeBlock();
+    }
+
+    private void initializeBlock() {
         this.isHardware = true;
 
         inputPortList.add(new InputPort(this, 1));
@@ -124,7 +129,8 @@ public class WaterLevel extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
         context.put("blockStateList", stateList);
         context.put("blockOutputPortVariables", java.util.Arrays.asList(getOutputPortVariables()));
         context.put("modelMode", model.getModelMode().name());
@@ -144,5 +150,55 @@ public class WaterLevel extends Block {
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/WaterLevel/derivative.vm", context);
         code.addDerivativeCode(codeStr);
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize states to zero
+        if (pumpState != null) {
+            pumpState.setData(new com.ncslab.block.data.Data(0.0));
+        }
+        if (levelState != null) {
+            levelState.setData(new com.ncslab.block.data.Data(0.0));
+        }
+
+        // Initialize outputs to zero
+        if (outputPortList.size() >= 2) {
+            outputPortList.get(0).setData(new com.ncslab.block.data.Data(0.0)); // Pump_Speed
+            outputPortList.get(1).setData(new com.ncslab.block.data.Data(0.0)); // Water_Level
+        }
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        // Output the current state values
+        if (outputPortList.size() >= 2 && pumpState != null && levelState != null) {
+            outputPortList.get(0).setData(pumpState.getData()); // Pump_Speed = pumpState
+            outputPortList.get(1).setData(levelState.getData()); // Water_Level = levelState
+        }
+    }
+
+    @Override
+    public void calculateDerivative(double t) {
+        if (pumpState == null || levelState == null || inputPortList.isEmpty()) {
+            return;
+        }
+
+        // Get input value
+        com.ncslab.block.data.Data inputData = inputPortList.get(0).getData();
+
+        // Pump dynamics: first-order lag
+        // pumpState' = (pumpK * input - pumpState) / pumpT
+        com.ncslab.block.data.Data pumpDerivative = inputData.times(new com.ncslab.block.data.Data(pumpK))
+            .minus(pumpState.getData())
+            .divide(new com.ncslab.block.data.Data(pumpT));
+        pumpState.setDerivateData(pumpDerivative);
+
+        // Water level dynamics: first-order lag
+        // levelState' = (waterLevelK * pumpState - levelState) / waterLevelT
+        com.ncslab.block.data.Data levelDerivative = pumpState.getData().times(new com.ncslab.block.data.Data(waterLevelK))
+            .minus(levelState.getData())
+            .divide(new com.ncslab.block.data.Data(waterLevelT));
+        levelState.setDerivateData(levelDerivative);
     }
 }

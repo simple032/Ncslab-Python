@@ -7,7 +7,7 @@
 #include "onestep.hpp"
 
 #define INIT_POINT_NUM 100
-#define TOL 1E-4
+#define TOL 1E-3  // Match Java default RelTol for consistency
 
 extern MODEL *mp;
 extern double sample_time[20];
@@ -121,13 +121,28 @@ void NCSLabOneStep()
 
     dif = calculateStateDif(1, 2);
 
-    // printf("%f\n",dif);
-    if(dif > TOL)
-      nextStepSize = sqrt(sqrt((TOL * stepSize) / dif))*0.84*stepSize;
-    else
-      nextStepSize = stepSize;
+    // Standard step size controller for RK23 (similar to MATLAB ode23)
+    // Use safety factor and limit step size changes
+    if(dif > 1E-10) {  // Avoid division by zero
+      double ratio = TOL / dif;  // Error ratio
+      double factor = 0.9 * pow(ratio, 1.0/3.0);  // Conservative controller (power of 1/3 for 3rd order)
 
-   if (nextStepSize > stepSize || i == 1)
+      // Limit step size changes to prevent oscillation
+      if(factor > 5.0) factor = 5.0;      // Don't grow too fast
+      if(factor < 0.2) factor = 0.2;      // Don't shrink too fast
+
+      nextStepSize = stepSize * factor;
+
+      // Also limit absolute step size
+      if(nextStepSize > maxStepSize) nextStepSize = maxStepSize;
+      if(nextStepSize < 1E-9) nextStepSize = 1E-9;  // Minimum step
+    } else {
+      nextStepSize = stepSize * 2.0;  // Error is tiny, can grow step
+      if(nextStepSize > maxStepSize) nextStepSize = maxStepSize;
+    }
+
+   // Accept step if error is acceptable (dif <= TOL) or if this is the retry
+   if (dif <= TOL || i == 1)
     {
       mp->time += stepSize;
       stepSize = nextStepSize;

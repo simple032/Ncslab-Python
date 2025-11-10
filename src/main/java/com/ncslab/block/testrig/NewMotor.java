@@ -76,19 +76,7 @@ public class NewMotor extends Block {
     public NewMotor(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
 
-        inputPortList.add(new InputPort(this, 1));
-        outputPortList.add(new OutputPort(this, "Speed", 1, false));
-
-        this.isHardware = true;
-
-        switch (model.getModelMode()) {
-            case Simulation:
-                speedState = new State(this, 1, "speedState");
-                stateList.add(speedState);
-                break;
-            case Compilation:
-                break;
-        }
+        initializeBlock();
     }
 
     String hardwareDefineName;

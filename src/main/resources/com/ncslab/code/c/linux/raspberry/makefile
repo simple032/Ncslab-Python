@@ -1,4 +1,5 @@
-OBJS=$(SFCNOBJS) mainccode.o hardware.o ServerThread.o ClientThread.o DataApi.o UploadThread.o ncs_serialport_pi.o onestep.o util.o ncslabmain.o Matrix.o DAC8532.o DEV_Config.o  ADS1256.o
+# Matrix.o removed - Matrix.hpp is now header-only template
+OBJS=$(SFCNOBJS) mainccode.o hardware.o ServerThread.o ClientThread.o DataApi.o UploadThread.o ncs_serialport_pi.o onestep.o util.o ncslabmain.o DAC8532.o DEV_Config.o  ADS1256.o
 
 CC=/opt/pi/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf-g++
 //CC=gcc
@@ -34,8 +35,7 @@ DataApi.o: DataApi.cpp
 UploadThread.o: UploadThread.cpp
 	$(CC) $(CCFlag)  -c UploadThread.cpp
 
-Matrix.o: Matrix.cpp
-	$(CC) $(CCFlag)  -c Matrix.cpp
+# Matrix.o build rule removed - Matrix.hpp is now header-only template
 
 ncslabmain.o: ncslabmain.cpp
 	$(CC) $(CCFlag)  -c ncslabmain.cpp

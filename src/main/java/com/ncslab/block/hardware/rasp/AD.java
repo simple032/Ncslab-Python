@@ -30,6 +30,8 @@ public class AD extends HardwareBlock{
      */
     public AD(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+		channel = getParameterByName("Channel");
+		outputPortList.add(new OutputPort(this,"out",1,false));
         System.out.println("DTO-NATIVE: AD block created successfully - " + blockDto.getBlockName());
     }
 
@@ -49,7 +51,7 @@ public class AD extends HardwareBlock{
 		//一个输出
 		outputPortList.add(new OutputPort(this,"out",1,false));
 
-		channel=new Parameter(this,1,"channel",paramValues.getString("Channel"));
+		channel=getParameterByName("Channel");
 
 	}
 

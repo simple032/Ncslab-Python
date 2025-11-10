@@ -1,6 +1,7 @@
 
-# OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncslabmain.o results.o Matrix.o
-OBJS = $(SFCNOBJS) mainccode.o onestep.o util.o ncslabmain.o results.o Matrix.o
+# OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncslabmain.o results.o
+# Matrix.o removed - Matrix.hpp is now header-only template
+OBJS = $(SFCNOBJS) mainccode.o onestep.o util.o ncslabmain.o results.o
 
 CC=g++
 
@@ -43,9 +44,7 @@ util.o: util.cpp
 ncslabmain.o: ncslabmain.cpp
 	$(CC) $(CCFlag)  -c ncslabmain.cpp
 
-Matrix.o: Matrix.cpp
-	$(CC) $(CCFlag)  -c Matrix.cpp
-
+# Matrix.o build rule removed - Matrix.hpp is now header-only template
 
 %.o: %.c
 	$(CC) $(CCFlag)  -c "$<"

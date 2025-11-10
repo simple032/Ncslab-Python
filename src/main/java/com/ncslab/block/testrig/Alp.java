@@ -26,6 +26,11 @@ public class Alp extends Block {
 	private double den[]= {1,3.091,1.19,0.2};
 	private List<State> xStateList = new ArrayList<>();
 
+	// Fan speed dynamics: First-order system with gain and time constant
+	private static final double FAN_GAIN = 0.002;  // Fan speed gain (scales PWM to RPM-like units)
+	private static final double FAN_TIME_CONSTANT = 0.5;  // Fan response time (seconds)
+	private State fanSpeedState;  // State for fan speed dynamics
+
     
     
     /**
@@ -43,11 +48,15 @@ public class Alp extends Block {
         // Initialize states based on model mode
         switch(model.getModelMode()) {
             case Simulation:
+                // Position dynamics states
                 for(int i = 0; i < 3; i++) {
                     State xState = new State(this, i + 1, "x" + (i + 1));
                     xStateList.add(xState);
                     stateList.add(xState);
                 }
+                // Fan speed state (separate dynamics)
+                fanSpeedState = new State(this, 4, "fanSpeed");
+                stateList.add(fanSpeedState);
                 break;
             case Compilation:
                 break;
@@ -78,11 +87,15 @@ public class Alp extends Block {
 		outputPortList.add(new OutputPort(this,"Position",2,false));
 		switch(model.getModelMode()) {
 		case Simulation:
+			// Position dynamics states
 			for(int i=0;i<3;i++) {
 				State xState=new State(this,i+1,"x"+(i+1));
 				xStateList.add(xState);
 				stateList.add(xState);
 			}
+			// Fan speed state (separate dynamics)
+			fanSpeedState = new State(this, 4, "fanSpeed");
+			stateList.add(fanSpeedState);
 			break;
 		case Compilation:
 			break;
@@ -125,22 +138,31 @@ public void generateInitCodeC(CodeStructC code) {
 
 		switch(model.getModelMode()) {
 		case Simulation:
+			// Fan speed dynamics: fanSpeed' = (FAN_GAIN * input - fanSpeed) / FAN_TIME_CONSTANT
+			String inputVar = getInputPortVariable(0);
+			if (inputVar != null) {
+				derivativeCode += fanSpeedState.getDerivativeName() + " = (" + FAN_GAIN + " * " + inputVar
+					+ " - " + fanSpeedState.getName() + ") / " + FAN_TIME_CONSTANT + ";\n";
+			} else {
+				derivativeCode += fanSpeedState.getDerivativeName() + " = -" + fanSpeedState.getName()
+					+ " / " + FAN_TIME_CONSTANT + ";\n";
+			}
+
+			// Position dynamics: controller canonical form
 			for(int i=0;i<xStateList.size()-1;i++) {
 				derivativeCode+=xStateList.get(i).getDerivativeName()+"="
 						+xStateList.get(i+1).getName()
 						+";\n";
 			}
-			String inputVar = getInputPortVariable(0);
 			if (inputVar != null) {
 				derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=("+inputVar;
 			} else {
 				// Fallback for disconnected input port
 				derivativeCode+=xStateList.get(xStateList.size()-1).getDerivativeName()+"=(0.0";
 			}
-			int i=den.length-1;
-			for(State xState:xStateList) {
-				derivativeCode+="-"+xState.getName()+"*"+den[i];
-				i--;
+			// Subtract den[1]*x1 + den[2]*x2 + den[3]*x3 (skip den[0]=1)
+			for(int i = 0; i < xStateList.size(); i++) {
+				derivativeCode+="-"+xStateList.get(i).getName()+"*"+den[i+1];
 			}
 			derivativeCode+=");\n";
 		     break;
@@ -149,5 +171,85 @@ public void generateInitCodeC(CodeStructC code) {
 		}
 
 		code.addDerivativeCode(derivativeCode);
+	}
+
+	@Override
+	public void calculateInit() {
+		// Initialize position dynamics states to zero
+		for (State xState : xStateList) {
+			xState.setData(new com.ncslab.block.data.Data(0.0));
+		}
+
+		// Initialize fan speed state to zero
+		if (fanSpeedState != null) {
+			fanSpeedState.setData(new com.ncslab.block.data.Data(0.0));
+		}
+
+		// Initialize output to zero
+		if (outputPortList.size() >= 2) {
+			outputPortList.get(0).setData(new com.ncslab.block.data.Data(0.0)); // FanSpeed
+			outputPortList.get(1).setData(new com.ncslab.block.data.Data(0.0)); // Position
+		}
+	}
+
+	@Override
+	public void calculateOutput(double t) {
+		if (xStateList.isEmpty() || outputPortList.size() < 2 || fanSpeedState == null) {
+			return;
+		}
+
+		// Calculate position using transfer function: Position = num[0]*x1 + num[1]*x2 + num[2]*x3
+		com.ncslab.block.data.Data position = new com.ncslab.block.data.Data(0.0);
+
+		for (int i = 0; i < xStateList.size() && i < num.length; i++) {
+			com.ncslab.block.data.Data stateContribution = xStateList.get(i).getData()
+				.times(new com.ncslab.block.data.Data(num[i]));
+			position = position.plus(stateContribution);
+		}
+
+		// FanSpeed: Use fan speed state (with dynamics, scaled by 2.0 like hardware)
+		com.ncslab.block.data.Data fanSpeed = fanSpeedState.getData().times(new com.ncslab.block.data.Data(2.0));
+
+		outputPortList.get(0).setData(fanSpeed);  // FanSpeed (from fan dynamics state)
+		outputPortList.get(1).setData(position);  // Position (transfer function output)
+	}
+
+	@Override
+	public void calculateDerivative(double t) {
+		if (xStateList.isEmpty() || inputPortList.isEmpty() || fanSpeedState == null) {
+			return;
+		}
+
+		// Get input value
+		com.ncslab.block.data.Data inputData = inputPortList.get(0).getData();
+
+		// Fan speed dynamics: first-order system fanSpeed' = (FAN_GAIN * input - fanSpeed) / FAN_TIME_CONSTANT
+		com.ncslab.block.data.Data fanTarget = inputData.times(new com.ncslab.block.data.Data(FAN_GAIN));
+		com.ncslab.block.data.Data fanDerivative = fanTarget.minus(fanSpeedState.getData())
+			.divide(new com.ncslab.block.data.Data(FAN_TIME_CONSTANT));
+		fanSpeedState.setDerivateData(fanDerivative);
+
+		// Position dynamics: Controller canonical form state-space representation
+		// x'1 = x2
+		// x'2 = x3
+		// x'3 = input - den[1]*x1 - den[2]*x2 - den[3]*x3
+
+		// First n-1 states: x'i = x(i+1)
+		for (int i = 0; i < xStateList.size() - 1; i++) {
+			xStateList.get(i).setDerivateData(xStateList.get(i + 1).getData());
+		}
+
+		// Last state: x'n = input - sum(den[i+1] * x[i])
+		// For den = [1, 3.091, 1.19, 0.2], we need: input - den[1]*x1 - den[2]*x2 - den[3]*x3
+		com.ncslab.block.data.Data lastDerivative = inputData;
+
+		// Subtract den coefficients times states (skip den[0] which is always 1)
+		for (int i = 0; i < xStateList.size(); i++) {
+			com.ncslab.block.data.Data term = xStateList.get(i).getData()
+				.times(new com.ncslab.block.data.Data(den[i + 1]));
+			lastDerivative = lastDerivative.minus(term);
+		}
+
+		xStateList.get(xStateList.size() - 1).setDerivateData(lastDerivative);
 	}
 }

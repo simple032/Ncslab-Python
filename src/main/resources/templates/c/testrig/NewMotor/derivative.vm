@@ -1,7 +1,7 @@
 /*Code for Derivative of NewMotor:($blockId)$blockName*/
 #if($modelMode == $simulationMode)
 /* Motor speed dynamics - first order response */
-double realInput = ${inputPortVariable};
+double realInput = ${inputVar};
 /* Motor speed derivative: (K*input - speed) / T */
 $speedStateDerivativeName = (${motorK} * realInput - $speedStateName) / ${motorT};
 #else

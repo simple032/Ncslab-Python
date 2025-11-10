@@ -1,12 +1,12 @@
 /*Code for Derivative of ${name}:($blockId)$blockName*/
 #if($modelMode == $simulationMode)
 double ${realInput} = 0.0;
-if(${inputPortVariable}>${inputMax})
+if(${inputVar}>${inputMax})
 	${realInput}=${inputMax};
-else if(${inputPortVariable}<${inputMin})
+else if(${inputVar}<${inputMin})
 	${realInput}=${inputMin};
 else
-	${realInput}=${inputPortVariable};
+	${realInput}=${inputVar};
 $speedStateDerivativeName=(4*${realInput}*${motorK}-$speedStateName)*(1/$motorT);
 $angleStateDerivativeName=$speedStateName;
 #end

@@ -3,8 +3,8 @@
 /* Simulation mode - SecondOrderInvertedPendulum (L2IP) simulation */
 /* SerialPortState represents communication state - simple first-order lag */
 double commTimeConstant = 0.1;
-${block.getDerivativeVariable(0)} = (${inputPortVariable} - ${block.getStateVariable(0)}) / commTimeConstant;
+${block.getDerivativeVariable(0)} = (${inputVar} - ${block.getStateVariable(0)}) / commTimeConstant;
 #else
 /* Hardware mode - communication state tracks input */
-${block.getDerivativeVariable(0)} = ${inputPortVariable} - ${block.getStateVariable(0)};
+${block.getDerivativeVariable(0)} = ${inputVar} - ${block.getStateVariable(0)};
 #end

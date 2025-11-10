@@ -30,6 +30,8 @@ public class DA extends HardwareBlock{
      */
     public DA(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
+		channel = getParameterByName("channel");
+		inputPortList.add(new InputPort(this,1));
         System.out.println("DTO-NATIVE: DA block created successfully - " + blockDto.getBlockName());
     }
 
@@ -39,8 +41,10 @@ public class DA extends HardwareBlock{
     public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
 
     static {
+        // DA is input-only (writes to digital-to-analog converter)
         inputNames.add("in1");
-        
+
+        // Parameter defaults
         PARAMETER_DEFAULTS.put("Channel", "0");
     }
 	public DA(JSONObject blockJSON,NCSLabModel model) {
@@ -49,7 +53,7 @@ public class DA extends HardwareBlock{
 		//一个输入
 		inputPortList.add(new InputPort(this,1));
 
-		channel=new Parameter(this,1,"channel",paramValues.getString("Channel"));
+		channel = getParameterByName("channel");
 	}
 
 	public void generateInitCodeM(CodeStructM code) {

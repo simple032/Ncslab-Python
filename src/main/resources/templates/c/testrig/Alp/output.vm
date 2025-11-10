@@ -4,11 +4,17 @@
 #set($outputPort2 = $blockOutputPortVariables.get(1))
 
 #if ($modelMode == $simulationMode)
-#if($blockStateList && $num && $den)
+#if($blockStateList && $num)
+## Calculate position using transfer function: Position = num[0]*x1 + num[1]*x2 + num[2]*x3
+$outputPort2 = 0.0;
 #foreach($state in $blockStateList)
-#set($numIndex = $den.size() - $foreach.index - 1)
-$outputPort1 += $state.getName() * $num.get($numIndex);
+#if($foreach.index < $num.size())
+$outputPort2 += $state.getName() * $num.get($foreach.index);
 #end
+#end
+## FanSpeed: Use fan speed state (4th state) with scaling factor 2.0 like hardware
+#set($fanSpeedState = $block.stateList.get(3))
+$outputPort1 = ${fanSpeedState.getName()} * 2.0;
 #end
 #elseif ($modelMode == $compilationMode)
 ${hardwareDefineName}.alpPWM = 2600 * $inputPort1;

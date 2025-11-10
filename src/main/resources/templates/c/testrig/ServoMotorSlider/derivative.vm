@@ -1,0 +1,22 @@
+/*Code for Derivative of ServoMotorSlider:(${block.blockId})${block.blockName}*/
+#if ($modelMode == "Simulation")
+#if($blockStateList && $den)
+## Controller canonical form: x'i = x(i+1) for i < n
+#set($lastIndex = $blockStateList.size() - 1)
+#foreach($state in $blockStateList)
+#if($foreach.index < $lastIndex)
+#set($nextState = $blockStateList.get($foreach.index + 1))
+${state.getDerivativeName()} = ${nextState.getName()};
+#end
+#end
+
+## Last state: x'n = input - sum(den[i+1] * x[i]) (skip den[0]=1)
+#set($inputVar = $block.getInputPortVariable(0))
+#if($inputVar)
+${blockStateList.get($lastIndex).getDerivativeName()} = (${inputVar}#else
+${blockStateList.get($lastIndex).getDerivativeName()} = (0.0#end
+#foreach($state in $blockStateList)
+ - ${state.getName()} * $den.get($foreach.index + 1)#end
+);
+#end
+#end

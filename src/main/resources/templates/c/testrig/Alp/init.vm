@@ -3,9 +3,13 @@
 #set($hardwareDefineName = "Block" + $blockId + "_Alp")
 
 #if ($modelMode == $simulationMode)
+    ## Initialize position dynamics states
     #foreach($state in $blockStateList)
-        $stateName = 0;
+        ${state.getName()} = 0;
     #end
+    ## Initialize fan speed state (4th state in stateList)
+    #set($fanSpeedState = $block.stateList.get(3))
+    ${fanSpeedState.getName()} = 0;
 #elseif ($modelMode == $compilationMode)
     initAlp(&${hardwareDefineName});
 #end

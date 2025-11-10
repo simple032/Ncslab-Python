@@ -7,10 +7,15 @@ double waterLevelK = 0.1;
 double waterLevelT = 50.0;
 
 /* Pump dynamics: first-order lag */
-${block.getDerivativeVariable(0)} = (pumpK * ${inputPortVariable} - ${block.getStateVariable(0)}) / pumpT;
+#if ($blockStateList && $blockStateList.size() >= 2)
+#set($pumpState = $blockStateList.get(0))
+#set($levelState = $blockStateList.get(1))
+#set($inputPort = $block.getInputPortVariable(0))
+${pumpState.getDerivativeName()} = ( pumpK * ${inputPort} - ${pumpState.getName()} ) / pumpT;
 
 /* Water level dynamics: first-order lag */
-${block.getDerivativeVariable(1)} = (waterLevelK * ${block.getStateVariable(0)} - ${block.getStateVariable(1)}) / waterLevelT;
+${levelState.getDerivativeName()} = ( waterLevelK * ${pumpState.getName()} - ${levelState.getName()} ) / waterLevelT;
+#end
 #else
 /* Hardware mode - no continuous states */
 #end

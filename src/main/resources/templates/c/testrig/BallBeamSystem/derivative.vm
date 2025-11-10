@@ -2,11 +2,11 @@
 #if($localVariableDeclarations)
 ${localVariableDeclarations}
 #end
-#if($inputPortVariable && $la && $ua)
-if (${inputPortVariable} < ${la})
+#if($inputVar && $la && $ua)
+if (${inputVar} < ${la})
     u=${la};
-else if ((${inputPortVariable} >= ${la}) && (${inputPortVariable} <= ${ua}))
-    u=${inputPortVariable};
+else if ((${inputVar} >= ${la}) && (${inputVar} <= ${ua}))
+    u=${inputVar};
 else
     u=${ua};
 #end

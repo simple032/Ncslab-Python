@@ -285,10 +285,14 @@ public class RaspFan extends Block {
         OutputPort out = outputPortList.get(0);
         Data currentState = new Data();
 
-        int i=num.length-1;
-        for (State xState:xStateList) {
-            currentState = currentState.plus(xState.getData().times(new Data(num[i])));
-            i--;
+        // Calculate output with num coefficients in reverse order (matches controller canonical form with padded numerator)
+        // For padded num array, we need: y = num[last]*x1 + num[last-1]*x2 + ...
+        int numIndex = num.length - 1;
+        for (State xState : xStateList) {
+            if (numIndex >= 0) {
+                currentState = currentState.plus(xState.getData().times(new Data(num[numIndex])));
+                numIndex--;
+            }
         }
 
         out.setData(currentState);
@@ -296,15 +300,19 @@ public class RaspFan extends Block {
 
     @Override
     public void calculateDerivative(double t) {
+        // First n-1 states: x'i = x(i+1)
         for(int i = 0; i < xStateList.size() - 1; i++){
             xStateList.get(i).setDerivateData(xStateList.get(i+1).getData());
         }
 
-        Data derivativeData = inputPortList.get(0).getData();;
-        int i=den.length-1;
-        for(State xState:xStateList) {
-            derivativeData = derivativeData.minus(xState.getData().times(new Data(den[i])));
-            i--;
+        // Last state: x'n = input - den[last]*x1 - den[last-1]*x2 - ... (reverse order for controller canonical form)
+        Data derivativeData = inputPortList.get(0).getData();
+        int denIndex = den.length - 1;
+        for(State xState : xStateList) {
+            if (denIndex >= 0) {
+                derivativeData = derivativeData.minus(xState.getData().times(new Data(den[denIndex])));
+                denIndex--;
+            }
         }
         xStateList.get(xStateList.size() - 1).setDerivateData(derivativeData);
     }

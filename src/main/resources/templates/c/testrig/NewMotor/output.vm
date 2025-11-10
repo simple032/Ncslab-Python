@@ -1,6 +1,5 @@
 #set($inputPort1 = $block.getInputPortVariable(0))
 #set($outputPort1 = $block.getOutputPortVariable(0))
-#set($stateSpeed = $blockStateList.get(0).getName())
 #set($motorK = $block.getParameter("motorK").getInitDouble())
 #set($motorT = $block.getParameter("motorT").getInitDouble())
 
@@ -35,5 +34,5 @@
         Serialport_Send(hComm1, (uint8_t*)sendData, sendLength);
     }
 #elseif ($modelMode == $simulationMode)
-    $outputPort1 = 5000 * $stateSpeed;
+    $outputPort1 = 5000 * $speedStateName;
 #end

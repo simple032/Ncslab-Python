@@ -110,6 +110,18 @@ public class ServoMotorSlider extends Block {
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
+        context.put("blockStateList", xStateList);
+        context.put("blockOutputPortVariables", java.util.Arrays.asList(getOutputPortVariables()));
+
+        // Add num and den arrays to context
+        context.put("num", java.util.Arrays.stream(num).boxed().collect(java.util.stream.Collectors.toList()));
+        context.put("den", java.util.Arrays.stream(den).boxed().collect(java.util.stream.Collectors.toList()));
+
+        // Ensure hardwareDefineName is set
+        if (hardwareDefineName == null) {
+            hardwareDefineName = "Block" + this.getBlockId() + "_ServoMotorSlider";
+        }
+        context.put("hardwareDefineName", hardwareDefineName);
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/output.vm", context);
         code.addOutputCode(codeStr);
@@ -118,11 +130,81 @@ public class ServoMotorSlider extends Block {
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("states", xStateList);
+        context.put("blockStateList", xStateList);
+
+        // Add num and den arrays to context
+        context.put("num", java.util.Arrays.stream(num).boxed().collect(java.util.stream.Collectors.toList()));
+        context.put("den", java.util.Arrays.stream(den).boxed().collect(java.util.stream.Collectors.toList()));
 
         if(model.getModelMode() == ModelMode.Simulation) {
             String codeStr = TemplateManager.renderTemplate("c/testrig/ServoMotorSlider/derivative.vm", context);
             code.addDerivativeCode(codeStr);
         }
-        
+
+    }
+
+    @Override
+    public void calculateInit() {
+        // Initialize all states to zero
+        for (State xState : xStateList) {
+            xState.setData(new com.ncslab.block.data.Data(0.0));
+        }
+
+        // Initialize output to zero
+        if (!outputPortList.isEmpty()) {
+            outputPortList.get(0).setData(new com.ncslab.block.data.Data(0.0)); // Position
+        }
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        if (xStateList.isEmpty() || outputPortList.isEmpty()) {
+            return;
+        }
+
+        // Calculate output using numerator coefficients: y = num[0]*x1 + num[1]*x2 + num[2]*x3
+        com.ncslab.block.data.Data output = new com.ncslab.block.data.Data(0.0);
+
+        for (int i = 0; i < xStateList.size() && i < num.length; i++) {
+            com.ncslab.block.data.Data stateContribution = xStateList.get(i).getData()
+                .times(new com.ncslab.block.data.Data(num[i]));
+            output = output.plus(stateContribution);
+        }
+
+        // Set output
+        outputPortList.get(0).setData(output); // Position
+    }
+
+    @Override
+    public void calculateDerivative(double t) {
+        if (xStateList.isEmpty() || inputPortList.isEmpty()) {
+            return;
+        }
+
+        // Get input value
+        com.ncslab.block.data.Data inputData = inputPortList.get(0).getData();
+
+        // Controller canonical form state-space representation:
+        // x'1 = x2
+        // x'2 = x3
+        // x'3 = input - den[3]*x1 - den[2]*x2 - den[1]*x3
+
+        // First n-1 states: x'i = x(i+1)
+        for (int i = 0; i < xStateList.size() - 1; i++) {
+            xStateList.get(i).setDerivateData(xStateList.get(i + 1).getData());
+        }
+
+        // Last state: x'n = input - sum(den[i] * x[i])
+        // For den = [1, 2.01, 38.86, 49.06], we need: input - den[1]*x1 - den[2]*x2 - den[3]*x3
+        com.ncslab.block.data.Data lastDerivative = inputData;
+
+        // Subtract den coefficients times states (skip den[0] which is always 1)
+        for (int i = 0; i < xStateList.size(); i++) {
+            com.ncslab.block.data.Data term = xStateList.get(i).getData()
+                .times(new com.ncslab.block.data.Data(den[i + 1]));
+            lastDerivative = lastDerivative.minus(term);
+        }
+
+        xStateList.get(xStateList.size() - 1).setDerivateData(lastDerivative);
     }
 }
