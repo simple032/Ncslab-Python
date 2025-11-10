@@ -57,4 +57,27 @@ public class Property {
         }
         return value;
     }
+
+    public String getProperty(String key, String defaultValue) {
+        String value = null;
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                System.err.println("Sorry, unable to find config.properties");
+                return "";
+            }
+
+            // Load a properties file from the class path with ISO-8859-1 encoding
+            Properties prop = new Properties();
+            try (InputStreamReader reader = new InputStreamReader(input, StandardCharsets.ISO_8859_1)) {
+                prop.load(reader);
+            }
+
+            // Get the property value and print it
+            value = prop.getProperty(key, defaultValue);
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return value;
+    }
 }

@@ -267,20 +267,6 @@ public class MfcalcClient {
                 log.error("Error sending request to MFCalc server: {}", e.getMessage(), e);
             }
 
-            // Log to file for debugging
-            try (java.io.FileWriter fw = new java.io.FileWriter("mfcalc.log", true)) {
-                fw.write(java.time.LocalDateTime.now() + " - " + e.toString() + "\n");
-                for (StackTraceElement ste : e.getStackTrace()) {
-                    fw.write("\tat " + ste + "\n");
-                }
-                if (isConnectionError && !allowRetry) {
-                    fw.write("Note: Reconnection was already attempted and failed\n");
-                }
-                fw.write("\n");
-            } catch (IOException logEx) {
-                log.error("Failed to write to mfcalc.log: {}", logEx.getMessage());
-            }
-
             return MfcalcResponseDto.builder()
                     .status("error")
                     .error("Connection error: " + e.getMessage() +

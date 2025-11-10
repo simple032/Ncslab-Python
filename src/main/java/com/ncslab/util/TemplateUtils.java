@@ -86,11 +86,13 @@ public class TemplateUtils {
 
         // Add pre-computed state information with standardized names
         java.util.List<String> stateNames = new java.util.ArrayList<>();
+        java.util.List<String> stateDerivativeNames = new java.util.ArrayList<>();
         java.util.List<String> stateVariables = new java.util.ArrayList<>();
         java.util.List<Object> stateValues = new java.util.ArrayList<>();
 
         for (com.ncslab.block.io.State state : block.getStateList()) {
             String stateName = state.getName(); // Already includes Block{id}_State_ prefix
+            String stateDerivativeName = state.getDerivativeName();
             String stateVar = stateName; // Use as-is, already properly prefixed
             String stateLocalName = state.getLocalName(); // Local name without prefix
             Object stateValue = state.getData().getInitValue();
@@ -98,12 +100,14 @@ public class TemplateUtils {
             stateNames.add(stateName);
             stateVariables.add(stateVar);
             stateValues.add(stateValue);
+            stateDerivativeNames.add(stateDerivativeName);
 
             // Individual state access (legacy) - use full state name as key
             context.put(stateName, stateVar); // C variable name as string
             context.put(stateName + "Name", stateVar); // Explicit C variable name
             context.put(stateName + "Value", stateValue);
             context.put(stateName + "Object", state); // Keep object for advanced access if needed
+            context.put(stateName + "DerivativeName", stateDerivativeName);
 
             // Add local name mapping to avoid double prefixing
             context.put(stateLocalName, stateVar); // Map local name to full C variable name
