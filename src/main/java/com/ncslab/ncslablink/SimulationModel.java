@@ -179,6 +179,10 @@ public class SimulationModel extends NCSLabModel{
         double minStep = getConfig().getMinStep();
         double maxStep = getConfig().getFixedStep();
         double step = getConfig().getFixedStep();
+
+        // Flag to track if calculateTerminates has been called to prevent double execution
+        final boolean[] terminateCalled = new boolean[]{false};
+
         try {
 
             // 定义控制系统的微分方程
@@ -238,6 +242,7 @@ public class SimulationModel extends NCSLabModel{
                     }
                     if(isLast){
                         calculateTerminates(t);
+                        terminateCalled[0] = true;
                     }
                 }
             };
@@ -269,6 +274,7 @@ public class SimulationModel extends NCSLabModel{
                     }
                     if(isLast){
                         calculateTerminates(currentTime);
+                        terminateCalled[0] = true;
                     }
                 }
             };
@@ -341,8 +347,12 @@ public class SimulationModel extends NCSLabModel{
                 }
 
             }
-            calculateTerminates(tEnd);
-            
+
+            // Only call calculateTerminates if it hasn't been called already by a step handler
+            if (!terminateCalled[0]) {
+                calculateTerminates(tEnd);
+            }
+
             // Use optimized WebSocket streaming instead of file I/O
             System.out.printf("RT Debug: About to send results - session=%s, terminals=%d%n", 
                 (session != null ? "present" : "null"), getTerminalList().size());
@@ -731,13 +741,14 @@ public class SimulationModel extends NCSLabModel{
      * @param jsonScope Target JSON object to populate
      */
     private void buildScopeJson(int cursor, ScopeStruct scope, JSONObject jsonScope) {
-        Scope scopeBlock = (Scope) scope.getBlock();
-        
+        // Get the block - can be Scope, ToWorkspace, ToFile, Display, XYGraph, Matplotlib, etc.
+        Block block = scope.getBlock();
+
         jsonScope.put("width", scope.getWidth());
         jsonScope.put("height", scope.getHeight());
-        jsonScope.put("name", scopeBlock.getBlockName());
-        jsonScope.put("path", scopeBlock.getBlockPath());
-        jsonScope.put("uuid", scopeBlock.getBlockUUID());
+        jsonScope.put("name", block.getBlockName());
+        jsonScope.put("path", block.getBlockPath());
+        jsonScope.put("uuid", block.getBlockUUID());
 
         int size = scope.getTimeList().size();
         jsonScope.put("length", size);

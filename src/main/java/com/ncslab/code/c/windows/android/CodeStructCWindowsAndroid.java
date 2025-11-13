@@ -65,7 +65,7 @@ public class CodeStructCWindowsAndroid extends CodeStructCWindows {
 		writeNCSLabFile("include/UploadThread.hpp", "UploadThread.hpp");
 
 //		writeNCSLabFile("lib/Matrix.o", "Matrix.o");
-        writeNCSLabFile("Matrix.cpp", "Matrix.cpp");
+        // Matrix.cpp removed - Matrix.hpp is now header-only template
 		writeNCSLabFile("Matrix.hpp", "Matrix.hpp");
 //		writeNCSLabFile("lib/ricatti.o", "ricatti.o");
 //		writeNCSLabFile("../../ricatti.hpp", "ricatti.hpp");

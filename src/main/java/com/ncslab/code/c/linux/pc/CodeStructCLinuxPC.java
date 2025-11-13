@@ -1,7 +1,5 @@
 package com.ncslab.code.c.linux.pc;
 
-import java.io.File;
-import java.io.BufferedReader;
 import java.io.*;
 
 import com.ncslab.code.c.CodeStructC;
@@ -27,8 +25,17 @@ public class CodeStructCLinuxPC extends CodeStructC{
 		if(file.exists()==false) {
 			file.mkdir();
 		}
-
 		codePath=modelPath+"/";
+
+		try {
+			//Runtime.getRuntime().exec("python /home/pi/.config/antostart/GetPiId.py");
+			// Use ProcessBuilder instead of deprecated Runtime.exec()
+			ProcessBuilder processBuilder = new ProcessBuilder("sudo", "chmod", "-R", "777", codePathBase);
+			processBuilder.start();
+//			Runtime.getRuntime().exec("sudo chmod -R 777 /home/pi/NetConTop/NCSLabLink/CCode");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		//写锟斤拷锟杰边碉拷锟斤拷源锟侥硷拷
 		//makefile

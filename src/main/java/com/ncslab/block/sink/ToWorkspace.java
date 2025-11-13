@@ -30,6 +30,11 @@ import com.ncslab.block.io.terminal.ScopeStruct;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.util.TemplateManager;
+import com.ncslab.util.UserContext;
+
+// Internal imports - MFCalc client
+import com.ncslab.code.m.MfcalcClientManager;
+import com.ncslab.dto.communication.MfcalcResponseDto;
 
 /**
  * To Workspace block with SIMULINK-compatible parameters.
@@ -195,6 +200,232 @@ public class ToWorkspace extends SinkBlock {
     @Override
     public void updateDimension() throws MatDimException {
         // No dimension updates needed for sink block
+    }
+
+    @Override
+    public void calculateTerminate(double t) {
+        // Only save workspace data in simulation mode
+        if (model.getModelMode() == ModelMode.Simulation) {
+            saveWorkspaceDataToMfcalc();
+        }
+    }
+
+    /**
+     * Save accumulated data to MFCalc workspace (Simulation Mode Only)
+     *
+     * Process:
+     * 1. Get userId from UserContext or model
+     * 2. Convert scopeStruct data to structure format
+     * 3. Call MfcalcClientManager.setVariableForUser(userId, variableName, data)
+     * 4. Format: {time: [...], signals: [...]}
+     */
+    private void saveWorkspaceDataToMfcalc() {
+        try {
+            String varName = variableName != null ? variableName.getInitString() : "simout";
+            System.out.println("[ToWorkspace] Saving data to workspace variable via MFCalc: " + varName);
+
+            if (scopeStruct == null) {
+                System.err.println("[ToWorkspace] No data to save - scopeStruct is null");
+                return;
+            }
+
+            // Get collected data
+            int dataPoints = scopeStruct.getTimeList().size();
+            System.out.println("[ToWorkspace] Data points collected: " + dataPoints);
+
+            if (dataPoints == 0) {
+                System.err.println("[ToWorkspace] No data points collected during simulation");
+                return;
+            }
+
+            // Get userId from UserContext or model
+            String userId = UserContext.getUserId();
+            if (userId == null) {
+                userId = String.valueOf(model.getUserId());
+            }
+            System.out.println("[ToWorkspace] User ID: " + userId);
+
+            // Convert data to workspace format
+            Map<String, Object> workspaceData = convertToWorkspaceFormat();
+
+            // Send variable to MFCalc workspace
+            MfcalcResponseDto response = MfcalcClientManager.getInstance().setVariableForUser(userId, varName, workspaceData);
+
+            if (response == null || response.isError()) {
+                String error = response != null ? response.getError() : "Null response";
+                System.err.println("[ToWorkspace] Error sending variable to MFCalc: " + error);
+                return;
+            }
+
+            System.out.println("[ToWorkspace] Successfully saved " + dataPoints + " points to workspace variable '" + varName + "'");
+
+        } catch (Exception e) {
+            System.err.println("[ToWorkspace] Error saving workspace data: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Convert scopeStruct data to MFCalc workspace format.
+     *
+     * Supports two formats based on SaveFormat parameter:
+     *
+     * 1. Timeseries format (when SaveFormat = "Timeseries"):
+     * {
+     *   "type": "timeseries",
+     *   "value": {
+     *     "time": {"type": "matrix", "value": "[...]"},
+     *     "data": {"type": "matrix", "value": "[...]"},
+     *     "name": "variableName"
+     *   }
+     * }
+     *
+     * 2. Struct format (when SaveFormat = "Array", "Structure", or "StructureWithTime"):
+     * {
+     *   "type": "struct",
+     *   "value": {
+     *     "numFields": 2,
+     *     "fields": {
+     *       "time": {"type": "matrix", "value": "[...]"},
+     *       "signals": {"type": "matrix", "value": "[...]"}
+     *     }
+     *   }
+     * }
+     *
+     * Note: scopeStruct stores scalar values directly in dataList as List<Double>
+     * For matrix data, values are flattened in row-major order
+     */
+    private Map<String, Object> convertToWorkspaceFormat() {
+        // Get time and signal data from scopeStruct
+        List<Double> timeList = scopeStruct.getTimeList();
+        List<Double> dataList = scopeStruct.getDataList();
+
+        int width = scopeStruct.getWidth();
+        int height = scopeStruct.getHeight();
+
+        // Get save format
+        String format = saveFormat != null ? saveFormat.getInitString() : "Array";
+        String varName = variableName != null ? variableName.getInitString() : "simout";
+
+        // Check if Timeseries format is requested
+        if ("Timeseries".equals(format)) {
+            return convertToTimeseriesFormat(timeList, dataList, width, height, varName);
+        } else {
+            return convertToStructFormat(timeList, dataList, width, height);
+        }
+    }
+
+    /**
+     * Convert to MFCalc Timeseries format
+     */
+    private Map<String, Object> convertToTimeseriesFormat(List<Double> timeList, List<Double> dataList,
+                                                           int width, int height, String name) {
+        Map<String, Object> timeseriesValue = new HashMap<>();
+
+        // Time field - always a column vector in MFCalc
+        Map<String, Object> timeField = new HashMap<>();
+        timeField.put("type", "matrix");
+        timeField.put("value", formatMatrixString(timeList, timeList.size(), 1));
+        timeseriesValue.put("time", timeField);
+
+        // Data field
+        Map<String, Object> dataField = new HashMap<>();
+        if (width == 1 && height == 1) {
+            // Scalar data - column vector [n x 1]
+            dataField.put("type", "matrix");
+            dataField.put("value", formatMatrixString(dataList, dataList.size(), 1));
+        } else {
+            // Matrix data - reconstruct as time series of matrices [time x (height*width)]
+            int matrixSize = width * height;
+            int numTimePoints = timeList.size();
+
+            // Format as matrix with rows = numTimePoints, cols = matrixSize
+            List<Double> flatData = new ArrayList<>(dataList);
+            dataField.put("type", "matrix");
+            dataField.put("value", formatMatrixString(flatData, numTimePoints, matrixSize));
+        }
+        timeseriesValue.put("data", dataField);
+
+        Map<String, Object> workspaceData = new HashMap<>();
+        workspaceData.put("type", "timeseries");
+        workspaceData.put("value", timeseriesValue);
+
+        return workspaceData;
+    }
+
+    /**
+     * Convert to MFCalc Struct format
+     */
+    private Map<String, Object> convertToStructFormat(List<Double> timeList, List<Double> dataList,
+                                                       int width, int height) {
+        Map<String, Object> structValue = new HashMap<>();
+        Map<String, Object> fields = new HashMap<>();
+
+        // Time field - always a column vector in MFCalc
+        Map<String, Object> timeField = new HashMap<>();
+        timeField.put("type", "matrix");
+        timeField.put("value", formatMatrixString(timeList, timeList.size(), 1));
+        fields.put("time", timeField);
+
+        // Signals field
+        Map<String, Object> signalsField = new HashMap<>();
+        if (width == 1 && height == 1) {
+            // Scalar data - column vector [n x 1]
+            signalsField.put("type", "matrix");
+            signalsField.put("value", formatMatrixString(dataList, dataList.size(), 1));
+        } else {
+            // Matrix data - reconstruct as time series of matrices [time x (height*width)]
+            int matrixSize = width * height;
+            int numTimePoints = timeList.size();
+
+            // Format as matrix with rows = numTimePoints, cols = matrixSize
+            List<Double> flatData = new ArrayList<>(dataList);
+            signalsField.put("type", "matrix");
+            signalsField.put("value", formatMatrixString(flatData, numTimePoints, matrixSize));
+        }
+        fields.put("signals", signalsField);
+
+        structValue.put("numFields", fields.size());
+        structValue.put("fields", fields);
+
+        Map<String, Object> workspaceData = new HashMap<>();
+        workspaceData.put("type", "struct");
+        workspaceData.put("value", structValue);
+
+        return workspaceData;
+    }
+
+    /**
+     * Format data as MFCalc matrix string: "[row1;row2;...]"
+     * @param data Flat list of values
+     * @param rows Number of rows
+     * @param cols Number of columns
+     * @return Matrix string in MFCalc format
+     */
+    private String formatMatrixString(List<Double> data, int rows, int cols) {
+        StringBuilder sb = new StringBuilder("[");
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                int index = r * cols + c;
+                if (index < data.size()) {
+                    sb.append(data.get(index));
+                } else {
+                    sb.append("0");
+                }
+
+                if (c < cols - 1) {
+                    sb.append(",");
+                }
+            }
+
+            if (r < rows - 1) {
+                sb.append(";");
+            }
+        }
+
+        sb.append("]");
+        return sb.toString();
     }
 
     // === Code Generation Methods ===

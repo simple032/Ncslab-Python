@@ -159,10 +159,15 @@ public class Data {
                     log.debug("Get variable '{}' response: {}", variableName, variableResponse);
                     if (variableResponse != null && variableResponse.getMessageType().equals("variable_value")){
                         List<MfcalcVariableDto> latestVariables =  variableResponse.getVariables();
-                        for(MfcalcVariableDto variableDto : latestVariables) {                            
+                        for(MfcalcVariableDto variableDto : latestVariables) {
                             if(variableDto != null && variableDto.getName().equals(variableName)) {
-                                result = variableDto.getValue().toString();
-                                log.info("Parsed expression '{}' to value: {}", dataString, result);
+                                Object value = variableDto.getValue();
+                                if (value != null) {
+                                    result = value.toString();
+                                    log.info("Parsed expression '{}' to value: {}", dataString, result);
+                                } else {
+                                    log.warn("Variable '{}' has null value for expression '{}'", variableName, dataString);
+                                }
                                 break;
                             }
                         }

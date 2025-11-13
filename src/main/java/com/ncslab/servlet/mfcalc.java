@@ -182,7 +182,11 @@ public class mfcalc extends HttpServlet {
 							message = errorMsg;
 							operationSuccess = false;
 						}
-					} else if (variablesResponse.getData() != null) {
+					} else if (variablesResponse.getVariables() != null) {
+						// Convert variables data to proper JSON format
+						String jsonData = JsonUtils.toJson(variablesResponse.getVariables());
+						model.setOutputMat(jsonData != null ? jsonData : "[]");
+					} else if (variablesResponse.getData() != null) { // Backward compatibility
 						// Convert variables data to proper JSON format
 						String jsonData = JsonUtils.toJson(variablesResponse.getData());
 						model.setOutputMat(jsonData != null ? jsonData : "[]");

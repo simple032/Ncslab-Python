@@ -29,6 +29,12 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
 import com.ncslab.util.TemplateManager;
 import com.ncslab.util.TemplateUtils;
+import com.ncslab.util.UserContext;
+
+// Internal imports - MFCalc client
+import com.ncslab.code.m.MfcalcClientManager;
+import com.ncslab.dto.communication.MfcalcResponseDto;
+import com.ncslab.dto.communication.MfcalcVariableDto;
 
 /**
  * From Workspace block with SIMULINK-compatible parameters.
@@ -131,6 +137,11 @@ public class FromWorkspace extends SourceBlock {
 
     @Override
     public void calculateInit() {
+        // Load workspace data from MFCalc in simulation mode
+        if (model.getModelMode() == com.ncslab.ncslablink.ModelMode.Simulation) {
+            loadWorkspaceDataFromMfcalc();
+        }
+
         // Initialize with first data point if available
         if (!signalData.isEmpty()) {
             Data outputData = new Data(signalData.get(0));
@@ -299,6 +310,317 @@ public class FromWorkspace extends SourceBlock {
 
         String codeStr = TemplateManager.renderTemplate("m/source/FromWorkspace/output.vm", context);
         code.addOutputCode(codeStr);
+    }
+
+    /**
+     * Load workspace data from MFCalc workspace (Simulation Mode Only)
+     *
+     * Process:
+     * 1. Get userId from UserContext or model
+     * 2. Call MfcalcClientManager.getVariableForUser(userId, variableName)
+     * 3. Parse the response and extract time/signal data
+     * 4. Expected format: structure with "time" and "signals" arrays
+     */
+    private void loadWorkspaceDataFromMfcalc() {
+        try {
+            String varName = variableName != null ? variableName.getInitString() : "simin";
+            System.out.println("[FromWorkspace] Loading workspace variable via MFCalc: " + varName);
+
+            // Get userId from UserContext or model
+            String userId = UserContext.getUserId();
+            if (userId == null) {
+                userId = String.valueOf(model.getUserId());
+            }
+            System.out.println("[FromWorkspace] User ID: " + userId);
+
+            // Get variable from MFCalc workspace
+            MfcalcResponseDto response = MfcalcClientManager.getInstance().getVariableForUser(userId, varName);
+
+            if (response == null || response.isError()) {
+                String error = response != null ? response.getError() : "Null response";
+                System.err.println("[FromWorkspace] Error getting variable from MFCalc: " + error);
+                // Fall back to placeholder data
+                usePlaceholderData();
+                return;
+            }
+
+            // Parse the variable data
+            parseWorkspaceData(response.getData());
+
+            System.out.println("[FromWorkspace] Successfully loaded " + timeData.size() + " data points from workspace");
+
+        } catch (Exception e) {
+            System.err.println("[FromWorkspace] Error loading workspace data: " + e.getMessage());
+            e.printStackTrace();
+
+            // Fallback to placeholder data for testing
+            System.out.println("[FromWorkspace] Using placeholder sine wave data");
+            usePlaceholderData();
+        }
+    }
+
+    /**
+     * Parse workspace variable data from MFCalc response.
+     *
+     * Supports multiple MFCalc formats:
+     *
+     * 1. Timeseries format:
+     * {
+     *   "type": "timeseries",
+     *   "value": {
+     *     "time": {"type": "matrix", "value": "[...]"},
+     *     "data": {"type": "matrix", "value": "[...]"},
+     *     "name": "varname"
+     *   }
+     * }
+     *
+     * 2. Struct format:
+     * {
+     *   "type": "struct",
+     *   "value": {
+     *     "fields": {
+     *       "time": {"type": "matrix", "value": "[...]"},
+     *       "signals": {"type": "matrix", "value": "[...]"}
+     *     }
+     *   }
+     * }
+     *
+     * Also supports legacy formats: {time: [...], signals: [...]}
+     */
+    @SuppressWarnings("unchecked")
+    private void parseWorkspaceData(Object data) throws Exception {
+        timeData.clear();
+        signalData.clear();
+
+        if (data == null) {
+            throw new Exception("Workspace variable data is null");
+        }
+
+        // Handle MFCalc formats
+        if (data instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> dataMap = (Map<String, Object>) data;
+
+            String type = (String) dataMap.get("type");
+
+            if ("timeseries".equals(type)) {
+                // MFCalc Timeseries format
+                parseMfcalcTimeseries(dataMap);
+            } else if ("struct".equals(type)) {
+                // MFCalc Struct format
+                parseMfcalcStruct(dataMap);
+            } else {
+                // Legacy simple map format: {time: [...], signals: [...]}
+                parseLegacyMapFormat(dataMap);
+            }
+        }
+        // Handle JSONObject format (legacy)
+        else if (data instanceof org.json.JSONObject) {
+            parseLegacyJsonFormat((org.json.JSONObject) data);
+        }
+
+        // Validate data
+        if (timeData.isEmpty() || signalData.isEmpty()) {
+            throw new Exception("No time or signal data found in workspace variable");
+        }
+
+        if (timeData.size() != signalData.size()) {
+            throw new Exception("Time and signal arrays have different lengths: time=" +
+                timeData.size() + ", signals=" + signalData.size());
+        }
+    }
+
+    /**
+     * Parse MFCalc timeseries format:
+     * {"type": "timeseries", "value": {"time": {...}, "data": {...}, "name": "..."}}
+     */
+    @SuppressWarnings("unchecked")
+    private void parseMfcalcTimeseries(Map<String, Object> timeseriesData) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> value = (Map<String, Object>) timeseriesData.get("value");
+        if (value == null) {
+            throw new Exception("Timeseries value is null");
+        }
+
+        // Parse time field
+        @SuppressWarnings("unchecked")
+        Map<String, Object> timeField = (Map<String, Object>) value.get("time");
+        if (timeField != null) {
+            parseMatrixField(timeField, timeData);
+        }
+
+        // Parse data field
+        @SuppressWarnings("unchecked")
+        Map<String, Object> dataField = (Map<String, Object>) value.get("data");
+        if (dataField != null) {
+            parseMatrixField(dataField, signalData);
+        }
+
+        // Optional: log the name if present
+        String name = (String) value.get("name");
+        if (name != null) {
+            System.out.println("[FromWorkspace] Loaded timeseries: " + name);
+        }
+    }
+
+    /**
+     * Parse MFCalc struct format:
+     * {"type": "struct", "value": {"fields": {"time": {...}, "signals": {...}}}}
+     */
+    @SuppressWarnings("unchecked")
+    private void parseMfcalcStruct(Map<String, Object> structData) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> value = (Map<String, Object>) structData.get("value");
+        if (value == null) {
+            throw new Exception("Struct value is null");
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> fields = (Map<String, Object>) value.get("fields");
+        if (fields == null) {
+            throw new Exception("Struct fields is null");
+        }
+
+        // Parse time field
+        @SuppressWarnings("unchecked")
+        Map<String, Object> timeField = (Map<String, Object>) fields.get("time");
+        if (timeField != null) {
+            parseMatrixField(timeField, timeData);
+        }
+
+        // Parse signals field (try "signals" first, then "values")
+        @SuppressWarnings("unchecked")
+        Map<String, Object> signalsField = (Map<String, Object>) fields.get("signals");
+        if (signalsField == null) {
+            signalsField = (Map<String, Object>) fields.get("values");
+        }
+        if (signalsField != null) {
+            parseMatrixField(signalsField, signalData);
+        }
+    }
+
+    /**
+     * Parse MFCalc matrix field: {"type": "matrix", "value": "[1,2;3,4]"}
+     */
+    @SuppressWarnings("unchecked")
+    private void parseMatrixField(Map<String, Object> field, List<Double> targetList) throws Exception {
+        String type = (String) field.get("type");
+        Object value = field.get("value");
+
+        if ("matrix".equals(type) && value instanceof String) {
+            // Parse matrix string format: "[1,2;3,4]"
+            String matrixStr = (String) value;
+            parseMatrixString(matrixStr, targetList);
+        } else if (value instanceof List) {
+            // Handle list format
+            @SuppressWarnings("unchecked")
+            List<?> list = (List<?>) value;
+            for (Object item : list) {
+                targetList.add(convertToDouble(item));
+            }
+        }
+    }
+
+    /**
+     * Parse MFCalc matrix string: "[1,2,3;4,5,6]" -> [1, 2, 3, 4, 5, 6]
+     */
+    private void parseMatrixString(String matrixStr, List<Double> targetList) {
+        // Remove brackets
+        String content = matrixStr.trim();
+        if (content.startsWith("[")) {
+            content = content.substring(1);
+        }
+        if (content.endsWith("]")) {
+            content = content.substring(0, content.length() - 1);
+        }
+
+        // Split by semicolon (rows) and comma (columns)
+        String[] rows = content.split(";");
+        for (String row : rows) {
+            String[] values = row.split(",");
+            for (String val : values) {
+                try {
+                    targetList.add(Double.parseDouble(val.trim()));
+                } catch (NumberFormatException e) {
+                    // Skip invalid values
+                }
+            }
+        }
+    }
+
+    /**
+     * Parse legacy map format: {time: [...], signals: [...]}
+     */
+    @SuppressWarnings("unchecked")
+    private void parseLegacyMapFormat(Map<String, Object> dataMap) {
+        // Parse time array
+        Object timeObj = dataMap.get("time");
+        if (timeObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<?> timeList = (List<?>) timeObj;
+            for (Object t : timeList) {
+                timeData.add(convertToDouble(t));
+            }
+        }
+
+        // Parse signal array (try "signals" first, then "values")
+        Object signalObj = dataMap.get("signals");
+        if (signalObj == null) {
+            signalObj = dataMap.get("values");
+        }
+        if (signalObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<?> signalList = (List<?>) signalObj;
+            for (Object s : signalList) {
+                signalData.add(convertToDouble(s));
+            }
+        }
+    }
+
+    /**
+     * Parse legacy JSONObject format
+     */
+    private void parseLegacyJsonFormat(org.json.JSONObject json) {
+        // Parse time array
+        if (json.has("time")) {
+            org.json.JSONArray timeArray = json.getJSONArray("time");
+            for (int i = 0; i < timeArray.length(); i++) {
+                timeData.add(timeArray.getDouble(i));
+            }
+        }
+
+        // Parse signal array
+        String signalKey = json.has("signals") ? "signals" : "values";
+        if (json.has(signalKey)) {
+            org.json.JSONArray signalArray = json.getJSONArray(signalKey);
+            for (int i = 0; i < signalArray.length(); i++) {
+                signalData.add(signalArray.getDouble(i));
+            }
+        }
+    }
+
+    /**
+     * Convert Object to Double (handles various numeric types from MFCalc)
+     */
+    private double convertToDouble(Object obj) {
+        if (obj instanceof Number) {
+            return ((Number) obj).doubleValue();
+        } else if (obj instanceof String) {
+            return Double.parseDouble((String) obj);
+        }
+        return 0.0;
+    }
+
+    /**
+     * Use placeholder sine wave data when workspace variable is unavailable
+     */
+    private void usePlaceholderData() {
+        timeData.clear();
+        signalData.clear();
+        for (int i = 0; i < 100; i++) {
+            timeData.add(i * 0.1);
+            signalData.add(Math.sin(i * 0.1));
+        }
     }
 
     /**

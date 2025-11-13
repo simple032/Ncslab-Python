@@ -1157,7 +1157,7 @@ public class NCSLabSystem {
                                   java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
             throws com.ncslab.ncslablink.ModelException {
         try {
-            com.ncslab.dto.model.GraphDataDto.PropDataDto props = cell.getProps();
+            com.ncslab.dto.model.GraphDataDto.PropDataDto props = cell.getPropsAsObject();
             if (props == null) {
                 System.err.println("Cell has no props, skipping: " + cell.getId());
                 return;
@@ -1248,9 +1248,10 @@ public class NCSLabSystem {
         blockJSON.put("blockPath", blockPath);
         blockJSON.put("blockUUID", id);
 
-        // Set parameter values
-        if (props.getParamValues() != null) {
-            blockJSON.put("paramValues", props.getParamValues());
+        // Set parameter values - use getParamValuesAsMap() to handle both Map and array types
+        java.util.Map<String, Object> paramValues = props.getParamValuesAsMap();
+        if (paramValues != null && !paramValues.isEmpty()) {
+            blockJSON.put("paramValues", new org.json.JSONObject(paramValues));
         } else {
             blockJSON.put("paramValues", new org.json.JSONObject());
         }
@@ -1336,8 +1337,9 @@ public class NCSLabSystem {
                                      String parentPath,
                                      String modelName) {
         // First try explicit path from props
-        if (cell.getProps() != null && cell.getProps().getPath() != null) {
-            return cell.getProps().getPath();
+        com.ncslab.dto.model.GraphDataDto.PropDataDto props = cell.getPropsAsObject();
+        if (props != null && props.getPath() != null) {
+            return props.getPath();
         }
 
         // Then try cell path

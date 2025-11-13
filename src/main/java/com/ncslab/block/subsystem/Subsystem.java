@@ -28,6 +28,7 @@ public class Subsystem extends Block{
     @Getter
     protected List<Out> outBlockList;
 
+
     // NCSLabSystem manages all blocks and lines within this subsystem
     @Getter
     protected NCSLabSystem innerSystem;
@@ -47,7 +48,7 @@ public class Subsystem extends Block{
     public static final List<String> outputNames = new ArrayList<>();
     public static final List<String> inputNames = new ArrayList<>();
     
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public Subsystem(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
         inBlockList = new ArrayList<>();
@@ -62,9 +63,10 @@ public class Subsystem extends Block{
     public Subsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inBlockList = new ArrayList<>();
-        outBlockList = new ArrayList<>();
+        outBlockList = new ArrayList<>();        
         
         // Initialize NCSLabSystem to manage subsystem's internal structure
+        // TODO: Design the subsystem-scope context based on available paramValues
         innerSystem = new NCSLabSystem();
         
         // Initialize with empty collections - blocks and lines will be added via management methods

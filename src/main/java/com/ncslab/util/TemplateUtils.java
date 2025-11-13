@@ -281,7 +281,7 @@ public class TemplateUtils {
             context.put("solver", block.getModel().getConfig().getSolver());
         }
 
-        // Common mode constants
+        // Common mode constants (enum values for template comparison)
         context.put("compilationMode", ModelMode.Compilation);
         context.put("simulationMode", ModelMode.Simulation);
 

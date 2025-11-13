@@ -141,10 +141,13 @@ public class DCMotorAngle extends Block {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        context.put("block", this);
+        // Use standard context population for consistency
+        com.ncslab.util.TemplateUtils.populateStandardContext(context, this);
+
+        // Add block-specific context
         context.put("blockStateList", stateList);
         context.put("blockOutputPortVariables", java.util.Arrays.asList(getOutputPortVariables()));
-        context.put("modelMode", model.getModelMode().name());
+        // Note: modelMode is already set by populateStandardContext
 
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/output.vm", context);
         code.addOutputCode(codeStr);
