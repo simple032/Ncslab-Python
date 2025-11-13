@@ -188,6 +188,12 @@ public class BlockType{
         blockClassTree.put("From Workspace", com.ncslab.block.source.FromWorkspace.class);
         blockClassTree.put("FromWorkspace", com.ncslab.block.source.FromWorkspace.class);
 
+        // File blocks - MAT file I/O
+        blockClassTree.put("To File", com.ncslab.block.sink.ToFile.class);
+        blockClassTree.put("ToFile", com.ncslab.block.sink.ToFile.class);
+        blockClassTree.put("From File", com.ncslab.block.source.FromFile.class);
+        blockClassTree.put("FromFile", com.ncslab.block.source.FromFile.class);
+
         // Discrete
         blockClassTree.put("DiscreteStateSpace", com.ncslab.block.discrete.DiscreteStateSpace.class);
         blockClassTree.put("Zero-OrderHold", com.ncslab.block.discrete.Zero_Order_Hold.class);

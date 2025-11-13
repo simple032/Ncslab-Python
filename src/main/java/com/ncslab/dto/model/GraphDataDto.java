@@ -44,8 +44,9 @@ public class GraphDataDto {
         @JsonProperty("subGraph")
         private SubGraphDataDto subGraph;
 
+        // Use Object to handle both PropDataDto objects and arrays gracefully
         @JsonProperty("props")
-        private PropDataDto props;
+        private Object props;
 
         // Link-specific properties
         @JsonProperty("source")
@@ -53,6 +54,22 @@ public class GraphDataDto {
 
         @JsonProperty("target")
         private LinkDto target;
+
+        /**
+         * Get props as PropDataDto if it's an object, null otherwise
+         */
+        public PropDataDto getPropsAsObject() {
+            if (props instanceof Map) {
+                // Convert Map to PropDataDto using Jackson
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    return mapper.convertValue(props, PropDataDto.class);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return props instanceof PropDataDto ? (PropDataDto) props : null;
+        }
     }
 
     /**
@@ -73,11 +90,12 @@ public class GraphDataDto {
         @JsonProperty("description")
         private String description;
 
+        // Can be either Map (object) or empty array []
         @JsonProperty("paramLables")
-        private Map<String, String> paramLables;
+        private Object paramLables;
 
         @JsonProperty("paramValues")
-        private Map<String, Object> paramValues;
+        private Object paramValues;
 
         @JsonProperty("srcBlock")
         private String srcBlock;
@@ -87,6 +105,28 @@ public class GraphDataDto {
 
         @JsonProperty("title")
         private String title;
+
+        /**
+         * Get paramLables as Map if it's an object, empty map if it's an array or null
+         */
+        @SuppressWarnings("unchecked")
+        public Map<String, String> getParamLablesAsMap() {
+            if (paramLables instanceof Map) {
+                return (Map<String, String>) paramLables;
+            }
+            return new java.util.HashMap<>();
+        }
+
+        /**
+         * Get paramValues as Map if it's an object, empty map if it's an array or null
+         */
+        @SuppressWarnings("unchecked")
+        public Map<String, Object> getParamValuesAsMap() {
+            if (paramValues instanceof Map) {
+                return (Map<String, Object>) paramValues;
+            }
+            return new java.util.HashMap<>();
+        }
     }
 
     /**
