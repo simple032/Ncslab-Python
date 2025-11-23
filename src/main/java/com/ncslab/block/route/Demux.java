@@ -311,18 +311,7 @@ public class Demux extends RouteBlock {
 		String codeStr = TemplateManager.renderTemplate("c/route/Demux/output.vm", context);
 		code.addOutputCode(codeStr);
 	}
-	public void generateDerivativeCodeC(CodeStructC code) {
-		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
-		String codeStr = TemplateManager.renderTemplate("c/route/Demux/derivative.vm", context);
-		code.addDerivativeCode(codeStr);
-	}
-	public void generateUpdateCodeC(CodeStructC code) {
-		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
-		String codeStr = TemplateManager.renderTemplate("c/route/Demux/update.vm", context);
-		code.addUpdateCode(codeStr);
-	}
+    
 	public void updateDimension() throws MatDimException {
 		// Demux splits a vector input into multiple scalar outputs
 		// Input: vector of size N
@@ -374,9 +363,33 @@ public class Demux extends RouteBlock {
 	public void checkDimension() throws MatDimException {
 		InputPort inputPort = this.getInputPortList().get(0);
 
+		// Debug: Print Demux input dimensions and connected block info
+		if ("Demux1".equals(blockName)) {
+			System.out.println("========================================");
+			System.out.println("Demux1 checkDimension - Input dimensions:");
+			System.out.println("  Height: " + inputPort.getHeight());
+			System.out.println("  Width: " + inputPort.getWidth());
+			System.out.println("  isVector(): " + inputPort.isVector());
+			System.out.println("  isReal(): " + inputPort.isReal());
+			System.out.println("  VectorSize: " + inputPort.getVectorSize());
+
+			// Check connected block
+			if (inputPort.getLinkedLine() != null) {
+				OutputPort sourcePort = inputPort.getLinkedLine().getLinkedOutputPort();
+				if (sourcePort != null) {
+					System.out.println("  Connected to: " + sourcePort.getBlock().getBlockName());
+					System.out.println("  Source output dimensions: [" +
+						sourcePort.getHeight() + "×" + sourcePort.getWidth() + "]");
+				}
+			}
+			System.out.println("========================================");
+		}
+
 		// Check that input is a vector (not a scalar)
 		if(inputPort.isVector()==false || inputPort.isReal()==true) {
-			MatDimException e=new MatDimException("Block "+this.blockName+" input dimension error!\n Only a vector is applicable for demux\n");
+			MatDimException e=new MatDimException(
+            String.format(
+            "Block %s input has invalid dimension [%dx%d]!\n Only a vector is applicable for demux\n", blockName, inputPort.getHeight(), inputPort.getWidth()));
 			throw(e);
 		}
 

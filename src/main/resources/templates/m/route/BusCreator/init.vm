@@ -1,0 +1,15 @@
+% Code for initialization of block BusCreator:($block.blockId) $block.blockName
+
+#if($isVirtual)
+% Virtual Bus: $busOutputName (signals stored separately)
+#foreach($elementName in $elementNames)
+${busOutputName}_${elementName} = 0;  % Initialize virtual bus element
+#end
+#else
+% Non-Virtual Bus: $busOutputName (struct)
+${outputSignalName} = struct();
+#foreach($elementName in $elementNames)
+${outputSignalName}.${elementName} = 0;  % Initialize struct field
+#end
+#end
+

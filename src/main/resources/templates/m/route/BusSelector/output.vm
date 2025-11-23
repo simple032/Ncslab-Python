@@ -1,0 +1,7 @@
+## Bus Selector - Output Code (MATLAB)
+% Extract bus elements
+#foreach($signal in $selectedSignals)
+#set($idx = $foreach.index)
+#set($outputSignal = $outputNames.get($idx))
+$outputSignal = ${inputPort0SignalName}.${signal};  % Extract: $signal
+#end

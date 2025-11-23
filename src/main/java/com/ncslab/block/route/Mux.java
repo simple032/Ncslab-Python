@@ -359,41 +359,38 @@ public class Mux extends RouteBlock {
 		code.addOutputCode(codeStr);
 	}
 
-	public void generateDerivativeCodeC(CodeStructC code) {
-		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
-		String codeStr = TemplateManager.renderTemplate("c/route/Mux/derivative.vm", context);
-		code.addDerivativeCode(codeStr);
-	}
-
-	public void generateUpdateCodeC(CodeStructC code) {
-		context.put("block", this);
-
-		String codeStr = TemplateManager.renderTemplate("c/route/Mux/update.vm", context);
-		code.addUpdateCode(codeStr);
-	}
-
 	public void updateDimension() throws MatDimException {
-		//super.updateDimension();
+		super.updateDimension();
 		int size=0;
 		CDataType outputCType = CDataType.DOUBLE; // Default
 		boolean firstInput = true;
 
 		for(int i=0; i<inputPortList.size(); i++) {
 			InputPort inputPort = inputPortList.get(i);
-			if(inputPort.isVector()==true||inputPort.isReal()==true) {
-				size+=inputPort.getVectorSize();
-			}
-			else {
-				// Matrix inputs are also supported - add all elements
-				int elements = inputPort.getHeight() * inputPort.getWidth();
-				size += elements;
-				System.out.println("MUX updateDimension: " + getBlockName() + " - Added " + elements + " matrix elements to size (now=" + size + ")");
-			}
 
-			// Determine output CDataType: if all inputs have same type, use that; otherwise use DOUBLE
+			// Get dimensions from linked output signal, not from input port
 			if (inputPort.getLinkedLine() != null && inputPort.getLinkedLine().getLinkedOutputPort() != null) {
-				CDataType inputCType = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getCDataType();
+				OutputSignal inputSignal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+				// Calculate size based on signal dimensions
+				int height = inputSignal.getHeight();
+				int width = inputSignal.getWidth();
+				boolean isScalar = (height == 1 && width == 1);
+				boolean isVector = (height == 1 || width == 1);
+
+				if (isScalar || isVector) {
+					// Scalar or vector: add vector size
+					int vectorSize = Math.max(height, width);
+					size += vectorSize;
+				} else {
+					// Matrix: add all elements
+					int elements = height * width;
+					size += elements;
+					System.out.println("MUX updateDimension: " + getBlockName() + " - Added " + elements + " matrix elements to size (now=" + size + ")");
+				}
+
+				// Determine output CDataType
+				CDataType inputCType = inputSignal.getCDataType();
 				if (firstInput) {
 					outputCType = inputCType;
 					firstInput = false;
@@ -404,6 +401,12 @@ public class Mux extends RouteBlock {
 			}
 		}
 
+		// Ensure size is at least 1 (avoid 0-dimension matrices)
+		if (size == 0) {
+			throw new MatDimException("Mux block '" + getBlockName() + "': Cannot determine output dimensions. " +
+				"Check that all input signals have valid dimensions.");
+		}
+
 		OutputPort output=getOutputPortList().get(0);
 		output.setHeight(size);
 		output.setWidth(1);
@@ -412,7 +415,7 @@ public class Mux extends RouteBlock {
 		output.getOutputSignalC().setDataType(DataType.MATRIX);
 		// Set output CDataType based on input analysis
 		output.getOutputSignalC().setCDataType(outputCType);
-		System.out.println("MUX updateDimension: " + getBlockName() + " - Output CDataType set to: " + outputCType);
+		System.out.println("MUX updateDimension: " + getBlockName() + " - Output dimensions set to [" + size + "×1], CDataType: " + outputCType);
 	}
 
 	public void checkDimension() throws MatDimException {
@@ -422,22 +425,43 @@ public class Mux extends RouteBlock {
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        Matrix matrixResult = new Matrix(out.getHeight(), out.getWidth());
-        int index = 0;
+
+        // Calculate total output size dynamically by summing all input vector sizes
+        int totalSize = 0;
         for(int i=0; i<num; i++) {
             InputPort in = inputPortList.get(i);
-            if(in.getHeight() > 1){
-                for(int j=0; j<in.getVectorSize(); j++) {
+            if(in.isVector() || in.isReal()) {
+                totalSize += in.getVectorSize();
+            } else {
+                // Matrix inputs - add all elements
+                totalSize += in.getHeight() * in.getWidth();
+            }
+        }
+
+        // Create output matrix with correct dimensions [totalSize x 1]
+        Matrix matrixResult = new Matrix(totalSize, 1);
+        int index = 0;
+
+        // Concatenate all inputs into output vector
+        for(int i=0; i<num; i++) {
+            InputPort in = inputPortList.get(i);
+
+            if(in.getHeight() > 1) {
+                // Column vector input [height x 1]
+                for(int j=0; j<in.getHeight(); j++) {
                     matrixResult.set(index++, 0, in.getData().getMatrix().get(j, 0));
                 }
-            }else if(in.getWidth() > 1){
-                for(int j=0; j<in.getVectorSize(); j++) {
+            } else if(in.getWidth() > 1) {
+                // Row vector input [1 x width]
+                for(int j=0; j<in.getWidth(); j++) {
                     matrixResult.set(index++, 0, in.getData().getMatrix().get(0, j));
                 }
-            }else {
+            } else {
+                // Scalar input
                 matrixResult.set(index++, 0, in.getData().getInitValue());
             }
         }
+
         out.setData(new Data(matrixResult));
     }
 }
