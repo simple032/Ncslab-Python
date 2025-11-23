@@ -10,6 +10,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import com.ncslab.util.TemplateManager;
+import Jama.Matrix;
 
 public class Transpose extends Block {
 
@@ -30,6 +32,18 @@ public class Transpose extends Block {
     public Transpose(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Transpose block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create Transpose block from TransposeDto.
+     *
+     * @param dto The TransposeDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Transpose block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Transpose createFromDto(TransposeDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Transpose(dto, model);
     }
 
 
@@ -81,5 +95,25 @@ public class Transpose extends Block {
         out.getOutputSignalC().setHeight(in.getWidth());
         out.getOutputSignalC().setWidth(in.getHeight());
         out.getOutputSignalC().setDataType(DataType.MATRIX);
+    }
+
+    /**
+     * Calculate output by transposing the input matrix.
+     * For a matrix A, computes A^T (transpose).
+     *
+     * @param t Current simulation time (unused for this block)
+     */
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+
+        // Get input matrix
+        Matrix input = inputPortList.get(0).getData().getMatrix();
+
+        // Perform transpose
+        Matrix result = input.transpose();
+
+        // Set output
+        out.getOutputSignalC().getData().setMatrix(result);
     }
 }

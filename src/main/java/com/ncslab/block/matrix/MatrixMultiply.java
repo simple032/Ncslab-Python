@@ -13,6 +13,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -20,6 +21,7 @@ import com.ncslab.block.io.InputPort;
 import java.util.ArrayList;
 import java.util.List;
 import com.ncslab.util.TemplateManager;
+import Jama.Matrix;
 
 public class MatrixMultiply extends Block {
 
@@ -33,6 +35,18 @@ public class MatrixMultiply extends Block {
     public MatrixMultiply(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixMultiply block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create MatrixMultiply block from MatrixMultiplyDto.
+     *
+     * @param dto The MatrixMultiplyDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New MatrixMultiply block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static MatrixMultiply createFromDto(MatrixMultiplyDto dto, NCSLabModel model) throws BlockCreationException {
+        return new MatrixMultiply(dto, model);
     }
 
 
@@ -109,5 +123,29 @@ public class MatrixMultiply extends Block {
     }
 
     public void checkDimension() throws MatDimException {
+    }
+
+    /**
+     * Calculate output by performing matrix multiplication.
+     * Computes: out = A1 * A2 * A3 * ... * An
+     * where the multiplication order follows the input sequence.
+     *
+     * @param t Current simulation time (unused for this block)
+     */
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+
+        // Start with first input matrix
+        Matrix result = inputPortList.get(0).getData().getMatrix();
+
+        // Multiply by each subsequent input matrix
+        for (int i = 1; i < seq.length(); i++) {
+            Matrix nextMatrix = inputPortList.get(i).getData().getMatrix();
+            result = result.times(nextMatrix);
+        }
+
+        // Set output
+        out.getOutputSignalC().getData().setMatrix(result);
     }
 }

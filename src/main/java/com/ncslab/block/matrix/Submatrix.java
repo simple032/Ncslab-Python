@@ -14,6 +14,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -21,6 +22,7 @@ import com.ncslab.block.io.InputPort;
 import java.util.ArrayList;
 import java.util.List;
 import com.ncslab.util.TemplateManager;
+import Jama.Matrix;
 
 public class Submatrix extends Block {
     private Parameter startingRow;
@@ -36,6 +38,18 @@ public class Submatrix extends Block {
     public Submatrix(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: Submatrix block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create Submatrix block from SubmatrixDto.
+     *
+     * @param dto The SubmatrixDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Submatrix block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Submatrix createFromDto(SubmatrixDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Submatrix(dto, model);
     }
 
 
@@ -129,5 +143,32 @@ public class Submatrix extends Block {
         out.getOutputSignalC().setHeight(outHeight);
         out.getOutputSignalC().setWidth(outWidth);
         out.getOutputSignalC().setDataType(DataType.MATRIX);
+    }
+
+    /**
+     * Calculate output by extracting a submatrix from the input.
+     * Extracts rows [startingRow:endingRow] and columns [startingColumn:endingColumn].
+     *
+     * @param t Current simulation time (unused for this block)
+     */
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+
+        // Get input matrix
+        Matrix input = inputPortList.get(0).getData().getMatrix();
+
+        // Get parameters (1-based indexing)
+        int startRow = (int) startingRow.getData().getInitValue() - 1; // Convert to 0-based
+        int endRow = (int) endingRow.getData().getInitValue() - 1;
+        int startCol = (int) startingColumn.getData().getInitValue() - 1;
+        int endCol = (int) endingColumn.getData().getInitValue() - 1;
+
+        // Extract submatrix using JAMA's getMatrix method
+        // getMatrix(int i0, int i1, int j0, int j1) - inclusive on both ends
+        Matrix result = input.getMatrix(startRow, endRow, startCol, endCol);
+
+        // Set output
+        out.getOutputSignalC().getData().setMatrix(result);
     }
 }

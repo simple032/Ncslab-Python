@@ -17,11 +17,14 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
 
 import com.ncslab.util.TemplateManager;
+import Jama.Matrix;
+
 public class MatrixConcatenate extends Block {
     private String seq;
     private Parameter ConcatenateDimension;
@@ -34,6 +37,18 @@ public class MatrixConcatenate extends Block {
     public MatrixConcatenate(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixConcatenate block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create MatrixConcatenate block from MatrixConcatenateDto.
+     *
+     * @param dto The MatrixConcatenateDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New MatrixConcatenate block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static MatrixConcatenate createFromDto(MatrixConcatenateDto dto, NCSLabModel model) throws BlockCreationException {
+        return new MatrixConcatenate(dto, model);
     }
 
 
@@ -125,5 +140,81 @@ public class MatrixConcatenate extends Block {
         out.getOutputSignalC().setHeight(outHeight);
         out.getOutputSignalC().setWidth(outWidth);
         out.getOutputSignalC().setDataType(DataType.MATRIX);
+    }
+
+    /**
+     * Calculate output by concatenating input matrices.
+     * Dimension 1: Vertical concatenation (stack rows)
+     * Dimension 2: Horizontal concatenation (stack columns)
+     *
+     * @param t Current simulation time (unused for this block)
+     */
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+
+        int dim = (int) ConcatenateDimension.getData().getInitValue();
+        int numInputs = seq.length();
+
+        // Get all input matrices
+        Matrix[] inputs = new Matrix[numInputs];
+        for (int i = 0; i < numInputs; i++) {
+            inputs[i] = inputPortList.get(i).getData().getMatrix();
+        }
+
+        Matrix result;
+
+        if (dim == 1) {
+            // Vertical concatenation (concatenate rows)
+            int totalRows = 0;
+            int cols = inputs[0].getColumnDimension();
+
+            // Calculate total rows
+            for (Matrix input : inputs) {
+                totalRows += input.getRowDimension();
+            }
+
+            // Create result matrix
+            result = new Matrix(totalRows, cols);
+
+            // Copy data
+            int currentRow = 0;
+            for (Matrix input : inputs) {
+                int rows = input.getRowDimension();
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        result.set(currentRow + i, j, input.get(i, j));
+                    }
+                }
+                currentRow += rows;
+            }
+        } else {
+            // Horizontal concatenation (concatenate columns)
+            int rows = inputs[0].getRowDimension();
+            int totalCols = 0;
+
+            // Calculate total columns
+            for (Matrix input : inputs) {
+                totalCols += input.getColumnDimension();
+            }
+
+            // Create result matrix
+            result = new Matrix(rows, totalCols);
+
+            // Copy data
+            int currentCol = 0;
+            for (Matrix input : inputs) {
+                int cols = input.getColumnDimension();
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        result.set(i, currentCol + j, input.get(i, j));
+                    }
+                }
+                currentCol += cols;
+            }
+        }
+
+        // Set output
+        out.getOutputSignalC().getData().setMatrix(result);
     }
 }

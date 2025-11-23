@@ -10,6 +10,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -29,6 +30,18 @@ public class IsTriangular extends Block {
     public IsTriangular(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IsTriangular block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create IsTriangular block from IsTriangularDto.
+     *
+     * @param dto The IsTriangularDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New IsTriangular block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static IsTriangular createFromDto(IsTriangularDto dto, NCSLabModel model) throws BlockCreationException {
+        return new IsTriangular(dto, model);
     }
 
 

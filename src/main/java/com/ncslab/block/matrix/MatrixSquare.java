@@ -10,6 +10,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -33,6 +34,18 @@ public class MatrixSquare extends Block {
     public MatrixSquare(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: MatrixSquare block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create MatrixSquare block from MatrixSquareDto.
+     *
+     * @param dto The MatrixSquareDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New MatrixSquare block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static MatrixSquare createFromDto(MatrixSquareDto dto, NCSLabModel model) throws BlockCreationException {
+        return new MatrixSquare(dto, model);
     }
 
 

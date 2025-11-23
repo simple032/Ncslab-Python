@@ -11,6 +11,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -29,6 +30,18 @@ public class IsSymmetric extends Block {
     public IsSymmetric(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IsSymmetric block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create IsSymmetric block from IsSymmetricDto.
+     *
+     * @param dto The IsSymmetricDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New IsSymmetric block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static IsSymmetric createFromDto(IsSymmetricDto dto, NCSLabModel model) throws BlockCreationException {
+        return new IsSymmetric(dto, model);
     }
 
 

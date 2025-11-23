@@ -14,11 +14,13 @@ import com.ncslab.block.io.Parameter;
 import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import Jama.Matrix;
 
 public class IdentityMatrix extends Block {
     private Parameter outputDimensions;
@@ -32,6 +34,18 @@ public class IdentityMatrix extends Block {
     public IdentityMatrix(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: IdentityMatrix block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create IdentityMatrix block from IdentityMatrixDto.
+     *
+     * @param dto The IdentityMatrixDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New IdentityMatrix block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static IdentityMatrix createFromDto(IdentityMatrixDto dto, NCSLabModel model) throws BlockCreationException {
+        return new IdentityMatrix(dto, model);
     }
 
 
@@ -85,5 +99,25 @@ public class IdentityMatrix extends Block {
         out.getOutputSignalC().setHeight(n);
         out.getOutputSignalC().setWidth(n);
         out.getOutputSignalC().setDataType(DataType.MATRIX);
+    }
+
+    /**
+     * Calculate output by generating an identity matrix.
+     * Creates an n×n identity matrix where diagonal elements are 1 and all others are 0.
+     *
+     * @param t Current simulation time (unused for this block)
+     */
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+
+        // Get dimension parameter
+        int n = (int) outputDimensions.getData().getInitValue();
+
+        // Create identity matrix using JAMA's static method
+        Matrix result = Matrix.identity(n, n);
+
+        // Set output
+        out.getOutputSignalC().getData().setMatrix(result);
     }
 }

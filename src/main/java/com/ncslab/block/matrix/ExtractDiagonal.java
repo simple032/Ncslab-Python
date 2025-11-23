@@ -12,6 +12,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import Jama.Matrix;
 
 public class ExtractDiagonal extends Block {
 
@@ -31,6 +33,18 @@ public class ExtractDiagonal extends Block {
     public ExtractDiagonal(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ExtractDiagonal block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create ExtractDiagonal block from ExtractDiagonalDto.
+     *
+     * @param dto The ExtractDiagonalDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New ExtractDiagonal block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static ExtractDiagonal createFromDto(ExtractDiagonalDto dto, NCSLabModel model) throws BlockCreationException {
+        return new ExtractDiagonal(dto, model);
     }
 
 
@@ -81,5 +95,35 @@ public class ExtractDiagonal extends Block {
         out.getOutputSignalC().setHeight(1);
         out.getOutputSignalC().setWidth(nColumn);
         out.getOutputSignalC().setDataType(DataType.MATRIX);
+    }
+
+    /**
+     * Calculate output by extracting diagonal elements from the input matrix.
+     * Returns a row vector containing the diagonal elements.
+     *
+     * @param t Current simulation time (unused for this block)
+     */
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+
+        // Get input matrix
+        Matrix input = inputPortList.get(0).getData().getMatrix();
+
+        // Determine diagonal length (minimum of rows and columns)
+        int rows = input.getRowDimension();
+        int cols = input.getColumnDimension();
+        int diagonalLength = Math.min(rows, cols);
+
+        // Create result as row vector
+        Matrix result = new Matrix(1, diagonalLength);
+
+        // Extract diagonal elements
+        for (int i = 0; i < diagonalLength; i++) {
+            result.set(0, i, input.get(i, i));
+        }
+
+        // Set output
+        out.getOutputSignalC().getData().setMatrix(result);
     }
 }
