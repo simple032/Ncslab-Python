@@ -172,6 +172,18 @@ public class StringConcatenate extends Block {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
+    /**
+     * Factory method to create StringConcatenate from StringConcatenateDto.
+     *
+     * @param dto The StringConcatenateDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringConcatenate instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringConcatenate createFromDto(StringConcatenateDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringConcatenate(dto, model);
+    }
+
     // === Static Factory Method for JSON Deserialization ===
     public static StringConcatenate fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

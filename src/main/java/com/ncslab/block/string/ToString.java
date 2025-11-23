@@ -16,6 +16,7 @@ import com.ncslab.dto.block.specialized.string.ToStringDto;
 
 // Internal imports - Core
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 // Internal imports - Block components
@@ -122,6 +123,18 @@ public class ToString extends Block {
         outputPortList.add(new OutputPort(this, 1, true)); // Has feedthrough
 
         System.out.println("DTO-NATIVE: ToString block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create ToString from ToStringDto.
+     *
+     * @param dto The ToStringDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New ToString instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static ToString createFromDto(ToStringDto dto, NCSLabModel model) throws BlockCreationException {
+        return new ToString(dto, model);
     }
 
     @Override

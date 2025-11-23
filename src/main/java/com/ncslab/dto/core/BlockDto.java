@@ -61,7 +61,24 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.ScopeDto.class, name = "Scope"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.TerminatorDto.class, name = "Terminator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.XYGraphDto.class, name = "XYGraph"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.StopSimulationDto.class, name = "StopSimulation"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.StopSimulationDto.class, name = "Stop Simulation"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.SwitchDto.class, name = "Switch"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.MultiportSwitchDto.class, name = "Multiport Switch"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.MultiportSwitchDto.class, name = "MultiportSwitch"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.ManualSwitchDto.class, name = "ManualSwitch"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.ManualSwitchDto.class, name = "Manual Switch"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.MergeDto.class, name = "Merge"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.IndexVectorDto.class, name = "IndexVector"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.IndexVectorDto.class, name = "Index Vector"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.BusCreatorDto.class, name = "BusCreator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.BusCreatorDto.class, name = "Bus Creator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.BusSelectorDto.class, name = "BusSelector"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.route.BusSelectorDto.class, name = "Bus Selector"),
+    // Verification blocks
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.verification.AssertDto.class, name = "Assert"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.verification.CheckSignalAttributesDto.class, name = "CheckSignalAttributes"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.verification.CheckSignalAttributesDto.class, name = "Check Signal Attributes"),
     @JsonSubTypes.Type(value = com.ncslab.dto.communication.CircuitBlockDto.class, name = "CircuitBlock"),
     // New block DTOs - Week 6 Update
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.ClockDto.class, name = "Clock"),
@@ -103,7 +120,7 @@ import java.util.*;
     // Additional block types from BlockType.java
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller (s)"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PID Controller"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.OldPIDControllerDto.class, name = "PIDController"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.PIDControllerDto.class, name = "PIDController"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.SaturationDto.class, name = "Saturate"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.SaturationDto.class, name = "Saturation"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.RelayDto.class, name = "Relay"),
@@ -129,6 +146,10 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.Dq02abcDto.class, name = "dq02abc"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.ProductOfElementsDto.class, name = "ProductOfElements"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.SumOfElementsDto.class, name = "SumOfElements"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.ComplexToMagnitudeAngleDto.class, name = "ComplexToMagnitudeAngle"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.DotProductDto.class, name = "DotProduct"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.MatrixDto.class, name = "Matrix"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.ReciprocalSqrtDto.class, name = "ReciprocalSqrt"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.VariableTransportDelayDto.class, name = "VariableTransportDelay"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.TransportDelayDto.class, name = "TransportDelay"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.TransportDelayDto.class, name = "Transport Delay"),
@@ -164,6 +185,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.MatrixMultiplyDto.class, name = "MatrixMultiply"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.MatrixConcatenateDto.class, name = "MatrixConcatenate"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.MatrixSquareDto.class, name = "MatrixSquare"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.HermitianTransposeDto.class, name = "HermitianTranspose"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.PermuteMatrixDto.class, name = "PermuteMatrix"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.SubmatrixDto.class, name = "Submatrix"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.advancedControl.LQRControllerDto.class, name = "LQRController"),
@@ -276,7 +298,32 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringTrimDto.class, name = "StringTrim"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.StringUpperDto.class, name = "StringUpper"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.SubstringDto.class, name = "Substring"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.ToStringDto.class, name = "ToString")
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.string.ToStringDto.class, name = "ToString"),
+    // Data Store blocks (signal package)
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.DataStoreMemoryDto.class, name = "DataStoreMemory"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.DataStoreMemoryDto.class, name = "Data Store Memory"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.DataStoreReadDto.class, name = "DataStoreRead"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.DataStoreReadDto.class, name = "Data Store Read"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.DataStoreWriteDto.class, name = "DataStoreWrite"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.DataStoreWriteDto.class, name = "Data Store Write"),
+    // Signal attribute blocks (Quick-Win implementation)
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.WidthDto.class, name = "Width"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.ProbeDto.class, name = "Probe"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.ICDto.class, name = "IC"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.SignalSpecificationDto.class, name = "SignalSpecification"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.signal.SignalSpecificationDto.class, name = "Signal Specification"),
+    // Discrete blocks (Quick-Win implementation)
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.MemoryDto.class, name = "Memory"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.TappedDelayDto.class, name = "TappedDelay"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.TappedDelayDto.class, name = "Tapped Delay"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.FirstOrderHoldDto.class, name = "FirstOrderHold"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.FirstOrderHoldDto.class, name = "First-Order Hold"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discrete.FirstOrderHoldDto.class, name = "First Order Hold"),
+    // Matrix blocks (Quick-Win implementation)
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.ReshapeDto.class, name = "Reshape"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.PermuteDimensionsDto.class, name = "PermuteDimensions"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.PermuteDimensionsDto.class, name = "Permute Dimensions"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.AssignmentDto.class, name = "Assignment")
     // All DTOs with javax.validation issues now fixed!
 })
 @Data
@@ -488,6 +535,8 @@ public class BlockDto implements BaseDto {
     public void setParameterValue(String name, Object value) {
         if (parameters == null) parameters = new HashMap<>();
         parameters.put(name, TypedParameter.of(value));
+        if (paramValues == null) paramValues = new HashMap<>();
+        paramValues.put(name, value);
     }
     
     /**

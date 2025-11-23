@@ -15,6 +15,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.string.ComposeStringDto;
 
 // Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
@@ -128,6 +129,18 @@ public class ComposeString extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
 
         System.out.println("DTO-NATIVE: ComposeString block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create ComposeString from ComposeStringDto.
+     *
+     * @param dto The ComposeStringDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New ComposeString instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static ComposeString createFromDto(ComposeStringDto dto, NCSLabModel model) throws BlockCreationException {
+        return new ComposeString(dto, model);
     }
 
     @Override

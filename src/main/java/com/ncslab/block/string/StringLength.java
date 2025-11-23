@@ -16,6 +16,7 @@ import com.ncslab.dto.block.specialized.string.StringLengthDto;
 
 // Internal imports - Core
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 // Internal imports - Block components
@@ -119,6 +120,18 @@ public class StringLength extends Block {
         outputPortList.add(new OutputPort(this, 1, true)); // Has feedthrough
 
         System.out.println("DTO-NATIVE: StringLength block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create StringLength from StringLengthDto.
+     *
+     * @param dto The StringLengthDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringLength instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringLength createFromDto(StringLengthDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringLength(dto, model);
     }
 
     @Override

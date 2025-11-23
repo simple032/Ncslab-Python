@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.string.StringToEnumDto;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
@@ -97,6 +98,18 @@ public class StringToEnum extends Block {
         outputPortList.add(new OutputPort(this, 1, true)); // Has feedthrough
 
         System.out.println("DTO-NATIVE: StringToEnum block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create StringToEnum from StringToEnumDto.
+     *
+     * @param dto The StringToEnumDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringToEnum instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringToEnum createFromDto(StringToEnumDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringToEnum(dto, model);
     }
 
     @Override

@@ -15,6 +15,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.string.StringCompareDto;
 
 // Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
@@ -126,6 +127,18 @@ public class StringCompare extends Block {
         outputPortList.add(new OutputPort(this, 1, true));
 
         System.out.println("DTO-NATIVE: StringCompare block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create StringCompare from StringCompareDto.
+     *
+     * @param dto The StringCompareDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringCompare instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringCompare createFromDto(StringCompareDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringCompare(dto, model);
     }
 
     @Override

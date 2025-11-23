@@ -16,6 +16,7 @@ import com.ncslab.dto.block.specialized.string.StringFindDto;
 
 // Internal imports - Core
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.NCSLabModel;
 
 // Internal imports - Block components
@@ -133,6 +134,18 @@ public class StringFind extends Block {
         outputPortList.add(new OutputPort(this, 1, true)); // Has feedthrough
 
         System.out.println("DTO-NATIVE: StringFind block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create StringFind from StringFindDto.
+     *
+     * @param dto The StringFindDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringFind instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringFind createFromDto(StringFindDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringFind(dto, model);
     }
 
     @Override

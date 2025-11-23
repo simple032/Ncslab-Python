@@ -24,7 +24,7 @@ import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.*;
 import com.ncslab.block.lan.CCodeBlock;
 import com.ncslab.block.lan.MCodeBlock;
-
+import com.ncslab.block.lan.SimuBlock;
 // Internal imports - Code generation
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
@@ -42,7 +42,7 @@ import com.ncslab.util.TemplateUtils;
  * @author NCSLab Team
  * @version 2025
  */
-public class Block implements MCodeBlock, CCodeBlock {
+public class Block implements MCodeBlock, CCodeBlock, SimuBlock {
 
     // === Block Identity ===
     /** Block type identifier - used in BlockType factory for differentiated handling */
@@ -1060,53 +1060,186 @@ public class Block implements MCodeBlock, CCodeBlock {
         // Default implementation - override in derived classes
     }
 
-    // === Runtime Simulation Interface ===
-    
+    // === Runtime Simulation Interface (SIMULINK-compatible lifecycle) ===
+
+    // --- Pre-Simulation Phase ---
+
     /**
-     * Calculates block output at the specified time.
-     * Override in derived classes to implement block-specific output calculation.
-     * 
-     * @param t Current simulation time
+     * Validates block parameters before simulation starts.
+     * Called after block construction but before any initialization.
+     * Override to implement parameter validation logic.
+     *
+     * SIMULINK equivalent: mdlCheckParameters
+     *
+     * @throws IllegalArgumentException if parameters are invalid
      */
-    public void calculateOutput(double t) {
-        // Default implementation - override in derived classes
+    @Override
+    public void calculateCheckParameters() {
+        // Default implementation - override in derived classes for validation
     }
-    
-    /**
-     * Calculates block derivatives at the specified time.
-     * Used for continuous-time blocks with differential equations.
-     * 
-     * @param t Current simulation time
-     */
-    public void calculateDerivative(double t) {
-        // Default implementation - override in derived classes
-    }
-    
-    /**
-     * Performs discrete update calculations at the specified time.
-     * Used for discrete-time blocks with difference equations.
-     * 
-     * @param t Current simulation time
-     */
-    public void calculateDiscreteUpdate(double t) {
-        // Default implementation - override in derived classes
-    }
-    
+
     /**
      * Performs block initialization calculations.
-     * Called once at the start of simulation.
+     * Called once at t=0 to set initial conditions.
+     * Override to initialize states and outputs.
+     *
+     * SIMULINK equivalent: mdlInitializeConditions
      */
+    @Override
     public void calculateInit() {
         // Default implementation - override in derived classes
     }
-    
+
+    /**
+     * Performs one-time startup actions after initialization.
+     * Called once after calculateInit() but before main simulation loop.
+     * Override to open files, allocate buffers, initialize hardware.
+     *
+     * SIMULINK equivalent: mdlStart
+     */
+    @Override
+    public void calculateStart() {
+        // Default implementation - override in derived classes
+    }
+
+    // --- In-Simulation Phase ---
+
+    /**
+     * Enables this block (for conditional subsystems).
+     * Called when a subsystem containing this block becomes active.
+     * Override to reinitialize states when enabled.
+     *
+     * SIMULINK equivalent: mdlEnable
+     */
+    @Override
+    public void calculateEnable() {
+        // Default implementation - override in derived classes
+    }
+
+    /**
+     * Calculates block output at the specified time.
+     * Called every simulation time step (or at sample times for discrete blocks).
+     * Override to implement block-specific output calculation.
+     *
+     * SIMULINK equivalent: mdlOutputs
+     *
+     * @param t Current simulation time
+     */
+    @Override
+    public void calculateOutput(double t) {
+        // Default implementation - override in derived classes
+    }
+
+    /**
+     * Calculates block derivatives at the specified time.
+     * Called during ODE integration for continuous-time blocks.
+     * Override to compute dx/dt = f(x, u, t).
+     *
+     * SIMULINK equivalent: mdlDerivatives
+     *
+     * @param t Current simulation time
+     */
+    @Override
+    public void calculateDerivative(double t) {
+        // Default implementation - override in derived classes
+    }
+
+    /**
+     * Updates block at major time step (for continuous blocks).
+     * Called after output calculation but before discrete update.
+     * Override to update delay buffers, transport delay history.
+     *
+     * NOTE: Different from calculateDiscreteUpdate which only runs at sample times.
+     *
+     * SIMULINK equivalent: mdlUpdate
+     *
+     * @param t Current simulation time
+     */
+    @Override
+    public void calculateUpdate(double t) {
+        // Default implementation - override in derived classes
+    }
+
+    /**
+     * Performs discrete update calculations at the specified time.
+     * Called only at discrete sample times for discrete blocks.
+     * Override to implement x[k+1] = f(x[k], u[k]).
+     *
+     * SIMULINK equivalent: Part of mdlUpdate (discrete portion)
+     *
+     * @param t Current simulation time
+     */
+    @Override
+    public void calculateDiscreteUpdate(double t) {
+        // Default implementation - override in derived classes
+    }
+
+    /**
+     * Detects zero-crossing events for accurate event handling.
+     * Called during variable-step integration to detect discontinuities.
+     * Override to return zero-crossing signals for switching/saturation blocks.
+     *
+     * SIMULINK equivalent: mdlZeroCrossings
+     *
+     * @param t Current simulation time
+     * @return Array of zero-crossing signals (null if not supported)
+     */
+    @Override
+    public double[] calculateZeroCrossings(double t) {
+        return null; // Default: no zero-crossings
+    }
+
+    /**
+     * Disables this block (for conditional subsystems).
+     * Called when a subsystem containing this block becomes inactive.
+     * Override to save state when disabled.
+     *
+     * SIMULINK equivalent: mdlDisable
+     */
+    @Override
+    public void calculateDisable() {
+        // Default implementation - override in derived classes
+    }
+
+    // --- Post-Simulation Phase ---
+
+    /**
+     * Performs graceful shutdown before termination.
+     * Called once before calculateTerminate() for orderly shutdown.
+     * Override to flush buffers, save state, generate reports.
+     *
+     * SIMULINK equivalent: Part of mdlTerminate (pre-cleanup)
+     */
+    @Override
+    public void calculateStop() {
+        // Default implementation - override in derived classes
+    }
+
     /**
      * Performs block termination cleanup.
-     * Called once at the end of simulation.
-     * 
+     * Called once at the end of simulation for resource release.
+     * Override to close files, release hardware, free memory.
+     *
+     * SIMULINK equivalent: mdlTerminate
+     *
      * @param t Final simulation time
      */
+    @Override
     public void calculateTerminate(double t) {
+        // Default implementation - override in derived classes
+    }
+
+    // --- Utility Methods ---
+
+    /**
+     * Resets block to initial conditions (mid-simulation reset).
+     * Called when reset port is triggered or manual reset requested.
+     * Override to reset integrator states, clear buffers, restart counters.
+     *
+     * @param t Time of reset
+     */
+    @Override
+    public void calculateReset(double t) {
         // Default implementation - override in derived classes
     }
 }

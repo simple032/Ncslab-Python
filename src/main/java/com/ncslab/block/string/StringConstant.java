@@ -137,6 +137,18 @@ public class StringConstant extends SourceBlock {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
+    /**
+     * Factory method to create StringConstant from StringConstantDto.
+     *
+     * @param dto The StringConstantDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringConstant instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringConstant createFromDto(StringConstantDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringConstant(dto, model);
+    }
+
 
     // === Static Factory Method for JSON Deserialization ===
     public static StringConstant fromJSON(JSONObject blockJSON, NCSLabModel model) {

@@ -162,6 +162,18 @@ public class Substring extends Block {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
+    /**
+     * Factory method to create Substring from SubstringDto.
+     *
+     * @param dto The SubstringDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Substring instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Substring createFromDto(SubstringDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Substring(dto, model);
+    }
+
     // === Static Factory Method for JSON Deserialization ===
     public static Substring fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

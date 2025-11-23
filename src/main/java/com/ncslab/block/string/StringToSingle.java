@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.string.StringToSingleDto;
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
@@ -72,6 +73,18 @@ public class StringToSingle extends Block {
         super(blockDto, model);
         inputPortList.add(new InputPort(this, 1));
         outputPortList.add(new OutputPort(this, 1, true)); // Has feedthrough
+    }
+
+    /**
+     * Factory method to create StringToSingle from StringToSingleDto.
+     *
+     * @param dto The StringToSingleDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringToSingle instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringToSingle createFromDto(StringToSingleDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringToSingle(dto, model);
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.string.StringContainsDto;
 import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
@@ -74,6 +75,18 @@ public class StringContains extends Block {
         inputPortList.add(new InputPort(this, 1));
         inputPortList.add(new InputPort(this, 2));
         outputPortList.add(new OutputPort(this, 1, true));
+    }
+
+    /**
+     * Factory method to create StringContains from StringContainsDto.
+     *
+     * @param dto The StringContainsDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New StringContains instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static StringContains createFromDto(StringContainsDto dto, NCSLabModel model) throws BlockCreationException {
+        return new StringContains(dto, model);
     }
 
     @Override

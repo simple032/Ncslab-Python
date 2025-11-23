@@ -18,6 +18,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.string.ScanStringDto;
 
 // Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
@@ -130,6 +131,18 @@ public class ScanString extends Block {
         }
 
         System.out.println("DTO-NATIVE: ScanString block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create ScanString from ScanStringDto.
+     *
+     * @param dto The ScanStringDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New ScanString instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static ScanString createFromDto(ScanStringDto dto, NCSLabModel model) throws BlockCreationException {
+        return new ScanString(dto, model);
     }
 
     @Override
