@@ -10,16 +10,41 @@ import com.ncslab.circuit.block.electblock.DiodeCurrentElect;
 import com.ncslab.circuit.block.io.BlockVoltage;
 import com.ncslab.circuit.block.io.PortCurrent;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.dto.communication.CircuitBlockDto;
 
+/**
+ * Diode circuit element block for electrical circuit simulation.
+ * Can operate in both Branch mode (voltage-to-current) and Link mode (current-to-voltage).
+ */
 public class Diode extends CircuitBlock {
-	
+
 	private DiodeElect diode;
 	private DiodeCurrentElect diodeCurrent;
 	private AddElect add;
-	
+
+	/**
+	 * Legacy JSON Constructor - Creates Diode block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockJSON JSON object containing diode configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	public Diode(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-		
+	}
+
+	/**
+	 * DTO-Native Constructor - Creates Diode block directly from CircuitBlockDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto CircuitBlockDto containing diode configuration
+	 * @param model Parent model reference
+	 */
+	public Diode(CircuitBlockDto dto, NCSLabModel model) {
+		super(dto, model);
+		System.out.println("DTO-NATIVE: Diode (circuit element) block created successfully - " + dto.getBlockName());
 	}
 	
 	@Override

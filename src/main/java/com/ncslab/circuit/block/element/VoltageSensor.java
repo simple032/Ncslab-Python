@@ -15,20 +15,88 @@ import com.ncslab.block.Block;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.math.Add;
+import com.ncslab.dto.communication.CircuitBlockDto;
+import com.ncslab.dto.block.specialized.circuit.element.VoltageSensorDto;
 
+/**
+ * Voltage Sensor circuit element block for electrical circuit simulation.
+ * Measures voltage across its terminals and outputs the measured value.
+ */
 public class VoltageSensor extends CircuitBlock {
-	
+
 	private Constant currentSource;
-	
+
 	private Add add;
-	
+
+	/**
+	 * Legacy JSON Constructor - Creates VoltageSensor block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockJSON JSON object containing voltage sensor configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	public VoltageSensor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		circuitPortList.get(1).setName("RConn2");
 		//this.blockName=this.blockName.replaceAll(" ", "_");
 		//setupEquivilentBlockModels();
 	}
-	
+
+	/**
+	 * DTO-Native Constructor - Creates VoltageSensor block directly from CircuitBlockDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto CircuitBlockDto containing voltage sensor configuration
+	 * @param model Parent model reference
+	 */
+	public VoltageSensor(CircuitBlockDto dto, NCSLabModel model) {
+		super(dto, model);
+		circuitPortList.get(1).setName("RConn2");
+		System.out.println("DTO-NATIVE: VoltageSensor block created successfully - " + dto.getBlockName());
+	}
+
+	/**
+	 * Factory method: Create voltage sensor with specified scale and offset
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param scale Scale factor
+	 * @param offset Voltage offset in Volts
+	 * @param model Parent model
+	 * @return VoltageSensor instance
+	 */
+	public static VoltageSensor create(String blockName, String blockPath,
+	                                   double scale, double offset, NCSLabModel model) {
+		VoltageSensorDto dto = VoltageSensorDto.create(blockName, blockPath, scale, offset);
+		return new VoltageSensor(dto, model);
+	}
+
+	/**
+	 * Factory method: Create voltage sensor with scale factor only
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param scale Scale factor
+	 * @param model Parent model
+	 * @return VoltageSensor instance
+	 */
+	public static VoltageSensor create(String blockName, String blockPath,
+	                                   double scale, NCSLabModel model) {
+		return create(blockName, blockPath, scale, VoltageSensorDto.DEFAULT_OFFSET, model);
+	}
+
+	/**
+	 * Factory method: Create ideal voltage sensor (scale=1.0, offset=0.0)
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param model Parent model
+	 * @return VoltageSensor instance
+	 */
+	public static VoltageSensor createDefault(String blockName, String blockPath, NCSLabModel model) {
+		return create(blockName, blockPath,
+			VoltageSensorDto.DEFAULT_SCALE, VoltageSensorDto.DEFAULT_OFFSET, model);
+	}
+
 	protected void setupBlockList() {
 		setupEquivilentBlockModels();
 	}

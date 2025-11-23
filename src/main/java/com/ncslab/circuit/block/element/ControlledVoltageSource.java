@@ -7,19 +7,71 @@ import com.ncslab.circuit.block.BlockModeType;
 import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.circuit.block.electblock.GainElect;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.dto.communication.CircuitBlockDto;
+import com.ncslab.dto.block.specialized.circuit.element.ControlledVoltageSourceDto;
 
+/**
+ * Controlled Voltage Source circuit element block for electrical circuit simulation.
+ * Voltage is controlled by an external input signal.
+ */
 public class ControlledVoltageSource extends CircuitBlock {
-	
+
 	private GainElect controlledVoltageSource;
-	
+
+	/**
+	 * Legacy JSON Constructor - Creates ControlledVoltageSource block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockJSON JSON object containing controlled voltage source configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	public ControlledVoltageSource(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		circuitPortList.get(1).setName("RConn2");
 		//this.blockName=this.blockName.replaceAll(" ", "_");
 		//setupEquivilentBlockModels();
-		
 	}
-	
+
+	/**
+	 * DTO-Native Constructor - Creates ControlledVoltageSource block directly from CircuitBlockDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto CircuitBlockDto containing controlled voltage source configuration
+	 * @param model Parent model reference
+	 */
+	public ControlledVoltageSource(CircuitBlockDto dto, NCSLabModel model) {
+		super(dto, model);
+		circuitPortList.get(1).setName("RConn2");
+		System.out.println("DTO-NATIVE: ControlledVoltageSource block created successfully - " + dto.getBlockName());
+	}
+
+	/**
+	 * Factory method: Create controlled voltage source with specified gain
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param gain Gain factor
+	 * @param model Parent model
+	 * @return ControlledVoltageSource instance
+	 */
+	public static ControlledVoltageSource create(String blockName, String blockPath,
+	                                             double gain, NCSLabModel model) {
+		ControlledVoltageSourceDto dto = ControlledVoltageSourceDto.create(blockName, blockPath, gain);
+		return new ControlledVoltageSource(dto, model);
+	}
+
+	/**
+	 * Factory method: Create controlled voltage source with default gain (1.0)
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param model Parent model
+	 * @return ControlledVoltageSource instance
+	 */
+	public static ControlledVoltageSource createDefault(String blockName, String blockPath, NCSLabModel model) {
+		return create(blockName, blockPath, ControlledVoltageSourceDto.DEFAULT_GAIN, model);
+	}
+
 	@Override
 	protected void setupBlockList() {
 		// TODO Auto-generated method stub

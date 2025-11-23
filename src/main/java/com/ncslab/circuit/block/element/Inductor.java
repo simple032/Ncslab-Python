@@ -7,17 +7,84 @@ import com.ncslab.circuit.block.BlockModeType;
 import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.circuit.block.io.BlockVoltage;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.dto.communication.CircuitBlockDto;
 
 import com.ncslab.circuit.block.electblock.*;
 
+/**
+ * Inductor circuit element block for electrical circuit simulation.
+ * Can only operate in Link mode (stores current, produces voltage).
+ */
 public class Inductor extends CircuitBlock {
 	private Integrator integrator;
 	private GainElect gain;
 	private AddElect add;
-	
+
+	/**
+	 * Legacy JSON Constructor - Creates Inductor block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockJSON JSON object containing inductor configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	public Inductor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
-		
+	}
+
+	/**
+	 * DTO-Native Constructor - Creates Inductor block directly from CircuitBlockDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto CircuitBlockDto containing inductor configuration
+	 * @param model Parent model reference
+	 */
+	public Inductor(CircuitBlockDto dto, NCSLabModel model) {
+		super(dto, model);
+		System.out.println("DTO-NATIVE: Inductor block created successfully - " + dto.getBlockName());
+	}
+
+	// === Static Factory Methods for Programmatic Creation ===
+
+	/**
+	 * Create an inductor with specified inductance value
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param inductance Inductance in Henries
+	 * @param model Parent model
+	 * @return Inductor instance
+	 */
+	public static Inductor create(String blockName, String blockPath, double inductance, NCSLabModel model) {
+		com.ncslab.dto.block.specialized.circuit.element.InductorDto dto =
+			com.ncslab.dto.block.specialized.circuit.element.InductorDto.create(blockName, blockPath, inductance);
+		return new Inductor(dto, model);
+	}
+
+	/**
+	 * Create an inductor with specified inductance and initial current
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param inductance Inductance in Henries
+	 * @param initialCurrent Initial current in Amperes
+	 * @param model Parent model
+	 * @return Inductor instance
+	 */
+	public static Inductor create(String blockName, String blockPath, double inductance, double initialCurrent, NCSLabModel model) {
+		com.ncslab.dto.block.specialized.circuit.element.InductorDto dto =
+			com.ncslab.dto.block.specialized.circuit.element.InductorDto.create(blockName, blockPath, inductance, initialCurrent);
+		return new Inductor(dto, model);
+	}
+
+	/**
+	 * Create a 1mH inductor with default parameters
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param model Parent model
+	 * @return Inductor instance with 1mH inductance
+	 */
+	public static Inductor createDefault(String blockName, String blockPath, NCSLabModel model) {
+		return create(blockName, blockPath, 1e-3, model);
 	}
 	
 	protected void setupBlockModeType() {

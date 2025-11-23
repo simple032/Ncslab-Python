@@ -7,17 +7,85 @@ import com.ncslab.circuit.block.BlockModeType;
 import com.ncslab.circuit.block.CircuitBlock;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.circuit.block.io.PortCurrent;
+import com.ncslab.dto.communication.CircuitBlockDto;
 
 import com.ncslab.circuit.block.electblock.*;
 
+/**
+ * Capacitor circuit element block for electrical circuit simulation.
+ * Can only operate in Branch mode (stores voltage, produces current).
+ */
 public class Capacitor extends CircuitBlock {
-	
+
 	private Integrator integrator;
 	private GainElect gain;
 	private AddElect add;
-	
+
+	/**
+	 * Legacy JSON Constructor - Creates Capacitor block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockJSON JSON object containing capacitor configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	public Capacitor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
+	}
+
+	/**
+	 * DTO-Native Constructor - Creates Capacitor block directly from CircuitBlockDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto CircuitBlockDto containing capacitor configuration
+	 * @param model Parent model reference
+	 */
+	public Capacitor(CircuitBlockDto dto, NCSLabModel model) {
+		super(dto, model);
+		System.out.println("DTO-NATIVE: Capacitor block created successfully - " + dto.getBlockName());
+	}
+
+	// === Static Factory Methods for Programmatic Creation ===
+
+	/**
+	 * Create a capacitor with specified capacitance value
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param capacitance Capacitance in Farads
+	 * @param model Parent model
+	 * @return Capacitor instance
+	 */
+	public static Capacitor create(String blockName, String blockPath, double capacitance, NCSLabModel model) {
+		com.ncslab.dto.block.specialized.circuit.element.CapacitorDto dto =
+			com.ncslab.dto.block.specialized.circuit.element.CapacitorDto.create(blockName, blockPath, capacitance);
+		return new Capacitor(dto, model);
+	}
+
+	/**
+	 * Create a capacitor with specified capacitance and initial voltage
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param capacitance Capacitance in Farads
+	 * @param initialVoltage Initial voltage in Volts
+	 * @param model Parent model
+	 * @return Capacitor instance
+	 */
+	public static Capacitor create(String blockName, String blockPath, double capacitance, double initialVoltage, NCSLabModel model) {
+		com.ncslab.dto.block.specialized.circuit.element.CapacitorDto dto =
+			com.ncslab.dto.block.specialized.circuit.element.CapacitorDto.create(blockName, blockPath, capacitance, initialVoltage);
+		return new Capacitor(dto, model);
+	}
+
+	/**
+	 * Create a 1μF capacitor with default parameters
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param model Parent model
+	 * @return Capacitor instance with 1μF capacitance
+	 */
+	public static Capacitor createDefault(String blockName, String blockPath, NCSLabModel model) {
+		return create(blockName, blockPath, 1e-6, model);
 	}
 	
 	//电容只能时树枝

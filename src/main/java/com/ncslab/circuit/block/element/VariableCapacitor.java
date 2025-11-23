@@ -10,19 +10,77 @@ import com.ncslab.circuit.block.electblock.AddElect;
 import com.ncslab.circuit.block.electblock.ProductElect;
 import com.ncslab.circuit.block.io.PortCurrent;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.dto.communication.CircuitBlockDto;
+import com.ncslab.dto.block.specialized.circuit.element.VariableCapacitorDto;
 
+/**
+ * Variable Capacitor circuit element block for electrical circuit simulation.
+ * Capacitance is controlled by an external input signal.
+ * Can only operate in Branch mode.
+ */
 public class VariableCapacitor extends CircuitBlock{
-	
+
 	private Integrator integrator;
 	private LimitingLink limiting;
 	private ProductElect product;
 	private AddElect add;
-	
+
+	/**
+	 * Legacy JSON Constructor - Creates VariableCapacitor block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockJSON JSON object containing variable capacitor configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	public VariableCapacitor(JSONObject blockJSON,NCSLabModel model) {
 		super(blockJSON,model);
 		circuitPortList.get(0).setName("LConn2");
 	}
-	
+
+	/**
+	 * DTO-Native Constructor - Creates VariableCapacitor block directly from CircuitBlockDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto CircuitBlockDto containing variable capacitor configuration
+	 * @param model Parent model reference
+	 */
+	public VariableCapacitor(CircuitBlockDto dto, NCSLabModel model) {
+		super(dto, model);
+		circuitPortList.get(0).setName("LConn2");
+		System.out.println("DTO-NATIVE: VariableCapacitor block created successfully - " + dto.getBlockName());
+	}
+
+	/**
+	 * Factory method: Create variable capacitor with specified parameters
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param minimumCapacitance Minimum capacitance in Farads
+	 * @param initialVoltage Initial voltage in Volts
+	 * @param model Parent model
+	 * @return VariableCapacitor instance
+	 */
+	public static VariableCapacitor create(String blockName, String blockPath,
+	                                       double minimumCapacitance, double initialVoltage,
+	                                       NCSLabModel model) {
+		VariableCapacitorDto dto = VariableCapacitorDto.create(
+			blockName, blockPath, minimumCapacitance, initialVoltage);
+		return new VariableCapacitor(dto, model);
+	}
+
+	/**
+	 * Factory method: Create variable capacitor with default parameters (1pF min, 0V initial)
+	 * @param blockName Block name
+	 * @param blockPath Block path
+	 * @param model Parent model
+	 * @return VariableCapacitor instance
+	 */
+	public static VariableCapacitor createDefault(String blockName, String blockPath, NCSLabModel model) {
+		return create(blockName, blockPath,
+			VariableCapacitorDto.DEFAULT_MIN_CAPACITANCE, 0.0, model);
+	}
+
 	//可变电容只能作为树枝存在
 	protected void setupBlockModeType() {
 		blockModeType=BlockModeType.BranchOnly;
