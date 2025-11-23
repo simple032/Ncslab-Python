@@ -1,19 +1,12 @@
 /*Code for initialization of block PID Controller:($blockId)$blockName*/
-#if($proportionalGain && $integralGain && $derivativeGain && $filterCoefficient && $stateIntegral && $stateFilter)
-    ## Initialize PID parameters
-    #if($proportionalGain.initCodeC)
-        ${proportionalGain.initCodeC}
-    #end
-    #if($integralGain.initCodeC)
-        ${integralGain.initCodeC}
-    #end
-    #if($derivativeGain.initCodeC)
-        ${derivativeGain.initCodeC}
-    #end
-    #if($filterCoefficient.initCodeC)
-        ${filterCoefficient.initCodeC}
-    #end
+## Initialize PID parameters
+${PObject.initCodeC}
+${IObject.initCodeC}
+${DObject.initCodeC}
+${NObject.initCodeC}
 
+#if($stateIntegral && $stateFilter)
+    
     ## Initialize saturation limits if enabled
     #if($limitOutput == "on")
         #if($lowerSaturationLimit && $lowerSaturationLimit.initCodeC)
@@ -25,10 +18,10 @@
     #end
 
     ## Initialize PID internal states
-    #if($proportionalGain.dataType == $realDataType && $stateIntegral.dataType == $realDataType)
+    #if($integralStateHeight == 1 && $integralStateWidth == 1)
         ## Scalar PID controller
-        ${integralStateName} = 0.0;
-        ${filterStateName} = 0.0;
+        ${stateIntegralName} = 0.0;
+        ${stateFilterName} = 0.0;
     #else
         ## Matrix PID controller
         #set($height = $integralStateHeight)
@@ -37,12 +30,9 @@
         #set($wMax = $width - 1)
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
-                ${integralStateName}[${i}][${j}] = 0.0;
-                ${filterStateName}[${i}][${j}] = 0.0;
+                ${stateIntegralName}[${i}][${j}] = 0.0;
+                ${stateFilterName}[${i}][${j}] = 0.0;
             #end
         #end
     #end
-#else
-    ## Fallback if parameters missing
-    /* PID Controller block $blockId missing parameters */
 #end

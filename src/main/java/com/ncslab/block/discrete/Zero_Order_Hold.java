@@ -366,11 +366,33 @@ public class Zero_Order_Hold extends DiscreteBlock {
         // No additional dimension checks needed for zero-order hold
     }
 
+    // === SIMULINK-Compatible Lifecycle Methods ===
+
+    /**
+     * Validate block parameters before simulation starts.
+     * SIMULINK equivalent: mdlCheckParameters
+     *
+     * Validates:
+     * - Sample time is positive and finite
+     * - Sample time is integer multiple of fixed step size
+     */
+    @Override
+    public void calculateCheckParameters() {
+        // Validate sample time
+        double sampleTimeValue = sampleTimeParam.getDouble();
+        if (sampleTimeValue <= 0.0 || Double.isNaN(sampleTimeValue) || Double.isInfinite(sampleTimeValue)) {
+            throw new IllegalArgumentException("Zero_Order_Hold " + blockName +
+                ": Sample time must be positive and finite, got: " + sampleTimeValue);
+        }
+
+        // Additional validation will be done in updateDimension() for sample time multiple check
+    }
+
     @Override
     public void calculateOutput(double t) {
         // Zero-order hold: outputs the last sampled input value
         OutputPort output = outputPortList.get(0);
-        
+
         if (stateOutput == null || stateOutput.getData() == null) {
             // If no state available, pass through current input
             InputPort input = inputPortList.get(0);
@@ -381,7 +403,7 @@ public class Zero_Order_Hold extends DiscreteBlock {
             }
             return;
         }
-        
+
         // Output the held (sampled) value from state
         output.setData(stateOutput.getData());
     }
@@ -414,31 +436,43 @@ public class Zero_Order_Hold extends DiscreteBlock {
         }
     }
     
+    /**
+     * Perform one-time startup actions after initialization.
+     * SIMULINK equivalent: mdlStart
+     *
+     * For Zero_Order_Hold, no special startup actions are needed.
+     */
+    @Override
+    public void calculateStart() {
+        // No startup actions needed for Zero_Order_Hold
+        // Resources are already initialized in calculateInit()
+    }
+
     @Override
     public void calculateUpdate(double t) {
         // Update zero-order hold state at discrete sample times
         InputPort input = inputPortList.get(0);
-        
+
         if (input.getData() == null || stateOutput == null) {
             return;
         }
-        
+
         double sampleTime = sampleTimeParam.getData().getInitValue();
-        
+
         // For zero-order hold, we sample the input at discrete time intervals
         // This update happens at the sample time boundaries
         if (sampleTime > 0) {
             // Check if it's time to sample (this is typically controlled by the solver)
             // For now, we'll sample the current input value
             Data inputData = input.getData();
-            
+
             if (inputData.getDataType() == DataType.REAL) {
                 stateOutput.setData(new Data(inputData.getInitValue()));
             } else if (inputData.getDataType() == DataType.MATRIX) {
                 // For matrix inputs, create a copy
                 Jama.Matrix inputMatrix = inputData.getMatrix();
                 Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
-                
+
                 for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
                     for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
                         outputMatrix.set(i, j, inputMatrix.get(i, j));
@@ -448,6 +482,107 @@ public class Zero_Order_Hold extends DiscreteBlock {
             } else {
                 stateOutput.setData(inputData);
             }
+        }
+    }
+
+    /**
+     * Update discrete states at sample times.
+     * SIMULINK equivalent: Part of mdlUpdate (discrete portion)
+     *
+     * For Zero-Order Hold, this samples the input at discrete time intervals.
+     *
+     * @param t Current simulation time
+     */
+    @Override
+    public void calculateDiscreteUpdate(double t) {
+        // Sample the current input at discrete time intervals
+        InputPort input = inputPortList.get(0);
+
+        if (input.getData() == null || stateOutput == null) {
+            return;
+        }
+
+        Data inputData = input.getData();
+
+        // Update held value by sampling current input
+        if (inputData.getDataType() == DataType.REAL) {
+            stateOutput.setData(new Data(inputData.getInitValue()));
+        } else if (inputData.getDataType() == DataType.MATRIX) {
+            // For matrix inputs, create a deep copy
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    outputMatrix.set(i, j, inputMatrix.get(i, j));
+                }
+            }
+            stateOutput.setData(new Data(outputMatrix));
+        } else {
+            stateOutput.setData(inputData);
+        }
+    }
+
+    /**
+     * Graceful shutdown before termination.
+     * SIMULINK equivalent: Part of mdlTerminate (pre-cleanup)
+     *
+     * For Zero_Order_Hold, no pre-termination actions needed.
+     */
+    @Override
+    public void calculateStop() {
+        // No stop actions needed for Zero_Order_Hold
+        // No files, hardware, or external resources to flush
+    }
+
+    /**
+     * Cleanup resources and finalize simulation.
+     * SIMULINK equivalent: mdlTerminate
+     *
+     * For Zero_Order_Hold, release internal state.
+     *
+     * @param t Final simulation time
+     */
+    @Override
+    public void calculateTerminate(double t) {
+        // Release internal state to help garbage collection
+        stateOutput = null;
+    }
+
+    /**
+     * Reset block to initial conditions (mid-simulation reset).
+     * SIMULINK equivalent: Reset port functionality
+     *
+     * Resets the held value to the current input.
+     *
+     * @param t Time of reset
+     */
+    @Override
+    public void calculateReset(double t) {
+        // Reset by resampling the current input
+        InputPort input = inputPortList.get(0);
+
+        if (input.getData() != null && stateOutput != null) {
+            Data inputData = input.getData();
+
+            if (inputData.getDataType() == DataType.REAL) {
+                stateOutput.setData(new Data(inputData.getInitValue()));
+            } else if (inputData.getDataType() == DataType.MATRIX) {
+                Jama.Matrix inputMatrix = inputData.getMatrix();
+                Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+
+                for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                    for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                        outputMatrix.set(i, j, inputMatrix.get(i, j));
+                    }
+                }
+                stateOutput.setData(new Data(outputMatrix));
+            } else {
+                stateOutput.setData(inputData);
+            }
+        } else if (stateOutput != null) {
+            // No input, reset to zero
+            stateOutput.setData(new Data(0.0));
         }
     }
 }

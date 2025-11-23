@@ -166,6 +166,10 @@ public class Delay extends DiscreteBlock {
         this.initialCondition = getParameterByName("InitialCondition");
         this.delayLength = getParameterByName("DelayLength");
 
+        if(delayLength.getData().getDataType()==DataType.REAL && delayLength.getData().getInitValue() == 0.0){
+            feedthrough = true;
+        }
+
         // Create missing SIMULINK parameters with defaults
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
@@ -358,7 +362,7 @@ public class Delay extends DiscreteBlock {
         if (outputPortList != null && !outputPortList.isEmpty()) {
             output = outputPortList.get(0);
         }
-        
+
         // For standalone delay blocks (created for testing), initialize ports if they don't exist
         if (inputPortList == null || inputPortList.isEmpty()) {
             inputPortList = new ArrayList<>();
@@ -367,8 +371,219 @@ public class Delay extends DiscreteBlock {
         }
         if (outputPortList == null || outputPortList.isEmpty()) {
             outputPortList = new ArrayList<>();
-            output = new OutputPort(this, 1, false); // No feedthrough for delay
+            output = new OutputPort(this, 1, feedthrough); // No feedthrough for delay
             outputPortList.add(output);
+        }
+
+        // CRITICAL FIX: Set initial output dimensions from IC if it's a matrix
+        // This must happen BEFORE updateBlock() is called, so the OutputSignal
+        // gets created with the correct dimensions
+        System.out.println("DEBUG Delay " + blockName + ": postConstructionInitialization - checking IC");
+        System.out.println("  initialCondition = " + initialCondition);
+        System.out.println("  output = " + output);
+
+        if (initialCondition != null && output != null) {
+            Data icData = initialCondition.getData();
+            System.out.println("  IC dataType = " + icData.getDataType());
+
+            if (icData.getDataType() == DataType.MATRIX) {
+                Matrix icMatrix = icData.getMatrix();
+                int icHeight = icMatrix.getRowDimension();
+                int icWidth = icMatrix.getColumnDimension();
+
+                System.out.println("  Setting initial output dimensions from IC: [" + icHeight + "×" + icWidth + "]");
+
+                output.setWidth(icWidth);
+                output.setHeight(icHeight);
+            }
+        }
+    }
+
+    @Override
+    public void updateDimension() throws MatDimException {
+        super.updateDimension();
+
+        // SIMULINK-compatible dimension feedthrough: Output dimensions = Input dimensions
+        // IC expansion happens later in expandICToMatchDimensions() after dimensions converge
+
+        if (inputPortList == null || inputPortList.isEmpty() || outputPortList == null || outputPortList.isEmpty()) {
+            return;
+        }
+
+        InputPort inputPort = inputPortList.get(0);
+        OutputPort outputPort = outputPortList.get(0);
+        OutputSignal outputSignal = outputPort.getOutputSignalC();
+
+        System.out.println("DEBUG Delay " + blockName + ": updateDimension called");
+
+        // Get input dimensions
+        if (inputPort.getLinkedLine() != null) {
+            OutputSignal inputSignal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            if (inputSignal != null) {
+                int inputWidth = inputSignal.getWidth();
+                int inputHeight = inputSignal.getHeight();
+                DataType inputDataType = inputSignal.getDataType();
+
+                System.out.println("  Input signal: [" + inputHeight + "×" + inputWidth + "] type=" + inputDataType);
+
+                // Check if input has valid dimensions (not default [1×1] from uninitialized feedback loop)
+                boolean hasValidInput = !(inputWidth == 1 && inputHeight == 1 && inputDataType == DataType.REAL);
+
+                if (hasValidInput) {
+                    // Dimension feedthrough: output = input
+                    // CRITICAL: Must set dimensions on BOTH outputPort AND outputSignalC
+                    // because other blocks read from outputSignalC, not outputPort!
+                    outputPort.setWidth(inputWidth);
+                    outputPort.setHeight(inputHeight);
+
+                    outputSignal.setWidth(inputWidth);
+                    outputSignal.setHeight(inputHeight);
+                    outputSignal.setDataType(inputDataType);
+                    System.out.println("  Set output from input: [" + inputHeight + "×" + inputWidth + "]");
+                } else if (initialCondition != null) {
+                    // No valid input (feedback loop first iteration) - use IC dimensions if available
+                    Data icData = initialCondition.getData();
+                    System.out.println("  IC dataType: " + icData.getDataType());
+                    if (icData.getDataType() == DataType.MATRIX) {
+                        // Matrix IC - use its dimensions
+                        Matrix icMatrix = icData.getMatrix();
+                        int icHeight = icMatrix.getRowDimension();
+                        int icWidth = icMatrix.getColumnDimension();
+
+                        System.out.println("  IC matrix dimensions: [" + icHeight + "×" + icWidth + "]");
+
+                        outputPort.setWidth(icWidth);
+                        outputPort.setHeight(icHeight);
+
+                        outputSignal.setWidth(icWidth);
+                        outputSignal.setHeight(icHeight);
+                        outputSignal.setDataType(DataType.MATRIX);
+                        System.out.println("  Set output from IC: [" + icHeight + "×" + icWidth + "]");
+                    } else {
+                        System.out.println("  IC is scalar, keeping default [1×1]");
+                    }
+                    // else: scalar IC - keep default [1×1] dimensions
+                }
+            }
+        } else if (initialCondition != null) {
+            // Input not connected yet - use IC dimensions if available
+            Data icData = initialCondition.getData();
+            System.out.println("  Input not connected, using IC");
+            System.out.println("  IC dataType: " + icData.getDataType());
+            if (icData.getDataType() == DataType.MATRIX) {
+                // Matrix IC - use its dimensions
+                Matrix icMatrix = icData.getMatrix();
+                int icHeight = icMatrix.getRowDimension();
+                int icWidth = icMatrix.getColumnDimension();
+
+                System.out.println("  IC matrix dimensions: [" + icHeight + "×" + icWidth + "]");
+
+                outputPort.setWidth(icWidth);
+                outputPort.setHeight(icHeight);
+
+                outputSignal.setWidth(icWidth);
+                outputSignal.setHeight(icHeight);
+                outputSignal.setDataType(DataType.MATRIX);
+                System.out.println("  Set output from IC (unconnected): [" + icHeight + "×" + icWidth + "]");
+            } else {
+                System.out.println("  IC is scalar, keeping default [1×1]");
+            }
+        }
+    }
+
+    /**
+     * Expand IC to match final dimensions after dimension propagation converges
+     * SIMULINK-compatible: Scalar IC="0" expands to zero matrix matching output dimensions
+     */
+    public void expandICToMatchDimensions() {
+        if (initialCondition == null || outputPortList == null || outputPortList.isEmpty()) {
+            return;
+        }
+
+        OutputPort outputPort = outputPortList.get(0);
+        int outputWidth = outputPort.getWidth();
+        int outputHeight = outputPort.getHeight();
+
+        Data icData = initialCondition.getData();
+
+        // SIMULINK SCALAR ZERO EXPANSION (done AFTER dimension propagation)
+        if (icData.getDataType() == DataType.REAL && (outputWidth > 1 || outputHeight > 1)) {
+            double icValue = icData.getInitValue();
+            if (Math.abs(icValue) < 1e-10) { // Scalar zero
+                Matrix zeroMatrix = new Matrix(outputHeight, outputWidth);
+                icData.setMatrix(zeroMatrix);
+
+                System.out.println(blockName + ": Expanded IC=0 to zero matrix [" +
+                                 outputHeight + "×" + outputWidth + "] to match output dimensions");
+            }
+        }
+    }
+
+    @Override
+    public void checkDimension() throws MatDimException {
+        // Delay block supports both scalar and matrix inputs
+        // Validate IC matrix dimensions if IC is a matrix
+        // SIMULINK behavior for IC dimension matching:
+        // 1. Scalar input [1×1]: IC can be any size, uses IC(0,0)
+        // 2. Column vector input [n×1]: IC can be [n×1] (exact match) or [n×m] (uses first column)
+        // 3. Row vector input [1×n]: IC can be [1×n] (exact match) or [m×n] (uses first row)
+        // 4. Matrix input [m×n]: IC must be [m×n] (exact match)
+        InputPort inputPort = inputPortList.get(0);
+        if (inputPort == null || inputPort.getLinkedLine() == null) {
+            return;
+        }
+        OutputSignal inputSignal = inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        if (inputSignal == null) {
+            return;
+        }
+        if (initialCondition != null && initialCondition.getDataType() != DataType.REAL) {
+            Matrix icMatrix = initialCondition.getMatrix();
+            if (icMatrix != null) {
+                int inputWidth = inputSignal.getWidth();
+                int inputHeight = inputSignal.getHeight();
+                int icHeight = icMatrix.getRowDimension();
+                int icWidth = icMatrix.getColumnDimension();
+
+                boolean isScalarInput = (inputWidth == 1 && inputHeight == 1);
+                boolean isColumnVector = (inputWidth == 1 && inputHeight > 1);
+                boolean isRowVector = (inputWidth > 1 && inputHeight == 1);
+
+                // Validate based on input type
+                if (isScalarInput) {
+                    if(icWidth != this.delayLength.getData().getIntValue()+1){
+                        throw new MatDimException(
+                            String.format("Delay block '%s': IC matrix width [%d] does not match input vector length [%d]",
+                                blockName, icWidth, this.delayLength.getData().getIntValue()));
+                    }
+                }
+                else if (isColumnVector) {
+                    // Column vector: IC must have matching height (width can differ, uses first column)
+                    if (icHeight != inputHeight) {
+                        throw new MatDimException(
+                            String.format("Delay block '%s': IC matrix height [%d] does not match input vector length [%d]",
+                                blockName, icHeight, inputHeight));
+                    }
+                }
+                else if (isRowVector) {
+                    // Row vector input [1×n]: IC can be [1×n] (exact match) or [m×n] (uses first row)
+                    if (icWidth != inputWidth) {
+                        throw new MatDimException(
+                            String.format("Delay block '%s': IC matrix width [%d] does not match input row vector length [%d]",
+                                blockName, icWidth, inputWidth));
+                    }
+                }
+                else {
+                    // Matrix input: IC dimensions must match exactly, or IC can be scalar and will expand
+                    if (icHeight != inputHeight || icWidth != inputWidth) {
+                        // Allow scalar IC with any input dimensions (scalar expansion)
+                        if (!(icHeight == 1 && icWidth == 1)) {
+                            throw new MatDimException(
+                                String.format("Delay block '%s': IC matrix dimensions [%d×%d] do not match input dimensions [%d×%d]",
+                                    blockName, icHeight, icWidth, inputHeight, inputWidth));
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -423,59 +638,21 @@ public class Delay extends DiscreteBlock {
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Fail fast - validate required ports exist
-        if (outputPortList == null || outputPortList.isEmpty()) {
-            throw new BlockCreationException("Delay block requires output port for code generation");
-        }
-        if (inputPortList == null || inputPortList.isEmpty()) {
-            throw new BlockCreationException("Delay block requires input port for code generation");
-        }
-
-        // Fail fast - validate required parameters exist
-        if (sampleTimeParam == null) {
-            throw new BlockCreationException("Delay block requires sample time parameter");
-        }
-        if (initialCondition == null) {
-            throw new BlockCreationException("Delay block requires initial condition parameter");
-        }
-        if (delayLength == null || delayLength.getData() == null) {
-            throw new BlockCreationException("Delay block requires valid delay length parameter");
-        }
-
         String codeStr = TemplateManager.renderTemplate("c/discrete/Delay/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     @Override
     public void calculateOutput(double t) {
-        // Discrete delay: y[k] = u[k-n] where n is the delay length
-        
-        // Fail fast - validate critical components exist
-        if (outputPortList == null || outputPortList.isEmpty()) {
-            throw new IllegalStateException("Delay block cannot calculate output: no output ports configured");
-        }
-        
-        OutputPort output = outputPortList.get(0);
-        if (output == null) {
-            throw new IllegalStateException("Delay block cannot calculate output: output port is null");
-        }
-        
-        if (delayLength == null || delayLength.getData() == null) {
-            throw new IllegalStateException("Delay block cannot calculate output: delay length parameter is missing");
-        }
-        
-        if (initialCondition == null) {
-            throw new IllegalStateException("Delay block cannot calculate output: initial condition parameter is missing");
-        }
-        
-        if (buffer == null || buffer.isEmpty()) {
-            // If buffer not initialized or empty, output initial condition
-            double ic = initialCondition.getDouble();
-            output.setData(new Data(ic));
-            return;
-        }
+        // Discrete delay: y[k] = u[k-n] where n is the delay length        
+        OutputPort output = outputPortList.get(0);        
         
         int delayLengthValue = (int) delayLength.getData().getInitValue();
+
+        if(feedthrough){
+            output.setData(inputPortList.get(0).getData());
+            return;
+        }
         
         // Output the delayed sample from buffer
         // Buffer stores samples in chronological order: [oldest, ..., newest]
@@ -501,65 +678,102 @@ public class Delay extends DiscreteBlock {
     @Override
     public void calculateInit() {
         // Initialize delay block
-        
-        // Fail fast - validate critical components exist
-        if (outputPortList == null || outputPortList.isEmpty()) {
-            throw new IllegalStateException("Delay block cannot initialize: no output ports configured");
-        }
-        
         OutputPort output = outputPortList.get(0);
-        if (output == null) {
-            throw new IllegalStateException("Delay block cannot initialize: output port is null");
-        }
-        
-        if (delayLength == null || delayLength.getData() == null) {
-            throw new IllegalStateException("Delay block cannot initialize: delay length parameter is missing");
-        }
-        
-        if (initialCondition == null) {
-            throw new IllegalStateException("Delay block cannot initialize: initial condition parameter is missing");
-        }
-        
+
         int delayLengthValue = (int) delayLength.getData().getInitValue();
-        double ic = initialCondition.getDouble();
-        
-        // Initialize buffer with initial condition values
+
+        // Initialize buffer
         buffer = new ArrayList<>();
-        
-        // Pre-fill buffer with initial conditions for the delay length
-        for (int i = 0; i < delayLengthValue; i++) {
-            buffer.add(new Data(ic));
+
+        // SIMULINK edge case: delayLength = 0 means direct feedthrough (no delay)
+        if (delayLengthValue == 0) {
+            // No buffer needed for zero delay - output will directly copy input in calculateOutput
+            return;
+        }
+
+        // Determine input type for proper IC handling
+        int inputWidth = input != null ? input.getWidth() : 1;
+        int inputHeight = input != null ? input.getHeight() : 1;
+        boolean isScalarInput = (inputWidth == 1 && inputHeight == 1);
+        boolean isColumnVector = (inputWidth == 1 && inputHeight > 1);
+        boolean isRowVector = (inputWidth > 1 && inputHeight == 1);
+
+        if(initialCondition.getDataType() == DataType.REAL){
+            double ic = initialCondition.getDouble();
+
+            // Pre-fill buffer with scalar initial conditions for the delay length
+            for (int i = 0; i < delayLengthValue; i++) {
+                buffer.add(new Data(ic));
+            }
+
+            // Initial output is the initial condition
+            output.setData(new Data(ic));
+        } else {
+            // Matrix/Vector initial condition
+            Matrix icMatrix = initialCondition.getMatrix();
+
+            if (icMatrix == null) {
+                throw new IllegalStateException("Delay block cannot initialize: initial condition matrix is null");
+            }
+
+            if (isScalarInput) {
+                // Scalar input with matrix IC: use IC(0,0)
+                double ic = icMatrix.get(0, 0);
+
+                // Pre-fill buffer with scalar initial conditions
+                for (int i = 0; i < delayLengthValue; i++) {
+                    buffer.add(new Data(ic));
+                }
+
+                // Initial output is the first element of IC matrix
+                output.setData(new Data(ic));
+            } else if (isColumnVector) {
+                // Column vector input [n×1]: extract first column from IC matrix [n×m]
+                Matrix icVector = new Matrix(inputHeight, 1);
+                for (int i = 0; i < inputHeight; i++) {
+                    icVector.set(i, 0, icMatrix.get(i, 0));
+                }
+
+                // Pre-fill buffer with IC column vector
+                for (int i = 0; i < delayLengthValue; i++) {
+                    buffer.add(new Data(icVector.copy()));
+                }
+
+                // Initial output is the IC column vector
+                output.setData(new Data(icVector.copy()));
+            } else if (isRowVector) {
+                // Row vector input [1×n]: extract first row from IC matrix [m×n]
+                Matrix icVector = new Matrix(1, inputWidth);
+                for (int j = 0; j < inputWidth; j++) {
+                    icVector.set(0, j, icMatrix.get(0, j));
+                }
+
+                // Pre-fill buffer with IC row vector
+                for (int i = 0; i < delayLengthValue; i++) {
+                    buffer.add(new Data(icVector.copy()));
+                }
+
+                // Initial output is the IC row vector
+                output.setData(new Data(icVector.copy()));
+            } else {
+                // Matrix input [m×n]: IC must be [m×n] (validated in updateDimension)
+                // Pre-fill buffer with full IC matrix
+                for (int i = 0; i < delayLengthValue; i++) {
+                    buffer.add(new Data(icMatrix.copy()));
+                }
+
+                // Initial output is the full IC matrix
+                output.setData(new Data(icMatrix.copy()));
+            }
         }
         
-        // Initial output is the initial condition
-        output.setData(new Data(ic));
+        
     }
     
     @Override
     public void calculateUpdate(double t) {
-        // Update delay buffer with new input sample
-        
-        // Fail fast - validate critical components exist
-        if (inputPortList == null || inputPortList.isEmpty()) {
-            throw new IllegalStateException("Delay block cannot update: no input ports configured");
-        }
-        
-        if (buffer == null) {
-            throw new IllegalStateException("Delay block cannot update: buffer not initialized (call calculateInit() first)");
-        }
-        
-        InputPort input = inputPortList.get(0);
-        if (input == null) {
-            throw new IllegalStateException("Delay block cannot update: input port is null");
-        }
-        
-        if (input.getData() == null) {
-            throw new IllegalStateException("Delay block cannot update: input data is null");
-        }
-        
-        if (delayLength == null || delayLength.getData() == null) {
-            throw new IllegalStateException("Delay block cannot update: delay length parameter is missing");
-        }
+        // Update delay buffer with new input sample        
+        InputPort input = inputPortList.get(0);       
         
         Data inputData = input.getData();
         int delayLengthValue = (int) delayLength.getData().getInitValue();

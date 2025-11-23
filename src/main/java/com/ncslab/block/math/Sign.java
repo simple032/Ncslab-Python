@@ -137,10 +137,22 @@ public class Sign extends MathBlock {
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create Sign block from SignDto.
+     *
+     * @param dto The SignDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Sign block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Sign createFromDto(SignDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Sign(dto, model);
     }
     
     // === Static Factory Method for JSON Deserialization ===

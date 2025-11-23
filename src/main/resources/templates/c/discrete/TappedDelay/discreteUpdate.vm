@@ -1,0 +1,6 @@
+/* Discrete update for TappedDelay block ${blockId}: ${blockName} */
+// Update tapped delay buffer: shift and insert new value
+for (int i = ${NumDelays} - 1; i > 0; i--) {
+    Block${blockId}_tapped_delay_buffer[i] = Block${blockId}_tapped_delay_buffer[i-1];
+}
+Block${blockId}_tapped_delay_buffer[0] = ${inputVar};

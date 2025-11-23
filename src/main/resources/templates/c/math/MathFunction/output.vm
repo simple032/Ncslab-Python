@@ -1,32 +1,32 @@
-
+/*Code for Output of MathFunction:(${block.blockId})${block.blockName}*/
 #if($inputHeight == 1 && $inputWidth == 1)
     ## Scalar mathematical functions
-    #if($function == "transpose")
+    #if($OperatorValue == "transpose")
         ## Transpose of scalar is itself
         ${outputVar} = ${inputVar};
-    #elseif($function == "reciprocal")
+    #elseif($OperatorValue == "reciprocal")
         ## Reciprocal: 1/x
         ${outputVar} = 1.0 / (${inputVar});
-    #elseif($function == "square")
+    #elseif($OperatorValue == "square")
         ## Square: x^2
         ${outputVar} = (${inputVar}) * (${inputVar});
-    #elseif($function == "exp")
+    #elseif($OperatorValue == "exp")
         ## Exponential: e^x
         ${outputVar} = exp(${inputVar});
-    #elseif($function == "log")
+    #elseif($OperatorValue == "log")
         ## Natural logarithm: ln(x)
         ${outputVar} = log(${inputVar});
-    #elseif($function == "log10")
+    #elseif($OperatorValue == "log10")
         ## Base-10 logarithm: log10(x)
         ${outputVar} = log10(${inputVar});
-    #elseif($function == "pow")
+    #elseif($OperatorValue == "pow")
         ## Power: x^y (requires second input)
         #if($inputs.size() > 1)
             ${outputVar} = pow(${inputVar}, ${inputs.get(1)});
         #else
             ${outputVar} = ${inputVar}; /* Power function requires second input */
         #end
-    #elseif($function == "sqrt")
+    #elseif($OperatorValue == "sqrt")
         ## Square root: sqrt(x)
         ${outputVar} = sqrt(${inputVar});
     #else
@@ -38,49 +38,49 @@
     #set($hMax = $inputHeight - 1)
     #set($wMax = $inputWidth - 1)
 
-    #if($function == "transpose")
+    #if($OperatorValue == "transpose")
         ## Matrix transpose
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
         ${outputVar}($j, $i) = ${inputVar}($i, $j);
             #end
         #end
-    #elseif($function == "reciprocal")
+    #elseif($OperatorValue == "reciprocal")
         ## Element-wise reciprocal
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
         ${outputVar}($i, $j) = 1.0 / (${inputVar}($i, $j));
             #end
         #end
-    #elseif($function == "square")
+    #elseif($OperatorValue == "square")
         ## Element-wise square
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
         ${outputVar}($i, $j) = (${inputVar}($i, $j)) * (${inputVar}($i, $j));
             #end
         #end
-    #elseif($function == "exp")
+    #elseif($OperatorValue == "exp")
         ## Element-wise exponential
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
         ${outputVar}($i, $j) = exp(${inputVar}($i, $j));
             #end
         #end
-    #elseif($function == "log")
+    #elseif($OperatorValue == "log")
         ## Element-wise natural logarithm
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
         ${outputVar}($i, $j) = log(${inputVar}($i, $j));
             #end
         #end
-    #elseif($function == "log10")
+    #elseif($OperatorValue == "log10")
         ## Element-wise base-10 logarithm
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])
         ${outputVar}($i, $j) = log10(${inputVar}($i, $j));
             #end
         #end
-    #elseif($function == "pow")
+    #elseif($OperatorValue == "pow")
         ## Element-wise power
         #if($inputs.size() > 1)
             #foreach($i in [0..$hMax])
@@ -95,7 +95,7 @@
                 #end
             #end
         #end
-    #elseif($function == "sqrt")
+    #elseif($OperatorValue == "sqrt")
         ## Element-wise square root
         #foreach($i in [0..$hMax])
             #foreach($j in [0..$wMax])

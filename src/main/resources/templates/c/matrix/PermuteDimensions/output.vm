@@ -1,0 +1,13 @@
+#set($input = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($output = $outputPortList.get(0).getOutputSignalC())
+
+#set($permOrder = $block.getParameter("PermutationOrder").getData().getInitValue())
+
+/* Code for output of PermuteDimensions: ($blockId)$blockName */
+## For 2D transpose (permutation order "2,1")
+#if($permOrder.toString() == "2,1")
+$output.setName($inputName.transpose())
+#else
+## For other permutations, use generic permute function
+$output.setName($inputName.permute("$permOrder"))
+#end

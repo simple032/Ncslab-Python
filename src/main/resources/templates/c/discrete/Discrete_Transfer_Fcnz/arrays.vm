@@ -1,3 +1,4 @@
 /* Define arrays for block discrete_Transfer_Fcnz:(${blockId}) ${blockName} */
-double Block${blockId}_discrete_transferz_savedata[${signal1Height}][${signal1Width}];
-double Block${blockId}_state[${signal1Height}][${stateNum}];
+// Matrix-based implementation: Clean, type-safe storage
+Matrix Block${blockId}_discrete_transferz_savedata(${signal1Height}, ${signal1Width});
+std::deque<Matrix> Block${blockId}_state_buffer;  // State history buffer (deque for efficient shifting)

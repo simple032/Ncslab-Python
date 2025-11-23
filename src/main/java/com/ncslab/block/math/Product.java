@@ -1,5 +1,6 @@
 package com.ncslab.block.math;
 
+import com.ncslab.block.Block;
 import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -49,6 +50,7 @@ public class Product extends MathBlock {
     // === Operational Settings ===
     @Getter
     private final String inputSequence;
+    @Getter
     private final boolean matrixMultiplication;
 
     // === Static Parameter Definitions ===
@@ -136,7 +138,7 @@ public class Product extends MathBlock {
      */
     public Product(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
-        
+
         // Use centralized parameter management via getParameterByName
         this.inputs = getParameterByName("Inputs");
         this.inputSequence = this.inputs.getInitString(); // Initialize final field from parameter
@@ -146,10 +148,22 @@ public class Product extends MathBlock {
         this.inputSameDT = getParameterByName("InputSameDT");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
         initializePorts();
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create Product block from ProductDto.
+     *
+     * @param dto The ProductDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Product block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Product createFromDto(ProductDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Product(dto, model);
     }
     // === Static Factory Method for JSON Deserialization ===
     public static Product fromJSON(JSONObject blockJSON, NCSLabModel model) {
@@ -368,13 +382,14 @@ public class Product extends MathBlock {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
+        // Add port data type context for scalar expansion handling
+        // This provides inputHeights, inputWidths, inputIsMatrix arrays
+        com.ncslab.util.TemplateUtils.populatePortDataTypeContext(context, this);
+
         String codeStr = TemplateManager.renderTemplate("c/math/Product/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
-    private boolean isMatrixMultiplication() {
-        return matrixMultiplication;
-    }
 
     public void updateDimension() throws MatDimException {
         OutputPort out = outputPortList.get(0);
@@ -387,40 +402,192 @@ public class Product extends MathBlock {
             m[i] = signal[i].getHeight();
             n[i] = signal[i].getWidth();
         }
-        int v = 1;
+
+        System.out.println("updateDimension (" + blockName + ") - Input count: " + signal.length);
+        for (int i = 0; i < signal.length; i++) {
+            System.out.println("  Input " + i + ": [" + signal[i].getHeight() + "x" + signal[i].getWidth() + "]");
+        }    
 
         if (!isMatrixMultiplication()) {
-            for (OutputSignal x : signal) {
-                if ((x.getHeight() != m[0]) || (x.getWidth() != n[0])) {
-                    v = 0;
-                    MatDimException e = new MatDimException("Block " + this.blockName + " " + inputSequence.length() + " input dimensions doesn't match !\n \n");
-                    throw(e);
+            // Element-wise multiplication mode with SIMULINK-compatible scalar expansion
+            // Supported operations:
+            //   Scalar × Scalar = Scalar
+            //   Scalar × Matrix = Matrix (scalar expanded)
+            //   Matrix × Scalar = Matrix (scalar expanded)
+            //   Matrix × Matrix (same dimensions) = Matrix (element-wise)
+
+            // Find the maximum dimensions (non-scalar dimension if present)
+            int maxHeight = 1;
+            int maxWidth = 1;
+            boolean hasMatrix = false;
+
+            for (int i = 0; i < signal.length; i++) {
+                boolean isScalar = (m[i] == 1 && n[i] == 1);
+                if (!isScalar) {
+                    hasMatrix = true;
+                    if (maxHeight == 1 && maxWidth == 1) {
+                        // First non-scalar sets the reference dimensions
+                        maxHeight = m[i];
+                        maxWidth = n[i];
+                    } else {
+                        // Verify all non-scalar inputs have the same dimensions
+                        if (m[i] != maxHeight || n[i] != maxWidth) {
+                            throw new MatDimException(
+                                String.format("Block %s: Non-scalar input dimensions must match. " +
+                                    "Found [%d×%d] and [%d×%d]",
+                                    blockName, maxHeight, maxWidth, m[i], n[i]));
+                        }
+                    }
                 }
             }
-            if (v == 1) {
-                out.setHeight(signal[0].getHeight());
-                out.setWidth(signal[0].getWidth());
-                out.getOutputSignalC().setHeight(signal[0].getHeight());
-                out.getOutputSignalC().setWidth(signal[0].getWidth());
-                out.getOutputSignalC().setDataType(signal[0].getDataType());
-            }
+
+            // Set output dimensions
+            out.setHeight(maxHeight);
+            out.setWidth(maxWidth);
+            out.getOutputSignalC().setHeight(maxHeight);
+            out.getOutputSignalC().setWidth(maxWidth);
+            out.getOutputSignalC().setDataType(hasMatrix ? DataType.MATRIX : DataType.REAL);
+            // Debug: Print output dimensions
+            System.out.println("updateDimension (" + blockName + ") - Output: [" + maxHeight + "x" + maxWidth + "]");
         } else {
-            for (int i = 0; i < inputSequence.length() - 1; i++) {
-                if (n[i] != m[i + 1]) {
-                    v = 0;
-                    MatDimException e = new MatDimException("Block " + this.blockName + " " + inputSequence.length() + " input dimensions doesn't match !\n \n");
-                    throw(e);
+            // Matrix multiplication mode with scalar expansion and fallback support
+            // Rules:
+            //   Scalar * Scalar = Scalar
+            //   Scalar * Matrix = Matrix (scalar expansion, element-wise)
+            //   Matrix * Scalar = Matrix (scalar expansion, element-wise)
+            //   Matrix * Matrix (compatible dims) = Matrix multiplication [m×n] * [n×p] = [m×p]
+            //   Matrix * Matrix (same dims, incompatible for matmul) = Element-wise multiplication
+
+            // CRITICAL FIX: For feedback loops with Delay blocks initialized to scalar,
+            // we need to infer proper dimensions for matrix multiplication rather than
+            // treating [1×1] as scalar, which can lead to wrong equilibrium dimensions.
+
+            // Check if we have exactly one non-scalar and one [1×1] that could need dimension inference
+            int nonScalarCount = 0;
+            int scalarIndex = -1;
+            int nonScalarIndex = -1;
+
+            for (int i = 0; i < signal.length; i++) {
+                boolean isScalar = (m[i] == 1 && n[i] == 1);
+                if (!isScalar) {
+                    nonScalarCount++;
+                    nonScalarIndex = i;
+                } else {
+                    scalarIndex = i;
                 }
             }
-            out.setHeight(signal[0].getHeight());
-            out.setWidth(signal[inputSequence.length() - 1].getWidth());
-            out.getOutputSignalC().setHeight(signal[0].getHeight());
-            out.getOutputSignalC().setWidth(signal[inputSequence.length() - 1].getWidth());
-            out.getOutputSignalC().setDataType(DataType.MATRIX);
+
+            // Special handling for 2-input matrix multiplication with one [1×1]
+            // If we have [1×n] × [1×1], infer that [1×1] should be [n×1] for proper matrix multiplication
+            // This prevents wrong equilibrium in feedback loops with Delay blocks
+            if (signal.length == 2 && nonScalarCount == 1 && scalarIndex >= 0) {
+                int nonScalarHeight = m[nonScalarIndex];
+                int nonScalarWidth = n[nonScalarIndex];
+
+                // Check if this is a row vector × scalar case that should be row vector × column vector
+                if ((nonScalarHeight == 1 && nonScalarWidth > 1) || (nonScalarHeight > 1 && nonScalarWidth == 1)) {
+                    // Get the source block for the scalar input
+                    OutputPort scalarSource = inputPortList.get(scalarIndex).getLinkedLine().getLinkedOutputPort();
+                    Block sourceBlock = scalarSource.getBlock();
+
+                    // If source is a Delay block with scalar IC in a feedback loop,
+                    // infer the required dimension for matrix multiplication
+                    if (sourceBlock instanceof com.ncslab.block.discrete.Delay) {
+                        System.out.println("DEBUG " + blockName + ": Detected Delay block with [1×1] in matrix multiplication");
+                        System.out.println("  Non-scalar input: [" + nonScalarHeight + "×" + nonScalarWidth + "]");
+
+                        // For [1×n] × [?×?] matrix multiplication, we need [?×?] = [n×k] to produce [1×k]
+                        // For [m×1] × [?×?] matrix multiplication, we need [?×?] = [1×k] to produce [m×k]
+                        int inferredHeight, inferredWidth;
+
+                        if (nonScalarIndex == 0) {
+                            // Pattern: [1×n] × [1×1] → should be [1×n] × [n×k]
+                            // Infer [1×1] should be [n×1] to produce [1×1] (most restrictive)
+                            if (nonScalarHeight == 1 && nonScalarWidth > 1) {
+                                inferredHeight = nonScalarWidth;
+                                inferredWidth = 1;
+                                System.out.println("  Inferred Delay dimension for matmul: [" + inferredHeight + "×" + inferredWidth + "]");
+
+                                // Update the scalar signal dimensions
+                                m[scalarIndex] = inferredHeight;
+                                n[scalarIndex] = inferredWidth;
+                                signal[scalarIndex].setHeight(inferredHeight);
+                                signal[scalarIndex].setWidth(inferredWidth);
+                                signal[scalarIndex].setDataType(DataType.MATRIX);
+
+                                // Update source port dimensions to propagate back
+                                scalarSource.setHeight(inferredHeight);
+                                scalarSource.setWidth(inferredWidth);
+                                scalarSource.getOutputSignalC().setHeight(inferredHeight);
+                                scalarSource.getOutputSignalC().setWidth(inferredWidth);
+                                scalarSource.getOutputSignalC().setDataType(DataType.MATRIX);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Find non-scalar dimensions and determine output dimensions
+            int outHeight = 1;
+            int outWidth = 1;
+            boolean hasMatrix = false;
+
+            // First pass: identify output dimensions
+            for (int i = 0; i < signal.length; i++) {
+                boolean isScalar = (m[i] == 1 && n[i] == 1);
+                if (!isScalar) {
+                    if (!hasMatrix) {
+                        // First non-scalar matrix sets initial dimensions
+                        outHeight = m[i];
+                        outWidth = n[i];
+                        hasMatrix = true;
+                    } else {
+                        // Subsequent non-scalar matrices
+                        // Check if matrix multiplication is possible
+                        if (outWidth == m[i]) {
+                            // Compatible for matrix multiplication: [outHeight × outWidth] * [m[i] × n[i]]
+                            // Result dimensions: [outHeight × n[i]]
+                            outWidth = n[i];
+                        } else if (outHeight == m[i] && outWidth == n[i]) {
+                            // Same dimensions but not compatible for matrix multiplication
+                            // Will fall back to element-wise multiplication
+                            // Output dimensions remain [outHeight × outWidth]
+                        } else {
+                            throw new MatDimException(
+                                String.format("Block %s: Matrix dimensions [%d×%d] and [%d×%d] are incompatible " +
+                                    "for both matrix multiplication and element-wise multiplication",
+                                    blockName, outHeight, outWidth, m[i], n[i]));
+                        }
+                    }
+                }
+                // Scalars don't affect output dimensions
+            }
+
+            out.setHeight(outHeight);
+            out.setWidth(outWidth);
+            out.getOutputSignalC().setHeight(outHeight);
+            out.getOutputSignalC().setWidth(outWidth);
+            out.getOutputSignalC().setDataType(hasMatrix ? DataType.MATRIX : DataType.REAL);
+            // Debug: Print output dimensions
+            System.out.println("updateDimension (" + blockName + ") - Output: [" + outHeight + "x" + outWidth + "]");
         }
+
     }
 
     public void checkDimension() throws MatDimException {
+        // Validate all input dimensions are non-zero
+        for (int i = 0; i < inputPortList.size(); i++) {
+            OutputSignal signal = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            int height = signal.getHeight();
+            int width = signal.getWidth();
+
+            if (height == 0 || width == 0) {
+                throw new MatDimException(
+                    String.format("Product block '%s': Input %d has invalid dimensions [%d×%d]. " +
+                        "All input dimensions must be at least [1×1].",
+                        blockName, i+1, height, width));
+            }
+        }
     }
 
     @Override
@@ -431,25 +598,25 @@ public class Product extends MathBlock {
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        Data resultData = new Data(out.getHeight(), out.getWidth());
-        if(resultData.getDataType()==DataType.MATRIX) {
-            Matrix matrix = new Matrix(out.getHeight(), out.getWidth());
-            for (int i = 0; i < out.getHeight(); i++) {
-                for (int j = 0; j < out.getWidth(); j++) {
-                    matrix.set(i, j, 1);
-                }
-            }
-            resultData.setMatrix(matrix);
-        }else {
-            resultData.setInitValue(1);
+
+        // IMPORTANT: For matrix multiplication, initialize result from FIRST INPUT, not identity matrix
+        // This ensures correct multiplication order: input[0] * input[1] * ... * input[n]
+        // Initialize with first input's data
+        Data firstInput = inputPortList.get(0).getData();
+        Data resultData;
+        if (firstInput.getDataType() == DataType.MATRIX) {
+            resultData = new Data(firstInput.getMatrix().copy());
+        } else {
+            resultData = new Data(firstInput.getInitValue());
         }
 
         // Check if inputSequence is numeric (count) or operator string
         boolean isNumericInput = inputSequence.length() < inputPortList.size();
 
         if (!isMatrixMultiplication()) {
-            // Element-wise operations
-            for (int i = 0; i < inputPortList.size(); i++) {
+            // Element-wise operations (with scalar expansion support)
+            // Start from i=1 since we already initialized with input[0]
+            for (int i = 1; i < inputPortList.size(); i++) {
                 char operation;
 
                 if (isNumericInput) {
@@ -461,14 +628,16 @@ public class Product extends MathBlock {
                 }
 
                 if (operation == '*') {
-                    resultData = resultData.times(inputPortList.get(i).getData());
+                    // Use arrayTimes for element-wise multiplication (supports scalar expansion)
+                    resultData = resultData.arrayTimes(inputPortList.get(i).getData());
                 } else if (operation == '/') {
                     resultData = resultData.divide(inputPortList.get(i).getData());
                 }
             }
         } else {
-            // Matrix multiplication mode
-            for (int i = 0; i < inputPortList.size(); i++) {
+            // Matrix multiplication mode with scalar expansion support
+            // Start from i=1 since we already initialized with input[0]
+            for (int i = 1; i < inputPortList.size(); i++) {
                 char operation;
 
                 if (isNumericInput) {
@@ -479,10 +648,22 @@ public class Product extends MathBlock {
                     operation = inputSequence.charAt(i);
                 }
 
+                Data inputData = inputPortList.get(i).getData();
+
                 if (operation == '*') {
-                    resultData = resultData.arrayTimes(inputPortList.get(i).getData());
+                    // Check if either operand is scalar
+                    boolean resultIsScalar = (resultData.getDataType() == DataType.REAL);
+                    boolean inputIsScalar = (inputData.getDataType() == DataType.REAL);
+
+                    if (resultIsScalar || inputIsScalar) {
+                        // Scalar expansion: use arrayTimes for element-wise multiplication
+                        resultData = resultData.arrayTimes(inputData);
+                    } else {
+                        // Both are matrices: check if dimensions are compatible for matrix multiplication
+                        resultData = resultData.times(inputData);
+                    }
                 } else if (operation == '/')  {
-                    resultData = resultData.divide(inputPortList.get(i).getData());
+                    resultData = resultData.divide(inputData);
                 }
             }
         }

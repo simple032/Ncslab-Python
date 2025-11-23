@@ -1,0 +1,20 @@
+#set($originalSignal = $inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($assignValues = $inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC())
+#set($output = $outputPortList.get(0).getOutputSignalC())
+
+#set($mode = $block.getParameter("AssignmentMode").getData().getInitValue())
+#set($indicesParam = $block.getParameter("Indices").getData().getInitValue())
+
+/* Code for output of Assignment: ($blockId)$blockName */
+## Different code generation based on assignment mode
+#if($mode.toString() == "element")
+$output.setName($originalSignalName.assignElement($indicesParam))
+#elseif($mode.toString() == "row")
+$output.setName($originalSignalName.assignRow($indicesParam, $assignValuesName))
+#elseif($mode.toString() == "column")
+$output.setName($originalSignalName.assignColumn($indicesParam, $assignValuesName))
+#elseif($mode.toString() == "index")
+$output.setName($originalSignalName.assignIndices($indicesParam, $assignValuesName))
+#else
+$output.setName($originalSignalName.assign($indicesParam, $assignValuesName))
+#end

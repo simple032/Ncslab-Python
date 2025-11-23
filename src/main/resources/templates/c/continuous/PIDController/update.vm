@@ -1,26 +1,21 @@
 /*Code for Update of PID Controller:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $stateIntegral && $stateFilter && $proportionalGain)
-    #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+#set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+
+#if($signalDataType == $realDataType && $PObject.dataType == $realDataType)
+    ## Scalar PID state update
+    $stateIntegralName = $stateIntegralName + $stateIntegralDerivativeName * model.stepSize;
+    $stateFilterName = $stateFilterName + $stateFilterDerivativeName * model.stepSize;
+#else
+    ## Matrix PID state update
+    #set($height = $stateFilterHeight)
+    #set($width = $stateFilterWidth)
+    #set($hMax = $height - 1)
+    #set($wMax = $width - 1)
     
-    #if($signalDataType == $realDataType && $proportionalGain.dataType == $realDataType)
-        ## Scalar PID state update
-        $integralStateName = $integralStateName + $integralStateDerivativeName * model.stepSize;
-        $filterStateName = $filterStateName + $filterStateDerivativeName * model.stepSize;
-    #else
-        ## Matrix PID state update
-        #set($height = $filterStateHeight)
-        #set($width = $filterStateWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-                $integralStateName[$i][$j] = $integralStateName[$i][$j] + $integralStateDerivativeName[$i][$j] * model.stepSize;
-                $filterStateName[$i][$j] = $filterStateName[$i][$j] + $filterStateDerivativeName[$i][$j] * model.stepSize;
-            #end
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+            $stateIntegralName[$i][$j] = $stateIntegralName[$i][$j] + $stateIntegralDerivativeName[$i][$j] * model.stepSize;
+            $stateFilterName[$i][$j] = $stateFilterName[$i][$j] + $stateFilterDerivativeName[$i][$j] * model.stepSize;
         #end
     #end
-#else
-    ## Fallback if parameters missing
-    /* PID Controller update block $blockId missing parameters */
 #end

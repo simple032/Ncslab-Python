@@ -22,6 +22,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 // Internal imports - Block components
 import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -356,6 +357,7 @@ public class Sum extends MathBlock {
     }
     // === Code Generation Methods (preserved from original) ===
     public void generateOutputCodeC(CodeStructC code) {
+        super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         context.put("sequence", getInputSequence());
 
@@ -365,34 +367,69 @@ public class Sum extends MathBlock {
     public void updateDimension() throws MatDimException {
         OutputPort out = outputPortList.get(0);
         OutputSignal[] signal = new OutputSignal[inputSequence.length()];
-        int m = -1, n = -1;
-        int v = 1;
 
+        // Collect all input signals
         for (int i = 0; i < inputSequence.length(); i++) {
             signal[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+        }
 
-            if (i == 0) {
-                m = signal[i].getHeight();
-                n = signal[i].getWidth();
-            } else {
-                if ((signal[i].getHeight() != m) || (signal[i].getWidth() != n)) {
-                    v = 0;
-                    MatDimException e = new MatDimException("Block " + this.blockName + " " + inputSequence.length() + " input dimensions doesn't match !\n \n");
-                    throw(e);
+        // SIMULINK-compatible scalar expansion support
+        // Supported operations:
+        //   Scalar + Scalar = Scalar
+        //   Scalar + Matrix = Matrix (scalar expanded)
+        //   Matrix + Scalar = Matrix (scalar expanded)
+        //   Matrix + Matrix (same dimensions) = Matrix (element-wise)
+
+        // Find the maximum dimensions (non-scalar dimension if present)
+        int maxHeight = 1;
+        int maxWidth = 1;
+        boolean hasMatrix = false;
+
+        for (int i = 0; i < signal.length; i++) {
+            int height = signal[i].getHeight();
+            int width = signal[i].getWidth();
+            boolean isScalar = (height == 1 && width == 1);
+
+            if (!isScalar) {
+                hasMatrix = true;
+                if (maxHeight == 1 && maxWidth == 1) {
+                    // First non-scalar sets the reference dimensions
+                    maxHeight = height;
+                    maxWidth = width;
+                } else {
+                    // Verify all non-scalar inputs have the same dimensions
+                    if (height != maxHeight || width != maxWidth) {
+                        throw new MatDimException(
+                            String.format("Block %s: Non-scalar input dimensions must match. " +
+                                "Found [%d×%d] and [%d×%d]",
+                                blockName, maxHeight, maxWidth, height, width));
+                    }
                 }
             }
-            }
-        if (v == 1) {
-            out.setHeight(signal[0].getHeight());
-            out.setWidth(signal[0].getWidth());
-            out.getOutputSignalC().setHeight(signal[0].getHeight());
-            out.getOutputSignalC().setWidth(signal[0].getWidth());
-            out.getOutputSignalC().setDataType(signal[0].getDataType());
         }
+
+        // Set output dimensions
+        out.setHeight(maxHeight);
+        out.setWidth(maxWidth);
+        out.getOutputSignalC().setHeight(maxHeight);
+        out.getOutputSignalC().setWidth(maxWidth);
+        out.getOutputSignalC().setDataType(hasMatrix ? DataType.MATRIX : DataType.REAL);
     }
 
     public void checkDimension() throws MatDimException {
-        // No additional dimension checks needed for sum block
+        // Validate all input dimensions are non-zero
+        for (int i = 0; i < inputPortList.size(); i++) {
+            OutputSignal signal = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            int height = signal.getHeight();
+            int width = signal.getWidth();
+
+            if (height == 0 || width == 0) {
+                throw new MatDimException(
+                    String.format("Sum block '%s': Input %d has invalid dimensions [%d×%d]. " +
+                        "All input dimensions must be at least [1×1].",
+                        blockName, i+1, height, width));
+            }
+        }
     }
 
     // === Runtime Simulation API (restored) ===

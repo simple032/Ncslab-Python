@@ -604,8 +604,8 @@ public class PIDController extends ContinuousBlock {
                 stateFilter.setData(new Data(filterState));
             }
 
-            // Calculate PID output: P + I + D
-            double output = pGain * inputValue + integralState + filterState * fCoeff;
+            // Calculate PID output: P + I + D (parallel form with filtered derivative)
+            double output = pGain * inputValue + integralState + filterState;
             
             // Handle external reset
             if (externalReset.getInitString().equals("on") && inputPortList.size() > 1) {
@@ -614,8 +614,8 @@ public class PIDController extends ContinuousBlock {
                     stateIntegral.setData(new Data(initialConditionForIntegrator.getData().getInitValue()));
                     stateFilter.setData(new Data(initialConditionForFilter.getData().getInitValue()));
                     // Recalculate output after reset
-                    output = pGain * inputValue + initialConditionForIntegrator.getData().getInitValue() + 
-                            initialConditionForFilter.getData().getInitValue() * fCoeff;
+                    output = pGain * inputValue + initialConditionForIntegrator.getData().getInitValue() +
+                            initialConditionForFilter.getData().getInitValue();
                 }
             }
 
@@ -690,8 +690,8 @@ public class PIDController extends ContinuousBlock {
                         stateFilter.getData().getMatrix().set(i, j, filterState);
                     }
 
-                    // Calculate PID output
-                    double output = pGain * inputValue + integralState + filterState * fCoeff;
+                    // Calculate PID output (parallel form with filtered derivative)
+                    double output = pGain * inputValue + integralState + filterState;
 
                     // Handle external reset
                     if (externalReset.getInitString().equals("on") && inputPortList.size() > 1) {
@@ -703,7 +703,7 @@ public class PIDController extends ContinuousBlock {
                                 double resetFilter = initialConditionForFilter.getData().getMatrix().get(i, j);
                                 stateIntegral.getData().getMatrix().set(i, j, resetIntegral);
                                 stateFilter.getData().getMatrix().set(i, j, resetFilter);
-                                output = pGain * inputValue + resetIntegral + resetFilter * fCoeff;
+                                output = pGain * inputValue + resetIntegral + resetFilter;
                             }
                         }
                     }
@@ -801,8 +801,7 @@ public class PIDController extends ContinuousBlock {
         context.put("integralStateHeight", stateIntegral.getHeight());
         context.put("integralStateWidth", stateIntegral.getWidth());
         context.put("filterStateHeight", stateFilter.getHeight());
-        context.put("filterStateWidth", stateFilter.getWidth());
-        context.put("realDataType", DataType.REAL);
+        context.put("filterStateWidth", stateFilter.getWidth());        
         
         String codeStr = TemplateManager.renderTemplate("c/continuous/PIDController/init.vm", context);
         code.addInitCode(codeStr);

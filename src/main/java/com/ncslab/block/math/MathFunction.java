@@ -326,14 +326,12 @@ public class MathFunction extends MathBlock {
     public void generateOutputCodeM(CodeStructM code) {
         super.generateOutputCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
         String codeStr = TemplateManager.renderTemplate("m/math/MathFunction/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);       
         String codeStr = TemplateManager.renderTemplate("c/math/MathFunction/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -383,15 +381,23 @@ public class MathFunction extends MathBlock {
                 }
                 break;
             case MATRIX:
-                Matrix matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
-                for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
-                    for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
-                        double inputValueMatrix = inputData.getMatrix().get(i, j);
-                        if ("pow".equals(mathOperator)) {
-                            double exponent = inputPortList.get(1).getData().getMatrix().get(i, j);
-                            matrixResult.set(i, j, Math.pow(inputValueMatrix, exponent));
-                        } else {
-                            matrixResult.set(i, j, applyMathFunction(inputValueMatrix, mathOperator));
+                Matrix matrixResult;
+
+                // Special handling for transpose: swap dimensions and use JAMA's transpose()
+                if ("transpose".equals(mathOperator)) {
+                    matrixResult = inputData.getMatrix().transpose();
+                } else {
+                    // For all other operations, apply element-wise
+                    matrixResult = new Matrix(inputData.getMatrix().getRowDimension(), inputData.getMatrix().getColumnDimension());
+                    for (int i = 0; i < inputData.getMatrix().getRowDimension(); i++) {
+                        for (int j = 0; j < inputData.getMatrix().getColumnDimension(); j++) {
+                            double inputValueMatrix = inputData.getMatrix().get(i, j);
+                            if ("pow".equals(mathOperator)) {
+                                double exponent = inputPortList.get(1).getData().getMatrix().get(i, j);
+                                matrixResult.set(i, j, Math.pow(inputValueMatrix, exponent));
+                            } else {
+                                matrixResult.set(i, j, applyMathFunction(inputValueMatrix, mathOperator));
+                            }
                         }
                     }
                 }
@@ -434,6 +440,8 @@ public class MathFunction extends MathBlock {
                 return Math.round(value);
             case "sign":
                 return value > 0 ? 1.0 : (value < 0 ? -1.0 : 0.0);
+            case "transpose":
+                return value;
             default:
                 return 0;
         }

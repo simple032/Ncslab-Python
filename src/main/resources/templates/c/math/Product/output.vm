@@ -15,9 +15,62 @@
 #end
 
 #if($isMatrixMult)
-    /* Matrix multiplication mode */
-    /* TODO: Implement matrix multiplication */
-    ${outputVar} = 1.0; /* Placeholder for matrix multiplication */
+    /* Matrix multiplication mode with scalar expansion support */
+    #if($numInputs == 2)
+        ## Two-input matrix multiplication
+        #set($input0 = $inputs.get(0))
+        #set($input1 = $inputs.get(1))
+        #set($op = $InputsValue.charAt(0))
+        #if($outputHeight == 1 && $outputWidth == 1)
+            ## Result is 1x1 - use temporary matrix for computation
+    {
+        Matrix tmpResult(1,1);
+            #if($op == '*')
+        tmpResult = ${input0} * ${input1};
+            #elseif($op == '/')
+        tmpResult = ${input0} * ${input1}.inverse();
+            #end
+        ${outputVar} = tmpResult(0, 0);
+    }
+        #else
+            ## Result is matrix
+            #if($op == '*')
+    ${outputVar} = ${input0} * ${input1};
+            #elseif($op == '/')
+    ${outputVar} = ${input0} * ${input1}.inverse();
+            #end
+        #end
+    #else
+        ## Multi-input matrix multiplication - chain the operations
+        #if($outputHeight == 1 && $outputWidth == 1)
+            ## Result is 1x1 - use temporary matrix for computation
+    {
+        auto tmpResult = ${inputs.get(0)}
+        #foreach($i in [1..$maxIndex])
+            #set($operation = $InputsValue.charAt($i - 1))
+            #if($operation == '*')
+    * ${inputs.get($i)}
+            #elseif($operation == '/')
+    * ${inputs.get($i)}.inverse()
+            #end
+        #end
+        ;
+        ${outputVar} = tmpResult(0, 0);
+    }
+        #else
+            ## Result is matrix
+        ${outputVar} = ${inputs.get(0)}
+        #foreach($i in [1..$maxIndex])
+            #set($operation = $InputsValue.charAt($i - 1))
+            #if($operation == '*')
+    * ${inputs.get($i)}
+            #elseif($operation == '/')
+    * ${inputs.get($i)}.inverse()
+            #end
+        #end
+        ;
+        #end
+    #end
 #else
     ## Element-wise multiplication/division
     #if($inputHeight == 1 && $inputWidth == 1)
@@ -46,18 +99,32 @@
             #foreach($n in [0..$wMax])
                 ${outputVar}($m, $n) = 1.0;
 
-                ## Apply operations for this element
+                ## Apply operations for this element (with scalar expansion)
                 #foreach($i in [0..$maxIndex])
+                    ## Check if input is scalar using TemplateUtils-provided context
+                    #set($isScalar = ($inputHeights.get($i) == 1 && $inputWidths.get($i) == 1))
                     #if($isNumericInput)
                         ## Numeric input: use default '*' for all
+                        #if($isScalar)
+            ${outputVar}($m, $n) *= ${inputs.get($i)};
+                        #else
             ${outputVar}($m, $n) *= ${inputs.get($i)}($m, $n);
+                        #end
                     #else
                         ## String input: use charAt to get operator
                         #set($operation = $InputsValue.charAt($i))
                         #if($operation == '*')
+                            #if($isScalar)
+            ${outputVar}($m, $n) *= ${inputs.get($i)};
+                            #else
             ${outputVar}($m, $n) *= ${inputs.get($i)}($m, $n);
+                            #end
                         #elseif($operation == '/')
+                            #if($isScalar)
+            ${outputVar}($m, $n) /= ${inputs.get($i)};
+                            #else
             ${outputVar}($m, $n) /= ${inputs.get($i)}($m, $n);
+                            #end
                         #end
                     #end
                 #end

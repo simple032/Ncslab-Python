@@ -1,0 +1,46 @@
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar logarithm with domain validation
+    if(${inputVar} > 0.0) {
+    #if($LogTypeValue == "log" || $LogTypeValue == "ln")
+        ${outputVar} = log(${inputVar});  // Natural logarithm
+    #elseif($LogTypeValue == "log2")
+        ${outputVar} = log2(${inputVar});  // Log base 2
+    #elseif($LogTypeValue == "log10")
+        ${outputVar} = log10(${inputVar});  // Log base 10
+    #elseif($LogTypeValue == "custom")
+        ${outputVar} = log(${inputVar}) / log(${CustomBase});  // Custom base
+    #else
+        ${outputVar} = log(${inputVar});  // Default to natural logarithm
+    #end
+    } else if(${inputVar} == 0.0) {
+        ${outputVar} = -INFINITY;  // log(0) = -inf
+    } else {
+        ${outputVar} = NAN;  // log(negative) = NaN
+    }
+#else
+    ## Matrix logarithm - element-wise operation
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}($i, $j) > 0.0) {
+            #if($LogTypeValue == "log" || $LogTypeValue == "ln")
+        ${outputVar}($i, $j) = log(${inputVar}($i, $j));  // Natural logarithm
+            #elseif($LogTypeValue == "log2")
+        ${outputVar}($i, $j) = log2(${inputVar}($i, $j));  // Log base 2
+            #elseif($LogTypeValue == "log10")
+        ${outputVar}($i, $j) = log10(${inputVar}($i, $j));  // Log base 10
+            #elseif($LogTypeValue == "custom")
+        ${outputVar}($i, $j) = log(${inputVar}($i, $j)) / log(${CustomBase});  // Custom base
+            #else
+        ${outputVar}($i, $j) = log(${inputVar}($i, $j));  // Default to natural logarithm
+            #end
+    } else if(${inputVar}($i, $j) == 0.0) {
+        ${outputVar}($i, $j) = -INFINITY;  // log(0) = -inf
+    } else {
+        ${outputVar}($i, $j) = NAN;  // log(negative) = NaN
+    }
+        #end
+    #end
+#end

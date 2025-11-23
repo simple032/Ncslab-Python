@@ -1,0 +1,16 @@
+/* Code for arrays of block FirstOrderHold: (${blockId}) ${blockName} */
+#if($signalDataType == $realDataType)
+/* Scalar first-order hold state variables */
+real_T Block${blockId}_foh_last_sample;
+real_T Block${blockId}_foh_second_last_sample;
+real_T Block${blockId}_foh_last_sample_time;
+real_T Block${blockId}_foh_second_last_sample_time;
+int Block${blockId}_foh_initialized;
+#else
+/* Matrix first-order hold state variables */
+real_T Block${blockId}_foh_last_sample_matrix[${signalHeight}][${signalWidth}];
+real_T Block${blockId}_foh_second_last_sample_matrix[${signalHeight}][${signalWidth}];
+real_T Block${blockId}_foh_last_sample_time;
+real_T Block${blockId}_foh_second_last_sample_time;
+int Block${blockId}_foh_initialized;
+#end

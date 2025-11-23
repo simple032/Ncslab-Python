@@ -12,6 +12,7 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -40,6 +41,18 @@ public class ProductOfElements extends MathBlock {
     public ProductOfElements(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         System.out.println("DTO-NATIVE: ProductOfElements block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create ProductOfElements block from ProductOfElementsDto.
+     *
+     * @param dto The ProductOfElementsDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New ProductOfElements block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static ProductOfElements createFromDto(ProductOfElementsDto dto, NCSLabModel model) throws BlockCreationException {
+        return new ProductOfElements(dto, model);
     }
 
 

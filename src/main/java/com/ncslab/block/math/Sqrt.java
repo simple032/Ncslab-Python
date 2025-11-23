@@ -140,28 +140,40 @@ public class Sqrt extends MathBlock {
      */
     public Sqrt(SqrtDto dto, NCSLabModel model) {
         super(dto, model);
-        
+
         // Extract and validate DTO parameters
         String functionValue = dto.getFunctionValue();
         String sampleTimeStr = dto.getSampleTime() != null ? dto.getSampleTime().getAsString() : "-1";
         String outDataTypeValue = dto.getOutDataTypeStrValue();
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
-        
+
         // Create parameters from DTO values
         this.function = getParameterByName("Function");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
         // Validate parameters
         validateParameters(this.function, this.sampleTime);
-        
+
         // Initialize ports
         initializePorts();
-        
+
         System.out.println("DTO-NATIVE: Sqrt block created successfully from SqrtDto - " + dto.getBlockName());
     }
-    
+
+    /**
+     * Factory method to create Sqrt block from SqrtDto.
+     *
+     * @param dto The SqrtDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Sqrt block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Sqrt createFromDto(SqrtDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Sqrt(dto, model);
+    }
+
     /**
      * DTO-NATIVE Constructor - Creates Sqrt block directly from BlockDto DTO
      * @deprecated Use specific SqrtDto constructor instead

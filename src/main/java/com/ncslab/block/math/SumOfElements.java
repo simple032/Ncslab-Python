@@ -12,6 +12,7 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.block.io.InputPort;
@@ -41,6 +42,18 @@ public class SumOfElements extends MathBlock {
         outputPortList.add(output);
 
         paraseParamValues();
+    }
+
+    /**
+     * Factory method to create SumOfElements block from SumOfElementsDto.
+     *
+     * @param dto The SumOfElementsDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New SumOfElements block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static SumOfElements createFromDto(SumOfElementsDto dto, NCSLabModel model) throws BlockCreationException {
+        return new SumOfElements(dto, model);
     }
 
 

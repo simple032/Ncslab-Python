@@ -1,0 +1,41 @@
+
+#set($input1 = $inputs.get(0))
+#set($input2 = $inputs.get(1))
+#set($input1Height = $inputHeights.get(0))
+#set($input1Width = $inputWidths.get(0))
+#set($input2Height = $inputHeights.get(1))
+#set($input2Width = $inputWidths.get(1))
+#set($input1IsScalar = ($input1Height == 1 && $input1Width == 1))
+#set($input2IsScalar = ($input2Height == 1 && $input2Width == 1))
+
+#if($input1IsScalar && $input2IsScalar)
+    ## Scalar power: base^exponent
+    ${outputVar} = pow(${input1}, ${input2});
+#elseif($input1IsScalar)
+    ## Scalar base, matrix exponent (element-wise)
+    #set($hMax = $input2Height - 1)
+    #set($wMax = $input2Width - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    ${outputVar}($i, $j) = pow(${input1}, ${input2}($i, $j));
+        #end
+    #end
+#elseif($input2IsScalar)
+    ## Matrix base, scalar exponent
+    #set($hMax = $input1Height - 1)
+    #set($wMax = $input1Width - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    ${outputVar}($i, $j) = pow(${input1}($i, $j), ${input2});
+        #end
+    #end
+#else
+    ## Matrix base, matrix exponent (element-wise)
+    #set($hMax = $input1Height - 1)
+    #set($wMax = $input1Width - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    ${outputVar}($i, $j) = pow(${input1}($i, $j), ${input2}($i, $j));
+        #end
+    #end
+#end

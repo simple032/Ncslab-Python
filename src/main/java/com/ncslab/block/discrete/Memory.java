@@ -1,0 +1,445 @@
+package com.ncslab.block.discrete;
+
+import Jama.Matrix;
+import com.ncslab.block.data.Data;
+import lombok.Getter;
+import org.json.JSONObject;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.dto.block.specialized.discrete.MemoryDto;
+
+import com.ncslab.block.discrete.DiscreteBlock;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.code.m.CodeStructM;
+import com.ncslab.block.data.DataType;
+import com.ncslab.ncslablink.BlockCreationException;
+import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.util.TemplateManager;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Memory block with SIMULINK-compatible parameters and type-safe constructors.
+ *
+ * The Memory block is specifically designed to break algebraic loops in feedback systems.
+ * It outputs the input value from the previous time step, providing unit delay functionality
+ * without feedthrough.
+ *
+ * SIMULINK Parameters:
+ * - InitialCondition: Initial condition for the memory
+ * - SampleTime: Sample time for discrete operation
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ *
+ * Key Features:
+ * - No feedthrough (breaks algebraic loops)
+ * - Unit delay behavior: y[k] = u[k-1]
+ * - First output is the initial condition
+ * - Supports scalar and matrix signals
+ *
+ * @author NCSLab
+ * @version 1.0
+ * @since Quick-Win Implementation 2025
+ */
+public class Memory extends DiscreteBlock {
+
+    // === Internal State ===
+    private Data currentValue;
+    private Data previousValue;
+    private final boolean feedthrough = false; // Memory has no feedthrough
+
+    // === SIMULINK-Compatible Parameters ===
+    private final Parameter initialCondition;
+    private final Parameter sampleTimeParam;
+    private final Parameter outDataType;
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Port References ===
+    private OutputPort output;
+    private InputPort input;
+
+    // === Static Parameter Definitions ===
+
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("InitialCondition", "0");
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
+
+    public static final List<String> outputNames = new ArrayList<>();
+
+    public static final List<String> inputNames = new ArrayList<>();
+
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
+    static {
+        // Port names
+        outputNames.add("out1");
+        inputNames.add("in1");
+
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+
+        // Output port defaults (Memory has no feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", false); // Memory never has feedthrough
+        OUTPUT_PORT_DEFAULTS.add(output1);
+    }
+
+    // === Private Constructor with Typed Parameters ===
+    private Memory(Parameter initialCondition, Parameter sampleTimeParam, Parameter outDataType,
+                  Parameter saturateOnIntegerOverflow, String blockName, String blockPath,
+                  String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+
+        // Validate parameters
+        validateParameters(sampleTimeParam);
+
+        // Assign parameters
+        this.initialCondition = Objects.requireNonNull(initialCondition, "Initial condition parameter cannot be null");
+        this.sampleTimeParam = Objects.requireNonNull(sampleTimeParam, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Set discrete sample time
+        setSampleTime(this.sampleTimeParam);
+
+        // Initialize ports
+        postConstructionInitialization();
+    }
+
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public Memory(JSONObject blockIn, NCSLabModel model) {
+        super(blockIn, model); // This calls parseParameterList() automatically
+
+        // Get parameters by name from the automatically populated parameterList
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Set discrete sample time
+        setSampleTime(sampleTimeParam);
+
+        // Initialize ports
+        postConstructionInitialization();
+    }
+
+    /**
+     * DTO-NATIVE Constructor - Creates Memory block directly from BlockDto DTO
+     */
+    public Memory(BlockDto blockDto, NCSLabModel model) {
+        super(blockDto, model);
+
+        // Get parameters by name from the automatically populated parameterList
+        this.initialCondition = getParameterByName("InitialCondition");
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Set discrete sample time
+        setSampleTime(this.sampleTimeParam);
+
+        // Initialize ports
+        postConstructionInitialization();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
+    public static Memory fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+
+            Parameter initialCondition = createInitialConditionFromJSON(paramValues, blockName);
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+
+            Memory block = new Memory(initialCondition, sampleTime, outDataType, saturateParam,
+                                     blockName, blockPath, blockUUID, model);
+
+            setParameterBlockReference(block, initialCondition, sampleTime, outDataType, saturateParam);
+
+            return block;
+
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create Memory block from JSON: " + e.getMessage(), e);
+        }
+    }
+
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
+    public static Memory create(String name, String path, double initialCondition, double sampleTime, NCSLabModel model) {
+        return create(name, path, initialCondition, sampleTime, "Inherit: Same as input", false, model);
+    }
+
+    /**
+     * Create a Memory block with full parameters (DTO-based approach).
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param initialCondition Initial condition for the memory
+     * @param sampleTime Sample time for discrete operation
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Memory block instance
+     */
+    public static Memory create(String name, String path, double initialCondition, double sampleTime,
+                               String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        // Build DTO using type-safe builder pattern
+        MemoryDto dto = MemoryDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid Memory parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new Memory(dto, model);
+    }
+
+    // === Parameter Validation ===
+    private static void validateParameters(Parameter sampleTime) {
+        double sampleTimeValue = sampleTime.getDouble();
+        if (sampleTimeValue <= 0.0 || sampleTimeValue == Double.NaN || sampleTimeValue == Double.POSITIVE_INFINITY) {
+            throw new IllegalArgumentException("Sample time must be positive and finite");
+        }
+    }
+
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createInitialConditionFromJSON(JSONObject paramValues, String blockName) {
+        String initialConditionValue = paramValues.optString("InitialCondition", "0.0");
+        return new Parameter(null, 1, "InitialCondition", initialConditionValue);
+    }
+
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "1.0");
+        return new Parameter(null, 2, "SampleTime", sampleTimeValue);
+    }
+
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 3, "OutDataTypeStr", outDataTypeValue);
+    }
+
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateValue);
+    }
+
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+
+    private static void setParameterBlockReference(Memory block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "Memory");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        return identity;
+    }
+
+    // === Port Initialization ===
+    private void postConstructionInitialization() {
+        // Create ports if they don't exist (DTO constructor may not have created them)
+        if (inputPortList.isEmpty()) {
+            InputPort inputPort = new InputPort(this, 1, "in1");
+            inputPortList.add(inputPort);
+        }
+
+        if (outputPortList.isEmpty()) {
+            OutputPort outputPort = new OutputPort(this, 1, feedthrough); // Use Block, int, boolean constructor
+            outputPortList.add(outputPort);
+        }
+
+        // Set references to the ports
+        input = inputPortList.get(0);  // First input port
+        output = outputPortList.get(0); // First output port
+
+        // Memory never has feedthrough, so set false
+        output.setFeedThrough(feedthrough); // false
+    }
+
+    // Define arrays to save data
+    public void generateArraysCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/discrete/Memory/arrays.vm", context);
+        code.addArraysCode(codeStr);
+    }
+
+    public void generateInitCodeM(CodeStructM code) {
+        super.generateInitCodeM(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("m/discrete/Memory/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/discrete/Memory/init.vm", context);
+        code.addInitCode(codeStr);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/discrete/Memory/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    public void updateDimension() throws MatDimException {
+        super.updateDimension();
+
+        // TODO: Implement SIMULINK scalar zero expansion for IC
+        // If IC is scalar "0" and input is vector/matrix, expand IC to zero matrix matching input dimensions
+        // See Delay.java:503-526 for reference implementation
+
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        if (sampleTimeParam.getDataType() != DataType.REAL || initialCondition.getDataType() != DataType.REAL) {
+            MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be a real double scalar(period)!\n \n");
+            throw(e);
+        }
+
+        if (!isSampleTimeMultiple(sampleTimeParam.getDouble(), model.getConfig().getFixedStep())) {
+            MatDimException e = new MatDimException("Parameter(sampleTime) of Block " + this.blockName + " must be an integer multiple of the fixed-step size!\n \n");
+            throw(e);
+        }
+
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
+
+    public void checkDimension() throws MatDimException {
+        // No specific dimension checking needed
+    }
+
+    @Override
+    public void calculateInit() {
+        OutputPort out = outputPortList.get(0);
+        // Initialize both values with initial condition
+        currentValue = new Data(initialCondition.getData().getInitValue());
+        previousValue = new Data(initialCondition.getData().getInitValue());
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        OutputPort out = outputPortList.get(0);
+        // Output the previous value (memory behavior - unit delay)
+        out.setData(previousValue);
+    }
+
+    @Override
+    public void calculateUpdate(double t) {
+        // This method is called to update internal state before calculateOutput
+        // For Memory, the update happens in calculateDiscreteUpdate
+        // This method is typically empty for discrete blocks that do state updates in calculateDiscreteUpdate
+    }
+
+    @Override
+    public void calculateDiscreteUpdate(double t) {
+        InputPort input = inputPortList.get(0);
+        // Shift values: previous becomes current input
+        previousValue = currentValue;
+        currentValue = input.getData();
+    }
+
+    /**
+     * Generate discrete update code for C code generation.
+     * This method handles the template-based code generation for discrete time updates.
+     */
+    public void generateDiscreteUpdateCodeCInside(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        // Check if discrete update template exists, otherwise use inline code
+        try {
+            String codeStr = TemplateManager.renderTemplate("c/discrete/Memory/discreteUpdate.vm", context);
+            code.addDiscreteUpdateCode(codeStr);
+        } catch (Exception e) {
+            // Fallback to manual discrete update code if no template exists
+            String discreteUpdateCode = String.format("/* Discrete update for Memory block %d: %s */\n",
+                                                    getBlockId(), getBlockName());
+            discreteUpdateCode += String.format("Block%d_memory_savedata[0][1] = Block%d_memory_savedata[0][0];\n",
+                                               getBlockId(), getBlockId());
+            discreteUpdateCode += String.format("Block%d_memory_savedata[0][0] = %s;\n",
+                                               getBlockId(), input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
+            code.addDiscreteUpdateCode(discreteUpdateCode);
+        }
+    }
+}

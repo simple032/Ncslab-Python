@@ -1,0 +1,34 @@
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar exponential
+    #if($ExpTypeValue == "exp")
+    ${outputVar} = exp(${inputVar});
+    #elseif($ExpTypeValue == "exp2")
+    ${outputVar} = exp2(${inputVar});  // 2^x
+    #elseif($ExpTypeValue == "exp10")
+    ${outputVar} = pow(10.0, ${inputVar});  // 10^x
+    #elseif($ExpTypeValue == "custom")
+    ${outputVar} = pow(${CustomBase}, ${inputVar});  // base^x
+    #else
+    ${outputVar} = exp(${inputVar});  // Default to natural exponential
+    #end
+#else
+    ## Matrix exponential - element-wise operation
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+            #if($ExpTypeValue == "exp")
+    ${outputVar}($i, $j) = exp(${inputVar}($i, $j));
+            #elseif($ExpTypeValue == "exp2")
+    ${outputVar}($i, $j) = exp2(${inputVar}($i, $j));  // 2^x
+            #elseif($ExpTypeValue == "exp10")
+    ${outputVar}($i, $j) = pow(10.0, ${inputVar}($i, $j));  // 10^x
+            #elseif($ExpTypeValue == "custom")
+    ${outputVar}($i, $j) = pow(${CustomBase}, ${inputVar}($i, $j));  // base^x
+            #else
+    ${outputVar}($i, $j) = exp(${inputVar}($i, $j));  // Default to natural exponential
+            #end
+        #end
+    #end
+#end

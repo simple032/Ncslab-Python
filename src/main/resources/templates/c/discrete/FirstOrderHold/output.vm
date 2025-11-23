@@ -1,0 +1,47 @@
+/* Code for output of block FirstOrderHold: (${blockId}) ${blockName} */
+{
+#if($signalDataType == $realDataType)
+    /* Scalar first-order hold output calculation */
+    if (!Block${blockId}_foh_initialized || model.time == 0.0) {
+        /* At initialization, output input value */
+        ${outputVar} = ${inputVar};
+    } else if (Block${blockId}_foh_second_last_sample_time < Block${blockId}_foh_last_sample_time) {
+        /* Linear extrapolation: y(t) = y[k-1] + slope * (t - t[k-1]) */
+        real_T time_diff = Block${blockId}_foh_last_sample_time - Block${blockId}_foh_second_last_sample_time;
+        real_T time_step = model.time - Block${blockId}_foh_last_sample_time;
+        real_T slope = (Block${blockId}_foh_last_sample - Block${blockId}_foh_second_last_sample) / time_diff;
+        ${outputVar} = Block${blockId}_foh_last_sample + slope * time_step;
+    } else {
+        /* Only one sample available, use zero-order hold */
+        ${outputVar} = Block${blockId}_foh_last_sample;
+    }
+#else
+    /* Matrix first-order hold output calculation */
+    if (!Block${blockId}_foh_initialized || model.time == 0.0) {
+        /* At initialization, output input value */
+  #foreach($i in [0..$optHeightIndex])
+    #foreach($j in [0..$optWidthIndex])
+        ${outputVar}(${i}, ${j}) = ${inputVar}(${i}, ${j});
+    #end
+  #end
+    } else if (Block${blockId}_foh_second_last_sample_time < Block${blockId}_foh_last_sample_time) {
+        /* Linear extrapolation for each matrix element */
+        real_T time_diff = Block${blockId}_foh_last_sample_time - Block${blockId}_foh_second_last_sample_time;
+        real_T time_step = model.time - Block${blockId}_foh_last_sample_time;
+  #foreach($i in [0..$optHeightIndex])
+    #foreach($j in [0..$optWidthIndex])
+        real_T slope_${i}_${j} = (Block${blockId}_foh_last_sample_matrix[${i}][${j}] -
+                                  Block${blockId}_foh_second_last_sample_matrix[${i}][${j}]) / time_diff;
+        ${outputVar}(${i}, ${j}) = Block${blockId}_foh_last_sample_matrix[${i}][${j}] + slope_${i}_${j} * time_step;
+    #end
+  #end
+    } else {
+        /* Only one sample available, use zero-order hold */
+  #foreach($i in [0..$optHeightIndex])
+    #foreach($j in [0..$optWidthIndex])
+        ${outputVar}(${i}, ${j}) = Block${blockId}_foh_last_sample_matrix[${i}][${j}];
+    #end
+  #end
+    }
+#end
+}

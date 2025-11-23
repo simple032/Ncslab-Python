@@ -1,1 +1,3 @@
-double Block${blockId}_discrete_delay_savedata[${signalHeight}][${signalWidth}*${delayLength}];
+// Delay buffer: stores delayed samples as Matrix objects for type-safe, clean implementation
+// Each element is a Matrix(${signalHeight}, ${signalWidth}) representing one delayed sample
+std::deque<Matrix> Block${blockId}_discrete_delay_buffer;

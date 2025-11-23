@@ -2,3 +2,17 @@
 #if($sampleTime)${sampleTime.getInitCodeC()}#end
 sample_time[sample_i]=${sampleTimeName};
 sample_i++;
+
+// Initialize state buffer with zero matrices (IC = 0 for transfer function states)
+// State buffer size = stateDim (denominator order - 1)
+{
+    Matrix zeroState(${signal1Height}, ${signal1Width});
+    zeroState.setZero();
+
+    for(int i = 0; i < ${stateDim}; i++) {
+        Block${blockId}_state_buffer.push_back(zeroState);
+    }
+
+    // Initialize savedata matrix to zero
+    Block${blockId}_discrete_transferz_savedata.setZero();
+}

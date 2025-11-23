@@ -4,11 +4,11 @@
 #if($proportionalGainDataType == $realDataType)
   #if($signalDataType == $realDataType)
   if(sfcnIsMajorStep()) {
-  Block${blockId}save_data[0] = $proportionalGainName * $signalName;
-  Block${blockId}save_data[1] = $derivativeGainName * $signalName;
-  Block${blockId}save_data[2] = $integralGainName * $signalName;
-  Block${blockId}save_data[3] = (Block${blockId}save_data[1] - $stateFilterName) * $filterCoefficientName;
-  double intermediate = Block${blockId}save_data[0] + $stateIntegralName + Block${blockId}save_data[3];
+  Block${blockId}save_data[0] = $PName * $signalName;
+  Block${blockId}save_data[1] = $DName * $signalName;
+  Block${blockId}save_data[2] = $IName * $signalName;
+  Block${blockId}save_data[3] = (Block${blockId}save_data[1] - $stateFilterName) * $NName;
+  double intermediate = Block${blockId}save_data[0] + $stateIntegralName + $stateFilterName;
 
     #if($externalReset == "on")
     if($resetSigName) {
@@ -31,13 +31,13 @@
         #set($index1 = "j*$m5+1")
         #set($index2 = "j*$m5+2")
         if(sfcnIsMajorStep()) {
-          Block${blockId}save_data[i][$baseIndex] = $proportionalGainName * ${signalName}(i,j);
-          Block${blockId}save_data[i][$index1] = $derivativeGainName * ${signalName}(i,j);
-          Block${blockId}save_data[i][$index2] = $integralGainName * ${signalName}(i,j);
+          Block${blockId}save_data[i][$baseIndex] = $PName * ${signalName}(i,j);
+          Block${blockId}save_data[i][$index1] = $DName * ${signalName}(i,j);
+          Block${blockId}save_data[i][$index2] = $IName * ${signalName}(i,j);
         }
   double intermediate = Block${blockId}save_data[i][$baseIndex] +
     ${stateIntegralName}(i,j) +
-    (Block${blockId}save_data[i][$index1] - ${stateFilterName}(i,j)) * $filterCoefficientName;
+    ${stateFilterName}(i,j);
 
     #if($externalReset == "on")
     if($resetSigName) {
@@ -63,13 +63,13 @@
         #set($index1 = "j*$m5+1")
         #set($index2 = "j*$m5+2")
   if(sfcnIsMajorStep()) {
-  Block${blockId}save_data[i][$baseIndex] = ${proportionalGainName}(i,j) * $signalName;
-  Block${blockId}save_data[i][$index1] = ${derivativeGainName}(i,j) * $signalName;
-  Block${blockId}save_data[i][$index2] = ${integralGainName}(i,j) * $signalName;
+  Block${blockId}save_data[i][$baseIndex] = ${PName}(i,j) * $signalName;
+  Block${blockId}save_data[i][$index1] = ${DName}(i,j) * $signalName;
+  Block${blockId}save_data[i][$index2] = ${IName}(i,j) * $signalName;
   }
   double intermediate = Block${blockId}save_data[i][$baseIndex] + \
     ${stateIntegralName}(i,j) + \
-  (Block${blockId}save_data[i][$index1] - ${stateFilterName}(i,j)) * ${filterCoefficientName}(i,j);
+  ${stateFilterName}(i,j);
 
     #if($externalReset == "on")
     if($resetSigName) {
@@ -93,13 +93,13 @@
         #set($index1 = "j*$m5+1")
         #set($index2 = "j*$m5+2")
   if(sfcnIsMajorStep()) {
-  Block${blockId}save_data[i][$baseIndex] = ${proportionalGainName}(i,j) * ${signalName}(i,j);
-  Block${blockId}save_data[i][$index1] = ${derivativeGainName}(i,j) * ${signalName}(i,j);
-  Block${blockId}save_data[i][$index2] = ${integralGainName}(i,j) * ${signalName}(i,j);
+  Block${blockId}save_data[i][$baseIndex] = ${PName}(i,j) * ${signalName}(i,j);
+  Block${blockId}save_data[i][$index1] = ${DName}(i,j) * ${signalName}(i,j);
+  Block${blockId}save_data[i][$index2] = ${IName}(i,j) * ${signalName}(i,j);
   }
   double intermediate = Block${blockId}save_data[i][$baseIndex] + \
     ${stateIntegralName}(i,j) + \
-  (Block${blockId}save_data[i][$index1] - ${stateFilterName}(i,j)) * ${filterCoefficientName}(i,j);
+  ${stateFilterName}(i,j);
 
     #if($externalReset == "on")
     if($resetSigName) {

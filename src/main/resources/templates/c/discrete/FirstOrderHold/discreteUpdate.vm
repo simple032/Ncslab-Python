@@ -1,0 +1,28 @@
+/* Code for discrete update of block FirstOrderHold:(${blockId}) ${blockName} */
+#if($signalDataType == $realDataType)
+/* Update sample history at discrete time step (scalar) */
+Block${blockId}_foh_second_last_sample = Block${blockId}_foh_last_sample;
+Block${blockId}_foh_second_last_sample_time = Block${blockId}_foh_last_sample_time;
+
+Block${blockId}_foh_last_sample = ${inputVar};
+Block${blockId}_foh_last_sample_time = model.time;
+
+Block${blockId}_foh_initialized = 1;
+#else
+/* Update sample history at discrete time step (matrix) */
+#foreach($i in [0..$optHeightIndex])
+  #foreach($j in [0..$optWidthIndex])
+Block${blockId}_foh_second_last_sample_matrix[${i}][${j}] = Block${blockId}_foh_last_sample_matrix[${i}][${j}];
+  #end
+#end
+Block${blockId}_foh_second_last_sample_time = Block${blockId}_foh_last_sample_time;
+
+#foreach($i in [0..$optHeightIndex])
+  #foreach($j in [0..$optWidthIndex])
+Block${blockId}_foh_last_sample_matrix[${i}][${j}] = ${inputVar}(${i}, ${j});
+  #end
+#end
+Block${blockId}_foh_last_sample_time = model.time;
+
+Block${blockId}_foh_initialized = 1;
+#end

@@ -1,0 +1,11 @@
+/* Code for initialization of block FirstOrderHold:(${blockId}) ${blockName} */
+${sampleTime.initCodeC}
+sample_time[sample_i] = $sampleTimeName;
+sample_i = sample_i + 1;
+
+/* Initialize first-order hold state variables */
+Block${blockId}_foh_last_sample = 0.0;
+Block${blockId}_foh_second_last_sample = 0.0;
+Block${blockId}_foh_last_sample_time = 0.0;
+Block${blockId}_foh_second_last_sample_time = 0.0;
+Block${blockId}_foh_initialized = 0;

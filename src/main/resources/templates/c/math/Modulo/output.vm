@@ -1,0 +1,89 @@
+
+#set($input1 = $inputs.get(0))
+#set($input1Height = $inputHeights.get(0))
+#set($input1Width = $inputWidths.get(0))
+#set($input1IsScalar = ($input1Height == 1 && $input1Width == 1))
+
+## Determine divisor source (internal parameter or external port)
+#if($DivisorSourceValue == "External" && $inputs.size() > 1)
+    #set($input2 = $inputs.get(1))
+    #set($input2Height = $inputHeights.get(1))
+    #set($input2Width = $inputWidths.get(1))
+    #set($input2IsScalar = ($input2Height == 1 && $input2Width == 1))
+    #set($divisorVar = $input2)
+    #set($divisorIsScalar = $input2IsScalar)
+    #set($divisorHeight = $input2Height)
+    #set($divisorWidth = $input2Width)
+#else
+    #set($divisorVar = $Divisor)
+    #set($divisorIsScalar = true)
+#end
+
+#if($input1IsScalar && $divisorIsScalar)
+    ## Scalar modulo with divide-by-zero check
+    if(${divisorVar} != 0.0) {
+    #if($ModuloTypeValue == "fmod")
+        ${outputVar} = fmod(${input1}, ${divisorVar});  // C-style fmod
+    #else
+        ${outputVar} = fmod(${input1}, ${divisorVar});  // IEEE remainder (same as fmod for most cases)
+    #end
+    } else {
+        ${outputVar} = NAN;  // Division by zero
+    }
+#elseif($input1IsScalar)
+    ## Scalar divided by matrix (element-wise)
+    #set($hMax = $divisorHeight - 1)
+    #set($wMax = $divisorWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${divisorVar}($i, $j) != 0.0) {
+            #if($ModuloTypeValue == "fmod")
+        ${outputVar}($i, $j) = fmod(${input1}, ${divisorVar}($i, $j));
+            #else
+        ${outputVar}($i, $j) = fmod(${input1}, ${divisorVar}($i, $j));
+            #end
+    } else {
+        ${outputVar}($i, $j) = NAN;
+    }
+        #end
+    #end
+#elseif($divisorIsScalar)
+    ## Matrix modulo scalar
+    #set($hMax = $input1Height - 1)
+    #set($wMax = $input1Width - 1)
+    if(${divisorVar} != 0.0) {
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                #if($ModuloTypeValue == "fmod")
+        ${outputVar}($i, $j) = fmod(${input1}($i, $j), ${divisorVar});
+                #else
+        ${outputVar}($i, $j) = fmod(${input1}($i, $j), ${divisorVar});
+                #end
+            #end
+        #end
+    } else {
+        ## Division by zero
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ${outputVar}($i, $j) = NAN;
+            #end
+        #end
+    }
+#else
+    ## Matrix modulo matrix (element-wise)
+    #set($hMax = $input1Height - 1)
+    #set($wMax = $input1Width - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${divisorVar}($i, $j) != 0.0) {
+            #if($ModuloTypeValue == "fmod")
+        ${outputVar}($i, $j) = fmod(${input1}($i, $j), ${divisorVar}($i, $j));
+            #else
+        ${outputVar}($i, $j) = fmod(${input1}($i, $j), ${divisorVar}($i, $j));
+            #end
+    } else {
+        ${outputVar}($i, $j) = NAN;
+    }
+        #end
+    #end
+#end

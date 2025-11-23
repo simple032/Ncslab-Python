@@ -1,0 +1,5 @@
+/* Discrete update for Memory block ${blockId}: ${blockName} */
+#if($signal)
+Block${blockId}_memory_savedata[0][1] = Block${blockId}_memory_savedata[0][0];
+Block${blockId}_memory_savedata[0][0] = ${signalName};
+#end

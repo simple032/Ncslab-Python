@@ -1,6 +1,44 @@
 /* Code for initialization of block Delay:(${blockId}) ${blockName} */
-${sampleTime.getInitCodeC()}
-${initialCondition.getInitCodeC()}
-${delayLength.getInitCodeC()}
+${SampleTimeObject.getInitCodeC()}
+${InitialConditionObject.getInitCodeC()}
+${DelayLengthObject.getInitCodeC()}
 sample_time[sample_i]=${SampleTimeName};
 sample_i=sample_i+1;
+
+// Initialize delay buffer with Initial Condition
+// Pre-fill buffer with DelayLength samples of the initial condition
+{
+    int delayLength = (int)(${DelayLengthValue});
+
+    // SIMULINK edge case: delayLength = 0 means direct feedthrough (no delay)
+    if (delayLength > 0) {
+#if($signalHeight == 1 && $signalWidth == 1)
+        // Scalar signal: Create 1x1 matrices
+        Matrix icMatrix(1, 1);
+        icMatrix(0, 0) = ${InitialConditionName};
+
+        for(int i = 0; i < delayLength; i++) {
+            Block${blockId}_discrete_delay_buffer.push_back(icMatrix);
+        }
+#else
+        // Vector/Matrix signal: Handle scalar IC expansion
+        // SIMULINK behavior: Scalar IC expands to fill all elements with the same value
+        Matrix icMatrix(${signalHeight}, ${signalWidth});
+
+        // Check if IC is scalar (double) or already a Matrix
+        // If IC is a Matrix, use it directly; if scalar, expand to signal dimensions
+#if($InitialConditionObject.getData().getDataType().toString() == "MATRIX")
+        // IC is already a Matrix - use it directly
+        icMatrix = ${InitialConditionName};
+#else
+        // IC is scalar - expand to match signal dimensions
+        icMatrix.setConstant(${InitialConditionName});
+#end
+
+        for(int i = 0; i < delayLength; i++) {
+            Block${blockId}_discrete_delay_buffer.push_back(icMatrix);
+        }
+#end
+    }
+    // If delayLength = 0, buffer remains empty (direct feedthrough)
+}

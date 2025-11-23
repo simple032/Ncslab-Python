@@ -1,0 +1,2 @@
+/* Code for arrays of block Memory: (${blockId}) ${blockName} */
+real_T Block${blockId}_memory_savedata[1][2];

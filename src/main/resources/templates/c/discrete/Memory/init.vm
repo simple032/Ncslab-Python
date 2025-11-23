@@ -1,0 +1,5 @@
+/* Code for initialization of block Memory: (${blockId}) ${blockName} */
+${sampleTime.getInitCodeC()}
+${initialCondition.getInitCodeC()}
+sample_time[sample_i] = ${SampleTimeName};
+sample_i = sample_i + 1;

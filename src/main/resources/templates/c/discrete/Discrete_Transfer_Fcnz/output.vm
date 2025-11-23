@@ -1,78 +1,127 @@
 /* Code for output of discrete_transfer_funz:(${blockId}) ${blockName} */
+/* Matrix-based implementation: Clean, maintainable transfer function computation */
 #set($outVar = $outputSignal)
 
-## Note: stateDim is already set in Java context as signal3.getWidth() - 1
 {
 if(fabs(floor(model.time/0.2+0.5)-model.time/0.2)<0.000001&&mp->majorStep>0) {
 #set($h = $s3Width - $s2Width - 1)
 #set($s2WidthMax = $s2Width - 1)
 #set($s3WidthMax = $s3Width - 1)
 #if($signal1DataType == $realDataType)
-Block${blockId}_discrete_transferz_savedata[0][0] = ${signal1Name};
+    // Scalar signal path
+    // Compute current state: x[k] = u[k] - sum(a[i] * x[k-i])
+    Block${blockId}_discrete_transferz_savedata(0, 0) = ${signal1Name};
   #if($s3Width > 1)
-  for(int i=1; i<${s3Width}; i++){
-    Block${blockId}_discrete_transferz_savedata[0][0] -= ${signal3Name}[0][i] * Block${blockId}_state[0][i-1];
-  }
+    for(int i=1; i<${s3Width}; i++){
+    ## Use matrix indexing for signal3 if it's a matrix, direct access if scalar
+    #if($signal3.dataType == $matrixDataType)
+        Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name}(i, 0) * Block${blockId}_state_buffer[i-1](0, 0);
+    #else
+        Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name} * Block${blockId}_state_buffer[i-1](0, 0);
+    #end
+    }
   #else
-  Block${blockId}_discrete_transferz_savedata[0][0] -= ${signal3Name} * Block${blockId}_state[0][0];
+    Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name} * Block${blockId}_state_buffer[0](0, 0);
   #end
 
+    // Compute output: y[k] = sum(b[i] * x[k-i])
   #if($s2Width == $s3Width)
     #if($s2Width > 1)
-      ${outVar} = Block${blockId}_discrete_transferz_savedata[0][0] * ${signal2Name}[0][0];
-      for(int i=1; i<${s2Width}; i++)
-        ${outVar} += ${signal2Name}[0][i] * Block${blockId}_state[0][i-1];
+      ## Use matrix indexing for signal2 if it's a matrix
+      #if($signal2.dataType == $matrixDataType)
+        ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name}(0, 0);
+        for(int i=1; i<${s2Width}; i++)
+            ${outVar} += ${signal2Name}(i, 0) * Block${blockId}_state_buffer[i-1](0, 0);
+      #else
+        ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name};
+        ${outVar} += ${signal2Name} * Block${blockId}_state_buffer[0](0, 0);
+      #end
     #else
-      ${outVar} = Block${blockId}_discrete_transferz_savedata[0][0] * ${signal2Name};
-      ${outVar} += ${signal2Name} * Block${blockId}_state[0][0];
+        ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name};
+        ${outVar} += ${signal2Name} * Block${blockId}_state_buffer[0](0, 0);
     #end
   #else
     ${outVar} = 0;
     for(int j=0; j<${s2Width}; j++)
-      ${outVar} += ${signal2Name}[0][j] * Block${blockId}_state[0][j];
+      ## Use matrix indexing for signal2 if it's a matrix
+      #if($signal2.dataType == $matrixDataType)
+        ${outVar} += ${signal2Name}(j, 0) * Block${blockId}_state_buffer[j](0, 0);
+      #else
+        ${outVar} += ${signal2Name} * Block${blockId}_state_buffer[j](0, 0);
+      #end
   #end
+
+    // Update state buffer: shift states and store new state
 #if($s3Width>1)
-#set($loopEnd = $s3Width - 1)
-for(int i=${loopEnd}; i>=1; i--){
-  Block${blockId}_state[0][i] = Block${blockId}_state[0][i-1];
-}
-#end
-Block${blockId}_state[0][0] = Block${blockId}_discrete_transferz_savedata[0][0];
+    // Efficient deque shifting: remove oldest, add newest
+    Matrix newState(1, 1);
+    newState(0, 0) = Block${blockId}_discrete_transferz_savedata(0, 0);
+
+    Block${blockId}_state_buffer.pop_back();   // Remove oldest state
+    Block${blockId}_state_buffer.push_front(newState);  // Add new state at front
 #else
+    Block${blockId}_state_buffer[0](0, 0) = Block${blockId}_discrete_transferz_savedata(0, 0);
+#end
+
+#else
+    // Vector/Matrix signal path
   #set($s1HeightMax = $signal1Height - 1)
   #set($s1WidthMax = $signal1Width - 1)
+
+    // For each element of the input signal
   #foreach($m in [0..$s1HeightMax])
     #foreach($n in [0..$s1WidthMax])
-    Block${blockId}_discrete_transferz_savedata[${m}][${n}] = ${signal1Name}[${m}][${n}];
-    for(int i=1; i<${s3Width}; i++) {
-      Block${blockId}_discrete_transferz_savedata[${m}][${n}] -= ${signal3Name}[0][i] * Block${blockId}_state[${m}][${n}*${stateDim} + i-1];
-    }
+        // Compute current state for element [$m,$n]
+        Block${blockId}_discrete_transferz_savedata(${m}, ${n}) = ${signal1Name}(${m}, ${n});
 
+        for(int i=1; i<${s3Width}; i++) {
+      ## Use matrix indexing for signal3 if it's a matrix
+      #if($signal3.dataType == $matrixDataType)
+            Block${blockId}_discrete_transferz_savedata(${m}, ${n}) -= ${signal3Name}(i, 0) * Block${blockId}_state_buffer[i-1](${m}, ${n});
+      #else
+            Block${blockId}_discrete_transferz_savedata(${m}, ${n}) -= ${signal3Name} * Block${blockId}_state_buffer[i-1](${m}, ${n});
+      #end
+        }
+
+        // Compute output for element [$m,$n]
       #if($s2Width == $s3Width)
-        ${outVar}[${m}][${n}] = Block${blockId}_discrete_transferz_savedata[${m}][${n}] * ${signal2Name}[0][0];
+        ## Use matrix indexing for signal2 and output if they're matrices
+        #if($signal2.dataType == $matrixDataType)
+        ${outVar}(${m}, ${n}) = Block${blockId}_discrete_transferz_savedata(${m}, ${n}) * ${signal2Name}(0, 0);
+        #else
+        ${outVar}(${m}, ${n}) = Block${blockId}_discrete_transferz_savedata(${m}, ${n}) * ${signal2Name};
+        #end
         #if($s2Width > 1)
           #set($s2LoopEnd = $s2Width - 1)
-          for(int i=1; i<=${s2LoopEnd}; i++)
-            ${outVar}[${m}][${n}] += ${signal2Name}[0][i] * Block${blockId}_state[${m}][${n}*${stateDim} + i-1];
+            for(int i=1; i<=${s2LoopEnd}; i++)
+            #if($signal2.dataType == $matrixDataType)
+                ${outVar}(${m}, ${n}) += ${signal2Name}(i, 0) * Block${blockId}_state_buffer[i-1](${m}, ${n});
+            #else
+                ${outVar}(${m}, ${n}) += ${signal2Name} * Block${blockId}_state_buffer[i-1](${m}, ${n});
+            #end
         #end
       #else
-        ${outVar}[${m}][${n}] = 0;
+        ${outVar}(${m}, ${n}) = 0;
         for(int j=0; j<${s2Width}; j++) {
-          ${outVar}[${m}][${n}] += ${signal2Name}[0][j] * Block${blockId}_state[${m}][${n}*${stateDim}+j];
+          #if($signal2.dataType == $matrixDataType)
+            ${outVar}(${m}, ${n}) += ${signal2Name}(j, 0) * Block${blockId}_state_buffer[j](${m}, ${n});
+          #else
+            ${outVar}(${m}, ${n}) += ${signal2Name} * Block${blockId}_state_buffer[j](${m}, ${n});
+          #end
         }
       #end
     #end
   #end
 
-#set($s3LoopEnd = $s3Width - 1)
-for(int m=0; m<${s1Height}; m++) {
-  for(int n=0; n<${s1Width}; n++) {
-    for(int i=${s3LoopEnd}; i>=1; i--) {
-      Block${blockId}_state[m][n*${stateDim} + i] = Block${blockId}_state[m][n*${stateDim} + i-1];
-    }
-    Block${blockId}_state[m][n*${stateDim}] = Block${blockId}_discrete_transferz_savedata[m][n];
-  }
-}
+    // Update state buffer for all matrix elements: shift states and store new values
+#if($s3Width > 1)
+    // Efficient deque shifting for matrix signals
+    Block${blockId}_state_buffer.pop_back();   // Remove oldest state matrix
+    Block${blockId}_state_buffer.push_front(Block${blockId}_discrete_transferz_savedata);  // Add new state at front
+#else
+    Block${blockId}_state_buffer[0] = Block${blockId}_discrete_transferz_savedata;
+#end
+
 #end
 }
 }

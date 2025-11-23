@@ -485,6 +485,10 @@ public class Add extends MathBlock {
         super.generateOutputCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
+        // Add port data type context for scalar expansion handling
+        // This provides inputHeights, inputWidths, inputIsMatrix arrays
+        com.ncslab.util.TemplateUtils.populatePortDataTypeContext(context, this);
+
         String codeStr = TemplateManager.renderTemplate("c/math/Add/output.vm", context);
         code.addOutputCode(codeStr);
     }
@@ -500,31 +504,63 @@ public class Add extends MathBlock {
     public void updateDimension() throws MatDimException {
         OutputPort out = outputPortList.get(0);
         OutputSignal[] inputSignals = new OutputSignal[inputSequence.length()];
-        
+
         // Collect input signals
         for (int i = 0; i < inputSequence.length(); i++) {
             inputSignals[i] = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         }
-        
-        // Validate all inputs have the same dimensions
-        int referenceHeight = inputSignals[0].getHeight();
-        int referenceWidth = inputSignals[0].getWidth();
-        
-        for (int i = 1; i < inputSignals.length; i++) {
-            OutputSignal signal = inputSignals[i];
-            if (signal.getHeight() != referenceHeight || signal.getWidth() != referenceWidth) {
-                throw new MatDimException(
-                    String.format("Block %s input dimensions don't match! Input 1: [%dx%d], Input %d: [%dx%d]",
-                        this.blockName, referenceHeight, referenceWidth, i + 1, signal.getHeight(), signal.getWidth()));
+
+        // SIMULINK-compatible scalar expansion support
+        // Supported operations:
+        //   Scalar + Scalar = Scalar
+        //   Scalar + Matrix = Matrix (scalar expanded)
+        //   Matrix + Scalar = Matrix (scalar expanded)
+        //   Matrix + Matrix (same dimensions) = Matrix (element-wise)
+
+        // Find the maximum dimensions (non-scalar dimension if present)
+        int maxHeight = 1;
+        int maxWidth = 1;
+        boolean hasMatrix = false;
+
+        // Debug: Print input dimensions
+        System.out.println("updateDimension - Input count: " + inputSignals.length);
+        for (int i = 0; i < inputSignals.length; i++) {
+            System.out.println("  Input " + i + ": [" + inputSignals[i].getHeight() + "×" + inputSignals[i].getWidth() + "]");
+        }    
+
+        for (int i = 0; i < inputSignals.length; i++) {
+            int height = inputSignals[i].getHeight();
+            int width = inputSignals[i].getWidth();
+            boolean isScalar = (height == 1 && width == 1);
+
+            if (!isScalar) {
+                hasMatrix = true;
+                if (maxHeight == 1 && maxWidth == 1) {
+                    // First non-scalar sets the reference dimensions
+                    maxHeight = height;
+                    maxWidth = width;
+                } else {
+                    // Verify all non-scalar inputs have the same dimensions
+                    if (height != maxHeight || width != maxWidth) {
+                        throw new MatDimException(
+                            String.format("Block %s: Non-scalar input dimensions must match. " +
+                                "Found [%d×%d] and [%d×%d]",
+                                blockName, maxHeight, maxWidth, height, width));
+                    }
+                }
             }
         }
+
+        // Set output dimensions
+        out.setHeight(maxHeight);
+        out.setWidth(maxWidth);
+        out.getOutputSignalC().setHeight(maxHeight);
+        out.getOutputSignalC().setWidth(maxWidth);
+        out.getOutputSignalC().setDataType(hasMatrix ? DataType.MATRIX : DataType.REAL);
+
+        // Debug: Print output dimensions 
+        System.out.println("updateDimension - Output: [" + maxHeight + "×" + maxWidth + "]");
         
-        // Set output dimensions to match inputs
-        out.setHeight(referenceHeight);
-        out.setWidth(referenceWidth);
-        out.getOutputSignalC().setHeight(referenceHeight);
-        out.getOutputSignalC().setWidth(referenceWidth);
-        out.getOutputSignalC().setDataType(inputSignals[0].getDataType());
     }
     
     /**
@@ -533,7 +569,19 @@ public class Add extends MathBlock {
      * @throws MatDimException if dimensions are invalid
      */
     public void checkDimension() throws MatDimException {
-        // Additional dimension checks can be added here if needed
+        // Validate all input dimensions are non-zero
+        for (int i = 0; i < inputPortList.size(); i++) {
+            OutputSignal signal = inputPortList.get(i).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            int height = signal.getHeight();
+            int width = signal.getWidth();
+
+            if (height == 0 || width == 0) {
+                throw new MatDimException(
+                    String.format("Add block '%s': Input %d has invalid dimensions [%d×%d]. " +
+                        "All input dimensions must be at least [1×1].",
+                        blockName, i+1, height, width));
+            }
+        }
     }
 
     // === Runtime Simulation Interface ===
@@ -547,13 +595,42 @@ public class Add extends MathBlock {
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        Data result = new Data(out.getHeight(), out.getWidth());
+
+        // IMPORTANT: Initialize result from FIRST INPUT with its operation applied
+        // This ensures proper data type (MATRIX vs REAL) instead of creating scalar with dimensions
+        Data firstInput = inputPortList.get(0).getData();
 
         // Check if inputSequence is numeric (count) or operator string
         boolean isNumericInput = inputSequence.length() < inputPortList.size();
 
-        // Process each input according to its operation sign
-        for (int i = 0; i < inputPortList.size(); i++) {
+        // Get first input's operation
+        char firstOperation;
+        if (isNumericInput) {
+            firstOperation = '+';
+        } else {
+            firstOperation = inputSequence.charAt(0);
+        }
+
+        // Initialize result based on first input and its operation
+        Data result;
+        if (firstOperation == '+') {
+            // Start with first input as-is
+            if (firstInput.getDataType() == com.ncslab.block.data.DataType.MATRIX) {
+                result = new Data(firstInput.getMatrix().copy());
+            } else {
+                result = new Data(firstInput.getInitValue());
+            }
+        } else {
+            // First operation is '-', so negate first input
+            if (firstInput.getDataType() == com.ncslab.block.data.DataType.MATRIX) {
+                result = new Data(firstInput.getMatrix().copy().times(-1.0));
+            } else {
+                result = new Data(-firstInput.getInitValue());
+            }
+        }
+
+        // Process remaining inputs starting from i=1
+        for (int i = 1; i < inputPortList.size(); i++) {
             Data inputData = inputPortList.get(i).getData();
             char operation;
 

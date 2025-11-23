@@ -1,27 +1,21 @@
 /*Code for Derivative of PID Controller:($blockId)$blockName*/
-#if($inputPortList && $inputPortList.size() > 0 && $stateIntegral && $stateFilter && $proportionalGain)
-    #set($signal = $inputPortList[0].linkedLine.linkedOutputPort.outputSignalC)
+
+#if($PObject.dataType == $realDataType)
+    ## Scalar PID derivative calculation
+    $stateIntegralDerivativeName = Block${blockId}save_data[2];
+    $stateFilterDerivativeName = Block${blockId}save_data[3];
+#else
+    ## Matrix PID derivative calculation
+    #set($height = $stateIntegralHeight)
+    #set($width = $stateIntegralWidth)
+    #set($hMax = $height - 1)
+    #set($wMax = $width - 1)
     
-    
-    #if($signalDataType == $realDataType && $proportionalGain.dataType == $realDataType)
-        ## Scalar PID derivative calculation
-        $integralStateDerivativeName = Block${blockId}save_data[2];
-        $filterStateDerivativeName = Block${blockId}save_data[3];
-    #else
-        ## Matrix PID derivative calculation
-        #set($height = $integralStateHeight)
-        #set($width = $integralStateWidth)
-        #set($hMax = $height - 1)
-        #set($wMax = $width - 1)
-        
-        #foreach($i in [0..$hMax])
-            #foreach($j in [0..$wMax])
-                $integralStateDerivativeName[$i][$j] = Block${blockId}save_data[$i][$j*5+2];
-                $filterStateDerivativeName[$i][$j] = Block${blockId}save_data[$i][$j*5+3];
-            #end
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+            $stateIntegralDerivativeName[$i][$j] = Block${blockId}save_data[$i][$j*5+2];
+            $stateFilterDerivativeName[$i][$j] = Block${blockId}save_data[$i][$j*5+3];
         #end
     #end
-#else
-    ## Fallback if parameters missing
-    /* PID Controller derivative block $blockId missing parameters */
 #end
+

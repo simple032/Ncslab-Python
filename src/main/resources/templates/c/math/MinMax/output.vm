@@ -1,0 +1,79 @@
+
+#set($numInputs = $inputs.size())
+#set($isMin = ($FunctionValue == "min"))
+#set($hasMatrix = false)
+#set($maxHeight = 1)
+#set($maxWidth = 1)
+
+## Determine if any input is a matrix and find maximum dimensions
+#foreach($idx in [0..$numInputs - 1])
+    #if($inputHeights.get($idx) > 1 || $inputWidths.get($idx) > 1)
+        #set($hasMatrix = true)
+        #if($inputHeights.get($idx) > $maxHeight)
+            #set($maxHeight = $inputHeights.get($idx))
+        #end
+        #if($inputWidths.get($idx) > $maxWidth)
+            #set($maxWidth = $inputWidths.get($idx))
+        #end
+    #end
+#end
+
+#if(!$hasMatrix)
+    ## All scalar inputs
+    #if($isMin)
+    ${outputVar} = ${inputs.get(0)};
+    #foreach($idx in [1..$numInputs - 1])
+    if(${inputs.get($idx)} < ${outputVar}) {
+        ${outputVar} = ${inputs.get($idx)};
+    }
+    #end
+    #else
+    ${outputVar} = ${inputs.get(0)};
+    #foreach($idx in [1..$numInputs - 1])
+    if(${inputs.get($idx)} > ${outputVar}) {
+        ${outputVar} = ${inputs.get($idx)};
+    }
+    #end
+    #end
+#else
+    ## Matrix operation - element-wise with scalar expansion
+    #set($hMax = $maxHeight - 1)
+    #set($wMax = $maxWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+            ## Initialize with first input (handle scalar/matrix)
+            #set($input0IsScalar = ($inputHeights.get(0) == 1 && $inputWidths.get(0) == 1))
+            #if($input0IsScalar)
+    ${outputVar}($i, $j) = ${inputs.get(0)};
+            #else
+    ${outputVar}($i, $j) = ${inputs.get(0)}($i, $j);
+            #end
+
+            ## Compare with remaining inputs
+            #foreach($idx in [1..$numInputs - 1])
+                #set($inputIsScalar = ($inputHeights.get($idx) == 1 && $inputWidths.get($idx) == 1))
+                #if($isMin)
+                    #if($inputIsScalar)
+    if(${inputs.get($idx)} < ${outputVar}($i, $j)) {
+        ${outputVar}($i, $j) = ${inputs.get($idx)};
+    }
+                    #else
+    if(${inputs.get($idx)}($i, $j) < ${outputVar}($i, $j)) {
+        ${outputVar}($i, $j) = ${inputs.get($idx)}($i, $j);
+    }
+                    #end
+                #else
+                    #if($inputIsScalar)
+    if(${inputs.get($idx)} > ${outputVar}($i, $j)) {
+        ${outputVar}($i, $j) = ${inputs.get($idx)};
+    }
+                    #else
+    if(${inputs.get($idx)}($i, $j) > ${outputVar}($i, $j)) {
+        ${outputVar}($i, $j) = ${inputs.get($idx)}($i, $j);
+    }
+                    #end
+                #end
+            #end
+        #end
+    #end
+#end

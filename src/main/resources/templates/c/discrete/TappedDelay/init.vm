@@ -1,0 +1,5 @@
+/* Code for initialization of block TappedDelay: (${blockId}) ${blockName} */
+// Initialize tapped delay buffer with initial condition
+for (int i = 0; i < ${NumDelays}; i++) {
+    Block${blockId}_tapped_delay_buffer[i] = ${InitialCondition};
+}

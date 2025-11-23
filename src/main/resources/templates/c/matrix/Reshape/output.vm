@@ -1,0 +1,40 @@
+
+## Reshape block output code
+## Reshapes input to specified output dimensions using column-major ordering (MATLAB convention)
+#if($outputRows && $outputCols)
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar input - simply assign to output
+        $outputVar = $inputVar;
+    #else
+        ## Matrix/Vector input - reshape using column-major order
+        ## Flatten input in column-major order, then reshape to output dimensions
+        {
+            ## Create temporary flat array
+            double flat_array[$inputHeight * $inputWidth];
+            int idx = 0;
+
+            ## Extract input in column-major order
+            #set($wMax = $inputWidth - 1)
+            #set($hMax = $inputHeight - 1)
+            #foreach($j in [0..$wMax])
+                #foreach($i in [0..$hMax])
+                    flat_array[idx++] = ${inputVar}($i, $j);
+                #end
+            #end
+
+            ## Reshape to output in column-major order
+            idx = 0;
+            #set($outColMax = $outputCols - 1)
+            #set($outRowMax = $outputRows - 1)
+            #foreach($j in [0..$outColMax])
+                #foreach($i in [0..$outRowMax])
+                    ${outputVar}($i, $j) = flat_array[idx++];
+                #end
+            #end
+        }
+    #end
+#else
+    ## Fallback if dimension parameters missing
+    /* Warning: Reshape block $blockId missing output dimension configuration */
+    $outputVar = $inputVar;
+#end

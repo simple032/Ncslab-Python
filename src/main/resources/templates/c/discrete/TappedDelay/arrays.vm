@@ -1,0 +1,2 @@
+/* Code for arrays of block TappedDelay: (${blockId}) ${blockName} */
+real_T Block${blockId}_tapped_delay_buffer[${NumDelays}];

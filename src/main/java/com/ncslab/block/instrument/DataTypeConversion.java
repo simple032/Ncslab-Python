@@ -179,6 +179,53 @@ public class DataTypeConversion extends Block {
         code.addOutputCode(codeStr);
     }
 
+    // === SIMULINK-Compatible Lifecycle Methods ===
+
+    /**
+     * Validate block parameters before simulation starts.
+     * SIMULINK equivalent: mdlCheckParameters
+     *
+     * Validates:
+     * - Output data type string is valid
+     * - Rounding method is recognized
+     */
+    @Override
+    public void calculateCheckParameters() {
+        // Validate output data type parameter
+        if (outDataTypeStr == null) {
+            throw new IllegalArgumentException("DataTypeConversion " + blockName +
+                ": OutDataTypeStr parameter cannot be null");
+        }
+
+        // Validate rounding method
+        if (rndMeth != null) {
+            String method = rndMeth.getInitString();
+            if (!isValidRoundingMethod(method)) {
+                throw new IllegalArgumentException("DataTypeConversion " + blockName +
+                    ": Invalid rounding method: " + method +
+                    ". Valid methods: Round, Floor, Ceiling, Zero, Truncate");
+            }
+        }
+
+        // Validate output data type can be parsed
+        try {
+            parseOutputDataType();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("DataTypeConversion " + blockName +
+                ": Invalid output data type: " + outDataTypeStr.getInitString(), e);
+        }
+    }
+
+    /**
+     * Check if a rounding method string is valid
+     */
+    private boolean isValidRoundingMethod(String method) {
+        return method.equals("Round") || method.equals("Nearest") ||
+               method.equals("Floor") || method.equals("Ceiling") ||
+               method.equals("Ceil") || method.equals("Zero") ||
+               method.equals("Truncate");
+    }
+
     @Override
     public void calculateOutput(double t) {
         // Java simulation: convert input data type to output type with rounding
@@ -208,6 +255,85 @@ public class DataTypeConversion extends Block {
                 out.setData(new Data(0.0));
             }
         }
+    }
+
+    /**
+     * Perform one-time startup actions after initialization.
+     * SIMULINK equivalent: mdlStart
+     *
+     * For DataTypeConversion, no special startup actions are needed.
+     * This is a pure feedthrough block.
+     */
+    @Override
+    public void calculateStart() {
+        // No startup actions needed for DataTypeConversion
+        // This is a stateless feedthrough block
+    }
+
+    /**
+     * Update block at major time step.
+     * SIMULINK equivalent: mdlUpdate
+     *
+     * For DataTypeConversion (feedthrough block), no updates needed.
+     *
+     * @param t Current simulation time
+     */
+    @Override
+    public void calculateUpdate(double t) {
+        // No update actions needed for feedthrough block
+        // Output is computed directly from input in calculateOutput
+    }
+
+    /**
+     * Calculate continuous state derivatives.
+     * SIMULINK equivalent: mdlDerivatives
+     *
+     * For DataTypeConversion, no continuous states exist.
+     *
+     * @param t Current simulation time
+     */
+    @Override
+    public void calculateDerivative(double t) {
+        // No derivatives for feedthrough block with no continuous states
+    }
+
+    /**
+     * Graceful shutdown before termination.
+     * SIMULINK equivalent: Part of mdlTerminate (pre-cleanup)
+     *
+     * For DataTypeConversion, no pre-termination actions needed.
+     */
+    @Override
+    public void calculateStop() {
+        // No stop actions needed for DataTypeConversion
+        // No files, hardware, or external resources to flush
+    }
+
+    /**
+     * Cleanup resources and finalize simulation.
+     * SIMULINK equivalent: mdlTerminate
+     *
+     * For DataTypeConversion, no resources to release.
+     *
+     * @param t Final simulation time
+     */
+    @Override
+    public void calculateTerminate(double t) {
+        // No resources to clean up for stateless feedthrough block
+    }
+
+    /**
+     * Reset block to initial conditions (mid-simulation reset).
+     * SIMULINK equivalent: Reset port functionality
+     *
+     * For DataTypeConversion (stateless block), reset has no effect.
+     *
+     * @param t Time of reset
+     */
+    @Override
+    public void calculateReset(double t) {
+        // No state to reset for feedthrough block
+        // Output will automatically reflect current input
     }
 
     /**

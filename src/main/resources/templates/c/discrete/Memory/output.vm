@@ -1,0 +1,68 @@
+/* Code for output of block Memory: (${blockId}) ${blockName} */
+#if($sampleTime && $signal && $initialCondition)
+{
+    real_T Block${blockId}_sampleTimeTmp = (${SampleTimeName} != -1) ? ${SampleTimeName} : model.stepSize;
+
+    #if($signalDataType == $realDataType)
+        ## Scalar Memory
+        if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+            Block${blockId}_memory_savedata[0][(int)(model.time/Block${blockId}_sampleTimeTmp)%2] = ${signalName};
+        }
+
+        if(model.time < Block${blockId}_sampleTimeTmp) {
+            if(fabs((int)(model.time/${SampleTimeName}+0.5) - model.time/${SampleTimeName}) < 0.000001 && mp->majorStep > 0) {
+                Block${blockId}_memory_savedata[0][0] = Block${blockId}_memory_savedata[0][1];
+                Block${blockId}_memory_savedata[0][1] = ${signalName};
+            }
+
+            if((model.time + 0.00001) < ${SampleTimeName}) {
+                ${output1} = ${InitialConditionName};
+            } else {
+                if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+                    ${output1} = Block${blockId}_memory_savedata[0][(int)(model.time/Block${blockId}_sampleTimeTmp+1)%2];
+                }
+            }
+        }
+    #else
+        ## Matrix Memory
+        #set($height = $signalHeight)
+        #set($width = $signalWidth)
+        #if($height == 1 && $width == 1)
+            ## Scalar signal being treated as matrix - use direct access
+            if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+                Block${blockId}_memory_savedata[0][(int)(model.time/Block${blockId}_sampleTimeTmp)%2] = ${signalName};
+            }
+
+            if(model.time < Block${blockId}_sampleTimeTmp) {
+                ${output1} = ${InitialConditionName};
+            } else {
+                if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+                    ${output1} = Block${blockId}_memory_savedata[0][!((int)(model.time/Block${blockId}_sampleTimeTmp)%2)];
+                }
+            }
+        #else
+            ## True matrix signals
+            #set($hMax = $height - 1)
+            #set($wMax = $width - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+                Block${blockId}_memory_savedata[${i}][(int)(model.time/Block${blockId}_sampleTimeTmp)%2+2*${j}] = ${signalName}(${i}, ${j});
+            }
+
+            if(model.time < Block${blockId}_sampleTimeTmp) {
+                ${output1}(${i}, ${j}) = ${InitialConditionName}(${i}, ${j});
+            } else {
+                if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+                    ${output1}(${i}, ${j}) = Block${blockId}_memory_savedata[${i}][!((int)(model.time/Block${blockId}_sampleTimeTmp)%2)+2*${j}];
+                }
+            }
+                #end
+            #end
+        #end
+    #end
+}
+#else
+    ## Fallback if parameters missing
+    ${output1} = 0.0; /* Memory parameters missing, using default */
+#end

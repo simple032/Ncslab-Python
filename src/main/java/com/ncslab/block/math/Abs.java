@@ -126,26 +126,38 @@ public class Abs extends MathBlock {
      */
     public Abs(AbsDto dto, NCSLabModel model) {
         super(dto, model);
-        
+
         // Extract parameters from DTO with defaults
         String sampleTimeValue = dto.getSampleTime() != null ? (dto.getSampleTime().getAsString()) : "-1";
         String outDataTypeValue = dto.getOutDataTypeStrValue();
         String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
-        
+
         // Validate sample time
         double sampleTimeDouble = Double.parseDouble(sampleTimeValue);
         if (sampleTimeDouble != -1.0 && sampleTimeDouble <= 0.0) {
             throw new IllegalArgumentException("Sample time must be positive or -1 (inherited)");
         }
-        
+
         // Initialize parameters
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
         initializePorts();
-        
+
         System.out.println("DTO-SPECIFIC: Abs block created successfully from AbsDto - " + dto.getBlockName());
+    }
+
+    /**
+     * Factory method to create Abs block from AbsDto.
+     *
+     * @param dto The AbsDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Abs block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Abs createFromDto(AbsDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Abs(dto, model);
     }
 
 // === Static Factory Method for JSON Deserialization ===

@@ -1,19 +1,56 @@
 /* Code for output of block Delay:(${blockId}) ${blockName} */
+/* Matrix-based implementation: Clean, type-safe, unified for all signal types */
 {
-    int h = (int)(${delayLength});
+    int delayLength = (int)(${DelayLengthValue});
+    bool isSampleTime = fabs((int)(model.time / ${SampleTimeName} + 0.5) - model.time / ${SampleTimeName}) < 0.000001;
 
-    if (fabs((int)(model.time / ${SampleTimeName} + 0.5) - model.time / ${SampleTimeName}) < 0.000001 && mp->majorStep > 0) {
-        for(int i = 0; i < h-1; i++) {
-            Block${blockId}_discrete_delay_savedata[0][i] = Block${blockId}_discrete_delay_savedata[0][i+1];
-        }
-        Block${blockId}_discrete_delay_savedata[0][h-1] = ${inputSignal};
-    }
-
-    if ((model.time + 0.00001) < (${delayLength} * ${SampleTimeName})) {
-        ${outputSignal} = ${InitialConditionName};
+    // SIMULINK edge case: delayLength = 0 means direct feedthrough (no delay)
+    if (delayLength == 0) {
+        // No delay: output = input (direct feedthrough)
+        ${outputSignal} = ${inputSignal};
     } else {
-        if (fabs((int)(model.time / ${SampleTimeName} + 0.5) - model.time / ${SampleTimeName}) < 0.000001) {
-            ${outputSignal} = Block${blockId}_discrete_delay_savedata[0][0];
+        // Normal delay operation
+
+        // Update buffer at sample times (shift in new sample, shift out oldest)
+        if (isSampleTime && mp->majorStep > 0) {
+#if($signalHeight == 1 && $signalWidth == 1)
+            // Scalar signal: Create 1x1 Matrix from input
+            Matrix inputMatrix(1, 1);
+            inputMatrix(0, 0) = ${inputSignal};
+
+            // Efficient deque operation: O(1) complexity
+            Block${blockId}_discrete_delay_buffer.push_back(inputMatrix);  // Add new sample at back
+            Block${blockId}_discrete_delay_buffer.pop_front();              // Remove oldest sample from front
+#else
+            // Vector/Matrix signal: Input is already a Matrix
+            Block${blockId}_discrete_delay_buffer.push_back(${inputSignal}); // Add new sample at back
+            Block${blockId}_discrete_delay_buffer.pop_front();                // Remove oldest sample from front
+#end
+        }
+
+        // Output delayed sample
+        if ((model.time + 0.00001) < (delayLength * ${SampleTimeName})) {
+            // Not enough samples yet, output initial condition
+#if($signalHeight == 1 && $signalWidth == 1)
+            ${outputSignal} = ${InitialConditionName};
+#else
+            // Handle scalar IC expansion for vector/matrix signals
+    #if($InitialConditionObject.getData().getDataType().toString() == "MATRIX")
+            ${outputSignal} = ${InitialConditionName};
+    #else
+            // Scalar IC: expand to match signal dimensions
+            ${outputSignal}.setConstant(${InitialConditionName});
+    #end
+#end
+        } else {
+            if (isSampleTime) {
+                // Output oldest sample (front of deque = most delayed sample)
+#if($signalHeight == 1 && $signalWidth == 1)
+                ${outputSignal} = Block${blockId}_discrete_delay_buffer.front()(0, 0);
+#else
+                ${outputSignal} = Block${blockId}_discrete_delay_buffer.front();
+#end
+            }
         }
     }
 }

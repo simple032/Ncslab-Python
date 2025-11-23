@@ -9,7 +9,7 @@
 #end
 
 #if($inputHeight == 1 && $inputWidth == 1)
-    ## Scalar inputs - sum with appropriate signs
+    ## Scalar output - all inputs are scalar
     ${outputVar} = 0.0;
     #foreach($i in [0..$maxIndex])
         #if($isNumericInput)
@@ -26,24 +26,38 @@
         #end
     #end
 #else
-    ## Matrix inputs - element-wise sum with signs (using Eigen indexing)
+    ## Matrix output - element-wise sum with scalar expansion support
     #foreach($m in [0..$hMax])
         #foreach($n in [0..$wMax])
             ## Initialize element
             ${outputVar}($m, $n) = 0.0;
 
-            ## Sum all inputs for this element
+            ## Sum all inputs for this element (with scalar expansion)
             #foreach($i in [0..$maxIndex])
+                ## Check if input is scalar using TemplateUtils-provided context
+                #set($isScalar = ($inputHeights.get($i) == 1 && $inputWidths.get($i) == 1))
                 #if($isNumericInput)
                     ## Numeric input: use default '+' for all
+                    #if($isScalar)
+            ${outputVar}($m, $n) += ${inputs.get($i)};
+                    #else
             ${outputVar}($m, $n) += ${inputs.get($i)}($m, $n);
+                    #end
                 #else
                     ## String input: use charAt to get operator
                     #set($sign = $InputsValue.charAt($i))
                     #if($sign == '+')
+                        #if($isScalar)
+            ${outputVar}($m, $n) += ${inputs.get($i)};
+                        #else
             ${outputVar}($m, $n) += ${inputs.get($i)}($m, $n);
+                        #end
                     #elseif($sign == '-')
+                        #if($isScalar)
+            ${outputVar}($m, $n) -= ${inputs.get($i)};
+                        #else
             ${outputVar}($m, $n) -= ${inputs.get($i)}($m, $n);
+                        #end
                     #end
                 #end
             #end

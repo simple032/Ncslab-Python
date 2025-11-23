@@ -356,6 +356,11 @@ public class UnitDelay extends DiscreteBlock {
 
     public void updateDimension() throws MatDimException {
         super.updateDimension();
+
+        // TODO: Implement SIMULINK scalar zero expansion for IC
+        // If IC is scalar "0" and input is vector/matrix, expand IC to zero matrix matching input dimensions
+        // See Delay.java:503-526 for reference implementation
+
         OutputPort out = outputPortList.get(0);
         InputPort in = inputPortList.get(0);
         OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
@@ -381,12 +386,51 @@ public class UnitDelay extends DiscreteBlock {
         // No specific dimension checking needed
     }
 
+    // === SIMULINK-Compatible Lifecycle Methods ===
+
+    /**
+     * Validate block parameters before simulation starts.
+     * SIMULINK equivalent: mdlCheckParameters
+     *
+     * Validates:
+     * - Sample time is positive and finite
+     * - Initial condition is valid numeric value
+     * - Sample time is integer multiple of fixed step size
+     */
+    @Override
+    public void calculateCheckParameters() {
+        // Validate sample time
+        double sampleTimeValue = sampleTimeParam.getDouble();
+        if (sampleTimeValue <= 0.0 || Double.isNaN(sampleTimeValue) || Double.isInfinite(sampleTimeValue)) {
+            throw new IllegalArgumentException("UnitDelay " + blockName + ": Sample time must be positive and finite, got: " + sampleTimeValue);
+        }
+
+        // Validate initial condition is numeric
+        if (initialCondition.getData() == null) {
+            throw new IllegalArgumentException("UnitDelay " + blockName + ": Initial condition cannot be null");
+        }
+
+        // Additional validation will be done in updateDimension() for sample time multiple check
+    }
+
     @Override
     public void calculateInit() {
         OutputPort out = outputPortList.get(0);
         // Initialize both values with initial condition
         currentValue = new Data(initialCondition.getData().getInitValue());
         previousValue = new Data(initialCondition.getData().getInitValue());
+    }
+
+    /**
+     * Perform one-time startup actions after initialization.
+     * SIMULINK equivalent: mdlStart
+     *
+     * For UnitDelay, no special startup actions are needed.
+     */
+    @Override
+    public void calculateStart() {
+        // No startup actions needed for UnitDelay
+        // Resources are already initialized in calculateInit()
     }
 
     @Override
@@ -409,6 +453,48 @@ public class UnitDelay extends DiscreteBlock {
         // Shift values: previous becomes current input
         previousValue = currentValue;
         currentValue = input.getData();
+    }
+
+    /**
+     * Graceful shutdown before termination.
+     * SIMULINK equivalent: Part of mdlTerminate (pre-cleanup)
+     *
+     * For UnitDelay, no pre-termination actions needed.
+     */
+    @Override
+    public void calculateStop() {
+        // No stop actions needed for UnitDelay
+        // No files, hardware, or external resources to flush
+    }
+
+    /**
+     * Cleanup resources and finalize simulation.
+     * SIMULINK equivalent: mdlTerminate
+     *
+     * For UnitDelay, release internal state.
+     *
+     * @param t Final simulation time
+     */
+    @Override
+    public void calculateTerminate(double t) {
+        // Release internal state to help garbage collection
+        currentValue = null;
+        previousValue = null;
+    }
+
+    /**
+     * Reset block to initial conditions (mid-simulation reset).
+     * SIMULINK equivalent: Reset port functionality
+     *
+     * Resets the delay buffer to initial condition.
+     *
+     * @param t Time of reset
+     */
+    @Override
+    public void calculateReset(double t) {
+        // Reset both values back to initial condition
+        currentValue = new Data(initialCondition.getData().getInitValue());
+        previousValue = new Data(initialCondition.getData().getInitValue());
     }
 
     /**

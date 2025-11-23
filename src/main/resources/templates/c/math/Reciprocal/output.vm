@@ -1,0 +1,40 @@
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar reciprocal: 1/input
+    if(${inputVar} != 0.0) {
+        ${outputVar} = 1.0 / ${inputVar};
+
+        ## Apply saturation if enabled
+    #if($EnableSaturationValue == "on" || $EnableSaturationValue == true)
+        if(${outputVar} > ${UpperLimit}) {
+            ${outputVar} = ${UpperLimit};
+        } else if(${outputVar} < ${LowerLimit}) {
+            ${outputVar} = ${LowerLimit};
+        }
+    #end
+    } else {
+        ${outputVar} = INFINITY;  // Division by zero
+    }
+#else
+    ## Matrix reciprocal - element-wise operation
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+    if(${inputVar}($i, $j) != 0.0) {
+        ${outputVar}($i, $j) = 1.0 / ${inputVar}($i, $j);
+
+            ## Apply saturation if enabled
+            #if($EnableSaturationValue == "on" || $EnableSaturationValue == true)
+        if(${outputVar}($i, $j) > ${UpperLimit}) {
+            ${outputVar}($i, $j) = ${UpperLimit};
+        } else if(${outputVar}($i, $j) < ${LowerLimit}) {
+            ${outputVar}($i, $j) = ${LowerLimit};
+        }
+            #end
+    } else {
+        ${outputVar}($i, $j) = INFINITY;  // Division by zero
+    }
+        #end
+    #end
+#end

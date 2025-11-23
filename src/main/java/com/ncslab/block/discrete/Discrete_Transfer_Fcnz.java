@@ -275,7 +275,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        
+        OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();        
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
@@ -283,6 +283,8 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         context.put("sampleTime", sampleTimeParam);
         // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+        context.put("signal1Height", signal1.getHeight());
+        context.put("signal1Width", signal1.getWidth());
         
         // Add signal variables if ports are connected
         if (inputPortList.size() >= 3) {
@@ -295,6 +297,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
                 context.put("signal2", signal2.getName());
                 // Provide pre-constructed variable names with _REAL suffix for template
                 context.put("signal2NameREAL", signal2.getName() + "_REAL");
+                
             }
             if (inputPortList.get(2).getLinkedLine() != null && 
                 inputPortList.get(2).getLinkedLine().getLinkedOutputPort() != null) {
@@ -305,9 +308,17 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
                 context.put("signal3", signal3.getName());
                 // Provide pre-constructed variable names with _REAL suffix for template
                 context.put("signal3NameREAL", signal3.getName() + "_REAL");
+
+                // Add dimension variables needed by templates
+                // Get vector lengths (works for both row and column vectors)
+                
+                int denLength = Math.max(signal3.getWidth(), signal3.getHeight());
+                context.put("stateDim", denLength - 1);  // Denominator order - 1
+                context.put("stateNum", denLength - 1);  // Number of states
             }
         }
 
+        
         String initCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/init.vm", context);
         code.addInitCode(initCode);
     }
@@ -331,14 +342,16 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         context.put("signal3", signal3);
         
         // Add dimension variables needed by templates
+        // Get vector lengths (works for both row and column vectors)
+        int numLength = Math.max(signal2.getWidth(), signal2.getHeight());
+        int denLength = Math.max(signal3.getWidth(), signal3.getHeight());
+
         context.put("signal1Height", signal1.getHeight());
-        context.put("signal1Width", signal1.getWidth());
-        context.put("s1Height", signal1.getHeight());
-        context.put("s1Width", signal1.getWidth());
-        context.put("s2Width", signal2.getWidth());
-        context.put("s3Width", signal3.getWidth());
-        context.put("stateDim", signal3.getWidth() - 1);  // Denominator order - 1
-        context.put("stateNum", signal3.getWidth() - 1);  // Number of states
+        context.put("signal1Width", signal1.getWidth());        
+        context.put("s2Width", numLength);  // Numerator vector length (row or column)
+        context.put("s3Width", denLength);  // Denominator vector length (row or column)
+        context.put("stateDim", denLength - 1);  // Denominator order - 1
+        context.put("stateNum", denLength - 1);  // Number of states
         
         // Add signal names for template
         // FIXED: Signal names already include Block prefix, don't add another
@@ -363,14 +376,26 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 			OutputSignal signal1=inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			OutputSignal signal2=inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
 			OutputSignal signal3=inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-			if(signal2.getHeight()!=1||signal3.getHeight()!=1) {
-				 MatDimException e=new MatDimException("The input port2 signal and input port3 signal of"+this.blockName+"must be Matrix(1*n)!\n");
+
+			// Validate coefficient inputs are vectors (either row [1×n] or column [n×1])
+			boolean signal2IsVector = (signal2.getHeight() == 1 || signal2.getWidth() == 1);
+			boolean signal3IsVector = (signal3.getHeight() == 1 || signal3.getWidth() == 1);
+
+			if(!signal2IsVector || !signal3IsVector) {
+				 MatDimException e=new MatDimException("The input port2 signal and input port3 signal of " +
+				     this.blockName + " must be vectors (either row [1×n] or column [n×1])!\n");
 				 throw(e);
 			}
-			if(signal2.getWidth()>signal3.getWidth()) {
+
+			// Get vector lengths (works for both row and column vectors)
+			int numLength = Math.max(signal2.getHeight(), signal2.getWidth());
+			int denLength = Math.max(signal3.getHeight(), signal3.getWidth());
+
+			if(numLength > denLength) {
 				MatDimException e=new MatDimException("The order of the denominator must be greater than or equal to the order of the numerator.\n");
 				 throw(e);
 			}
+
 			out.setHeight(signal1.getHeight());
 			out.setWidth(signal1.getWidth());
 			out.getOutputSignalC().setHeight(signal1.getHeight());
@@ -386,19 +411,23 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         // Initialize state arrays based on numerator and denominator orders
         OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        
-        numOrder = signal2.getWidth() - 1;  // Numerator order
-        denOrder = signal3.getWidth() - 1;  // Denominator order
-        
+
+        // Get vector lengths (works for both row and column vectors)
+        int numLength = Math.max(signal2.getWidth(), signal2.getHeight());
+        int denLength = Math.max(signal3.getWidth(), signal3.getHeight());
+
+        numOrder = numLength - 1;  // Numerator order (degree of polynomial)
+        denOrder = denLength - 1;  // Denominator order (degree of polynomial)
+
         // Initialize state arrays
         xStates = new State[Math.max(denOrder, 1)];
         uStates = new State[Math.max(numOrder, 1)];
-        
+
         for (int i = 0; i < xStates.length; i++) {
             xStates[i] = new State(this, i + 1, "x_state_" + i, 1, 1);
             xStates[i].setData(new Data(0.0));
         }
-        
+
         for (int i = 0; i < uStates.length; i++) {
             uStates[i] = new State(this, i + 1, "u_state_" + i, 1, 1);
             uStates[i].setData(new Data(0.0));
@@ -414,36 +443,71 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         InputPort numerator = inputPortList.get(1);  // Numerator coefficients [b0, b1, ..., bn]
         InputPort denominator = inputPortList.get(2);  // Denominator coefficients [a0, a1, ..., am]
         OutputPort output = outputPortList.get(0);
-        
+
+        // Validate input connections
+        if (input.getData() == null) {
+            throw new RuntimeException("Discrete Transfer Fcn block '" + blockName + "': Input signal is null");
+        }
+        if (numerator.getData() == null) {
+            throw new RuntimeException("Discrete Transfer Fcn block '" + blockName + "': Numerator coefficients input is null");
+        }
+        if (denominator.getData() == null) {
+            throw new RuntimeException("Discrete Transfer Fcn block '" + blockName + "': Denominator coefficients input is null");
+        }
+
         Data inputSignal = input.getData();
         Data numCoeffs = numerator.getData();
         Data denCoeffs = denominator.getData();
-        
-        // Get coefficient values
-        double[] b = new double[numCoeffs.getWidth()];
-        double[] a = new double[denCoeffs.getWidth()];
-        
+
+        // Validate coefficient dimensions (must be vectors)
+        int numLength = Math.max(numCoeffs.getWidth(), numCoeffs.getHeight());
+        int denLength = Math.max(denCoeffs.getWidth(), denCoeffs.getHeight());
+
+        if (numLength == 0) {
+            throw new RuntimeException("Discrete Transfer Fcn block '" + blockName + "': Numerator coefficients have zero length");
+        }
+        if (denLength == 0) {
+            throw new RuntimeException("Discrete Transfer Fcn block '" + blockName + "': Denominator coefficients have zero length");
+        }
+
+        // Get coefficient values (support both row and column vectors)
+        double[] b = new double[numLength];
+        double[] a = new double[denLength];
+
         if (numCoeffs.getDataType() == DataType.MATRIX) {
             Matrix numMatrix = numCoeffs.getMatrix();
+            if (numMatrix == null) {
+                throw new RuntimeException("Discrete Transfer Fcn block '" + blockName + "': Numerator coefficient matrix is null");
+            }
+            // Extract coefficients from either row vector [1×n] or column vector [n×1]
+            boolean isRowVector = (numMatrix.getRowDimension() == 1);
             for (int i = 0; i < b.length; i++) {
-                b[i] = numMatrix.get(0, i);
+                b[i] = isRowVector ? numMatrix.get(0, i) : numMatrix.get(i, 0);
             }
         } else {
             b[0] = numCoeffs.getInitValue();
         }
-        
+
         if (denCoeffs.getDataType() == DataType.MATRIX) {
             Matrix denMatrix = denCoeffs.getMatrix();
+            if (denMatrix == null) {
+                throw new RuntimeException("Discrete Transfer Fcn block '" + blockName + "': Denominator coefficient matrix is null");
+            }
+            // Extract coefficients from either row vector [1×n] or column vector [n×1]
+            boolean isRowVector = (denMatrix.getRowDimension() == 1);
             for (int i = 0; i < a.length; i++) {
-                a[i] = denMatrix.get(0, i);
+                a[i] = isRowVector ? denMatrix.get(0, i) : denMatrix.get(i, 0);
             }
         } else {
             a[0] = denCoeffs.getInitValue();
         }
-        
-        // Normalize by a[0] if needed
+
+        // Validate a[0] is not zero
         if (Math.abs(a[0]) < 1e-10) {
-            throw new RuntimeException("Denominator coefficient a[0] cannot be zero");
+            throw new RuntimeException(String.format(
+                "Discrete Transfer Fcn block '%s': Denominator coefficient a[0]=%.10f is effectively zero. " +
+                "The first denominator coefficient must be non-zero. Check the denominator input connection.",
+                blockName, a[0]));
         }
         
         // Calculate output based on Direct Form II
