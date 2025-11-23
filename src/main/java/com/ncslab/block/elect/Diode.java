@@ -11,6 +11,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.block.data.Data;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -97,5 +98,59 @@ public class Diode extends Block {
 			out.getOutputSignalC().setDataType(signal.getDataType());
 			//break;
 		//}
+	}
+
+	/**
+	 * Calculate output for Diode block at the specified time.
+	 *
+	 * Implements diode voltage-to-current characteristic:
+	 * - If voltage > Vf: current = (voltage - Vf) / Ron (forward conduction)
+	 * - If 0 < voltage <= Vf: current = 0 (threshold region)
+	 * - If voltage < 0: current = voltage * Goff (reverse leakage)
+	 *
+	 * @param t Current simulation time
+	 */
+	@Override
+	public void calculateOutput(double t) {
+		// Validate required ports exist
+		if (inputPortList == null || inputPortList.isEmpty()) {
+			throw new IllegalStateException("Diode block cannot calculate output: no input ports configured");
+		}
+		if (outputPortList == null || outputPortList.isEmpty()) {
+			throw new IllegalStateException("Diode block cannot calculate output: no output ports configured");
+		}
+
+		InputPort inputPort = inputPortList.get(0);
+		OutputPort outputPort = outputPortList.get(0);
+
+		// Validate input data
+		if (inputPort == null || inputPort.getData() == null) {
+			throw new IllegalStateException("Diode block cannot calculate output: input data is null");
+		}
+
+		// Get parameter values
+		double vfValue = vf.getData().getInitValue();
+		double ronValue = ron.getData().getInitValue();
+		double goffValue = goff.getData().getInitValue();
+
+		// Get input voltage
+		double voltage = inputPort.getData().getInitValue();
+
+		// Calculate output current based on diode characteristic
+		double current;
+		if (voltage > vfValue) {
+			// Forward conduction: current = (voltage - Vf) / Ron
+			current = (voltage - vfValue) / ronValue;
+		} else if (voltage > 0) {
+			// Threshold region: no current flow
+			current = 0.0;
+		} else {
+			// Reverse leakage: current = voltage * Goff
+			current = voltage * goffValue;
+		}
+
+		// Set output data
+		Data outputData = new Data(current);
+		outputPort.setData(outputData);
 	}
 }

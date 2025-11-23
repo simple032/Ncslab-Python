@@ -11,6 +11,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.block.data.Data;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -86,6 +87,62 @@ public class LimitingLink extends Block{
 			out.getOutputSignalC().setDataType(signal.getDataType());
 			//break;
 		//}
+	}
+
+	/**
+	 * Calculate output for LimitingLink block at the specified time.
+	 *
+	 * Implements minimum resistance limiting with reciprocal:
+	 * - If input >= Rmin: output = 1 / input (reciprocal)
+	 * - If input < Rmin: output = 1 / Rmin (limit reciprocal to minimum)
+	 *
+	 * @param t Current simulation time
+	 */
+	@Override
+	public void calculateOutput(double t) {
+		// Validate required ports exist
+		if (inputPortList == null || inputPortList.isEmpty()) {
+			throw new IllegalStateException("LimitingLink block cannot calculate output: no input ports configured");
+		}
+		if (outputPortList == null || outputPortList.isEmpty()) {
+			throw new IllegalStateException("LimitingLink block cannot calculate output: no output ports configured");
+		}
+
+		InputPort inputPort = inputPortList.get(0);
+		OutputPort outputPort = outputPortList.get(0);
+
+		// Validate input data
+		if (inputPort == null || inputPort.getData() == null) {
+			throw new IllegalStateException("LimitingLink block cannot calculate output: input data is null");
+		}
+
+		// Get parameter value
+		double rminValue = rmin.getData().getInitValue();
+
+		// Get input value
+		double input = inputPort.getData().getInitValue();
+
+		// Calculate output with minimum limiting and reciprocal
+		double output;
+		if (input >= rminValue) {
+			// Reciprocal of input: output = 1 / input
+			if (Math.abs(input) < 1e-10) {
+				// Prevent division by zero
+				throw new IllegalStateException("LimitingLink block: input value too close to zero for reciprocal calculation");
+			}
+			output = 1.0 / input;
+		} else {
+			// Reciprocal of minimum: output = 1 / Rmin
+			if (Math.abs(rminValue) < 1e-10) {
+				// Prevent division by zero
+				throw new IllegalStateException("LimitingLink block: Rmin parameter too close to zero for reciprocal calculation");
+			}
+			output = 1.0 / rminValue;
+		}
+
+		// Set output data
+		Data outputData = new Data(output);
+		outputPort.setData(outputData);
 	}
 }
 

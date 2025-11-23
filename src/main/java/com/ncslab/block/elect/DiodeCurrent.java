@@ -11,6 +11,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.block.data.Data;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -97,5 +98,55 @@ public class DiodeCurrent extends Block {
 			out.getOutputSignalC().setDataType(signal.getDataType());
 			//break;
 		//}
+	}
+
+	/**
+	 * Calculate output for DiodeCurrent block at the specified time.
+	 *
+	 * Implements diode current-to-voltage characteristic:
+	 * - If current > 0: voltage = (current * Ron) + Vf (forward conduction)
+	 * - If current <= 0: voltage = current / Goff (reverse leakage)
+	 *
+	 * @param t Current simulation time
+	 */
+	@Override
+	public void calculateOutput(double t) {
+		// Validate required ports exist
+		if (inputPortList == null || inputPortList.isEmpty()) {
+			throw new IllegalStateException("DiodeCurrent block cannot calculate output: no input ports configured");
+		}
+		if (outputPortList == null || outputPortList.isEmpty()) {
+			throw new IllegalStateException("DiodeCurrent block cannot calculate output: no output ports configured");
+		}
+
+		InputPort inputPort = inputPortList.get(0);
+		OutputPort outputPort = outputPortList.get(0);
+
+		// Validate input data
+		if (inputPort == null || inputPort.getData() == null) {
+			throw new IllegalStateException("DiodeCurrent block cannot calculate output: input data is null");
+		}
+
+		// Get parameter values
+		double vfValue = vf.getData().getInitValue();
+		double ronValue = ron.getData().getInitValue();
+		double goffValue = goff.getData().getInitValue();
+
+		// Get input current
+		double current = inputPort.getData().getInitValue();
+
+		// Calculate output voltage based on diode characteristic
+		double voltage;
+		if (current > 0) {
+			// Forward conduction: voltage = (current * Ron) + Vf
+			voltage = (current * ronValue) + vfValue;
+		} else {
+			// Reverse leakage: voltage = current / Goff
+			voltage = current / goffValue;
+		}
+
+		// Set output data
+		Data outputData = new Data(voltage);
+		outputPort.setData(outputData);
 	}
 }

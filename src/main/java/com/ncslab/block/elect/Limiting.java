@@ -11,6 +11,7 @@ import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
+import com.ncslab.block.data.Data;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -87,5 +88,53 @@ public class Limiting extends Block{
 			out.getOutputSignalC().setDataType(signal.getDataType());
 			//break;
 		//}
+	}
+
+	/**
+	 * Calculate output for Limiting block at the specified time.
+	 *
+	 * Implements minimum resistance limiting:
+	 * - If input >= Rmin: output = input (pass through)
+	 * - If input < Rmin: output = Rmin (limit to minimum)
+	 *
+	 * @param t Current simulation time
+	 */
+	@Override
+	public void calculateOutput(double t) {
+		// Validate required ports exist
+		if (inputPortList == null || inputPortList.isEmpty()) {
+			throw new IllegalStateException("Limiting block cannot calculate output: no input ports configured");
+		}
+		if (outputPortList == null || outputPortList.isEmpty()) {
+			throw new IllegalStateException("Limiting block cannot calculate output: no output ports configured");
+		}
+
+		InputPort inputPort = inputPortList.get(0);
+		OutputPort outputPort = outputPortList.get(0);
+
+		// Validate input data
+		if (inputPort == null || inputPort.getData() == null) {
+			throw new IllegalStateException("Limiting block cannot calculate output: input data is null");
+		}
+
+		// Get parameter value
+		double rminValue = rmin.getData().getInitValue();
+
+		// Get input value
+		double input = inputPort.getData().getInitValue();
+
+		// Calculate output with minimum limiting
+		double output;
+		if (input >= rminValue) {
+			// Pass through: output = input
+			output = input;
+		} else {
+			// Limit to minimum: output = Rmin
+			output = rminValue;
+		}
+
+		// Set output data
+		Data outputData = new Data(output);
+		outputPort.setData(outputData);
 	}
 }
