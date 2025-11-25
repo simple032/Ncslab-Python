@@ -78,6 +78,46 @@ public class SimulationModel extends NCSLabModel{
         states = new double[statesSize];
     }
 
+	/**
+	 * Sanitize numeric value for JSON encoding
+	 * Converts non-finite numbers (NaN, Infinity, -Infinity) to string representations
+	 * to avoid JSONException while preserving information about the condition
+	 *
+	 * @param value The numeric value to sanitize
+	 * @param blockType Optional block type for diagnostic logging
+	 * @param signalName Optional signal name for diagnostic logging
+	 * @param time Optional simulation time for diagnostic logging
+	 * @return The value if finite, otherwise a string representation
+	 */
+	private Object sanitizeNumericValue(double value, String blockType, String signalName, double time) {
+		if (Double.isNaN(value)) {
+			System.err.printf("WARNING: NaN detected at t=%.6f in %s signal '%s'%n", time, blockType, signalName);
+			return "NaN";
+		} else if (Double.isInfinite(value)) {
+			String infinityType = value > 0 ? "Infinity" : "-Infinity";
+			System.err.printf("WARNING: %s detected at t=%.6f in %s signal '%s'%n", infinityType, time, blockType, signalName);
+			return infinityType;
+		} else {
+			return value;
+		}
+	}
+
+	/**
+	 * Sanitize numeric value for JSON encoding (simple version)
+	 * @param value The numeric value to sanitize
+	 * @return The value if finite, otherwise a string representation
+	 */
+    // TODO:前端如何处理
+	private Object sanitizeNumericValue(double value) {
+		if (Double.isNaN(value)) {
+			return "NaN";
+		} else if (Double.isInfinite(value)) {
+			return value > 0 ? "Infinity" : "-Infinity";
+		} else {
+			return value;
+		}
+	}
+
 	public static SimulationModel createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException {
         return new SimulationModel(jsonIn,mode);
 	}
@@ -229,6 +269,7 @@ public class SimulationModel extends NCSLabModel{
                     // 计算代数输出（可以直接调用系统ODE的计算部分）
 //                    systemODE.computeDerivatives(t, y, yDot);
                     // 3. 处理离散状态更新
+                    calculateUpdates(t);  // NEW: Major time step update
                     calculateDiscreteUpdates(t);
 
                     double iteration = Math.floor(t/step)/1000;
@@ -241,6 +282,7 @@ public class SimulationModel extends NCSLabModel{
                         }
                     }
                     if(isLast){
+                        calculateStops(t);  // NEW: Graceful shutdown
                         calculateTerminates(t);
                         terminateCalled[0] = true;
                     }
@@ -260,6 +302,7 @@ public class SimulationModel extends NCSLabModel{
                     double[] state = interpolator.getInterpolatedState();
 
                     // 处理离散状态更新
+                    calculateUpdates(currentTime);  // NEW: Major time step update
                     calculateDiscreteUpdates(currentTime);
 
                     // 处理主步长的输出
@@ -283,7 +326,12 @@ public class SimulationModel extends NCSLabModel{
             // send the simulation data to the client
             double tStart = getConfig().getStartTime();
             double tEnd = getConfig().getStopTime();
-            calculateInits(tStart, states);
+
+            // === Pre-Simulation Phase ===
+            calculateCheckParameters();  // NEW: Validate parameters
+            calculateInits(tStart, states);  // Initialize states and outputs
+            calculateStarts();  // NEW: One-time startup actions
+
             boolean hasState = systemODE.getDimension() > 0;
             
             System.out.printf("Simulation setup: %s, hasState=%s, tStart=%.3f, tEnd=%.3f%n", 
@@ -307,6 +355,7 @@ public class SimulationModel extends NCSLabModel{
 
                 while(t < tEnd){
                     calculateOutputs(t);
+                    calculateUpdates(t);  // NEW: Major time step update
                     calculateDiscreteUpdates(t);
                     // 发送时间序列消息
                     if(t - Math.floor(t) < minStep) {
@@ -323,6 +372,7 @@ public class SimulationModel extends NCSLabModel{
                     if(t >= tEnd) {
                         // Process final time point exactly
                         calculateOutputs(tEnd);
+                        calculateUpdates(tEnd);  // NEW: Major time step update
                         calculateDiscreteUpdates(tEnd);
                         try {
                             sendSimulatingMessage(session, tEnd);
@@ -338,6 +388,7 @@ public class SimulationModel extends NCSLabModel{
                 if(!finalTimeProcessed) {
                     System.out.printf("Warning: Processing final time point as safety measure: t=%.6f, tEnd=%.6f%n", t, tEnd);
                     calculateOutputs(tEnd);
+                    calculateUpdates(tEnd);  // NEW: Major time step update
                     calculateDiscreteUpdates(tEnd);
                     try {
                         sendSimulatingMessage(session, tEnd);
@@ -348,9 +399,11 @@ public class SimulationModel extends NCSLabModel{
 
             }
 
-            // Only call calculateTerminates if it hasn't been called already by a step handler
+            // === Post-Simulation Phase ===
+            // Only call calculateStops and calculateTerminates if not already called by a step handler
             if (!terminateCalled[0]) {
-                calculateTerminates(tEnd);
+                calculateStops(tEnd);  // NEW: Graceful shutdown
+                calculateTerminates(tEnd);  // Cleanup resources
             }
 
             // Use optimized WebSocket streaming instead of file I/O
@@ -362,7 +415,7 @@ public class SimulationModel extends NCSLabModel{
                 System.out.println("RT Debug: No session provided, skipping result sending");
             }
 		}
-		catch(Exception e) {
+		catch(Exception e) {            
             e.printStackTrace();
 			throw new ModelException("Can not execute the exe file!");
 		}
@@ -617,8 +670,13 @@ public class SimulationModel extends NCSLabModel{
                     JSONObject outputData = new JSONObject();
                     outputData.put("name", outputPort.getOutputSignalC().getName());
                     outputData.put("type", outputPort.getOutputSignalC().getDataType());
-                    outputData.put("real", outputPort.getOutputSignalC().getData().getInitValue());
-                    outputData.put("matrix", outputPort.getOutputSignalC().getData().getMatrix());
+                    if(outputPort.getOutputSignalC().getDataType()==DataType.REAL){
+                        // Sanitize non-finite numbers before JSON encoding
+                        double value = outputPort.getOutputSignalC().getData().getInitValue();
+                        outputData.put("value", sanitizeNumericValue(value));
+                    }else{
+                        outputData.put("value", outputPort.getOutputSignalC().getData().getMatrix());
+                    }
                     outputDataArray.put(outputData);
                 }
                 for (InputPort inputPort : block.getInputPortList()) {
@@ -628,8 +686,13 @@ public class SimulationModel extends NCSLabModel{
                         if (outputPort.getOutputSignalC() != null) {
                             inputData.put("name", outputPort.getOutputSignalC().getName());
                             inputData.put("type", outputPort.getOutputSignalC().getDataType());
-                            inputData.put("real", outputPort.getOutputSignalC().getData().getInitValue());
-                            inputData.put("matrix", outputPort.getOutputSignalC().getData().getMatrix());
+                            if(outputPort.getOutputSignalC().getDataType()==DataType.REAL){
+                                // Sanitize non-finite numbers before JSON encoding
+                                double value = outputPort.getOutputSignalC().getData().getInitValue();
+                                inputData.put("value", sanitizeNumericValue(value));
+                            }else{
+                                inputData.put("value", outputPort.getOutputSignalC().getData().getMatrix());
+                            }
                             inputDataArray.put(inputData);
                         }
                     }
@@ -728,6 +791,47 @@ public class SimulationModel extends NCSLabModel{
         }
     }
 
+    /**
+     * Validate all block parameters before simulation starts.
+     * SIMULINK equivalent: mdlCheckParameters
+     */
+    private void calculateCheckParameters() {
+        for(Block block: getBlockList()){
+            block.calculateCheckParameters();
+        }
+    }
+
+    /**
+     * Perform one-time startup actions after initialization.
+     * SIMULINK equivalent: mdlStart
+     */
+    private void calculateStarts() {
+        for(Block block: getBlockList()){
+            block.calculateStart();
+        }
+    }
+
+    /**
+     * Update blocks at major time step (for continuous blocks).
+     * SIMULINK equivalent: mdlUpdate
+     * @param t Current simulation time
+     */
+    private void calculateUpdates(double t) {
+        for(Block block: getBlockList()){
+            block.calculateUpdate(t);
+        }
+    }
+
+    /**
+     * Graceful shutdown before termination.
+     * @param t Current simulation time
+     */
+    private void calculateStops(double t) {
+        for(Block block: getBlockList()){
+            block.calculateStop();
+        }
+    }
+
     public void calculateTerminates(double t){
         for(Block block: getBlockList()){
             block.calculateTerminate(t);
@@ -761,8 +865,8 @@ public class SimulationModel extends NCSLabModel{
             time.put(scope.getTimeList().remove(0));
 
             for (int h = 0; h < scope.getHeight(); h++) {
-                for (int w = 0; w < scope.getWidth(); w++) {
-                    data.put(scope.getDataList().remove(0));
+                for (int w = 0; w < scope.getWidth(); w++) {                    
+                    data.put(sanitizeNumericValue(scope.getDataList().remove(0)));
                 }
             }
         }

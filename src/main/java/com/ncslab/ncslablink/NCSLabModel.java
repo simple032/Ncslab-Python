@@ -19,6 +19,7 @@ import com.ncslab.dto.model.LineDto;
 import com.ncslab.dto.model.SaveInfoDto;
 import com.ncslab.util.JsonUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -65,6 +66,11 @@ abstract public class NCSLabModel {
 	@Getter
 	@Setter
     private int modelId;
+
+	public String getModelUUID() {
+		return UUID.randomUUID().toString();
+	}
+
 	@Getter
     private int testRig;
 
@@ -244,17 +250,11 @@ abstract public class NCSLabModel {
 		} else {
 			System.out.println("No auto-generation needed - all ports are connected");
 		}
-		
 		// CRITICAL FIX: Add missing dimension processing for DTO path
 		// This was causing RT simulation to have empty scope results
 		System.out.println("DTO Fix: Setting up dimension processing...");
 		rootSystem.setupDimensionList();
-		try {
-			rootSystem.updateDimensions();
-		} catch (Exception e) {
-			System.err.println("DTO Fix: Error during dimension processing: " + e.getMessage());
-			e.printStackTrace();
-		}
+		rootSystem.updateDimensions();		
 		
 		// 继续现有工作流程
 		rootSystem.calculateSystemState();
@@ -959,10 +959,50 @@ abstract public class NCSLabModel {
 
 
 	private void updateDimensions() throws MatDimException{
-		for(Block block:dimensionList) {
-			block.updateDimension();
+		// Multiple passes for feedback loops with scalar expansion
+		// Continue until dimensions stabilize (no changes) or max iterations reached
+		final int MAX_PASSES = 10;
+		boolean dimensionsChanged = true;
+		int passCount = 0;
+
+		while (dimensionsChanged && passCount < MAX_PASSES) {
+			dimensionsChanged = false;
+			passCount++;
+
+			System.out.println("Dimension propagation pass " + passCount + "...");
+
+			for(Block block:dimensionList) {
+				// Store old dimensions to detect changes
+				List<OutputPort> outputs = block.getOutputPortList();
+				Map<OutputPort, int[]> oldDimensions = new HashMap<>();
+				for (OutputPort port : outputs) {
+					oldDimensions.put(port, new int[]{port.getHeight(), port.getWidth()});
+				}
+
+				// Update dimensions
+				block.updateDimension();
+
+				// Check if any dimensions changed
+				for (OutputPort port : outputs) {
+					int[] old = oldDimensions.get(port);
+					if (old[0] != port.getHeight() || old[1] != port.getWidth()) {
+						dimensionsChanged = true;
+						System.out.println("  " + block.getBlockName() + " dimensions changed: [" +
+						                 old[0] + "×" + old[1] + "] → [" + port.getHeight() + "×" + port.getWidth() + "]");
+					}
+				}
+			}
+
+			if (!dimensionsChanged) {
+				System.out.println("Dimensions stabilized after " + passCount + " passes");
+			}
 		}
 
+		if (passCount >= MAX_PASSES) {
+			System.out.println("WARNING: Reached maximum dimension propagation passes (" + MAX_PASSES + ")");
+		}
+
+		// Final validation pass
 		for(Block block:dimensionList) {
 			block.checkDimension();
 		}
@@ -1016,18 +1056,7 @@ abstract public class NCSLabModel {
 					log.info("Parsing block ("+newBlock.getBlockId()+"): '"+newBlock.getBlockName()+"'...");
 
                     fullBlockList.add(newBlock);
-                    rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()
-
-                    // JSONObject lineJSON = new JSONObject();
-
-                    // lineJSON.put("fromBlockName", newBlock.getBlockName());
-                    // lineJSON.put("fromBlockUUID", newBlock.getBlockUUID());
-                    // lineJSON.put("fromPortNo", 1);
-
-                    // lineJSON.put("toBlockName", block.getBlockName());
-                    // lineJSON.put("toBlockUUID", block.getBlockUUID());
-                    // lineJSON.put("toPortNo", i+1);
-                    // lineJSON.put("linePath", block.getBlockPath());					
+                    rootSystem.addBlock(newBlock); // Also add to model's getBlockList() for Line.createLine()			
 
                     // Line line=Line.createLine(lineJSON, getBlockList());
 					LineDto lineDto = new LineDto();
@@ -1059,16 +1088,6 @@ abstract public class NCSLabModel {
                 OutputPort output = block.getOutputPortList().get(i);
                 if(output.getLinkedLineList().isEmpty()) {
                     //如果输入端口没有连接，则连接到constant
-                    // {"blockType": "Terminator", "blockName": "Terminator1", "position": [100, 400, 160, 460], "paramValues": {}}
-                    // JSONObject blockJSON = new JSONObject();
-                    // blockJSON.put("blockType", "Terminator");
-                    // blockJSON.put("blockName", "Auto_Terminator" + (blockSeq));
-                    // JSONObject paramValues = new JSONObject();
-                    // blockJSON.put("paramValues", paramValues);
-                    // blockJSON.put("blockPath", block.getBlockPath());
-                    // blockJSON.put("blockUUID", UUID.randomUUID().toString());
-                    // Block newBlock = BlockType.createBlock(blockSeq+1, blockJSON, this);
-
 					TerminatorDto terminatorDto = new TerminatorDto();		
 					terminatorDto.setBlockName("Auto_Terminator"+(blockSeq));					
 					terminatorDto.setBlockPath(block.getBlockPath());

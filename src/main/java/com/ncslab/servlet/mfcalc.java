@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.dto.communication.MfcalcResponseDto;
 import com.ncslab.dto.communication.MfcalcServletRequestDto;
+import com.ncslab.util.FileSystemApiClient;
 import com.ncslab.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -124,7 +125,8 @@ public class mfcalc extends HttpServlet {
 
     	try {
     		log.info("Getting MFCalc client for user: {}", model.getUserId());
-			MfcalcClient client = MfcalcClientManager.getClientForUser(String.valueOf(model.getUserId()));
+			String userId = String.valueOf(model.getUserId());
+			MfcalcClient client = MfcalcClientManager.getClientForUser(userId);
 			log.info("MFCalc client retrieved");
 
 			ServerResponseDto responseDto;
@@ -134,7 +136,8 @@ public class mfcalc extends HttpServlet {
 				String message = "SUCCESS";
 				boolean operationSuccess = true;
 
-				switch (method) {
+				switch (method) {			
+				
 				case "runScript":
 					log.info("Executing runScript...");
 					log.info("About to call client.runScript()");

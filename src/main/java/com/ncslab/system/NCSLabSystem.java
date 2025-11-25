@@ -96,6 +96,7 @@ public class NCSLabSystem {
     /**
      * List of blocks organized by dimension processing order
      */
+    @Getter
     private final List<Block> dimensionList = new ArrayList<>();
     
     /**
@@ -829,19 +830,104 @@ public class NCSLabSystem {
     /**
      * Update dimensions for all blocks in the dimension processing order
      * This ensures dimension consistency across all blocks
-     * 
+     * Uses iterative propagation to handle feedback loops (SIMULINK-compatible)
+     *
      * @throws MatDimException if dimension conflicts are detected
      */
     public void updateDimensions() throws MatDimException {
-        // First pass: Update dimensions for all blocks
-        for (Block block : dimensionList) {
-            block.updateDimension();
+        final int MAX_ITERATIONS = 10;
+        int iteration = 0;
+        boolean dimensionsChanged = true;
+
+        log.info("Starting iterative dimension propagation...");
+
+        // Iterative dimension propagation until convergence
+        MatDimException lastException = null;
+        while (dimensionsChanged && iteration < MAX_ITERATIONS) {
+            dimensionsChanged = false;
+            lastException = null;
+            iteration++;
+
+            log.info("===== Dimension Propagation Iteration {} =====", iteration);
+
+            for (Block block : dimensionList) {
+                // Capture old dimensions
+                int oldWidth = 0, oldHeight = 0;
+                if (!block.getOutputPortList().isEmpty()) {
+                    OutputPort output = block.getOutputPortList().get(0);
+                    oldWidth = output.getWidth();
+                    oldHeight = output.getHeight();
+                }
+
+                // Update dimensions - catch exceptions during iteration to allow convergence
+                try {
+                    log.debug("Update dimension for {}", block.getBlockName());
+                    block.updateDimension();
+                } catch (MatDimException e) {
+                    // Store exception but continue iteration to allow upstream dimensions to propagate
+                    lastException = e;
+                    log.debug("  {} dimension update failed: {}", block.getBlockName(), e.getMessage());
+                    continue; // Skip dimension change check for this block
+                }
+
+                // Check if dimensions changed
+                if (!block.getOutputPortList().isEmpty()) {
+                    OutputPort output = block.getOutputPortList().get(0);
+                    int newWidth = output.getWidth();
+                    int newHeight = output.getHeight();
+
+                    if (oldWidth != newWidth || oldHeight != newHeight) {
+                        dimensionsChanged = true;
+                        log.debug("  {} dimensions changed: [{}x{}] -> [{}x{}]",
+                                block.getBlockName(), oldHeight, oldWidth, newHeight, newWidth);
+                    }
+                }
+            }
+
+            if (!dimensionsChanged) {
+                log.info("Dimensions converged after {} iteration(s)", iteration);
+                // If we had exceptions but dimensions converged, throw the last exception
+                if (lastException != null) {
+                    throw lastException;
+                }
+            }
         }
-        
-        // Second pass: Check dimension consistency
+
+        if (iteration >= MAX_ITERATIONS) {
+            throw new MatDimException("Dimension propagation did not converge after " +
+                                     MAX_ITERATIONS + " iterations - possible dimension conflict");
+        }
+
+        // After convergence, expand IC for Delay blocks to match final dimensions
+        log.info("Expanding IC for Delay blocks to match final dimensions...");
+        for (Block block : blocks) {
+            if (block instanceof com.ncslab.block.discrete.Delay) {
+                ((com.ncslab.block.discrete.Delay)block).expandICToMatchDimensions();
+            }
+        }
+
+        // Final validation pass
+        log.info("Checking dimension consistency...");
         for (Block block : dimensionList) {
             block.checkDimension();
         }
+
+        // Print final output dimensions for all blocks
+        log.info("===== FINAL OUTPUT DIMENSIONS =====");
+        for (Block block : blocks) {
+            if (!block.getOutputPortList().isEmpty()) {
+                StringBuilder dimInfo = new StringBuilder();
+                dimInfo.append(String.format("Block(%d): %s [%s]",
+                    block.getBlockId(), block.getBlockName(), block.getBlockType()));
+                for (int i = 0; i < block.getOutputPortList().size(); i++) {
+                    OutputPort port = block.getOutputPortList().get(i);
+                    dimInfo.append(String.format(" | Port%d: [%dx%d]",
+                        i+1, port.getHeight(), port.getWidth()));
+                }
+                log.info(dimInfo.toString());
+            }
+        }
+        log.info("===== END FINAL DIMENSIONS =====");
     }
     
     /**
@@ -960,65 +1046,37 @@ public class NCSLabSystem {
             for (InputPort input : inputPortList) {
                 scanDimInputPort(input);
             }
-            System.out.println("DimScan: Adding dimThrough block " + block.getBlockName() + " to dimensionList");
             dimensionList.add(block);
         } else {
-            // Block without dimension feedthrough - process first input, queue others
-            System.out.println("DimScan: Processing first input port for non-dimThrough block " +
+            // Block without dimension feedthrough - must process ALL inputs before adding block
+            System.out.println("DimScan: Processing ALL input ports for non-dimThrough block " +
                              block.getBlockName());
             block.setIsDimScaned(true);
             outputPort.setIsDimScaned(true);
             List<InputPort> inputPortList = block.getInputPortList();
 
-            // Process first input for dimension compatibility
-            if (!inputPortList.isEmpty()) {
-                scanDimInputPort(inputPortList.get(0));
+            // CRITICAL FIX: Process ALL inputs recursively before adding this block
+            // This ensures all input blocks are dimensioned before dependent blocks
+            for (InputPort input : inputPortList) {
+                scanDimInputPort(input);
             }
 
-            // Queue remaining inputs for second pass
-            if (inputPortList.size() > 1) {
-                System.out.println("DimScan: Queuing " + (inputPortList.size() - 1) +
-                                 " remaining inputs for second pass");
-                for (int i = 1; i < inputPortList.size(); i++) {
-                    InputPort input = inputPortList.get(i);
-                    if (input.getLinkedLine() != null && input.getLinkedLine().getLinkedOutputPort() != null) {
-                        Block linkedBlock = input.getLinkedLine().getLinkedOutputPort().getBlock();
-                        if (!linkedBlock.getIsDimScaned()) {
-                            System.out.println("DimScan: Queuing block " + linkedBlock.getBlockName() +
-                                             " for second pass");
-                            scanDimList.add(linkedBlock);
-                        }
-                    }
-                }
-            }
-
-            System.out.println("DimScan: Adding non-dimThrough block " + block.getBlockName() + " to dimensionList");
+            // Now add the block AFTER all its inputs have been processed
             dimensionList.add(block);
         }
 
         // Remove from path (backtrack)
-        dimOutputPortPathList.remove(dimOutputPortPathList.size() - 1);
-        System.out.println("DimScan: Finished processing block " + block.getBlockName());
+        dimOutputPortPathList.remove(dimOutputPortPathList.size() - 1);        
     }
     
     /**
      * Display dimension blocks for debugging (similar to original showDimBlocks)
      */
-    private void showDimBlocks() {
-        int i = 1;
+    private void showDimBlocks() {        
         for (Block block : dimensionList) {
             System.out.printf("NCSLabSystem: Dimension block (%d): %s (type=%s)%n", 
-                i, block.getBlockName(), block.getBlockType());
-            i++;
+                block.getBlockId(), block.getBlockName(), block.getBlockType());            
         }
-    }
-    
-    /**
-     * Get the dimension processing list
-     * @return List of blocks in dimension processing order
-     */
-    public List<Block> getDimensionList() {
-        return new ArrayList<>(dimensionList);
     }
     
     /**
@@ -1190,7 +1248,7 @@ public class NCSLabSystem {
             targetSystem.addBlock(block);
             model.categorizeBlock(block);
 
-            System.out.println("NCSLabSystem: Created block from graphData: " + blockType + "/" + blockName +
+            log.info("NCSLabSystem: Created block from graphData: " + blockType + "/" + blockName +
                                " at path: " + blockPath + " in system: " +
                                (targetSystem == this ? "THIS" : "SUBSYSTEM"));
 
@@ -1222,7 +1280,7 @@ public class NCSLabSystem {
             }
 
         } catch (Exception e) {
-            System.err.println("NCSLabSystem: Error processing block cell: " + e.getMessage());
+            log.error("NCSLabSystem: Error processing block cell: " + e.getMessage());
             e.printStackTrace();
             throw new com.ncslab.ncslablink.ModelException("Failed to process block cell: " + e.getMessage());
         }
@@ -1251,7 +1309,8 @@ public class NCSLabSystem {
         // Set parameter values - use getParamValuesAsMap() to handle both Map and array types
         java.util.Map<String, Object> paramValues = props.getParamValuesAsMap();
         if (paramValues != null && !paramValues.isEmpty()) {
-            blockJSON.put("paramValues", new org.json.JSONObject(paramValues));
+            org.json.JSONObject jsonParams = new org.json.JSONObject(paramValues);
+            blockJSON.put("paramValues", jsonParams);
         } else {
             blockJSON.put("paramValues", new org.json.JSONObject());
         }
