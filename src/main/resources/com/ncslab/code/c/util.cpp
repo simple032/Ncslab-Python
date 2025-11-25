@@ -89,7 +89,10 @@ double gcd1(double a[]) {
 	for (i = 0; i < mp->blockNum; i++) {
 		if (a[i] == 0) {
 			break;
-		}
+		}else if(a[i] < 0){
+            d = STEP_SIZE;
+            continue;
+        }
 		d = gcd(d, a[i]);
 	}
 	return d;

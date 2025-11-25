@@ -117,6 +117,30 @@ public:
         return Base::operator()(row, col);
     }
 
+    // 与另一个矩阵相加
+    MatrixT& operator+=(const MatrixT& other) {
+        Base::operator+=(other); // 显式转为基类引用
+        return *this; // 返回基类引用（*this 作为 Base 类型）
+    }
+
+    // 与标量 double 相加
+    MatrixT& operator+=(const double other) {
+        // Eigen 矩阵与标量相加需用 this->operator+=，触发标量重载
+        this->operator+=(other); 
+        return *this;
+    }
+
+    // 减法类似处理
+    MatrixT& operator-=(const MatrixT& other) {
+        Base::operator-=(other);
+        return *this;
+    }
+
+    MatrixT& operator-=(const double other) {
+        this->operator-=(other);
+        return *this;
+    }
+
     /**
      * @brief Concatenate two matrices along specified dimension
      *

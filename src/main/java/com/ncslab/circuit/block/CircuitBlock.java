@@ -2,12 +2,15 @@ package com.ncslab.circuit.block;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
 import com.ncslab.circuit.block.io.*;
 import com.ncslab.circuit.CircuitModel;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.dto.communication.CircuitBlockDto;
+import com.ncslab.dto.common.TypedParameter;
 
 import com.ncslab.block.Block;
 import com.ncslab.block.io.OutputPort;
@@ -62,18 +65,65 @@ abstract public class CircuitBlock {
 	
 	private CircuitModel circuitModel=null;
 
+	/**
+	 * Legacy JSON Constructor - Creates circuit block from JSONObject.
+	 * Maintained for backward compatibility with existing JSON-based workflows.
+	 *
+	 * @param blockIn JSON object containing circuit block configuration
+	 * @param model Parent model reference
+	 * @deprecated Use DTO-native constructor for new development
+	 */
+	@Deprecated
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
 		this.blockName = blockIn.getString("blockName");
 		this.paramValues = blockIn.getJSONObject("paramValues");
 		this.model = model;
 		this.blockPath = blockIn.getString("blockPath");
-		
+
 		circuitPortList.add(new CircuitPort(this,"LConn1",CircuitPortType.Left,1));
 		circuitPortList.add(new CircuitPort(this,"RConn1",CircuitPortType.Right,2));
-		
+
 		setupBlockModeType();
 		//setupBlockList();
+	}
+
+	/**
+	 * DTO-Native Constructor - Creates circuit block directly from CircuitBlockDto.
+	 * Provides type-safe construction with comprehensive validation.
+	 *
+	 * @param dto CircuitBlockDto containing circuit block configuration
+	 * @param model Parent model reference
+	 */
+	protected CircuitBlock(CircuitBlockDto dto, NCSLabModel model) {
+		this.blockType = dto.getBlockType();
+		this.blockName = dto.getBlockName();
+		this.blockPath = dto.getBlockPath();
+		this.model = model;
+
+		// Create paramValues JSONObject from DTO parameters
+		this.paramValues = new JSONObject();
+		if (dto.getParameters() != null) {
+			for (Map.Entry<String, TypedParameter> entry : dto.getParameters().entrySet()) {
+				this.paramValues.put(entry.getKey(), entry.getValue().getAsString());
+			}
+		}
+
+		// Add circuit-specific parameters
+		Map<String, Object> circuitParams = dto.createCircuitParamValues();
+		for (Map.Entry<String, Object> entry : circuitParams.entrySet()) {
+			if (!this.paramValues.has(entry.getKey())) {
+				this.paramValues.put(entry.getKey(), entry.getValue());
+			}
+		}
+
+		circuitPortList.add(new CircuitPort(this,"LConn1",CircuitPortType.Left,1));
+		circuitPortList.add(new CircuitPort(this,"RConn1",CircuitPortType.Right,2));
+
+		setupBlockModeType();
+		//setupBlockList();
+
+		System.out.println("DTO-NATIVE: CircuitBlock created successfully - " + dto.getBlockName());
 	}
 	
 	public void setCircuitModel(CircuitModel circuitModel) {

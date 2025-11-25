@@ -6,11 +6,13 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.testrig.NewMotorDto;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.code.m.CodeStructM;
+import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
@@ -23,7 +25,8 @@ public class NewMotor extends Block {
 
     private String name = "NewMotor";
 
-    
+    private final double motorK = 0.01;
+    private final double motorT = 0.07;
     
     /**
      * DTO-NATIVE Constructor - Creates NewMotor block directly from BlockDto DTO
@@ -60,18 +63,15 @@ public class NewMotor extends Block {
     static {
         outputNames.add("Speed");
         inputNames.add("in1");
-        
-        // Parameter defaults
-        PARAMETER_DEFAULTS.put("motorK", "0.01");
-        PARAMETER_DEFAULTS.put("motorT", "0.09");
+
+        // Parameter defaults        
         PARAMETER_DEFAULTS.put("SampleTime", "-1");
         PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
     }
 
     State speedState;
 
-    private double motorK = 0.01;
-    private double motorT = 0.09;
+  
 
     public NewMotor(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
@@ -138,25 +138,13 @@ public class NewMotor extends Block {
         }
         context.put("hardwareDefineName", hardwareDefineName);
 
-        // Add input variable for template
-        if (inputPortList != null && !inputPortList.isEmpty() &&
-            inputPortList.get(0).getLinkedLine() != null &&
-            inputPortList.get(0).getLinkedLine().getLinkedOutputPort() != null) {
-            context.put("input", inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
-        }
-
-        // Add output variables for template
-        if (outputPortList.size() > 0) {
-            context.put("output1", outputPortList.get(0).getOutputSignalC().getName());
-        }
-
         String codeStr = TemplateManager.renderTemplate("c/testrig/NewMotor/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Add NewMotor-specific variables
         context.put("speedState", speedState);
         context.put("motorK", motorK);
@@ -164,5 +152,36 @@ public class NewMotor extends Block {
 
         String derivativeCode = TemplateManager.renderTemplate("c/testrig/NewMotor/derivative.vm", context);
         code.addDerivativeCode(derivativeCode);
+    }
+
+    /**
+     * Calculate motor speed derivative based on first-order motor dynamics
+     * Motor model: dSpeed/dt = (K*input - speed) / T
+     * This represents a first-order lag system with gain K and time constant T
+     */
+    @Override
+    public void calculateDerivative(double t) {        
+            // Get input value
+        double inputValue = inputPortList.get(0).getLinkedLine()
+                .getLinkedOutputPort().getOutputSignalC().getData().getInitValue();        
+
+        // Motor speed derivative: (K*input - speed) / T
+        double speedValue = speedState.getData().getInitValue();
+        double derivative = (motorK * inputValue - speedValue) / motorT;
+        Data derivativeData = new Data(derivative);
+        speedState.setDerivateData(derivativeData);        
+    }
+
+    /**
+     * Calculate motor output
+     * In simulation mode: output = 5000 * speedState
+     */
+    @Override
+    public void calculateOutput(double t) {                
+        // Output is speed state scaled by 5000 (matches C code: output = 5000 * speedState)
+        double speedValue = speedState.getData().getInitValue();
+        double output = 5000.0 * speedValue;
+
+        outputPortList.get(0).getOutputSignalC().setValue(output);        
     }
 }
