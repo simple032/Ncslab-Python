@@ -178,6 +178,18 @@ public class XYGraph extends SinkBlock {
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
+    /**
+     * Factory method to create XYGraph from BlockDto.
+     *
+     * @param dto The BlockDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New XYGraph instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static XYGraph createFromDto(BlockDto dto, NCSLabModel model) throws BlockCreationException {
+        return new XYGraph(dto, model);
+    }
+
     // === Static Factory Method for JSON Deserialization ===
     public static XYGraph fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {

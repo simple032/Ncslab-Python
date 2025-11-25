@@ -174,7 +174,7 @@ public class Scope extends SinkBlock {
         // Initialize scope arrays and ports
         this.inportNum = Integer.parseInt(numberOfInputs.getInitString());
         this.scopeStructs = new ScopeStruct[inportNum];
-        
+
         // Add input ports and create scope structures
         for(int i = 0; i < inportNum; i++) {
             inputPortList.add(new InputPort(this, i+1));
@@ -182,6 +182,18 @@ public class Scope extends SinkBlock {
         }
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create Scope from ScopeDto.
+     *
+     * @param dto The ScopeDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New Scope instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static Scope createFromDto(ScopeDto dto, NCSLabModel model) throws BlockCreationException {
+        return new Scope(dto, model);
     }
 
     // === Static Factory Method for JSON Deserialization ===

@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
 
 // Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -96,6 +97,18 @@ public class ToFile extends SinkBlock {
         this.scopeStruct = new ScopeStruct(this, 1, varName);
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create ToFile from BlockDto.
+     *
+     * @param dto The BlockDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New ToFile instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static ToFile createFromDto(BlockDto dto, NCSLabModel model) throws BlockCreationException {
+        return new ToFile(dto, model);
     }
 
     /**

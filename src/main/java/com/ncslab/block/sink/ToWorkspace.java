@@ -15,6 +15,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.sink.ToWorkspaceDto;
 
 // Internal imports - Core
+import com.ncslab.ncslablink.BlockCreationException;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -103,6 +104,18 @@ public class ToWorkspace extends SinkBlock {
         this.scopeStruct = new ScopeStruct(this, 1, variableName.getInitString());
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
+    }
+
+    /**
+     * Factory method to create ToWorkspace from ToWorkspaceDto.
+     *
+     * @param dto The ToWorkspaceDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New ToWorkspace instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static ToWorkspace createFromDto(ToWorkspaceDto dto, NCSLabModel model) throws BlockCreationException {
+        return new ToWorkspace(dto, model);
     }
 
     /**

@@ -92,21 +92,41 @@ public class Terminator extends SinkBlock{
     public void checkDimension() throws MatDimException {
     }
 
+    @Override
+    public void calculateOutput(double t) {
+        // Terminator blocks are pure sink blocks - they simply consume input signals
+        // to prevent "unconnected output" warnings in SIMULINK-compatible models.
+        // No actual processing or data storage is needed.
+
+        // For SIMULINK compatibility, we still read the input to mark it as "used"
+        // This prevents compiler warnings about unused signals
+        if (!inputPortList.isEmpty() && inputPortList.get(0).getData() != null) {
+            // Read input data (marking it as used)
+            // No storage or processing needed - this is a terminator
+            inputPortList.get(0).getData();
+        }
+    }
+
+    @Override
+    public void calculateInit() {
+        // No initialization needed for terminator blocks
+        // They don't maintain any state
+    }
+
     public void generateOutputCodeC(com.ncslab.code.c.CodeStructC code) {
         super.generateOutputCodeC(code);
-        
+
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Add Terminator-specific context variables
         context.put("block", this);
-        
-        // Since Terminator is a sink block with no outputs, provide empty outputSignal
-        context.put("outputSignal", "");
-        context.put("outputSignalName", "");
-        
-        // Terminator blocks don't generate any C code - they just terminate signals
-        // No template rendering needed since terminators don't produce output
+        context.put("blockId", getBlockId());
+        context.put("blockName", getBlockName());
+
+        // Render minimal template (just a comment for documentation)
+        String outputCode = com.ncslab.util.TemplateManager.renderTemplate("c/sink/Terminator/output.vm", context);
+        code.addSinkOutputCode(outputCode);
     }
 
 }
