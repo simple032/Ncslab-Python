@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("MathFunction")
+@JsonTypeName("Math Function")
 @MigrationCompatible(originalClass = "com.ncslab.block.math.MathFunction")
 public class MathFunctionDto extends BlockDto {
     

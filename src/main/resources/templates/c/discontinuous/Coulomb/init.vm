@@ -1,4 +1,3 @@
 /*Code for initialization of block Coulomb:($blockId)$blockName*/
-
-$offsetInitCodeC
-$gainInitCodeC
+$OffsetObject.getInitCodeC()
+$GainObject.getInitCodeC()

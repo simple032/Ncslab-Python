@@ -257,16 +257,15 @@ abstract public class CodeStructC{
 				+"#include\"math.h\"\n"
 				+"#include \"Matrix.hpp\"\n"
                 +"#include \"util.hpp\"\n"
-                +"#ifdef _ENABLE_PI\n"
-                +"#include \"ncs_serialport.h\"\n"
-                +"#include \"hardware.h\"\n"
-                +"#endif\n"
 				//TODO:这些有linux特定的api，需要根据平台类型来定制
 				// +"#include <iostream>\n"
 //				 +"#include <octave/oct.h>\n"
                 + "#include <cstdint>\n"
                 + "#include <cstring>\n"
                 + "#include <cstdlib>\n"
+				+ "#ifdef _ENABLE_PI\n"				
+				+ "#include \"hardware.h\"\n"
+				+ "#endif\n"
 				+ "#ifdef __linux\n"
                 + "#include <termios.h>\n"
                 +"#include <sys/socket.h>\n"
@@ -1200,6 +1199,15 @@ abstract public class CodeStructC{
 	//初始化数据结构，实现数据结构之间的指针连接
 	private void generateDataStrucureInit() {
 		dataStructureInitCode+="/*Initialize data structure*/\n";
+
+		// Initialize matrix output signals - resize to proper dimensions
+		dataStructureInitCode+="/*Resize matrix output signals*/\n";
+		for(OutputSignal outputSignal : outputSignalList) {
+			String initCode = outputSignal.getInitCodeC();
+			if (!initCode.isEmpty()) {
+				dataStructureInitCode += initCode;
+			}
+		}
 
 		if(model.getModelMode()==ModelMode.Simulation) {
 			dataStructureInitCode+="/*Initialize terminals*/\n";

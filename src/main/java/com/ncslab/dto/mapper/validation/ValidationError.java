@@ -1,9 +1,12 @@
 package com.ncslab.dto.mapper.validation;
 
+import lombok.Data;
+
 /**
  * Base validation error class used by validation frameworks.
  * Compatible with existing validation systems and provides field-level error information.
  */
+@Data
 public class ValidationError {
     private String field;
     private String message;
@@ -24,19 +27,11 @@ public class ValidationError {
         this.code = code;
         this.invalidValue = invalidValue;
     }
+
+    public boolean contains(String msg){        
+        return message.contains(msg);
+    }
     
-    // Getters and setters
-    public String getField() { return field; }
-    public void setField(String field) { this.field = field; }
-    
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
-    
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-    
-    public Object getInvalidValue() { return invalidValue; }
-    public void setInvalidValue(Object invalidValue) { this.invalidValue = invalidValue; }
     
     @Override
     public String toString() {

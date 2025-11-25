@@ -137,7 +137,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.RepeatingSequenceDto.class, name = "RepeatingSequence"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.RepeatingSequenceDto.class, name = "Repeating Sequence"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.TrigFunctionDto.class, name = "TrigonometricFunction"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.   math.TrigFunctionDto.class, name = "Trigonometric Function"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.TrigFunctionDto.class, name = "Trigonometric Function"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.MathFunctionDto.class, name = "MathFunction"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.MathFunctionDto.class, name = "Math Function"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.MathFunctionDto.class, name = "Math"),

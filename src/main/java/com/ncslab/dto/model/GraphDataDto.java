@@ -61,9 +61,10 @@ public class GraphDataDto {
         public PropDataDto getPropsAsObject() {
             if (props instanceof Map) {
                 // Convert Map to PropDataDto using Jackson
+                // IMPORTANT: Use centralized ObjectMapper to ensure consistent behavior
+                // Creating a new ObjectMapper causes unwanted conversions (e.g., "[0; 0]" → "0.0")
                 try {
-                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                    return mapper.convertValue(props, PropDataDto.class);
+                    return com.ncslab.util.JsonUtils.getObjectMapper().convertValue(props, PropDataDto.class);
                 } catch (Exception e) {
                     return null;
                 }

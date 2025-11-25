@@ -5,11 +5,14 @@ import com.ncslab.dto.communication.ServerResponseDto;
 import com.ncslab.dto.communication.MfcalcResponseDto;
 import com.ncslab.util.JsonUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class MfcalcClientManager {
 
     // 线程安全的用户客户端管理容器
@@ -40,12 +43,18 @@ public class MfcalcClientManager {
         }
 
         return clientMap.computeIfAbsent(userId, k -> {
+            MfcalcClient client = null;
             try {
-                return new MfcalcClient(null, userId);
+                client = new MfcalcClient(null, userId);
+                MfcalcResponseDto responseDto = client.runCommand(String.format("cd user_%s", userId));
+                if (!responseDto.isSuccess()) { 
+                    log.warn("MFCalc runCommand error: {}. You may need to update the mfaclc server version.", responseDto.getErrorInfo());                    
+                }
             } catch (IOException e) {
-                // System.err.println("Failed to create MfcalcClient for user: " + userId);
-                return null;
+                log.error("Failed to establish new client for user {}", userId);
+                client = null;
             }
+            return client;
         });
     }
 

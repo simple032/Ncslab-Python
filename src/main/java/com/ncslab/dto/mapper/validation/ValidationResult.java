@@ -33,6 +33,11 @@ public class ValidationResult {
         errors.add(new ValidationError("general", message));
         valid = false;
     }
+
+    public void addWarning(String message) {
+        warnings.add(new ValidationWarning("general", message));
+        valid = false;
+    }
     
     public void addWarning(String field, String message) {
         warnings.add(new ValidationWarning(field, message));
