@@ -191,22 +191,20 @@ public class ToWorkspace extends SinkBlock {
     public void checkDimension() throws MatDimException {
         if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
             OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            
+            scopeStruct.setDimension(signal.getWidth(), signal.getHeight());
 
-            if (scopeStruct != null) {
-                scopeStruct.setDimension(signal.getWidth(), signal.getHeight());
-
-                // Set max data points
-                String maxPoints = maxDataPoints != null ? maxDataPoints.getInitString() : "inf";
-                if (!maxPoints.equals("inf")) {
-                    try {
-                        scopeStruct.setMaxDataLength(Integer.parseInt(maxPoints));
-                    } catch (NumberFormatException e) {
-                        scopeStruct.setMaxDataLength(100000); // Default fallback
-                    }
+            // Set max data points
+            String maxPoints = maxDataPoints != null ? maxDataPoints.getInitString() : "inf";
+            if (!maxPoints.equals("inf")) {
+                try {
+                    scopeStruct.setMaxDataLength(Integer.parseInt(maxPoints));
+                } catch (NumberFormatException e) {
+                    scopeStruct.setMaxDataLength(100000); // Default fallback
                 }
-
-                model.addTerminal(scopeStruct);
             }
+
+            model.addTerminal(scopeStruct);            
         }
     }
 
