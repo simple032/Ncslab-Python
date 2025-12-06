@@ -1,0 +1,7 @@
+/* Code for initialization of block DigitalClock: (${blockId}) ${blockName} */
+${sampleTime.initCodeC}
+sample_time[sample_i] = ${sampleTimeName};
+sample_i = sample_i + 1;
+
+/* Initialize state to 0 */
+${stateOutputName} = 0.0;

@@ -152,6 +152,23 @@ public class Pulse extends SourceBlock {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + pulseDto.getBlockName());
     }
+
+    public Pulse(BlockDto pulseDto, NCSLabModel model) {
+        super(pulseDto, model);
+
+        // Initialize final parameters from PulseDto
+        this.amplitude = getParameterByName("Amplitude");
+        this.period = getParameterByName("Period");
+        this.pulseWidth = getParameterByName("PulseWidth");
+        this.phaseDelay = getParameterByName("PhaseDelay");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        initializePorts();
+
+        System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + pulseDto.getBlockName());
+    }
     
     
     // === Static Factory Method for JSON Deserialization ===
@@ -359,12 +376,8 @@ public class Pulse extends SourceBlock {
 	}
 	public void generateInitCodeC(CodeStructC code) {
 		super.generateInitCodeC(code);
-		context.put("block", this);
-		context.put("amplitude", amplitude);
-		context.put("period", period);
-		context.put("pulseWidth", pulseWidth);
-		context.put("phaseDelay", phaseDelay);
-		
+		com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
 		String codeStr = TemplateManager.renderTemplate("c/source/Pulse/init.vm", context);
 		code.addInitCode(codeStr);
 	}
@@ -379,12 +392,6 @@ public class Pulse extends SourceBlock {
 		context.put("period", period);
 		context.put("pulseWidth", pulseWidth);
 		context.put("phaseDelay", phaseDelay);
-		
-		// Add parameter names for template ${...Name} variables - use local names to avoid double prefixing
-		context.put("amplitudeName", context.get(amplitude.getLocalName())); // Use parameter local name mapped by TemplateUtils
-		context.put("periodName", context.get(period.getLocalName())); // Use parameter local name mapped by TemplateUtils
-		context.put("pulseWidthName", context.get(pulseWidth.getLocalName())); // Use parameter local name mapped by TemplateUtils
-		context.put("phaseDelayName", context.get(phaseDelay.getLocalName())); // Use parameter local name mapped by TemplateUtils
 		
 		// Add dimension variables needed by template
 		context.put("amplitudeHeight", amplitude.getHeight());

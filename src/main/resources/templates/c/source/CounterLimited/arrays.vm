@@ -1,0 +1,2 @@
+/* Define state variable for block CounterLimited:(${blockId}) ${blockName} */
+double Block${blockId}_counter_value;

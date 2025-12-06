@@ -1,0 +1,2 @@
+/* Code for output of block CounterLimited:(${blockId}) ${blockName} */
+${output1} = Block${blockId}_counter_value;

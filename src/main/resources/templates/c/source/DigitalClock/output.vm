@@ -1,0 +1,13 @@
+/* Code for output of block DigitalClock: (${blockId}) ${blockName} */
+{
+    real_T Block${blockId}_sampleTimeTmp = ${sampleTimeName};
+
+    /* Check if current time is at a sample time hit */
+    if (fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
+        /* Sample time hit: update state with current time */
+        ${stateOutputName} = model.time;
+    }
+
+    /* Output the held time value (either just sampled or previous value) */
+    ${outputSignalName} = ${stateOutputName};
+}

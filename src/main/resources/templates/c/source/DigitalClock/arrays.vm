@@ -1,0 +1,3 @@
+/* Array declarations for Digital Clock block: (${blockId}) ${blockName} */
+/* State variable to hold the sampled time value */
+real_T ${stateOutputName};
