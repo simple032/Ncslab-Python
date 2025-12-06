@@ -1,0 +1,24 @@
+/* Code for output of block SecondOrderIntegrator: (${blockId}) ${blockName} */
+## Output is the position state (x)
+#if($statePosition)
+    #if($LimitX && $LimitX == "on")
+        ## Apply position saturation if enabled
+        #if($UpperLimitX && $LowerLimitX)
+            if (${statePosition} > ${UpperLimitX}) {
+                ${outputSignal} = ${UpperLimitX};
+            } else if (${statePosition} < ${LowerLimitX}) {
+                ${outputSignal} = ${LowerLimitX};
+            } else {
+                ${outputSignal} = ${statePosition};
+            }
+        #else
+            ${outputSignal} = ${statePosition};
+        #end
+    #else
+        ## No saturation, direct output
+        ${outputSignal} = ${statePosition};
+    #end
+#else
+    ## Fallback if state not properly initialized
+    ${outputSignal} = 0.0; /* SecondOrderIntegrator position state not found, using default */
+#end

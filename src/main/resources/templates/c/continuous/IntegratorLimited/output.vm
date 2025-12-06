@@ -1,0 +1,35 @@
+/* Code for output of block IntegratorLimited: (${blockId}) ${blockName} */
+#if($state)
+  #if($LimitOutput == "on")
+    ## Apply saturation to output
+    #if($signalDataType == $realDataType)
+      ## Scalar output with saturation
+      ${outputSignal} = ${state};
+      if(${outputSignal} > ${UpperLimit}){
+        ${outputSignal} = ${UpperLimit};
+      }
+      if(${outputSignal} < ${LowerLimit}){
+        ${outputSignal} = ${LowerLimit};
+      }
+    #else
+      ## Matrix output with saturation
+      ${outputSignal} = ${state};
+      for(int i=0; i<${signalHeight}; i++){
+        for(int j=0; j<${signalWidth}; j++){
+          if(${outputSignal}(i, j) > ${UpperLimit}){
+            ${outputSignal}(i, j) = ${UpperLimit};
+          }
+          if(${outputSignal}(i, j) < ${LowerLimit}){
+            ${outputSignal}(i, j) = ${LowerLimit};
+          }
+        }
+      }
+    #end
+  #else
+    ## No saturation
+    ${outputSignal} = ${state};
+  #end
+#else
+  ## Fallback if state not properly initialized
+  ${outputSignal} = 0.0; /* IntegratorLimited state not found, using default */
+#end

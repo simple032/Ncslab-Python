@@ -1,0 +1,14 @@
+/* Code for initialization of block SecondOrderIntegrator: (${blockId}) ${blockName} */
+## Initialize position state (x) with InitialConditionX
+#if($InitialConditionX)
+${statePosition} = ${InitialConditionX};
+#else
+${statePosition} = 0.0;
+#end
+
+## Initialize velocity state (v = dx/dt) with InitialConditionDxDt
+#if($InitialConditionDxDt)
+${stateVelocity} = ${InitialConditionDxDt};
+#else
+${stateVelocity} = 0.0;
+#end

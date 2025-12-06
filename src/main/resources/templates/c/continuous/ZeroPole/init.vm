@@ -1,0 +1,3 @@
+#foreach($state in $states)
+${state.getName()} = 0.0;
+#end

@@ -1,0 +1,84 @@
+/* Code for derivative of block IntegratorLimited: (${blockId}) ${blockName} */
+#if($LimitOutput == "on")
+  ## Limited integrator - stop integrating at saturation limits
+  #if($signalDataType == $realDataType)
+    #if($initialConditionDataType == $realDataType)
+      ## Scalar integrator with limits
+      if((${state} >= ${UpperLimit} && ${inputSignal} > 0) || (${state} <= ${LowerLimit} && ${inputSignal} < 0)){
+        ${stateDerivative} = 0.0;  /* Stop integrating at limit */
+      } else {
+        ${stateDerivative} = ${inputSignal};
+      }
+    #else
+      ## Scalar input, matrix initial condition
+      #set($height = $initialConditionHeight)
+      #set($width = $initialConditionWidth)
+      #if($height && $width)
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+          #foreach($j in [0..$wMax])
+            if((${state}[${i}][${j}] >= ${UpperLimit} && ${inputSignal}[${i}][${j}] > 0) ||
+               (${state}[${i}][${j}] <= ${LowerLimit} && ${inputSignal}[${i}][${j}] < 0)){
+              ${stateDerivative}[${i}][${j}] = 0.0;  /* Stop integrating at limit */
+            } else {
+              ${stateDerivative}[${i}][${j}] = ${inputSignal}[${i}][${j}];
+            }
+          #end
+        #end
+      #end
+    #end
+  #else
+    ## Matrix integrator with limits
+    #set($height = $signalHeight)
+    #set($width = $signalWidth)
+    #if($height && $width)
+      #set($hMax = $height - 1)
+      #set($wMax = $width - 1)
+      #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+          if((${state}[${i}][${j}] >= ${UpperLimit} && ${inputSignal}[${i}][${j}] > 0) ||
+             (${state}[${i}][${j}] <= ${LowerLimit} && ${inputSignal}[${i}][${j}] < 0)){
+            ${stateDerivative}[${i}][${j}] = 0.0;  /* Stop integrating at limit */
+          } else {
+            ${stateDerivative}[${i}][${j}] = ${inputSignal}[${i}][${j}];
+          }
+        #end
+      #end
+    #end
+  #end
+#else
+  ## Normal integrator without limits (same as regular Integrator)
+  #if($signalDataType == $realDataType)
+    #if($initialConditionDataType == $realDataType)
+      ## Scalar integrator
+      ${stateDerivative} = ${inputSignal};
+    #else
+      ## Scalar input, matrix initial condition
+      #set($height = $initialConditionHeight)
+      #set($width = $initialConditionWidth)
+      #if($height && $width)
+        #set($hMax = $height - 1)
+        #set($wMax = $width - 1)
+        #foreach($i in [0..$hMax])
+          #foreach($j in [0..$wMax])
+            ${stateDerivative}[${i}][${j}] = ${inputSignal}[${i}][${j}];
+          #end
+        #end
+      #end
+    #end
+  #else
+    ## Matrix integrator
+    #set($height = $signalHeight)
+    #set($width = $signalWidth)
+    #if($height && $width)
+      #set($hMax = $height - 1)
+      #set($wMax = $width - 1)
+      #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+          ${stateDerivative}[${i}][${j}] = ${inputSignal}[${i}][${j}];
+        #end
+      #end
+    #end
+  #end
+#end

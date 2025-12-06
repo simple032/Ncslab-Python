@@ -1,0 +1,20 @@
+/* Derivative calculation for ZeroPole block: (${blockId}) ${blockName} */
+#if($states && $states.size() > 0)
+## For all states except the last: derivative[i] = state[i+1]
+#if($states.size() > 1)
+#set($statesSizeMax = $states.size() - 2)
+#foreach($i in [0..$statesSizeMax])
+#set($nextI = $i + 1)
+${states.get($i).getDerivativeName()} = ${states.get($nextI).getName()};
+#end
+#end
+
+## For the last state: derivative[last] = input - sum(state[i] * den[reverse_i])
+#set($lastStateIndex = $states.size() - 1)
+${states.get($lastStateIndex).getDerivativeName()} = ${inputSignal}#if($den && $den.size() > 0)
+#set($denIndex = $den.size() - 1)
+#foreach($state in $states)
+    - ${state.getName()} * ${den.get($denIndex)}#set($denIndex = $denIndex - 1)
+#end
+#end;
+#end

@@ -1,0 +1,50 @@
+/* Code for initialization of block IntegratorLimited: (${blockId}) ${blockName} */
+## Initialize parameters first
+#if($InitialConditionObject)
+${InitialConditionObject.getInitCodeC()}
+#end
+## Initialize state using parameter
+#if($outputSignalObject.dataType == $realDataType)
+  #if($InitialConditionObject.dataType == $realDataType)
+    ${state} = ${InitialCondition};
+  #else
+    for(int i=0; i<${InitialConditionObject.height}; i++){
+      for(int j=0; j<${InitialConditionObject.width}; j++){
+        ${state}(i, j) = ${InitialCondition}(i, j);
+      }
+    }
+  #end
+#else
+  #if($InitialConditionObject.dataType == $realDataType)
+    for(int i=0; i<${outputSignalObject.height}; i++){
+      for(int j=0; j<${outputSignalObject.width}; j++){
+        ${state}(i, j) = ${InitialCondition};
+      }
+    }
+  #else
+    ${state} = ${InitialCondition};
+  #end
+#end
+
+## Apply saturation to initial condition if enabled
+#if($LimitOutput == "on")
+  #if($outputSignalObject.dataType == $realDataType)
+    if(${state} > ${UpperLimit}){
+      ${state} = ${UpperLimit};
+    }
+    if(${state} < ${LowerLimit}){
+      ${state} = ${LowerLimit};
+    }
+  #else
+    for(int i=0; i<${outputSignalObject.height}; i++){
+      for(int j=0; j<${outputSignalObject.width}; j++){
+        if(${state}(i, j) > ${UpperLimit}){
+          ${state}(i, j) = ${UpperLimit};
+        }
+        if(${state}(i, j) < ${LowerLimit}){
+          ${state}(i, j) = ${LowerLimit};
+        }
+      }
+    }
+  #end
+#end
