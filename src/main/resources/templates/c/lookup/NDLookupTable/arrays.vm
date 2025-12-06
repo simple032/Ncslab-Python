@@ -1,0 +1,2 @@
+/*Define arrays for block n-D Lookup Table:($blockId)$blockName*/
+InterpolationTable ${tableName};

@@ -8,6 +8,6 @@
     char msg[255];
     hComm = Serialport_Open("/dev/ttyUSB0", 115200, msg);
     printf("Open 1st port:%s\n", msg);
-    hComm1 = Serialport_Open("/dev/ttyUSB1", 115200, msg);
+    hComm1 = Serialport_Open("/dev/ttyUSB1", 9600, msg);
     printf("Open 2nd port:%s\n", msg);
 #end

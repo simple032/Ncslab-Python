@@ -1,0 +1,8 @@
+/*Code for output of block n-D Lookup Table:($blockId)$blockName*/
+#if($numDimensions == 1)
+${outputSignal} = linear_interpolation(&${tableName}, ${inputSignal1});
+#elseif($numDimensions == 2)
+${outputSignal} = bilinear_interpolation(&${tableName}, ${inputSignal1}, ${inputSignal2});
+#else
+${outputSignal} = 0.0; /* Higher dimensions not yet implemented */
+#end
