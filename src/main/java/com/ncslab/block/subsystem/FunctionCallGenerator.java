@@ -254,6 +254,29 @@ public class FunctionCallGenerator extends Block {
         return new FunctionCallGenerator(dto, model);
     }
 
+    /**
+     * Factory method to create FunctionCallGenerator block from FunctionCallGeneratorDto.
+     *
+     * @param dto   FunctionCallGeneratorDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created FunctionCallGenerator block
+     */
+    public static FunctionCallGenerator createFromDto(FunctionCallGeneratorDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("FunctionCallGeneratorDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid FunctionCallGeneratorDto: " + dto.getValidationErrors());
+        }
+
+        return new FunctionCallGenerator(dto, model);
+    }
+
     // === Port Initialization ===
     /**
      * Initializes output port for function-call signal.

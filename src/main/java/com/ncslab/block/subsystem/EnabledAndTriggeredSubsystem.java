@@ -249,6 +249,29 @@ public class EnabledAndTriggeredSubsystem extends Subsystem {
         return new EnabledAndTriggeredSubsystem(dto, model);
     }
 
+    /**
+     * Factory method to create EnabledAndTriggeredSubsystem from EnabledAndTriggeredSubsystemDto.
+     *
+     * @param dto   EnabledAndTriggeredSubsystemDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created EnabledAndTriggeredSubsystem block
+     */
+    public static EnabledAndTriggeredSubsystem createFromDto(EnabledAndTriggeredSubsystemDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("EnabledAndTriggeredSubsystemDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid EnabledAndTriggeredSubsystemDto: " + dto.getValidationErrors());
+        }
+
+        return new EnabledAndTriggeredSubsystem(dto, model);
+    }
+
     // === Internal Block Creation ===
     /**
      * Creates and configures the internal Enable block.

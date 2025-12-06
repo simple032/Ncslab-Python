@@ -186,6 +186,29 @@ public class In extends Block {
         return new In(dto, model);
     }
 
+    /**
+     * Factory method to create In block from InDto.
+     *
+     * @param dto   InDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created In block
+     */
+    public static In createFromDto(InDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("InDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid InDto: " + dto.getValidationErrors());
+        }
+
+        return new In(dto, model);
+    }
+
     // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);

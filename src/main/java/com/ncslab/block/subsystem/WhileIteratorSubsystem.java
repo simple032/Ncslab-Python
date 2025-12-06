@@ -391,6 +391,29 @@ public class WhileIteratorSubsystem extends Subsystem {
         return new WhileIteratorSubsystem(dto, model);
     }
 
+    /**
+     * Factory method to create WhileIteratorSubsystem from WhileIteratorSubsystemDto.
+     *
+     * @param dto   WhileIteratorSubsystemDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created WhileIteratorSubsystem block
+     */
+    public static WhileIteratorSubsystem createFromDto(WhileIteratorSubsystemDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("WhileIteratorSubsystemDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid WhileIteratorSubsystemDto: " + dto.getValidationErrors());
+        }
+
+        return new WhileIteratorSubsystem(dto, model);
+    }
+
     // === Override toString for debugging ===
     @Override
     public String toString() {

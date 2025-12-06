@@ -63,13 +63,31 @@ public class Subsystem extends Block{
     public Subsystem(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         inBlockList = new ArrayList<>();
-        outBlockList = new ArrayList<>();        
-        
+        outBlockList = new ArrayList<>();
+
         // Initialize NCSLabSystem to manage subsystem's internal structure
         // TODO: Design the subsystem-scope context based on available paramValues
         innerSystem = new NCSLabSystem();
-        
+
         // Initialize with empty collections - blocks and lines will be added via management methods
+    }
+
+    /**
+     * Factory method to create Subsystem from SubsystemDto.
+     *
+     * @param dto   SubsystemDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created Subsystem block
+     */
+    public static Subsystem createFromDto(SubsystemDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("SubsystemDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        return new Subsystem(dto, model);
     }
 
     @Override

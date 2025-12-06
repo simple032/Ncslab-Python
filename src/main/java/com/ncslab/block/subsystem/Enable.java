@@ -272,6 +272,29 @@ public class Enable extends Block {
         return new Enable(dto, model);
     }
 
+    /**
+     * Factory method to create Enable block from EnableDto.
+     *
+     * @param dto   EnableDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created Enable block
+     */
+    public static Enable createFromDto(EnableDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("EnableDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid EnableDto: " + dto.getValidationErrors());
+        }
+
+        return new Enable(dto, model);
+    }
+
     // === Port Initialization ===
     /**
      * Initializes input and output ports based on block configuration.

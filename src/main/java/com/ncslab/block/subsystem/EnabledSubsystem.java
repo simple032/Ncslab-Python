@@ -289,6 +289,29 @@ public class EnabledSubsystem extends Subsystem {
         return new EnabledSubsystem(dto, model);
     }
 
+    /**
+     * Factory method to create EnabledSubsystem from EnabledSubsystemDto.
+     *
+     * @param dto   EnabledSubsystemDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created EnabledSubsystem block
+     */
+    public static EnabledSubsystem createFromDto(EnabledSubsystemDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("EnabledSubsystemDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid EnabledSubsystemDto: " + dto.getValidationErrors());
+        }
+
+        return new EnabledSubsystem(dto, model);
+    }
+
     // === Port Initialization ===
     /**
      * Initializes the enable input port on the subsystem boundary (top edge).
