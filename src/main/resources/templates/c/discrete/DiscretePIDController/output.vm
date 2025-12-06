@@ -1,0 +1,46 @@
+/* Code for output of block DiscretePIDController: (${blockId}) ${blockName} */
+#if($signal && $P && $I && $D && $N && $integralState && $filterState && $out && $SampleTime)
+    #set($outputVar = $outputSignal)
+    #set($inputVar = $signalName)
+    #set($pGainVar = $PName)
+    #set($integralVar = $integralStateName)
+    #set($filterVar = $filterStateName)
+    #set($sampleTimeVar = $sampleTimeName)
+
+{
+    ## Determine sample time (block-scoped to avoid conflicts)
+    real_T Block${blockId}_sampleTimeTmp = ${sampleTimeVar} == -1 ? model.stepSize : ${sampleTimeVar};
+
+    ## Check if it's a sample time hit
+    if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001 && mp->majorStep > 0) {
+        #if($signal.dataType == $realDataType)
+            ## Scalar discrete PID calculation
+            #if($P.dataType == $realDataType)
+                ## Discrete PID output: u(k) = P*e(k) + I_sum(k) + Df(k)
+                $outputVar = $pGainVar * $inputVar + $integralVar + $filterVar;
+            #end
+        #else
+            ## Matrix discrete PID calculation
+            #set($hMax = $PHeight - 1)
+            #set($wMax = $PWidth - 1)
+            for(int i = 0; i <= $hMax; i++) {
+                for(int j = 0; j <= $wMax; j++) {
+                    #set($outputIdx = "${outputVar}(i, j)")
+                    #set($integralIdx = "${integralVar}(i, j)")
+                    #set($filterIdx = "${filterVar}(i, j)")
+                    #set($pGainIdx = "${pGainVar}(i, j)")
+                    #set($inputIdx = "${inputVar}(i, j)")
+
+                    ## Discrete PID output: u(k) = P*e(k) + I_sum(k) + Df(k)
+                    $outputIdx = $pGainIdx * $inputIdx + $integralIdx + $filterIdx;
+                }
+            }
+        #end
+    }
+}
+#else
+    ## Fallback if parameters missing
+    #if($out)
+        ${outputSignal} = 0.0; /* DiscretePIDController block missing parameters */
+    #end
+#end

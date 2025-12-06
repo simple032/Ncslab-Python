@@ -1,2 +1,5 @@
-/* Define arrays for block discrete_unit_Delay:(${blockId}) ${blockName} */
-double Block${blockId}_unit_delay_savedata[${signalHeight}][${signalWidth}*2];
+/* Define state variables for block UnitDelay:(${blockId}) ${blockName} */
+/* Using C++ std::array for type-safe, efficient double-buffering */
+/* Buffer[0] = previous value (output), Buffer[1] = current value (will become previous) */
+std::array<Matrix, 2> Block${blockId}_unit_delay_buffer;
+int Block${blockId}_unit_delay_buffer_index = 0;  // Tracks which buffer slot is "previous"

@@ -282,7 +282,7 @@ public class Discrete_Transfer_Fcn extends DiscreteBlock {
     }
 
     private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
-        String sampleTimeValue = paramValues.optString("SampleTime", "1.0");
+        String sampleTimeValue = paramValues.optString("SampleTime", "-1");  // Default to inherited
         return new Parameter(null, 4, "SampleTime", sampleTimeValue);
     }
 

@@ -1,0 +1,23 @@
+/* Code for initialization of block Difference:(${blockId}) ${blockName} */
+${sampleTime.getInitCodeC()}
+${initialCondition.getInitCodeC()}
+sample_time[sample_i] = ${SampleTimeName};
+sample_i = sample_i + 1;
+
+// Initialize previous value with initial condition
+{
+#if($signalHeight == 1 && $signalWidth == 1)
+    // Scalar signal: Initialize previous value directly
+    Block${blockId}_difference_previous = ${InitialConditionName};
+#else
+    // Vector/Matrix signal
+    #if($InitialConditionObject.getData().getDataType().toString() == "MATRIX")
+    // IC is already a Matrix - use it directly
+    Block${blockId}_difference_previous = ${InitialConditionName};
+    #else
+    // IC is scalar - expand to match signal dimensions
+    Block${blockId}_difference_previous = Matrix(${signalHeight}, ${signalWidth});
+    Block${blockId}_difference_previous.setConstant(${InitialConditionName});
+    #end
+#end
+}

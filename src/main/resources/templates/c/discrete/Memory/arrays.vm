@@ -1,2 +1,5 @@
-/* Code for arrays of block Memory: (${blockId}) ${blockName} */
-real_T Block${blockId}_memory_savedata[1][2];
+/* Define state variables for block Memory:(${blockId}) ${blockName} */
+/* Using C++ std::array for type-safe, efficient double-buffering */
+/* Buffer[0] = previous value (output), Buffer[1] = current value (will become previous) */
+std::array<Matrix, 2> Block${blockId}_memory_buffer;
+int Block${blockId}_memory_buffer_index = 0;  // Tracks which buffer slot is "previous"

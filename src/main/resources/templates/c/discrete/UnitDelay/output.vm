@@ -1,68 +1,42 @@
-/* Code for output of block UnitDelay: (${blockId}) ${blockName} */
+/* Code for output of block UnitDelay:(${blockId}) ${blockName} */
+/* Buffer-based implementation matching Java calculateOutput() logic */
+/* Handles inherited sample time (-1) correctly */
 #if($sampleTime && $signal && $initialCondition)
 {
-    real_T Block${blockId}_sampleTimeTmp = (${SampleTimeName} != -1) ? ${SampleTimeName} : model.stepSize;
+    // Handle inherited sample time (-1): use model step size as fallback
+    // This matches DiscreteBlock.updateDimension() behavior in Java
+    double effectiveSampleTime = (${SampleTimeName} > 0) ? ${SampleTimeName} : mp->stepSize;
 
-    #if($signalDataType == $realDataType)
-        ## Scalar Unit Delay
-        if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
-            Block${blockId}_unit_delay_savedata[0][(int)(model.time/Block${blockId}_sampleTimeTmp)%2] = ${signalName};
-        }
+    // Check if we're at a sample time using the effective (resolved) sample time
+    bool isSampleTime = (effectiveSampleTime > 0) &&
+        (fabs(floor(model.time / effectiveSampleTime + 0.5) - model.time / effectiveSampleTime) < 1e-6);
 
-        if(model.time < Block${blockId}_sampleTimeTmp) {
-            if(fabs((int)(model.time/${SampleTimeName}+0.5) - model.time/${SampleTimeName}) < 0.000001 && mp->majorStep > 0) {
-                Block${blockId}_unit_delay_savedata[0][0] = Block${blockId}_unit_delay_savedata[0][1];
-                Block${blockId}_unit_delay_savedata[0][1] = ${signalName};
-            }
+    // Update buffer at sample times (swap previous/current)
+    if (isSampleTime && mp->majorStep > 0) {
+        // Swap buffer index: 0->1, 1->0
+        Block${blockId}_unit_delay_buffer_index = 1 - Block${blockId}_unit_delay_buffer_index;
 
-            if((model.time + 0.00001) < ${SampleTimeName}) {
-                ${output1} = ${InitialConditionName};
-            } else {
-                if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
-                    ${output1} = Block${blockId}_unit_delay_savedata[0][(int)(model.time/Block${blockId}_sampleTimeTmp+1)%2];
-                }
-            }
-        }
-    #else
-        ## Matrix Unit Delay
-        #set($height = $signalHeight)
-        #set($width = $signalWidth)
-        #if($height == 1 && $width == 1)
-            ## Scalar signal being treated as matrix - use direct access
-            if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
-                Block${blockId}_unit_delay_savedata[0][(int)(model.time/Block${blockId}_sampleTimeTmp)%2] = ${signalName};
-            }
+        // Store current input into the "new current" slot
+        int currentSlot = 1 - Block${blockId}_unit_delay_buffer_index;  // The non-previous slot
+#if($signalHeight == 1 && $signalWidth == 1)
+        // Scalar signal
+        Block${blockId}_unit_delay_buffer[currentSlot](0, 0) = ${signalName};
+#else
+        // Vector/Matrix signal
+        Block${blockId}_unit_delay_buffer[currentSlot] = ${signalName};
+#end
+    }
 
-            if(model.time < Block${blockId}_sampleTimeTmp) {
-                ${output1} = ${InitialConditionName};
-            } else {
-                if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
-                    ${output1} = Block${blockId}_unit_delay_savedata[0][!((int)(model.time/Block${blockId}_sampleTimeTmp)%2)];
-                }
-            }
-        #else
-            ## True matrix signals
-            #set($hMax = $height - 1)
-            #set($wMax = $width - 1)
-            #foreach($i in [0..$hMax])
-                #foreach($j in [0..$wMax])
-            if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
-                Block${blockId}_unit_delay_savedata[${i}][(int)(model.time/Block${blockId}_sampleTimeTmp)%2+2*${j}] = ${signalName}(${i}, ${j});
-            }
-
-            if(model.time < Block${blockId}_sampleTimeTmp) {
-                ${output1}(${i}, ${j}) = ${InitialConditionName}(${i}, ${j});
-            } else {
-                if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001) {
-                    ${output1}(${i}, ${j}) = Block${blockId}_unit_delay_savedata[${i}][!((int)(model.time/Block${blockId}_sampleTimeTmp)%2)+2*${j}];
-                }
-            }
-                #end
-            #end
-        #end
-    #end
+    // Output the previous value (unit delay behavior) - ALWAYS output
+    // Java equivalent: out.setData(previousValue);
+    int prevSlot = Block${blockId}_unit_delay_buffer_index;
+#if($signalHeight == 1 && $signalWidth == 1)
+    ${output1} = Block${blockId}_unit_delay_buffer[prevSlot](0, 0);
+#else
+    ${output1} = Block${blockId}_unit_delay_buffer[prevSlot];
+#end
 }
 #else
-    ## Fallback if parameters missing
+    // Fallback if parameters missing
     ${output1} = 0.0; /* UnitDelay parameters missing, using default */
 #end

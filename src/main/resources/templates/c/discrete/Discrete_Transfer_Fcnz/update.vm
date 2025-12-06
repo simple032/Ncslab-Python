@@ -1,12 +1,8 @@
 /* Code for Update of Discrete_Transfer_Fcnz:(${blockId}) ${blockName} */
-#if($signal1DataType == $realDataType)
-Block${blockId}_state[0][0] = Block${blockId}_discrete_transferz_savedata[0][0];
-#else
-#set($s1HeightMax = $signal1Height - 1)
-#set($s1WidthMax = $signal1Width - 1)
-#foreach($m in [0..$s1HeightMax])
-  #foreach($n in [0..$s1WidthMax])
-    Block${blockId}_state[${m}][${n}*${stateDim}] = Block${blockId}_discrete_transferz_savedata[${m}][${n}];
-  #end
-#end
-#end
+/* Note: State buffer updates are now handled in output.vm using deque operations */
+/* This file is kept for compatibility but state shifting is done inline with output calculation */
+
+## State buffer management is now integrated into output.vm:
+## - Block${blockId}_state_buffer.pop_back()   // Remove oldest state
+## - Block${blockId}_state_buffer.push_front() // Add new state at front
+## This provides more efficient and cleaner state management.

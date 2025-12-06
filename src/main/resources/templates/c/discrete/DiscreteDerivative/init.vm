@@ -1,17 +1,17 @@
-/* Code for initialization of block Memory:(${blockId}) ${blockName} */
+/* Code for initialization of block DiscreteDerivative:(${blockId}) ${blockName} */
 ${sampleTime.getInitCodeC()}
+${gain.getInitCodeC()}
 ${initialCondition.getInitCodeC()}
 sample_time[sample_i] = ${SampleTimeName};
 sample_i = sample_i + 1;
 
-// Initialize memory buffer with initial condition
+// Initialize previous input with initial condition
 {
 #if($signalHeight == 1 && $signalWidth == 1)
-    // Scalar signal: Create 1x1 matrices
+    // Scalar signal: Create 1x1 matrix
     Matrix icMatrix(1, 1);
     icMatrix(0, 0) = ${InitialConditionName};
-    Block${blockId}_memory_buffer[0] = icMatrix;
-    Block${blockId}_memory_buffer[1] = icMatrix;
+    Block${blockId}_discrete_derivative_prev = icMatrix;
 #else
     // Vector/Matrix signal
     Matrix icMatrix(${signalHeight}, ${signalWidth});
@@ -22,8 +22,6 @@ sample_i = sample_i + 1;
     // IC is scalar - expand to match signal dimensions
     icMatrix.setConstant(${InitialConditionName});
     #end
-    Block${blockId}_memory_buffer[0] = icMatrix;
-    Block${blockId}_memory_buffer[1] = icMatrix;
+    Block${blockId}_discrete_derivative_prev = icMatrix;
 #end
-    Block${blockId}_memory_buffer_index = 0;
 }

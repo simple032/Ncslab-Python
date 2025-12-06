@@ -5,7 +5,7 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import org.json.JSONObject;
 import com.ncslab.dto.core.BlockDto;
-import com.ncslab.dto.block.specialized.discrete.UnitDelayDto;
+import com.ncslab.dto.block.specialized.discrete.DifferenceDto;
 
 import com.ncslab.block.discrete.DiscreteBlock;
 import com.ncslab.block.io.InputPort;
@@ -27,41 +27,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * UnitDelay block with SIMULINK-compatible parameters and type-safe constructors.
+ * Difference block with SIMULINK-compatible parameters and type-safe constructors.
  *
  * SIMULINK Parameters:
- * - InitialCondition: Initial condition for the delay
+ * - InitialCondition: Initial condition for u[n-1]
  * - SampleTime: Sample time for discrete operation
- * - OutDataTypeStr: Output data type specification
- * - SaturateOnIntegerOverflow: Handle integer overflow
+ *
+ * Block Behavior:
+ * y[n] = u[n] - u[n-1]
+ *
+ * The Difference block computes the difference between the current input and
+ * the previous input. This is simpler than DiscreteDerivative (no division by Ts, no gain).
+ * Supports scalar and matrix inputs.
  */
-public class UnitDelay extends DiscreteBlock {
+public class Difference extends DiscreteBlock {
 
     // === Internal State ===
     private Data currentValue;
     private Data previousValue;
-    private final boolean feedthrough = false; // Unit delay has no feedthrough
+    private final boolean feedthrough = false; // Difference has no feedthrough
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter initialCondition;
     private final Parameter sampleTimeParam;
-    private final Parameter outDataType;
-    private final Parameter saturateOnIntegerOverflow;
 
     // === Port References ===
     private OutputPort output;
     private InputPort input;
 
     // === Static Parameter Definitions ===
-    
+
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put("InitialCondition", "0");
         PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
-        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
-        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
     }
 
     public static final List<String> outputNames = new ArrayList<>();
@@ -73,12 +74,10 @@ public class UnitDelay extends DiscreteBlock {
     public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
 
     static {
-        // SIMULINK parameter names
-
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
-        
+
         // Input port defaults
         INPUT_PORT_DEFAULTS = new ArrayList<>();
         Map<String, Object> input1 = new HashMap<>();
@@ -87,21 +86,21 @@ public class UnitDelay extends DiscreteBlock {
         input1.put("height", 1);
         input1.put("dataType", "REAL");
         INPUT_PORT_DEFAULTS.add(input1);
-        
-        // Output port defaults (unit delay has no feedthrough)
+
+        // Output port defaults (Difference has no feedthrough)
         OUTPUT_PORT_DEFAULTS = new ArrayList<>();
         Map<String, Object> output1 = new HashMap<>();
         output1.put("name", "out1");
         output1.put("width", 1);
         output1.put("height", 1);
         output1.put("dataType", "REAL");
-        output1.put("feedthrough", false); // Unit delay never has feedthrough
+        output1.put("feedthrough", false); // Difference never has feedthrough
         OUTPUT_PORT_DEFAULTS.add(output1);
     }
+
     // === Private Constructor with Typed Parameters ===
-    private UnitDelay(Parameter initialCondition, Parameter sampleTimeParam, Parameter outDataType, 
-                     Parameter saturateOnIntegerOverflow, String blockName, String blockPath, 
-                     String blockUUID, NCSLabModel model) {
+    private Difference(Parameter initialCondition, Parameter sampleTimeParam,
+                      String blockName, String blockPath, String blockUUID, NCSLabModel model) {
         super(createBlockIdentity(blockName, blockPath, blockUUID), model);
 
         // Validate parameters
@@ -110,8 +109,7 @@ public class UnitDelay extends DiscreteBlock {
         // Assign parameters
         this.initialCondition = Objects.requireNonNull(initialCondition, "Initial condition parameter cannot be null");
         this.sampleTimeParam = Objects.requireNonNull(sampleTimeParam, "Sample time parameter cannot be null");
-        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
-        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);
 
@@ -121,31 +119,29 @@ public class UnitDelay extends DiscreteBlock {
 
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
-    public UnitDelay(JSONObject blockIn, NCSLabModel model) {
+    public Difference(JSONObject blockIn, NCSLabModel model) {
         super(blockIn, model); // This calls parseParameterList() automatically
 
         // Get parameters by name from the automatically populated parameterList
         this.initialCondition = getParameterByName("InitialCondition");
         this.sampleTimeParam = getParameterByName("SampleTime");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // Set discrete sample time
         setSampleTime(sampleTimeParam);
 
         // Initialize ports
         postConstructionInitialization();
-    }    /**
-     * DTO-NATIVE Constructor - Creates UnitDelay block directly from BlockDto DTO
+    }
+
+    /**
+     * DTO-NATIVE Constructor - Creates Difference block directly from BlockDto DTO
      */
-    public UnitDelay(BlockDto blockDto, NCSLabModel model) {
+    public Difference(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
-       
+
         // Get parameters by name from the automatically populated parameterList
         this.initialCondition = getParameterByName("InitialCondition");
         this.sampleTimeParam = getParameterByName("SampleTime");
-        this.outDataType = getParameterByName("OutDataTypeStr");
-        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");    
 
         // Set discrete sample time
         setSampleTime(this.sampleTimeParam);
@@ -155,9 +151,9 @@ public class UnitDelay extends DiscreteBlock {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-    
+
     // === Static Factory Method for JSON Deserialization ===
-    public static UnitDelay fromJSON(JSONObject blockJSON, NCSLabModel model) {
+    public static Difference fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
             String blockName = requireNonEmptyString(blockJSON, "blockName");
             String blockPath = requireNonEmptyString(blockJSON, "blockPath");
@@ -170,62 +166,38 @@ public class UnitDelay extends DiscreteBlock {
 
             Parameter initialCondition = createInitialConditionFromJSON(paramValues, blockName);
             Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
-            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
-            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
 
-            UnitDelay block = new UnitDelay(initialCondition, sampleTime, outDataType, saturateParam,
-                                           blockName, blockPath, blockUUID, model);
+            Difference block = new Difference(initialCondition, sampleTime,
+                                             blockName, blockPath, blockUUID, model);
 
-            setParameterBlockReference(block, initialCondition, sampleTime, outDataType, saturateParam);
+            setParameterBlockReference(block, initialCondition, sampleTime);
 
             return block;
 
         } catch (Exception e) {
-            throw new BlockCreationException("Failed to create UnitDelay block from JSON: " + e.getMessage(), e);
+            throw new BlockCreationException("Failed to create Difference block from JSON: " + e.getMessage(), e);
         }
     }
 
     // === Static Factory Method for Programmatic Creation (DTO-Based) ===
-    public static UnitDelay create(String name, String path, double initialCondition, double sampleTime, NCSLabModel model) {
-        return create(name, path, initialCondition, sampleTime, "Inherit: Same as input", false, model);
-    }
-
-    /**
-     * Create a UnitDelay block with full parameters (DTO-based approach).
-     *
-     * This modern implementation uses DTOs instead of Parameter manipulation,
-     * providing type safety, automatic validation, and cleaner code.
-     *
-     * @param name Block name
-     * @param path Block path
-     * @param initialCondition Initial condition for the delay
-     * @param sampleTime Sample time for discrete operation
-     * @param outDataType Output data type specification
-     * @param saturateOnOverflow Handle integer overflow
-     * @param model Parent model
-     * @return UnitDelay block instance
-     */
-    public static UnitDelay create(String name, String path, double initialCondition, double sampleTime,
-                                  String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+    public static Difference create(String name, String path, double initialCondition, double sampleTime, NCSLabModel model) {
         // Build DTO using type-safe builder pattern
-        UnitDelayDto dto = UnitDelayDto.builder()
+        DifferenceDto dto = DifferenceDto.builder()
             .blockName(name)
             .blockPath(path)
             .blockUUID("null")
             .initialCondition(com.ncslab.dto.common.TypedParameter.of(initialCondition))
             .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
-            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
-            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
             .build();
 
         // Validate DTO (automatic validation)
         com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
         if (!validation.isValid()) {
-            throw new IllegalArgumentException("Invalid UnitDelay parameters: " + validation.getErrors());
+            throw new IllegalArgumentException("Invalid Difference parameters: " + validation.getErrors());
         }
 
         // Use DTO constructor (clean, no JSONObject workarounds needed!)
-        return new UnitDelay(dto, model);
+        return new Difference(dto, model);
     }
 
     // === Parameter Validation ===
@@ -247,16 +219,6 @@ public class UnitDelay extends DiscreteBlock {
         return new Parameter(null, 2, "SampleTime", sampleTimeValue);
     }
 
-    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
-        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
-        return new Parameter(null, 3, "OutDataTypeStr", outDataTypeValue);
-    }
-
-    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
-        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
-        return new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateValue);
-    }
-
     // === Utility Methods ===
     private static String requireNonEmptyString(JSONObject json, String key) {
         if (!json.has(key)) {
@@ -269,7 +231,7 @@ public class UnitDelay extends DiscreteBlock {
         return value;
     }
 
-    private static void setParameterBlockReference(UnitDelay block, Parameter... parameters) {
+    private static void setParameterBlockReference(Difference block, Parameter... parameters) {
         for (Parameter param : parameters) {
             try {
                 java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
@@ -283,7 +245,7 @@ public class UnitDelay extends DiscreteBlock {
 
     private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
         JSONObject identity = new JSONObject();
-        identity.put("blockType", "UnitDelay");
+        identity.put("blockType", "Difference");
         identity.put("blockName", blockName);
         identity.put("blockPath", blockPath);
         identity.put("blockUUID", blockUUID);
@@ -297,37 +259,25 @@ public class UnitDelay extends DiscreteBlock {
             InputPort inputPort = new InputPort(this, 1, "in1");
             inputPortList.add(inputPort);
         }
-        
+
         if (outputPortList.isEmpty()) {
             OutputPort outputPort = new OutputPort(this, 1, feedthrough); // Use Block, int, boolean constructor
             outputPortList.add(outputPort);
         }
-        
+
         // Set references to the ports
         input = inputPortList.get(0);  // First input port
         output = outputPortList.get(0); // First output port
-        
-        // Unit delay never has feedthrough, so set false (redundant since constructor already sets it)
-        output.setFeedThrough(feedthrough); // false
-    }
 
-    // === Helper Methods ===
-    private int[] calculateSignalIndices(int height, int width) {
-        int[] indices = new int[height * width];
-        int index = 0;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                indices[index++] = i * width + j;
-            }
-        }
-        return indices;
+        // Difference never has feedthrough, so set false
+        output.setFeedThrough(feedthrough); // false
     }
 
     // Define arrays to save data
     public void generateArraysCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/arrays.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/discrete/Difference/arrays.vm", context);
         code.addArraysCode(codeStr);
     }
 
@@ -335,7 +285,7 @@ public class UnitDelay extends DiscreteBlock {
         super.generateInitCodeM(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String codeStr = TemplateManager.renderTemplate("m/discrete/UnitDelay/init.vm", context);
+        String codeStr = TemplateManager.renderTemplate("m/discrete/Difference/init.vm", context);
         code.addInitCode(codeStr);
     }
 
@@ -343,23 +293,19 @@ public class UnitDelay extends DiscreteBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/init.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/discrete/Difference/init.vm", context);
         code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/output.vm", context);
+        String codeStr = TemplateManager.renderTemplate("c/discrete/Difference/output.vm", context);
         code.addOutputCode(codeStr);
     }
 
     public void updateDimension() throws MatDimException {
         super.updateDimension();
-
-        // TODO: Implement SIMULINK scalar zero expansion for IC
-        // If IC is scalar "0" and input is vector/matrix, expand IC to zero matrix matching input dimensions
-        // See Delay.java:503-526 for reference implementation
 
         OutputPort out = outputPortList.get(0);
         InputPort in = inputPortList.get(0);
@@ -402,68 +348,87 @@ public class UnitDelay extends DiscreteBlock {
         // Validate sample time
         double sampleTimeValue = sampleTimeParam.getDouble();
         if (sampleTimeValue <= 0.0 || Double.isNaN(sampleTimeValue) || Double.isInfinite(sampleTimeValue)) {
-            throw new IllegalArgumentException("UnitDelay " + blockName + ": Sample time must be positive and finite, got: " + sampleTimeValue);
+            throw new IllegalArgumentException("Difference " + blockName + ": Sample time must be positive and finite, got: " + sampleTimeValue);
         }
 
         // Validate initial condition is numeric
         if (initialCondition.getData() == null) {
-            throw new IllegalArgumentException("UnitDelay " + blockName + ": Initial condition cannot be null");
+            throw new IllegalArgumentException("Difference " + blockName + ": Initial condition cannot be null");
         }
-
-        // Additional validation will be done in updateDimension() for sample time multiple check
     }
 
     @Override
     public void calculateInit() {
         OutputPort out = outputPortList.get(0);
-        // Initialize both values with initial condition
-        currentValue = new Data(initialCondition.getData().getInitValue());
+        // Initialize previousValue with initial condition
+        // currentValue will be set in first discrete update
         previousValue = new Data(initialCondition.getData().getInitValue());
+        currentValue = new Data(initialCondition.getData().getInitValue());
     }
 
     /**
      * Perform one-time startup actions after initialization.
      * SIMULINK equivalent: mdlStart
      *
-     * For UnitDelay, no special startup actions are needed.
+     * For Difference, no special startup actions are needed.
      */
     @Override
     public void calculateStart() {
-        // No startup actions needed for UnitDelay
+        // No startup actions needed for Difference
         // Resources are already initialized in calculateInit()
     }
 
     @Override
     public void calculateOutput(double t) {
         OutputPort out = outputPortList.get(0);
-        // Output the previous value (unit delay behavior)
-        out.setData(previousValue);
+        InputPort in = inputPortList.get(0);
+
+        // Get current input
+        Data currentInput = in.getData();
+
+        // Calculate difference: y[n] = u[n] - u[n-1]
+        Data outputData;
+        if (currentInput.getDataType() == DataType.MATRIX) {
+            // Matrix input
+            Matrix current = currentInput.getMatrix();
+            Matrix previous = previousValue.getMatrix();
+            Matrix difference = current.minus(previous);
+            outputData = new Data(difference);
+        } else {
+            // Scalar input
+            double current = currentInput.getInitValue();
+            double previous = previousValue.getInitValue();
+            double difference = current - previous;
+            outputData = new Data(difference);
+        }
+
+        // Set output
+        out.setData(outputData);
     }
 
     @Override
     public void calculateUpdate(double t) {
         // This method is called to update internal state before calculateOutput
-        // For unit delay, the update happens in calculateDiscreteUpdate
+        // For Difference, the update happens in calculateDiscreteUpdate
         // This method is typically empty for discrete blocks that do state updates in calculateDiscreteUpdate
     }
 
     @Override
     public void calculateDiscreteUpdate(double t) {
         InputPort input = inputPortList.get(0);
-        // Shift values: previous becomes current input
-        previousValue = currentValue;
-        currentValue = input.getData();
+        // Store current input as previous value for next time step
+        previousValue = input.getData();
     }
 
     /**
      * Graceful shutdown before termination.
      * SIMULINK equivalent: Part of mdlTerminate (pre-cleanup)
      *
-     * For UnitDelay, no pre-termination actions needed.
+     * For Difference, no pre-termination actions needed.
      */
     @Override
     public void calculateStop() {
-        // No stop actions needed for UnitDelay
+        // No stop actions needed for Difference
         // No files, hardware, or external resources to flush
     }
 
@@ -471,7 +436,7 @@ public class UnitDelay extends DiscreteBlock {
      * Cleanup resources and finalize simulation.
      * SIMULINK equivalent: mdlTerminate
      *
-     * For UnitDelay, release internal state.
+     * For Difference, release internal state.
      *
      * @param t Final simulation time
      */
@@ -486,15 +451,15 @@ public class UnitDelay extends DiscreteBlock {
      * Reset block to initial conditions (mid-simulation reset).
      * SIMULINK equivalent: Reset port functionality
      *
-     * Resets the delay buffer to initial condition.
+     * Resets the previous value to initial condition.
      *
      * @param t Time of reset
      */
     @Override
     public void calculateReset(double t) {
-        // Reset both values back to initial condition
-        currentValue = new Data(initialCondition.getData().getInitValue());
+        // Reset previous value back to initial condition
         previousValue = new Data(initialCondition.getData().getInitValue());
+        currentValue = new Data(initialCondition.getData().getInitValue());
     }
 
     /**
@@ -504,17 +469,15 @@ public class UnitDelay extends DiscreteBlock {
     public void generateDiscreteUpdateCodeCInside(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
 
-        // Check if discrete update template exists, otherwise use inline code
+        // Use template for discrete update
         try {
-            String codeStr = TemplateManager.renderTemplate("c/discrete/UnitDelay/discreteUpdate.vm", context);
+            String codeStr = TemplateManager.renderTemplate("c/discrete/Difference/update.vm", context);
             code.addDiscreteUpdateCode(codeStr);
         } catch (Exception e) {
             // Fallback to manual discrete update code if no template exists
-            String discreteUpdateCode = String.format("/* Discrete update for UnitDelay block %d: %s */\n",
+            String discreteUpdateCode = String.format("/* Discrete update for Difference block %d: %s */\n",
                                                     getBlockId(), getBlockName());
-            discreteUpdateCode += String.format("Block%d_unit_delay_savedata[0][1] = Block%d_unit_delay_savedata[0][0];\n", 
-                                               getBlockId(), getBlockId());
-            discreteUpdateCode += String.format("Block%d_unit_delay_savedata[0][0] = %s;\n", 
+            discreteUpdateCode += String.format("Block%d_difference_previous = %s;\n",
                                                getBlockId(), input.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName());
             code.addDiscreteUpdateCode(discreteUpdateCode);
         }

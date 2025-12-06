@@ -1,0 +1,33 @@
+/* Code for output of block DiscreteDerivative:(${blockId}) ${blockName} */
+/* Discrete derivative: y[n] = K * (u[n] - u[n-1]) / Ts */
+#if($sampleTime && $gain && $signal && $initialCondition)
+{
+    // Handle inherited sample time (-1): use model step size as fallback
+    double effectiveSampleTime = (${SampleTimeName} > 0) ? ${SampleTimeName} : mp->stepSize;
+
+    // Calculate derivative: y[n] = K * (u[n] - u[n-1]) / Ts
+#if($signalHeight == 1 && $signalWidth == 1)
+    // Scalar signal
+    double current = ${signalName};
+    double previous = Block${blockId}_discrete_derivative_prev(0, 0);
+    ${output1} = ${GainName} * (current - previous) / effectiveSampleTime;
+#else
+    // Vector/Matrix signal - element-wise derivative
+    Matrix current = ${signalName};
+    Matrix derivative(${signalHeight}, ${signalWidth});
+
+    for (int i = 0; i < ${signalHeight}; i++) {
+        for (int j = 0; j < ${signalWidth}; j++) {
+            double curr_val = current(i, j);
+            double prev_val = Block${blockId}_discrete_derivative_prev(i, j);
+            derivative(i, j) = ${GainName} * (curr_val - prev_val) / effectiveSampleTime;
+        }
+    }
+
+    ${output1} = derivative;
+#end
+}
+#else
+    // Fallback if parameters missing
+    ${output1} = 0.0; /* DiscreteDerivative parameters missing, using default */
+#end

@@ -1,0 +1,8 @@
+/* Define state variables for block Difference:(${blockId}) ${blockName} */
+/* Store previous input value for difference calculation */
+/* y[n] = u[n] - u[n-1] */
+#if($signalHeight == 1 && $signalWidth == 1)
+double Block${blockId}_difference_previous = 0.0;  // Scalar previous value
+#else
+Matrix Block${blockId}_difference_previous;  // Matrix previous value
+#end

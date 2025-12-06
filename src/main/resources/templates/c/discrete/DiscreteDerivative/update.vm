@@ -1,0 +1,9 @@
+/* Discrete update for DiscreteDerivative block ${blockId}: ${blockName} */
+/* Store current input as previous input for next time step */
+#if($signalHeight == 1 && $signalWidth == 1)
+    // Scalar signal
+    Block${blockId}_discrete_derivative_prev(0, 0) = ${signalName};
+#else
+    // Vector/Matrix signal
+    Block${blockId}_discrete_derivative_prev = ${signalName};
+#end

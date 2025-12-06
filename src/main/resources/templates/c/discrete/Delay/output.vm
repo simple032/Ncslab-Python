@@ -1,15 +1,24 @@
 /* Code for output of block Delay:(${blockId}) ${blockName} */
-/* Matrix-based implementation: Clean, type-safe, unified for all signal types */
+/* Buffer-based implementation matching Java calculateOutput() logic */
+/* Handles inherited sample time (-1) correctly */
 {
     int delayLength = (int)(${DelayLengthValue});
-    bool isSampleTime = fabs((int)(model.time / ${SampleTimeName} + 0.5) - model.time / ${SampleTimeName}) < 0.000001;
+
+    // Handle inherited sample time (-1): use model step size as fallback
+    // This matches DiscreteBlock.updateDimension() behavior in Java
+    double effectiveSampleTime = (${SampleTimeName} > 0) ? ${SampleTimeName} : mp->stepSize;
+
+    // Check if we're at a sample time using the effective (resolved) sample time
+    bool isSampleTime = (effectiveSampleTime > 0) &&
+        (fabs(floor(model.time / effectiveSampleTime + 0.5) - model.time / effectiveSampleTime) < 1e-6);
 
     // SIMULINK edge case: delayLength = 0 means direct feedthrough (no delay)
     if (delayLength == 0) {
         // No delay: output = input (direct feedthrough)
         ${outputSignal} = ${inputSignal};
     } else {
-        // Normal delay operation
+        // Normal delay operation using deque buffer
+        // Buffer stores samples in chronological order: front = oldest, back = newest
 
         // Update buffer at sample times (shift in new sample, shift out oldest)
         if (isSampleTime && mp->majorStep > 0) {
@@ -28,13 +37,29 @@
 #end
         }
 
-        // Output delayed sample
-        if ((model.time + 0.00001) < (delayLength * ${SampleTimeName})) {
-            // Not enough samples yet, output initial condition
+        // Output delayed sample - ALWAYS output (hold previous value between sample times)
+        // Use buffer-based logic matching Java calculateOutput():
+        // - Buffer is pre-filled with IC in init, so buffer.size() == delayLength
+        // - Front of deque is the oldest (most delayed) sample
+        // - This is equivalent to Java: buffer.get(buffer.size() - delayLength)
+
+        // Check if enough time has passed for delay to "fill up"
+        // Using buffer size check instead of time-based calculation
+        // (buffer is always maintained at delayLength size after init)
+        int bufferSize = (int)Block${blockId}_discrete_delay_buffer.size();
+
+        if (bufferSize >= delayLength) {
+            // Output the oldest (front) sample - this is the delayed value
+#if($signalHeight == 1 && $signalWidth == 1)
+            ${outputSignal} = Block${blockId}_discrete_delay_buffer.front()(0, 0);
+#else
+            ${outputSignal} = Block${blockId}_discrete_delay_buffer.front();
+#end
+        } else {
+            // Buffer not yet full (shouldn't happen if init is correct), use IC
 #if($signalHeight == 1 && $signalWidth == 1)
             ${outputSignal} = ${InitialConditionName};
 #else
-            // Handle scalar IC expansion for vector/matrix signals
     #if($InitialConditionObject.getData().getDataType().toString() == "MATRIX")
             ${outputSignal} = ${InitialConditionName};
     #else
@@ -42,15 +67,6 @@
             ${outputSignal}.setConstant(${InitialConditionName});
     #end
 #end
-        } else {
-            if (isSampleTime) {
-                // Output oldest sample (front of deque = most delayed sample)
-#if($signalHeight == 1 && $signalWidth == 1)
-                ${outputSignal} = Block${blockId}_discrete_delay_buffer.front()(0, 0);
-#else
-                ${outputSignal} = Block${blockId}_discrete_delay_buffer.front();
-#end
-            }
         }
     }
 }

@@ -27,7 +27,7 @@ import Jama.Matrix;
 
 /**
  * Discrete_Transfer_Fcnz block with SIMULINK-compatible parameters and type-safe constructors.
- * 
+ *
  * SIMULINK Parameters:
  * - SampleTime: Sample time for discrete operation
  * - OutDataTypeStr: Output data type specification
@@ -39,7 +39,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     private final Parameter sampleTimeParam;
     private final Parameter outDataType;
     private final Parameter saturateOnIntegerOverflow;
-    
+
     // === Internal state ===
     private final boolean feedthrough = true; // Transfer function blocks have feedthrough
     private State[] xStates;  // State variables for the transfer function
@@ -48,10 +48,10 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     private int denOrder = 0;  // Denominator order
 
     // === Static Parameter Definitions ===
-    
+
     // Parameter defaults matching database format
     public static final Map<String, String> PARAMETER_DEFAULTS;
-    
+
     static {
         PARAMETER_DEFAULTS = new HashMap<>();
         PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
@@ -63,7 +63,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 
     static {
         // SIMULINK parameter names
-        
+
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
@@ -75,7 +75,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     private Discrete_Transfer_Fcnz(Parameter sampleTime, Parameter outDataType, Parameter saturateOnIntegerOverflow,
                                    String blockName, String blockPath, String blockUUID, NCSLabModel model) {
         super(createBlockIdentity(blockName, blockPath, blockUUID), model);
-        
+
         // Assign parameters
         this.sampleTimeParam = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
         this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
@@ -93,16 +93,16 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     @Deprecated
 	public Discrete_Transfer_Fcnz(JSONObject blockIn, NCSLabModel model) {
 		super(blockIn, model);
-		
+
         // Create legacy parameters for backward compatibility
         this.sampleTimeParam = getParameterByName("SampleTime");
-        
+
         // Create missing SIMULINK parameters with defaults
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
         // Add all parameters to parameter list
-        
+
         // Create ports
 		inputPortList.add(new InputPort(this, 1));  // Input signal
 		inputPortList.add(new InputPort(this, 2));  // Numerator coefficients
@@ -120,14 +120,35 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         this.sampleTimeParam = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
-        
+
         initializePorts();
-        
+
         setSampleTime(sampleTimeParam);
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
 
+    // ================== 添加此 DTO 专用构造函数 ==================
+    /**
+     * DTO-SPECIALIZED Constructor - Required by OptimizedBlockFactory for Discrete_Transfer_FcnzDto
+     */
+    public Discrete_Transfer_Fcnz(Discrete_Transfer_FcnzDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // 初始化参数 (复用现有逻辑)
+        this.sampleTimeParam = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // 初始化端口
+        initializePorts();
+
+        // 设置采样时间 (离散模块必须步骤)
+        setSampleTime(sampleTimeParam);
+
+        System.out.println("DTO-SPECIALIZED: Discrete_Transfer_Fcnz block created from Discrete_Transfer_FcnzDto - " + dto.getBlockName());
+    }
+    // ===========================================================
 
     private void initializePorts() {
         inputPortList.add(new InputPort(this, 1));  // Input signal
@@ -135,7 +156,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         inputPortList.add(new InputPort(this, 3));  // Denominator coefficients
         outputPortList.add(new OutputPort(this, 1, feedthrough));
     }
-    
+
     // === Static Factory Method for JSON Deserialization ===
     public static Discrete_Transfer_Fcnz fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -143,26 +164,26 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
             String blockPath = requireNonEmptyString(blockJSON, "blockPath");
             String blockUUID = blockJSON.optString("blockUUID", "null");
             JSONObject paramValues = blockJSON.optJSONObject("paramValues");
-            
+
             if (paramValues == null) {
                 paramValues = new JSONObject();
             }
             Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
             Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
             Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
-            
+
             Discrete_Transfer_Fcnz block = new Discrete_Transfer_Fcnz(sampleTime, outDataType, saturateParam,
                                                                      blockName, blockPath, blockUUID, model);
-            
+
             setParameterBlockReference(block, sampleTime, outDataType, saturateParam);
-            
+
             return block;
-            
+
         } catch (Exception e) {
             throw new BlockCreationException("Failed to create Discrete_Transfer_Fcnz block from JSON: " + e.getMessage(), e);
         }
     }
-    
+
     // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static Discrete_Transfer_Fcnz create(String name, String path, double sampleTime, NCSLabModel model) {
         return create(name, path, sampleTime, "Inherit: Same as input", false, model);
@@ -256,14 +277,14 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     public void generateArraysCodeC(CodeStructC code) {
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        
+
         context.put("block", this);
         context.put("signal1", signal1);
         context.put("signal3", signal3);
-        
+
         // Add dimension variables needed by templates
         context.put("signal1Height", signal1.getHeight());
         context.put("signal1Width", signal1.getWidth());
@@ -275,20 +296,20 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
-        OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();        
+        OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         context.put("block", this);
         context.put("sampleTime", sampleTimeParam);
         // sampleTimeName is already set by TemplateUtils.populateAllContext() with correct prefix
         context.put("realDataType", com.ncslab.block.data.DataType.REAL);
         context.put("signal1Height", signal1.getHeight());
         context.put("signal1Width", signal1.getWidth());
-        
+
         // Add signal variables if ports are connected
         if (inputPortList.size() >= 3) {
-            if (inputPortList.get(1).getLinkedLine() != null && 
+            if (inputPortList.get(1).getLinkedLine() != null &&
                 inputPortList.get(1).getLinkedLine().getLinkedOutputPort() != null) {
                 OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
                 // FIXED: signal2.getName() already includes Block prefix, don't add another
@@ -297,9 +318,9 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
                 context.put("signal2", signal2.getName());
                 // Provide pre-constructed variable names with _REAL suffix for template
                 context.put("signal2NameREAL", signal2.getName() + "_REAL");
-                
+
             }
-            if (inputPortList.get(2).getLinkedLine() != null && 
+            if (inputPortList.get(2).getLinkedLine() != null &&
                 inputPortList.get(2).getLinkedLine().getLinkedOutputPort() != null) {
                 OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
                 // FIXED: signal3.getName() already includes Block prefix, don't add another
@@ -311,28 +332,29 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
 
                 // Add dimension variables needed by templates
                 // Get vector lengths (works for both row and column vectors)
-                
+
                 int denLength = Math.max(signal3.getWidth(), signal3.getHeight());
                 context.put("stateDim", denLength - 1);  // Denominator order - 1
                 context.put("stateNum", denLength - 1);  // Number of states
             }
         }
 
-        
+
         String initCode = TemplateManager.renderTemplate("c/discrete/Discrete_Transfer_Fcnz/init.vm", context);
         code.addInitCode(initCode);
     }
 
+
     public void generateOutputCodeC(CodeStructC code) {
         // Populate all standard template variables first
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         OutputPort out = outputPortList.get(0);
         OutputPort ops = inputPortList.get(0).getLinkedLine().getLinkedOutputPort();
         OutputSignal signal1 = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal2 = inputPortList.get(1).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
         OutputSignal signal3 = inputPortList.get(2).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-        
+
         context.put("block", this);
         context.put("inputPortList", inputPortList);
         context.put("realDataType", DataType.REAL);
@@ -340,19 +362,19 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
         context.put("signal1", signal1);
         context.put("signal2", signal2);
         context.put("signal3", signal3);
-        
+
         // Add dimension variables needed by templates
         // Get vector lengths (works for both row and column vectors)
         int numLength = Math.max(signal2.getWidth(), signal2.getHeight());
         int denLength = Math.max(signal3.getWidth(), signal3.getHeight());
 
         context.put("signal1Height", signal1.getHeight());
-        context.put("signal1Width", signal1.getWidth());        
+        context.put("signal1Width", signal1.getWidth());
         context.put("s2Width", numLength);  // Numerator vector length (row or column)
         context.put("s3Width", denLength);  // Denominator vector length (row or column)
         context.put("stateDim", denLength - 1);  // Denominator order - 1
         context.put("stateNum", denLength - 1);  // Number of states
-        
+
         // Add signal names for template
         // FIXED: Signal names already include Block prefix, don't add another
         context.put("signal1Name", signal1.getName()); // Already has Block{id}_Output{port} format
@@ -438,7 +460,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     public void calculateOutput(double t) {
         // Discrete transfer function output calculation
         // y(k) = (b0*u(k) + b1*u(k-1) + ... + bn*u(k-n)) / a0 - (a1*y(k-1) + ... + am*y(k-m)) / a0
-        
+
         InputPort input = inputPortList.get(0);  // Input signal
         InputPort numerator = inputPortList.get(1);  // Numerator coefficients [b0, b1, ..., bn]
         InputPort denominator = inputPortList.get(2);  // Denominator coefficients [a0, a1, ..., am]
@@ -509,44 +531,44 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
                 "The first denominator coefficient must be non-zero. Check the denominator input connection.",
                 blockName, a[0]));
         }
-        
+
         // Calculate output based on Direct Form II
         double outputValue = 0.0;
-        
+
         if (inputSignal.getDataType() == DataType.REAL) {
             // Scalar input case
             double u = inputSignal.getInitValue();
-            
-            // Calculate numerator part: b0*u(k) + b1*u(k-1) + ... 
+
+            // Calculate numerator part: b0*u(k) + b1*u(k-1) + ...
             outputValue = b[0] * u / a[0];
             for (int i = 1; i < b.length && i <= uStates.length; i++) {
                 outputValue += b[i] * uStates[i-1].getData().getInitValue() / a[0];
             }
-            
+
             // Subtract denominator part: a1*y(k-1) + a2*y(k-2) + ...
             for (int i = 1; i < a.length && i <= xStates.length; i++) {
                 outputValue -= a[i] * xStates[i-1].getData().getInitValue() / a[0];
             }
-            
+
             output.setData(new Data(outputValue));
         } else {
             // Matrix input case - apply transfer function element-wise
             Matrix inputMatrix = inputSignal.getMatrix();
             Matrix outputMatrix = new Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
-            
+
             for (int row = 0; row < inputMatrix.getRowDimension(); row++) {
                 for (int col = 0; col < inputMatrix.getColumnDimension(); col++) {
                     double u = inputMatrix.get(row, col);
-                    
+
                     // Calculate for this element
                     outputValue = b[0] * u / a[0];
                     // Note: For matrix inputs, states would need to be matrices too
                     // This is a simplified implementation
-                    
+
                     outputMatrix.set(row, col, outputValue);
                 }
             }
-            
+
             output.setData(new Data(outputMatrix));
         }
     }
@@ -555,13 +577,13 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
     public void calculateUpdate(double t) {
         // Update state variables for next time step
         // This is called at each discrete time step to shift the state variables
-        
+
         InputPort input = inputPortList.get(0);
         OutputPort output = outputPortList.get(0);
-        
+
         Data inputSignal = input.getData();
         Data outputSignal = output.getOutputSignalC().getData();
-        
+
         if (inputSignal.getDataType() == DataType.REAL) {
             // Shift input states (u(k-1) = u(k), u(k-2) = u(k-1), etc.)
             for (int i = uStates.length - 1; i > 0; i--) {
@@ -570,7 +592,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
             if (uStates.length > 0) {
                 uStates[0].setData(inputSignal);
             }
-            
+
             // Shift output states (y(k-1) = y(k), y(k-2) = y(k-1), etc.)
             for (int i = xStates.length - 1; i > 0; i--) {
                 xStates[i].setData(xStates[i-1].getData());
@@ -587,7 +609,7 @@ public class Discrete_Transfer_Fcnz extends DiscreteBlock{
             if (uStates.length > 0) {
                 uStates[0].setData(inputSignal);
             }
-            
+
             for (int i = xStates.length - 1; i > 0; i--) {
                 xStates[i].setData(xStates[i-1].getData());
             }
