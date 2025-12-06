@@ -1,0 +1,60 @@
+
+#if($inputVar && $outputVar && $HitCrossingOffsetName && $crossingDirection)
+    ## Use standardized template variables for crossing detection logic
+    #set($threshold = $HitCrossingOffsetName)
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar input signal
+        {
+            double currentValue = ${inputVar};
+            double previousValue = prev_${blockId};
+            double threshold = ${threshold};
+            bool risingCrossing = previousValue < threshold && currentValue >= threshold;
+            bool fallingCrossing = previousValue > threshold && currentValue <= threshold;
+            bool crossed = false;
+
+            #if($crossingDirection == "rising")
+            crossed = risingCrossing;
+            #elseif($crossingDirection == "falling")
+            crossed = fallingCrossing;
+            #else
+            ## "either" direction (default)
+            crossed = risingCrossing || fallingCrossing;
+            #end
+
+            ${outputVar} = crossed ? 1.0 : 0.0;
+        }
+    #else
+        ## Matrix input signal - element-wise crossing detection
+        #set($hMax = $inputHeight - 1)
+        #set($wMax = $inputWidth - 1)
+        {
+            double threshold = ${threshold};
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            {
+                double currentValue = ${inputVar}(${i}, ${j});
+                double previousValue = prev_${blockId}(${i}, ${j});
+                bool risingCrossing = previousValue < threshold && currentValue >= threshold;
+                bool fallingCrossing = previousValue > threshold && currentValue <= threshold;
+                bool crossed = false;
+
+                #if($crossingDirection == "rising")
+                crossed = risingCrossing;
+                #elseif($crossingDirection == "falling")
+                crossed = fallingCrossing;
+                #else
+                ## "either" direction (default)
+                crossed = risingCrossing || fallingCrossing;
+                #end
+
+                ${outputVar}(${i}, ${j}) = crossed ? 1.0 : 0.0;
+            }
+                #end
+            #end
+        }
+    #end
+#else
+    ## Fallback if parameters missing
+    /* HitCrossing block $blockId missing parameters, using zero output */
+    $outputVar = 0.0;
+#end

@@ -1,0 +1,19 @@
+/* Code for initialization of block HitCrossing:(${block.blockId}) ${block.blockName} */
+#if($HitCrossingOffsetObject)
+${HitCrossingOffsetObject.getInitCodeC()}#end
+#if($HitCrossingDirectionObject)
+${HitCrossingDirectionObject.getInitCodeC()}#end
+
+## Initialize previous value to current input value
+#if($inputVar)
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar initialization
+        prev_${blockId} = ${inputVar};
+    #else
+        ## Matrix initialization
+        prev_${blockId} = ${inputVar};
+    #end
+#else
+    ## Fallback initialization to zero
+    prev_${blockId} = 0.0;
+#end

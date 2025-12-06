@@ -1,0 +1,39 @@
+
+#if($inputVar && $outputVar && $input2Var && $input3Var)
+    ## DeadZoneDynamic block with dynamic thresholds
+    ## Input port 1: signal (u)
+    ## Input port 2: upper threshold (positiveLimit)
+    ## Input port 3: lower threshold (negativeLimit)
+    ## If u > positiveLimit: y = u - positiveLimit
+    ## If u < negativeLimit: y = u - negativeLimit
+    ## Otherwise: y = 0
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar dead zone with dynamic thresholds
+        if(${inputVar} > ${input2Var}) {
+            ${outputVar} = ${inputVar} - ${input2Var};
+        } else if(${inputVar} < ${input3Var}) {
+            ${outputVar} = ${inputVar} - ${input3Var};
+        } else {
+            ${outputVar} = 0.0;
+        }
+    #else
+        ## Matrix dead zone - element-wise with dynamic thresholds
+        #set($hMax = $inputHeight - 1)
+        #set($wMax = $inputWidth - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        if(${inputVar}($i, $j) > ${input2Var}) {
+            ${outputVar}($i, $j) = ${inputVar}($i, $j) - ${input2Var};
+        } else if(${inputVar}($i, $j) < ${input3Var}) {
+            ${outputVar}($i, $j) = ${inputVar}($i, $j) - ${input3Var};
+        } else {
+            ${outputVar}($i, $j) = 0.0;
+        }
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    /* DeadZoneDynamic block $blockId missing input ports, using pass-through */
+    $outputVar = $inputVar;
+#end

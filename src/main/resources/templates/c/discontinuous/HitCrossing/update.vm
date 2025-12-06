@@ -1,0 +1,12 @@
+## update.vm - HitCrossing block state update
+## Updates previous value for next crossing detection
+
+#if($inputVar)
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar update - store current value as previous
+        prev_${blockId} = ${inputVar};
+    #else
+        ## Matrix update - store current matrix as previous
+        prev_${blockId} = ${inputVar};
+    #end
+#end

@@ -1,0 +1,15 @@
+## arrays.vm - HitCrossing block state variable declaration
+## Declares previous value storage for crossing detection
+
+#if($inputHeight && $inputWidth)
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar input - store single previous value
+        double prev_${blockId};
+    #else
+        ## Matrix input - store previous matrix
+        Eigen::Matrix<double, ${inputHeight}, ${inputWidth}> prev_${blockId};
+    #end
+#else
+    ## Fallback if dimensions not available
+    double prev_${blockId};
+#end
