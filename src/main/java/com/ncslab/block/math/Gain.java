@@ -11,7 +11,6 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.parquet.Log;
 import org.json.JSONObject;
 
 // Internal imports - DTO
@@ -164,7 +163,6 @@ public class Gain extends MathBlock {
 
         // Use centralized parameter management via getParameterByName
         this.gain = getParameterByName("Gain");
-        log.debug("Gain: init:{}, parsed:{}", gain.getInitString(), gain.getDataString());
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
@@ -376,8 +374,8 @@ public class Gain extends MathBlock {
         super.generateInitCodeC(code);
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         
-        // String codeStr = TemplateManager.renderTemplate("c/math/Gain/init.vm", context);
-        // code.addInitCode(codeStr);
+        String codeStr = TemplateManager.renderTemplate("c/math/Gain/init.vm", context);
+        code.addInitCode(codeStr);
     }
 
     public void generateOutputCodeC(CodeStructC code) {

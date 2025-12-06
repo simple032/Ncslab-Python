@@ -1,0 +1,14 @@
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar unary minus
+    $outputVar = -$inputVar;
+#else
+    ## Matrix unary minus: element-wise negation (using Eigen indexing)
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+        ${outputVar}($i, $j) = -${inputVar}($i, $j);
+        #end
+    #end
+#end

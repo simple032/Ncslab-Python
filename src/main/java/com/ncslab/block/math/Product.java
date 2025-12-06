@@ -81,9 +81,9 @@ public class Product extends MathBlock {
 
     // === Private Constructor with Typed Parameters ===
     private Product(Parameter inputs, Parameter multiplication, Parameter sampleTime,
-                   Parameter inputSameDT, Parameter outDataType, Parameter saturateOnIntegerOverflow,
-                   String blockName, String blockPath, String blockUUID,
-                   NCSLabModel model) {
+                    Parameter inputSameDT, Parameter outDataType, Parameter saturateOnIntegerOverflow,
+                    String blockName, String blockPath, String blockUUID,
+                    NCSLabModel model) {
         super(createBlockIdentity(blockName, blockPath, blockUUID), model);
 
         // Extract input sequence and multiplication mode from parameters
@@ -133,7 +133,8 @@ public class Product extends MathBlock {
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
         // Initialize ports
         initializePorts();
-    }    /**
+    }
+    /**
      * DTO-NATIVE Constructor - Creates Product block directly from BlockDto DTO
      */
     public Product(BlockDto blockDto, NCSLabModel model) {
@@ -153,6 +154,31 @@ public class Product extends MathBlock {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
+
+    // ================== 添加此 DTO 专用构造函数 ==================
+    /**
+     * DTO-SPECIALIZED Constructor - Required by OptimizedBlockFactory for ProductDto
+     */
+    public Product(ProductDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // 复用通用的参数获取逻辑 (父类 Block 已从 DTO 解析了参数列表)
+        this.inputs = getParameterByName("Inputs");
+        this.inputSequence = this.inputs.getInitString();
+
+        this.multiplication = getParameterByName("Multiplication");
+        this.matrixMultiplication = "Matrix(*)".equals(this.multiplication.getInitString());
+
+        this.sampleTime = getParameterByName("SampleTime");
+        this.inputSameDT = getParameterByName("InputSameDT");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        initializePorts();
+
+        System.out.println("DTO-SPECIALIZED: Product block created from ProductDto - " + dto.getBlockName());
+    }
+    // ===========================================================
 
     /**
      * Factory method to create Product block from ProductDto.
@@ -187,7 +213,7 @@ public class Product extends MathBlock {
             Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
 
             Product block = new Product(inputs, multiplication, sampleTime, inputSameDT,
-                                       outDataType, saturateParam, blockName, blockPath, blockUUID, model);
+                outDataType, saturateParam, blockName, blockPath, blockUUID, model);
 
             // Set block reference in parameters (required for Parameter constructor compatibility)
             setParameterBlockReference(block, inputs, multiplication, sampleTime, inputSameDT, outDataType, saturateParam);
@@ -211,7 +237,7 @@ public class Product extends MathBlock {
      */
     public static Product create(String name, String path, String inputSequence, NCSLabModel model) {
         return create(name, path, inputSequence, "Element-wise(*)", -1.0, true,
-                     "Inherit: Same as input", false, model);
+            "Inherit: Same as input", false, model);
     }
 
     /**
@@ -232,8 +258,8 @@ public class Product extends MathBlock {
      * @return Configured Product block instance
      */
     public static Product create(String name, String path, String inputSequence, String multiplicationMode,
-                                double sampleTime, boolean inputSameDT, String outDataType,
-                                boolean saturateOnOverflow, NCSLabModel model) {
+                                 double sampleTime, boolean inputSameDT, String outDataType,
+                                 boolean saturateOnOverflow, NCSLabModel model) {
         // Build DTO using type-safe builder pattern
         ProductDto dto = ProductDto.builder()
             .blockName(name)
@@ -406,7 +432,7 @@ public class Product extends MathBlock {
         System.out.println("updateDimension (" + blockName + ") - Input count: " + signal.length);
         for (int i = 0; i < signal.length; i++) {
             System.out.println("  Input " + i + ": [" + signal[i].getHeight() + "x" + signal[i].getWidth() + "]");
-        }    
+        }
 
         if (!isMatrixMultiplication()) {
             // Element-wise multiplication mode with SIMULINK-compatible scalar expansion
@@ -434,7 +460,7 @@ public class Product extends MathBlock {
                         if (m[i] != maxHeight || n[i] != maxWidth) {
                             throw new MatDimException(
                                 String.format("Block %s: Non-scalar input dimensions must match. " +
-                                    "Found [%d×%d] and [%d×%d]",
+                                        "Found [%d×%d] and [%d×%d]",
                                     blockName, maxHeight, maxWidth, m[i], n[i]));
                         }
                     }
@@ -555,7 +581,7 @@ public class Product extends MathBlock {
                         } else {
                             throw new MatDimException(
                                 String.format("Block %s: Matrix dimensions [%d×%d] and [%d×%d] are incompatible " +
-                                    "for both matrix multiplication and element-wise multiplication",
+                                        "for both matrix multiplication and element-wise multiplication",
                                     blockName, outHeight, outWidth, m[i], n[i]));
                         }
                     }
@@ -567,7 +593,15 @@ public class Product extends MathBlock {
             out.setWidth(outWidth);
             out.getOutputSignalC().setHeight(outHeight);
             out.getOutputSignalC().setWidth(outWidth);
-            out.getOutputSignalC().setDataType(hasMatrix ? DataType.MATRIX : DataType.REAL);
+
+//            out.getOutputSignalC().setDataType(hasMatrix ? DataType.MATRIX : DataType.REAL);
+            // [Fix] 如果结果维度是 1x1，强制设为 REAL 类型，避免下游模块(如Scope)将其视为矩阵访问
+            if (outHeight == 1 && outWidth == 1) {
+                out.getOutputSignalC().setDataType(DataType.REAL);
+            } else {
+                out.getOutputSignalC().setDataType(hasMatrix ? DataType.MATRIX : DataType.REAL);
+            }
+
             // Debug: Print output dimensions
             System.out.println("updateDimension (" + blockName + ") - Output: [" + outHeight + "x" + outWidth + "]");
         }
@@ -584,7 +618,7 @@ public class Product extends MathBlock {
             if (height == 0 || width == 0) {
                 throw new MatDimException(
                     String.format("Product block '%s': Input %d has invalid dimensions [%d×%d]. " +
-                        "All input dimensions must be at least [1×1].",
+                            "All input dimensions must be at least [1×1].",
                         blockName, i+1, height, width));
             }
         }

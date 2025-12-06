@@ -1,0 +1,34 @@
+
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar rounding function
+    #if($OperatorValue == "floor")
+    ${outputVar} = floor(${inputVar});
+    #elseif($OperatorValue == "ceil")
+    ${outputVar} = ceil(${inputVar});
+    #elseif($OperatorValue == "round")
+    ${outputVar} = round(${inputVar});
+    #elseif($OperatorValue == "fix" || $OperatorValue == "trunc")
+    ${outputVar} = trunc(${inputVar});
+    #else
+    ${outputVar} = floor(${inputVar}); /* Default to floor */
+    #end
+#else
+    ## Matrix rounding function - element-wise operation
+    #set($hMax = $inputHeight - 1)
+    #set($wMax = $inputWidth - 1)
+    #foreach($i in [0..$hMax])
+        #foreach($j in [0..$wMax])
+            #if($OperatorValue == "floor")
+    ${outputVar}($i, $j) = floor(${inputVar}($i, $j));
+            #elseif($OperatorValue == "ceil")
+    ${outputVar}($i, $j) = ceil(${inputVar}($i, $j));
+            #elseif($OperatorValue == "round")
+    ${outputVar}($i, $j) = round(${inputVar}($i, $j));
+            #elseif($OperatorValue == "fix" || $OperatorValue == "trunc")
+    ${outputVar}($i, $j) = trunc(${inputVar}($i, $j));
+            #else
+    ${outputVar}($i, $j) = floor(${inputVar}($i, $j)); /* Default to floor */
+            #end
+        #end
+    #end
+#end

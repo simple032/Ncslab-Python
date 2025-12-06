@@ -1,0 +1,9 @@
+## AlgebraicConstraint arrays declaration
+## Stores current solution estimate for Newton-Raphson iteration
+
+// AlgebraicConstraint block: ${blockName} (ID: ${blockId})
+// Current solution estimate for algebraic equation f(z) = 0
+double Block${blockId}_z_current = ${InitialGuessValue};
+
+// Iteration counter for debugging (optional)
+int Block${blockId}_iterations = 0;
