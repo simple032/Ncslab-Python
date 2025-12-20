@@ -1192,7 +1192,36 @@ abstract public class CodeStructC{
 		else {
 			dataStructureCode+="BLOCK **blocks=NULL;\n";
 		}
-		dataStructureCode+="MODEL model={(char *)\""+model.getModelRealName()+"\","+model.getBlockList().size()+","+model.getConfig().getFixedStep()+","+model.getConfig().getStartTime()+","+model.getConfig().getStopTime()+","+model.getConfig().getStartTime()+",0.0,"+model.getConfig().getFixedStep()+",0,0,0,0,NULL,NULL,NULL,NULL,0,0};\n";
+		// Initialize MODEL structure with solver parameters
+		// Fields: name, blockNum, stepSize, startTime, stopTime, time, offset, discreteTime, discreteUpdate,
+		//         relTol, absTol, minStep, maxStep, solverStatus, stepRejections, totalSteps,
+		//         signalNum, parameterNum, stateNum, signals, parameters, states, blocks, majorStep, terminalNum
+		dataStructureCode+="MODEL model={\n";
+		dataStructureCode+="  (char *)\""+model.getModelRealName()+"\",\n";  // name
+		dataStructureCode+="  "+model.getBlockList().size()+",\n";           // blockNum
+		dataStructureCode+="  "+model.getConfig().getFixedStep()+",\n";      // stepSize
+		dataStructureCode+="  "+model.getConfig().getStartTime()+",\n";      // startTime
+		dataStructureCode+="  "+model.getConfig().getStopTime()+",\n";       // stopTime
+		dataStructureCode+="  "+model.getConfig().getStartTime()+",\n";      // time (initial = startTime)
+		dataStructureCode+="  0.0,\n";                                        // offset
+		dataStructureCode+="  "+model.getConfig().getFixedStep()+",\n";      // discreteTime
+		dataStructureCode+="  0,\n";                                          // discreteUpdate
+		// Solver tolerance parameters
+		dataStructureCode+="  "+model.getConfig().getRelTol()+",\n";         // relTol
+		dataStructureCode+="  "+model.getConfig().getAbsTol()+",\n";         // absTol
+		dataStructureCode+="  "+model.getConfig().getMinStep()+",\n";        // minStep
+		dataStructureCode+="  "+model.getConfig().getMaxStep()+",\n";        // maxStep
+		// Solver status fields (initialized to 0)
+		dataStructureCode+="  0,\n";                                          // solverStatus
+		dataStructureCode+="  0,\n";                                          // stepRejections
+		dataStructureCode+="  0,\n";                                          // totalSteps
+		// Signal/parameter/state counts
+		dataStructureCode+="  0, 0, 0,\n";                                    // signalNum, parameterNum, stateNum
+		dataStructureCode+="  NULL, NULL, NULL,\n";                           // signals, parameters, states
+		dataStructureCode+="  NULL,\n";                                       // blocks
+		dataStructureCode+="  0,\n";                                          // majorStep
+		dataStructureCode+="  0\n";                                           // terminalNum
+		dataStructureCode+="};\n";
 	}
 
 

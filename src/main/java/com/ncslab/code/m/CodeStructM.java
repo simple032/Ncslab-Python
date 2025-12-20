@@ -12,6 +12,10 @@ import com.utils.Property;
 import lombok.Getter;
 
 public class CodeStructM {
+	// ODE45 adaptive step size constants
+	private static final double ODE45_STEP_EXPONENT = 0.25;  // 1/4 for conservative 4th order method
+	private static final double ODE45_SAFETY_FACTOR = 0.84;  // Safety factor for step size adjustment
+
 	//init初始化的代码
 	@Getter
     public String initCode="";
@@ -441,7 +445,7 @@ public class CodeStructM {
 
 		code+=calculateStateDifCode(1,2);
 
-		code+="nh=((tol*h)/dif)^0.25*0.84*h;\n";
+		code+="nh=((tol*h)/dif)^" + ODE45_STEP_EXPONENT + "*" + ODE45_SAFETY_FACTOR + "*h;\n";
 
 		//code+="if nh<h || i==2 ||t!="+model.getConfig().getStartTime()+" \n";
 		code+="if nh>h || i==2 \n";

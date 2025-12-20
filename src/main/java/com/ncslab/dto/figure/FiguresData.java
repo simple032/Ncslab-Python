@@ -1,4 +1,4 @@
-package com.ncslab.dto.ui;
+package com.ncslab.dto.figure;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -179,6 +179,12 @@ public class FiguresData {
             private Integer position;
 
             /**
+             * Plot type: "2D" or "3D"
+             */
+            @JsonProperty("type")
+            private String type;
+
+            /**
              * 2D or 3D line plot data
              */
             @JsonProperty("plot")
@@ -239,6 +245,14 @@ public class FiguresData {
             private String method;
 
             /**
+             * Axis scale: "linear" or "log"
+             * - "linear": Standard linear scale (default)
+             * - "log": Logarithmic scale (for semilogx, semilogy, loglog plots)
+             */
+            @JsonProperty("scale")
+            private String scale;
+
+            /**
              * Check if this limit is in auto mode
              */
             public boolean isAuto() {
@@ -253,12 +267,40 @@ public class FiguresData {
             }
 
             /**
+             * Check if this axis uses linear scale (default)
+             * @return true if scale is linear or not specified
+             */
+            public boolean isLinear() {
+                return scale == null || "linear".equalsIgnoreCase(scale);
+            }
+
+            /**
+             * Check if this axis uses logarithmic scale
+             * @return true if scale is "log"
+             */
+            public boolean isLog() {
+                return "log".equalsIgnoreCase(scale);
+            }
+
+            /**
              * Get the range (max - min)
              * @return range or null if min/max not set
              */
             public Double getRange() {
                 if (min != null && max != null) {
                     return max - min;
+                }
+                return null;
+            }
+
+            /**
+             * Get the log-scale range (log10(max) - log10(min))
+             * Only meaningful when scale is "log"
+             * @return log range or null if min/max not set or values are non-positive
+             */
+            public Double getLogRange() {
+                if (min != null && max != null && min > 0 && max > 0) {
+                    return Math.log10(max) - Math.log10(min);
                 }
                 return null;
             }
@@ -270,6 +312,12 @@ public class FiguresData {
         @Builder
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Plot {
+            /**
+             * Plot type: "2D" or "3D"
+             */
+            @JsonProperty("type")
+            private String type;
+
             @JsonProperty("title")
             private String title;
 

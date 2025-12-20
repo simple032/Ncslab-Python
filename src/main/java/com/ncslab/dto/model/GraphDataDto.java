@@ -128,6 +128,14 @@ public class GraphDataDto {
             }
             return new java.util.HashMap<>();
         }
+
+        /**
+         * Get blockType with leading/trailing whitespace trimmed
+         * Overrides Lombok's generated getter to ensure clean block type names
+         */
+        public String getBlockType() {
+            return blockType != null ? blockType.trim() : blockType;
+        }
     }
 
     /**
