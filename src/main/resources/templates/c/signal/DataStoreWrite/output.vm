@@ -1,0 +1,21 @@
+
+## Data Store Write block output code
+## Writes input value to global data store variable
+#if($inputPortList && $inputPortListSize > 0)
+    #set($dataStoreNameParam = $block.getParameterByName("DataStoreName"))
+    #if($dataStoreNameParam)
+        #set($storeName = $dataStoreNameParam.getInitString())
+        ## Write input signal to global data store variable
+        #if($inputSignal1DataType == $realDataType)
+            ## Scalar write
+            ${storeName}_global = $inputSignal1;
+        #else
+            ## Matrix write
+            ${storeName}_global = $inputSignal1;
+        #end
+    #else
+        /* DataStoreWrite block $blockId missing data store name parameter */
+    #end
+#else
+    /* DataStoreWrite block $blockId missing input signal */
+#end

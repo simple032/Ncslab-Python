@@ -10,7 +10,7 @@ CCFlag = -DPSAPI_VERSION=1 \
          -I${M2PLAB_ROOT}/server/cruntime/include \
 		 -I/data/M2PLab/server/cruntime/include \
 		 -I/usr/include/eigen3 \
-         -g -O2
+         -fopenmp -g -O2
 
 LDFlag = -L${M2PLAB_ROOT}/server/cruntime/lib -lpthread -lrt  -pthread -fopenmp
 

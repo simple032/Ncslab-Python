@@ -1,0 +1,10 @@
+
+#if($inputPortList && $inputPortListSize > 0)
+    % Assert block - check assertion condition
+    if ~($inputSignal > 0)
+        fprintf(2, 'Assert block $blockName: $errorMessage\n');
+        #if($stopWhenAssertionFail == "on")
+        error('Assertion failed in block $blockName');
+        #end
+    end
+#end

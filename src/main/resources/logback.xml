@@ -7,7 +7,7 @@
     </appender>
 
     <!-- 针对特定 Logger 配置：仅输出 INFO 及以上级别 -->
-    <logger name="com.ncslab.code.m.MfcalcClient" level="DEBUG" additivity="false">
+    <logger name="com.ncslab.code.m.MfcalcClient" level="ERROR" additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>
 

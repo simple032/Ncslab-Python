@@ -185,6 +185,29 @@ public class Out extends Block {
         return new Out(dto, model);
     }
 
+    /**
+     * Factory method to create Out block from OutDto.
+     *
+     * @param dto   OutDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created Out block
+     */
+    public static Out createFromDto(OutDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("OutDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid OutDto: " + dto.getValidationErrors());
+        }
+
+        return new Out(dto, model);
+    }
+
     // === Code Generation Methods ===
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);

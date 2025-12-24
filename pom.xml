@@ -28,9 +28,153 @@
 		<junit.version>4.13.2</junit.version>
 		<jupiter.version>5.6.2</jupiter.version>
 		<mockito.version>4.0.0</mockito.version>
-<!--		<junit.version>4.13.2</junit.version>-->
-<!--		<jupiter.version>5.7.0</jupiter.version>-->
 	</properties>
+
+  <!-- 1. 开发/生产 Profile（核心调整：添加文件重命名） -->
+  <profiles>
+      <!-- 开发环境 Profile（默认激活） -->
+      <profile>
+          <id>dev</id>
+          <activation>
+              <activeByDefault>true</activeByDefault>
+          </activation>
+          <properties>
+              <env>dev</env> <!-- 环境标识 -->
+              <config.source>src/main/resources/config.dev.properties</config.source>
+          </properties>
+          <build>
+              <plugins>
+                <!-- 第一步：用 Ant 任务复制并重命名配置文件 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <executions>
+                        <execution>
+                            <id>copy-and-rename-config</id>
+                            <phase>process-resources</phase> <!-- 编译前执行，确保配置文件到位 -->
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <configuration>
+                                <target>
+                                    <!-- 打印重命名信息 -->
+                                    <echo message="===== 开始处理开发环境配置文件 =====" />
+                                    <echo message="源文件：${config.source}" />
+                                    <echo message="目标文件：${project.build.outputDirectory}/config.properties" />
+
+                                    <!-- 核心：复制并强制重命名（覆盖旧文件） -->
+                                    <copy file="${config.source}" tofile="${project.build.outputDirectory}/config.properties" overwrite="true"/>
+
+                                    <echo message="===== 配置文件处理完成！ =====" />
+                                </target>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- 第二步：maven-war-plugin（移除 webResources，仅保留你的原有配置） -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>3.3.2</version>
+                    <configuration>
+                        <outputDirectory>D:\Documents\NCSLab\ncslab_server\tomcat10\webapps</outputDirectory>
+                        <warName>NCSLabLink</warName>
+                        <!-- 无需再配置 webResources：target/classes 下的 config.properties 会自动打包到 WEB-INF/classes -->
+                    </configuration>
+                </plugin>
+            </plugins>
+          </build>
+      </profile>
+
+      <!-- 生产环境 Profile -->
+      <profile>
+          <id>prod</id>
+          <properties>
+              <env>prod</env> <!-- 环境标识 -->
+              <!-- SCP 配置 -->
+              <scp.local.war.path>${project.build.directory}/${project.build.finalName}.war</scp.local.war.path>
+              <scp.host>10.20.24.74</scp.host>
+              <scp.username>sust</scp.username>
+              <scp.password>ncslab</scp.password> <!-- 后续替换为密钥认证 -->
+              <scp.target.dir>/home/sust/Downloads/</scp.target.dir>
+              <scp.port>22</scp.port>
+          </properties>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-war-plugin</artifactId>
+                      <version>3.3.2</version>
+                      <configuration>
+                          <!-- 生产模式：指定 webapp 目录 -->
+                          <warSourceDirectory>src/main/webapp</warSourceDirectory>                          
+                      </configuration>
+                  </plugin>
+
+                  <!-- 生产模式：SCP 传输（不变） -->
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-antrun-plugin</artifactId>
+                      <version>3.1.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.jcraft</groupId>
+                              <artifactId>jsch</artifactId>
+                              <version>0.1.55</version>
+                          </dependency>
+                      </dependencies>
+                      <executions>
+                      <!-- 新增：配置文件重命名任务（和开发模式一致） -->
+                          <execution>
+                              <id>copy-and-rename-config</id>
+                              <phase>process-resources</phase>
+                              <goals>
+                                  <goal>run</goal>
+                              </goals>
+                              <configuration>
+                                  <target>
+                                      <echo message="===== 开始处理生产环境配置文件 =====" />
+                                      <echo message="源文件：src/main/resources/config.prod.properties" />
+                                      <echo message="目标文件：${project.build.outputDirectory}/config.properties" />
+                                      <!-- 直接复制重命名，无变量依赖 -->
+                                      <copy file="src/main/resources/config.prod.properties" tofile="${project.build.outputDirectory}/config.properties" overwrite="true" />
+                                      <echo message="===== 配置文件处理完成！ =====" />
+                                  </target>
+                              </configuration>
+                          </execution>
+                          <execution>
+                              <id>prod-scp-deploy</id>
+                              <phase>package</phase>
+                              <goals>
+                                  <goal>run</goal>
+                              </goals>
+                              <configuration>
+                                  <target>
+                                      <echo message="===== 开始 SCP 传输生产包 =====" />
+                                      <echo message="本地 WAR 路径：${scp.local.war.path}" />
+                                      <echo message="远端服务器：${scp.username}@${scp.host}:${scp.port}" />
+                                      <echo message="远端目标目录：${scp.target.dir}" />
+
+                                      <scp
+                                          file="${scp.local.war.path}"
+                                          todir="${scp.username}:${scp.password}@${scp.host}:${scp.target.dir}"
+                                          port="${scp.port}"
+                                          trust="true"
+                                          failonerror="true"
+                                      />
+
+                                      <echo message="===== SCP 传输完成！ =====" />
+                                  </target>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
+  </profiles>
 
 	<dependencies>
 		<dependency>
@@ -71,7 +215,9 @@
 <!--      <scope>test</scope>-->
 <!--    </dependency>-->
 
-    <!-- Jakarta Servlet API for Java 17 -->
+    <!-- Jakarta Servlet API for Java 21 -->
+    <!-- 模拟Servlet对象（推荐使用Mockito+Servlet API模拟） -->
+    
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
@@ -79,11 +225,18 @@
       <scope>provided</scope>
     </dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-reload4j</artifactId>
 			<version>2.0.9</version>
-		</dependency>
+		</dependency> -->
+
+    <!-- Logback 实现（包含绑定，无需额外绑定器） -->
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.4.8</version>
+    </dependency>
 
 		<dependency>
 			<groupId>com.mysql</groupId>
@@ -133,6 +286,13 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-jexl3</artifactId>
       <version>3.2.1</version>
+    </dependency>
+
+    <!-- JFreeChart for generating scope plots -->
+    <dependency>
+      <groupId>org.jfree</groupId>
+      <artifactId>jfreechart</artifactId>
+      <version>1.5.4</version>
     </dependency>
 
     <!-- Jakarta WebSocket API for Java 17 -->
@@ -270,12 +430,15 @@
           </annotationProcessorPaths>
         </configuration>
       </plugin>
-      <plugin>
+      <plugin> 
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.2.1</version>
-        <configuration>
+        <version>3.3.2</version>
+        <configuration>          
           <warSourceDirectory>src/main/webapp</warSourceDirectory>
-        </configuration>
+          <!-- <outputDirectory>D:\Documents\NCSLab\ncslab_server\tomcat10\webapps</outputDirectory>
+          <warName>NCSLabLink</warName> -->
+        </configuration> 
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -296,7 +459,7 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin>      
       <!-- <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>

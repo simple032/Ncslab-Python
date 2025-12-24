@@ -145,6 +145,29 @@ public class FunctionCallSubsystem extends Subsystem {
             " block created successfully - " + blockDto.getBlockName());
     }
 
+    /**
+     * Factory method to create FunctionCallSubsystem from FunctionCallSubsystemDto.
+     *
+     * @param dto   FunctionCallSubsystemDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created FunctionCallSubsystem block
+     */
+    public static FunctionCallSubsystem createFromDto(FunctionCallSubsystemDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("FunctionCallSubsystemDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid FunctionCallSubsystemDto: " + dto.getValidationErrors());
+        }
+
+        return new FunctionCallSubsystem(dto, model);
+    }
+
     // === Port Initialization ===
     /**
      * Initializes the function-call input port (port 1).

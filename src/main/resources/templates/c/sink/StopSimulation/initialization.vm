@@ -1,0 +1,4 @@
+
+## StopSimulation block initialization
+## Block: $blockName (ID: $blockId)
+/* StopSimulation block $blockName initialized */

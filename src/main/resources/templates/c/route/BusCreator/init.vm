@@ -1,0 +1,38 @@
+/* Code for initialization of block BusCreator:($block.blockId) $block.blockName */
+
+#if($isVirtual)
+/* Virtual Bus: $busOutputName (signals stored separately) */
+#foreach($elementName in $elementNames)
+    #set($idx = $foreach.index)
+    #set($inputHeight = $inputHeights.get($idx))
+    #set($inputWidth = $inputWidths.get($idx))
+    #set($inputCDataType = $inputCDataTypes.get($idx))
+
+    #if($inputHeight == 1 && $inputWidth == 1)
+/* Virtual bus element: ${busOutputName}_${elementName} (scalar) */
+${inputCDataType.getCppType()} ${busOutputName}_${elementName};
+    #elseif($inputHeight > 1 || $inputWidth > 1)
+/* Virtual bus element: ${busOutputName}_${elementName} (matrix ${inputHeight}x${inputWidth}) */
+Eigen::Matrix<${inputCDataType.getCppType()}, $inputHeight, $inputWidth> ${busOutputName}_${elementName};
+    #end
+#end
+#else
+/* Non-Virtual Bus: $busOutputName (C struct) */
+typedef struct {
+#foreach($elementName in $elementNames)
+    #set($idx = $foreach.index)
+    #set($inputHeight = $inputHeights.get($idx))
+    #set($inputWidth = $inputWidths.get($idx))
+    #set($inputCDataType = $inputCDataTypes.get($idx))
+
+    #if($inputHeight == 1 && $inputWidth == 1)
+    ${inputCDataType.getCppType()} $elementName;  /* Scalar */
+    #elseif($inputHeight > 1 || $inputWidth > 1)
+    Eigen::Matrix<${inputCDataType.getCppType()}, $inputHeight, $inputWidth> $elementName;  /* Matrix ${inputHeight}x${inputWidth} */
+    #end
+#end
+} ${busOutputName}_Type;
+
+${busOutputName}_Type $outputSignalName;
+#end
+

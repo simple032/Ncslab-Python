@@ -1,0 +1,18 @@
+
+#if($inputPortList && $inputPortListSize > 0)
+    % StopSimulation block - check stop condition
+    #if($stopCondition == "nonzero")
+    if $inputSignal ~= 0
+    #elseif($stopCondition == ">0")
+    if $inputSignal > 0
+    #elseif($stopCondition == "<0")
+    if $inputSignal < 0
+    #elseif($stopCondition == "==value")
+    if abs($inputSignal - $comparisonValue) < 1e-10
+    #else
+    if $inputSignal ~= 0
+    #end
+        fprintf('StopSimulation block $blockName: $stopMessage\n');
+        error('Simulation stopped by $blockName');
+    end
+#end

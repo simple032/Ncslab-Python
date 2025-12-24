@@ -1,0 +1,5 @@
+## Multiport Switch Block - Initialization Template
+## This template initializes variables for the Multiport Switch block
+
+## Initialize default output value
+${defaultOutputInitCodeC}

@@ -31,6 +31,12 @@ public class Parameter {
 		this.id=id;
 		this.localName=localName;
 
+		// DEBUG: Log parameter creation for IC
+		if ("InitialCondition".equals(localName) && block != null) {
+			System.out.println("Parameter constructor: block=" + block.getBlockName() +
+			                 ", localName=" + localName + ", inString='" + inString + "'");
+		}
+
 		// updateName();
 
 		data=new Data(inString);

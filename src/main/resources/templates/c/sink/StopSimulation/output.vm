@@ -1,0 +1,40 @@
+
+#if($inputPortList && $inputPortListSize > 0)
+    ## StopSimulation block - check stop condition
+    #if($inputSignal1DataType == $realDataType)
+        ## Scalar stop condition check
+        #if($stopCondition == "nonzero")
+        if ($inputSignal != 0.0) {
+        #elseif($stopCondition == ">0")
+        if ($inputSignal > 0.0) {
+        #elseif($stopCondition == "<0")
+        if ($inputSignal < 0.0) {
+        #elseif($stopCondition == "==value")
+        if (fabs($inputSignal - $comparisonValue) < 1e-10) {
+        #else
+        if ($inputSignal != 0.0) {
+        #end
+            fprintf(stderr, "StopSimulation block $blockName: $stopMessage\\n");
+            exit(0); ## Normal simulation stop
+        }
+    #else
+        ## Matrix stop condition check (check first element)
+        double stopValue = ${inputSignal}(0, 0);
+        #if($stopCondition == "nonzero")
+        if (stopValue != 0.0) {
+        #elseif($stopCondition == ">0")
+        if (stopValue > 0.0) {
+        #elseif($stopCondition == "<0")
+        if (stopValue < 0.0) {
+        #elseif($stopCondition == "==value")
+        if (fabs(stopValue - $comparisonValue) < 1e-10) {
+        #else
+        if (stopValue != 0.0) {
+        #end
+            fprintf(stderr, "StopSimulation block $blockName: $stopMessage\\n");
+            exit(0); ## Normal simulation stop
+        }
+    #end
+#else
+    /* StopSimulation block $blockId missing input signal */
+#end

@@ -1,0 +1,13 @@
+## Bus Selector - Output Code (C)
+## This template generates code to extract bus elements
+## Template variables available:
+## - $inputPort0SignalName: Input bus signal name
+## - $outputNames: List of output signal names
+## - $selectedSignals: Array of selected element names
+
+// Extract bus elements
+#foreach($signal in $selectedSignals)
+#set($idx = $foreach.index)
+#set($outputSignal = $outputNames.get($idx))
+$outputSignal = ${inputPort0SignalName}.${signal};  // Extract: $signal
+#end

@@ -1,0 +1,4 @@
+
+## Assert block initialization
+## Block: $blockName (ID: $blockId)
+/* Assert block $blockName initialized */

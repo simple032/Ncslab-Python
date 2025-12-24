@@ -272,6 +272,29 @@ public class ForIteratorSubsystem extends Subsystem {
         return new ForIteratorSubsystem(dto, model);
     }
 
+    /**
+     * Factory method to create ForIteratorSubsystem from ForIteratorSubsystemDto.
+     *
+     * @param dto   ForIteratorSubsystemDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created ForIteratorSubsystem block
+     */
+    public static ForIteratorSubsystem createFromDto(ForIteratorSubsystemDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("ForIteratorSubsystemDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid ForIteratorSubsystemDto: " + dto.getValidationErrors());
+        }
+
+        return new ForIteratorSubsystem(dto, model);
+    }
+
     // === Port Initialization ===
     /**
      * Initializes input and output ports based on block configuration.

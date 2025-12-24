@@ -63,20 +63,6 @@ public class TemplateUtils {
                 context.put("offsetName", paramVar);
                 context.put("offsetInitCodeC", paramVar + " = " + paramValue + ";");
             }
-
-            // PID Controller specific parameter mappings using local name
-            if ("P".equals(paramLocalName)) {
-                context.put("proportionalGainName", paramVar);
-            }
-            if ("I".equals(paramLocalName)) {
-                context.put("integralGainName", paramVar);
-            }
-            if ("D".equals(paramLocalName)) {
-                context.put("derivativeGainName", paramVar);
-            }
-            if ("N".equals(paramLocalName)) {
-                context.put("filterCoefficientName", paramVar);
-            }
         }
         
         // Standardized parameter collections
@@ -108,6 +94,8 @@ public class TemplateUtils {
             context.put(stateName + "Value", stateValue);
             context.put(stateName + "Object", state); // Keep object for advanced access if needed
             context.put(stateName + "DerivativeName", stateDerivativeName);
+            context.put(stateName + "Height", state.getHeight());
+            context.put(stateName + "Width", state.getWidth());
 
             // Add local name mapping to avoid double prefixing
             context.put(stateLocalName, stateVar); // Map local name to full C variable name

@@ -6,25 +6,26 @@ import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
+import lombok.extern.slf4j.Slf4j;
 
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.ncslablink.*;
 import com.ncslab.dto.core.ModelDto;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.communication.WebSocketMessageDto;
 import com.ncslab.dto.model.MdlDataDto;
 import com.ncslab.util.JsonUtils;
 import com.ncslab.util.UserContext;
 import com.utils.Property;
-import org.json.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 @ServerEndpoint("/websocketsimulatert")
-
+@Slf4j
 public class SimulateRTWebSocket {
 
 	@OnOpen
 	public void onOpen(Session session) {
-		System.out.println("WEBopen Experiment for RT Simulation");
+		log.info("WEBopen Experiment for RT Simulation");
 		session.setMaxTextMessageBufferSize(1024*1024);
 		session.setMaxBinaryMessageBufferSize(1024*1024);
 	}
@@ -50,7 +51,7 @@ public class SimulateRTWebSocket {
 
 	@OnMessage
 	public void onMessage(Session session,String msgString){
-		System.out.println(msgString);
+		log.info(msgString);
 
         // Try to parse as DTO first, fall back to legacy JSONObject
         WebSocketMessageDto wsMessage = null;
@@ -60,14 +61,14 @@ public class SimulateRTWebSocket {
 		try {
 			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
 			com = wsMessage.getCom();
-			System.out.println("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);				
+			log.info("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);				
 		} catch (JsonProcessingException e) {
 			// If Jackson parsing fails, log error and return
-			System.err.println("Failed to parse WebSocket message with Jackson: " + e.getMessage());
+			log.error("Failed to parse WebSocket message with Jackson: " + e.getMessage());
 			try {
 				sendMessage(session, "error");
 			} catch (IOException ioEx) {
-				System.err.println("Failed to send error message: " + ioEx.getMessage());
+				log.error("Failed to send error message: " + ioEx.getMessage());
 			}
 			return;
 		}
@@ -88,9 +89,9 @@ public class SimulateRTWebSocket {
 				Integer userId = mdlData.getUserId();
 				if (userId != null) {
 					UserContext.setUserId(userId);
-					System.out.println("SimulateRTWebSocket: Set user context to user ID: " + userId);
+					log.info("SimulateRTWebSocket: Set user context to user ID: " + userId);
 				} else {
-					System.out.println("Warning: No user ID in mdlData, expression parsing will use default user ID");
+					log.info("Warning: No user ID in mdlData, expression parsing will use default user ID");
 				}
 
 				String errorMsgs="";
@@ -109,16 +110,27 @@ public class SimulateRTWebSocket {
                 try {
                 	modelDto = JsonUtils.getObjectMapper().readValue(jsonDataString, ModelDto.class);
                 } catch (JsonProcessingException e) {
-                	System.err.println("Failed to parse JSON to ModelDto: " + e.getMessage());
+                	log.error("Failed to parse JSON to ModelDto: " + e.getMessage());
                 	throw new ModelException("Failed to parse JSON to ModelDto DTO: " + e.getMessage());
                 }
-                
+
+                // DEBUG: Check Delay4's IC after Jackson parsing
+                if (modelDto.getBlocks() != null) {
+                    for (BlockDto block : modelDto.getBlocks()) {
+                        if ("Delay4".equals(block.getBlockName())) {
+                            Object icValue = block.getParamValues() != null ? block.getParamValues().get("InitialCondition") : null;
+                            System.out.println("SimulateRTWebSocket: After Jackson parse, Delay4 IC = '" + icValue + "'" +
+                                             ", class = " + (icValue != null ? icValue.getClass().getSimpleName() : "null"));
+                        }
+                    }
+                }
+
                 // Validate DTO structure
                 if (!modelDto.isValid()) {
                 	throw new ModelException("Invalid ModelDto DTO structure");
                 }
                 
-                System.out.println("Using DTO-based RT WebSocket model creation for: " + modelDto.getModelName());
+                log.info("Using DTO-based RT WebSocket model creation for: " + modelDto.getModelName());
                 
                 // Create model using DTO factory method
                 model = SimulationModel.createFromDto(modelDto, ModelMode.Simulation);
@@ -127,7 +139,7 @@ public class SimulateRTWebSocket {
                 	throw new ModelException("Failed to create RT WebSocket simulation model from DTO");
                 }
                 
-                System.out.println("RT WebSocket model created successfully: " + model.getModelName() + 
+                log.info("RT WebSocket model created successfully: " + model.getModelName() + 
                 		   " with " + model.getBlockList().size() + " blocks");
 
 	        	sendMessage(session,"generated");
@@ -145,20 +157,7 @@ public class SimulateRTWebSocket {
 
                 // sendResultMessage(session, model);
 	        }
-			catch(IOException e) {
-				System.err.println(e.getMessage());
-	        	System.err.println("Code generation terminated unsuccessfully");
-			}
-	        catch(ModelException e) {
-	        	try {
-	        		sendErrorMessage(session,e.getMessage());
-	        	}
-	        	catch(IOException ee) {
-	        	}
-	        	System.err.println(e.getMessage());
-	        	System.err.println("Code generation terminated unsuccessfully");
-	        }
-			catch(Exception e) {
+			catch(Exception e) {				
 				e.printStackTrace();
 				try {
 	        		sendErrorMessage(session,e.getMessage());
@@ -168,7 +167,8 @@ public class SimulateRTWebSocket {
 	        	}
                 catch (Exception ee) {
                     ee.printStackTrace();
-                }
+                }				
+	        	log.error("Code generation terminated unsuccessfully");
 			}
 			finally {
 				// ==================== CLEAR USER CONTEXT ====================

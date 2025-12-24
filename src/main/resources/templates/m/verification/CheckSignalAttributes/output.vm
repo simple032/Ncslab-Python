@@ -1,0 +1,6 @@
+
+#if($inputPortList && $inputPortListSize > 0 && $outputPortList && $outputPortListSize > 0)
+    % CheckSignalAttributes block - pass through input
+    $outputSignal = $inputSignal;
+    % Attribute checking performed in simulation engine
+#end

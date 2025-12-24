@@ -11,7 +11,7 @@ CCFlag = -D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
          -I${M2PLAB_ROOT}/server/cruntime/include \
          -fopenmp -g -O2
 
-LDFlag = -lwinmm -lws2_32 \
+LDFlag = -fopenmp -lwinmm -lws2_32 \
          -L${M2PLAB_ROOT}/server/cruntime/lib
 
 ncslab.exe: ncslabmain.o mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o

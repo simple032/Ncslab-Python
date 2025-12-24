@@ -1,0 +1,43 @@
+
+## Probe block output code
+## Outputs signal properties based on probe type
+#set($probeTypeParam = $block.getParameterByName("ProbeType"))
+#if($probeTypeParam)
+    #set($probeType = $probeTypeParam.getInitString())
+    #if($probeType == "width")
+        ## Output signal width (number of elements)
+        #if($inputHeight == 1 && $inputWidth == 1)
+            $outputVar = 1.0;
+        #else
+            $outputVar = (double)($inputHeight * $inputWidth);
+        #end
+    #elseif($probeType == "sampleTime")
+        ## Output sample time
+        #set($sampleTimeParam = $block.getParameterByName("SampleTime"))
+        #if($sampleTimeParam)
+            $outputVar = $sampleTimeParam.getDouble();
+        #else
+            $outputVar = -1.0;  ## Inherited
+        #end
+    #elseif($probeType == "dataType")
+        ## Output data type code (0=real, 1=complex)
+        $outputVar = 0.0;  ## Real (complex not yet implemented)
+    #elseif($probeType == "complexity")
+        ## Output complexity (0=real, 1=complex)
+        $outputVar = 0.0;  ## Real (complex not yet implemented)
+    #else
+        ## Default to width
+        #if($inputHeight == 1 && $inputWidth == 1)
+            $outputVar = 1.0;
+        #else
+            $outputVar = (double)($inputHeight * $inputWidth);
+        #end
+    #end
+#else
+    ## Fallback if probe type parameter missing
+    #if($inputHeight == 1 && $inputWidth == 1)
+        $outputVar = 1.0;
+    #else
+        $outputVar = (double)($inputHeight * $inputWidth);
+    #end
+#end

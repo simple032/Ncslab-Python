@@ -1,0 +1,16 @@
+
+#if($inputPortList && $inputPortListSize > 0 && $outputPortList && $outputPortListSize > 0)
+    ## CheckSignalAttributes block - pass through input and check attributes
+    #if($inputSignal1DataType == $realDataType && $outputSignal1DataType == $realDataType)
+        ## Scalar pass-through
+        $outputSignal = $inputSignal;
+
+        ## Attribute checking performed in Java calculateOutput method
+        ## C code generation focuses on pass-through behavior
+    #else
+        ## Matrix pass-through
+        $outputSignal = $inputSignal;
+    #end
+#else
+    /* CheckSignalAttributes block $blockId missing input/output signals */
+#end

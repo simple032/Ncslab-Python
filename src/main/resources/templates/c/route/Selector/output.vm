@@ -1,0 +1,96 @@
+
+#if($inputPort0SignalName && $outputPort0SignalName && $indexVector)
+    #set($input = $inputPort0SignalName)
+    #set($output = $outputPort0SignalName)
+    #set($indices = $indexVector.getInitString())
+
+    ## Parse index vector (MATLAB 1-based indexing)
+    #if($indices.startsWith("[") && $indices.endsWith("]"))
+        ## Array notation: [1, 3, 5]
+        #set($content = $indices.substring(1, $indices.length() - 1).trim())
+        #set($indexArray = $content.split(","))
+
+        #if($indexArray.size() == 1)
+            ## Single element - scalar output (convert 1-based to 0-based)
+            #set($idx = $Integer.parseInt($indexArray[0].trim()) - 1)
+            #if($inputHeight == 1)
+                ## Row vector
+                ${output} = ${input}(0, ${idx});
+            #elseif($inputWidth == 1)
+                ## Column vector
+                ${output} = ${input}(${idx}, 0);
+            #else
+                ## General matrix - row-major order
+                #set($row = $idx / $inputWidth)
+                #set($col = $idx % $inputWidth)
+                ${output} = ${input}(${row}, ${col});
+            #end
+        #else
+            ## Multiple elements - vector output
+            #foreach($i in [0..$indexArray.size() - 1])
+                #set($idx = $Integer.parseInt($indexArray[$i].trim()) - 1)
+                #if($inputHeight == 1)
+                    ## Row vector
+                    ${output}(${i}, 0) = ${input}(0, ${idx});
+                #elseif($inputWidth == 1)
+                    ## Column vector
+                    ${output}(${i}, 0) = ${input}(${idx}, 0);
+                #else
+                    ## General matrix - row-major order
+                    #set($row = $idx / $inputWidth)
+                    #set($col = $idx % $inputWidth)
+                    ${output}(${i}, 0) = ${input}(${row}, ${col});
+                #end
+            #end
+        #end
+    #elseif($indices.contains(":"))
+        ## MATLAB range notation: 1:2:10 or 1:10
+        #set($parts = $indices.split(":"))
+        #if($parts.size() == 2)
+            ## start:end (step = 1)
+            #set($start = $Integer.parseInt($parts[0].trim()) - 1)
+            #set($end = $Integer.parseInt($parts[1].trim()) - 1)
+            #set($step = 1)
+        #elseif($parts.size() == 3)
+            ## start:step:end
+            #set($start = $Integer.parseInt($parts[0].trim()) - 1)
+            #set($step = $Integer.parseInt($parts[1].trim()))
+            #set($end = $Integer.parseInt($parts[2].trim()) - 1)
+        #end
+
+        ## Generate range and extract elements
+        #set($outputIdx = 0)
+        #if($step > 0)
+            #foreach($idx in [$start..$end])
+                #if(($idx - $start) % $step == 0)
+                    #if($inputHeight == 1)
+                        ${output}(${outputIdx}, 0) = ${input}(0, ${idx});
+                    #elseif($inputWidth == 1)
+                        ${output}(${outputIdx}, 0) = ${input}(${idx}, 0);
+                    #else
+                        #set($row = $idx / $inputWidth)
+                        #set($col = $idx % $inputWidth)
+                        ${output}(${outputIdx}, 0) = ${input}(${row}, ${col});
+                    #end
+                    #set($outputIdx = $outputIdx + 1)
+                #end
+            #end
+        #end
+    #else
+        ## Single integer index
+        #set($idx = $Integer.parseInt($indices.trim()) - 1)
+        #if($inputHeight == 1)
+            ${output} = ${input}(0, ${idx});
+        #elseif($inputWidth == 1)
+            ${output} = ${input}(${idx}, 0);
+        #else
+            #set($row = $idx / $inputWidth)
+            #set($col = $idx % $inputWidth)
+            ${output} = ${input}(${row}, ${col});
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    /* Warning: Selector block $blockId missing input, output, or index configuration */
+    $outputPort0SignalName = 0.0;
+#end

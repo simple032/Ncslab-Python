@@ -1,0 +1,3 @@
+
+## Data Store Write block initialization
+## No initialization code needed - writes to global variable defined by DataStoreMemory

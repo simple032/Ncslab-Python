@@ -225,6 +225,29 @@ public class TriggeredSubsystem extends Subsystem {
         return new TriggeredSubsystem(dto, model);
     }
 
+    /**
+     * Factory method to create TriggeredSubsystem from TriggeredSubsystemDto.
+     *
+     * @param dto   TriggeredSubsystemDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created TriggeredSubsystem block
+     */
+    public static TriggeredSubsystem createFromDto(TriggeredSubsystemDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("TriggeredSubsystemDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid TriggeredSubsystemDto: " + dto.getValidationErrors());
+        }
+
+        return new TriggeredSubsystem(dto, model);
+    }
+
     // === Trigger Block Management ===
 
     /**

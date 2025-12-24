@@ -1,0 +1,54 @@
+## Multiport Switch Block - Output Calculation Template
+## This template implements the multi-way routing logic based on control signal
+
+// Multiport Switch: ${blockName}
+// Control signal determines which data input is routed to output
+{
+    // Read control signal from input 0
+    double control_value = ${controlInputSignalName};
+
+    // Handle NaN and Inf
+    if (isnan(control_value) || isinf(control_value)) {
+        // Invalid control, use default output
+        ${outputPort0SignalName} = ${defaultOutputName};
+    } else {
+        // Convert to integer (round to nearest)
+        int control_int = (int)round(control_value);
+
+        // Determine selected data input based on data port order
+        int selected_input_index;
+
+#if ($dataPortOrderValue == "Zero-based contiguous")
+        // Zero-based: control=0 → input 1, control=1 → input 2, etc.
+        selected_input_index = control_int;
+#else
+        // One-based: control=1 → input 1, control=2 → input 2, etc.
+        selected_input_index = control_int - 1;
+#end
+
+        // Validate range (0 to numberOfDataInputs-1)
+        if (selected_input_index >= 0 && selected_input_index < ${numberOfDataInputsValue}) {
+            // Route selected data input to output
+#set($first = true)
+#foreach($dataInputSignal in $dataInputSignalNames)
+#if($first)
+            if (selected_input_index == 0) {
+                ${outputPort0SignalName} = ${dataInputSignal};
+            }
+#set($first = false)
+#else
+            else if (selected_input_index == $foreach.index) {
+                ${outputPort0SignalName} = ${dataInputSignal};
+            }
+#end
+#end
+            else {
+                // Should not reach here, but use default output as fallback
+                ${outputPort0SignalName} = ${defaultOutputName};
+            }
+        } else {
+            // Out of range, use default output
+            ${outputPort0SignalName} = ${defaultOutputName};
+        }
+    }
+}

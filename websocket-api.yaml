@@ -1,0 +1,631 @@
+openapi: 3.0.3
+info:
+  title: NCSLabLink WebSocket API
+  description: |
+    WebSocket endpoints for NCSLabLink real-time operations including compilation progress,
+    simulation monitoring, and robot control.
+    
+    **Recent Updates (2025):**
+    - Added real-time simulation endpoint (/websocketsimulatert)
+    - Added step control simulation endpoint (/websocketsimulatestep)  
+    - Enhanced message schemas with optimized performance
+    - Improved error handling and progress reporting
+  version: 2.0.0
+
+servers:
+  - url: ws://localhost:8080/ncslab_link
+    description: Local WebSocket server
+  - url: wss://api.ncslab.com
+    description: Production WebSocket server
+
+tags:
+  - name: Compilation
+    description: Real-time compilation with progress updates
+  - name: Simulation
+    description: Real-time simulation operations
+  - name: Real-time
+    description: Optimized real-time simulation endpoints
+  - name: Robotics
+    description: Robot control and programming
+
+paths:
+  /websocketcompile:
+    get:
+      tags:
+        - Compilation
+      summary: WebSocket for compilation progress
+      description: |
+        Real-time compilation with progress updates. Supports multiple target platforms.
+        
+        **Message Flow:**
+        1. Client sends compilation request
+        2. Server sends progress messages: start → generating → generated → compiling → compiled → database inserting → database inserted → finished
+        3. On error, sends error message
+      servers:
+        - url: ws://localhost:8080/ncslab_link
+      responses:
+        '101':
+          description: WebSocket connection established
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CompilationRequest'
+                  - $ref: '#/components/schemas/CompilationProgress'
+                  - $ref: '#/components/schemas/CompilationResult'
+
+  /websocketsimulate:
+    get:
+      tags:
+        - Simulation
+      summary: WebSocket for simulation progress
+      description: |
+        Real-time simulation with progress updates and results streaming.
+        
+        **Message Flow:**
+        1. Client sends simulation request
+        2. Server sends progress: start → generating → generated → compiling → compiled → simulating → simulated → result
+        3. Results are streamed in real-time during simulation
+      servers:
+        - url: ws://localhost:8080/ncslab_link
+      responses:
+        '101':
+          description: WebSocket connection established
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SimulationRequest'
+                  - $ref: '#/components/schemas/SimulationProgress'
+                  - $ref: '#/components/schemas/SimulationResult'
+
+  /websocketsimulatert:
+    get:
+      tags:
+        - Real-time
+      summary: WebSocket for real-time simulation
+      description: |
+        Optimized real-time simulation endpoint with reduced overhead and enhanced performance.
+        
+        **Message Flow:**
+        1. Client sends RT simulation request
+        2. Server sends: start → generating → generated → simulated → result
+        3. Optimized for minimal latency with ArrayList performance improvements
+        4. Enhanced error handling and progress reporting
+      servers:
+        - url: ws://localhost:8080/ncslab_link
+      responses:
+        '101':
+          description: WebSocket connection established
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SimulationRequest'
+                  - $ref: '#/components/schemas/RTSimulationProgress'
+                  - $ref: '#/components/schemas/SimulationResult'
+
+  /websocketsimulatestep:
+    get:
+      tags:
+        - Real-time
+      summary: WebSocket for step control simulation (New)
+      description: |
+        Step-by-step simulation control with real-time features.
+        
+        **Message Flow:**
+        1. Connection established with step control capabilities
+        2. Server sends rt_connection_established with available features
+        3. Support for forward/backward stepping and live updates
+        4. Immediate result streaming for interactive debugging
+        
+        **Real-time Features:**
+        - step_forward_streaming: Execute forward steps with streaming
+        - step_backward_streaming: Execute backward steps with streaming  
+        - live_progress_updates: Real-time progress monitoring
+        - immediate_result_streaming: Instant result delivery
+      servers:
+        - url: ws://localhost:8080/ncslab_link
+      responses:
+        '101':
+          description: WebSocket connection established with step control
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/StepControlRequest'
+                  - $ref: '#/components/schemas/StepControlProgress'
+                  - $ref: '#/components/schemas/StepControlResult'
+
+  /websocketsfcncompile:
+    get:
+      tags:
+        - Compilation
+      summary: WebSocket for S-Function compilation
+      description: |
+        Compile S-Functions with dimension checking and error reporting.
+        
+        **Message Flow:**
+        1. Client sends S-Function data
+        2. Server validates dimensions and compiles
+        3. Returns result or error message
+      servers:
+        - url: ws://localhost:8080/ncslab_link
+      responses:
+        '101':
+          description: WebSocket connection established
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SFunctionRequest'
+                  - $ref: '#/components/schemas/SFunctionResult'
+
+  /hualong:
+    get:
+      tags:
+        - Robotics
+      summary: Hualong robot control WebSocket
+      description: |
+        Real-time robot control and programming interface for Hualong robotics.
+        
+        **Supported Commands:**
+        - `parse_program`: Parse Blockly JSON into robot movements
+        - `execute_program`: Execute robot program (supports dry run mode)
+        - `get_robot_status`: Get current robot pose and joint angles
+        - `emergency_stop`: Emergency stop command
+        - `set_coordinate_system`: Set robot coordinate system
+        
+        **Message Flow varies by command**
+      servers:
+        - url: ws://localhost:8080/ncslab_link
+      responses:
+        '101':
+          description: WebSocket connection established
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/HualongCommand'
+                  - $ref: '#/components/schemas/HualongResponse'
+
+components:
+  schemas:
+    CompilationRequest:
+      type: object
+      required:
+        - action
+        - data
+      properties:
+        action:
+          type: string
+          enum: [compile]
+        data:
+          type: object
+          required:
+            - model
+            - target
+          properties:
+            model:
+              $ref: '#/components/schemas/ModelData'
+            target:
+              type: string
+              enum: [raspberry, windowspc, linuxpc, loongarch, stm32]
+              description: Target compilation platform
+
+    CompilationProgress:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [start, generating, generated, compiling, compiled, database inserting, database inserted, finished, error]
+        message:
+          type: string
+          description: Progress message
+        percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Progress percentage
+        timestamp:
+          type: string
+          format: date-time
+
+    CompilationResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [finished, error]
+        code:
+          type: integer
+          description: Status code (2000 for success)
+        fileName:
+          type: string
+          description: Generated file name
+        filePath:
+          type: string
+          description: Path to generated files
+        error:
+          type: string
+          description: Error message if compilation failed
+
+    SimulationRequest:
+      type: object
+      required:
+        - action
+        - data
+      properties:
+        action:
+          type: string
+          enum: [simulate]
+        data:
+          type: object
+          required:
+            - model
+          properties:
+            model:
+              $ref: '#/components/schemas/ModelData'
+            realtime:
+              type: boolean
+              default: false
+
+    SimulationProgress:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [start, generating, generated, compiling, compiled, simulating, simulated, result, error]
+        message:
+          type: string
+        percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        currentTime:
+          type: number
+          description: Current simulation time
+        totalTime:
+          type: number
+          description: Total simulation time
+
+    RTSimulationProgress:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [start, generating, generated, simulated, result, error]
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    SimulationResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [result, error]
+        code:
+          type: integer
+        resultFile:
+          type: string
+          description: Path to results file
+        data:
+          type: object
+          description: Simulation output data
+          additionalProperties: true
+        error:
+          type: string
+
+    SFunctionRequest:
+      type: object
+      required:
+        - action
+        - data
+      properties:
+        action:
+          type: string
+          enum: [compile]
+        data:
+          type: object
+          required:
+            - functionName
+            - functionCode
+          properties:
+            functionName:
+              type: string
+            functionCode:
+              type: string
+            dimensions:
+              type: object
+              properties:
+                inputs:
+                  type: array
+                  items:
+                    type: integer
+                outputs:
+                  type: array
+                  items:
+                    type: integer
+
+    SFunctionResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [start, result, error]
+        code:
+          type: integer
+        message:
+          type: string
+        filePath:
+          type: string
+        error:
+          type: string
+
+    HualongCommand:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          enum: [parse_program, execute_program, get_robot_status, emergency_stop, set_coordinate_system]
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/ParseProgramData'
+            - $ref: '#/components/schemas/ExecuteProgramData'
+            - $ref: '#/components/schemas/CoordinateSystemData'
+
+    ParseProgramData:
+      type: object
+      required:
+        - blocklyJson
+      properties:
+        blocklyJson:
+          type: object
+          description: Blockly JSON representation
+
+    ExecuteProgramData:
+      type: object
+      required:
+        - movements
+      properties:
+        movements:
+          type: array
+          items:
+            $ref: '#/components/schemas/RobotMovement'
+        dryRun:
+          type: boolean
+          default: false
+          description: Execute in simulation mode without moving robot
+
+    RobotMovement:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [MOVE_J, MOVE_L, DELAY, SET_SPEED, SET_COORDINATE]
+        targetPose:
+          $ref: '#/components/schemas/RobotPose'
+        duration:
+          type: number
+          description: Duration in seconds for DELAY
+        speed:
+          type: number
+          description: Speed percentage (0-100)
+        coordinateSystem:
+          type: string
+          enum: [JOINT, WORLD, TOOL, USER]
+
+    RobotPose:
+      type: object
+      properties:
+        position:
+          $ref: '#/components/schemas/Point3D'
+        orientation:
+          $ref: '#/components/schemas/Orientation'
+        jointAngles:
+          $ref: '#/components/schemas/JointAngles'
+
+    Point3D:
+      type: object
+      required:
+        - x
+        - y
+        - z
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        z:
+          type: number
+
+    Orientation:
+      type: object
+      required:
+        - rx
+        - ry
+        - rz
+      properties:
+        rx:
+          type: number
+          description: Rotation around X axis (degrees)
+        ry:
+          type: number
+          description: Rotation around Y axis (degrees)
+        rz:
+          type: number
+          description: Rotation around Z axis (degrees)
+
+    JointAngles:
+      type: object
+      required:
+        - j1
+        - j2
+        - j3
+        - j4
+        - j5
+        - j6
+      properties:
+        j1:
+          type: number
+        j2:
+          type: number
+        j3:
+          type: number
+        j4:
+          type: number
+        j5:
+          type: number
+        j6:
+          type: number
+
+    CoordinateSystemData:
+      type: object
+      required:
+        - system
+      properties:
+        system:
+          type: string
+          enum: [JOINT, WORLD, TOOL, USER]
+
+    HualongResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [progress, status, result, error]
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            robotStatus:
+              $ref: '#/components/schemas/RobotPose'
+            movements:
+              type: array
+              items:
+                $ref: '#/components/schemas/RobotMovement'
+            progress:
+              type: object
+              properties:
+                current:
+                  type: integer
+                total:
+                  type: integer
+                percentage:
+                  type: number
+
+    ModelData:
+      type: object
+      required:
+        - blocks
+        - lines
+      properties:
+        modelId:
+          type: string
+        userId:
+          type: string
+        blocks:
+          type: array
+          items:
+            type: object
+        lines:
+          type: array
+          items:
+            type: object
+        simulationTime:
+          type: number
+        stepSize:
+          type: number
+
+    StepControlRequest:
+      type: object
+      required:
+        - action
+        - data
+      properties:
+        action:
+          type: string
+          enum: [step_forward, step_backward, get_status, reset]
+        data:
+          type: object
+          properties:
+            model:
+              $ref: '#/components/schemas/ModelData'
+            stepCount:
+              type: integer
+              minimum: 1
+              description: Number of steps to execute
+            realtime:
+              type: boolean
+              default: true
+
+    StepControlProgress:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rt_connection_established, step_forward_streaming, step_backward_streaming, live_progress_updates, immediate_result_streaming, error]
+        status:
+          type: string
+          enum: [connected, stepping, completed, error]
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            realtime_features:
+              type: array
+              items:
+                type: string
+              description: Available real-time features
+            current_step:
+              type: integer
+              description: Current simulation step
+            total_steps:
+              type: integer
+              description: Total simulation steps
+            step_time:
+              type: number
+              description: Current simulation time
+        timestamp:
+          type: integer
+          format: int64
+
+    StepControlResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [result, status, error]
+        code:
+          type: integer
+        data:
+          type: object
+          properties:
+            step_results:
+              type: array
+              items:
+                type: object
+                description: Results for each simulation step
+            simulation_state:
+              type: object
+              description: Current simulation state
+            performance_metrics:
+              type: object
+              properties:
+                execution_time:
+                  type: number
+                memory_usage:
+                  type: number
+                step_rate:
+                  type: number
+        error:
+          type: string

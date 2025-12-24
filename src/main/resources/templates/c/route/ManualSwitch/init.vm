@@ -1,0 +1,6 @@
+## Manual Switch Block Initialization
+## Block: $blockName (ID: $blockId)
+
+// Manual Switch: $blockName
+// Control: ${switchControlValue}
+// Routes input ${switchControlValue} to output

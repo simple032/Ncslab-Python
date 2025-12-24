@@ -53,6 +53,13 @@ public class BlockType{
         blockClassTree.put("Display", com.ncslab.block.sink.Display.class);
         blockClassTree.put("Matplotlib", com.ncslab.block.sink.Matplotlib.class);
         blockClassTree.put("XYGraph", com.ncslab.block.sink.XYGraph.class);
+        blockClassTree.put("StopSimulation", com.ncslab.block.sink.StopSimulation.class);
+        blockClassTree.put("Stop Simulation", com.ncslab.block.sink.StopSimulation.class);
+
+        // Verification
+        blockClassTree.put("Assert", com.ncslab.block.verification.Assert.class);
+        blockClassTree.put("CheckSignalAttributes", com.ncslab.block.verification.CheckSignalAttributes.class);
+        blockClassTree.put("Check Signal Attributes", com.ncslab.block.verification.CheckSignalAttributes.class);
 
         // Source
         blockClassTree.put("Constant", com.ncslab.block.source.Constant.class);
@@ -197,8 +204,13 @@ public class BlockType{
         // Discrete
         blockClassTree.put("DiscreteStateSpace", com.ncslab.block.discrete.DiscreteStateSpace.class);
         blockClassTree.put("Zero-OrderHold", com.ncslab.block.discrete.Zero_Order_Hold.class);
+        blockClassTree.put("FirstOrderHold", com.ncslab.block.discrete.FirstOrderHold.class);
+        blockClassTree.put("First-Order Hold", com.ncslab.block.discrete.FirstOrderHold.class);
         blockClassTree.put("Delay", com.ncslab.block.discrete.Delay.class);
         blockClassTree.put("UnitDelay", com.ncslab.block.discrete.UnitDelay.class);
+        blockClassTree.put("Memory", com.ncslab.block.discrete.Memory.class);
+        blockClassTree.put("TappedDelay", com.ncslab.block.discrete.TappedDelay.class);
+        blockClassTree.put("Tapped Delay", com.ncslab.block.discrete.TappedDelay.class);
         blockClassTree.put("Discrete-TimeIntegrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);
         blockClassTree.put("DiscreteTransferFcn", com.ncslab.block.discrete.Discrete_Transfer_Fcn.class);
         blockClassTree.put("DiscreteTransferFcn(z)", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);
@@ -211,8 +223,18 @@ public class BlockType{
         blockClassTree.put("Mux", com.ncslab.block.route.Mux.class);
         blockClassTree.put("Demux", com.ncslab.block.route.Demux.class);
         blockClassTree.put("Switch", com.ncslab.block.route.Switch.class);
+        blockClassTree.put("Multiport Switch", com.ncslab.block.route.MultiportSwitch.class);
+        blockClassTree.put("ManualSwitch", com.ncslab.block.route.ManualSwitch.class);
+        blockClassTree.put("Manual Switch", com.ncslab.block.route.ManualSwitch.class);
+        blockClassTree.put("Merge", com.ncslab.block.route.Merge.class);
+        blockClassTree.put("IndexVector", com.ncslab.block.route.IndexVector.class);
+        blockClassTree.put("Index Vector", com.ncslab.block.route.IndexVector.class);
         blockClassTree.put("From", com.ncslab.block.route.From.class);
         blockClassTree.put("Goto", com.ncslab.block.route.To.class);
+        blockClassTree.put("BusCreator", com.ncslab.block.route.BusCreator.class);
+        blockClassTree.put("Bus Creator", com.ncslab.block.route.BusCreator.class);
+        blockClassTree.put("BusSelector", com.ncslab.block.route.BusSelector.class);
+        blockClassTree.put("Bus Selector", com.ncslab.block.route.BusSelector.class);
 
         // Discontinuous
         blockClassTree.put("Saturation", com.ncslab.block.discontinuous.Saturation.class);
@@ -251,6 +273,21 @@ public class BlockType{
         blockClassTree.put("BitwiseOperator", com.ncslab.block.logicAndBit.BitwiseOperator.class);
         blockClassTree.put("CompareToZero", com.ncslab.block.logicAndBit.CompareToZero.class);
         blockClassTree.put("Transpose", com.ncslab.block.matrix.Transpose.class);
+
+        // Signal attribute blocks
+        blockClassTree.put("Width", com.ncslab.block.signal.Width.class);
+        blockClassTree.put("Probe", com.ncslab.block.signal.Probe.class);
+        blockClassTree.put("IC", com.ncslab.block.signal.IC.class);
+        blockClassTree.put("SignalSpecification", com.ncslab.block.signal.SignalSpecification.class);
+        blockClassTree.put("Signal Specification", com.ncslab.block.signal.SignalSpecification.class);
+
+        // Data Store blocks
+        blockClassTree.put("DataStoreMemory", com.ncslab.block.signal.DataStoreMemory.class);
+        blockClassTree.put("Data Store Memory", com.ncslab.block.signal.DataStoreMemory.class);
+        blockClassTree.put("DataStoreRead", com.ncslab.block.signal.DataStoreRead.class);
+        blockClassTree.put("Data Store Read", com.ncslab.block.signal.DataStoreRead.class);
+        blockClassTree.put("DataStoreWrite", com.ncslab.block.signal.DataStoreWrite.class);
+        blockClassTree.put("Data Store Write", com.ncslab.block.signal.DataStoreWrite.class);
 
         // Subsystem
         blockClassTree.put("In", com.ncslab.block.subsystem.In.class);
@@ -292,6 +329,9 @@ public class BlockType{
         blockClassTree.put("MatrixSquare", com.ncslab.block.matrix.MatrixSquare.class);
         blockClassTree.put("PermuteMatrix", com.ncslab.block.matrix.PermuteMatrix.class);
         blockClassTree.put("Submatrix", com.ncslab.block.matrix.Submatrix.class);
+        blockClassTree.put("PermuteDimensions", com.ncslab.block.matrix.PermuteDimensions.class);
+        blockClassTree.put("Assignment", com.ncslab.block.matrix.Assignment.class);
+        blockClassTree.put("Reshape", com.ncslab.block.matrix.Reshape.class);
 
         // Advanced Control
         blockClassTree.put("LQRController", com.ncslab.block.advancedControl.LQRController.class);

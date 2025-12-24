@@ -1,0 +1,5 @@
+## IC (Initial Condition) Block Initialization
+## Block: $blockName (ID: $blockId)
+
+// IC Block: $blockName
+static int ${blockId}_first_execution = 1;

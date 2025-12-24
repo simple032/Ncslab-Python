@@ -1,0 +1,38 @@
+
+## Signal Specification Block Output Calculation
+## Block: $blockName (ID: $blockId)
+
+// Signal Specification: Pass-through with validation
+#set($enforceDimensionsParam = $block.getParameterByName("EnforceDimensions"))
+#set($enforceDataTypeParam = $block.getParameterByName("EnforceDataType"))
+#set($enforceSampleTimeParam = $block.getParameterByName("EnforceSampleTime"))
+#set($enforceComplexityParam = $block.getParameterByName("EnforceComplexity"))
+#set($dimensionsParam = $block.getParameterByName("Dimensions"))
+#if($enforceDimensionsParam && $enforceDimensionsParam.getInitString() == "on")
+#if($dimensionsParam)
+// TODO: Add dimension validation in C code
+// Expected dimensions: $dimensionsParam.getInitString()
+#end
+#end
+#if($enforceDataTypeParam && $enforceDataTypeParam.getInitString() == "on")
+// TODO: Add data type validation in C code
+#end
+#if($enforceSampleTimeParam && $enforceSampleTimeParam.getInitString() == "on")
+// TODO: Add sample time validation in C code
+#end
+#if($enforceComplexityParam && $enforceComplexityParam.getInitString() == "on")
+// TODO: Add complexity validation in C code
+#end
+
+// Pass through signal (non-blocking)
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar pass-through
+    $outputVar = $inputVar;
+#else
+    ## Matrix pass-through
+    for (int i = 0; i < $inputHeight; i++) {
+        for (int j = 0; j < $inputWidth; j++) {
+            ${outputVar}[i][j] = ${inputVar}[i][j];
+        }
+    }
+#end

@@ -1,0 +1,9 @@
+## Bus Selector - Initialization Code (C)
+## This template generates initialization code for extracting bus elements
+## Template variables available:
+## - $blockName: Block name
+## - $inputPort0SignalName: Input bus signal name
+## - $selectedSignals: Array of selected element names
+
+// Bus Selector: extracting elements from $inputPort0SignalName
+// Selected elements: #foreach($signal in $selectedSignals)${signal}#if($foreach.hasNext), #end#end

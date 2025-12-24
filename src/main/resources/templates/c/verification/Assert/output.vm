@@ -1,0 +1,31 @@
+
+#if($inputPortList && $inputPortListSize > 0)
+    ## Assert block - check assertion condition
+    #if($inputSignal1DataType == $realDataType)
+        ## Scalar assertion check
+        if (!($inputSignal > 0.0)) {
+            fprintf(stderr, "Assert block $blockName: $errorMessage\\n");
+            #if($stopWhenAssertionFail == "on")
+            exit(1); ## Stop simulation
+            #end
+        }
+    #else
+        ## Matrix assertion check (check if any element is positive)
+        bool assertionPassed = false;
+        for(int i = 0; i < $inputSignal1Height && !assertionPassed; i++) {
+            for(int j = 0; j < $inputSignal1Width && !assertionPassed; j++) {
+                if (${inputSignal}(i, j) > 0.0) {
+                    assertionPassed = true;
+                }
+            }
+        }
+        if (!assertionPassed) {
+            fprintf(stderr, "Assert block $blockName: $errorMessage\\n");
+            #if($stopWhenAssertionFail == "on")
+            exit(1); ## Stop simulation
+            #end
+        }
+    #end
+#else
+    /* Assert block $blockId missing input signal */
+#end

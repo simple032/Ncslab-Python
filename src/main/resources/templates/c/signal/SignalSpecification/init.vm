@@ -1,0 +1,27 @@
+
+## Signal Specification Block Initialization
+## Block: $blockName (ID: $blockId)
+
+// Signal Specification: $blockName
+#set($dimensionsParam = $block.getParameterByName("Dimensions"))
+#set($dimensionsModeParam = $block.getParameterByName("DimensionsMode"))
+#set($dataTypeParam = $block.getParameterByName("DataType"))
+#set($sampleTimeParam = $block.getParameterByName("SampleTime"))
+#set($complexityParam = $block.getParameterByName("Complexity"))
+#set($enforceDimensionsParam = $block.getParameterByName("EnforceDimensions"))
+#set($enforceDataTypeParam = $block.getParameterByName("EnforceDataType"))
+#set($enforceSampleTimeParam = $block.getParameterByName("EnforceSampleTime"))
+#set($enforceComplexityParam = $block.getParameterByName("EnforceComplexity"))
+#if($dimensionsParam)
+// Expected Dimensions: $dimensionsParam.getInitString() (Mode: $dimensionsModeParam.getInitString())
+#end
+#if($dataTypeParam)
+// Expected DataType: $dataTypeParam.getInitString()
+#end
+#if($sampleTimeParam)
+// Expected SampleTime: $sampleTimeParam.getInitString()
+#end
+#if($complexityParam)
+// Expected Complexity: $complexityParam.getInitString()
+#end
+// Enforcement: Dims=${enforceDimensionsParam.getInitString()}, Type=${enforceDataTypeParam.getInitString()}, Time=${enforceSampleTimeParam.getInitString()}, Complexity=${enforceComplexityParam.getInitString()}

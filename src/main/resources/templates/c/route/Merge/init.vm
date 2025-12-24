@@ -1,0 +1,2 @@
+/* Code for initialization of block Merge: (${blockId}) ${blockName} */
+${initialOutput.getInitCodeC()}

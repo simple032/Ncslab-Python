@@ -1,0 +1,9 @@
+## Manual Switch Block Output Calculation
+## Block: $blockName (ID: $blockId)
+
+// Manual Switch output calculation
+#if($switchControlValue == "1")
+${outputVar} = ${inputVar1};  // Route input 1
+#else
+${outputVar} = ${inputVar0};  // Route input 0 (default)
+#end

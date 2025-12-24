@@ -1,0 +1,10 @@
+
+## Width block output code
+## Outputs the width (number of elements) of the input signal
+#if($inputHeight == 1 && $inputWidth == 1)
+    ## Scalar input - width is 1
+    $outputVar = 1.0;
+#else
+    ## Matrix/Vector input - width is total number of elements
+    $outputVar = (double)($inputHeight * $inputWidth);
+#end

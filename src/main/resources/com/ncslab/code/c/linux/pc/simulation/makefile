@@ -24,7 +24,7 @@ CCFlag=-D_SIMU -I $(srcdir) -I $(jsondir) -I $(pidir) -I $(eigendir) -fPIC -g -O
 # -fopenmp -lpthread =pthread
 # -Werror=format-security
 # -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wdate-time
-LDFLAG=-lm  -g -O2 -Wformat -rdynamic -fPIC
+LDFLAG=-fopenmp -lm  -g -O2 -Wformat -rdynamic -fPIC
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)

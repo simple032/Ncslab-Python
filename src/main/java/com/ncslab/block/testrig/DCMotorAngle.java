@@ -8,6 +8,7 @@ import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.testrig.DCMotorAngleDto;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.OutputSignal;
@@ -155,7 +156,7 @@ public class DCMotorAngle extends Block {
 
     public void generateDerivativeCodeC(CodeStructC code) {
         com.ncslab.util.TemplateUtils.populateAllContext(context, this);
-        
+
         // Add DCMotorAngle-specific variables
         context.put("name", name);
         context.put("realInput", getBlockName() + "_real_input");
@@ -166,7 +167,61 @@ public class DCMotorAngle extends Block {
         context.put("motorK", motorK);
         context.put("motorT", motorT);
 
+        // Add state name variables for template
+        context.put("speedStateName", speedState.getName());
+        context.put("speedStateDerivativeName", speedState.getDerivativeName());
+        context.put("angleStateName", angleState.getName());
+        context.put("angleStateDerivativeName", angleState.getDerivativeName());
+        context.put("inputVar", getInputPortVariable(0));
+
         String codeStr = TemplateManager.renderTemplate("c/testrig/DCMotorAngle/derivative.vm", context);
         code.addDerivativeCode(codeStr);
+    }
+
+    /**
+     * Calculate motor derivatives based on first-order dynamics with input saturation
+     * Motor model:
+     *   d(speed)/dt = (4 * saturated_input * motorK - speed) / motorT
+     *   d(angle)/dt = speed
+     */
+    @Override
+    public void calculateDerivative(double t) {
+        // Get input value from input port
+        double inputValue = inputPortList.get(0).getLinkedLine()
+                .getLinkedOutputPort().getOutputSignalC().getData().getInitValue();
+
+        // Apply input saturation
+        double saturatedInput;
+        if (inputValue > input_max) {
+            saturatedInput = input_max;
+        } else if (inputValue < input_min) {
+            saturatedInput = input_min;
+        } else {
+            saturatedInput = inputValue;
+        }
+
+        // Speed derivative: (4 * saturated_input * motorK - speed) / motorT
+        double speedValue = speedState.getData().getInitValue();
+        double speedDerivative = (4 * saturatedInput * motorK - speedValue) / motorT;
+        speedState.setDerivateData(new Data(speedDerivative));
+
+        // Angle derivative: speed (angle is integral of speed)
+        angleState.setDerivateData(new Data(speedValue));
+    }
+
+    /**
+     * Calculate motor outputs
+     * Output port 0: Speed (rad/s)
+     * Output port 1: Angle (degrees)
+     */
+    @Override
+    public void calculateOutput(double t) {
+        // Output speed state to port 0
+        double speedValue = speedState.getData().getInitValue();
+        outputPortList.get(0).getOutputSignalC().setValue(speedValue);
+
+        // Output angle state to port 1
+        double angleValue = angleState.getData().getInitValue();
+        outputPortList.get(1).getOutputSignalC().setValue(angleValue);
     }
 }

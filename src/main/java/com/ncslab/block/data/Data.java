@@ -93,21 +93,57 @@ public class Data {
 
         initString = inString.trim();
 
-        dataString = parseExpression(inString);
+        // DEBUG: Print what we're parsing - check for any brackets
+        boolean debugIC = initString.contains("[");
+        if (debugIC) {
+            System.out.println("Data constructor: parsing '" + initString + "'");
+            System.out.println("  isStringMatrix: " + isStringMatrix(initString));
+        }
 
+        // IMPORTANT: Check if string is a matrix BEFORE calling parseExpression
+        // Otherwise, mfcalc will evaluate "[0; 0]" as MATLAB code and return just "0"
+        // (semicolon is statement separator in MATLAB)
+        if (isStringMatrix(initString)) {
+            dataString = initString;
+            dataType = DataType.MATRIX;
+            initMatrix = parseMatrix(dataString);
+            value = initMatrix;
+            if (debugIC) {
+                System.out.println("  Parsed as MATRIX: " + initMatrix.getRowDimension() + "x" + initMatrix.getColumnDimension());
+            }
+            return;
+        }
+
+        // Only parse expressions for non-matrix strings
+        dataString = parseExpression(inString);
+        if (debugIC) {
+            System.out.println("  After parseExpression: '" + dataString + "'");
+        }
+
+        // CRITICAL FIX: Check if parseExpression returned a matrix string
+        // This handles cases like "zeros(4,1)" which evaluates to "[0;0;0;0]"
         if (isStringMatrix(dataString)) {
             dataType = DataType.MATRIX;
             initMatrix = parseMatrix(dataString);
             value = initMatrix;
+            if (debugIC) {
+                System.out.println("  parseExpression result is MATRIX: " + initMatrix.getRowDimension() + "x" + initMatrix.getColumnDimension());
+            }
             return;
         }
 
         // FIX: Parse scalar numeric value and set getInitValue() for C code generation
         try {
             value = parseDoubleWithInfinity(dataString);
+            if (debugIC) {
+                System.out.println("  Parsed as scalar: " + value);
+            }
         } catch (NumberFormatException e) {
             // If not parseable as number, keep as string (for expressions, variable names, etc.)
             value = dataString;
+            if (debugIC) {
+                System.out.println("  Kept as string: " + value);
+            }
         }
 	}
 
@@ -127,6 +163,21 @@ public class Data {
     }
 
 	private static String parseExpression(String dataString) {
+		// CRITICAL FIX: Handle eye(m,n) pattern before mfcalc
+		// because mfcalc incorrectly evaluates eye(4,1) as eye(4)
+		String trimmed = dataString.trim();
+
+		// Handle eye(m,n) - identity matrix with m rows and n columns
+		if (trimmed.matches("eye\\s*\\(\\s*\\d+\\s*,\\s*\\d+\\s*\\)")) {
+			java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("eye\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)");
+			java.util.regex.Matcher matcher = pattern.matcher(trimmed);
+			if (matcher.find()) {
+				int rows = Integer.parseInt(matcher.group(1));
+				int cols = Integer.parseInt(matcher.group(2));
+				return generateEyeMatrix(rows, cols);
+			}
+		}
+
 		// Get user ID from thread-local context (set by WebSocket endpoint)
         String userId = com.ncslab.util.UserContext.getUserId();
         if (userId == null) {
@@ -180,6 +231,28 @@ public class Data {
             }
         }
         return result.trim();
+	}
+
+	/**
+	 * Generate eye(m,n) identity matrix string
+	 * Workaround for m2pcode/mfcalc bug where eye(4,1) is incorrectly evaluated as eye(4)
+	 */
+	private static String generateEyeMatrix(int rows, int cols) {
+		StringBuilder sb = new StringBuilder("[");
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (i == j) {
+					sb.append("1");
+				} else {
+					sb.append("0");
+				}
+				if (j < cols - 1) sb.append(",");
+			}
+			if (i < rows - 1) sb.append(";");
+		}
+		sb.append("]");
+		log.info("Generated eye({},{}) matrix: {}", rows, cols, sb.toString());
+		return sb.toString();
 	}
 
 	public static boolean isStringMatrix(String matrixString) {

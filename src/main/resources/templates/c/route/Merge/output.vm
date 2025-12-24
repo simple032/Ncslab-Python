@@ -1,0 +1,44 @@
+/* Code for output of block Merge: (${blockId}) ${blockName} */
+#if($numberOfInputsValue && $inputSignalNames && $outputPort0SignalName)
+{
+    ## Merge logic: Select the most recently updated input
+    ## In this simplified implementation, we select the last valid input
+    ## A full implementation would track actual update timestamps
+
+    int Block${blockId}_selectedInput = -1;
+
+    ## Check all inputs from last to first (giving priority to later inputs)
+    #set($numInputs = $numberOfInputsValue)
+    #set($maxIndex = $numInputs - 1)
+    #foreach($i in [0..$maxIndex])
+        #set($reverseIndex = $maxIndex - $i)
+        #if($inputSignalNames.get($reverseIndex))
+    if (Block${blockId}_selectedInput < 0) {
+        Block${blockId}_selectedInput = ${reverseIndex};
+    }
+        #end
+    #end
+
+    ## Output the selected input or initial output
+    if (Block${blockId}_selectedInput >= 0) {
+        switch (Block${blockId}_selectedInput) {
+    #foreach($i in [0..$maxIndex])
+        #if($inputSignalNames.get($i))
+            case ${i}:
+                ${outputPort0SignalName} = ${inputSignalNames.get($i)};
+                break;
+        #end
+    #end
+            default:
+                ${outputPort0SignalName} = ${initialOutputName};
+                break;
+        }
+    } else {
+        ## No input available, use initial output
+        ${outputPort0SignalName} = ${initialOutputName};
+    }
+}
+#else
+    ## Fallback if parameters missing
+    ${outputPort0SignalName} = 0.0; /* Merge parameters missing, using default */
+#end

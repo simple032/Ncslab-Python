@@ -32,7 +32,7 @@ public class OutputSignal {
 	public OutputSignal(Block block,int id,int outputPortId,String localName){
 		this.block=block;
 		this.id=id;
-		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
+		this.name = (block != null) ? "Block" + block.getBlockId() + "_Output" + outputPortId : "Signal_" + id;
 		this.localName=localName;
 		this.outputPortId=outputPortId;
 	}
@@ -42,7 +42,7 @@ public class OutputSignal {
 		this.id=id;
 		this.width=width;
 		this.height=height;
-		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
+		this.name = (block != null) ? "Block" + block.getBlockId() + "_Output" + outputPortId : "Signal_" + id;
 		this.localName=localName;
 		this.outputPortId=outputPortId;
 
@@ -53,7 +53,7 @@ public class OutputSignal {
 	}
 
 	public String getName() {
-		this.name="Block"+block.getBlockId()+"_Output"+outputPortId;
+		this.name = (block != null) ? "Block" + block.getBlockId() + "_Output" + outputPortId : "Signal_" + id;
 		return this.name;
 	}
 
@@ -98,15 +98,16 @@ public class OutputSignal {
 					code += "REAL " + getName() + ";\n";
 				}
 			} else {
-				// True matrix/vector - use Matrix type alias
-				// This uses the predefined type aliases from Matrix.hpp:
-				// MatrixU8 = MatrixT<uint8_t>, MatrixI16 = MatrixT<int16_t>, etc.
+				// True matrix/vector - declare matrix variable with dimensions
+				// CRITICAL FIX: Initialize Eigen matrices with dimensions to avoid 0x0 default construction
+				// This prevents "row >= 0 && row < rows()" assertion failures when accessing elements
+				// before explicit resize()
 				if (cDataType != null) {
-					code += cDataType.getMatrixTypeName() + " " + getName() +
-					        "(" + height + "," + width + ");\n";
+					// Typed matrix - initialize with dimensions
+					code += cDataType.getMatrixTypeName() + " " + getName() + "(" + height + ", " + width + ");\n";
 				} else {
-					// Default Matrix (Matrix = MatrixT<double>)
-					code += "Matrix " + getName() + "(" + height + "," + width + ");\n";
+					// Default dynamic matrix (Matrix = Eigen::MatrixXd) - initialize with dimensions
+					code += "Matrix " + getName() + "(" + height + ", " + width + ");\n";
 				}
 			}
 			break;
@@ -119,25 +120,65 @@ public class OutputSignal {
 
 	}
 
+	/**
+	 * Generate initialization code to resize matrix variables
+	 */
+	public String getInitCodeC() {
+		String code = "";
+
+		// Only generate resize code for matrices (not scalars)
+		boolean isActuallyScalar = (height == 1 && width == 1);
+
+		if (dataType == DataType.MATRIX && !isActuallyScalar) {
+			code += "    " + getName() + ".resize(" + height + ", " + width + ");\n";
+		}
+
+		return code;
+	}
+
     public void setWidth(int width) {
-		// TODO Auto-generated method stub
+		// Update width dimension
 		this.width = width;
-		if(width>1) {
-			this.dataType =DataType.MATRIX;
-            if(width!=this.data.getWidth()) {
-                this.data = new Data(height, width);
-            }
+
+		// CRITICAL FIX: Always check BOTH dimensions to determine dataType
+		// A signal is REAL only if BOTH width=1 AND height=1
+		if(width > 1 || height > 1) {
+			this.dataType = DataType.MATRIX;
+		} else {
+			this.dataType = DataType.REAL;
+		}
+
+		// CRITICAL FIX: Always recreate Data when dimensions change
+		// This ensures Data object matches the dimension metadata
+		if(width != this.data.getWidth() || height != this.data.getHeight()) {
+			if(this.dataType == DataType.MATRIX) {
+				this.data = new Data(height, width);
+			} else {
+				this.data = new Data(0.0);  // Scalar with explicit double
+			}
 		}
 	}
 
     public void setHeight(int height) {
-		// TODO Auto-generated method stub
+		// Update height dimension
 		this.height = height;
-		if(height>1) {
-			this.dataType =DataType.MATRIX;
-            if(height!=this.data.getHeight()) {
-                this.data = new Data(height, width);
-            }
+
+		// CRITICAL FIX: Always check BOTH dimensions to determine dataType
+		// A signal is REAL only if BOTH width=1 AND height=1
+		if(width > 1 || height > 1) {
+			this.dataType = DataType.MATRIX;
+		} else {
+			this.dataType = DataType.REAL;
+		}
+
+		// CRITICAL FIX: Always recreate Data when dimensions change
+		// This ensures Data object matches the dimension metadata
+		if(width != this.data.getWidth() || height != this.data.getHeight()) {
+			if(this.dataType == DataType.MATRIX) {
+				this.data = new Data(height, width);
+			} else {
+				this.data = new Data(0.0);  // Scalar with explicit double
+			}
 		}
 	}
 

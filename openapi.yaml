@@ -1,0 +1,486 @@
+openapi: 3.0.3
+info:
+  title: NCSLabLink API
+  description: |
+    NCSLabLink (M2PLink) is a web application that provides virtual simulation and code generation services,
+    designed to replace MATLAB/Simulink functionality. It compiles block diagrams to executable code for
+    simulation or deployment on various platforms including embedded systems.
+    
+    **Recent Updates (2025):**
+    - Enhanced WebSocket support with real-time simulation endpoints
+    - License management system integration
+    - Performance optimizations (Vector → ArrayList migration)
+    - Template-based code generation with Apache Velocity
+    - Environment variable-based security configuration
+  version: 2.0.0
+  contact:
+    name: NCSLab Team
+    
+servers:
+  - url: http://localhost:8080/ncslab_link
+    description: Local development server
+  - url: https://api.ncslab.com
+    description: Production server
+
+tags:
+  - name: Compilation
+    description: Code compilation for various target platforms
+  - name: Simulation
+    description: Model simulation operations
+  - name: Code Execution
+    description: Execute code in various languages
+  - name: Utility
+    description: Utility endpoints
+  - name: License
+    description: License management and validation
+
+paths:
+  /compile/{platform}:
+    post:
+      tags:
+        - Compilation
+      summary: Compile model for target platform
+      description: Compiles block diagram model to C code for specified platform
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [raspberry, windowspc, linuxpc, loongarch, stm32]
+          description: Target compilation platform
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelData'
+      responses:
+        '200':
+          description: Compilation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompileResponse'
+        '400':
+          description: Compilation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /compilestm32:
+    post:
+      tags:
+        - Compilation
+      summary: Compile model for STM32
+      description: Specialized endpoint for STM32 microcontroller compilation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelData'
+      responses:
+        '200':
+          description: Compilation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompileResponse'
+
+  /simulate:
+    post:
+      tags:
+        - Simulation
+      summary: Simulate model
+      description: Runs simulation of the block diagram model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelData'
+      responses:
+        '200':
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulateResponse'
+
+  /python:
+    post:
+      tags:
+        - Code Execution
+      summary: Execute Python code
+      description: Executes Python code through external Python server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeExecutionRequest'
+      responses:
+        '200':
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeExecutionResponse'
+    get:
+      tags:
+        - Code Execution
+      summary: Python endpoint status
+      description: Check Python server availability
+      responses:
+        '200':
+          description: Server status
+
+  /octave:
+    post:
+      tags:
+        - Code Execution
+      summary: Execute Octave/MATLAB code
+      description: Executes Octave/MATLAB code through external Octave server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeExecutionRequest'
+      responses:
+        '200':
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeExecutionResponse'
+    get:
+      tags:
+        - Code Execution
+      summary: Octave endpoint status
+      description: Check Octave server availability
+      responses:
+        '200':
+          description: Server status
+
+  /mfcalc:
+    post:
+      tags:
+        - Code Execution
+      summary: Execute MFCalc calculations
+      description: Performs MFCalc calculations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeExecutionRequest'
+      responses:
+        '200':
+          description: Calculation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeExecutionResponse'
+    get:
+      tags:
+        - Code Execution
+      summary: MFCalc endpoint status
+      description: Check MFCalc server availability
+      responses:
+        '200':
+          description: Server status
+
+  /function:
+    post:
+      tags:
+        - Compilation
+      summary: Generate S-Function
+      description: Generates S-Function files from provided code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SFunctionRequest'
+      responses:
+        '200':
+          description: Generation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+
+  /ai/{action}:
+    post:
+      tags:
+        - Utility
+      summary: Get block properties for AI
+      description: Returns block properties for AI/UI purposes
+      parameters:
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+          description: AI action type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+              description: Array of block type names
+      responses:
+        '200':
+          description: Block properties
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/BlockProperties'
+
+  /test:
+    get:
+      tags:
+        - Utility
+      summary: Test endpoint
+      description: Simple test endpoint to verify service availability
+      responses:
+        '200':
+          description: Test successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 2000
+
+components:
+  schemas:
+    ModelData:
+      type: object
+      required:
+        - blocks
+        - lines
+      properties:
+        modelId:
+          type: string
+          description: Unique model identifier
+        userId:
+          type: string
+          description: User identifier
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Block'
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/Line'
+        simulationTime:
+          type: number
+          description: Simulation duration
+        stepSize:
+          type: number
+          description: Simulation step size
+
+    Block:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+          description: Block type (e.g., Constant, Sum, Integrator)
+        id:
+          type: string
+          description: Unique block identifier
+        name:
+          type: string
+          description: Block display name
+        params:
+          type: object
+          description: Block-specific parameters
+          additionalProperties: true
+        position:
+          type: object
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+
+    Line:
+      type: object
+      required:
+        - srcBlock
+        - srcPort
+        - dstBlock
+        - dstPort
+      properties:
+        srcBlock:
+          type: string
+          description: Source block ID
+        srcPort:
+          type: integer
+          description: Source port number
+        dstBlock:
+          type: string
+          description: Destination block ID
+        dstPort:
+          type: integer
+          description: Destination port number
+
+    BaseResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Response code (2000 for success, 400 for error)
+          example: 2000
+        message:
+          type: string
+          description: Response message
+
+    CompileResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            fileName:
+              type: string
+              description: Generated executable filename
+            filePath:
+              type: string
+              description: Path to generated files
+            errors:
+              type: array
+              items:
+                type: string
+              description: Compilation errors if any
+
+    SimulateResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            resultFile:
+              type: string
+              description: Path to simulation results file
+            data:
+              type: object
+              description: Simulation output data
+
+    CodeExecutionRequest:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Code to execute
+        modelId:
+          type: string
+          description: Model identifier
+        userId:
+          type: string
+          description: User identifier
+
+    CodeExecutionResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 2000
+        result:
+          type: string
+          description: Execution output
+        figures:
+          type: array
+          items:
+            type: string
+          description: Generated figure URLs
+        logs:
+          type: string
+          description: Execution logs
+        error:
+          type: string
+          description: Error message if any
+
+    SFunctionRequest:
+      type: object
+      required:
+        - functionName
+        - functionBody
+      properties:
+        functionName:
+          type: string
+          description: S-Function name
+        functionBody:
+          type: string
+          description: S-Function implementation code
+        userId:
+          type: string
+          description: User identifier
+        modelId:
+          type: string
+          description: Model identifier
+
+    BlockProperties:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: true
+        inputs:
+          type: integer
+        outputs:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Detailed error information
+
+    LicenseInfo:
+      type: object
+      properties:
+        licenseKey:
+          type: string
+          description: License key identifier
+        user:
+          type: string
+          description: Licensed user
+        startDate:
+          type: string
+          format: date
+          description: License start date
+        endDate:
+          type: string
+          format: date
+          description: License expiration date
+        timestamp:
+          type: integer
+          format: int64
+          description: License timestamp

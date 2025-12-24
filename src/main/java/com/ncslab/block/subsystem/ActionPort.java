@@ -300,6 +300,29 @@ public class ActionPort extends Block {
         return new ActionPort(dto, model);
     }
 
+    /**
+     * Factory method to create ActionPort block from ActionPortDto.
+     *
+     * @param dto   ActionPortDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created ActionPort block
+     */
+    public static ActionPort createFromDto(ActionPortDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("ActionPortDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid ActionPortDto: " + dto.getValidationErrors());
+        }
+
+        return new ActionPort(dto, model);
+    }
+
     // === Code Generation Methods ===
 
     /**

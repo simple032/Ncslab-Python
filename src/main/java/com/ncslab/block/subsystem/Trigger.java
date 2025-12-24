@@ -230,6 +230,29 @@ public class Trigger extends Block {
         return new Trigger(dto, model);
     }
 
+    /**
+     * Factory method to create Trigger block from TriggerDto.
+     *
+     * @param dto   TriggerDto containing block configuration
+     * @param model NCSLabModel containing the block diagram
+     * @return Created Trigger block
+     */
+    public static Trigger createFromDto(TriggerDto dto, NCSLabModel model) {
+        if (dto == null) {
+            throw new IllegalArgumentException("TriggerDto cannot be null");
+        }
+        if (model == null) {
+            throw new IllegalArgumentException("NCSLabModel cannot be null");
+        }
+
+        // Validate DTO before creating block
+        if (!dto.isValid()) {
+            throw new IllegalArgumentException("Invalid TriggerDto: " + dto.getValidationErrors());
+        }
+
+        return new Trigger(dto, model);
+    }
+
     // === Code Generation Methods ===
 
     /**

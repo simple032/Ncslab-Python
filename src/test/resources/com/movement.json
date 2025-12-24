@@ -1,0 +1,78 @@
+{
+  "com": "run",
+  "data": {
+    "armData": {
+      "arm1": 0,
+      "arm2": 0,
+      "arm3": 0,
+      "arm4": 0,
+      "arm5": 0,
+      "arm6": 0
+    },
+    "terminal": {
+      "x": 378,
+      "y": 0,
+      "z": 280,
+      "roll": 0,
+      "pitch": 90,
+      "yaw": 180
+    },
+    "points": [
+      {
+        "id": 1,
+        "key": "p1",
+        "position": {
+          "x": 378,
+          "y": 0,
+          "z": 280
+        },
+        "orientation": {
+          "w": -0.23538292316172763,
+          "x": 0.7607049119794573,
+          "y": -0.38126741921505847,
+          "z": 0.4696361053190599
+        },
+        "jointAngles": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "coordinateSystemId": 1,
+        "robotArmId": 1,
+        "updatedAt": "2025-03-26 10:46:38",
+        "createdAt": "2025-03-26 10:46:38"
+      },
+      {
+        "id": 2,
+        "key": "p2",
+        "position": {
+          "x": 290,
+          "y": 0,
+          "z": 280
+        },
+        "orientation": {
+          "w": -0.23538292316172763,
+          "x": 0.7607049119794573,
+          "y": -0.38126741921505847,
+          "z": 0.4696361053190599
+        },
+        "jointAngles": [
+          0,
+          -19.4427,
+          16.4016,
+          0,
+          3.04111,
+          -7.01671e-15
+        ],
+        "coordinateSystemId": 1,
+        "robotArmId": 1,
+        "updatedAt": "2025-03-26 11:08:26",
+        "createdAt": "2025-03-26 11:08:26"
+      }
+    ],
+    "program": "{\"xml\":{\"_attributes\":{\"xmlns\":\"https://developers.google.com/blockly/xml\"},\"block\":{\"_attributes\":{\"type\":\"procedures_defnoreturn\",\"id\":\"fk~pQ(UcZ.]P(xc5#V:m\",\"x\":\"215\",\"y\":\"-130\"},\"field\":{\"_attributes\":{\"name\":\"NAME\"},\"_text\":\"main\"},\"comment\":{\"_attributes\":{\"pinned\":\"false\",\"h\":\"80\",\"w\":\"160\"},\"_text\":\"Describe this function...\"},\"statement\":{\"_attributes\":{\"name\":\"STACK\"},\"block\":{\"_attributes\":{\"type\":\"MoveL\",\"id\":\"so@F^|ivxk{PI6Py3_}s\"},\"field\":[{\"_attributes\":{\"name\":\"position\"},\"_text\":\"p2\"},{\"_attributes\":{\"name\":\"velocity\"},\"_text\":\"500\"},{\"_attributes\":{\"name\":\"zone\"},\"_text\":\"10\"},{\"_attributes\":{\"name\":\"tool\"},\"_text\":\"1\"}],\"next\":{\"block\":{\"_attributes\":{\"type\":\"MoveL\",\"id\":\"-)nTzv!mGR2_#3|@t7OZ\"},\"field\":[{\"_attributes\":{\"name\":\"position\"},\"_text\":\"p1\"},{\"_attributes\":{\"name\":\"velocity\"},\"_text\":\"500\"},{\"_attributes\":{\"name\":\"zone\"},\"_text\":\"10\"},{\"_attributes\":{\"name\":\"tool\"},\"_text\":\"1\"}],\"next\":{\"block\":{\"_attributes\":{\"type\":\"MoveJ\",\"id\":\"IL!uM)_cs$H|i-VEiWf8\"},\"field\":[{\"_attributes\":{\"name\":\"position\"},\"_text\":\"p2\"},{\"_attributes\":{\"name\":\"velocity\"},\"_text\":\"500\"},{\"_attributes\":{\"name\":\"zone\"},\"_text\":\"10\"},{\"_attributes\":{\"name\":\"tool\"},\"_text\":\"1\"}],\"next\":{\"block\":{\"_attributes\":{\"type\":\"MoveC\",\"id\":\"S0Pr#$D!GIe^eRM_xU`C\"},\"field\":[{\"_attributes\":{\"name\":\"position1\"},\"_text\":\"p1\"},{\"_attributes\":{\"name\":\"position2\"},\"_text\":\"p1\"},{\"_attributes\":{\"name\":\"velocity\"},\"_text\":\"500\"},{\"_attributes\":{\"name\":\"zone\"},\"_text\":\"10\"},{\"_attributes\":{\"name\":\"tool\"},\"_text\":\"1\"}]}}}}}}}}}}}"
+  }
+}

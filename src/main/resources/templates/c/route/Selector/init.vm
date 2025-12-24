@@ -1,0 +1,3 @@
+/* Code for initialization of block Selector:($blockId)$blockName */
+## Selector block typically does not require initialization code
+## Index parsing is done at runtime in the output code

@@ -1,0 +1,15 @@
+/* Code for initialization of block IndexVector:($blockId)$blockName */
+## Index Vector Block Initialization
+## Block: $blockName (ID: $blockId)
+
+// Index Vector: $blockName
+// IndexParamArray: ${indexParamArray.getInitString()}
+// IndexMode: ${indexMode.getInitString()}
+
+// Pre-computed index vector (size: ${IndexVectorSize})
+static int ${blockId}_index_vector[] = {
+#foreach($idx in $IndexVectorParsed)
+    $idx#if($foreach.hasNext),#end
+#end
+};
+static int ${blockId}_vector_size = ${IndexVectorSize};

@@ -1,0 +1,10 @@
+## IC Block Output Calculation
+## Block: $blockName (ID: $blockId)
+
+// IC Block: Initial Condition = ${InitialCondition}
+if (${blockId}_first_execution || t == 0.0) {
+    ${outputVar} = ${InitialCondition};
+    ${blockId}_first_execution = 0;
+} else {
+    ${outputVar} = ${inputVar};  // Pass through
+}

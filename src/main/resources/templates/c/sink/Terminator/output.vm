@@ -1,0 +1,6 @@
+## Terminator block output template
+## This block terminates unused outputs to prevent warnings
+## No actual code generation needed - just a comment for documentation
+
+/* Terminator block: ${blockName} (Block ${blockId}) - Signal termination point */
+/* This block prevents unconnected output warnings but performs no operations */

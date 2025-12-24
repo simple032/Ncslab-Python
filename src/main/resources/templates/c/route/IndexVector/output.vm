@@ -1,0 +1,7 @@
+## Index Vector Block Output Calculation
+## Block: $blockName (ID: $blockId)
+
+// Index Vector output: pre-computed indices
+for (int i = 0; i < ${blockId}_vector_size; i++) {
+    ${outputVar}[i] = ${blockId}_index_vector[i];
+}

@@ -3,8 +3,6 @@ package com.ncslab.block.io;
 import com.ncslab.block.Block;
 import com.ncslab.block.data.DataType;
 import com.ncslab.line.Line;
-import com.ncslab.block.io.OutputPort;
-import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.data.Data;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.util.TemplateManager;
@@ -13,8 +11,6 @@ import lombok.Setter;
 import org.apache.velocity.VelocityContext;
 
 public class InputPort {
-
-	private OutputPort linkedOutputPort;
 
 	@Getter
 	private Block block;
@@ -35,8 +31,6 @@ public class InputPort {
 		this.block=block;
 
 		this.number=number;
-
-		this.linkedOutputPort=null;
 
 		// Use UUID if available, otherwise fall back to block ID
 		String blockUUID = "null"; // placeholder for UUID

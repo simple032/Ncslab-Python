@@ -1,0 +1,27 @@
+## Display block output template
+## This block displays the current input value during simulation
+## Similar to Scope but only maintains the most recent value
+
+#if($inputPortList && $inputPortListSize > 0 && $scopeStruct)
+    /* Display block: ${blockName} (Block ${blockId}) */
+    if (sfcnIsMajorStep()) {
+        /* Clear previous value and store current value for display */
+        ${scopeStructName}.timeList.clear();
+        ${scopeStructName}.dataList.clear();
+        ${scopeStructName}.timeList.push_back(sfcnGetT());
+
+        #if($inputSignal1DataType == $realDataType)
+            /* Scalar value display */
+            ${scopeStructName}.dataList.push_back($inputSignal);
+        #else
+            /* Matrix value display - flatten matrix into vector */
+            for(int i = 0; i < $inputSignal1Height; i++) {
+                for(int j = 0; j < $inputSignal1Width; j++) {
+                    ${scopeStructName}.dataList.push_back(${inputSignal}(i, j));
+                }
+            }
+        #end
+    }
+#else
+    /* Display block $blockId missing parameters - no data logging */
+#end

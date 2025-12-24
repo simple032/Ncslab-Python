@@ -72,15 +72,30 @@ void discreteInitFixed() {
 //xiazhiqiang:Computes the greatest common divisor of the sampling time array
 double gcd(double x, double y)
 {
+	// Handle negative or zero sample times (inherited/auto sample time)
+	// Negative sample times like -1 indicate "inherited" timing
+	if (x <= 0 || y <= 0) {
+		// Return the positive one, or 0 if both are non-positive
+		if (x > 0) return x;
+		if (y > 0) return y;
+		return 0;
+	}
+
 	int a = (int)(x * 1000);
 	int b = (int)(y * 1000);
+
+	// Handle edge cases
+	if (a == 0) return y;
+	if (b == 0) return x;
+
 	int result;
-	for (result = a; result >= 0; result--)
+	// CRITICAL FIX: Loop must stop at 1, not 0, to avoid division by zero
+	for (result = (a < b ? a : b); result > 0; result--)
 	{
 		if (0 == a % result && 0 == b % result)
 			return result / 1000.0;
 	}
-	return 0;
+	return 0.001; // Return 1ms as fallback instead of 0
 }
 
 double gcd1(double a[]) {
@@ -89,7 +104,10 @@ double gcd1(double a[]) {
 	for (i = 0; i < mp->blockNum; i++) {
 		if (a[i] == 0) {
 			break;
-		}
+		}else if(a[i] < 0){
+            d = STEP_SIZE;
+            continue;
+        }
 		d = gcd(d, a[i]);
 	}
 	return d;

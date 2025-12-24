@@ -1,0 +1,26 @@
+{
+    "userName" : "user1" ,
+    "modelName" : "Unnamed" ,
+    "config" : {
+        "FixedStep" : "auto" ,
+        "Solver" : "FixedStepDiscrete",
+        "StartTime" : "0.0" ,
+        "StopTime" : "20.0" ,
+        "MaxDataPoints" : "1000" 
+    } , 
+    "canvas" : { 
+        "width" : "1000" ,
+        "height" : "1000" 
+     }
+     , 
+    "blocks":[
+        { "blockType" : "Constant" , "srcBlock" : "simulink/Sources/Constant" , "blockName" : "Constant" , "paramValues": {"Value":"1","SampleTime":"-1"} , "shape": {"x":171,"y":102,"angle": 0, "width":100 , "height":100  } , "Position": "[171, 102,271,202]" , "ports": [] },
+        { "blockType" : "Out" , "srcBlock" : "simulink/Sinks/Out1" , "blockName" : "Out" , "paramValues": {} , "shape": {"x":393,"y":93,"angle": 0, "width":100 , "height":100  } , "Position": "[393, 93,493,193]" , "ports": [] },
+        { "blockType" : "Out" , "srcBlock" : "simulink/Sinks/Out1" , "blockName" : "Out0" , "paramValues": {} , "shape": {"x":393,"y":255,"angle": 0, "width":100 , "height":100  } , "Position": "[393, 255,493,355]" , "ports": [] },
+        { "blockType" : "Sine" , "srcBlock" : "simulink/Sources/Sine Wave" , "blockName" : "Sine" , "paramValues": {"Amplitude":"1","Bias":"0","Frequency":"1","Phase":"0"} , "shape": {"x":174,"y":261,"angle": 0, "width":100 , "height":100  } , "Position": "[174, 261,274,361]" , "ports": [] }
+    ],
+    "lines":[
+        {"fromBlockName":"Constant","fromPortNo":"1","toBlockName":"Out","toPortNo":"1"},
+        {"fromBlockName":"Sine","fromPortNo":"1","toBlockName":"Out0","toPortNo":"1"}
+    ]
+}
