@@ -295,6 +295,7 @@ REAL calculateStateDif(int seq1, int seq2) {
 
 static long oldSec = 0;
 
+/*
 #ifndef _WIN32
 void writeInformation() {
 	struct timeval tv;
@@ -330,7 +331,50 @@ void writeInformation() {
     }
 }
 
-#endif
+#endif*/
+
+void writeInformation(){
+#ifdef _WIN32_WINNT
+	struct timeval tv;
+	PROGRESSTYPE progressType=Simulating;
+	DWORD sec=(GetTickCount()/1000)%60;
+	//gettimeofday(&tv,NULL);
+	if(sec!=oldSec){
+		/*
+		int n=0;
+		while(n<sizeof(progressType)){
+			char *pos=(char *)(&progressType);
+			n+=fwrite(pos+n,1,sizeof(progressType)-n,stdout);	
+		}
+		n=0;
+		while(n<sizeof(&mp->time)){
+			char *pos=(char *)(&mp->time);
+			n+=fwrite(pos+n,1,sizeof(mp->time)-n,stdout);	
+		}*/
+		fputc(0x55,stdout);
+		fputc(0x55,stdout);
+		fwrite(&progressType,1,sizeof(progressType),stdout);
+		printf("%f\n",mp->time);
+		//fwrite(&(mp->time),1,sizeof(mp->time),stdout);
+		
+		fflush(stdout); 
+		oldSec=sec;
+	}
+#else
+	struct timeval tv;
+	PROGRESSTYPE progressType=Simulating;
+	gettimeofday(&tv,NULL);
+	if(tv.tv_sec!=oldSec){
+		fputc(0x55,stdout);
+		fputc(0x55,stdout);
+		fwrite(&progressType,1,sizeof(progressType),stdout);
+		printf("%f\n",mp->time);
+		fflush(stdout); 
+		oldSec=tv.tv_sec;
+	}
+#endif	
+}
+
 
 
 // 初始化缓冲区
@@ -601,4 +645,41 @@ void insert_to_z_table(InterpolationTable *table, int x_index, int y_index, doub
         return;
     }
     table->z[x_index][y_index] = value;
+}
+
+void writeBuf(unsigned char *buf,int size){
+	for(int i=0;i<size;i++){
+		fputc(buf[i],stdout);
+		//fflush(stdout); 
+	}
+}
+
+void writeSavingInformation(int currentTerminal,int terminalNum){
+	PROGRESSTYPE progressType=Saving;
+	/*
+	int n=0;
+	while(n<sizeof(progressType)){
+		char *pos=(char *)(&progressType);
+		n+=fwrite(pos+n,1,sizeof(progressType)-n,stdout);	
+	}
+	
+	n=0;
+	while(n<sizeof(currentTerminal)){
+		char *pos=(char *)(&currentTerminal);
+		n+=fwrite(&currentTerminal,1,sizeof(currentTerminal)-n,stdout);
+	}
+	
+	n=0;
+	while(n<sizeof(terminalNum)){
+		char *pos=(char *)(&terminalNum);
+		n+=fwrite(&terminalNum,1,sizeof(terminalNum)-n,stdout);
+	}*/
+	
+	fputc(0x55,stdout);
+	fputc(0x55,stdout);
+	
+	writeBuf((unsigned char *)(&progressType),sizeof(progressType));
+	writeBuf((unsigned char *)(&currentTerminal),sizeof(currentTerminal));
+	writeBuf((unsigned char *)(&terminalNum),sizeof(terminalNum));
+	fflush(stdout);
 }

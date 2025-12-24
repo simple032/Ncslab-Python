@@ -119,7 +119,7 @@ public class SimulateWebSocket {
 	}
 
 	private void sendResultMessage(Session session, CodeModelC modelC) throws IOException{
-		String resultsPath = "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json";
+		String resultsPath = "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.bin";
 		WebSocketMessageDto message = WebSocketMessageDto.createResultMessage(
 			resultsPath, modelC.getUserId(), modelC.getModelId());
         if(session!=null) {
@@ -288,8 +288,8 @@ public class SimulateWebSocket {
                 System.out.println("WebSocket model created successfully: " + modelC.getModelName() + 
                 				   " on " + host + " with " + modelC.getBlockList().size() + " blocks");
 
-                //和sfunction冲突
-//                modelC.removeAllFiles();
+                //TODO:和sfunction冲突
+               	modelC.removeAllFiles();
 
                 modelC.generate();
 

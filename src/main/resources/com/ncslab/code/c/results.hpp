@@ -2,5 +2,6 @@
 #define RESULTS_HPP
 
 void NCSLabSaveResult();
+void NCSLabSaveResultBin();
 
 #endif

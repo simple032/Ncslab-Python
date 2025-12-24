@@ -284,5 +284,13 @@ void storeDerivative(int);
 void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
 
+enum PROGRESSTYPE{
+	Simulating=1,
+	Saving=2,
+	Ending=-1
+};
+
+void writeSavingInformation(int,int);
+
 #endif
 

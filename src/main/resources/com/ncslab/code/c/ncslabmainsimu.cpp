@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
 
 	double endTime = 10;
 	double end = -1;
+	PROGRESSTYPE progressType=Ending;
 	NCSLabInit();
 
 
@@ -32,9 +33,16 @@ int main(int argc, char* argv[]) {
 	ncslabLoop();
 
 	NCSLabTerminate();
-	NCSLabSaveResult();
+	//NCSLabSaveResult();
+	NCSLabSaveResultBin();
 	NCSLabFinalize();
 
-	fwrite(&end, 1, sizeof(end), stdout);
+	//fwrite(&end, 1, sizeof(end), stdout);
+	
+	#ifdef _WIN32_WINNT	
+    fputc(0x55,stdout);
+    fputc(0x55,stdout);
+#endif
+    fwrite(&progressType,1,sizeof(progressType),stdout);
 }
 

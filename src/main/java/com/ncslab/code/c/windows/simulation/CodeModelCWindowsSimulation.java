@@ -57,7 +57,27 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
     public void copyLibraryFiles(){
 
     }
+    
+    private void sendSavingMessage(Session session,int currentTerminal,int terminalNum) throws IOException{
+		JSONObject jb=new JSONObject();
+		jb.put("msg", "saving");
+		jb.put("currentTerminal", currentTerminal);
+		jb.put("terminalNum",terminalNum);
+		session.getBasicRemote().sendText(jb.toString());
+	}
+    
+    private double readDouble(LittleEndianDataInputStream out)  throws IOException{
+		byte c;
+		String valueString="";
+		while((c=out.readByte())!='\n') {
+			valueString+=(char)c;
+		}
+		//System.out.println(valueString);
+		return Double.parseDouble(valueString);
+	}
 
+    
+    
 	public void simulate(Session session) throws ModelException {
 		Process process = null;
 		System.out.println("Executing simulation codes...");
@@ -122,33 +142,44 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 			long currentTime = new java.util.Date().getTime();
 
 			while(true) {
-                try {
-                    double time = out.readDouble();
-
-                    if (time < 0) {
-                        break;
-                    }
-
-                    // send the simulation data to the client
-                    sendSimulatingMessage(session, time);
-                }
-                // 会出现这个EOFException，但是不影响程序的运行
-                // 因为EOFException是在读取完所有数据后抛出的异常
-                catch (EOFException e) {
-                	break;
-                }
-
+				int pre1=0,pre2=0;
+				do {
+					pre1=pre2;
+					pre2=out.readByte();
+					if(pre1==0x55&&pre2==0x55) {
+						break;
+					}
+				}
+				while(true);
+				int cmd=out.readInt();
+				//System.out.println(cmd);
+				if(cmd==-1) {
+					break;
+				}
+				switch(cmd) {
+				case 1:
+					double time=readDouble(out);//out.readDouble();
+					sendSimulatingMessage(session,time);
+					break;
+				case 2:
+					int currentTerminal=out.readInt();
+				
+					int terminalNum=out.readInt();
+					sendSavingMessage(session,currentTerminal,terminalNum);
+					break;
+				}
+				
 				//if((new java.util.Date().getTime())-currentTime>1000) {
 				//	currentTime=new java.util.Date().getTime();
-				//	sendSimulatingMessage(session,time);
+					//sendSimulatingMessage(session,time);
 				//}
-
+				
 				//System.out.println(time);
 			}
-
+			
 			out.close();
-
 			process.waitFor();
+			
 		}
 		catch(InterruptedException|IOException e) {
             e.printStackTrace();
