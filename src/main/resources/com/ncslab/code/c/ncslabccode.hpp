@@ -229,6 +229,17 @@ typedef struct {
 	REAL discreteTime;
 	int discreteUpdate;
 
+	// Solver tolerance parameters (matching MATLAB/Simulink)
+	REAL relTol;        // Relative tolerance (default 1e-3)
+	REAL absTol;        // Absolute tolerance (default 1e-6)
+	REAL minStep;       // Minimum step size (default 1e-10)
+	REAL maxStep;       // Maximum step size (default auto)
+
+	// Solver status and diagnostics
+	int solverStatus;   // 0=OK, 1=Warning, 2=Error, 3=Diverged
+	int stepRejections; // Count of rejected steps
+	int totalSteps;     // Total integration steps taken
+
 	int signalNum;
 	int parameterNum;
 	int stateNum;
@@ -238,9 +249,9 @@ typedef struct {
 
 	BLOCK **blocks;
 	int majorStep;
-#ifndef _WIN32
+#ifndef __WIN32
 	struct timeval tv;
-#endif // _WIN32
+#endif // __WIN32
   int terminalNum;
 }MODEL;
 

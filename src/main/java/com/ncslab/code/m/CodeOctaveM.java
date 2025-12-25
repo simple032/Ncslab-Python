@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.dto.communication.MfcalcResponseDto;
-import com.ncslab.dto.figure.FiguresData;
+import com.ncslab.dto.ui.FiguresData;
 import com.ncslab.dto.ui.AppMessage;
 import com.ncslab.dto.ui.UIComponentMessage;
 
