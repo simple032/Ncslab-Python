@@ -1,0 +1,32 @@
+/* Discrete update for block CounterLimited:(${blockId}) ${blockName} */
+#if(${countDirection.getInitString()} == "Up")
+    // Count up
+    #if(${outputAtTerminalCount.getInitString()} == "Wrap")
+        // Wrap mode: wrap to 0 when reaching max
+        if (Block${blockId}_counter_value >= ${maxCount.getName()}) {
+            Block${blockId}_counter_value = 0.0;
+        } else {
+            Block${blockId}_counter_value += 1.0;
+        }
+    #else
+        // Hit mode: hold at max when reached
+        if (Block${blockId}_counter_value < ${maxCount.getName()}) {
+            Block${blockId}_counter_value += 1.0;
+        }
+    #end
+#else
+    // Count down
+    #if(${outputAtTerminalCount.getInitString()} == "Wrap")
+        // Wrap mode: wrap to max when reaching 0
+        if (Block${blockId}_counter_value <= 0.0) {
+            Block${blockId}_counter_value = ${maxCount.getName()};
+        } else {
+            Block${blockId}_counter_value -= 1.0;
+        }
+    #else
+        // Hit mode: hold at 0 when reached
+        if (Block${blockId}_counter_value > 0.0) {
+            Block${blockId}_counter_value -= 1.0;
+        }
+    #end
+#end

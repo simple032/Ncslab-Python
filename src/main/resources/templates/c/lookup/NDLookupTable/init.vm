@@ -1,0 +1,33 @@
+/*Code for init of block n-D Lookup Table:($blockId)$blockName*/
+#if($numDimensions == 1)
+    #set($xLen = $breakpoints1Length)
+init_interpolation_table(&${tableName}, ${xLen}, 1, 1);
+
+#foreach($value in $breakpoints1)
+insert_to_x_table(&${tableName}, ${foreach.index}, ${value});
+#end
+
+#foreach($value in $tableData1D)
+insert_to_z_table(&${tableName}, ${foreach.index}, 0, ${value});
+#end
+
+#elseif($numDimensions == 2)
+    #set($xLen = $breakpoints1Length)
+    #set($yLen = $breakpoints2Length)
+init_interpolation_table(&${tableName}, ${xLen}, ${yLen}, 1);
+
+#foreach($value in $breakpoints1)
+insert_to_x_table(&${tableName}, ${foreach.index}, ${value});
+#end
+
+#foreach($value in $breakpoints2)
+insert_to_y_table(&${tableName}, ${foreach.index}, ${value});
+#end
+
+#foreach($row in $tableData2D)
+#foreach($value in $row)
+insert_to_z_table(&${tableName}, ${foreach.parent.index}, ${foreach.index}, ${value});
+#end
+#end
+
+#end

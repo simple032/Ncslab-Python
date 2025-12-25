@@ -37,7 +37,10 @@ public class LineDto {
     
     @JsonProperty("toBlockUUID")
     private String toBlockUUID = "null";
-    
+
+    @JsonProperty("seriesType")
+    private String seriesType;
+
     // Default constructor for Jackson
     public LineDto() {}
     
@@ -72,6 +75,7 @@ public class LineDto {
                 ", toBlockName='" + toBlockName + '\'' +
                 ", toPortNo='" + toPortNo + '\'' +
                 ", linePath='" + linePath + '\'' +
+                ", seriesType='" + seriesType + '\'' +
                 '}';
     }
 }

@@ -1,0 +1,66 @@
+/*Code for initialization of block DiscretePIDController:(${blockId})${blockName}*/
+#if($P && $I && $D && $N && $SampleTime && $InitialConditionForIntegrator && $InitialConditionForFilter && $integralState && $prevError && $filterState)
+    ## Initialize parameter variables
+    #if($P.initCodeC)
+        ${P.initCodeC}
+    #end
+    #if($I.initCodeC)
+        ${I.initCodeC}
+    #end
+    #if($D.initCodeC)
+        ${D.initCodeC}
+    #end
+    #if($N.initCodeC)
+        ${N.initCodeC}
+    #end
+    #if($SampleTime.initCodeC)
+        ${SampleTime.initCodeC}
+    #end
+    #if($InitialConditionForIntegrator.initCodeC)
+        ${InitialConditionForIntegrator.initCodeC}
+    #end
+    #if($InitialConditionForFilter.initCodeC)
+        ${InitialConditionForFilter.initCodeC}
+    #end
+
+    ## Initialize states with initial conditions
+    #if($P.dataType == $realDataType && $integralState.dataType == $realDataType)
+        ## Scalar states
+        ${integralStateName} = ${InitialConditionForIntegratorName};
+        ${prevErrorName} = 0.0;
+        ${filterStateName} = ${InitialConditionForFilterName};
+    #elseif($P.dataType == $realDataType && $integralState.dataType == $matrixDataType)
+        ## Scalar gains and matrix states
+        #set($hMax = $integralStateHeight - 1)
+        #set($wMax = $integralStateWidth - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                ${integralStateName}[${i}][${j}] = ${InitialConditionForIntegratorName};
+                ${prevErrorName}[${i}][${j}] = 0.0;
+                ${filterStateName}[${i}][${j}] = ${InitialConditionForFilterName};
+            #end
+        #end
+    #else
+        ## Matrix gains and matrix states
+        #set($hMax = $integralStateHeight - 1)
+        #set($wMax = $integralStateWidth - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+                #if($InitialConditionForIntegrator.dataType == $realDataType)
+                    ${integralStateName}[${i}][${j}] = ${InitialConditionForIntegratorName};
+                #else
+                    ${integralStateName}[${i}][${j}] = ${InitialConditionForIntegratorName}[${i}][${j}];
+                #end
+                ${prevErrorName}[${i}][${j}] = 0.0;
+                #if($InitialConditionForFilter.dataType == $realDataType)
+                    ${filterStateName}[${i}][${j}] = ${InitialConditionForFilterName};
+                #else
+                    ${filterStateName}[${i}][${j}] = ${InitialConditionForFilterName}[${i}][${j}];
+                #end
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    /* DiscretePIDController block ${blockId} missing parameters */
+#end

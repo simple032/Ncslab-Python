@@ -3,124 +3,125 @@
 #set($outVar = $outputSignal)
 
 {
-if(fabs(floor(model.time/0.2+0.5)-model.time/0.2)<0.000001&&mp->majorStep>0) {
+## --- Sample time control logic ---
+## If SampleTime is -1 (inherited), execute every major step
+## Otherwise use C++ parameter variable Block{id}_SampleTime for time check
+#if($sampleTime.Value == "-1" || $sampleTime.Value == "-1.0" || $sampleTime.Value == -1)
+if(mp->majorStep > 0) {
+#else
+if(fabs(floor(model.time/Block${blockId}_SampleTime+0.5)-model.time/Block${blockId}_SampleTime)<0.000001 && mp->majorStep>0) {
+#end
+
 #set($h = $s3Width - $s2Width - 1)
 #set($s2WidthMax = $s2Width - 1)
 #set($s3WidthMax = $s3Width - 1)
+
 #if($signal1DataType == $realDataType)
-    // Scalar signal path
-    // Compute current state: x[k] = u[k] - sum(a[i] * x[k-i])
-    Block${blockId}_discrete_transferz_savedata(0, 0) = ${signal1Name};
+//Path 1: Scalar Signal Processing
+
+// --- Step 1: Compute Current State w[k] ---
+// Formula: w[k] = u[k] - sum(a[i] * w[k-i])
+// Initialize with input u[k]
+Block${blockId}_discrete_transferz_savedata(0, 0) = ${signal1Name};
+
   #if($s3Width > 1)
-    for(int i=1; i<${s3Width}; i++){
-    ## Use matrix indexing for signal3 if it's a matrix, direct access if scalar
+  for(int i=1; i<${s3Width}; i++){
+    ## Subtract denominator terms: a[i] * w[k-i]
+    ## Note: buffer index starts at 0, which corresponds to w[k-1]
     #if($signal3.dataType == $matrixDataType)
-        Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name}(i, 0) * Block${blockId}_state_buffer[i-1](0, 0);
+    Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name}(i, 0) * Block${blockId}_state_buffer[i-1](0, 0);
     #else
-        Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name} * Block${blockId}_state_buffer[i-1](0, 0);
+    Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name} * Block${blockId}_state_buffer[i-1](0, 0);
     #end
-    }
+  }
   #else
-    Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name} * Block${blockId}_state_buffer[0](0, 0);
+  // Fallback for 1st order denominator if needed
+  Block${blockId}_discrete_transferz_savedata(0, 0) -= ${signal3Name} * Block${blockId}_state_buffer[0](0, 0);
   #end
 
-    // Compute output: y[k] = sum(b[i] * x[k-i])
-  #if($s2Width == $s3Width)
-    #if($s2Width > 1)
-      ## Use matrix indexing for signal2 if it's a matrix
-      #if($signal2.dataType == $matrixDataType)
-        ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name}(0, 0);
-        for(int i=1; i<${s2Width}; i++)
-            ${outVar} += ${signal2Name}(i, 0) * Block${blockId}_state_buffer[i-1](0, 0);
-      #else
-        ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name};
-        ${outVar} += ${signal2Name} * Block${blockId}_state_buffer[0](0, 0);
-      #end
-    #else
-        ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name};
-        ${outVar} += ${signal2Name} * Block${blockId}_state_buffer[0](0, 0);
-    #end
+// --- Step 2: Compute Output y[k] ---
+// Formula: y[k] = b[0]*w[k] + sum(b[i]*w[k-i])
+
+// 2.1 Calculate b[0] term using CURRENT state w[k] (savedata) -- [FIX: No Delay]
+  #if($signal2.dataType == $matrixDataType)
+    ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name}(0, 0);
   #else
-    ${outVar} = 0;
-    for(int j=0; j<${s2Width}; j++)
-      ## Use matrix indexing for signal2 if it's a matrix
-      #if($signal2.dataType == $matrixDataType)
-        ${outVar} += ${signal2Name}(j, 0) * Block${blockId}_state_buffer[j](0, 0);
-      #else
-        ${outVar} += ${signal2Name} * Block${blockId}_state_buffer[j](0, 0);
-      #end
+    ${outVar} = Block${blockId}_discrete_transferz_savedata(0, 0) * ${signal2Name};
   #end
 
-    // Update state buffer: shift states and store new state
-#if($s3Width>1)
-    // Efficient deque shifting: remove oldest, add newest
-    Matrix newState(1, 1);
-    newState(0, 0) = Block${blockId}_discrete_transferz_savedata(0, 0);
+// 2.2 Add remaining terms b[1]...b[n] using HISTORY state (buffer)
+  #if($s2Width > 1)
+  for(int i=1; i<${s2Width}; i++) {
+    #if($signal2.dataType == $matrixDataType)
+      ${outVar} += ${signal2Name}(i, 0) * Block${blockId}_state_buffer[i-1](0, 0);
+    #else
+      ${outVar} += ${signal2Name} * Block${blockId}_state_buffer[i-1](0, 0);
+    #end
+  }
+  #end
 
-    Block${blockId}_state_buffer.pop_back();   // Remove oldest state
-    Block${blockId}_state_buffer.push_front(newState);  // Add new state at front
-#else
-    Block${blockId}_state_buffer[0](0, 0) = Block${blockId}_discrete_transferz_savedata(0, 0);
-#end
+// --- Step 3: Update State Buffer ---
+// Shift states: w[k-1] <- w[k]
+  #if($s3Width>1)
+  Matrix newState(1, 1);
+  newState(0, 0) = Block${blockId}_discrete_transferz_savedata(0, 0);
+
+  Block${blockId}_state_buffer.pop_back();   // Remove oldest
+  Block${blockId}_state_buffer.push_front(newState);  // Add new w[k]
+  #else
+  Block${blockId}_state_buffer[0](0, 0) = Block${blockId}_discrete_transferz_savedata(0, 0);
+  #end
 
 #else
-    // Vector/Matrix signal path
+// Path 2: Vector/Matrix Signal Processing
   #set($s1HeightMax = $signal1Height - 1)
   #set($s1WidthMax = $signal1Width - 1)
 
-    // For each element of the input signal
+// Iterate over every element in the signal matrix
   #foreach($m in [0..$s1HeightMax])
     #foreach($n in [0..$s1WidthMax])
-        // Compute current state for element [$m,$n]
-        Block${blockId}_discrete_transferz_savedata(${m}, ${n}) = ${signal1Name}(${m}, ${n});
 
-        for(int i=1; i<${s3Width}; i++) {
-      ## Use matrix indexing for signal3 if it's a matrix
+    // --- Step 1: Compute Current State w[k] for element (m,n) ---
+    Block${blockId}_discrete_transferz_savedata(${m}, ${n}) = ${signal1Name}(${m}, ${n});
+
+    for(int i=1; i<${s3Width}; i++) {
       #if($signal3.dataType == $matrixDataType)
-            Block${blockId}_discrete_transferz_savedata(${m}, ${n}) -= ${signal3Name}(i, 0) * Block${blockId}_state_buffer[i-1](${m}, ${n});
+      Block${blockId}_discrete_transferz_savedata(${m}, ${n}) -= ${signal3Name}(i, 0) * Block${blockId}_state_buffer[i-1](${m}, ${n});
       #else
-            Block${blockId}_discrete_transferz_savedata(${m}, ${n}) -= ${signal3Name} * Block${blockId}_state_buffer[i-1](${m}, ${n});
+      Block${blockId}_discrete_transferz_savedata(${m}, ${n}) -= ${signal3Name} * Block${blockId}_state_buffer[i-1](${m}, ${n});
       #end
-        }
+    }
 
-        // Compute output for element [$m,$n]
-      #if($s2Width == $s3Width)
-        ## Use matrix indexing for signal2 and output if they're matrices
-        #if($signal2.dataType == $matrixDataType)
+    // --- Step 2: Compute Output y[k] for element (m,n) ---
+
+    // 2.1 Calculate b[0] term using CURRENT state w[k]
+      #if($signal2.dataType == $matrixDataType)
         ${outVar}(${m}, ${n}) = Block${blockId}_discrete_transferz_savedata(${m}, ${n}) * ${signal2Name}(0, 0);
-        #else
-        ${outVar}(${m}, ${n}) = Block${blockId}_discrete_transferz_savedata(${m}, ${n}) * ${signal2Name};
-        #end
-        #if($s2Width > 1)
-          #set($s2LoopEnd = $s2Width - 1)
-            for(int i=1; i<=${s2LoopEnd}; i++)
-            #if($signal2.dataType == $matrixDataType)
-                ${outVar}(${m}, ${n}) += ${signal2Name}(i, 0) * Block${blockId}_state_buffer[i-1](${m}, ${n});
-            #else
-                ${outVar}(${m}, ${n}) += ${signal2Name} * Block${blockId}_state_buffer[i-1](${m}, ${n});
-            #end
-        #end
       #else
-        ${outVar}(${m}, ${n}) = 0;
-        for(int j=0; j<${s2Width}; j++) {
-          #if($signal2.dataType == $matrixDataType)
-            ${outVar}(${m}, ${n}) += ${signal2Name}(j, 0) * Block${blockId}_state_buffer[j](${m}, ${n});
-          #else
-            ${outVar}(${m}, ${n}) += ${signal2Name} * Block${blockId}_state_buffer[j](${m}, ${n});
-          #end
-        }
+        ${outVar}(${m}, ${n}) = Block${blockId}_discrete_transferz_savedata(${m}, ${n}) * ${signal2Name};
       #end
+
+    // 2.2 Add remaining terms b[1]...b[n] using HISTORY state
+      #if($s2Width > 1)
+      for(int i=1; i<${s2Width}; i++) {
+        #if($signal2.dataType == $matrixDataType)
+          ${outVar}(${m}, ${n}) += ${signal2Name}(i, 0) * Block${blockId}_state_buffer[i-1](${m}, ${n});
+        #else
+          ${outVar}(${m}, ${n}) += ${signal2Name} * Block${blockId}_state_buffer[i-1](${m}, ${n});
+        #end
+      }
+      #end
+
     #end
   #end
 
-    // Update state buffer for all matrix elements: shift states and store new values
-#if($s3Width > 1)
-    // Efficient deque shifting for matrix signals
-    Block${blockId}_state_buffer.pop_back();   // Remove oldest state matrix
-    Block${blockId}_state_buffer.push_front(Block${blockId}_discrete_transferz_savedata);  // Add new state at front
-#else
-    Block${blockId}_state_buffer[0] = Block${blockId}_discrete_transferz_savedata;
-#end
+// --- Step 3: Update State Buffer (Matrix) ---
+  #if($s3Width > 1)
+  Block${blockId}_state_buffer.pop_back();
+  Block${blockId}_state_buffer.push_front(Block${blockId}_discrete_transferz_savedata);
+  #else
+  Block${blockId}_state_buffer[0] = Block${blockId}_discrete_transferz_savedata;
+  #end
 
 #end
 }

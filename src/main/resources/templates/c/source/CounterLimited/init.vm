@@ -1,0 +1,11 @@
+/* Code for initialization of block CounterLimited:(${blockId}) ${blockName} */
+${sampleTimeParam.getInitCodeC()}
+${initialCount.getInitCodeC()}
+${maxCount.getInitCodeC()}
+${countDirection.getInitCodeC()}
+${outputAtTerminalCount.getInitCodeC()}
+sample_time[sample_i] = ${sampleTimeParam.getName()};
+sample_i = sample_i + 1;
+
+// Initialize counter with initial count value
+Block${blockId}_counter_value = ${initialCount.getName()};

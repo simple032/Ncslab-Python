@@ -307,7 +307,7 @@ public class Delay extends DiscreteBlock {
     }
 
     private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
-        String sampleTimeValue = paramValues.optString("SampleTime", "1.0");
+        String sampleTimeValue = paramValues.optString("SampleTime", "-1");  // Default to inherited
         return new Parameter(null, 3, "SampleTime", sampleTimeValue);
     }
 
@@ -378,10 +378,6 @@ public class Delay extends DiscreteBlock {
         // CRITICAL FIX: Set initial output dimensions from IC if it's a matrix
         // This must happen BEFORE updateBlock() is called, so the OutputSignal
         // gets created with the correct dimensions
-        System.out.println("DEBUG Delay " + blockName + ": postConstructionInitialization - checking IC");
-        System.out.println("  initialCondition = " + initialCondition);
-        System.out.println("  output = " + output);
-
         if (initialCondition != null && output != null) {
             Data icData = initialCondition.getData();
             System.out.println("  IC dataType = " + icData.getDataType());

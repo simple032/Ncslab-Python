@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ScopeStruct extends Terminal {
 	@Setter
-    private int maxDataLength=500;
+    private int maxDataLength=1000;
     @Getter
     private int width=1;
     @Getter

@@ -1,0 +1,362 @@
+package com.ncslab.block.math;
+
+import com.ncslab.block.data.Data;
+import com.ncslab.block.data.DataType;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.io.OutputSignal;
+import com.ncslab.block.io.Parameter;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.dto.block.specialized.math.UnaryMinusDto;
+import com.ncslab.dto.core.BlockDto;
+import com.ncslab.ncslablink.BlockCreationException;
+import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.util.TemplateManager;
+import lombok.Getter;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * UnaryMinus block with SIMULINK-compatible parameters and type-safe constructors.
+ *
+ * SIMULINK Parameters:
+ * - SampleTime: Sample time for discrete operation (-1 for inherited)
+ * - OutDataTypeStr: Output data type specification
+ * - SaturateOnIntegerOverflow: Handle integer overflow
+ *
+ * Mathematical Operation:
+ * - Output: y = -u (negation of input)
+ * - Supports both scalar and matrix inputs (element-wise negation)
+ */
+public class UnaryMinus extends MathBlock {
+
+    // === SIMULINK-Compatible Parameters ===
+    private final Parameter sampleTime;
+    private final Parameter outDataType;
+    private final Parameter saturateOnIntegerOverflow;
+
+    // === Static Parameter Definitions ===
+
+    // Parameter defaults matching database format
+    public static final Map<String, String> PARAMETER_DEFAULTS;
+    static {
+        PARAMETER_DEFAULTS = new HashMap<>();
+        PARAMETER_DEFAULTS.put("SampleTime", "-1");  // Inherited
+        PARAMETER_DEFAULTS.put("OutDataTypeStr", "Inherit: Same as input");
+        PARAMETER_DEFAULTS.put("SaturateOnIntegerOverflow", "off");
+    }
+
+    public static final List<String> outputNames = new ArrayList<>();
+
+    public static final List<String> inputNames = new ArrayList<>();
+
+    // Port defaults for centralized initialization
+    public static final List<Map<String, Object>> INPUT_PORT_DEFAULTS;
+    public static final List<Map<String, Object>> OUTPUT_PORT_DEFAULTS;
+
+    static {
+        // Port names
+        outputNames.add("out1");
+        inputNames.add("in1");
+
+        // Input port defaults
+        INPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> input1 = new HashMap<>();
+        input1.put("name", "in1");
+        input1.put("width", 1);
+        input1.put("height", 1);
+        input1.put("dataType", "REAL");
+        INPUT_PORT_DEFAULTS.add(input1);
+
+        // Output port defaults (unary minus has feedthrough)
+        OUTPUT_PORT_DEFAULTS = new ArrayList<>();
+        Map<String, Object> output1 = new HashMap<>();
+        output1.put("name", "out1");
+        output1.put("width", 1);
+        output1.put("height", 1);
+        output1.put("dataType", "REAL");
+        output1.put("feedthrough", true);
+        OUTPUT_PORT_DEFAULTS.add(output1);
+    }
+
+    // === Private Constructor with Typed Parameters ===
+    private UnaryMinus(Parameter sampleTime, Parameter outDataType,
+               Parameter saturateOnIntegerOverflow, String blockName, String blockPath,
+               String blockUUID, NCSLabModel model) {
+        super(createBlockIdentity(blockName, blockPath, blockUUID), model);
+
+        // Validate parameters
+        validateParameters(sampleTime);
+
+        // Assign parameters
+        this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
+        this.outDataType = Objects.requireNonNull(outDataType, "Output data type parameter cannot be null");
+        this.saturateOnIntegerOverflow = Objects.requireNonNull(saturateOnIntegerOverflow, "Saturate parameter cannot be null");
+
+        // Add parameters to parameterList for template context population
+        parameterList.add(this.sampleTime);
+        parameterList.add(this.outDataType);
+        parameterList.add(this.saturateOnIntegerOverflow);
+
+        initializePorts();
+    }
+
+    // === Legacy Constructor (Deprecated) ===
+    @Deprecated
+    public UnaryMinus(JSONObject blockJSON, NCSLabModel model) {
+        super(blockJSON, model);
+
+        // Use name-based parameter access instead of index-based
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        initializePorts();
+    }
+
+    /**
+     * DTO-SPECIALIZED Constructor - Creates UnaryMinus block directly from UnaryMinusDto DTO
+     */
+    public UnaryMinus(UnaryMinusDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Extract parameters from DTO with defaults
+        String sampleTimeValue = dto.getSampleTime() != null ? (dto.getSampleTime().getAsString()) : "-1";
+        String outDataTypeValue = dto.getOutDataTypeStrValue();
+        String saturateValue = dto.getSaturateOnIntegerOverflowValue() ? "on" : "off";
+
+        // Validate sample time
+        double sampleTimeDouble = Double.parseDouble(sampleTimeValue);
+        if (sampleTimeDouble != -1.0 && sampleTimeDouble <= 0.0) {
+            throw new IllegalArgumentException("Sample time must be positive or -1 (inherited)");
+        }
+
+        // Initialize parameters
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        initializePorts();
+
+        System.out.println("DTO-SPECIALIZED: UnaryMinus block created successfully from UnaryMinusDto - " + dto.getBlockName());
+    }
+
+    /**
+     * Factory method to create UnaryMinus block from UnaryMinusDto.
+     *
+     * @param dto The UnaryMinusDto containing block configuration
+     * @param model The NCSLabModel this block belongs to
+     * @return New UnaryMinus block instance
+     * @throws BlockCreationException if block creation fails
+     */
+    public static UnaryMinus createFromDto(UnaryMinusDto dto, NCSLabModel model) throws BlockCreationException {
+        return new UnaryMinus(dto, model);
+    }
+
+    // === Static Factory Method for JSON Deserialization ===
+    public static UnaryMinus fromJSON(JSONObject blockJSON, NCSLabModel model) {
+        try {
+            String blockName = requireNonEmptyString(blockJSON, "blockName");
+            String blockPath = requireNonEmptyString(blockJSON, "blockPath");
+            String blockUUID = blockJSON.optString("blockUUID", "null");
+            JSONObject paramValues = blockJSON.optJSONObject("paramValues");
+
+            if (paramValues == null) {
+                paramValues = new JSONObject();
+            }
+
+            Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
+            Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
+            Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
+
+            UnaryMinus block = new UnaryMinus(sampleTime, outDataType, saturateParam,
+                               blockName, blockPath, blockUUID, model);
+
+            setParameterBlockReference(block, sampleTime, outDataType, saturateParam);
+
+            return block;
+
+        } catch (Exception e) {
+            throw new BlockCreationException("Failed to create UnaryMinus block from JSON: " + e.getMessage(), e);
+        }
+    }
+
+    // === Static Factory Method for Programmatic Creation (DTO-Based) ===
+    /**
+     * Create a UnaryMinus block with default parameters using DTO-based construction.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param model Parent model
+     * @return Configured UnaryMinus block instance
+     */
+    public static UnaryMinus create(String name, String path, NCSLabModel model) {
+        return create(name, path, -1.0, "Inherit: Same as input", false, model);
+    }
+
+    /**
+     * Create a UnaryMinus block with full parameters using DTO-based construction.
+     *
+     * This modern implementation uses DTOs instead of Parameter manipulation,
+     * providing type safety, automatic validation, and cleaner code.
+     *
+     * @param name Block name
+     * @param path Block path
+     * @param sampleTime Sample time (0 for continuous, -1 for inherited, >0 for discrete)
+     * @param outDataType Output data type specification
+     * @param saturateOnOverflow Handle integer overflow
+     * @param model Parent model
+     * @return Configured UnaryMinus block instance
+     */
+    public static UnaryMinus create(String name, String path, double sampleTime,
+                            String outDataType, boolean saturateOnOverflow, NCSLabModel model) {
+        // Build DTO using type-safe builder pattern
+        UnaryMinusDto dto = UnaryMinusDto.builder()
+            .blockName(name)
+            .blockPath(path)
+            .blockUUID("null")
+            .sampleTime(com.ncslab.dto.common.TypedParameter.of(sampleTime))
+            .outDataTypeStr(com.ncslab.dto.common.TypedParameter.of(outDataType))
+            .saturateOnIntegerOverflow(com.ncslab.dto.common.TypedParameter.of(saturateOnOverflow))
+            .build();
+
+        // Validate DTO (automatic validation)
+        com.ncslab.dto.mapper.validation.ValidationResult validation = dto.validate();
+        if (!validation.isValid()) {
+            throw new IllegalArgumentException("Invalid UnaryMinus parameters: " + validation.getErrors());
+        }
+
+        // Use DTO constructor (clean, no JSONObject workarounds needed!)
+        return new UnaryMinus(dto, model);
+    }
+
+    // === Parameter Validation ===
+    private static void validateParameters(Parameter sampleTime) {
+        double sampleTimeValue = sampleTime.getDouble();
+        if (sampleTimeValue != -1.0 && sampleTimeValue <= 0.0) {
+            throw new IllegalArgumentException("Sample time must be positive or -1 (inherited)");
+        }
+    }
+
+    // === Helper Methods for JSON Parameter Creation ===
+    private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
+        String sampleTimeValue = paramValues.optString("SampleTime", "-1");
+        return new Parameter(null, 1, "SampleTime", sampleTimeValue);
+    }
+
+    private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
+        String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
+        return new Parameter(null, 2, "OutDataTypeStr", outDataTypeValue);
+    }
+
+    private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
+        String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
+        return new Parameter(null, 3, "SaturateOnIntegerOverflow", saturateValue);
+    }
+
+    // === Utility Methods ===
+    private static String requireNonEmptyString(JSONObject json, String key) {
+        if (!json.has(key)) {
+            throw new IllegalArgumentException("Required field '" + key + "' is missing");
+        }
+        String value = json.getString(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Field '" + key + "' cannot be empty");
+        }
+        return value;
+    }
+
+    private static void setParameterBlockReference(UnaryMinus block, Parameter... parameters) {
+        for (Parameter param : parameters) {
+            try {
+                java.lang.reflect.Field blockField = Parameter.class.getDeclaredField("block");
+                blockField.setAccessible(true);
+                blockField.set(param, block);
+            } catch (Exception e) {
+                // Fallback: parameter block reference will be null, but should work for basic operations
+            }
+        }
+    }
+
+    private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
+        JSONObject identity = new JSONObject();
+        identity.put("blockType", "UnaryMinus");
+        identity.put("blockName", blockName);
+        identity.put("blockPath", blockPath);
+        identity.put("blockUUID", blockUUID);
+        identity.put("paramValues", new JSONObject()); // Add empty paramValues to avoid JSONException
+        return identity;
+    }
+
+    // === Port Initialization ===
+    private void initializePorts() {
+        inputPortList.add(new InputPort(this, 1));
+        outputPortList.add(new OutputPort(this, 1, true));
+    }
+
+    // === Code Generation Methods ===
+    public void generateInitCodeC(CodeStructC code) {
+        super.generateInitCodeC(code);
+        String initCode="";
+        code.addInitCode(initCode);
+    }
+
+    public void generateOutputCodeC(CodeStructC code) {
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+        String codeStr = TemplateManager.renderTemplate("c/math/UnaryMinus/output.vm", context);
+        code.addOutputCode(codeStr);
+    }
+
+    @Override
+    public void updateDimension() throws MatDimException {
+        OutputPort out = outputPortList.get(0);
+        InputPort in = inputPortList.get(0);
+        OutputSignal signal = in.getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+
+        out.setHeight(signal.getHeight());
+        out.setWidth(signal.getWidth());
+        out.getOutputSignalC().setHeight(signal.getHeight());
+        out.getOutputSignalC().setWidth(signal.getWidth());
+        out.getOutputSignalC().setDataType(signal.getDataType());
+    }
+
+    @Override
+    public void checkDimension() throws MatDimException {
+        // Check dimensions if needed
+    }
+
+    @Override
+    public void calculateOutput(double t) {
+        // SIMULINK UnaryMinus block: computes negation of input (y = -u)
+        Data inputData = inputPortList.get(0).getData();
+        Data outputData;
+
+        if (inputData.getDataType() == DataType.MATRIX) {
+            // Matrix input - apply negation element-wise
+            Jama.Matrix inputMatrix = inputData.getMatrix();
+            Jama.Matrix outputMatrix = new Jama.Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
+
+            for (int i = 0; i < inputMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < inputMatrix.getColumnDimension(); j++) {
+                    double value = inputMatrix.get(i, j);
+                    outputMatrix.set(i, j, -value);
+                }
+            }
+            outputData = new Data(outputMatrix);
+        } else {
+            // Scalar input - apply negation directly
+            double inputValue = inputData.getInitValue();
+            outputData = new Data(1, 1);
+            outputData.setInitValue(-inputValue);
+        }
+
+        outputPortList.get(0).setData(outputData);
+    }
+}

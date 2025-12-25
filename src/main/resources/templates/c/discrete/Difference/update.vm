@@ -1,0 +1,11 @@
+/* Discrete update for Difference block:(${blockId}) ${blockName} */
+/* Store current input as previous value for next time step */
+{
+#if($signalHeight == 1 && $signalWidth == 1)
+    // Scalar signal
+    Block${blockId}_difference_previous = ${signalName};
+#else
+    // Vector/Matrix signal
+    Block${blockId}_difference_previous = ${signalName};
+#end
+}

@@ -1,0 +1,8 @@
+/* Discrete update for block CounterFreeRunning:(${blockId}) ${blockName} */
+#if(${countDirection.getInitString()} == "Up")
+// Count up
+Block${blockId}_counter_value += 1.0;
+#else
+// Count down
+Block${blockId}_counter_value -= 1.0;
+#end

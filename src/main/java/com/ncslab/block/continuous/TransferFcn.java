@@ -506,8 +506,20 @@ public class TransferFcn extends ContinuousBlock {
             throw new BlockCreationException("TransferFcn block requires both numerator and denominator parameters");
         }
         
-        num = numerator.getDoubleArray();
-        den = denominator.getDoubleArray();
+        // num can be a scalar or a vector
+        num = new double[1];
+        if(numerator.getDataType() == DataType.REAL){
+            num[0] = numerator.getValue();
+        }else{
+            num = numerator.getDoubleArray();
+        }               
+
+        den = new double[1];
+        if(denominator.getDataType() == DataType.REAL){
+            den[0] = denominator.getValue();
+        }else{
+            den = denominator.getDoubleArray();
+        }
         
         // Fail fast - validate arrays exist and are non-empty
         if (num == null || num.length == 0) {

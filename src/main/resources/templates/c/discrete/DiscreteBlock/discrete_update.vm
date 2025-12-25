@@ -1,5 +1,5 @@
 /*Code for update of discrete block ${blockType}:(${blockId})${blockName}*/
-while(block${blockId}.discreteTime<=mp->time||block${blockId}.discreteTime-mp->time<0.0000001){
+while(block${blockId}.discreteTime<=mp->time||block${blockId}.discreteTime-mp->time<1e-6){
 $discreteUpdateCodeInside
 block${blockId}.discreteTime+=${sampleTime};
 block${blockId}.discreteUpdated=1;

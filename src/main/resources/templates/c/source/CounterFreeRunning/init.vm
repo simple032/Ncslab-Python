@@ -1,0 +1,9 @@
+/* Code for initialization of block CounterFreeRunning:(${blockId}) ${blockName} */
+${sampleTimeParam.getInitCodeC()}
+${initialCount.getInitCodeC()}
+${countDirection.getInitCodeC()}
+sample_time[sample_i] = ${sampleTimeParam.getName()};
+sample_i = sample_i + 1;
+
+// Initialize counter with initial count value
+Block${blockId}_counter_value = ${initialCount.getName()};

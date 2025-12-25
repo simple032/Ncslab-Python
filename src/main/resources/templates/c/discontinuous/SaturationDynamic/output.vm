@@ -1,0 +1,56 @@
+
+#if($inputVar && $outputVar && $input2Var && $input3Var)
+    ## SaturationDynamic block: y = min(max(u, lo), up)
+    ## Input port 1: signal (u)
+    ## Input port 2: upper limit (up)
+    ## Input port 3: lower limit (lo)
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar input signal
+        #if($outputHeight == 1 && $outputWidth == 1)
+            ## Scalar to scalar saturation with dynamic limits
+            if($inputVar > $input2Var) {
+                $outputVar = $input2Var;
+            } else if($inputVar < $input3Var) {
+                $outputVar = $input3Var;
+            } else {
+                $outputVar = $inputVar;
+            }
+        #else
+            ## Scalar to matrix - broadcast scalar to matrix
+            #set($hMax = $outputHeight - 1)
+            #set($wMax = $outputWidth - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            ## Use array access syntax for C++
+            if($inputVar > $input2Var) {
+                ${outputVar}(${i}, ${j}) = $input2Var;
+            } else if($inputVar < $input3Var) {
+                ${outputVar}(${i}, ${j}) = $input3Var;
+            } else {
+                ${outputVar}(${i}, ${j}) = $inputVar;
+            }
+                #end
+            #end
+        #end
+    #else
+        ## Matrix input signal - element-wise saturation with dynamic limits
+        #set($hMax = $inputHeight - 1)
+        #set($wMax = $inputWidth - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ## Use array access syntax for C++
+        if(${inputVar}(${i}, ${j}) > $input2Var) {
+            ${outputVar}(${i}, ${j}) = $input2Var;
+        } else if(${inputVar}(${i}, ${j}) < $input3Var) {
+            ${outputVar}(${i}, ${j}) = $input3Var;
+        } else {
+            ${outputVar}(${i}, ${j}) = ${inputVar}(${i}, ${j});
+        }
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    /* SaturationDynamic block $blockId missing input ports, using pass-through */
+    $outputVar = $inputVar;
+#end

@@ -1,0 +1,75 @@
+/*Code for Update of DiscretePIDController:(${blockId})${blockName}*/
+#if($signal && $P && $I && $D && $N && $SampleTime && $integralState && $prevError && $filterState)
+    #set($inputVar = $signalName)
+    #set($pGainVar = $PName)
+    #set($iGainVar = $IName)
+    #set($dGainVar = $DName)
+    #set($nCoeffVar = $NName)
+    #set($integralVar = $integralStateName)
+    #set($prevErrVar = $prevErrorName)
+    #set($filterVar = $filterStateName)
+    #set($sampleTimeVar = $sampleTimeName)
+
+{
+    ## Determine sample time (block-scoped to avoid conflicts)
+    real_T Block${blockId}_sampleTimeTmp = ${sampleTimeVar} == -1 ? model.stepSize : ${sampleTimeVar};
+
+    ## Check if it's a sample time hit
+    if(fabs(floor(model.time/Block${blockId}_sampleTimeTmp+0.5) - model.time/Block${blockId}_sampleTimeTmp) < 0.000001 && mp->majorStep > 0) {
+        #if($signal.dataType == $realDataType)
+            ## Scalar discrete PID state update
+            #if($P.dataType == $realDataType)
+                {
+                    real_T error = $inputVar;
+                    real_T prevErr = $prevErrVar;
+                    real_T Ts = Block${blockId}_sampleTimeTmp;
+
+                    ## Tustin (Trapezoidal) discretization for integral:
+                    ## I_sum(k) = I_sum(k-1) + I*Ts*(e(k)+e(k-1))/2
+                    $integralVar = $integralVar + $iGainVar * Ts * (error + prevErr) / 2.0;
+
+                    ## Filtered derivative using Tustin:
+                    ## Df(k) = (Df(k-1)*(2-N*Ts) + 2*N*D*(e(k)-e(k-1))) / (2+N*Ts)
+                    $filterVar = ($filterVar * (2.0 - $nCoeffVar * Ts) + 2.0 * $nCoeffVar * $dGainVar * (error - prevErr)) / (2.0 + $nCoeffVar * Ts);
+
+                    ## Update previous error
+                    $prevErrVar = error;
+                }
+            #end
+        #else
+            ## Matrix discrete PID state update
+            #set($hMax = $PHeight - 1)
+            #set($wMax = $PWidth - 1)
+            for(int i = 0; i <= $hMax; i++) {
+                for(int j = 0; j <= $wMax; j++) {
+                    #set($integralIdx = "${integralVar}(i, j)")
+                    #set($prevErrIdx = "${prevErrVar}(i, j)")
+                    #set($filterIdx = "${filterVar}(i, j)")
+                    #set($iGainIdx = "${iGainVar}(i, j)")
+                    #set($dGainIdx = "${dGainVar}(i, j)")
+                    #set($nCoeffIdx = "${nCoeffVar}(i, j)")
+                    #set($inputIdx = "${inputVar}(i, j)")
+
+                    {
+                        real_T error = $inputIdx;
+                        real_T prevErr = $prevErrIdx;
+                        real_T Ts = Block${blockId}_sampleTimeTmp;
+
+                        ## Tustin discretization for integral
+                        $integralIdx = $integralIdx + $iGainIdx * Ts * (error + prevErr) / 2.0;
+
+                        ## Filtered derivative using Tustin
+                        $filterIdx = ($filterIdx * (2.0 - $nCoeffIdx * Ts) + 2.0 * $nCoeffIdx * $dGainIdx * (error - prevErr)) / (2.0 + $nCoeffIdx * Ts);
+
+                        ## Update previous error
+                        $prevErrIdx = error;
+                    }
+                }
+            }
+        #end
+    }
+}
+#else
+    ## Fallback if parameters missing
+    /* DiscretePIDController block ${blockId} missing parameters for update */
+#end

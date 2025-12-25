@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * MathFunction block with SIMULINK-compatible parameters and type-safe constructors.
- * 
+ *
  * SIMULINK Parameters:
  * - Operator: Mathematical function (sin, cos, tan, log, exp, sqrt, pow, etc.)
  * - SampleTime: Sample time for discrete operation (-1 for inherited)
@@ -43,12 +43,12 @@ public class MathFunction extends MathBlock {
     private final Parameter sampleTime;
     private final Parameter outDataType;
     private final Parameter saturateOnIntegerOverflow;
-    
+
     // === Operational Settings ===
     private final String mathOperator;
-    
+
     // === Static Parameter Definitions ===
-    
+
     // Parameter defaults
     public static final Map<String, String> PARAMETER_DEFAULTS;
     static {
@@ -60,29 +60,29 @@ public class MathFunction extends MathBlock {
     }
 
     public static final List<String> outputNames = new ArrayList<>();
-    
+
     public static final List<String> inputNames = new ArrayList<>();
 
     static {
         // SIMULINK parameter names
-        
+
         // Port names
         outputNames.add("out1");
         inputNames.add("in1");
     }
-    
+
     // === Private Constructor with Typed Parameters ===
-    private MathFunction(Parameter operator, Parameter sampleTime, Parameter outDataType, 
-                        Parameter saturateOnIntegerOverflow, String blockName, String blockPath, 
+    private MathFunction(Parameter operator, Parameter sampleTime, Parameter outDataType,
+                        Parameter saturateOnIntegerOverflow, String blockName, String blockPath,
                         String blockUUID, NCSLabModel model) {
         super(createBlockIdentity(blockName, blockPath, blockUUID), model);
-        
+
         // Extract operator value
         this.mathOperator = operator.getInitString();
-        
+
         // Validate parameters
         validateParameters(operator, sampleTime);
-        
+
         // Assign parameters
         this.operator = Objects.requireNonNull(operator, "Operator parameter cannot be null");
         this.sampleTime = Objects.requireNonNull(sampleTime, "Sample time parameter cannot be null");
@@ -98,12 +98,12 @@ public class MathFunction extends MathBlock {
 
         initializePorts();
     }
-    
+
     // === Legacy Constructor (Deprecated) ===
     @Deprecated
     public MathFunction(JSONObject blockJSON, NCSLabModel model) {
         super(blockJSON, model);
-        
+
         // Extract legacy operator
         String operatorValue;
         if (paramValues.has("Operator"))
@@ -111,10 +111,10 @@ public class MathFunction extends MathBlock {
         else
             operatorValue = paramValues.getString("MathFunctionOperator");
         this.mathOperator = operatorValue;
-        
+
         // Create legacy operator parameter
         this.operator = getParameterByName("Operator");
-        
+
         // Create missing SIMULINK parameters with defaults
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
@@ -149,7 +149,36 @@ public class MathFunction extends MathBlock {
 
         System.out.println("DTO-NATIVE: " + getClass().getSimpleName() + " block created successfully - " + blockDto.getBlockName());
     }
-    
+
+    // ================== 添加此 DTO 专用构造函数 ==================
+    /**
+     * DTO-SPECIALIZED Constructor - Required by OptimizedBlockFactory for MathFunctionDto
+     */
+    public MathFunction(MathFunctionDto dto, NCSLabModel model) {
+        super(dto, model);
+
+        // Retrieve parameters (Note: DTO field is 'functionType', but mapped to 'FunctionType' parameter)
+        this.operator = getParameterByName("Operator");
+        this.sampleTime = getParameterByName("SampleTime");
+        this.outDataType = getParameterByName("OutDataTypeStr");
+        this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // CRITICAL: Extract mathOperator BEFORE initializePorts
+        // initializePorts() needs this to determine if a second input port (pow) is needed
+        if (this.operator != null) {
+            this.mathOperator = this.operator.getInitString();
+        } else {
+            // Fallback if parameter is missing (should not happen with valid DTO)
+            this.mathOperator = "exp";
+            System.err.println("Warning: 'FunctionType' parameter missing in MathFunctionDto for block " + dto.getBlockName());
+        }
+
+        initializePorts();
+
+        System.out.println("DTO-SPECIALIZED: MathFunction block created from MathFunctionDto - " + dto.getBlockName());
+    }
+    // ===========================================================
+
     // === Static Factory Method for JSON Deserialization ===
     public static MathFunction fromJSON(JSONObject blockJSON, NCSLabModel model) {
         try {
@@ -157,28 +186,28 @@ public class MathFunction extends MathBlock {
             String blockPath = requireNonEmptyString(blockJSON, "blockPath");
             String blockUUID = blockJSON.optString("blockUUID", "null");
             JSONObject paramValues = blockJSON.optJSONObject("paramValues");
-            
+
             if (paramValues == null) {
                 paramValues = new JSONObject();
             }
-            
+
             Parameter operator = createOperatorFromJSON(paramValues, blockName);
             Parameter sampleTime = createSampleTimeFromJSON(paramValues, blockName);
             Parameter outDataType = createOutDataTypeFromJSON(paramValues, blockName);
             Parameter saturateParam = createSaturateFromJSON(paramValues, blockName);
-            
+
             MathFunction block = new MathFunction(operator, sampleTime, outDataType, saturateParam,
                                                  blockName, blockPath, blockUUID, model);
-            
+
             setParameterBlockReference(block, operator, sampleTime, outDataType, saturateParam);
-            
+
             return block;
-            
+
         } catch (Exception e) {
             throw new BlockCreationException("Failed to create MathFunction block from JSON: " + e.getMessage(), e);
         }
     }
-    
+
     // === Static Factory Method for Programmatic Creation (DTO-Based) ===
     public static MathFunction create(String name, String path, String mathOperator, NCSLabModel model) {
         return create(name, path, mathOperator, -1.0, "Inherit: Same as input", false, model);
@@ -219,16 +248,16 @@ public class MathFunction extends MathBlock {
         // Use DTO constructor (clean, no JSONObject workarounds needed!)
         return new MathFunction(dto, model);
     }
-    
+
     // === Parameter Validation ===
     private static void validateParameters(Parameter operator, Parameter sampleTime) {
         String operatorValue = operator.getInitString();
         if (operatorValue == null || operatorValue.trim().isEmpty()) {
             throw new IllegalArgumentException("Operator parameter cannot be empty");
         }
-        
+
         // Validate operator type
-        String[] validOperators = {"sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "exp", "log", 
+        String[] validOperators = {"sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "exp", "log",
                                   "abs", "floor", "ceil", "round", "sign", "pow", "transpose"};
         boolean isValid = false;
         for (String validOp : validOperators) {
@@ -240,13 +269,13 @@ public class MathFunction extends MathBlock {
         if (!isValid) {
             throw new IllegalArgumentException("Invalid math operator: " + operatorValue);
         }
-        
+
         double sampleTimeValue = sampleTime.getDouble();
         if (sampleTimeValue != -1.0 && sampleTimeValue <= 0.0) {
             throw new IllegalArgumentException("Sample time must be positive or -1 (inherited)");
         }
     }
-    
+
     // === Helper Methods for JSON Parameter Creation ===
     private static Parameter createOperatorFromJSON(JSONObject paramValues, String blockName) {
         String operatorValue;
@@ -256,22 +285,22 @@ public class MathFunction extends MathBlock {
             operatorValue = paramValues.optString("MathFunctionOperator", "sin");
         return new Parameter(null, 1, "Operator", operatorValue);
     }
-    
+
     private static Parameter createSampleTimeFromJSON(JSONObject paramValues, String blockName) {
         String sampleTimeValue = paramValues.optString("SampleTime", "-1");
         return new Parameter(null, 2, "SampleTime", sampleTimeValue);
     }
-    
+
     private static Parameter createOutDataTypeFromJSON(JSONObject paramValues, String blockName) {
         String outDataTypeValue = paramValues.optString("OutDataTypeStr", "Inherit: Same as input");
         return new Parameter(null, 3, "OutDataTypeStr", outDataTypeValue);
     }
-    
+
     private static Parameter createSaturateFromJSON(JSONObject paramValues, String blockName) {
         String saturateValue = paramValues.optString("SaturateOnIntegerOverflow", "off");
         return new Parameter(null, 4, "SaturateOnIntegerOverflow", saturateValue);
     }
-    
+
     // === Utility Methods ===
     private static String requireNonEmptyString(JSONObject json, String key) {
         if (!json.has(key)) {
@@ -283,7 +312,7 @@ public class MathFunction extends MathBlock {
         }
         return value;
     }
-    
+
     private static void setParameterBlockReference(MathFunction block, Parameter... parameters) {
         for (Parameter param : parameters) {
             try {
@@ -295,7 +324,7 @@ public class MathFunction extends MathBlock {
             }
         }
     }
-    
+
     private static JSONObject createBlockIdentity(String blockName, String blockPath, String blockUUID) {
         JSONObject identity = new JSONObject();
         identity.put("blockType", "MathFunction");
@@ -304,7 +333,7 @@ public class MathFunction extends MathBlock {
         identity.put("blockUUID", blockUUID);
         return identity;
     }
-    
+
     // === Port Initialization ===
     private void initializePorts() {
         System.out.println("DEBUG MathFunction.initializePorts(): mathOperator = '" + mathOperator + "'");
@@ -331,7 +360,7 @@ public class MathFunction extends MathBlock {
     }
 
     public void generateOutputCodeC(CodeStructC code) {
-        com.ncslab.util.TemplateUtils.populateAllContext(context, this);       
+        com.ncslab.util.TemplateUtils.populateAllContext(context, this);
         String codeStr = TemplateManager.renderTemplate("c/math/MathFunction/output.vm", context);
         code.addOutputCode(codeStr);
     }

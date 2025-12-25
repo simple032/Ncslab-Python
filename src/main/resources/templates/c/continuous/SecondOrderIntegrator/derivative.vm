@@ -1,0 +1,27 @@
+/* Code for derivative of block SecondOrderIntegrator: (${blockId}) ${blockName} */
+## Second-order integration: y'' = u
+## Two states: position (x) and velocity (v = dx/dt)
+## dx/dt = v (velocity)
+## dv/dt = u (input is acceleration)
+
+## Position derivative: dx/dt = v (velocity state)
+#if($LimitDxDt && $LimitDxDt == "on")
+    ## Apply velocity saturation if enabled
+    #if($UpperLimitDxDt && $LowerLimitDxDt)
+        if (${stateVelocity} > ${UpperLimitDxDt}) {
+            ${statePositionDerivative} = ${UpperLimitDxDt};
+        } else if (${stateVelocity} < ${LowerLimitDxDt}) {
+            ${statePositionDerivative} = ${LowerLimitDxDt};
+        } else {
+            ${statePositionDerivative} = ${stateVelocity};
+        }
+    #else
+        ${statePositionDerivative} = ${stateVelocity};
+    #end
+#else
+    ## No velocity saturation
+    ${statePositionDerivative} = ${stateVelocity};
+#end
+
+## Velocity derivative: dv/dt = u (input acceleration)
+${stateVelocityDerivative} = ${inputSignal};

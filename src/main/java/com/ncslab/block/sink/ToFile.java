@@ -52,6 +52,7 @@ public class ToFile extends SinkBlock {
 
     // === SIMULINK-Compatible Parameters ===
     private final Parameter fileName;
+    private final Parameter maxDataPoints;
     private final Parameter matrixName;
     private final Parameter saveFormat;
     private final Parameter decimation;
@@ -67,6 +68,7 @@ public class ToFile extends SinkBlock {
 
     static {
         PARAMETER_DEFAULTS.put("FileName", "output.mat");
+        PARAMETER_DEFAULTS.put("MaxDataPoints", "inf");
         PARAMETER_DEFAULTS.put("MatrixName", "data");
         PARAMETER_DEFAULTS.put("SaveFormat", "Timeseries");
         PARAMETER_DEFAULTS.put("Decimation", "1");
@@ -84,6 +86,7 @@ public class ToFile extends SinkBlock {
 
         // Use centralized parameter management via getParameterByName
         this.fileName = getParameterByName("FileName");
+        this.maxDataPoints = getParameterByName("MaxDataPoints");
         this.matrixName = getParameterByName("MatrixName");
         this.saveFormat = getParameterByName("SaveFormat");
         this.decimation = getParameterByName("Decimation");
@@ -120,6 +123,7 @@ public class ToFile extends SinkBlock {
 
         // Get parameters from legacy JSON
         this.fileName = getParameterByName("FileName");
+        this.maxDataPoints = getParameterByName("MaxDataPoints");
         this.matrixName = getParameterByName("MatrixName");
         this.saveFormat = getParameterByName("SaveFormat");
         this.decimation = getParameterByName("Decimation");
@@ -131,6 +135,35 @@ public class ToFile extends SinkBlock {
         // Initialize scope struct for data storage
         String varName = matrixName != null ? matrixName.getInitString() : "data";
         this.scopeStruct = new ScopeStruct(this, 1, varName);
+    }
+
+    
+    @Override
+    public void checkDimension() throws MatDimException {
+        if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
+            OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+            String varName = matrixName != null ? matrixName.getInitString() : "data";
+            this.scopeStruct = new ScopeStruct(this, 1, varName);
+
+            // Set max data points
+            String maxPoints = maxDataPoints != null ? maxDataPoints.getInitString() : "inf";
+            if (!maxPoints.equals("inf")) {
+                try {
+                    scopeStruct.setMaxDataLength(Integer.parseInt(maxPoints));
+                } catch (NumberFormatException e) {
+                    scopeStruct.setMaxDataLength(100000); // Default fallback
+                }
+            }
+
+            scopeStruct.setDimension(signal.getWidth(), signal.getHeight());
+            model.addTerminal(scopeStruct);
+            
+        }
+    }
+
+    @Override
+    public void updateDimension() throws MatDimException {
+        // No dimension updates needed for sink block
     }
 
     @Override
@@ -179,22 +212,6 @@ public class ToFile extends SinkBlock {
         }
     }
 
-    @Override
-    public void checkDimension() throws MatDimException {
-        if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
-            OutputSignal signal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-
-            if (scopeStruct != null) {
-                scopeStruct.setDimension(signal.getWidth(), signal.getHeight());
-                model.addTerminal(scopeStruct);
-            }
-        }
-    }
-
-    @Override
-    public void updateDimension() throws MatDimException {
-        // No dimension updates needed for sink block
-    }
 
     @Override
     public void calculateTerminate(double t) {
@@ -237,11 +254,9 @@ public class ToFile extends SinkBlock {
                 return;
             }
 
-            // Get userId from UserContext or model
-            String userId = com.ncslab.util.UserContext.getUserId();
-            if (userId == null) {
-                userId = String.valueOf(model.getUserId());
-            }
+            // Get userId from UserContext or model                       
+            String userId = String.valueOf(model.getUserId());
+            
             System.out.println("[ToFile] User ID: " + userId);
 
             // Step 1: Get current directory
@@ -405,58 +420,6 @@ public class ToFile extends SinkBlock {
     }
 
     // === Code Generation Methods ===
-
-    @Override
-    public void generateInitCodeC(CodeStructC code) {
-        super.generateInitCodeC(code);
-        if (model.getModelMode() == ModelMode.Simulation) {
-            TemplateUtils.populateAllContext(context, this);
-
-            // Add block-specific context
-            context.put("scopeStruct", scopeStruct);
-            context.put("fileName", fileName.getInitString());
-            context.put("matrixName", matrixName.getInitString());
-            context.put("saveFormat", saveFormat.getInitString());
-
-            String initCode = TemplateManager.renderTemplate("c/sink/ToFile/init.vm", context);
-            code.addInitCode(initCode);
-        }
-    }
-
-    @Override
-    public void generateOutputCodeC(CodeStructC code) {
-        if (model.getModelMode() == ModelMode.Simulation) {
-            TemplateUtils.populateAllContext(context, this);
-
-            // Add block-specific context
-            context.put("scopeStruct", scopeStruct);
-
-            if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
-                OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
-                context.put("inputSignal", inputSignal.getName());
-                context.put("inputSignalHeight", inputSignal.getHeight());
-                context.put("inputSignalWidth", inputSignal.getWidth());
-            }
-
-            String outputCode = TemplateManager.renderTemplate("c/sink/ToFile/output.vm", context);
-            code.addSinkOutputCode(outputCode);
-        }
-    }
-
-    @Override
-    public void generateTerminateCodeC(CodeStructC code) {
-        if (model.getModelMode() == ModelMode.Simulation) {
-            TemplateUtils.populateAllContext(context, this);
-
-            context.put("fileName", fileName.getInitString());
-            context.put("matrixName", matrixName.getInitString());
-            context.put("saveFormat", saveFormat.getInitString());
-            context.put("scopeStruct", scopeStruct);
-
-            String codeStr = TemplateManager.renderTemplate("c/sink/ToFile/terminate.vm", context);
-            code.addTerminateCode(codeStr);
-        }
-    }
 
     @Override
     public void generateInitCodeM(CodeStructM code) {

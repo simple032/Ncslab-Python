@@ -1,0 +1,18 @@
+/*Code for arrays of block DiscretePIDController:(${blockId})${blockName}*/
+#if($signal)
+    ## Declare state arrays for integral, previous error, and filtered derivative
+    #if($signal.dataType == $realDataType)
+        ## Scalar states
+        real_T Block${blockId}_integralState;
+        real_T Block${blockId}_prevError;
+        real_T Block${blockId}_filterState;
+    #else
+        ## Matrix states
+        real_T Block${blockId}_integralState[$signal.height][$signal.width];
+        real_T Block${blockId}_prevError[$signal.height][$signal.width];
+        real_T Block${blockId}_filterState[$signal.height][$signal.width];
+    #end
+#else
+    ## Fallback if signal missing
+    /* DiscretePIDController block ${blockId} missing signal definition */
+#end

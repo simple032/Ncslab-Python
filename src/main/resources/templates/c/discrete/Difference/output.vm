@@ -1,0 +1,21 @@
+/* Code for output of block Difference:(${blockId}) ${blockName} */
+/* Difference calculation: y[n] = u[n] - u[n-1] */
+/* Handles inherited sample time (-1) correctly */
+#if($sampleTime && $signal && $initialCondition)
+{
+    // Handle inherited sample time (-1): use model step size as fallback
+    double effectiveSampleTime = (${SampleTimeName} > 0) ? ${SampleTimeName} : mp->stepSize;
+
+    // Calculate difference: current input minus previous input
+#if($signalHeight == 1 && $signalWidth == 1)
+    // Scalar signal
+    ${output1} = ${signalName} - Block${blockId}_difference_previous;
+#else
+    // Vector/Matrix signal
+    ${output1} = ${signalName} - Block${blockId}_difference_previous;
+#end
+}
+#else
+    // Fallback if parameters missing
+    ${output1} = 0.0; /* Difference parameters missing, using default */
+#end

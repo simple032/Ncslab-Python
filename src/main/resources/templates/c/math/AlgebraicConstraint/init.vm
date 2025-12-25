@@ -1,0 +1,7 @@
+## AlgebraicConstraint initialization code
+## Initialize solver state with initial guess
+
+// AlgebraicConstraint block: ${blockName} (ID: ${blockId})
+// Initialize solution to initial guess
+Block${blockId}_z_current = ${InitialGuessValue};
+Block${blockId}_iterations = 0;

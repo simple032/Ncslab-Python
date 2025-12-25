@@ -1,0 +1,37 @@
+
+#if($inputVar && $outputVar && $quantizationIntervalName)
+    ## Use standardized template variables for robust quantization logic
+    ## Formula: y = q * round(u / q)
+    ## Use floor(x + 0.5) for rounding in C to match Math.round behavior
+    #if($inputHeight == 1 && $inputWidth == 1)
+        ## Scalar input signal
+        #if($outputHeight == 1 && $outputWidth == 1)
+            ## Scalar to scalar quantization
+            $outputVar = $quantizationIntervalName * floor(($inputVar / $quantizationIntervalName) + 0.5);
+        #else
+            ## Scalar to matrix - broadcast scalar to matrix
+            #set($hMax = $outputHeight - 1)
+            #set($wMax = $outputWidth - 1)
+            #foreach($i in [0..$hMax])
+                #foreach($j in [0..$wMax])
+            ## Use array access syntax for C++
+            ${outputVar}(${i}, ${j}) = $quantizationIntervalName * floor(($inputVar / $quantizationIntervalName) + 0.5);
+                #end
+            #end
+        #end
+    #else
+        ## Matrix input signal - element-wise quantization
+        #set($hMax = $inputHeight - 1)
+        #set($wMax = $inputWidth - 1)
+        #foreach($i in [0..$hMax])
+            #foreach($j in [0..$wMax])
+        ## Use array access syntax for C++
+        ${outputVar}(${i}, ${j}) = $quantizationIntervalName * floor((${inputVar}(${i}, ${j}) / $quantizationIntervalName) + 0.5);
+            #end
+        #end
+    #end
+#else
+    ## Fallback if parameters missing
+    /* Quantizer block $blockId missing parameters, using pass-through */
+    $outputVar = $inputVar;
+#end
