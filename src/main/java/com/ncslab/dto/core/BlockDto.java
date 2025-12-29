@@ -323,8 +323,16 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.ReshapeDto.class, name = "Reshape"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.PermuteDimensionsDto.class, name = "PermuteDimensions"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.PermuteDimensionsDto.class, name = "Permute Dimensions"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.AssignmentDto.class, name = "Assignment")
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.matrix.AssignmentDto.class, name = "Assignment"),
     // All DTOs with javax.validation issues now fixed!
+    
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ACVoltageSourceDto.class, name = "AC Voltage Source"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.DCVoltageSourceDto.class, name = "DC Voltage Source"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ResistorDto.class, name = "Resistor"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.CapacitorDto.class, name = "Capacitor"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.InductorDto.class, name = "Inductor"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VoltageSensorDto.class, name = "Voltage Sensor"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.multielement.DiodeDto.class, name = "Diode")
 })
 @Data
 @SuperBuilder

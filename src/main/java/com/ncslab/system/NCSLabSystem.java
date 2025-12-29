@@ -1119,7 +1119,7 @@ public class NCSLabSystem {
         log.info("NCSLabSystem: Starting parseFromGraphData...");
 
         // Process root level cells into this system
-        if (graphData.getCells() != null && graphData.getCells().length > 0) {
+         if (graphData.getCells() != null && graphData.getCells().length > 0) {
             log.info("NCSLabSystem: Processing " + graphData.getCells().length + " cells from graphData");
             processGraphCells(graphData.getCells(), this, null, model, modelName, blockSeqCounter, lineSeqCounter);
         }

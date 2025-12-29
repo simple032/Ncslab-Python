@@ -1,0 +1,46 @@
+package block.elec;
+
+import org.json.JSONObject;
+
+import block.Block;
+import block.io.InputPort;
+import block.io.OutputPort;
+import code.c.CodeStructC;
+import ncslablink.MatDimException;
+import ncslablink.NCSLabModel;
+
+public class Mosfet extends Block {
+
+	private circuit2.block.multielement.Mosfet MosfetE;
+	public Mosfet(JSONObject blockIn, NCSLabModel model,circuit2.block.multielement.Mosfet mosfetE) {
+		super(blockIn, model);
+		// TODO Auto-generated constructor stub
+		inputPortList.add(new InputPort(this, 1));
+		outputPortList.add(new OutputPort(this,1,true));
+		this.MosfetE = mosfetE;
+	}
+
+	public void generateOutputCodeC(CodeStructC code) {
+		String outputCode="/*Code for output of block Voltage Sensor:("+getBlockId()+")"+getBlockName()+"*/\n";
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(0,0)=";
+		outputCode+=MosfetE.getVoltageString();
+		outputCode+=";\n";
+		outputCode+=outputPortList.get(0).getOutputSignalC().getName()+"(0,1)=";
+		outputCode+=MosfetE.getCurrentString();
+		outputCode+=";\n";
+		code.addOutputCode(outputCode);
+	}
+	
+	public void updateDimension() throws MatDimException{
+		OutputPort out = this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort();
+		if(out.getHeight() != 1 || out.getWidth()!=1) {
+			MatDimException e=new MatDimException("Block "+this.blockName+" input dimensions doesn't match !\n \n");
+			throw(e);
+		}
+		OutputPort output = this.getOutputPortList().get(0);
+		output.setHeight(1);
+		output.setWidth(2);
+		output.getOutputSignalC().setHeight(1);
+		output.getOutputSignalC().setWidth(2);
+	}
+}
