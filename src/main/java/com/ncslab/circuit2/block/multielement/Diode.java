@@ -27,6 +27,17 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 		//vFString="0";
 	}
 	
+	public Diode(JSONObject blockJSON,NCSLabModel model) {
+		super(0,blockJSON,model);
+		System.out.println(blockJSON);
+		
+		rOnString=paramValues.getString("Ron");
+		vFString=paramValues.getString("Vf");
+		gOffString=paramValues.getString("Goff");
+		
+		//vFString="0";
+	}
+	
 	public void setupSubCircuitBlocks(int blockId) {
 		//构建二极管中的电阻
 		JSONObject addJSON=new JSONObject();

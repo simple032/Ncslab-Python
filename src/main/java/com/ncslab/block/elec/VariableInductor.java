@@ -1,15 +1,15 @@
-package block.elec;
+package com.ncslab.block.elec;
 
 import org.json.JSONObject;
 
-import block.Block;
-import block.io.InputPort;
-import code.c.CodeStructC;
-import ncslablink.NCSLabModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.NCSLabModel;
 
 public class VariableInductor extends Block {
-	private circuit2.block.element.VariableInductor variableInductorE;
-	public VariableInductor(JSONObject blockJSON,NCSLabModel model,circuit2.block.element.VariableInductor variableInductorE) {
+	private com.ncslab.circuit2.block.element.VariableInductor variableInductorE;
+	public VariableInductor(JSONObject blockJSON,NCSLabModel model,com.ncslab.circuit2.block.element.VariableInductor variableInductorE) {
 		super(blockJSON,model);
 		this.variableInductorE=variableInductorE;
 		inputPortList.add(new InputPort(this,1));

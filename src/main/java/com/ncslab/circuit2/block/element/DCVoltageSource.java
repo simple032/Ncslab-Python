@@ -21,6 +21,16 @@ public class DCVoltageSource extends VoltageSource {
 		
 	}
 	
+	public DCVoltageSource(JSONObject blockJSON,NCSLabModel model) {
+		super(0,blockJSON,model);
+		//this.blockName=this.blockName.replaceAll(" ", "_");
+		//setupEquivilentBlockModels();
+		//System.out.println(blockJSON);
+		
+		vString=paramValues.getString("v0");
+		
+	}
+	
 	public String getVeString() {
 		return this.vString;
 	}

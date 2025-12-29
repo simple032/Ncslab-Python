@@ -21,6 +21,12 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 		lString=paramValues.getString("l");
 	}
 	
+	public Inductor(JSONObject blockJSON,NCSLabModel model) {
+		super(0,blockJSON,model);
+		//System.out.println(blockJSON);
+		lString=paramValues.getString("l");
+	}
+	
 	public String getRString() {
 		return "(2.0*("+this.lString+")/"+this.getSimpleTime()+")";
 	}

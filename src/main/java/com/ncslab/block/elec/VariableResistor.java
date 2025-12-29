@@ -1,16 +1,16 @@
-package block.elec;
+package com.ncslab.block.elec;
 
 import org.json.JSONObject;
 
-import block.Block;
-import block.io.InputPort;
-import block.io.OutputPort;
-import code.c.CodeStructC;
-import ncslablink.NCSLabModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.NCSLabModel;
 
 public class VariableResistor extends Block {
-	private circuit2.block.element.VariableResistor variableResistorE;
-	public VariableResistor(JSONObject blockJSON,NCSLabModel model,circuit2.block.element.VariableResistor variableResistorE) {
+	private com.ncslab.circuit2.block.element.VariableResistor variableResistorE;
+	public VariableResistor(JSONObject blockJSON,NCSLabModel model,com.ncslab.circuit2.block.element.VariableResistor variableResistorE) {
 		super(blockJSON,model);
 		this.variableResistorE=variableResistorE;
 		inputPortList.add(new InputPort(this,1));

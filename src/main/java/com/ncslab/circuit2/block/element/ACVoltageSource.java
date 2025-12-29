@@ -20,6 +20,14 @@ public class ACVoltageSource extends VoltageSource {
 		shift = paramValues.getString("shift");
 		frequency = paramValues.getString("frequency");
 	}
+	
+	public ACVoltageSource(JSONObject blockJSON, NCSLabModel model) {
+		super(0, blockJSON, model);
+		// TODO Auto-generated constructor stub
+		amp = paramValues.getString("amp");
+		shift = paramValues.getString("shift");
+		frequency = paramValues.getString("frequency");
+	}
 
 	public String getVString() {
 		return amp+"*sin("+frequency+"*2*3.1415926*("+currentTime+")+"+shift+"*3.1415926/180)";

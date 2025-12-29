@@ -6,7 +6,7 @@ import com.ncslab.circuit2.block.baseelement.CircuitBlockSingle;
 import com.ncslab.ncslablink.NCSLabModel;
 
 public class VariableCapacitor extends CircuitBlockSingle implements VariableBlock{
-	block.elec.VariableCapacitor variableCapacitorBlock;
+	com.ncslab.block.elec.VariableCapacitor variableCapacitorBlock;
 	
 	private String variableString;
 	
@@ -25,7 +25,7 @@ public class VariableCapacitor extends CircuitBlockSingle implements VariableBlo
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		variableCapacitorBlock=new block.elec.VariableCapacitor(addJSON,model,this);
+		variableCapacitorBlock=new com.ncslab.block.elec.VariableCapacitor(addJSON,model,this);
 		model.addElectBlock(variableCapacitorBlock);
 	}
 	

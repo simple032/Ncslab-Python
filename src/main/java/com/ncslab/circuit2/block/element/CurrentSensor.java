@@ -7,7 +7,7 @@ import com.ncslab.circuit2.block.baseelement.VoltageSource;
 import com.ncslab.ncslablink.NCSLabModel;
 
 public class CurrentSensor extends VoltageSource {
-	block.elec.CurrentSensor currentSensorBlock;
+	com.ncslab.block.elec.CurrentSensor currentSensorBlock;
 	public CurrentSensor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		this.blockModeType=BlockModeType.VoltageSource;
@@ -23,7 +23,7 @@ public class CurrentSensor extends VoltageSource {
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		currentSensorBlock=new block.elec.CurrentSensor(addJSON,model,this);
+		currentSensorBlock=new com.ncslab.block.elec.CurrentSensor(addJSON,model,this);
 		model.addElectBlock(currentSensorBlock);
 	}
 	

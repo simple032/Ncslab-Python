@@ -6,7 +6,7 @@ import com.ncslab.circuit2.block.baseelement.CircuitBlockSingle;
 import com.ncslab.ncslablink.NCSLabModel;
 
 public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,VariableBlock{
-	block.elec.VariableInductor variableInductorBlock;
+	com.ncslab.block.elec.VariableInductor variableInductorBlock;
 	
 	private String variableString;
 	
@@ -25,7 +25,7 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		variableInductorBlock=new block.elec.VariableInductor(addJSON,model,this);
+		variableInductorBlock=new com.ncslab.block.elec.VariableInductor(addJSON,model,this);
 		model.addElectBlock(variableInductorBlock);
 	}
 	

@@ -1,15 +1,15 @@
-package block.elec;
+package com.ncslab.block.elec;
 
 import org.json.JSONObject;
 
-import block.Block;
-import block.io.InputPort;
-import code.c.CodeStructC;
-import ncslablink.NCSLabModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.NCSLabModel;
 
 public class VariableCapacitor extends Block {
-	private circuit2.block.element.VariableCapacitor variableVariableE;
-	public VariableCapacitor(JSONObject blockJSON,NCSLabModel model,circuit2.block.element.VariableCapacitor variableVariableE) {
+	private com.ncslab.circuit2.block.element.VariableCapacitor variableVariableE;
+	public VariableCapacitor(JSONObject blockJSON,NCSLabModel model,com.ncslab.circuit2.block.element.VariableCapacitor variableVariableE) {
 		super(blockJSON,model);
 		this.variableVariableE=variableVariableE;
 		inputPortList.add(new InputPort(this,1));

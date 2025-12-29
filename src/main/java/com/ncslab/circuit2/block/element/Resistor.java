@@ -20,6 +20,12 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 		System.out.println(blockJSON);
 	}
 	
+	public Resistor(JSONObject blockJSON,NCSLabModel model) {
+		super(0,blockJSON,model);
+		rString=paramValues.getString("R");
+		System.out.println(blockJSON);
+	}
+	
 	public String getRString() {
 		if(Double.parseDouble(rString)<=0) {
 			return "1.0";

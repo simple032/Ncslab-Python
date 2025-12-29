@@ -7,7 +7,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 public class ControlledCurrentSource extends CurrentSource {
 
-	private block.elec.ControlledCurrentSource controlledCurrentSource;
+	private com.ncslab.block.elec.ControlledCurrentSource controlledCurrentSource;
 	public ControlledCurrentSource(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		// TODO Auto-generated constructor stub
@@ -22,7 +22,7 @@ public class ControlledCurrentSource extends CurrentSource {
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		controlledCurrentSource=new block.elec.ControlledCurrentSource(addJSON,model);
+		controlledCurrentSource=new com.ncslab.block.elec.ControlledCurrentSource(addJSON,model);
 		model.addElectBlock(controlledCurrentSource);
 	}
 	

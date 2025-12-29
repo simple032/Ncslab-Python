@@ -14,6 +14,12 @@ public class Capacitor extends CircuitBlockSingle {
 		cString=paramValues.getString("c");
 	}
 	
+	public Capacitor(JSONObject blockJSON,NCSLabModel model) {
+		super(0,blockJSON,model);
+		//System.out.println(blockJSON);
+		cString=paramValues.getString("c");
+	}
+	
 	public String getRString() {
 		return "("+this.getSimpleTime()+"/2.0/("+this.cString+"))";
 	}

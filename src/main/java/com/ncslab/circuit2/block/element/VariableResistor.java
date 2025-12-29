@@ -7,7 +7,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.circuit2.block.baseelement.*;
 
 public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,VariableBlock{
-	block.elec.VariableResistor variableResistorBlock;
+	com.ncslab.block.elec.VariableResistor variableResistorBlock;
 	
 	private int variableBlockId=0;
 	
@@ -30,7 +30,7 @@ public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		variableResistorBlock=new block.elec.VariableResistor(addJSON,model,this);
+		variableResistorBlock=new com.ncslab.block.elec.VariableResistor(addJSON,model,this);
 		model.addElectBlock(variableResistorBlock);
 	}
 	

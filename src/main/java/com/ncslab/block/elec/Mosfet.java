@@ -1,18 +1,18 @@
-package block.elec;
+package com.ncslab.block.elec;
 
 import org.json.JSONObject;
 
-import block.Block;
-import block.io.InputPort;
-import block.io.OutputPort;
-import code.c.CodeStructC;
-import ncslablink.MatDimException;
-import ncslablink.NCSLabModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.InputPort;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.MatDimException;
+import com.ncslab.ncslablink.NCSLabModel;
 
 public class Mosfet extends Block {
 
-	private circuit2.block.multielement.Mosfet MosfetE;
-	public Mosfet(JSONObject blockIn, NCSLabModel model,circuit2.block.multielement.Mosfet mosfetE) {
+	private com.ncslab.circuit2.block.multielement.Mosfet MosfetE;
+	public Mosfet(JSONObject blockIn, NCSLabModel model,com.ncslab.circuit2.block.multielement.Mosfet mosfetE) {
 		super(blockIn, model);
 		// TODO Auto-generated constructor stub
 		inputPortList.add(new InputPort(this, 1));

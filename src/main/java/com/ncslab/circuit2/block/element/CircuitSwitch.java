@@ -11,7 +11,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.circuit2.block.baseelement.*;
 
 public class CircuitSwitch extends CircuitBlockSingle implements SwitchBlock{
-	private block.elec.CircuitSwitch circuitSwitchBlock;
+	private com.ncslab.block.elec.CircuitSwitch circuitSwitchBlock;
 	private int switchId=0;
 	public CircuitSwitch(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
@@ -33,7 +33,7 @@ public class CircuitSwitch extends CircuitBlockSingle implements SwitchBlock{
 		addJSON.put("blockPath", this.blockPath);
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
-		circuitSwitchBlock=new block.elec.CircuitSwitch(addJSON, model, this);
+		circuitSwitchBlock=new com.ncslab.block.elec.CircuitSwitch(addJSON, model, this);
 		model.addElectBlock(circuitSwitchBlock);
 	}
 	

@@ -149,7 +149,7 @@ public class CircuitParser2 {
 			
 			//改变连接线
 			InputPort toPort=toCircuitBlock.getInputPortList().get(0);
-			Block toBlock=toPort.getBLock();
+			Block toBlock=toPort.getBlock();
 			//System.out.println(fromBlock.getBlockName()+":"+fromBlock.getOutputPortList().get(0).getNumber());
 			lineJSON.put("toBlockName", toBlock.getBlockName());
 			lineJSON.put("toPortNo", toPort.getNumber());

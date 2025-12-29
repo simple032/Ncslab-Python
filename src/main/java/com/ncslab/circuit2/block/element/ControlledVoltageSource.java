@@ -7,7 +7,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 public class ControlledVoltageSource extends VoltageSource {
 
-	private block.elec.ControlledVoltageSource controlledVoltageSource;
+	private com.ncslab.block.elec.ControlledVoltageSource controlledVoltageSource;
 	public ControlledVoltageSource(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		// TODO Auto-generated constructor stub
@@ -22,7 +22,7 @@ public class ControlledVoltageSource extends VoltageSource {
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		controlledVoltageSource=new block.elec.ControlledVoltageSource(addJSON,model);
+		controlledVoltageSource=new com.ncslab.block.elec.ControlledVoltageSource(addJSON,model);
 		model.addElectBlock(controlledVoltageSource);
 	}
 	

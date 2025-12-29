@@ -75,8 +75,26 @@ abstract public class CircuitBlock {
 		//setupBlockList();
 	}
 	
+	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
+		this.blockType = blockIn.getString("blockType");
+		this.blockName = blockIn.getString("blockName");
+		this.paramValues = blockIn.getJSONObject("paramValues");
+		this.model = model;
+		this.blockPath = blockIn.getString("blockPath");
+		
+		circuitPortList.add(new CircuitPort(this,"LConn1",CircuitPortType.Left,1));
+		circuitPortList.add(new CircuitPort(this,"RConn1",CircuitPortType.Right,2));
+		
+		//setupBlockModeType();
+		//setupBlockList();
+	}
+	
 	protected String getSimpleTime() {
 		return this.simpleTime;
+	}
+	
+	public void setBlockId(int id) {
+		this.blockId=id;
 	}
 	
 	public String getBlockPath() {

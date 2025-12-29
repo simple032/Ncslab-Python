@@ -20,9 +20,9 @@ public class SeriesRLCBranch extends CircuitBlockSingle {
 	private String iHisString="";
 	private String gString;
 	
-	private block.io.Parameter r;
-	private block.io.Parameter l;
-	private block.io.Parameter c;
+	private com.ncslab.block.io.Parameter r;
+	private com.ncslab.block.io.Parameter l;
+	private com.ncslab.block.io.Parameter c;
 	public SeriesRLCBranch(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		// TODO Auto-generated constructor stub

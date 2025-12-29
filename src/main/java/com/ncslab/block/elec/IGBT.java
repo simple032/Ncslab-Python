@@ -12,7 +12,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 public class IGBT extends Block {
 
 	private com.ncslab.circuit2.block.multielement.IGBT IGBTE;
-	public IGBT(JSONObject blockIn, NCSLabModel model,circuit2.block.multielement.IGBT igbtE) {
+	public IGBT(JSONObject blockIn, NCSLabModel model,com.ncslab.circuit2.block.multielement.IGBT igbtE) {
 		super(blockIn, model);
 		// TODO Auto-generated constructor stub
 		inputPortList.add(new InputPort(this, 1));

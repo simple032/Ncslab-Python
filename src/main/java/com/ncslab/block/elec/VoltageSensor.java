@@ -1,15 +1,15 @@
-package block.elec;
+package com.ncslab.block.elec;
 
 import org.json.JSONObject;
 
-import block.Block;
-import block.io.OutputPort;
-import code.c.CodeStructC;
-import ncslablink.NCSLabModel;
+import com.ncslab.block.Block;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.code.c.CodeStructC;
+import com.ncslab.ncslablink.NCSLabModel;
 
 public class VoltageSensor extends Block {
-	private circuit2.block.element.VoltageSensor voltageSensorE;
-	public VoltageSensor(JSONObject blockJSON,NCSLabModel model,circuit2.block.element.VoltageSensor voltageSensorE) {
+	private com.ncslab.circuit2.block.element.VoltageSensor voltageSensorE;
+	public VoltageSensor(JSONObject blockJSON,NCSLabModel model,com.ncslab.circuit2.block.element.VoltageSensor voltageSensorE) {
 		super(blockJSON,model);
 		this.voltageSensorE=voltageSensorE;
 		outputPortList.add(new OutputPort(this,1,true));
