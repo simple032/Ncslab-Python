@@ -85,17 +85,17 @@ public class CircuitParser2 {
 		this.model=model;
 		
 		//剥离所有的电路模块和电路连接线,建立电气模块blockList和线路lineList
-		parseCircuit();
+		//parseCircuit();
+		
+		Vector<CircuitBlock> blockList=new Vector<CircuitBlock>();
+		blockList.addAll(model.getRootSystem().getCircuitBlocks());
+		
+		Vector<CircuitLine> lineList=new Vector<CircuitLine>();
+		lineList.addAll(model.getRootSystem().getCircuitLines());
 		
 		//建立电路模型CircuitModel,建立节点模型,产生生成树
-		circuitModel=CircuitModel2.CreateCircuitModel(model, blockList, lineList);
-		
-		/*
-		//根据生成的Block电压方程和node电流方程,建立等效的M2PLink的block
-		circuitModel.setupModel();
-		
-		//处理与外部相连的模块的连接线
-		parseExternalConnections();*/
+		circuitModel=CircuitModel2.CreateCircuitModel(model,blockList,lineList);
+	
 	}
 	
 	

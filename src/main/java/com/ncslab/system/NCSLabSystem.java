@@ -10,6 +10,9 @@ import com.ncslab.dto.model.GraphDataDto;
 import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 
+import com.ncslab.circuit2.block.CircuitBlock;
+import com.ncslab.circuit2.line.CircuitLine;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.json.JSONObject;
 
 /**
  * NCSLabSystem class - Core logical operations for block-based modeling
@@ -49,11 +54,17 @@ public class NCSLabSystem {
     @Getter
     private final List<Block> blocks = new CopyOnWriteArrayList<>();
     
+    @Getter
+    private final List<CircuitBlock> circuitBlocks = new CopyOnWriteArrayList<>();
+    
     /**
      * All lines within this system
      */
     @Getter
     private final List<Line> lines = new ArrayList<>();
+    
+    @Getter
+    private final List<CircuitLine> circuitLines = new ArrayList<>();
     
     /**
      * Execution order chain - determines the order blocks are calculated
@@ -167,6 +178,13 @@ public class NCSLabSystem {
         }
     }
     
+    public void addCircuitBlock(CircuitBlock block) {
+        if (block != null && !circuitBlocks.contains(block)) {
+        	circuitBlocks.add(block);
+        	//circuitBlocks.setParent(this);
+        }
+    }
+    
     /**
      * Remove a block from this system
      * 
@@ -187,6 +205,12 @@ public class NCSLabSystem {
     public void addLine(Line line) {
         if (line != null && !lines.contains(line)) {
             lines.add(line);
+        }
+    }
+    
+    public void addCircuitLine(CircuitLine line) {
+        if (line != null && !circuitLines.contains(line)) {
+        	circuitLines.add(line);
         }
     }
     
@@ -612,6 +636,16 @@ public class NCSLabSystem {
     public Block findBlockByUUID(String blockUUID) {
         if (blockUUID == null) return null;
         for (Block block : blocks) {
+            if (blockUUID.equals(block.getBlockUUID())) {
+                return block;
+            }
+        }
+        return null;
+    }
+    
+    public CircuitBlock findCircuitBlockByUUID(String blockUUID) {
+        if (blockUUID == null) return null;
+        for (CircuitBlock block : circuitBlocks) {
             if (blockUUID.equals(block.getBlockUUID())) {
                 return block;
             }
@@ -1114,19 +1148,29 @@ public class NCSLabSystem {
                                    com.ncslab.ncslablink.NCSLabModel model,
                                    String modelName,
                                    java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
-                                   java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
+                                   java.util.concurrent.atomic.AtomicInteger circuitBlockSeqCounter,
+                                   java.util.concurrent.atomic.AtomicInteger lineSeqCounter,
+                                   java.util.concurrent.atomic.AtomicInteger circuitLineSeqCounter)
             throws com.ncslab.ncslablink.ModelException {
         log.info("NCSLabSystem: Starting parseFromGraphData...");
 
         // Process root level cells into this system
          if (graphData.getCells() != null && graphData.getCells().length > 0) {
             log.info("NCSLabSystem: Processing " + graphData.getCells().length + " cells from graphData");
-            processGraphCells(graphData.getCells(), this, null, model, modelName, blockSeqCounter, lineSeqCounter);
+            processGraphCells(graphData.getCells(), this, null, model, modelName, blockSeqCounter, circuitBlockSeqCounter, lineSeqCounter, circuitLineSeqCounter);
         }
 
         log.info("NCSLabSystem: Completed parseFromGraphData - " +
                            blocks.size() + " blocks, " + lines.size() + " lines in this system");
     }
+    
+    private boolean isCircuitLineCell(com.ncslab.dto.model.GraphDataDto.CellDataDto cell) {
+    	if(cell.getSource().getPort().contains("Conn")&&cell.getTarget().getPort().contains("Conn")) {
+    		return true;
+    	}
+    	return false;
+    }
+    
 
     /**
      * Recursively process graph cells (blocks and links) into the appropriate NCSLabSystem
@@ -1147,7 +1191,9 @@ public class NCSLabSystem {
                                    NCSLabModel model,
                                    String modelName,
                                    java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
-                                   java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
+                                   java.util.concurrent.atomic.AtomicInteger circuitBlockSeqCounter,
+                                   java.util.concurrent.atomic.AtomicInteger lineSeqCounter,
+                                   java.util.concurrent.atomic.AtomicInteger circuitLineSeqCounter)
             throws com.ncslab.ncslablink.ModelException {
         if (cells == null || cells.length == 0) {
             return;
@@ -1166,7 +1212,7 @@ public class NCSLabSystem {
             }
 
             // Process block cell into the target system
-            processBlockCell(cell, targetSystem, parentPath, model, modelName, blockSeqCounter, lineSeqCounter);
+            processBlockCell(cell, targetSystem, parentPath, model, modelName, blockSeqCounter, circuitBlockSeqCounter, lineSeqCounter, circuitLineSeqCounter);
         }
 
         // Second pass: Create all connections after blocks exist
@@ -1178,10 +1224,26 @@ public class NCSLabSystem {
 
             // Only process link cells in second pass
             if (isLinkCell(cellType)) {
-                processLinkCell(cell, targetSystem, parentPath, lineSeqCounter);
+            	if(isCircuitLineCell(cell)) {
+            		processCircuitLinkCell(cell, targetSystem, parentPath, circuitLineSeqCounter);
+            	}
+            	else {
+            		processLinkCell(cell, targetSystem, parentPath, lineSeqCounter);
+            	}
             }
         }
     }
+    
+    private static boolean isCircuitBlock(JSONObject blockJSON) {
+		String srcBlock=blockJSON.getString("srcBlock");
+		//System.out.println(srcBlock);
+		if(srcBlock.startsWith("fl_lib")||srcBlock.startsWith("elec_lib")) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 
     /**
      * Check if a cell represents a connection link
@@ -1212,7 +1274,9 @@ public class NCSLabSystem {
                                   com.ncslab.ncslablink.NCSLabModel model,
                                   String modelName,
                                   java.util.concurrent.atomic.AtomicInteger blockSeqCounter,
-                                  java.util.concurrent.atomic.AtomicInteger lineSeqCounter)
+                                  java.util.concurrent.atomic.AtomicInteger circuitBlockSeqCounter,
+                                  java.util.concurrent.atomic.AtomicInteger lineSeqCounter,
+                                  java.util.concurrent.atomic.AtomicInteger circuitLineSeqCounter)
             throws com.ncslab.ncslablink.ModelException {
         try {
             com.ncslab.dto.model.GraphDataDto.PropDataDto props = cell.getPropsAsObject();
@@ -1237,48 +1301,59 @@ public class NCSLabSystem {
             org.json.JSONObject blockJSON = createBlockJSONFromProps(props, cell.getId(), blockPath);
 
             // Create the block using legacy BlockType factory
-            com.ncslab.block.Block block = com.ncslab.block.BlockType.createBlock(
-                blockSeqCounter.incrementAndGet(), blockJSON, model);
-            if (block == null) {
-                System.err.println("Failed to create block from graphData: " + blockType + "/" + blockName);
-                return;
-            }
-
-            // Add block to the target system (could be rootSystem or a subsystem's innerSystem)
-            targetSystem.addBlock(block);
-            model.categorizeBlock(block);
-
-            log.info("NCSLabSystem: Created block from graphData: " + blockType + "/" + blockName +
-                               " at path: " + blockPath + " in system: " +
-                               (targetSystem == this ? "THIS" : "SUBSYSTEM"));
-
-            // If this is a subsystem with subGraph, recursively process it into the subsystem's innerSystem
-            if (block instanceof com.ncslab.block.subsystem.Subsystem && cell.getSubGraph() != null) {
-                com.ncslab.block.subsystem.Subsystem subsystem = (com.ncslab.block.subsystem.Subsystem) block;
-                com.ncslab.dto.model.GraphDataDto.SubGraphDataDto subGraph = cell.getSubGraph();
-
-                if (subGraph.getCells() != null && subGraph.getCells().length > 0) {
-                    String subsystemPath = blockPath + "/" + blockName;
-                    System.out.println("NCSLabSystem: Processing subsystem subGraph: " + subsystemPath +
-                                       " with " + subGraph.getCells().length + " cells into subsystem's innerSystem");
-
-                    // Recursively process cells into the subsystem's inner system
-                    processGraphCells(subGraph.getCells(), subsystem.getInnerSystem(), subsystemPath,
-                                      model, modelName, blockSeqCounter, lineSeqCounter);
-
-                    // Add all inner system in/out to subsystem
-                    subsystem.getInnerSystem().getBlocks().forEach(b -> {
-                        if (b instanceof com.ncslab.block.subsystem.In) {
-                            subsystem.addIn((com.ncslab.block.subsystem.In) b);
-                        } else if (b instanceof com.ncslab.block.subsystem.Out) {
-                            subsystem.addOut((com.ncslab.block.subsystem.Out) b);
-                        }
-                    });
-
-                    subsystem.updateBlock();
+            if(isCircuitBlock(blockJSON)) {
+            	com.ncslab.circuit2.block.CircuitBlock circuitBlock = com.ncslab.block.BlockType.createCircuitBlock(
+            			circuitBlockSeqCounter.incrementAndGet(), blockJSON, model,targetSystem);
+            	if (circuitBlock == null) {
+                    System.err.println("Failed to create block from graphData: " + blockType + "/" + blockName);
+                    return;
                 }
+            	targetSystem.addCircuitBlock(circuitBlock);
             }
+            else {
+            	com.ncslab.block.Block block = com.ncslab.block.BlockType.createBlock(
+                        blockSeqCounter.incrementAndGet(), blockJSON, model);
+                    if (block == null) {
+                        System.err.println("Failed to create block from graphData: " + blockType + "/" + blockName);
+                        return;
+                    }
 
+                    // Add block to the target system (could be rootSystem or a subsystem's innerSystem)
+                    targetSystem.addBlock(block);
+                    model.categorizeBlock(block);
+
+                    log.info("NCSLabSystem: Created block from graphData: " + blockType + "/" + blockName +
+                                       " at path: " + blockPath + " in system: " +
+                                       (targetSystem == this ? "THIS" : "SUBSYSTEM"));
+
+                    // If this is a subsystem with subGraph, recursively process it into the subsystem's innerSystem
+                    if (block instanceof com.ncslab.block.subsystem.Subsystem && cell.getSubGraph() != null) {
+                        com.ncslab.block.subsystem.Subsystem subsystem = (com.ncslab.block.subsystem.Subsystem) block;
+                        com.ncslab.dto.model.GraphDataDto.SubGraphDataDto subGraph = cell.getSubGraph();
+
+                        if (subGraph.getCells() != null && subGraph.getCells().length > 0) {
+                            String subsystemPath = blockPath + "/" + blockName;
+                            System.out.println("NCSLabSystem: Processing subsystem subGraph: " + subsystemPath +
+                                               " with " + subGraph.getCells().length + " cells into subsystem's innerSystem");
+
+                            // Recursively process cells into the subsystem's inner system
+                            processGraphCells(subGraph.getCells(), subsystem.getInnerSystem(), subsystemPath,
+                                              model, modelName, blockSeqCounter, circuitBlockSeqCounter,lineSeqCounter,circuitLineSeqCounter);
+
+                            // Add all inner system in/out to subsystem
+                            subsystem.getInnerSystem().getBlocks().forEach(b -> {
+                                if (b instanceof com.ncslab.block.subsystem.In) {
+                                    subsystem.addIn((com.ncslab.block.subsystem.In) b);
+                                } else if (b instanceof com.ncslab.block.subsystem.Out) {
+                                    subsystem.addOut((com.ncslab.block.subsystem.Out) b);
+                                }
+                            });
+
+                            subsystem.updateBlock();
+                        }
+                    }
+            }
+            
         } catch (Exception e) {
             log.error("NCSLabSystem: Error processing block cell: " + e.getMessage());
             e.printStackTrace();
@@ -1316,6 +1391,63 @@ public class NCSLabSystem {
         }
 
         return blockJSON;
+    }
+    
+    private void processCircuitLinkCell(com.ncslab.dto.model.GraphDataDto.CellDataDto cell,
+            NCSLabSystem targetSystem,
+            String parentPath,
+            java.util.concurrent.atomic.AtomicInteger circuitLineSeqCounter) {
+    	try {
+            com.ncslab.dto.model.GraphDataDto.LinkDto source = cell.getSource();
+            com.ncslab.dto.model.GraphDataDto.LinkDto target = cell.getTarget();
+
+            if (source == null || target == null) {
+                System.err.println("Link cell missing source or target, skipping: " + cell.getId());
+                return;
+            }
+
+            String linePath = cell.getPath();
+            if (linePath == null && parentPath != null) {
+                linePath = parentPath;
+            }
+
+            // Find source and target blocks by UUID within the target system
+            com.ncslab.circuit2.block.CircuitBlock sourceBlock = targetSystem.findCircuitBlockByUUID(source.getId());
+            com.ncslab.circuit2.block.CircuitBlock targetBlock = targetSystem.findCircuitBlockByUUID(target.getId());
+
+            if (sourceBlock == null || targetBlock == null) {
+                System.err.println("NCSLabSystem: Could not find source or target block for circuit link in system: " +
+                                   source.getId() + " -> " + target.getId());
+                return;
+            }
+
+            // Parse port numbers
+            String fromPortNo = source.getPort();
+            String toPortNo = target.getPort();
+
+            // Create LineDto
+            com.ncslab.dto.model.LineDto lineDto = new com.ncslab.dto.model.LineDto();
+            lineDto.setFromBlockName(sourceBlock.getBlockName());
+            lineDto.setFromBlockUUID(sourceBlock.getBlockUUID());
+            lineDto.setFromPortNo(fromPortNo);
+            lineDto.setToBlockName(targetBlock.getBlockName());
+            lineDto.setToBlockUUID(targetBlock.getBlockUUID());
+            lineDto.setToPortNo(toPortNo);
+            lineDto.setLinePath(linePath);
+
+            // Create and add line to the target system's block list
+            com.ncslab.circuit2.line.CircuitLine line = com.ncslab.circuit2.line.CircuitLine.createLine(lineDto, new ArrayList<>(targetSystem.getBlocks()),new ArrayList<>(targetSystem.getCircuitBlocks()));
+            line.setLineId(circuitLineSeqCounter.incrementAndGet());
+            targetSystem.addCircuitLine(line);
+
+            System.out.println("NCSLabSystem: Created circuit link in " + (targetSystem == this ? "THIS" : "SUBSYSTEM") +
+                               ": " + sourceBlock.getBlockName() + "(" + fromPortNo + ") -> " +
+                               targetBlock.getBlockName() + "(" + toPortNo + ")");
+
+        } catch (Exception e) {
+            System.err.println("NCSLabSystem: Error processing link cell: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**

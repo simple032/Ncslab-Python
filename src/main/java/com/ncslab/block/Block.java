@@ -71,6 +71,7 @@ public class Block implements MCodeBlock, CCodeBlock, SimuBlock {
     
     /** Block UUID for unique identification (only BlockCId has true uniqueness) */
     @Getter
+    @Setter
     protected String blockUUID = "null";
     
     /** 

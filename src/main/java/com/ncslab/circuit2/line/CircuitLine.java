@@ -1,5 +1,6 @@
 package com.ncslab.circuit2.line;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.json.JSONObject;
@@ -8,15 +9,82 @@ import com.ncslab.block.Block;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.circuit2.block.CircuitBlock;
 import com.ncslab.circuit2.block.io.CircuitPort;
+import com.ncslab.dto.model.LineDto;
 import com.ncslab.line.Line;
 import com.ncslab.ncslablink.NCSLabModel;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class CircuitLine {
 	private Vector<CircuitPort> circuitPortList = new Vector<CircuitPort>();
 	private String linePath;
 	
+	@Setter
+    @Getter
+    private int lineId=0;
+	
 	public CircuitLine(CircuitPort fromPort,CircuitPort toPort) {
 		circuitPortList.add(fromPort);
+		circuitPortList.add(toPort);
+	}
+	
+	CircuitLine(LineDto lineDto,List<Block> blockList,List<CircuitBlock> circuitBlockList) {
+		String fromBlockName = lineDto.getFromBlockName();
+		String toBlockName = lineDto.getToBlockName();
+		linePath=lineDto.getLinePath();
+		
+		// 寻找FromBlock和ToBlock
+		CircuitBlock fromBlock = null;
+		CircuitBlock toBlock = null;
+		
+		for (CircuitBlock block : circuitBlockList) {
+			//if (block.getBlockName().equals(fromBlockName)&&block.getBlockPath().equals(linePath)) {
+			if(block.getBlockUUID().equals(lineDto.getFromBlockUUID())) {
+				fromBlock = block;
+			}
+			//if (block.getBlockName().equals(toBlockName)&&block.getBlockPath().equals(linePath)) {
+			if(block.getBlockUUID().equals(lineDto.getToBlockUUID())) {
+				toBlock = block;
+			}
+		}
+		
+		if (fromBlock == null || toBlock == null) {
+			return;
+		}
+		
+		// 寻找FromBLock的CircuitPort
+		String fromPortNo =lineDto.getFromPortNo()+"";
+		CircuitPort fromPort = null;
+
+		Vector<CircuitPort> fromBlockPortList = fromBlock.getCurcuitPortList();
+		for (CircuitPort circuitPort : fromBlockPortList) {
+			if (("e"+circuitPort.getName()).equals(fromPortNo)) {
+				fromPort = circuitPort;
+			}
+		}
+
+		if (fromPort == null) {
+			return;
+		}
+		fromPort.getCircuitLineList().add(this);
+		circuitPortList.add(fromPort);
+
+		// 寻找ToBLock的CircuitPort
+		String toPortNo = lineDto.getToPortNo()+"";
+		CircuitPort toPort = null;
+
+		Vector<CircuitPort> toBlockPortList = toBlock.getCurcuitPortList();
+		for (CircuitPort circuitPort : toBlockPortList) {
+			if (("e"+circuitPort.getName()).equals(toPortNo)) {
+				toPort = circuitPort;
+			}
+		}
+
+		if (toPort == null) {
+			return;
+		}
+		toPort.getCircuitLineList().add(this);
 		circuitPortList.add(toPort);
 	}
 
@@ -98,5 +166,12 @@ public class CircuitLine {
 		CircuitLine line=new CircuitLine(lineJSON,blockList);
 		
 		return line;
+	}
+	
+	public static CircuitLine createLine(LineDto lineDto,List<Block> blockList,List<CircuitBlock> circuitBlockList) {
+		CircuitLine line=new CircuitLine(lineDto,blockList,circuitBlockList);
+
+		return line;
+		//return null;
 	}
 }

@@ -42,6 +42,9 @@ import com.ncslab.circuit.loop.CircuitLoopException;
 
 import com.ncslab.block.subsystem.*;
 
+import com.ncslab.circuit2.CircuitModel2;
+import com.ncslab.circuit2.CircuitParser2;
+
 @Slf4j
 abstract public class NCSLabModel {
 
@@ -133,6 +136,7 @@ abstract public class NCSLabModel {
 
 	private int blockSeq=0;
 	private int lineSeq=0;
+	private int circuitBlockSeq=0;
 
     //context
     protected int stateNum=0;
@@ -152,6 +156,9 @@ abstract public class NCSLabModel {
 
 	@Getter
 	private NCSLabSystem rootSystem = new NCSLabSystem();
+	
+	@Getter
+	private CircuitModel2 circuitModel;
 
 	//解析model，变成数据结构 - 原有JSONObject构造函数
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{
@@ -250,6 +257,12 @@ abstract public class NCSLabModel {
 		} else {
 			System.out.println("No auto-generation needed - all ports are connected");
 		}
+		
+		if(this.circuitBlockSeq>0) {
+			CircuitParser2 circuitParser=new CircuitParser2(this);
+			circuitModel=circuitParser.getCircuitModel();
+		}
+		
 		// CRITICAL FIX: Add missing dimension processing for DTO path
 		// This was causing RT simulation to have empty scope results
 		System.out.println("DTO Fix: Setting up dimension processing...");
@@ -283,13 +296,16 @@ abstract public class NCSLabModel {
 
 		// Use AtomicInteger for thread-safe counter updates during recursive parsing
 		java.util.concurrent.atomic.AtomicInteger blockSeqCounter = new java.util.concurrent.atomic.AtomicInteger(blockSeq);
+		java.util.concurrent.atomic.AtomicInteger circuitBlockSeqCounter = new java.util.concurrent.atomic.AtomicInteger(blockSeq);
 		java.util.concurrent.atomic.AtomicInteger lineSeqCounter = new java.util.concurrent.atomic.AtomicInteger(lineSeq);
+		java.util.concurrent.atomic.AtomicInteger circuitLineSeqCounter = new java.util.concurrent.atomic.AtomicInteger(lineSeq);
 
 		// Delegate to rootSystem for parsing
-		rootSystem.parseFromGraphData(graphData, this, modelName, blockSeqCounter, lineSeqCounter);
+		rootSystem.parseFromGraphData(graphData, this, modelName, blockSeqCounter, circuitBlockSeqCounter, lineSeqCounter, circuitLineSeqCounter);
 
 		// Update sequence counters after parsing
 		blockSeq = blockSeqCounter.get();
+		circuitBlockSeq = circuitBlockSeqCounter.get();
 		lineSeq = lineSeqCounter.get();
 
 		System.out.println("Completed parseModelFromGraphData - " +
@@ -680,7 +696,7 @@ abstract public class NCSLabModel {
 		JSONArray blockJSONList=jsonIn.getJSONArray("blocks");
 		for(int i=0;i<blockJSONList.length();i++) {
 			JSONObject blockJSON=blockJSONList.getJSONObject(i);
-
+			
 			Block block=BlockType.createBlock(blockSeq+1,blockJSON,this);
 			blockSeq++;
 
@@ -1557,4 +1573,11 @@ abstract public class NCSLabModel {
         return lineSeq;
     }
     
+    public void addElectBlock(Block block) {
+		block.setBlockId(blockSeq+1);
+		blockSeq++;
+		block.updateBlock();
+		//blockList.add(block);
+		rootSystem.addBlock(block);
+	}
 }

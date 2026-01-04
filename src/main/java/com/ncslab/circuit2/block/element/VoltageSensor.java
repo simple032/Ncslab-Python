@@ -5,9 +5,10 @@ import org.json.JSONObject;
 import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.CircuitBlock;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.system.NCSLabSystem;
 import com.ncslab.circuit2.block.baseelement.*;
 
-public class VoltageSensor extends CircuitBlockSingle {
+public class VoltageSensor extends CircuitBlockSingle implements InterCircuitBlock{
 	com.ncslab.block.elec.VoltageSensor voltageSensorBlock;
 	public VoltageSensor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
@@ -18,6 +19,14 @@ public class VoltageSensor extends CircuitBlockSingle {
 	}
 	
 	public VoltageSensor(JSONObject blockJSON,NCSLabModel model) {
+		super(0,blockJSON,model);
+		this.blockModeType=BlockModeType.VoltageSensor;
+		//System.out.println(blockJSON);
+		//System.out.println(getVoltageString());
+		createBlock();
+	}
+	
+	public VoltageSensor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem) {
 		super(0,blockJSON,model);
 		this.blockModeType=BlockModeType.VoltageSensor;
 		//System.out.println(blockJSON);
@@ -41,6 +50,7 @@ public class VoltageSensor extends CircuitBlockSingle {
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
 		voltageSensorBlock=new com.ncslab.block.elec.VoltageSensor(addJSON,model,this);
+		voltageSensorBlock.setBlockUUID(this.getBlockUUID());
 		model.addElectBlock(voltageSensorBlock);
 	}
 	

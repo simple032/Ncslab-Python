@@ -18,6 +18,8 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 import com.ncslab.circuit.block.electblock.ElectBlock;
 
+import com.ncslab.circuit2.CircuitModel2;
+
 abstract public class CodeModel extends NCSLabModel {
 
 
@@ -135,6 +137,11 @@ abstract public class CodeModel extends NCSLabModel {
 		CodeGenerationOption option = new CodeGenerationOption();
 		
 		System.out.println("Generating codes......");
+		
+		if(this.getCircuitModel()!=null) {
+			CircuitModel2 circuitModel=this.getCircuitModel();
+			circuitModel.generate();
+		}
 
 		//首先生成初始化代码
 		generateInitCode(option);

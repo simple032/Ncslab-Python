@@ -12,9 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.system.NCSLabSystem;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.util.JsonUtils;
+import com.ncslab.circuit2.block.CircuitBlock;
+import com.ncslab.circuit2.block.element.InterCircuitBlock;
 /**
  * Generate corresponding <code>Block</code> according to <code>BlockType</code>.
  * If your block is an instance of <code>Block</code> but not an instance of <code>SoughtedBlock</code>,
@@ -44,6 +47,7 @@ public class BlockType{
 	}
 
     private static final HashMap<String, Class<? extends Block>> blockClassTree = new HashMap<>();
+    private static final HashMap<String, Class<? extends CircuitBlock>> circuitBlockClassTree = new HashMap<>();
     private static final HashMap<String, Class<? extends NCSLabModel>> blockParsers = new HashMap<>();
 
     static {
@@ -380,14 +384,22 @@ public class BlockType{
         blockClassTree.put("DA_Out_Stm32", com.ncslab.block.hardware.stm32.DAC.class);
         blockClassTree.put("UDPReceiverForStm32", com.ncslab.block.hardware.stm32.UDPReceiver.class);
         blockClassTree.put("UDPSenderForStm32", com.ncslab.block.hardware.stm32.UDPSender.class);
-
+        
+        //Elect
+        circuitBlockClassTree.put("ACVoltageSource", com.ncslab.circuit2.block.element.ACVoltageSource.class);
+        circuitBlockClassTree.put("DCVoltageSource", com.ncslab.circuit2.block.element.DCVoltageSource.class);
+        circuitBlockClassTree.put("Resistor", com.ncslab.circuit2.block.element.Resistor.class);
+        circuitBlockClassTree.put("Capacitor", com.ncslab.circuit2.block.element.Capacitor.class);
+        circuitBlockClassTree.put("Inductor", com.ncslab.circuit2.block.element.Inductor.class);
+        circuitBlockClassTree.put("VoltageSensor", com.ncslab.circuit2.block.element.VoltageSensor.class);
+        circuitBlockClassTree.put("Diode", com.ncslab.circuit2.block.multielement.Diode.class);
     }
 
 	public static Block createBlock(int id, JSONObject blockJSON, NCSLabModel model) throws ModelException {
         String blockType = blockJSON.getString("blockType")
             .replace("Block", "")
             .replace(" ", "")
-            .replace("\n","");
+            .replace("\n ","");
 
         Block block = null;
         try {
@@ -401,6 +413,7 @@ public class BlockType{
 //                } catch (NoSuchMethodException e) {
                     // Fall back to deprecated constructor if fromJSON method doesn't exist
 //                    log.warn("Block type '{}' does not have fromJSON method, using deprecated constructor", blockType);
+            		
                     block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
 //                }
             }
@@ -412,6 +425,49 @@ public class BlockType{
 
         block.setBlockId(id);
         block.updateBlock();
+
+		return block;
+		// return null;
+	}
+	
+	public static CircuitBlock createCircuitBlock(int id, JSONObject blockJSON, NCSLabModel model,NCSLabSystem targetSystem) throws ModelException {
+        String blockType = blockJSON.getString("blockType")
+            .replace("Block", "")
+            .replace(" ", "")
+            .replace("\n ","");
+
+        CircuitBlock block = null;
+        try {
+            Class<? extends CircuitBlock> blockClass = circuitBlockClassTree.get(blockType);
+            if(blockClass != null) {
+//                TODO: change the interface to fromJSON.
+//                try {
+//                    // Try to use the new fromJSON factory method first
+//                    java.lang.reflect.Method fromJSONMethod = blockClass.getMethod("fromJSON", JSONObject.class, NCSLabModel.class);
+//                    block = (Block) fromJSONMethod.invoke(null, blockJSON, model);
+//                } catch (NoSuchMethodException e) {
+                    // Fall back to deprecated constructor if fromJSON method doesn't exist
+//                    log.warn("Block type '{}' does not have fromJSON method, using deprecated constructor", blockType);
+            		if(InterCircuitBlock.class.isAssignableFrom(blockClass)) {
+            			block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class, NCSLabSystem.class).newInstance(blockJSON, model,targetSystem);
+            		}
+            		//if(block instanceof InterCircuitBlock) {
+            		//	block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class, NCSLabSystem.class).newInstance(blockJSON, model,targetSystem);
+            		//}
+            		else {
+            			block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class).newInstance(blockJSON, model);
+            		}
+                    
+//                }
+            }
+        } catch (Exception ee){
+            log.error("Error creating block of type '{}': ", blockType, ee);
+        }
+        if(block == null)
+            throw(new ModelException("Can not find blocktype \" "+ blockType+ " \" in mapped function"));
+
+        block.setBlockId(id);
+        //block.updateBlock();
 
 		return block;
 		// return null;

@@ -4,6 +4,10 @@ import java.util.Vector;
 
 import org.json.JSONObject;
 
+//External libraries
+import lombok.Getter;
+import lombok.Setter;
+
 import com.ncslab.circuit2.block.io.CircuitPort;
 import com.ncslab.circuit2.block.io.CircuitPortType;
 import com.ncslab.circuit.block.io.PortCurrent;
@@ -56,6 +60,9 @@ abstract public class CircuitBlock {
 	//模块的输出值,测试用
 	private Block terminalBlock;
 	
+	@Getter
+	private String blockUUID="null";
+	
 	protected static String simpleTime="(model.stepSize)";
 	
 	private CircuitModel2 circuitModel=null;
@@ -67,6 +74,14 @@ abstract public class CircuitBlock {
 		this.model = model;
 		this.blockPath = blockIn.getString("blockPath");
 		this.blockId=id;
+		
+		if(blockIn.isNull("blockUUID")) {
+			this.blockUUID="null";
+		}
+		else {
+			this.blockUUID = blockIn.getString("blockUUID");
+		}
+		
 		
 		circuitPortList.add(new CircuitPort(this,"LConn1",CircuitPortType.Left,1));
 		circuitPortList.add(new CircuitPort(this,"RConn1",CircuitPortType.Right,2));
