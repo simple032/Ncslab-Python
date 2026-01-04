@@ -3,6 +3,7 @@
 
 #include "ncslabdefines.hpp"
 #include "ncslabccode.hpp"
+#include <gsl/gsl_linalg.h>
 
 // 定义缓冲区结构体
 typedef struct {
@@ -77,4 +78,90 @@ void writeInformation();
 double generateGaussianNoise(double mean, double stdDev);
 double lowPassFilter(double input, double alpha);
 unsigned char calcSum(unsigned char bytes[]);
+
+
+//电路仿真的定义代码
+
+typedef unsigned int uint32_T;
+
+//逆表的数据结构
+typedef struct{
+	uint32_T size;	//逆阵的大小
+	uint32_T *switchStatus; //逆阵对应的开关切换状态
+	uint32_T isVariableChanged; //是否有参数发生变化，需要重新计算
+	//REAL *rAA;
+	gsl_matrix * inv; //逆阵的指针
+}StoreGAA;
+
+//逆阵表的数据结构
+typedef struct{
+	REAL *gAAOriginal;  //最基础的gAA副本指针
+	uint32_T sizeOriginal; //原始的句子大小
+	uint32_T switchNum; //开关的个数
+	uint32_T *switchStatus; //开关的状态
+	uint32_T storeGAASize; //逆阵表的大小
+	StoreGAA *storeGAA; //指向逆阵的数据结构的指针
+}SwitchGAA;
+
+typedef struct{
+	uint32_T refSize;
+	uint32_T *refs;
+	uint32_T size;
+	int *vIndex;
+	int *vIndexOriginal;
+	
+	REAL *iAOriginal;
+	
+	int isVariableChanged;
+	
+	void (*getUpdatedGAA)(REAL *);
+	void (*getUpdatedIA)(REAL *);
+	SwitchGAA *pSwitchGaa;
+}Partition;
+
+typedef struct{
+	uint32_T size;
+	Partition *partitions;
+}Partitioner;
+
+gsl_matrix *addSwitchCombine(SwitchGAA *psGaa,REAL *gAA,int switchNum,int size,uint32_T *switchStatus);
+void setSwitchStatus(SwitchGAA *psGaa,int n,int status);
+StoreGAA *findStoreGAA(SwitchGAA *psGaa,uint32_T *switchStatus);
+int getSwtichStatus(SwitchGAA *psGaa,int pos);
+void CircuitCombineIA(REAL *iA,int *vIndex,int *size_p,int* ref,int n,int m,int indexSize,int refSize);
+gsl_matrix *caclulateInv(StoreGAA *pStoreGaa,REAL *gAA,int size);
+#define CIRCUIT_THREAD_NUM 8
+
+typedef struct{
+	int id;
+	SwitchGAA *psGaa;
+	int size;
+	
+	int start;
+	int num;
+	
+	gsl_matrix *inv;
+	gsl_vector *b;
+	gsl_vector *x;
+	
+#ifdef _WIN32_WINNT
+	HANDLE  thread;
+	DWORD threadId;	
+	HANDLE hEvent;
+	HANDLE rEvent;
+#endif
+	
+}CircuitThread;
+
+void startCircuitThread(CircuitThread *threads,int num);
+void calculateCircuitMatrix(CircuitThread *threads,gsl_matrix *inv,gsl_vector *b,gsl_vector *x,int size);
+
+int isPartRef(int nodeId,int *ref,int refSize,int *vIndex);
+
+void CircuitOutput();
+void CircuitUpdate();
+
+void copyCircuitMartrix(REAL *gAA,REAL *gAAc,REAL *iA,REAL *iAc,int size);
+void copyCircuitVector(REAL *iA,REAL *iAc,int size);
+void CircuitCombine(REAL *,REAL *,int *,int *,int *,int,int,int,int);
 #endif

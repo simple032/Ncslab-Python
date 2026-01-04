@@ -1303,7 +1303,7 @@ public class NCSLabSystem {
             // Create the block using legacy BlockType factory
             if(isCircuitBlock(blockJSON)) {
             	com.ncslab.circuit2.block.CircuitBlock circuitBlock = com.ncslab.block.BlockType.createCircuitBlock(
-            			circuitBlockSeqCounter.incrementAndGet(), blockJSON, model,targetSystem);
+            			circuitBlockSeqCounter.incrementAndGet(),blockSeqCounter, blockJSON, model,targetSystem);
             	if (circuitBlock == null) {
                     System.err.println("Failed to create block from graphData: " + blockType + "/" + blockName);
                     return;

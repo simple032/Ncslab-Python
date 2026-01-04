@@ -15,7 +15,7 @@ public class VoltageSensor extends CircuitBlockSingle implements InterCircuitBlo
 		this.blockModeType=BlockModeType.VoltageSensor;
 		//System.out.println(blockJSON);
 		//System.out.println(getVoltageString());
-		createBlock();
+		createBlock(null);
 	}
 	
 	public VoltageSensor(JSONObject blockJSON,NCSLabModel model) {
@@ -23,15 +23,15 @@ public class VoltageSensor extends CircuitBlockSingle implements InterCircuitBlo
 		this.blockModeType=BlockModeType.VoltageSensor;
 		//System.out.println(blockJSON);
 		//System.out.println(getVoltageString());
-		createBlock();
+		createBlock(null);
 	}
 	
-	public VoltageSensor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem) {
+	public VoltageSensor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem,java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		super(0,blockJSON,model);
 		this.blockModeType=BlockModeType.VoltageSensor;
 		//System.out.println(blockJSON);
 		//System.out.println(getVoltageString());
-		createBlock();
+		createBlock(blockSeqCounter);
 	}
 	
 	public String getVoltageString() {
@@ -41,7 +41,7 @@ public class VoltageSensor extends CircuitBlockSingle implements InterCircuitBlo
 		return vString;
 	}
 	
-	private void createBlock() {
+	private void createBlock(java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Voltage Sensor");
 		addJSON.put("blockName", this.blockName);
@@ -51,6 +51,7 @@ public class VoltageSensor extends CircuitBlockSingle implements InterCircuitBlo
 		//System.out.println(addJSON);
 		voltageSensorBlock=new com.ncslab.block.elec.VoltageSensor(addJSON,model,this);
 		voltageSensorBlock.setBlockUUID(this.getBlockUUID());
+		voltageSensorBlock.setBlockId(blockSeqCounter.incrementAndGet());
 		model.addElectBlock(voltageSensorBlock);
 	}
 	

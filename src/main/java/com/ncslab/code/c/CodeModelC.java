@@ -48,6 +48,18 @@ abstract public class CodeModelC extends CodeModel {
 	protected CodeModelC(ModelDto modelDto, ModelMode mode) throws ModelException{
 		super(modelDto, mode);
 	}
+	
+	protected void generatorCircuitOutputCode(CodeGenerationOption option) {
+		getCodeStructC().generatorCircuitOutputCode();
+	}
+	
+	protected void generatorCircuitGloablCode(CodeGenerationOption option) {
+		getCodeStructC().generatorCircuitInitCode();
+	}
+	
+	protected void generatorCircuitUpdateCode(CodeGenerationOption option) {
+		getCodeStructC().generatorCircuitUpdateCode();
+	}
 
 	public String getIpAddress() {
 		// 安卓客户端发过来的为空
@@ -121,6 +133,10 @@ abstract public class CodeModelC extends CodeModel {
 		getCodeStructC().generateOutputSignalDefineCode();
 		getCodeStructC().gnenrateDataStructureCode();
 		getCodeStructC().generateGlobalVariableDefineCode();
+		
+		if(this.getCircuitModel()!=null) {
+			getCodeStructC().generateCircuitDefineCode();
+		}
 	}
 
 	@Override

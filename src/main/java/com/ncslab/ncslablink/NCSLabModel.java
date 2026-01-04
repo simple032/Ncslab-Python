@@ -1574,8 +1574,8 @@ abstract public class NCSLabModel {
     }
     
     public void addElectBlock(Block block) {
-		block.setBlockId(blockSeq+1);
-		blockSeq++;
+		//block.setBlockId(blockSeq+1);
+		//blockSeq++;
 		block.updateBlock();
 		//blockList.add(block);
 		rootSystem.addBlock(block);

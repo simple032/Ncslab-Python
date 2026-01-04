@@ -21,6 +21,10 @@ import com.ncslab.circuit.block.electblock.ElectBlock;
 import com.ncslab.circuit2.CircuitModel2;
 
 abstract public class CodeModel extends NCSLabModel {
+	
+	abstract protected void generatorCircuitGloablCode(CodeGenerationOption option);
+	abstract protected void generatorCircuitOutputCode(CodeGenerationOption option);
+	abstract protected void generatorCircuitUpdateCode(CodeGenerationOption option);
 
 
     @Getter
@@ -166,6 +170,12 @@ abstract public class CodeModel extends NCSLabModel {
 		generateStatementCode(option);
 
 		generateTerminateCode(option);
+		
+		if(this.getCircuitModel()!=null) {
+			generatorCircuitGloablCode(option);
+			generatorCircuitOutputCode(option);
+			generatorCircuitUpdateCode(option);
+		}
 	}
 
 

@@ -11,9 +11,12 @@
 #include "Matrix.hpp"
 #include "onestep.hpp"
 #include "util.hpp"
+
+#include <gsl/gsl_linalg.h>
 //#include <octave/oct.h>
 
 extern MODEL* mp;
+
 
 double calalpoutput(double inputvalue) {
 	double result;
@@ -682,4 +685,477 @@ void writeSavingInformation(int currentTerminal,int terminalNum){
 	writeBuf((unsigned char *)(&currentTerminal),sizeof(currentTerminal));
 	writeBuf((unsigned char *)(&terminalNum),sizeof(terminalNum));
 	fflush(stdout);
+}
+
+void copyCircuitMartrix(REAL *gAA,REAL *gAAc,REAL *iA,REAL *iAc,int size){
+	memcpy(gAA,gAAc,sizeof(REAL)*size*size);
+	memcpy(iA,iAc,sizeof(REAL)*size);
+}
+
+void copyCircuitVector(REAL *iA,REAL *iAc,int size){
+	memcpy(iA,iAc,sizeof(REAL)*size);
+}
+
+bool isRef(int n,int* ref,int refSize){
+	for(int i = 0;i<refSize;++i){
+		if(n == ref[i])
+			return true;
+	}
+	return false;
+}
+/*用来进行电路开关的矩阵合并*/
+/*Vindex记录了原始节点与合并之后节点的对应关系*/
+/*size记录了合并前的矩阵大小，合并之后size变化，需要通过指针回传*/
+/*ref记录了参考节点的位置*/
+/*n和m记录了要合并的两个节点*/
+/**/
+void CircuitCombine(REAL *gAA,REAL *iA,int *vIndex,int *size_p,int* ref,int n,int m,int indexSize,int refSize){
+	int size=*size_p;
+	/*
+	for(int i=0;i<size;i++){
+		for(int j=0;j<size;j++){
+			printf("%f\t",gAA[i*size+j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	for(int i=0;i<size;i++){
+		printf("%f\t",iA[i]);
+	}
+	printf("\n\n");
+
+	printf("%d\t%d\n",n,m);*/
+
+	//如果合并的节点中有参考节点，电压方程由参考节点决定，那么就只需要消去非参考节点的行列即可
+	if(isRef(n,ref,refSize)||isRef(m,ref,refSize)){
+		int nRef,nn;
+		REAL gAAc[size][size];
+		//复制原始数据到二维数组，便于进行计算，以后可以优化掉
+		for(int i=0;i<size;i++){
+			for(int j=0;j<size;j++){
+				gAAc[i][j]=gAA[i*size+j];
+			}
+		}
+
+		//让n成为消去的节点
+		int refNode = m;
+		if(isRef(n,ref,refSize)){
+			refNode=n;
+			n=m;
+		}
+
+		//nn是变换后的消去节点
+		nn=vIndex[n];
+		nRef=vIndex[refNode];
+		
+		//让消去的节点指向参考节点
+		vIndex[n]=vIndex[refNode];
+		
+		//printf("%d\t%d\n",nRef,nn);
+
+		//分别消去nn的节点行与列
+		for(int i=nn;i<size-1;i++){
+			for(int j=0;j<size;j++){
+				gAAc[i][j]=gAAc[i+1][j];
+			}
+		}
+		for(int i=nn;i<size-1;i++){
+			for(int j=0;j<size-1;j++){
+				gAAc[j][i]=gAAc[j][i+1];
+			}
+		}
+		
+		//消去nn在iA中的节点
+		for(int i=nn;i<size-1;i++){
+			iA[i]=iA[i+1];
+		}
+		
+		/*
+		for(int i=nn+1;i<size;i++){
+			for(int j=0;j<size;j++){
+				if(vIndex[j]==i){
+					vIndex[j]-=1;
+				}
+			}
+		}*/
+		
+		//重新更新vIndex，让nn后面的节点都减一
+		for(int i=0;i<indexSize;i++){
+			if(vIndex[i]>nn){
+				vIndex[i]-=1;
+			}
+		}
+
+		//矩阵的大小减一
+		size--;
+		//重新放回到一维数组中
+		for(int i=0;i<size;i++){
+			for(int j=0;j<size;j++){
+				gAA[i*size+j]=gAAc[i][j];
+			}
+		}
+	}
+	else{
+		//解析合并的两个点在新矩阵中的位置
+		int nn=vIndex[n];
+		int mm=vIndex[m];
+		//如果不是一个点，才需要合并，如果是一个点，就忽略
+		if(nn!=mm){
+			REAL gAAc[size][size];
+			for(int i=0;i<size;i++){
+				for(int j=0;j<size;j++){
+					gAAc[i][j]=gAA[i*size+j];
+				}
+			}
+			//重新排布，让nn在前，mm在后
+			if(nn>mm){
+				int temp=nn,temp1=n;
+				nn=mm;
+				n=m;
+				mm=temp;
+				m=temp1;
+			}
+			//printf("%d\t%d\n",nn,mm);
+
+			//分别把mm的行与列合并到nn里面去
+			for(int i=0;i<size;i++){
+				gAAc[nn][i]+=gAAc[mm][i];
+			}
+			for(int i=0;i<size;i++){
+				gAAc[i][nn]+=gAAc[i][mm];
+			}
+			//iA也进行相应的合并
+			iA[nn]+=iA[mm];
+
+			//合并之后，要把mm后面的行和列依次向前
+			for(int i=mm;i<size-1;i++){
+				for(int j=0;j<size;j++){
+					gAAc[i][j]=gAAc[i+1][j];
+				}
+			}
+			for(int i=mm;i<size-1;i++){
+				for(int j=0;j<size-1;j++){
+					gAAc[j][i]=gAAc[j][i+1];
+				}
+			}
+			//iA也是要把mm后面的元素依次向前
+			for(int i=mm;i<size-1;i++){
+				iA[i]=iA[i+1];
+			}
+			/*
+			for(int i=0;i<size;i++){
+				printf("%d\t",vIndex[i]);
+			}
+			printf("\n");*/
+
+			//m的索引合并到n里面
+			vIndex[m]=vIndex[n];
+			
+			/*
+			for(int i=0;i<size;i++){
+				printf("%d\t",vIndex[i]);
+			}
+			printf("\n");*/
+			
+			/*
+			for(int i=mm+1;i<size;i++){
+				for(int j=0;j<size;j++){
+					if(vIndex[j]==i){
+						vIndex[j]-=1;
+					}
+				}
+			}*/
+
+			//重新更新vIndex，让mm后面的节点都减一
+			for(int i=0;i<indexSize;i++){
+				if(vIndex[i]>mm){
+					vIndex[i]-=1;
+				}
+			}
+
+			//矩阵的大小减一
+			size--;
+			//重新放回到一维数组中
+			for(int i=0;i<size;i++){
+				for(int j=0;j<size;j++){
+					gAA[i*size+j]=gAAc[i][j];
+				}
+			}
+			/*
+			for(int i=0;i<size;i++){
+				printf("%d\t",vIndex[i]);
+			}
+			printf("\n");*/
+			
+		}
+	
+		
+	}
+	/*
+	for(int i=0;i<size;i++){
+		for(int j=0;j<size;j++){
+			printf("%f\t",gAA[i*size+j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	for(int i=0;i<size;i++){
+		printf("%f\t",iA[i]);
+	}
+	printf("\n\n");*/
+	//exit(0);
+
+	*size_p=size;
+}
+
+
+//电路仿真方面的函数
+
+/*计算一种组合的Inv矩阵*/
+//SwitchGAA *psGaa指向SwitchGaa表的指针
+//REAL *gAA, 经过开关状态合并之后的gAA矩阵
+//int switchNum 开关的个数
+//int size,经过开关状态合并之后的gAA矩阵大小
+//uint32_T *switchStatus，指向现在开关状态的指针
+gsl_matrix *addSwitchCombine(SwitchGAA *psGaa,REAL *gAA,int switchNum,int size,uint32_T *switchStatus){
+	int pos;
+	
+	//SwitchGAA表的大小加一
+	psGaa->storeGAASize++;
+	//添加的Inv矩阵表格的位置Pos
+	pos=psGaa->storeGAASize-1;
+	//按照增加的SwitchGAA大小，从新分配内存
+	psGaa->storeGAA=(StoreGAA *)realloc(psGaa->storeGAA,sizeof(StoreGAA)*psGaa->storeGAASize);
+	//为新的inv表格对应的开关状态表分配内存，并且在数据结构中复制一份
+	psGaa->storeGAA[pos].switchStatus=(uint32_T *)malloc((switchNum/32+1)*sizeof(uint32_T));
+	memcpy(psGaa->storeGAA[pos].switchStatus,switchStatus,(switchNum/32+1)*sizeof(uint32_T));
+	
+	//Inv表格中记录矩阵大小
+	psGaa->storeGAA[pos].size=size;
+	//都是根据最新参数进行的计算，因此有无参数改变的标志为0
+	psGaa->storeGAA[pos].isVariableChanged=0;
+	//psGaa->storeGAA[pos].rAA=(REAL *)malloc(sizeof(REAL)*size*size);
+	
+	/*
+	printf("%d\t",psGaa->storeGAASize);
+	for(int i=0;i<psGaa->switchNum/32+1;i++){
+		printf("swtich Status:%4x\t",switchStatus[i]);
+	}
+	
+	printf("size:%d\tSwitchNum:%d\n",size,psGaa->switchNum);
+	*/
+	
+	//gsl_matrix_view A = gsl_matrix_view_array(gAA,size, size);
+	
+	//计算逆阵inv
+	gsl_matrix * inv = gsl_matrix_alloc(size,size);
+    gsl_permutation * p = gsl_permutation_alloc(size);
+    
+    int signum=0;
+    
+    gsl_matrix *matrixA=gsl_matrix_alloc(size,size);
+    for(size_t i=0;i<size;++i){
+        for(size_t j=0;j<size;++j){
+			gsl_matrix_set(matrixA,i,j,gAA[i*size+j]);
+		}
+    }
+
+    gsl_linalg_LU_decomp(matrixA, p, &signum);
+    
+    gsl_linalg_LU_invert(matrixA, p, inv);
+    
+    //在表格中保存逆阵inv
+    psGaa->storeGAA[pos].inv=inv;
+    
+    /*
+    for(size_t i=0;i<size;++i){
+        for(size_t j=0;j<size;++j){
+			printf("%8.4f", gsl_matrix_get(inv,i,j));
+		}
+		putchar('\n');
+    }*/
+    
+    gsl_matrix_free(matrixA);
+    gsl_permutation_free(p);
+    
+    //返回计算的逆阵指针，可以用来进行状态计算
+    return inv;
+    
+}
+
+//如果有无参数改变的标志为1,说明矩阵中有些参数发生变化，因此需要重新计算
+//StoreGAA *pStoreGaa，inv矩阵表项的指针
+//REAL *gAA, 经过开关状态合并之后的gAA矩阵
+//int size,经过开关状态合并之后的gAA矩阵大小
+gsl_matrix *caclulateInv(StoreGAA *pStoreGaa,REAL *gAA,int size){
+	//释放原有的inv矩阵
+	gsl_matrix_free(pStoreGaa->inv);
+	
+	//根据Gaa中的数值，计算新的Inv矩阵
+	gsl_matrix * inv = gsl_matrix_alloc(size,size);
+    gsl_permutation * p = gsl_permutation_alloc(size);
+    
+    int signum=0;
+    
+    gsl_matrix *matrixA=gsl_matrix_alloc(size,size);
+    for(size_t i=0;i<size;++i){
+        for(size_t j=0;j<size;++j){
+			gsl_matrix_set(matrixA,i,j,gAA[i*size+j]);
+		}
+    }
+
+    gsl_linalg_LU_decomp(matrixA, p, &signum);
+    
+    gsl_linalg_LU_invert(matrixA, p, inv);
+    
+    //保存计算的inv矩阵
+    pStoreGaa->inv=inv;
+    
+    //返回inv矩阵指针
+    return inv;
+}
+
+//设定指定位置的开关状态
+//pos，开关的编号
+//status 开关状态
+void setSwitchStatus(SwitchGAA *psGaa,int pos,int status){
+	int word=pos/32;
+	int bit=pos%32;
+	if(status){
+		psGaa->switchStatus[word]|=(0x01)<<bit;	
+	}
+	else{
+		psGaa->switchStatus[word]&=(~(0x01<<bit));		
+	}
+	//printf("%d\t%d\n",pos,status);
+	//printf("%x\n",psGaa->switchStatus[0]);
+}
+
+//匹配开关状态表，寻找匹配的inv矩阵，如果找到，就返回找到矩阵，如果没有，就返回NULL
+StoreGAA *findStoreGAA(SwitchGAA *psGaa,uint32_T *switchStatus){
+	for(int i=0;i<psGaa->storeGAASize;i++){
+		int same=1;
+		for(int j=0;j<psGaa->switchNum/32+1;j++){
+			if(psGaa->storeGAA[i].switchStatus[j]!=switchStatus[j]){
+				same=0;
+			}
+		}
+		if(same){
+			return &(psGaa->storeGAA[i]);
+		}
+	}
+	return NULL;
+}
+
+//获取pos位置的开关状态
+int getSwtichStatus(SwitchGAA *psGaa,int pos){
+	int word=pos/32;
+	int bit=pos%32;
+	
+	return (psGaa->switchStatus[word])&(0x01<<bit);
+}
+
+
+//与circuitCombine类似的功能，但是只合并iA和索引表
+void CircuitCombineIA(REAL *iA,int *vIndex,int *size_p,int* ref,int n,int m,int indexSize,int refSize){
+	int size=*size_p;
+
+	//如果合并的节点中有参考节点，电压方程由参考节点决定，那么就只需要消去非参考节点的行列即可
+	if(isRef(n,ref,refSize)||isRef(m,ref,refSize)){
+		int nRef,nn;
+		
+
+		//让n成为消去的节点
+		int refNode = m;
+		if(isRef(n,ref,refSize)){
+			refNode=n;
+			n=m;
+		}
+
+		//nn是变换后的消去节点
+		nn=vIndex[n];
+		nRef=vIndex[refNode];
+		
+		//让消去的节点指向参考节点
+		vIndex[n]=vIndex[refNode];
+		
+		//消去nn在iA中的节点
+		for(int i=nn;i<size-1;i++){
+			iA[i]=iA[i+1];
+		}
+				
+		//重新更新vIndex，让nn后面的节点都减一
+		for(int i=0;i<indexSize;i++){
+			if(vIndex[i]>nn){
+				vIndex[i]-=1;
+			}
+		}
+
+		//矩阵的大小减一
+		size--;
+	}
+	else{
+		//解析合并的两个点在新矩阵中的位置
+		int nn=vIndex[n];
+		int mm=vIndex[m];
+		//如果不是一个点，才需要合并，如果是一个点，就忽略
+		if(nn!=mm){
+			
+			//重新排布，让nn在前，mm在后
+			if(nn>mm){
+				int temp=nn,temp1=n;
+				nn=mm;
+				n=m;
+				mm=temp;
+				m=temp1;
+			}
+			//printf("%d\t%d\n",nn,mm);
+
+			
+			//iA也进行相应的合并
+			iA[nn]+=iA[mm];
+
+			
+			//iA也是要把mm后面的元素依次向前
+			for(int i=mm;i<size-1;i++){
+				iA[i]=iA[i+1];
+			}
+			/*
+			for(int i=0;i<size;i++){
+				printf("%d\t",vIndex[i]);
+			}
+			printf("\n");*/
+
+			//m的索引合并到n里面
+			vIndex[m]=vIndex[n];
+			
+			
+
+			//重新更新vIndex，让mm后面的节点都减一
+			for(int i=0;i<indexSize;i++){
+				if(vIndex[i]>mm){
+					vIndex[i]-=1;
+				}
+			}
+
+			//矩阵的大小减一
+			size--;
+			
+		}
+	
+		
+	}
+
+	*size_p=size;
+}
+
+int isPartRef(int nodeId,int *ref,int refSize,int *vIndex){
+
+	for(int i=0;i<refSize;i++){
+		if(vIndex[ref[i]]==vIndex[nodeId]){
+			return 1;
+		}
+	}
+
+	return 0;
 }

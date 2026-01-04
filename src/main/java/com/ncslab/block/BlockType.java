@@ -430,7 +430,7 @@ public class BlockType{
 		// return null;
 	}
 	
-	public static CircuitBlock createCircuitBlock(int id, JSONObject blockJSON, NCSLabModel model,NCSLabSystem targetSystem) throws ModelException {
+	public static CircuitBlock createCircuitBlock(int id, java.util.concurrent.atomic.AtomicInteger blockSeqCounter,JSONObject blockJSON, NCSLabModel model,NCSLabSystem targetSystem) throws ModelException {
         String blockType = blockJSON.getString("blockType")
             .replace("Block", "")
             .replace(" ", "")
@@ -449,7 +449,7 @@ public class BlockType{
                     // Fall back to deprecated constructor if fromJSON method doesn't exist
 //                    log.warn("Block type '{}' does not have fromJSON method, using deprecated constructor", blockType);
             		if(InterCircuitBlock.class.isAssignableFrom(blockClass)) {
-            			block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class, NCSLabSystem.class).newInstance(blockJSON, model,targetSystem);
+            			block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class, NCSLabSystem.class,java.util.concurrent.atomic.AtomicInteger.class).newInstance(blockJSON, model,targetSystem,blockSeqCounter);
             		}
             		//if(block instanceof InterCircuitBlock) {
             		//	block = blockClass.getConstructor(JSONObject.class, NCSLabModel.class, NCSLabSystem.class).newInstance(blockJSON, model,targetSystem);

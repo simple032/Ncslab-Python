@@ -23,6 +23,10 @@ import com.ncslab.block.io.GlobalVariable;
 import com.ncslab.block.io.terminal.Terminal;
 import com.utils.Property;
 
+import com.ncslab.circuit2.CircuitModel2;
+import com.ncslab.circuit2.block.baseelement.CircuitBlockSingle;
+import com.ncslab.circuit2.block.io.CircuitNode;
+
 import lombok.Getter;
 
 abstract public class CodeStructC{
@@ -35,6 +39,8 @@ abstract public class CodeStructC{
 	public Set<String> globalEndCodeSet = new LinkedHashSet<>();
 	public Set<String> includeCodeSet = new LinkedHashSet<>();
 	public Set<WrittenFile> writtenFileSet = new HashSet<>();
+	
+	
 
 	/**
 	 * You can freely add declare code in this function, and it will be added to the
@@ -167,6 +173,12 @@ abstract public class CodeStructC{
 	public String dataStructureCode="";
 	/*定义监控数据实体初始化的代码，初始化各个组件结构的名称，path等，让指针指向指定的位置，建立数据结构， */
 	public String dataStructureInitCode="";
+	
+	public String circuitInitCode="";
+	
+	private String circuitDefineCode="";
+	private String circuitOutputCode="";
+	private String circuitUpdateCode="";
 
 	/**
 	 * End code, that will be run after the simulation ends
@@ -247,6 +259,55 @@ abstract public class CodeStructC{
 	public String getDerivativeCode() {
 		return derivativeCode;
 	}
+	
+	public void generatorCircuitOutputCode() {
+		CircuitModel2 circuitModel2=model.getCircuitModel();
+		circuitOutputCode+=circuitModel2.getCircuitPartitionOutputCode();
+	}
+	
+	public void generatorCircuitInitCode() {
+		circuitInitCode+="/*Circuit Init Code*/\n";
+		CircuitModel2 circuitModel2=model.getCircuitModel();
+		//circuitInitCode+=circuitModel2.getGAAInitCode();
+		
+		circuitInitCode+=circuitModel2.getCircuitPartitionInitCode();
+	}
+	
+	public void generatorCircuitUpdateCode() {
+		CircuitModel2 circuitModel2=model.getCircuitModel();
+		circuitUpdateCode+="/*Code for Circuit Update*/\n";
+		for(CircuitBlockSingle block:circuitModel2.getSingleBlockList()) {
+			String hisString=block.getHisUpdateString();
+			if(hisString!=null) {
+				circuitUpdateCode+=hisString+";\n";
+			}
+		}
+	}
+	
+	public void generateCircuitDefineCode() {
+		circuitDefineCode+="/*Define circuit variables*/\n";
+		CircuitModel2 circuitModel2=model.getCircuitModel();
+		circuitDefineCode+="/*Define circuit variables for Nodes*/\n";
+		for(CircuitNode node:circuitModel2.getNodeList()) {
+			circuitDefineCode+="REAL "+node.getNodeString()+";\n";
+		}
+		circuitDefineCode+="/*Define circuit variables for Blocks*/\n";
+		for(CircuitBlockSingle block:circuitModel2.getSingleBlockList()) {
+			circuitDefineCode+=block.generateHisStringCode();
+			circuitDefineCode+="REAL "+block.getCurrentString()+";\n";
+		}
+		
+		circuitDefineCode+=circuitModel2.getVariableDefineCode();
+		
+		//circuitDefineCode+=circuitModel2.getGAADefineCode();
+		
+		circuitDefineCode+=circuitModel2.getCircuitPartitionDefineCode();
+		
+//		for(CircuitBlockSingle block:circuitModel2.getSingleBlockList()) {
+//			circuitDefineCode+="REAL "+block.getCurrentString()+";\n";
+//		}
+	}
+	
 
 	public void generateIncludeCode() {
 		includeCode+=""
@@ -325,11 +386,13 @@ abstract public class CodeStructC{
 		addGlobalEndCode();
 
 		String preCode="extern MODEL* mp;\n"
+					+"extern MODEL model;\n"
 					+statementCode+"\n"
 					+hardwareDefineCode+"\n"
 					+parameterDefineCode+"\n"
 					+stateDefineCode+"\n"
-					+outputSignalDefineCode+"\n";
+					+outputSignalDefineCode+"\n"
+					+circuitDefineCode+"\n";
 		String mainCCode=includeCode+"\n"
 				//global variables
 				+this.globalVariable+"\n"
@@ -352,7 +415,7 @@ abstract public class CodeStructC{
 				+ "};\n"//double&char
 
 				+"void NCSLabInit(){\n"
-
+				+circuitInitCode+"\n"
 				+globalInit+"\n"
 				+"unsigned int AD_init_Flag=0;\n"  //ad初始化标志位
 				+"unsigned int DA_init_Flag=0;\n"  //da初始化标志位
@@ -395,6 +458,14 @@ abstract public class CodeStructC{
                 +"void NCSLabFinalize(){\n"
                 +finalizeCode+"\n"
                 +"}\n"
+                
+				+"void CircuitOutput(){\n"
+				+circuitOutputCode+"\n"
+				+"}\n"
+                
+				+"void CircuitUpdate(){\n"
+				+circuitUpdateCode+"\n"
+				+"}\n"
 
 				+"MODEL * NCSLabGetModelP(){\n"
 				+"return &model;\n"
@@ -829,6 +900,10 @@ abstract public class CodeStructC{
 		code+="#define MATRIX_STATE_NUM "+model.getRootSystem().getMatrixStateNum()+"\n";
 
 		code+="#define STEP_SIZE (1.0*"+model.getConfig().getFixedStep()+")\n";
+		
+		if(model.getCircuitModel()!=null) {
+			code+="#define _CIRCUIT\n";
+		}
 
 		if(model.getModelMode()==ModelMode.Simulation) {
 			code+="#define MAX_DATA_POINTS "+model.getConfig().getMaxDataPoints()+"\n";
