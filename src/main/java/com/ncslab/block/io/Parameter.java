@@ -11,6 +11,7 @@ import Jama.Matrix;
 public class Parameter {
 
     @Getter
+    @Setter
     private int id;
     //this.name="Block"+block.getBlockId()+"_Parameter_"+localName;
     //区分监控组态中不同模块中的参数,replace方法用于处理部分模块的非连续字符串命名问题

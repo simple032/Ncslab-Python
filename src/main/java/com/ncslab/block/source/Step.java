@@ -102,6 +102,10 @@ public class Step extends SourceBlock {
         parameterList.add(initialValue);
         parameterList.add(finalValue);
         
+        time.setId(7);
+        initialValue.setId(8);
+        finalValue.setId(9);
+        
         // Port initialization is now handled by the centralized parseInputOutputPorts() method in parent constructor"
     }
     
