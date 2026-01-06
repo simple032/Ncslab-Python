@@ -392,7 +392,12 @@ public class BlockType{
         circuitBlockClassTree.put("Capacitor", com.ncslab.circuit2.block.element.Capacitor.class);
         circuitBlockClassTree.put("Inductor", com.ncslab.circuit2.block.element.Inductor.class);
         circuitBlockClassTree.put("VoltageSensor", com.ncslab.circuit2.block.element.VoltageSensor.class);
+        circuitBlockClassTree.put("CurrentSensor", com.ncslab.circuit2.block.element.CurrentSensor.class);
         circuitBlockClassTree.put("Diode", com.ncslab.circuit2.block.multielement.Diode.class);
+        circuitBlockClassTree.put("CircuitSwitch", com.ncslab.circuit2.block.element.CircuitSwitch.class);
+        circuitBlockClassTree.put("VariableResistor", com.ncslab.circuit2.block.element.VariableResistor.class);
+        circuitBlockClassTree.put("VariableInductor", com.ncslab.circuit2.block.element.VariableInductor.class);
+        circuitBlockClassTree.put("VariableCapacitor", com.ncslab.circuit2.block.element.VariableCapacitor.class);
     }
 
 	public static Block createBlock(int id, JSONObject blockJSON, NCSLabModel model) throws ModelException {
@@ -434,6 +439,7 @@ public class BlockType{
         String blockType = blockJSON.getString("blockType")
             .replace("Block", "")
             .replace(" ", "")
+            .replace("\t", "")
             .replace("\n ","");
 
         CircuitBlock block = null;

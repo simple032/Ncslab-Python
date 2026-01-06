@@ -2,22 +2,33 @@ package com.ncslab.circuit2.block.element;
 
 import org.json.JSONObject;
 
+import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.baseelement.CircuitBlockSingle;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.system.NCSLabSystem;
 
-public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,VariableBlock{
+public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,VariableBlock,InterCircuitBlock{
 	com.ncslab.block.elec.VariableInductor variableInductorBlock;
 	
 	private String variableString;
 	
 	public VariableInductor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
-		createBlock();
+		createBlock(null);
 		
 		variableString="EBlock"+this.blockId+"_L";
 	}
 	
-	private void createBlock() {
+	public VariableInductor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem,java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
+		super(0,blockJSON,model);
+		this.blockModeType=BlockModeType.VoltageSensor;
+		//System.out.println(blockJSON);
+		//System.out.println(getVoltageString());
+		createBlock(blockSeqCounter);
+		variableString="EBlock"+this.blockId+"_L";
+	}
+	
+	private void createBlock(java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Variable Inductor");
 		addJSON.put("blockName", this.blockName);
@@ -26,6 +37,8 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
 		variableInductorBlock=new com.ncslab.block.elec.VariableInductor(addJSON,model,this);
+		variableInductorBlock.setBlockUUID(this.getBlockUUID());
+		variableInductorBlock.setBlockId(blockSeqCounter.incrementAndGet());
 		model.addElectBlock(variableInductorBlock);
 	}
 	

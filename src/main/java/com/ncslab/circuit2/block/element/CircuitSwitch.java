@@ -8,15 +8,24 @@ import com.ncslab.circuit2.block.io.CircuitPort;
 import com.ncslab.circuit2.block.io.CircuitPortType;
 import com.ncslab.circuit2.block.io.CircuitNode;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.system.NCSLabSystem;
 import com.ncslab.circuit2.block.baseelement.*;
 
-public class CircuitSwitch extends CircuitBlockSingle implements SwitchBlock{
+public class CircuitSwitch extends CircuitBlockSingle implements SwitchBlock,InterCircuitBlock{
 	private com.ncslab.block.elec.CircuitSwitch circuitSwitchBlock;
 	private int switchId=0;
 	public CircuitSwitch(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		this.blockModeType=BlockModeType.Switch;
-		createBlock();
+		createBlock(null);
+	}
+	
+	public CircuitSwitch(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem,java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
+		super(0,blockJSON,model);
+		this.blockModeType=BlockModeType.Switch;
+		//System.out.println(blockJSON);
+		//System.out.println(getVoltageString());
+		createBlock(blockSeqCounter);
 	}
 	
 	public void setSwitchId(int switchId) {
@@ -26,7 +35,7 @@ public class CircuitSwitch extends CircuitBlockSingle implements SwitchBlock{
 		return this.switchId;
 	}
 	
-	private void createBlock() {
+	private void createBlock(java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Circuit Switch");
 		addJSON.put("blockName", this.blockName);
@@ -34,6 +43,8 @@ public class CircuitSwitch extends CircuitBlockSingle implements SwitchBlock{
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		circuitSwitchBlock=new com.ncslab.block.elec.CircuitSwitch(addJSON, model, this);
+		circuitSwitchBlock.setBlockUUID(this.getBlockUUID());
+		circuitSwitchBlock.setBlockId(blockSeqCounter.incrementAndGet());
 		model.addElectBlock(circuitSwitchBlock);
 	}
 	

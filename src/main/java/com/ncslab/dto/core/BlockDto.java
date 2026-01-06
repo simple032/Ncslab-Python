@@ -332,7 +332,12 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.CapacitorDto.class, name = "Capacitor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.InductorDto.class, name = "Inductor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VoltageSensorDto.class, name = "Voltage Sensor"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.multielement.DiodeDto.class, name = "Diode")
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.multielement.DiodeDto.class, name = "Diode"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.CircuitSwitchDto.class, name = "Circuit	Switch"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.CurrentSensorDto.class, name = "Current Sensor"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableResistorDto.class, name = "Variable Resistor"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableInductorDto.class, name = "Variable Inductor"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableCapacitorDto.class, name = "Variable Capacitor")
 })
 @Data
 @SuperBuilder

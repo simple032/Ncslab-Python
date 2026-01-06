@@ -2,11 +2,13 @@ package com.ncslab.circuit2.block.element;
 
 import org.json.JSONObject;
 
+import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.CircuitBlock;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.system.NCSLabSystem;
 import com.ncslab.circuit2.block.baseelement.*;
 
-public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,VariableBlock{
+public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,VariableBlock,InterCircuitBlock{
 	com.ncslab.block.elec.VariableResistor variableResistorBlock;
 	
 	private int variableBlockId=0;
@@ -17,12 +19,21 @@ public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,
 	
 	public VariableResistor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
-		createBlock();
+		createBlock(null);
 		
 		variableString="EBlock"+this.blockId+"_R";
 	}
 	
-	private void createBlock() {
+	public VariableResistor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem,java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
+		super(0,blockJSON,model);
+		this.blockModeType=BlockModeType.VoltageSensor;
+		//System.out.println(blockJSON);
+		//System.out.println(getVoltageString());
+		createBlock(blockSeqCounter);
+		variableString="EBlock"+this.blockId+"_R";
+	}
+	
+	private void createBlock(java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Variable Reisitor");
 		addJSON.put("blockName", this.blockName);
@@ -31,6 +42,8 @@ public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
 		variableResistorBlock=new com.ncslab.block.elec.VariableResistor(addJSON,model,this);
+		variableResistorBlock.setBlockUUID(this.getBlockUUID());
+		variableResistorBlock.setBlockId(blockSeqCounter.incrementAndGet());
 		model.addElectBlock(variableResistorBlock);
 	}
 	

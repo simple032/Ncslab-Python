@@ -1183,6 +1183,7 @@ abstract public class CodeStructC{
 
 		dataStructureCode+="/*Define parameter structures*/\n";
 		int parameterNum=0;
+		//List<Block> blockList=model.getBlockList();
 		for(Block block:model.getBlockList()) {
 			if(!block.getParameterList().isEmpty()) {
 				for(Parameter parameter:block.getParameterList()) {
