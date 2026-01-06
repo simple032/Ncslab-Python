@@ -19,9 +19,14 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 		variableString="EBlock"+this.blockId+"_L";
 	}
 	
+	public String getVariableString() {
+		variableString="EBlock"+this.blockId+"_L";
+		return variableString;
+	}
+	
 	public VariableInductor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem,java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		super(0,blockJSON,model);
-		this.blockModeType=BlockModeType.VoltageSensor;
+		this.blockModeType=BlockModeType.Nromal;
 		//System.out.println(blockJSON);
 		//System.out.println(getVoltageString());
 		createBlock(blockSeqCounter);
@@ -53,8 +58,9 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 		//String inputString="("+variableResistorBlock.getInputPortVariable(0)+")";
 		
 		//return "("+inputString+">0?"+inputString+":1)";
+		String inputString="("+variableInductorBlock.getInputPortVariable(0)+")";
 		
-		return "(2.0*("+variableInductorBlock.getInputPortVariable(0)+")/"+this.getSimpleTime()+")";
+		return "(2.0*("+inputString+")/"+this.getSimpleTime()+")";
 	}
 	
 	public String getHisUpdateString() {
@@ -131,7 +137,7 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 	public String getVariableDefineCode() {
 		// TODO Auto-generated method stub
 		
-		String code="REAL "+variableString+"=0;\n";
+		String code="REAL "+getVariableString()+"=0;\n";
 		return code;
 	}
 

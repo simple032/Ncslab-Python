@@ -10,4 +10,6 @@ public interface VariableBlock {
 	public String getVariableDefineCode();
 	//参数变化的时候需要设置isVariableChanged=1的代码
 	public String getVariableChangeCode();
+	
+	public String getVariableString();
 }

@@ -2,22 +2,38 @@ package com.ncslab.circuit2.block.element;
 
 import org.json.JSONObject;
 
+import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.baseelement.CircuitBlockSingle;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.system.NCSLabSystem;
 
-public class VariableCapacitor extends CircuitBlockSingle implements VariableBlock{
+public class VariableCapacitor extends CircuitBlockSingle implements VariableBlock,InterCircuitBlock{
 	com.ncslab.block.elec.VariableCapacitor variableCapacitorBlock;
 	
 	private String variableString;
 	
 	public VariableCapacitor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
-		createBlock();
+		createBlock(null);
 		
 		variableString="EBlock"+this.blockId+"_C";
 	}
 	
-	private void createBlock() {
+	public String getVariableString() {
+		variableString="EBlock"+this.blockId+"_C";
+		return variableString;
+	}
+	
+	public VariableCapacitor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem,java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
+		super(0,blockJSON,model);
+		this.blockModeType=BlockModeType.Nromal;
+		//System.out.println(blockJSON);
+		//System.out.println(getVoltageString());
+		createBlock(blockSeqCounter);
+		variableString="EBlock"+this.blockId+"_C";
+	}
+	
+	private void createBlock(java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Variable Capacitor");
 		addJSON.put("blockName", this.blockName);
@@ -26,6 +42,8 @@ public class VariableCapacitor extends CircuitBlockSingle implements VariableBlo
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
 		variableCapacitorBlock=new com.ncslab.block.elec.VariableCapacitor(addJSON,model,this);
+		variableCapacitorBlock.setBlockUUID(this.getBlockUUID());
+		variableCapacitorBlock.setBlockId(blockSeqCounter.incrementAndGet());
 		model.addElectBlock(variableCapacitorBlock);
 	}
 	
@@ -43,7 +61,9 @@ public class VariableCapacitor extends CircuitBlockSingle implements VariableBlo
 		
 		//return "(2.0*("+variableInductorBlock.getInputPortVariable(0)+")/"+this.getSimpleTime()+")";
 		
-		return "("+this.getSimpleTime()+"/2.0/("+variableCapacitorBlock.getInputPortVariable(0)+"))";
+		String inputString="("+variableCapacitorBlock.getInputPortVariable(0)+")";
+		
+		return "("+this.getSimpleTime()+"/2.0/("+inputString+"))";
 	}
 	
 	public String getHisUpdateString() {
@@ -106,7 +126,7 @@ public class VariableCapacitor extends CircuitBlockSingle implements VariableBlo
 	public String getVariableDefineCode() {
 		// TODO Auto-generated method stub
 		
-		String code="REAL "+variableString+"=0;\n";
+		String code="REAL "+getVariableString()+"=0;\n";
 		return code;
 	}
 

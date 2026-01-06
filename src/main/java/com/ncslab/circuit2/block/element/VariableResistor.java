@@ -24,9 +24,14 @@ public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,
 		variableString="EBlock"+this.blockId+"_R";
 	}
 	
+	public String getVariableString() {
+		variableString="EBlock"+this.blockId+"_R";
+		return variableString;
+	}
+	
 	public VariableResistor(JSONObject blockJSON,NCSLabModel model,NCSLabSystem targetSystem,java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		super(0,blockJSON,model);
-		this.blockModeType=BlockModeType.VoltageSensor;
+		this.blockModeType=BlockModeType.Nromal;
 		//System.out.println(blockJSON);
 		//System.out.println(getVoltageString());
 		createBlock(blockSeqCounter);
@@ -92,7 +97,7 @@ public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,
 	}
 	
 	public String getVariableDefineCode() {
-		String code="REAL "+variableString+"=0;\n";
+		String code="REAL "+getVariableString()+"=0;\n";
 		return code;
 	}
 
