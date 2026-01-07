@@ -7,7 +7,7 @@
 #include "onestep.hpp"
 
 #define INIT_POINT_NUM 100
-#define TOL 1E-3  // Match Java/Simulink default RelTol (1e-3) for consistent results
+#define TOL 1E-7  // Match Java/Simulink default RelTol (1e-3) for consistent results
 
 extern MODEL *mp;
 extern double sample_time[];
