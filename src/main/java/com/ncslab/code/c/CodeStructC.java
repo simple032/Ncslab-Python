@@ -432,6 +432,12 @@ abstract public class CodeStructC{
 
 				+"void NCSLabOutput(){\n"
 				+outputCode+"\n"
+				+"#ifdef _CIRCUIT\n"
+				+"if(mp->majorStep){\n"
+				+"CircuitOutput();\n"
+				+"CircuitUpdate();\n"
+				+"}\n"
+				+"#endif\n"
 				+"}\n"
 
 				+"void NCSLabDerivative(){\n"

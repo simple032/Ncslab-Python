@@ -63,9 +63,7 @@ void NCSLabOneStep(){
 
   mp->majorStep=1;
   NCSLabOutput();
-  #ifdef _CIRCUIT
-  CircuitOutput();
-  #endif
+  
   if(mp->discreteUpdate){
 
   	NCSLabDiscreteUpdate();
@@ -113,7 +111,7 @@ void NCSLabOneStep(){
   //mp->time+=mp->stepSize;
 
   #ifdef _CIRCUIT
-  CircuitUpdate();
+  
   #endif
 
 }
