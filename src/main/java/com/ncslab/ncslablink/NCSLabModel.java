@@ -155,7 +155,7 @@ abstract public class NCSLabModel {
     protected int outputNum=0;
 
 	@Getter
-	private NCSLabSystem rootSystem = new NCSLabSystem();
+	private NCSLabSystem rootSystem = new NCSLabSystem(modelName);
 	
 	@Getter
 	private CircuitModel2 circuitModel;
@@ -174,6 +174,8 @@ abstract public class NCSLabModel {
 		if (!modelDto.isValid()) {
 			throw new ModelException("Invalid ModelDto: " + modelDto.getValidationError());
 		}
+		
+		rootSystem.setPath(modelDto.getModelName());
 		
 		initFromDto(modelDto, mode);
 	}
@@ -1578,6 +1580,10 @@ abstract public class NCSLabModel {
 		//blockSeq++;
 		block.updateBlock();
 		//blockList.add(block);
-		rootSystem.addBlock(block);
+		rootSystem.addElectBlock(block,rootSystem);
 	}
+    
+    public void relocateCircuitBlocks() {
+    	this.getRootSystem().relocateCircuitBlocks(null, this.getRootSystem());
+    }
 }

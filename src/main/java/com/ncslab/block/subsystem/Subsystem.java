@@ -55,7 +55,7 @@ public class Subsystem extends Block{
         outBlockList = new ArrayList<>();
 
         // Initialize NCSLabSystem to manage subsystem's internal structure
-        innerSystem = new NCSLabSystem();
+        innerSystem = new NCSLabSystem(blockPath+"/"+blockName);
 
         // Initialize with empty collections - blocks and lines will be added via management methods
     }
@@ -67,7 +67,7 @@ public class Subsystem extends Block{
 
         // Initialize NCSLabSystem to manage subsystem's internal structure
         // TODO: Design the subsystem-scope context based on available paramValues
-        innerSystem = new NCSLabSystem();
+        innerSystem = new NCSLabSystem(blockPath+"/"+blockName);
 
         // Initialize with empty collections - blocks and lines will be added via management methods
     }

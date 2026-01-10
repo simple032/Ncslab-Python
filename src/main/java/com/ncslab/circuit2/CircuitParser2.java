@@ -87,6 +87,8 @@ public class CircuitParser2 {
 		//剥离所有的电路模块和电路连接线,建立电气模块blockList和线路lineList
 		//parseCircuit();
 		
+		model.relocateCircuitBlocks();
+		
 		Vector<CircuitBlock> blockList=new Vector<CircuitBlock>();
 		blockList.addAll(model.getRootSystem().getCircuitBlocks());
 		

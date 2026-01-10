@@ -164,7 +164,15 @@ public class NCSLabSystem {
     @Getter
     private int outputNum = 0;
     
+    @Getter
+    @Setter
+    private String path;
+    
     // ===== SYSTEM MANAGEMENT METHODS =====
+    
+    public NCSLabSystem(String path) {
+    	this.path=path;
+    }
     
     /**
      * Add a block to this system
@@ -176,6 +184,39 @@ public class NCSLabSystem {
             blocks.add(block);
             block.setParent(this);
         }
+    }
+    
+    private boolean isPathMatch(Block block,NCSLabSystem sys) {
+    	String sysPath=sys.getPath()+"/";
+    	String blockPath=block.getBlockPath();
+    	String[] blockPaths=blockPath.split("/");
+    	String path="";
+    	for(String sec:blockPaths) {
+    		path+=sec+"/";
+    	}
+    	
+    	if(path.equals(sysPath)) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    public void addElectBlock(Block block,NCSLabSystem sys) {
+    	if (block != null && isPathMatch(block,sys) && !sys.getBlocks().contains(block)) {
+    		sys.getBlocks().add(block);
+            block.setParent(sys);
+        }
+    	else {
+    		for(Block bloc:sys.getBlocks()) {
+    			if(bloc instanceof Subsystem) {
+                    // Handle subsystem-specific logic
+                    Subsystem subSystem = (Subsystem) bloc;
+                    NCSLabSystem subSys=subSystem.getInnerSystem();
+                    addElectBlock(block,subSys);
+        		}
+    		}
+    	}
     }
     
     public void addCircuitBlock(CircuitBlock block) {
@@ -1576,5 +1617,22 @@ public class NCSLabSystem {
     public String toString() {
         return String.format("NCSLabSystem[blocks=%d, lines=%d, executionOrder=%d, algebraicLoop=%s, states=%d, signals=%d]",
             blocks.size(), lines.size(), outputChain.size(), isAlgebraicLoop, stateNum, signalNum);
+    }
+    
+    public void relocateCircuitBlocks(NCSLabSystem parentSys,NCSLabSystem sys) {
+    	
+    	for(Block block:sys.getBlocks()) {
+    		if(block instanceof Subsystem) {
+                // Handle subsystem-specific logic
+                Subsystem subSystem = (Subsystem) block;
+                NCSLabSystem subSys=subSystem.getInnerSystem();
+                relocateCircuitBlocks(sys,subSys);
+    		}
+    	}
+    	
+    	if(parentSys!=null) {
+    		parentSys.getCircuitBlocks().addAll(sys.getCircuitBlocks());
+    		parentSys.getCircuitLines().addAll(sys.getCircuitLines());
+    	}
     }
 }
