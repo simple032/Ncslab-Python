@@ -111,6 +111,9 @@ void writeScopeBin(int cursor,TERMINAL *terminal,FILE *fp){
 
 	fwrite(&(scopeStruct),sizeof(scopeStruct),1,fp);
 	fwrite(scope->name,scopeStruct.nameLength,1,fp);
+	int uuidSize=strlen(scope->uuid);
+	fwrite(&uuidSize,sizeof(uuidSize),1,fp);
+	fwrite(scope->uuid,uuidSize,1,fp);
 
 	while(scope->timeList.size()>MAX_DATA_POINTS){
 		scope->timeList.pop_front();
