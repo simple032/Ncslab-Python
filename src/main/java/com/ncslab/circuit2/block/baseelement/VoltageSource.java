@@ -8,7 +8,7 @@ import com.ncslab.circuit2.block.io.CircuitPort;
 import com.ncslab.circuit2.block.io.CircuitNode;
 import com.ncslab.ncslablink.NCSLabModel;
 
-public class VoltageSource extends CircuitBlockSingle {
+public abstract class VoltageSource extends CircuitBlockSingle {
 	private int vsId;
 	
 	private int partVsId;
@@ -41,6 +41,8 @@ public class VoltageSource extends CircuitBlockSingle {
 	public String getVString() {
 		return null;
 	}
+	
+	abstract public double getVValue();
 	
 	public void setCurrentId(int currentId) {
 		this.currentId=currentId;

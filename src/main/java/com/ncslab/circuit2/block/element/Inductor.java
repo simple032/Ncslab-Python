@@ -15,20 +15,28 @@ import com.ncslab.circuit2.block.baseelement.*;
 public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 
 	private String lString;
+	private double lValue;
+	
 	public Inductor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		//System.out.println(blockJSON);
 		lString=paramValues.getString("l");
+		lValue=Double.parseDouble(lString);
 	}
 	
 	public Inductor(JSONObject blockJSON,NCSLabModel model) {
 		super(0,blockJSON,model);
 		//System.out.println(blockJSON);
 		lString=paramValues.getString("l");
+		lValue=Double.parseDouble(lString);
 	}
 	
 	public String getRString() {
 		return "(2.0*("+this.lString+")/"+this.getSimpleTime()+")";
+	}
+	
+	public double getRValue() {
+		return 2.0*lValue/this.getSampleTimeValue();
 	}
 	
 	public String getHisString() {
@@ -110,6 +118,12 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 			switchCode+="setSwitchStatus(partitioner.partitions["+partId+"].pSwitchGaa,"+this.getSwitchPartId()+","+0+");\n";
 		}
 		return switchCode;
+	}
+
+	@Override
+	public boolean getSwitchStatus() {
+		// TODO Auto-generated method stub
+		return lValue<=0;
 	}
 	
 }

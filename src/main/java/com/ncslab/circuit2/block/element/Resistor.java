@@ -14,16 +14,20 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 	private String rString;
 	private int switchId=0;
 	
+	private double rValue;
+	
 	public Resistor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		rString=paramValues.getString("R");
-		System.out.println(blockJSON);
+		rValue=Double.parseDouble(rString);
+		//System.out.println(blockJSON);
 	}
 	
 	public Resistor(JSONObject blockJSON,NCSLabModel model) {
 		super(0,blockJSON,model);
 		rString=paramValues.getString("R");
-		System.out.println(blockJSON);
+		rValue=Double.parseDouble(rString);
+		//System.out.println(blockJSON);
 	}
 	
 	public String getRString() {
@@ -33,6 +37,10 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 		else {
 			return "("+this.rString+"*1.0)";
 		}
+	}
+	
+	public double getRValue() {
+		return rValue;
 	}
 	
 	public String getSwitchCode() {
@@ -86,6 +94,12 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 			switchCode+="setSwitchStatus(partitioner.partitions["+partId+"].pSwitchGaa,"+this.getSwitchPartId()+","+0+");\n";
 		}
 		return switchCode;
+	}
+
+	@Override
+	public boolean getSwitchStatus() {
+		// TODO Auto-generated method stub
+		return rValue<=0;
 	}
 	
 }

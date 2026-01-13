@@ -12,6 +12,7 @@ import com.ncslab.circuit2.block.io.CircuitPortType;
 abstract public class CircuitBlockSingle extends CircuitBlock {
 	
 	private boolean isCurrentCodeGen=false;
+	private double hisValue=0;
 	
 	public CircuitBlockSingle(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
@@ -21,12 +22,20 @@ abstract public class CircuitBlockSingle extends CircuitBlock {
 		return "0";
 	}
 	
+	public double getHisValue() {
+		return hisValue;
+	}
+	
 	public String getHisUpdateString() {
 		return null;
 	}
 	
 	public String getRString() {
 		return null;
+	}
+	
+	public double getRValue() {
+		return 1;
 	}
 	
 	public String getCurrentString() {

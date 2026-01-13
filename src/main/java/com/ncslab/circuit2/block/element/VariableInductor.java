@@ -169,4 +169,11 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 		
 		return switchCode;
 	}
+
+	@Override
+	public boolean getSwitchStatus() {
+		// TODO Auto-generated method stub
+		com.ncslab.block.data.Data data=variableInductorBlock.getInputPortList().get(0).getData();
+		return data.getInitValue()<=0;
+	}
 }

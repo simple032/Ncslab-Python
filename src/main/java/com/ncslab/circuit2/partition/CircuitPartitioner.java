@@ -3,6 +3,8 @@ package com.ncslab.circuit2.partition;
 import java.util.Comparator;
 import java.util.Vector;
 
+import lombok.Getter;
+
 //import com.sun.java.swing.plaf.windows.TMSchema.Part;
 
 import com.ncslab.circuit2.CircuitModel2;
@@ -30,6 +32,7 @@ public class CircuitPartitioner {
 	private Vector<CircuitBlockSingle> singleBlockList;
 	private Vector<CircuitBlockMulti> multiBlockList;
 	
+	@Getter
 	private Vector<CircuitPartition> partitionList=new Vector<CircuitPartition>();
 	
 	private Vector<CircuitPartition> sepPartitionList=new Vector<CircuitPartition>();

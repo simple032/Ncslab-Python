@@ -8,20 +8,28 @@ import com.ncslab.circuit2.block.baseelement.*;
 
 public class Capacitor extends CircuitBlockSingle {
 	private String cString;
+	private double cValue;
 	public Capacitor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		//System.out.println(blockJSON);
 		cString=paramValues.getString("c");
+		cValue=Double.parseDouble(cString);
 	}
 	
 	public Capacitor(JSONObject blockJSON,NCSLabModel model) {
 		super(0,blockJSON,model);
 		//System.out.println(blockJSON);
 		cString=paramValues.getString("c");
+		cValue=Double.parseDouble(cString);
 	}
 	
 	public String getRString() {
 		return "("+this.getSimpleTime()+"/2.0/("+this.cString+"))";
+	}
+	
+	public double getRValue() {
+		double sampleTime=this.getSampleTimeValue();
+		return this.getSampleTimeValue()/2.0/cValue;
 	}
 	
 	public String getHisString() {

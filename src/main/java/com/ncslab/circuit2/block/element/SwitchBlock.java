@@ -11,4 +11,6 @@ public interface SwitchBlock {
 	
 	public void setSwitchPartId(int switchPartId);
 	public int getSwitchPartId();
+	
+	public boolean getSwitchStatus();
 }

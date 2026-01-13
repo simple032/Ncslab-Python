@@ -59,6 +59,27 @@ public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,
 		return "("+inputString+">0?"+inputString+":1)";
 	}
 	
+	public double getRValue() {
+		com.ncslab.block.data.Data data=variableResistorBlock.getInputPortList().get(0).getData();
+		double value=data.getInitValue();
+		//return value;
+		return value>0?value:1;
+	}
+	
+	private double oldRValue=0;
+	
+	public boolean isVariableChanged() {
+		com.ncslab.block.data.Data data=variableResistorBlock.getInputPortList().get(0).getData();
+		double newRValue=data.getInitValue();
+		if(oldRValue!=newRValue) {
+			oldRValue=newRValue;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
 	public String getSwitchCode() {
 		String switchCode="/*Switch Code for Switch "+this.getBlockName()+" */\n";
 		
@@ -141,5 +162,12 @@ public class VariableResistor extends CircuitBlockSingle implements SwitchBlock,
 		switchCode+="}\n";
 		
 		return switchCode;
+	}
+
+	@Override
+	public boolean getSwitchStatus() {
+		// TODO Auto-generated method stub
+		com.ncslab.block.data.Data data=variableResistorBlock.getInputPortList().get(0).getData();
+		return data.getInitValue()<=0;
 	}
 }

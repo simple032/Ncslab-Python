@@ -11,6 +11,8 @@ public class DCVoltageSource extends VoltageSource {
 	
 	private String vString;
 	
+	private double vValue;
+	
 	public DCVoltageSource(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		//this.blockName=this.blockName.replaceAll(" ", "_");
@@ -18,6 +20,7 @@ public class DCVoltageSource extends VoltageSource {
 		//System.out.println(blockJSON);
 		
 		vString=paramValues.getString("v0");
+		vValue=Double.parseDouble(vString);
 		
 	}
 	
@@ -28,6 +31,7 @@ public class DCVoltageSource extends VoltageSource {
 		//System.out.println(blockJSON);
 		
 		vString=paramValues.getString("v0");
+		vValue=Double.parseDouble(vString);
 		
 	}
 	
@@ -41,6 +45,10 @@ public class DCVoltageSource extends VoltageSource {
 	
 	public String getVString() {
 		return vString;
+	}
+	
+	public double getVValue() {
+		return vValue;
 	}
 
 }

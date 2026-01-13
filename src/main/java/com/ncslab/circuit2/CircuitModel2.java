@@ -25,7 +25,7 @@ import com.ncslab.circuit2.block.baseelement.CircuitBlockMulti;
 
 import com.ncslab.circuit2.block.element.SwitchBlock;
 import com.ncslab.circuit2.block.element.VariableBlock;
-
+import com.ncslab.circuit2.partition.CircuitPartition;
 import com.ncslab.circuit2.partition.CircuitPartitioner;
 
 import com.ncslab.ncslablink.ModelException;
@@ -192,6 +192,41 @@ public class CircuitModel2 {
 	
 	public Vector<Integer> getRefList() {
 		return this.refList;
+	}
+	
+	public void calculateInits(double tStart) {
+		createCircuitNodes();
+		
+		for(CircuitBlockMulti multiBlock:multiBlockList) {
+			multiBlock.setupLogicCode();
+		}
+		
+		setRef();
+		
+		System.out.println("Partiationing...");
+		partitioner=CircuitPartitioner.CreateCircuitPartitioner(this);
+		
+		for(CircuitPartition part:partitioner.getPartitionList()) {
+			part.calculateInits(tStart);
+		}
+		
+		//CreateGAA();
+		
+		/*
+		for(CircuitNode node:nodeList) {
+			System.out.println(node.getNodeId()+":"+node.getCircuitPortList().size()+":"+node.getVsCircuitPortList().size());
+			for(CircuitPort port:node.getCircuitPortList()) {
+				System.out.print(port.getBlock().getBlockName()+":"+port.getName()+"\t");
+			}
+			System.out.println();
+		}*/
+	}
+	
+	public void calculateOutputs(double t) {
+		System.out.println(t);
+		for(CircuitPartition part:partitioner.getPartitionList()) {
+			part.calculateOutputs(t);
+		}
 	}
 	
 	public void generate() {

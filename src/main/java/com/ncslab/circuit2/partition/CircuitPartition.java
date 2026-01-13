@@ -1,6 +1,8 @@
 package com.ncslab.circuit2.partition;
 
 import java.util.Vector;
+import lombok.Getter;
+import org.apache.commons.math3.linear.*;
 
 import com.ncslab.circuit2.CircuitModel2;
 import com.ncslab.circuit2.block.BlockModeType;
@@ -16,6 +18,8 @@ import com.ncslab.circuit2.block.io.CircuitPort;
 import com.ncslab.circuit2.block.io.CircuitPortType;
 import com.ncslab.circuit2.block.multielement.OpAmp;
 import com.ncslab.circuit2.block.multielement.Recalc;
+import com.ncslab.circuit2.gaa.SwitchGAA;
+import com.ncslab.circuit2.gaa.StoreGAA;
 
 public class CircuitPartition {
 	
@@ -37,9 +41,12 @@ public class CircuitPartition {
 	//参考节点列表，因为是节点合并形成part，不共地的电路不会放到一个part，所以一个part应该只有一个
 	private Vector<CircuitNode> refNodeList;
 	//开关器件的列表
+	@Getter
 	private Vector<CircuitBlock> switchBlockList=new Vector<CircuitBlock>();
 	//变参数器件的列表
 	private Vector<CircuitBlock> variableBlockList=new Vector<CircuitBlock>();
+	
+	private Vector<CircuitBlock> dynamicSwitchBlockList=new Vector<CircuitBlock>();
 	
 	private int id;
 	
@@ -48,6 +55,9 @@ public class CircuitPartition {
 	
 	//不考虑对外电流，对外节点的电压值
 	private String iAEff[];
+	
+	
+	private SwitchGAA switchGAA;
 	
 	//part的构造函数，每个part都是从一个block开始的
 	public CircuitPartition(CircuitBlock block) {
@@ -218,6 +228,12 @@ public class CircuitPartition {
 			if(block instanceof SwitchBlock) {
 				switchBlockList.add(block);
 				((SwitchBlock) block).setSwitchPartId(switchPartId++);
+			}
+		}
+		
+		for(CircuitBlock block:singleBlockList) {
+			if(block instanceof SwitchBlock &&((SwitchBlock)block).isDynamic()) {
+				dynamicSwitchBlockList.add(block);
 			}
 		}
 		
@@ -791,9 +807,211 @@ public class CircuitPartition {
 		return code;
 	}
 	
+	private long getSwitchStatus() {
+		long switchStatus=0;
+		long rate=1;
+		for(CircuitBlock block:dynamicSwitchBlockList) {
+			SwitchBlock swBlock=(SwitchBlock)block;
+			if(swBlock.getSwitchStatus()) {
+				switchStatus+=rate;
+			}
+			rate*=2;
+		}
+		
+		return switchStatus;
+	}
+	
+	public void calculateOutputs(double t) {
+		boolean isVariableChanged=false;
+		double[] iA=getIAValue();
+		
+		long switchStatus;
+		
+		for(CircuitBlock block:this.variableBlockList) {
+			VariableBlock vBlock=(VariableBlock)block;
+			if(vBlock.isVariableChanged()) {
+				isVariableChanged=true;
+			}
+		}
+		if(isVariableChanged) {
+			switchGAA.setVariableChanged();
+		}
+		
+		switchStatus=getSwitchStatus();
+		
+		StoreGAA storeGAA=switchGAA.findStoreGAA(switchStatus);
+		if(storeGAA==null) {
+			storeGAA=switchGAA.addStoreGAA(switchStatus);
+		}
+		
+		double inv[][]=storeGAA.getInv();
+		int[] vIndex=storeGAA.getVIndex();
+		iA=storeGAA.getCombineIA(iA);
+		
+		RealMatrix invM=new Array2DRowRealMatrix(inv);
+		RealMatrix iAV=new Array2DRowRealMatrix(iA);
+		RealMatrix xM=invM.multiply(iAV);
+		
+		double[] x=xM.transpose().getData()[0];
+		
+		/*
+		for(int i=0;i<x.length;i++) {
+			System.out.print(x[i]+"\t");
+		}
+		System.out.println();*/
+		
+		/*
+		for(int i=0;i<gAA.length;i++) {
+			for(int j=0;j<gAA.length;j++) {
+				System.out.print(gAA[i][j]+"\t");
+			}
+			System.out.println();
+		}
+		for(int i=0;i<iA.length;i++) {
+			System.out.print(iA[i]+"\t");
+		}
+		System.out.println();
+		System.out.println(isVariableChanged);
+		System.out.println(switchStatus);
+		System.out.println();*/
+		
+		
+	}
+	
+	public void calculateInits(double tStart) {
+		switchGAA=new SwitchGAA(this);
+		switchGAA.setSwitchNum(this.dynamicSwitchBlockList.size());
+	}
+	
 	private int mSize;
 	private String[][] gAA;
 	private String[] iA;
+	
+	public double[][] getGAAValue(){
+		int vsStart=nodeList.size();
+		mSize=nodeList.size()+vsBlockList.size();
+		double[][] gAAValue=new double[mSize][mSize];
+		
+		for(CircuitNode node:nodeList) {
+			//如果是参考节点,直接自身节点等于0
+			if(node.getIsPartRef()) {
+				gAAValue[node.getPartNodeId()][node.getPartNodeId()]=1.0;
+			}
+			else {
+				for(CircuitPort port:node.getCircuitPortList()) {
+					CircuitBlockSingle block=port.getBlock();
+					if(block.getBlockModeType()==BlockModeType.Nromal) {
+						CircuitNode nNode=block.getAnotherCircuitPort(port).getCircuitNode();
+						gAAValue[node.getPartNodeId()][node.getPartNodeId()]+=-1.0/block.getRValue();
+						gAAValue[node.getPartNodeId()][nNode.getPartNodeId()]+=1.0/block.getRValue();
+					}
+					else
+					//如果是电压源,则访问电压源的电流作为未知数
+					if(block.getBlockModeType()==BlockModeType.VoltageSource) {
+						if(port.getCircuitPortType()==CircuitPortType.Left) {
+							gAAValue[node.getPartNodeId()][vsStart+((VoltageSource)block).getPartVsId()]=-1.0;
+						}
+						else {
+							gAAValue[node.getPartNodeId()][vsStart+((VoltageSource)block).getPartVsId()]=1.0;
+						}
+					}
+					else
+					//如果是电流源,则在iA中增加一项
+					if(block instanceof CurrentSource) {
+						CurrentSource cBlock=(CurrentSource)block;
+						double sign=port.getCircuitPortType()==CircuitPortType.Left?(-1.0):(1.0);
+						iA[node.getPartNodeId()]+=sign*cBlock.getIValue();
+					}
+					//如果是电流源,则在iA中增加一项
+					//....
+				}
+			}
+		}
+		
+		/*处理电压源,增加关于电压源的方程*/
+		for(CircuitBlock block:vsBlockList) {
+			VoltageSource vsBlock=(VoltageSource)block;
+			vsBlock.setPartCurrentId(vsStart+((VoltageSource)block).getPartVsId());
+			gAAValue[vsStart+((VoltageSource)block).getPartVsId()][vsBlock.getCurcuitPortList().get(0).getCircuitNode().getPartNodeId()]=1.0;
+			gAAValue[vsStart+((VoltageSource)block).getPartVsId()][vsBlock.getCurcuitPortList().get(1).getCircuitNode().getPartNodeId()]=-1.0;
+		}
+		
+		return gAAValue;
+	}
+	
+	private double[] getIAValue(){
+		int vsStart=nodeList.size();
+		mSize=nodeList.size()+vsBlockList.size();
+		double[] iAValue=new double[mSize];
+		
+		for(CircuitNode node:nodeList) {
+			if(node.getIsPartRef()==false) {
+				iAValue[node.getPartNodeId()]+=node.getHisValue();
+			}
+		}
+		
+		for(CircuitBlock block:vsBlockList) {
+			VoltageSource vsBlock=(VoltageSource)block;
+			vsBlock.setPartCurrentId(vsStart+((VoltageSource)block).getPartVsId());
+			iAValue[vsStart+((VoltageSource)block).getPartVsId()]=vsBlock.getVValue();
+		}
+		
+		return iAValue;
+	}
+	
+//	private void getGAAValue() {
+//		int vsStart=nodeList.size();
+//		mSize=nodeList.size()+vsBlockList.size();
+//		gAAValue=new double[mSize][mSize];
+//		iAValue=new double[mSize];
+//		
+//		for(CircuitNode node:nodeList) {
+//			//如果是参考节点,直接自身节点等于0
+//			if(node.getIsPartRef()) {
+//				gAAValue[node.getPartNodeId()][node.getPartNodeId()]=1.0;
+//			}
+//			else {
+//				for(CircuitPort port:node.getCircuitPortList()) {
+//					CircuitBlockSingle block=port.getBlock();
+//					if(block.getBlockModeType()==BlockModeType.Nromal) {
+//						CircuitNode nNode=block.getAnotherCircuitPort(port).getCircuitNode();
+//						gAAValue[node.getPartNodeId()][node.getPartNodeId()]+=-1.0/block.getRValue();
+//						gAAValue[node.getPartNodeId()][nNode.getPartNodeId()]+=1.0/block.getRValue();
+//					}
+//					else
+//					//如果是电压源,则访问电压源的电流作为未知数
+//					if(block.getBlockModeType()==BlockModeType.VoltageSource) {
+//						if(port.getCircuitPortType()==CircuitPortType.Left) {
+//							gAAValue[node.getPartNodeId()][vsStart+((VoltageSource)block).getPartVsId()]=-1.0;
+//						}
+//						else {
+//							gAAValue[node.getPartNodeId()][vsStart+((VoltageSource)block).getPartVsId()]=1.0;
+//						}
+//					}
+//					else
+//					//如果是电流源,则在iA中增加一项
+//					if(block instanceof CurrentSource) {
+//						CurrentSource cBlock=(CurrentSource)block;
+//						double sign=port.getCircuitPortType()==CircuitPortType.Left?(-1.0):(1.0);
+//						iA[node.getPartNodeId()]+=sign*cBlock.getIValue();
+//					}
+//					//如果是电流源,则在iA中增加一项
+//					//....
+//				}
+//				iA[node.getPartNodeId()]+="+"+node.getHisString();
+//			}
+//		}
+//		
+//		/*处理电压源,增加关于电压源的方程*/
+//		for(CircuitBlock block:vsBlockList) {
+//			VoltageSource vsBlock=(VoltageSource)block;
+//			vsBlock.setPartCurrentId(vsStart+((VoltageSource)block).getPartVsId());
+//			gAAValue[vsStart+((VoltageSource)block).getPartVsId()][vsBlock.getCurcuitPortList().get(0).getCircuitNode().getPartNodeId()]=1.0;
+//			gAAValue[vsStart+((VoltageSource)block).getPartVsId()][vsBlock.getCurcuitPortList().get(1).getCircuitNode().getPartNodeId()]=-1.0;
+//			iAValue[vsStart+((VoltageSource)block).getPartVsId()]=vsBlock.getVValue();
+//		}
+//		
+//	}
 	
 	private void createGAA() {
 		int vsStart=nodeList.size();

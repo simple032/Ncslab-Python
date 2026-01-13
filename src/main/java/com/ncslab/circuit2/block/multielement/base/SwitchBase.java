@@ -77,4 +77,5 @@ public class SwitchBase extends CircuitBlockSingle implements SwitchBlock{
 		//switchCode+="CircuitCombine(gAA,iA,vIndex,&size,ref,"+this.getCurcuitPortList().get(0).getCircuitNode().getNodeId()+","+this.getCurcuitPortList().get(1).getCircuitNode().getNodeId()+");\n";
 		return switchCode+this.switchCodePart;
 	}
+
 }

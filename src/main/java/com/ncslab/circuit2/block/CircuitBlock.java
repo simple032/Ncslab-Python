@@ -90,6 +90,10 @@ abstract public class CircuitBlock {
 		//setupBlockList();
 	}
 	
+	protected double getSampleTimeValue() {
+		return model.getConfig().getFixedStep();
+	}
+	
 	protected CircuitBlock(JSONObject blockIn, NCSLabModel model) {
 		this.blockType = blockIn.getString("blockType");
 		this.blockName = blockIn.getString("blockName");

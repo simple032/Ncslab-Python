@@ -81,6 +81,19 @@ public class CircuitNode {
 		return hisString;
 	}
 	
+	public double getHisValue() {
+		double hisValue=0;
+		
+		if(!isOpAmpOutput) {
+			for(CircuitPort port:circuitPortList) {
+				double sign=(port.getCircuitPortType()==CircuitPortType.Left)?1.0:-1.0;
+				hisValue+=sign*port.getBlock().getHisValue();
+			}
+		}
+		
+		return hisValue;
+	}
+	
 	public Vector<CircuitPartition> getPartitionList(){
 		return this.partitionList;
 	}

@@ -7,7 +7,7 @@ import com.ncslab.ncslablink.NCSLabModel;
 
 public class DCCurrentSource extends CurrentSource {
 private String iString;
-	
+	double iValue;
 	public DCCurrentSource(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		//this.blockName=this.blockName.replaceAll(" ", "_");
@@ -15,10 +15,14 @@ private String iString;
 		//System.out.println(blockJSON);
 		
 		iString=paramValues.getString("i0");
-		
+		iValue=Double.parseDouble(iString);
 	}
 	
 	public String getIString() {
 		return iString;
+	}
+	
+	public double getIValue() {
+		return iValue;
 	}
 }

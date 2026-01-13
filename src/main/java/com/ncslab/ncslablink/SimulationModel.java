@@ -208,6 +208,8 @@ public class SimulationModel extends NCSLabModel{
         
         System.out.printf("RT Simulation: Final results sent - %d scopes processed%n", scopeCursor);
     }
+    
+    private double lastOutputTime=0;
 
 	public void simulate(Session session) throws ModelException {
 		System.out.println("Executing simulation codes...");
@@ -331,6 +333,8 @@ public class SimulationModel extends NCSLabModel{
             calculateCheckParameters();  // NEW: Validate parameters
             calculateInits(tStart, states);  // Initialize states and outputs
             calculateStarts();  // NEW: One-time startup actions
+            
+            this.getCircuitModel().calculateInits(tStart);
 
             boolean hasState = systemODE.getDimension() > 0;
             
@@ -355,6 +359,12 @@ public class SimulationModel extends NCSLabModel{
 
                 while(t < tEnd){
                     calculateOutputs(t);
+                    if(t-this.lastOutputTime>=(step*0.99)) {
+                    	lastOutputTime=t;
+                    	this.getCircuitModel().calculateOutputs(t);
+                    }
+                    
+                    
                     calculateUpdates(t);  // NEW: Major time step update
                     calculateDiscreteUpdates(t);
                     // 发送时间序列消息
