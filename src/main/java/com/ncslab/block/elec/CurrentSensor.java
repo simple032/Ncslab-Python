@@ -3,6 +3,7 @@ package com.ncslab.block.elec;
 import org.json.JSONObject;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.code.c.CodeStructC;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -22,4 +23,11 @@ public class CurrentSensor extends Block{
 		outputCode+=";\n";
 		code.addOutputCode(outputCode);
 	}
+	
+	@Override
+    public void calculateOutput(double t) {
+        Data output = new Data();
+        output.setInitValue(currentSensorE.getCurrentValue());
+        outputPortList.get(0).getOutputSignalC().setData(output);
+    }
 }

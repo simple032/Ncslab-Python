@@ -861,6 +861,13 @@ public class CircuitPartition {
 		for(CircuitNode node:nodeList) {
 			node.setVoltage(x[vIndex[node.getPartNodeId()]]);
 		}
+		
+		for(CircuitBlock block:vsBlockList) {
+			VoltageSource vsBlock=(VoltageSource)block;
+			vsBlock.setCurrentValue(x[vsBlock.getPartCurrentId()]);
+			//circuitOutputCode+=getPrefix()+"_"+vsBlock.getCurrentString()+"=gsl_vector_get(x,vIndex["+vsBlock.getPartCurrentId()+"]);\n";		
+		}
+		
 		/*
 		System.out.println(switchStatus);
 		for(int i=0;i<x.length;i++) {

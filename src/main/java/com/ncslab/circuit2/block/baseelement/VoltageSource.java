@@ -1,6 +1,8 @@
 package com.ncslab.circuit2.block.baseelement;
 
 import org.json.JSONObject;
+import lombok.Getter;
+import lombok.Setter;
 
 import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.CircuitBlock;
@@ -16,6 +18,10 @@ public abstract class VoltageSource extends CircuitBlockSingle {
 	private int currentId=-1;
 	
 	private int partCurrentId=-1;
+	
+	@Getter
+	@Setter
+	private double currentValue;
 	
 	public VoltageSource(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
