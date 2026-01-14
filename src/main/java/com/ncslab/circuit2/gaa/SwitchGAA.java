@@ -27,6 +27,22 @@ public class SwitchGAA {
 	public StoreGAA findStoreGAA(long switchStatus) {
 		for(StoreGAA storeGAA:storeGAAList) {
 			if(storeGAA.getSwitchStatus()==switchStatus) {
+				if(storeGAA.isVariableChanged()) {
+					double gAA[][]=part.getGAAValue();
+					int[] vIndex=new int[gAA.length];
+					for(int i=0;i<vIndex.length;i++) {
+						vIndex[i]=i;
+					}
+					
+					storeGAA.setVIndex(vIndex);
+					storeGAA.setGAA(gAA);
+					storeGAA.setPart(part);
+					
+					storeGAA.circuitCombine();
+					storeGAA.setupInv();
+					storeGAA.setVariableChanged(false);
+					
+				}
 				return storeGAA;
 			}
 		}

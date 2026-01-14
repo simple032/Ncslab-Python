@@ -41,6 +41,11 @@ public class VoltageSensor extends CircuitBlockSingle implements InterCircuitBlo
 		return vString;
 	}
 	
+	public double getVoltage() {
+		double voltage=this.getCurcuitPortList().get(0).getCircuitNode().getVoltage()-this.getCurcuitPortList().get(1).getCircuitNode().getVoltage();
+		return voltage;
+	}
+	
 	private void createBlock(java.util.concurrent.atomic.AtomicInteger blockSeqCounter) {
 		JSONObject addJSON=new JSONObject();
 		addJSON.put("blockType", "Voltage Sensor");

@@ -854,7 +854,20 @@ public class CircuitPartition {
 		
 		double[] x=xM.transpose().getData()[0];
 		
+		for(CircuitNode node:nodeList) {
+			node.setPartVoltage(x[vIndex[node.getPartNodeId()]]);
+		}
+		
+		for(CircuitNode node:nodeList) {
+			node.setVoltage(x[vIndex[node.getPartNodeId()]]);
+		}
 		/*
+		System.out.println(switchStatus);
+		for(int i=0;i<x.length;i++) {
+			System.out.print(vIndex[i]+"\t");
+		}
+		System.out.println();
+		
 		for(int i=0;i<x.length;i++) {
 			System.out.print(x[i]+"\t");
 		}

@@ -1,6 +1,8 @@
 package com.ncslab.circuit2.block.io;
 
 import java.util.Vector;
+import lombok.Getter;
+import lombok.Setter;
 
 import com.greenpineyu.fel.parser.FelParser.integerLiteral_return;
 
@@ -25,6 +27,14 @@ public class CircuitNode {
 	private int partitionerNodeId;
 	
 	private int partNodeId;
+	
+	@Getter
+	@Setter
+	private double partVoltage;
+	
+	@Getter
+	@Setter
+	private double voltage;
 	
 	public CircuitNode(int nodeId) {
 		this.nodeId=nodeId;

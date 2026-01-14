@@ -362,6 +362,7 @@ public class SimulationModel extends NCSLabModel{
                     if(t-this.lastOutputTime>=(step*0.99)) {
                     	lastOutputTime=t;
                     	this.getCircuitModel().calculateOutputs(t);
+                    	this.getCircuitModel().calculateUpdate(t);
                     }
                     
                     

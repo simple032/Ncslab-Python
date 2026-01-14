@@ -223,9 +223,15 @@ public class CircuitModel2 {
 	}
 	
 	public void calculateOutputs(double t) {
-		System.out.println(t);
+		//System.out.println(t);
 		for(CircuitPartition part:partitioner.getPartitionList()) {
 			part.calculateOutputs(t);
+		}
+	}
+	
+	public void calculateUpdate(double t) {
+		for(CircuitBlockSingle block:singleBlockList) {
+			block.updateHis();
 		}
 	}
 	

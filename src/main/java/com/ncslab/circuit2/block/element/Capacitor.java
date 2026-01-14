@@ -51,6 +51,13 @@ public class Capacitor extends CircuitBlockSingle {
 		return hisUpdateString;
 	}
 	
+	public void updateHis() {
+		double lv=this.getCurcuitPortList().get(0).getCircuitNode().getVoltage();
+		double rv=this.getCurcuitPortList().get(1).getCircuitNode().getVoltage();
+		
+		hisValue=-hisValue-4.0*cValue/this.getSampleTimeValue()*(lv-rv);
+	}
+	
 	public String getCurrentCode() {
 		String code=super.getCurrentCode();
 		

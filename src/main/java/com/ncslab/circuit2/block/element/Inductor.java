@@ -58,6 +58,13 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 		return hisUpdateString;
 	}
 	
+	public void updateHis() {
+		double lv=this.getCurcuitPortList().get(0).getCircuitNode().getVoltage();
+		double rv=this.getCurcuitPortList().get(1).getCircuitNode().getVoltage();
+		
+		hisValue+=this.getSampleTimeValue()/lValue*(lv-rv);
+	}
+	
 	public String getCurrentCode() {
 		String code=super.getCurrentCode();
 		
