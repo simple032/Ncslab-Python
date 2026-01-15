@@ -13,12 +13,20 @@ public class ACVoltageSource extends VoltageSource {
 	private String frequency;
 	private String currentTime ="model.time";
 	
+	private double ampValue;
+	private double shiftValue;
+	private double frequencyValue;
+	
 	public ACVoltageSource(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		// TODO Auto-generated constructor stub
 		amp = paramValues.getString("amp");
 		shift = paramValues.getString("shift");
 		frequency = paramValues.getString("frequency");
+		
+		ampValue=Double.parseDouble(amp);
+		shiftValue=Double.parseDouble(shift);
+		frequencyValue=Double.parseDouble(frequency);
 	}
 	
 	public ACVoltageSource(JSONObject blockJSON, NCSLabModel model) {
@@ -31,5 +39,11 @@ public class ACVoltageSource extends VoltageSource {
 
 	public String getVString() {
 		return amp+"*sin("+frequency+"*2*3.1415926*("+currentTime+")+"+shift+"*3.1415926/180)";
+	}
+
+	@Override
+	public double getVValue(double t) {
+		// TODO Auto-generated method stub
+		return ampValue*Math.sin(frequencyValue*2*3.1415926*t+shiftValue*3.1415926/180);
 	}
 }

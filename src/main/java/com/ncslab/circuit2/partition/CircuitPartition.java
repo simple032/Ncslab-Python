@@ -823,7 +823,7 @@ public class CircuitPartition {
 	
 	public void calculateOutputs(double t) {
 		boolean isVariableChanged=false;
-		double[] iA=getIAValue();
+		double[] iA=getIAValue(t);
 		
 		long switchStatus;
 		
@@ -835,6 +835,10 @@ public class CircuitPartition {
 		}
 		if(isVariableChanged) {
 			switchGAA.setVariableChanged();
+		}
+		
+		for(CircuitBlockMulti multiBlock:multiBlockList) {
+			multiBlock.logicCode(t);
 		}
 		
 		switchStatus=getSwitchStatus();
@@ -864,7 +868,7 @@ public class CircuitPartition {
 		
 		for(CircuitBlock block:vsBlockList) {
 			VoltageSource vsBlock=(VoltageSource)block;
-			vsBlock.setCurrentValue(x[vsBlock.getPartCurrentId()]);
+			vsBlock.setCurrentValue(x[vIndex[vsBlock.getPartCurrentId()]]);
 			//circuitOutputCode+=getPrefix()+"_"+vsBlock.getCurrentString()+"=gsl_vector_get(x,vIndex["+vsBlock.getPartCurrentId()+"]);\n";		
 		}
 		
@@ -959,7 +963,7 @@ public class CircuitPartition {
 		return gAAValue;
 	}
 	
-	private double[] getIAValue(){
+	private double[] getIAValue(double t){
 		int vsStart=nodeList.size();
 		mSize=nodeList.size()+vsBlockList.size();
 		double[] iAValue=new double[mSize];
@@ -973,7 +977,7 @@ public class CircuitPartition {
 		for(CircuitBlock block:vsBlockList) {
 			VoltageSource vsBlock=(VoltageSource)block;
 			vsBlock.setPartCurrentId(vsStart+((VoltageSource)block).getPartVsId());
-			iAValue[vsStart+((VoltageSource)block).getPartVsId()]=vsBlock.getVValue();
+			iAValue[vsStart+((VoltageSource)block).getPartVsId()]=vsBlock.getVValue(t);
 		}
 		
 		return iAValue;

@@ -14,6 +14,9 @@ public class SwitchBase extends CircuitBlockSingle implements SwitchBlock{
 	private String switchCode="";
 	private String switchCodePart="";
 	private int switchId=0;
+	
+	private boolean switchStatus=false;
+	
 	public SwitchBase(int id,JSONObject blockJSON,NCSLabModel model,CircuitBlockMulti multiBlock) {
 		super(id,blockJSON,model);
 		this.blockModeType=BlockModeType.Switch;
@@ -76,6 +79,17 @@ public class SwitchBase extends CircuitBlockSingle implements SwitchBlock{
 		String switchCode="/*Switch Code for SwitchBase "+this.getBlockName()+" */\n";
 		//switchCode+="CircuitCombine(gAA,iA,vIndex,&size,ref,"+this.getCurcuitPortList().get(0).getCircuitNode().getNodeId()+","+this.getCurcuitPortList().get(1).getCircuitNode().getNodeId()+");\n";
 		return switchCode+this.switchCodePart;
+	}
+
+
+	@Override
+	public boolean getSwitchStatus() {
+		// TODO Auto-generated method stub
+		return switchStatus;
+	}
+	
+	public void setSwitchStatus(boolean switchStatus) {
+		this.switchStatus=switchStatus;
 	}
 
 }

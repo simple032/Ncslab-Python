@@ -42,7 +42,7 @@ public class CurrentSensor extends VoltageSource implements InterCircuitBlock{
 		return "0.0";
 	}
 	
-	public double getVValue() {
+	public double getVValue(double t) {
 		return 0;
 	}
 	

@@ -48,7 +48,7 @@ public abstract class VoltageSource extends CircuitBlockSingle {
 		return null;
 	}
 	
-	abstract public double getVValue();
+	abstract public double getVValue(double t);
 	
 	public void setCurrentId(int currentId) {
 		this.currentId=currentId;

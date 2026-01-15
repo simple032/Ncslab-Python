@@ -2,6 +2,9 @@ package com.ncslab.circuit2;
 
 import java.util.Vector;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.apache.ibatis.annotations.Delete;
 //import org.apache.jasper.tagplugins.jstl.core.If;
 
@@ -54,6 +57,10 @@ public class CircuitModel2 {
 	private int mSize;
 	private String[][] gAA;
 	private String[] iA;
+	
+	@Getter
+	@Setter
+	private boolean isRecalc=false;
 	
 	
 	CircuitModel2(NCSLabModel model,Vector<CircuitBlock> blockList,Vector<CircuitLine> lineList) throws ModelException{
@@ -197,9 +204,10 @@ public class CircuitModel2 {
 	public void calculateInits(double tStart) {
 		createCircuitNodes();
 		
+		/*
 		for(CircuitBlockMulti multiBlock:multiBlockList) {
 			multiBlock.setupLogicCode();
-		}
+		}*/
 		
 		setRef();
 		
@@ -226,6 +234,20 @@ public class CircuitModel2 {
 		//System.out.println(t);
 		for(CircuitPartition part:partitioner.getPartitionList()) {
 			part.calculateOutputs(t);
+		}
+		
+		for(CircuitBlockMulti block:multiBlockList) {
+			block.updateLogic(t);
+		}
+		
+		if(this.isRecalc) {
+			this.isRecalc=false;
+			for(CircuitPartition part:partitioner.getPartitionList()) {
+				part.calculateOutputs(t);
+			}
+			for(CircuitBlockMulti block:multiBlockList) {
+				block.updateLogic(t);
+			}
 		}
 	}
 	

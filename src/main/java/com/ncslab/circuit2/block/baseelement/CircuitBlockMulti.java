@@ -43,4 +43,12 @@ abstract public class CircuitBlockMulti extends CircuitBlock {
 	
 	abstract public void setupLogicCode();
 	abstract public void setupLogicCode(int partId);
+	
+	public void logicCode(double t) {
+		
+	}
+	
+	public void updateLogic(double t) {
+		
+	}
 }

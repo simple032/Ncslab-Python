@@ -11,6 +11,7 @@ public class VariableCapacitor extends CircuitBlockSingle implements VariableBlo
 	com.ncslab.block.elec.VariableCapacitor variableCapacitorBlock;
 	
 	private String variableString;
+	private double oldCValue=0;
 	
 	public VariableCapacitor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
@@ -64,6 +65,13 @@ public class VariableCapacitor extends CircuitBlockSingle implements VariableBlo
 		String inputString="("+variableCapacitorBlock.getInputPortVariable(0)+")";
 		
 		return "("+this.getSimpleTime()+"/2.0/("+inputString+"))";
+	}
+	
+	public double getRValue() {
+		com.ncslab.block.data.Data data=variableCapacitorBlock.getInputPortList().get(0).getData();
+		double value=data.getInitValue();
+		//return value;
+		return this.getSampleTimeValue()/2.0/value;
 	}
 	
 	public String getHisUpdateString() {
@@ -141,5 +149,28 @@ public class VariableCapacitor extends CircuitBlockSingle implements VariableBlo
 		code+="};\n";
 		
 		return code;
+	}
+
+	@Override
+	public boolean isVariableChanged() {
+		// TODO Auto-generated method stub
+		com.ncslab.block.data.Data data=variableCapacitorBlock.getInputPortList().get(0).getData();
+		double newCValue=data.getInitValue();
+		if(oldCValue!=newCValue) {
+			oldCValue=newCValue;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public void updateHis() {
+		com.ncslab.block.data.Data data=variableCapacitorBlock.getInputPortList().get(0).getData();
+		double value=data.getInitValue();
+		double lv=this.getCurcuitPortList().get(0).getCircuitNode().getVoltage();
+		double rv=this.getCurcuitPortList().get(1).getCircuitNode().getVoltage();
+		
+		hisValue=-hisValue-4.0*value/this.getSampleTimeValue()*(lv-rv);
 	}
 }

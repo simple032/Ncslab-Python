@@ -47,7 +47,7 @@ public class DCVoltageSource extends VoltageSource {
 		return vString;
 	}
 	
-	public double getVValue() {
+	public double getVValue(double t) {
 		return vValue;
 	}
 

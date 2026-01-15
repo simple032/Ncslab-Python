@@ -13,7 +13,5 @@ public interface VariableBlock {
 	
 	public String getVariableString();
 	
-	public default boolean isVariableChanged() {
-		return false;
-	}
+	public boolean isVariableChanged();
 }

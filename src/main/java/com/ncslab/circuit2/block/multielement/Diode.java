@@ -16,6 +16,11 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 	private String vFString;
 	private String gOffString;
 	private SwitchBase sw;
+	
+	private double vFValue;
+	
+	private boolean diodeStatus=false;
+	
 	public Diode(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		System.out.println(blockJSON);
@@ -23,6 +28,8 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 		rOnString=paramValues.getString("Ron");
 		vFString=paramValues.getString("Vf");
 		gOffString=paramValues.getString("Goff");
+		
+		vFValue=Double.parseDouble(vFString);
 		
 		//vFString="0";
 	}
@@ -228,5 +235,25 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 		cCode+="static int "+this.getStatusString()+"=0;\n";
 		
 		return cCode;
+	}
+	
+	@Override
+	public void logicCode(double t) {
+		if(diodeStatus) {
+			sw.setSwitchStatus(diodeStatus);
+		}
+	}
+	
+	@Override
+	public void updateLogic(double t) {
+		double v0=this.getCurcuitPortList().get(0).getCircuitNode().getVoltage();
+		double v1=this.getCurcuitPortList().get(1).getCircuitNode().getVoltage();
+		
+		boolean oldDiodeStatus=diodeStatus;		
+		diodeStatus=(v0-v1>vFValue);
+		
+		if(oldDiodeStatus==false&&v0-v1>vFValue*100) {
+			this.model.getCircuitModel().setRecalc(true);
+		}
 	}
 }

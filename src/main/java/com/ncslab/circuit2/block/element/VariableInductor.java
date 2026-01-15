@@ -11,6 +11,7 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 	com.ncslab.block.elec.VariableInductor variableInductorBlock;
 	
 	private String variableString;
+	private double oldLValue=0;
 	
 	public VariableInductor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
@@ -61,6 +62,24 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 		String inputString="("+variableInductorBlock.getInputPortVariable(0)+")";
 		
 		return "(2.0*("+inputString+")/"+this.getSimpleTime()+")";
+	}
+	
+	@Override
+	public double getRValue() {
+		com.ncslab.block.data.Data data=variableInductorBlock.getInputPortList().get(0).getData();
+		double value=data.getInitValue();
+		//return value;
+		return 2.0*value/this.getSampleTimeValue();
+	}
+	
+	@Override
+	public void updateHis() {
+		double lv=this.getCurcuitPortList().get(0).getCircuitNode().getVoltage();
+		double rv=this.getCurcuitPortList().get(1).getCircuitNode().getVoltage();
+		com.ncslab.block.data.Data data=variableInductorBlock.getInputPortList().get(0).getData();
+		double value=data.getInitValue();
+		
+		hisValue+=this.getSampleTimeValue()/value*(lv-rv);
 	}
 	
 	public String getHisUpdateString() {
@@ -175,5 +194,18 @@ public class VariableInductor extends CircuitBlockSingle implements SwitchBlock,
 		// TODO Auto-generated method stub
 		com.ncslab.block.data.Data data=variableInductorBlock.getInputPortList().get(0).getData();
 		return data.getInitValue()<=0;
+	}
+	
+	@Override
+	public boolean isVariableChanged() {
+		com.ncslab.block.data.Data data=variableInductorBlock.getInputPortList().get(0).getData();
+		double newLValue=data.getInitValue();
+		if(oldLValue!=newLValue) {
+			oldLValue=newLValue;
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }

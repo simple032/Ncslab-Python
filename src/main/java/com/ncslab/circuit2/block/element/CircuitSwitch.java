@@ -98,5 +98,12 @@ public class CircuitSwitch extends CircuitBlockSingle implements SwitchBlock,Int
 		
 		return code;
 	}
+
+	@Override
+	public boolean getSwitchStatus() {
+		// TODO Auto-generated method stub
+		com.ncslab.block.data.Data data=circuitSwitchBlock.getInputPortList().get(0).getData();
+		return data.getInitValue()>0;
+	}
 	
 }
