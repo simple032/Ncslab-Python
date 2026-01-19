@@ -1,6 +1,7 @@
 package com.ncslab.circuit2;
 
 import java.util.Vector;
+import org.apache.commons.math3.linear.*;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -230,24 +231,51 @@ public class CircuitModel2 {
 		}*/
 	}
 	
-	public void calculateOutputs(double t) {
-		//System.out.println(t);
+	private void calcOutput(double t) {
 		for(CircuitPartition part:partitioner.getPartitionList()) {
 			part.calculateOutputs(t);
 		}
+		
+		partitioner.createGaaValue();
+		
+		double[][] gAA=partitioner.getGAAValue();
+		double[] iA=partitioner.getIAValue();
+		
+		RealMatrix gAAM=new Array2DRowRealMatrix(gAA,false);
+		DecompositionSolver solver = new LUDecomposition(gAAM).getSolver();
+		RealVector iAV = new ArrayRealVector(iA,false);
+		
+		RealVector xM = solver.solve(iAV);
+		
+		partitioner.partitionerProcess(xM.toArray());
+		
+		/*
+		for(int i=0;i<xM.toArray().length;i++) {
+			System.out.print(String.format("%.2f",xM.toArray()[i])+"\t");
+		}
+		System.out.println();*/
+		
+		
+		for(CircuitPartition part:partitioner.getPartitionList()) {
+			part.circuitOutputCodePost();
+		}
+		
+		int j=0;
 		
 		for(CircuitBlockMulti block:multiBlockList) {
 			block.updateLogic(t);
 		}
 		
+	}
+	
+	public void calculateOutputs(double t) {
+		//System.out.println(t);
+		
+		calcOutput(t);
+		
 		if(this.isRecalc) {
 			this.isRecalc=false;
-			for(CircuitPartition part:partitioner.getPartitionList()) {
-				part.calculateOutputs(t);
-			}
-			for(CircuitBlockMulti block:multiBlockList) {
-				block.updateLogic(t);
-			}
+			calcOutput(t);
 		}
 	}
 	

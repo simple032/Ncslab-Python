@@ -35,6 +35,10 @@ public class ACVoltageSource extends VoltageSource {
 		amp = paramValues.getString("amp");
 		shift = paramValues.getString("shift");
 		frequency = paramValues.getString("frequency");
+		
+		ampValue=Double.parseDouble(amp);
+		shiftValue=Double.parseDouble(shift);
+		frequencyValue=Double.parseDouble(frequency);
 	}
 
 	public String getVString() {

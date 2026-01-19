@@ -42,6 +42,8 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 		vFString=paramValues.getString("Vf");
 		gOffString=paramValues.getString("Goff");
 		
+		vFValue=Double.parseDouble(vFString);
+		
 		//vFString="0";
 	}
 	
@@ -238,10 +240,8 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 	}
 	
 	@Override
-	public void logicCode(double t) {
-		if(diodeStatus) {
-			sw.setSwitchStatus(diodeStatus);
-		}
+	public void logicCode(double t) {	
+		sw.setSwitchStatus(diodeStatus);
 	}
 	
 	@Override
@@ -251,8 +251,8 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 		
 		boolean oldDiodeStatus=diodeStatus;		
 		diodeStatus=(v0-v1>vFValue);
-		
-		if(oldDiodeStatus==false&&v0-v1>vFValue*100) {
+		//System.out.println("diodeStatus:"+diodeStatus);
+		if(oldDiodeStatus==false&&diodeStatus==true) {
 			this.model.getCircuitModel().setRecalc(true);
 		}
 	}

@@ -124,10 +124,109 @@ public class CircuitPartitioner {
 		createGaa();
 	}
 	
+	@Getter
+	private double[][] gAAValue;
+	@Getter
+	private double[] iAValue;
+	
+	boolean isPrint=true;
+	
+	public void createGaaValue(){
+		//gAAValue=new double[mSize][mSize];
+		//iAValue=new double[mSize];
+		
+		int lineNum=0;
+		int partNum=0;
+		for(CircuitPartition part:partitionList) {
+			int i=0;
+			double[][] currentEffValue=part.getCurrentEffValue();
+			for(CircuitNode node:part.getExNodeList()) {
+				gAAValue[lineNum][node.getPartitionerNodeId()]=1.0;
+				gAAValue[lineNum][cStart+partNum]=1.0;
+				int j=0;
+				for(CircuitNode node1:part.getExNodeList()) {
+					gAAValue[lineNum][currentStarts[partNum]+j]=-currentEffValue[i][j];
+					j++;
+				}
+				lineNum++;
+				i++;
+			}
+			partNum++;
+		}
+		
+		lineNum=0;
+		for(CircuitPartition part:partitionList) {
+			int i=0;
+			double[] iAEffValue=part.getIAEffValue();
+			for(CircuitNode node:part.getExNodeList()) {
+				iAValue[lineNum]=iAEffValue[i];
+				lineNum++;
+				i++;
+			}
+			
+		}
+		
+		partNum=0;
+		for(CircuitPartition part:partitionList) {
+			if(part.getExNodeList().isEmpty()) {
+				partNum++;
+				continue;
+			}
+			int i=0;
+			for(CircuitNode node:part.getExNodeList()) {
+				gAAValue[lineNum][currentStarts[partNum]+i]=1.0;
+				i++;
+			}
+			lineNum++;
+			partNum++;
+		}
+		
+		for(int i=0;i<nodeList.size()-1;i++) {
+			CircuitNode node=nodeList.get(i);
+			partNum=0;
+			for(CircuitPartition part:partitionList) {
+				for(int j=0;j<part.getExNodeList().size();j++) {
+					if(part.getExNodeList().get(j).getNodeId()==node.getNodeId()) {
+						gAAValue[lineNum][currentStarts[partNum]+j]=1.0;
+					}
+				}
+				partNum++;
+			}
+			lineNum++;
+		}
+		
+		//一般有几个独立参考点，就会剩下几项（需要核查），参考点直接置0
+		int i=0;
+		while(lineNum<mSize) {
+			gAAValue[lineNum][cStart+i]=1.0;
+			lineNum++;
+			i++;
+		}
+		
+		/*
+		if(isPrint) {
+			isPrint=false;
+			for(i=0;i<gAAValue.length;i++) {
+				for(int j=0;j<gAAValue.length;j++) {
+					System.out.print(gAAValue[i][j]+"\t");
+				}
+				System.out.println();
+			}
+			System.out.println();
+			for(i=0;i<gAAValue.length;i++) {
+				System.out.print(iAValue[i]+"\t");
+			}
+			System.out.println();
+		}*/
+	}
+	
 	private void createGaa() {
 		gAA=new String[mSize][mSize];
 		
 		iA=new String[mSize];
+		
+		gAAValue=new double[mSize][mSize];
+		iAValue=new double[mSize];
 		
 		for(int i=0;i<mSize;i++) {
 			iA[i]="0.0";
@@ -282,6 +381,30 @@ public class CircuitPartitioner {
 	
 	private void sortPartition() {
 		partitionList.sort(new SwitchNumComparator());
+	}
+	
+	
+	public void partitionerProcess(double[] x) {
+		int vI=0;
+		for(CircuitNode node:nodeList) {
+			node.setVoltage(x[vI]);
+			vI++;
+		}
+		
+		
+		for(CircuitPartition part:partitionList) {
+			//code+=part.getPartitionResultCode();
+			//计算各个公共端电流引起的电压变化
+			for(int i=0;i<part.getExIntNodeList().size();i++) {
+				//CircuitNode node=part.getExNodeList().get(i);
+				//code+=part.getExNodeCurrentString(i)+"=gsl_vector_get (x,"+(this.currentStarts[part.getId()]+i)+");\n";
+				int pos=this.currentStarts[part.getId()]+i;
+				part.getExIntNodeList().get(i).setExNodeCurrentValue(x[pos]);
+			}
+			//获得电压偏移量
+			//code+=part.getVolOffsetString()+"=gsl_vector_get (x,"+(this.cStart+part.getId())+");\n";
+			part.setVolOffsetValue(x[this.cStart+part.getId()]);
+		}
 	}
 	
 	//生成分区计算的调用+合并计算的代码+合并之后返回各个分区计算的函数代码

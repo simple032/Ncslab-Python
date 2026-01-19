@@ -36,6 +36,10 @@ public class CircuitNode {
 	@Setter
 	private double voltage;
 	
+	@Getter
+	@Setter
+	private double exNodeCurrentValue;
+	
 	public CircuitNode(int nodeId) {
 		this.nodeId=nodeId;
 	}

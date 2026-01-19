@@ -2,6 +2,7 @@ package com.ncslab.circuit2.partition;
 
 import java.util.Vector;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.math3.linear.*;
 
 import com.ncslab.circuit2.CircuitModel2;
@@ -56,8 +57,20 @@ public class CircuitPartition {
 	//不考虑对外电流，对外节点的电压值
 	private String iAEff[];
 	
+	@Getter
+	private double[][] currentEffValue;
+	@Getter
+	private double[] iAEffValue;
 	
 	private SwitchGAA switchGAA;
+	
+	@Setter
+	@Getter
+	private double VolOffsetValue;
+	
+	private double inv[][];
+	
+	private int[] vIndex;
 	
 	//part的构造函数，每个part都是从一个block开始的
 	public CircuitPartition(CircuitBlock block) {
@@ -253,6 +266,7 @@ public class CircuitPartition {
 		
 		//currentEff矩阵的大小等于外部连接的个数.每个外部节点的电压（参考节点除外）都受到各位外部节点流出电流（流出参考节点的电流除外）影响
 		currentEff=new String[exNodeList.size()][exNodeList.size()];
+		
 		//IAEff矩阵的大小等于外部连接的个数
 		iAEff=new String[exNodeList.size()];
 		for(int i=0;i<exNodeList.size();i++) {
@@ -260,6 +274,36 @@ public class CircuitPartition {
 			for(int j=0;j<exNodeList.size();j++) {
 				currentEff[i][j]=getPrefix()+"_cEff_"+i+"_"+j;
 			}
+		}
+		
+		
+		currentEffValue=new double[exNodeList.size()][exNodeList.size()];
+		iAEffValue=new double[exNodeList.size()];
+	}
+	
+	private void createCurrentEffectValue(double[][] inv,int[] vIndex) {
+		int i=0;
+		for(CircuitNode nodeI:exIntNodeList) {
+			int j=0;
+			for(CircuitNode nodeJ:exIntNodeList) {
+				if(nodeI.getIsPartRef()||nodeJ.getIsPartRef()) {
+					currentEffValue[i][j]=0;
+				}
+				else {
+					currentEffValue[i][j]=inv[vIndex[nodeI.getPartNodeId()]][vIndex[nodeJ.getPartNodeId()]];
+				}
+				j++;
+			}
+			i++;
+		}
+		
+	}
+	
+	private void createIaEffectValue(double[] x,int[] vIndex) {
+		int i=0;
+		for(CircuitNode nodeI:exIntNodeList) {
+			iAEffValue[i]=x[vIndex[nodeI.getPartNodeId()]];
+			i++;
 		}
 	}
 	
@@ -466,6 +510,8 @@ public class CircuitPartition {
 		
 		return code;
 	}
+	
+	
 	
 	private String getPartitionOutputCode() {
 		String code="/*Circuit Output code for Part"+id+"*/\n";
@@ -821,6 +867,46 @@ public class CircuitPartition {
 		return switchStatus;
 	}
 	
+	public void circuitOutputCodePost() {
+		
+		/*
+		if(this.id==2) {
+			
+			for(int i=0;i<inv.length;i++) {
+				for(int j=0;j<inv.length;j++) {
+					System.out.print(String.format("%.2f", inv[i][j])+"\t");
+				}
+				System.out.println();
+			}
+			
+			
+			System.out.println(inv[vIndex[17]][vIndex[16]]+"\t"+inv[vIndex[17]][vIndex[17]]+"\t"+inv[vIndex[17]][vIndex[18]]+"\n");
+			
+			System.out.println();
+		}*/
+		
+		for(CircuitNode nodeI:nodeList) {
+			double vol=nodeI.getPartVoltage()-VolOffsetValue;
+			
+			if(nodeI.getIsPartRef()==false) {
+				for(CircuitNode nodeJ:exIntNodeList) {
+					if(nodeJ.getIsPartRef()==false) {
+						
+						vol+=nodeJ.getExNodeCurrentValue()*inv[vIndex[nodeI.getPartNodeId()]][vIndex[nodeJ.getPartNodeId()]];
+					}
+					
+				}
+			}
+			nodeI.setVoltage(vol);
+		}
+		
+		/*
+		for(int i=0;i<exNodeList.size();i++) {
+			exIntNodeList.get(i).setVoltage(exNodeList.get(i).getVoltage());
+		}*/
+		
+	}
+	
 	public void calculateOutputs(double t) {
 		boolean isVariableChanged=false;
 		double[] iA=getIAValue(t);
@@ -848,8 +934,8 @@ public class CircuitPartition {
 			storeGAA=switchGAA.addStoreGAA(switchStatus);
 		}
 		
-		double inv[][]=storeGAA.getInv();
-		int[] vIndex=storeGAA.getVIndex();
+		inv=storeGAA.getInv();
+		vIndex=storeGAA.getVIndex();
 		iA=storeGAA.getCombineIA(iA);
 		
 		RealMatrix invM=new Array2DRowRealMatrix(inv);
@@ -871,6 +957,19 @@ public class CircuitPartition {
 			vsBlock.setCurrentValue(x[vIndex[vsBlock.getPartCurrentId()]]);
 			//circuitOutputCode+=getPrefix()+"_"+vsBlock.getCurrentString()+"=gsl_vector_get(x,vIndex["+vsBlock.getPartCurrentId()+"]);\n";		
 		}
+		
+		createCurrentEffectValue(inv,vIndex);
+		createIaEffectValue(x, vIndex);
+		
+		/*
+		System.out.print(t+":\t");
+		for(CircuitNode node:this.nodeList) {
+			System.out.print(node.getVoltage()+"\t");
+		}
+		System.out.println();*/
+		/*
+		
+		System.out.println(switchStatus);*/
 		
 		/*
 		System.out.println(switchStatus);
