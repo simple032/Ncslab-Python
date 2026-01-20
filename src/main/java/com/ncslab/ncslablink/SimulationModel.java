@@ -50,6 +50,12 @@ public class SimulationModel extends NCSLabModel{
     private double[] inputs;
     private double[] outputs;
     private JSONObject result = new JSONObject();
+    
+    private long lastSessionTime;
+    
+    @Getter
+    private boolean isMajorStep=false;
+    
 	// 原有JSONObject构造函数
 	SimulationModel(JSONObject jsonIn, ModelMode mode) throws ModelException{
 		super(jsonIn,mode);
@@ -210,6 +216,8 @@ public class SimulationModel extends NCSLabModel{
     }
     
     private double lastOutputTime=0;
+    
+    private double step;
 
 	public void simulate(Session session) throws ModelException {
 		System.out.println("Executing simulation codes...");
@@ -221,6 +229,8 @@ public class SimulationModel extends NCSLabModel{
         double minStep = getConfig().getMinStep();
         double maxStep = getConfig().getFixedStep();
         double step = getConfig().getFixedStep();
+        
+        this.step=step;
 
         // Flag to track if calculateTerminates has been called to prevent double execution
         final boolean[] terminateCalled = new boolean[]{false};
@@ -334,15 +344,22 @@ public class SimulationModel extends NCSLabModel{
             calculateInits(tStart, states);  // Initialize states and outputs
             calculateStarts();  // NEW: One-time startup actions
             
-            this.getCircuitModel().calculateInits(tStart);
+            if(circuitModel!=null) {
+            	circuitModel.calculateInits(tStart);
+            }
+            
 
             boolean hasState = systemODE.getDimension() > 0;
             
             System.out.printf("Simulation setup: %s, hasState=%s, tStart=%.3f, tEnd=%.3f%n", 
                 getSolverDisplayName(solverName), hasState, tStart, tEnd);
+            
+            lastSessionTime=new java.util.Date().getTime();
+            
             if(hasState) {
                 if(isVariableStepSolver(solverName)) {
                     // Variable-step simulation
+                	this.isMajorStep=true;
                     System.out.println("Using variable-step integration with adaptive step handler");
                     integrator.addStepHandler(stepHandler);
                     double tEndActual = integrator.integrate(systemODE, tStart, states, tEnd, states);
@@ -356,15 +373,15 @@ public class SimulationModel extends NCSLabModel{
             }else {
                 double t = tStart;
                 boolean finalTimeProcessed = false;
-
+                
+                this.isMajorStep=true;
+                
                 while(t < tEnd){
                     calculateOutputs(t);
-                    if(t-this.lastOutputTime>=(step*0.99)) {
-                    	lastOutputTime=t;
-                    	this.getCircuitModel().calculateOutputs(t);
-                    	this.getCircuitModel().calculateUpdate(t);
+                    if(circuitModel!=null) {
+                    	circuitModel.calculateOutputs(t);
+                    	circuitModel.calculateUpdate(t);
                     }
-                    
                     
                     calculateUpdates(t);  // NEW: Major time step update
                     calculateDiscreteUpdates(t);
@@ -376,8 +393,14 @@ public class SimulationModel extends NCSLabModel{
                             throw new RuntimeException(e);
                         }
                     }
-                    
+                    //saveStepResult(t);
                     t += step;
+                    
+                    long sessionTime=new java.util.Date().getTime();
+                    if(sessionTime>lastSessionTime+1000) {
+                    	lastSessionTime=sessionTime;
+                    	sendSimulatingMessage(session, t);
+                    }
                     
                     // Check if next step would overshoot the end time
                     if(t >= tEnd) {
@@ -393,6 +416,7 @@ public class SimulationModel extends NCSLabModel{
                         finalTimeProcessed = true;
                         break; // Exit the loop after processing final time
                     }
+                    
                 }
                 
                 // Safety check: ensure final time is always processed (should not be needed with above logic)
@@ -454,11 +478,13 @@ public class SimulationModel extends NCSLabModel{
             tStart, tEnd, totalSteps, actualStep);
 
         // Initialize and send initial condition
+        this.isMajorStep=true;
         calculateOutputs(currentTime);
+        this.isMajorStep=false;
         calculateDiscreteUpdates(currentTime);
         sendSimulatingMessage(session, currentTime);
 //        System.out.printf("Step 0: t=%.6f (initial)%n", currentTime);
-
+         
         // Perform step-by-step integration
         for (int stepIndex = 1; stepIndex <= totalSteps; stepIndex++) {
             double targetTime = tStart + stepIndex * actualStep;
@@ -476,20 +502,36 @@ public class SimulationModel extends NCSLabModel{
                 currentTime = actualEndTime;
 
                 // Calculate outputs and discrete updates at this precise time point
+                this.isMajorStep=true;
                 calculateOutputs(currentTime);
+                if(circuitModel!=null) {
+                	circuitModel.calculateOutputs(currentTime);
+                	circuitModel.calculateUpdate(currentTime);
+                }
+                this.isMajorStep=false;
                 calculateDiscreteUpdates(currentTime);
 
                 // Send simulation message
+                /*
                 if(stepIndex % 1000 == 0) {
                     sendSimulatingMessage(session, currentTime);
+                }*/
+                
+                long sessionTime=new java.util.Date().getTime();
+                if(sessionTime>lastSessionTime+1000) {
+                	lastSessionTime=sessionTime;
+                	sendSimulatingMessage(session, currentTime);
                 }
-//                System.out.printf("Step %d: t=%.6f (target=%.6f)%n", stepIndex, currentTime, targetTime);
+                
+                //System.out.printf("Step %d: t=%.6f (target=%.6f)%n", stepIndex, currentTime, targetTime);
 
                 // Verify we're making progress and haven't stalled
                 if (Math.abs(currentTime - targetTime) > minStep) {
                     System.out.printf("Warning: Integration stopped at t=%.6f instead of target t=%.6f%n",
                         currentTime, targetTime);
                 }
+                
+                //saveStepResult(currentTime);
 
             } catch (Exception e) {
                 System.err.printf("Integration failed at step %d, time=%.6f, target=%.6f%n",
@@ -662,15 +704,9 @@ public class SimulationModel extends NCSLabModel{
             default: return solverName + " (Unknown)";
         }
     }
-
-    protected void calculateOutputs(double t) {
-        // 计算各个模块的输出
-        // 类似Simulink的mdlOutputs
-        for(Block block: getOutputChain()) {
-            block.calculateOutput(t);
-        }
-
-        JSONArray series = new JSONArray();
+    
+    private void saveStepResult(double t) {
+    	JSONArray series = new JSONArray();
         for (Block block : getBlockList()) {
             JSONObject blockData = new JSONObject();
             JSONArray outputDataArray = new JSONArray();
@@ -721,9 +757,23 @@ public class SimulationModel extends NCSLabModel{
             blockData.put("inputs", inputDataArray);
             series.put(blockData);
         }
+        
+        //System.out.println(t);
 
         result.put("time", t);
         result.put("series", series);
+    }
+
+    protected void calculateOutputs(double t) {
+        // 计算各个模块的输出
+        // 类似Simulink的mdlOutputs
+        for(Block block: getOutputChain()) {
+            block.calculateOutput(t);
+        }
+        
+        //System.out.println(t);
+        
+        
     }
 
     protected void calculateDerivatives(double t, double[] x, double[] xDot) {

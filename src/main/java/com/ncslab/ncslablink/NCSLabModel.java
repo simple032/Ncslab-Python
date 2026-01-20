@@ -158,7 +158,7 @@ abstract public class NCSLabModel {
 	private NCSLabSystem rootSystem = new NCSLabSystem(modelName);
 	
 	@Getter
-	private CircuitModel2 circuitModel;
+	protected CircuitModel2 circuitModel;
 
 	//解析model，变成数据结构 - 原有JSONObject构造函数
 	protected NCSLabModel(JSONObject jsonIn,ModelMode mode) throws ModelException{

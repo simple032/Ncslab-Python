@@ -931,6 +931,7 @@ public class CircuitPartition {
 		
 		StoreGAA storeGAA=switchGAA.findStoreGAA(switchStatus);
 		if(storeGAA==null) {
+			//System.out.println(switchStatus);
 			storeGAA=switchGAA.addStoreGAA(switchStatus);
 		}
 		

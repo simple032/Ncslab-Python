@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ScopeStruct extends Terminal {
@@ -25,8 +26,8 @@ public class ScopeStruct extends Terminal {
 		super(block, id, localName);
 		this.name="Block" + block.getBlockId() + "_Scope_" + localName;
 		this.localName=localName;
-		this.timeList=new ArrayList<>();
-		this.dataList=new ArrayList<>();
+		this.timeList=new LinkedList<>();
+		this.dataList=new LinkedList<>();
 	}
 
 	public String getDefineCodeC() {
@@ -77,6 +78,13 @@ public class ScopeStruct extends Terminal {
 	}
 
     public void addTimeSeries(double time,Data data) {
+    	
+    	com.ncslab.ncslablink.SimulationModel model=(com.ncslab.ncslablink.SimulationModel)this.block.getModel();
+    	if(model.isMajorStep()==false) {
+    		return;
+    	}
+    	
+    	/*
     	while(timeList.size()>=maxDataLength) {
             this.timeList.remove(0);
             if(this.height==1 && this.width==1) {
@@ -88,9 +96,10 @@ public class ScopeStruct extends Terminal {
                     }
                 }
             }
-        }
+        }*/
 
-        this.timeList.add(time);
+        
+    	this.timeList.add(time);
         if(this.height==1 && this.width==1) {
         	this.dataList.add(data.getInitValue());
         }else{

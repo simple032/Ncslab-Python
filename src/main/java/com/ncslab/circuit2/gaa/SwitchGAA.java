@@ -28,6 +28,7 @@ public class SwitchGAA {
 		for(StoreGAA storeGAA:storeGAAList) {
 			if(storeGAA.getSwitchStatus()==switchStatus) {
 				if(storeGAA.isVariableChanged()) {
+					//System.out.println("changed");
 					double gAA[][]=part.getGAAValue();
 					int[] vIndex=new int[gAA.length];
 					for(int i=0;i<vIndex.length;i++) {
