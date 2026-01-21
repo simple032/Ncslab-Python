@@ -328,6 +328,10 @@ import java.util.*;
     
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ACVoltageSourceDto.class, name = "AC Voltage Source"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.DCVoltageSourceDto.class, name = "DC Voltage Source"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.DCCurrentSourceDto.class, name = "DC Current Source"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ACCurrentSourceDto.class, name = "AC Current Source"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ControlledVoltageSourceDto.class, name = "Controlled Voltage Source"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ControlledCurrentSourceDto.class, name = "Controlled Current Source"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ResistorDto.class, name = "Resistor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.CapacitorDto.class, name = "Capacitor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.InductorDto.class, name = "Inductor"),

@@ -18,11 +18,21 @@ private String iString;
 		iValue=Double.parseDouble(iString);
 	}
 	
+	public DCCurrentSource(JSONObject blockJSON,NCSLabModel model) {
+		super(0,blockJSON,model);
+		//this.blockName=this.blockName.replaceAll(" ", "_");
+		//setupEquivilentBlockModels();
+		//System.out.println(blockJSON);
+		
+		iString=paramValues.getString("i0");
+		iValue=Double.parseDouble(iString);
+	}
+	
 	public String getIString() {
 		return iString;
 	}
 	
-	public double getIValue() {
+	public double getIValue(double t) {
 		return iValue;
 	}
 }

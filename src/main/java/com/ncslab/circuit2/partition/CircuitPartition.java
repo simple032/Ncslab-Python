@@ -1039,14 +1039,7 @@ public class CircuitPartition {
 							gAAValue[node.getPartNodeId()][vsStart+((VoltageSource)block).getPartVsId()]=1.0;
 						}
 					}
-					else
-					//如果是电流源,则在iA中增加一项
-					if(block instanceof CurrentSource) {
-						CurrentSource cBlock=(CurrentSource)block;
-						double sign=port.getCircuitPortType()==CircuitPortType.Left?(-1.0):(1.0);
-						iA[node.getPartNodeId()]+=sign*cBlock.getIValue();
-					}
-					//如果是电流源,则在iA中增加一项
+					
 					//....
 				}
 			}
@@ -1071,6 +1064,14 @@ public class CircuitPartition {
 		for(CircuitNode node:nodeList) {
 			if(node.getIsPartRef()==false) {
 				iAValue[node.getPartNodeId()]+=node.getHisValue();
+				for(CircuitPort port:node.getCircuitPortList()) {
+					CircuitBlockSingle block=port.getBlock();
+					if(block instanceof CurrentSource) {
+						CurrentSource cBlock=(CurrentSource)block;
+						double sign=port.getCircuitPortType()==CircuitPortType.Left?(-1.0):(1.0);
+						iAValue[node.getPartNodeId()]+=sign*cBlock.getIValue(t);
+					}
+				}
 			}
 		}
 		

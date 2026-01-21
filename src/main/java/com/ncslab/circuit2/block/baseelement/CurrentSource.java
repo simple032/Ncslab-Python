@@ -15,5 +15,5 @@ public abstract class CurrentSource extends CircuitBlockSingle {
 		return null;
 	}
 	
-	abstract public double getIValue();
+	abstract public double getIValue(double t);
 }

@@ -388,6 +388,10 @@ public class BlockType{
         //Elect
         circuitBlockClassTree.put("ACVoltageSource", com.ncslab.circuit2.block.element.ACVoltageSource.class);
         circuitBlockClassTree.put("DCVoltageSource", com.ncslab.circuit2.block.element.DCVoltageSource.class);
+        circuitBlockClassTree.put("DCCurrentSource", com.ncslab.circuit2.block.element.DCCurrentSource.class);
+        circuitBlockClassTree.put("ACCurrentSource", com.ncslab.circuit2.block.element.ACCurrentSource.class);
+        circuitBlockClassTree.put("ControlledVoltageSource", com.ncslab.circuit2.block.element.ControlledVoltageSource.class);
+        circuitBlockClassTree.put("ControlledCurrentSource", com.ncslab.circuit2.block.element.ControlledCurrentSource.class);
         circuitBlockClassTree.put("Resistor", com.ncslab.circuit2.block.element.Resistor.class);
         circuitBlockClassTree.put("Capacitor", com.ncslab.circuit2.block.element.Capacitor.class);
         circuitBlockClassTree.put("Inductor", com.ncslab.circuit2.block.element.Inductor.class);
