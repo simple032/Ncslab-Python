@@ -5,166 +5,109 @@ import org.json.JSONObject;
 import com.greenpineyu.fel.parser.FelParser.integerLiteral_return;
 
 import com.ncslab.block.io.Parameter;
-import com.ncslab.circuit2.block.baseelement.CircuitBlockSingle;
+import com.ncslab.circuit2.block.baseelement.CircuitBlockMulti;
+import com.ncslab.circuit2.block.multielement.base.SwitchBase;
+import com.ncslab.circuit2.line.CircuitLine;
 import com.ncslab.ncslablink.NCSLabModel;
 
-public class SeriesRLCBranch extends CircuitBlockSingle {
+public class SeriesRLCBranch extends CircuitBlockMulti {
 	
 	private String typeString;
 	private String rString;
 	private String lString;
 	private String cString;
-	private String hisString="";
-	private String cHisString="";
-	private String lHisString="";
-	private String iHisString="";
-	private String gString;
 	
-	private com.ncslab.block.io.Parameter r;
-	private com.ncslab.block.io.Parameter l;
-	private com.ncslab.block.io.Parameter c;
 	public SeriesRLCBranch(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		// TODO Auto-generated constructor stub
 		typeString = paramValues.getString("Branchtype");
-		
-		r=new Parameter(this,1,"R",paramValues.getString("R"));
-		l=new Parameter(this,1,"L",paramValues.getString("L"));
-		c=new Parameter(this,1,"C",paramValues.getString("C"));
-		
-		
-		
-		
+
 		rString = paramValues.getString("R");
 		lString = paramValues.getString("L");
 		cString = paramValues.getString("C");
 		
-		
-		if(r.getData().getInitValue()<=0) {
-			rString = "1.0";
-		}
-		if(l.getData().getInitValue()<=0) {
-			lString = "1e-6";
-		}
-		if(c.getData().getInitValue()<=0) {
-			cString = "1e-6";
-		}
-		
-		hisString="EBlock"+this.getBlockId()+"_His";
-		switch (typeString) {
-		case "RL":
-			gString = "(1.0/("+this.rString+")+2.0*("+this.lString+")/"+this.getSimpleTime()+")";
-			lHisString = "EBlock"+this.getBlockId()+"_lHis";
-			iHisString = "EBlock"+this.getBlockId()+"_iHis";
-			break;
-		case "RC":
-			gString = "(1.0/("+this.rString+")+"+this.getSimpleTime()+"/2.0/("+this.cString+"))";
-			cHisString = "EBlock"+this.getBlockId()+"_cHis";
-			iHisString = "EBlock"+this.getBlockId()+"_iHis";
-			break;
-		case "R":
-			gString = "(1.0/("+this.rString+"))";
-			hisString = "0.0";
-			break;
-		case "L":
-			gString = "(2.0*("+this.lString+")/"+this.getSimpleTime()+")";
-			break;
-		case "C":
-			gString = "("+this.getSimpleTime()+"/2.0/("+this.cString+"))";
-			break;
-		case "LC":
-			gString = "(2.0*("+this.lString+")/"+this.getSimpleTime()+"+"+this.getSimpleTime()+"/2.0/("+this.cString+"))";
-			lHisString = "EBlock"+this.getBlockId()+"_lHis";
-			iHisString = "EBlock"+this.getBlockId()+"_iHis";
-			break;
-		case "RLC":
-			gString = "(1.0/("+this.rString+")+2.0*("+this.lString+")/"+this.getSimpleTime()+"+"+this.getSimpleTime()+"/2.0/("+this.cString+"))";
-			lHisString = "EBlock"+this.getBlockId()+"_lHis";
-			iHisString = "EBlock"+this.getBlockId()+"_iHis";
-			break;
-		default:
-			break;
-		}
+	}
+	
+	public SeriesRLCBranch(JSONObject blockJSON, NCSLabModel model) {
+		super(0, blockJSON, model);
+		// TODO Auto-generated constructor stub
+		typeString = paramValues.getString("Branchtype");
+
+		rString = paramValues.getString("R");
+		lString = paramValues.getString("L");
+		cString = paramValues.getString("C");
 		
 	}
 
-	public String getRString() {
-		return gString;
-	}
-	
-	public String getHisString() {
-		//String hisString;
-		//hisString="EBlock"+this.getBlockId()+"_His";
-		return hisString;
-	}
-	
-	public String getHisUpdateString() {
-		String hisUpdateString="";
+	@Override
+	public void setupSubCircuitBlocks(int blockId) {
+		// TODO Auto-generated method stub
 		
-		String lv=this.getCurcuitPortList().get(0).getCircuitNode().getNodeString();
-		String rv=this.getCurcuitPortList().get(1).getCircuitNode().getNodeString();
-		switch (typeString) {
-		case "R":
-			break;
-		case "L":
-			hisUpdateString+=this.hisString+"=("+this.hisString+"+"+this.getSimpleTime()+"/("+this.lString+")*("+lv+"-"+rv+"))";
-			break;
-		case "C":
-			hisUpdateString+=this.hisString+"=-"+this.hisString+"-(4.0*"+this.cString+")/("+this.getSimpleTime()+")*("+lv+"-"+rv+")";
-			break;
-		case "RL":
-			hisUpdateString+=this.lHisString+"=(2.0*"+this.lString+"/"+this.getSimpleTime()+"*("+this.getCurrentString()+"-"+this.iHisString+")-"+this.lHisString+");\n";
-			hisUpdateString+=this.iHisString+"="+this.getCurrentString()+";\n";
-			hisUpdateString+=this.hisString+"=("+this.hisString+"+(2.0*"+this.lHisString+"/"+this.gString+"));\n";
-			break;
-		case "RC":
-			hisUpdateString+=this.cHisString+"=("+this.getSimpleTime()+"/2.0/"+this.cString+"*("+this.getCurrentString()+"+"+this.iHisString+")+"+this.cHisString+");\n";
-			hisUpdateString+=this.iHisString+"="+this.getCurrentString()+";\n";
-			hisUpdateString+=this.hisString+"=(-1.0*"+this.hisString+"+(-2.0*"+this.cHisString+"/"+this.gString+"));\n";
-			break;
-			//RLC,LC
-		default: 
-			hisUpdateString+=this.lHisString+"=(2.0*"+this.lString+"/"+this.getSimpleTime()+"*("+this.getCurrentString()+"-"+this.iHisString+")-"+this.lHisString+");\n";
-			hisUpdateString+=this.iHisString+"="+this.getCurrentString()+";\n";
-			hisUpdateString+=this.hisString+"=("+this.hisString+"+(2.0*"+lHisString+"-"+this.getSimpleTime()+"*"+this.iHisString+"/"+this.cString+")/"+this.gString+");\n";
-			break;
-		}
+		JSONObject addJSON=new JSONObject();
+		addJSON.put("blockType", "Reisitor");
+		addJSON.put("blockName", this.blockName+"R");
+		addJSON.put("blockPath", this.blockPath);
+		JSONObject addParamValues=new JSONObject();
 		
-		return hisUpdateString;
-	}
+		addParamValues.put("R", rString);
+		addJSON.put("paramValues", addParamValues);
+		
+		Resistor rBlock=new Resistor(blockId++,addJSON,model);
+		this.getSingleCurcuitBlockList().add(rBlock);
+		
+		addJSON=new JSONObject();
+		addJSON.put("blockType", "Inductor");
+		addJSON.put("blockName", this.blockName+"L");
+		addJSON.put("blockPath", this.blockPath);
+		addParamValues=new JSONObject();
+		
+		addParamValues.put("l", lString);
+		addJSON.put("paramValues", addParamValues);
+		
+		Inductor lBlock=new Inductor(blockId++,addJSON,model);
+		this.getSingleCurcuitBlockList().add(lBlock);
+		
+		addJSON=new JSONObject();
+		addJSON.put("blockType", "Capacitor");
+		addJSON.put("blockName", this.blockName+"C");
+		addJSON.put("blockPath", this.blockPath);
+		addParamValues=new JSONObject();
+		
+		addParamValues.put("c", cString);
+		addJSON.put("paramValues", addParamValues);
+		
+		Capacitor cBlock=new Capacitor(blockId++,addJSON,model);
+		this.getSingleCurcuitBlockList().add(cBlock);
 	
-	public String getCurrentCode() {
-		String code=super.getCurrentCode();
+		//建立连线，将恒压降与电阻串联起来
+		CircuitLine circuitLine=new CircuitLine(rBlock.getCurcuitPortList().get(1),lBlock.getCurcuitPortList().get(0));
+		this.getCircuitLineList().add(circuitLine);
 		
-		String v0=this.getCurcuitPortList().get(0).getCircuitNode().getNodeString();
-		String v1=this.getCurcuitPortList().get(1).getCircuitNode().getNodeString();
+		//建立连线，将开关与电阻串联起来
+		circuitLine=new CircuitLine(lBlock.getCurcuitPortList().get(1),cBlock.getCurcuitPortList().get(0));
+		this.getCircuitLineList().add(circuitLine);
 		
-		code+=this.getCurrentString()+"=("+v0+"-"+v1+")/"+this.getRString()+"+"+this.getHisString()+";\n";
-		return code;
+		
+		//开关-电阻-恒压降串联，用开关的左port和和压降的右port替换diode的两侧port，与外界相连
+		replacePort(this.getCurcuitPortList().get(0),rBlock.getCurcuitPortList().get(0));
+		replacePort(this.getCurcuitPortList().get(1),cBlock.getCurcuitPortList().get(1));
+		
+		//用开关的左port和和压降的右port替换diode的两侧port
+		this.getCurcuitPortList().set(0, rBlock.getCurcuitPortList().get(0));
+		this.getCurcuitPortList().set(1, cBlock.getCurcuitPortList().get(1));
+		
 	}
-	
-	public String generateHisStringCode() {
-		String circuitDefineCode="";
-		switch (typeString) {
-		case "R":
-			break;
-		case "L":
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_His=0;\n";
-			break;
-		case "C":
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_His=0;\n";
-			break;
-		case "RC":
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_cHis=0;\n";
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_iHis=0;\n";
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_His=0;\n";
-			break;
-		default:
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_lHis=0;\n";
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_iHis=0;\n";
-			circuitDefineCode+="REAL EBlock"+this.getBlockId()+"_His=0;\n";
-			break;
-		}
-		return circuitDefineCode;
+
+	@Override
+	public void setupLogicCode() {
+		// TODO Auto-generated method stub
+		
 	}
+
+	@Override
+	public void setupLogicCode(int partId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

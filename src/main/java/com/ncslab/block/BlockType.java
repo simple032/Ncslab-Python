@@ -402,6 +402,7 @@ public class BlockType{
         circuitBlockClassTree.put("VariableResistor", com.ncslab.circuit2.block.element.VariableResistor.class);
         circuitBlockClassTree.put("VariableInductor", com.ncslab.circuit2.block.element.VariableInductor.class);
         circuitBlockClassTree.put("VariableCapacitor", com.ncslab.circuit2.block.element.VariableCapacitor.class);
+        circuitBlockClassTree.put("SeriesRLCBranch", com.ncslab.circuit2.block.element.SeriesRLCBranch.class);
     }
 
 	public static Block createBlock(int id, JSONObject blockJSON, NCSLabModel model) throws ModelException {

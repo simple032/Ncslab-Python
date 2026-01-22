@@ -332,6 +332,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ACCurrentSourceDto.class, name = "AC Current Source"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ControlledVoltageSourceDto.class, name = "Controlled Voltage Source"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ControlledCurrentSourceDto.class, name = "Controlled Current Source"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.SeriesRLCBranchDto.class, name = "SeriesRLCBranch"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.ResistorDto.class, name = "Resistor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.CapacitorDto.class, name = "Capacitor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.InductorDto.class, name = "Inductor"),
@@ -342,6 +343,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableResistorDto.class, name = "Variable Resistor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableInductorDto.class, name = "Variable Inductor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableCapacitorDto.class, name = "Variable Capacitor")
+    //@JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.SeriesRLCBranchDto.class, name = "SeriesRLCBranch")
 })
 @Data
 @SuperBuilder
