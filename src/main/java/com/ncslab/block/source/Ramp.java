@@ -81,9 +81,9 @@ public class Ramp extends SourceBlock {
         this.initialOutput = Objects.requireNonNull(initialOutput, "Initial output parameter cannot be null");
         
         // Add Ramp-specific parameters to parameter list
-        parameterList.add(slope);
-        parameterList.add(start);
-        parameterList.add(initialOutput);
+        //parameterList.add(slope);
+        //parameterList.add(start);
+        //parameterList.add(initialOutput);
         
         // Set port dimensions
         initializePorts();

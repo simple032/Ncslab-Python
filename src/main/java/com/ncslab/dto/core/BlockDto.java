@@ -49,6 +49,8 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.SignDto.class, name = "Sign"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.SqrtDto.class, name = "Sqrt"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.MinMaxDto.class, name = "MinMax"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.ReverseParkTransformDto.class, name = "Reverse Park Transform"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.ParkTransformDto.class, name = "Park Transform"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.IntegratorDto.class, name = "Integrator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.DerivativeDto.class, name = "Derivative"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.continuous.TransferFcnDto.class, name = "Transfer Fcn"),
@@ -248,7 +250,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.NewMotorDto.class, name = "NewMotor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.DCMotorAngleDto.class, name = "DCMotorAngle"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.DCMotorAngleDirectDto.class, name = "DCMotorAngleNew"),
-     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.DCMotorAngleDirectDto.class, name = "DCMotorAngleDirect"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.DCMotorAngleDirectDto.class, name = "DCMotorAngleDirect"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ServoMotorSliderDto.class, name = "ServoMotorSlider"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.AlpDto.class, name = "ALP"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.AlpDto.class, name = "Alp"),
@@ -275,6 +277,7 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.SecondOrderRotaryInvertedPendulumDto.class, name = "R2IP"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.BallPlateSystemDto.class, name = "BallPlateSystem"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.WaterLevelDto.class, name = "NetWaterLevel"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator7Dto.class, name = "HG Generator7"),
     // Data processing blocks (added Week 6)
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.ByteUnpackDto.class, name = "Byte Unpack"),
@@ -343,7 +346,6 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableResistorDto.class, name = "Variable Resistor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableInductorDto.class, name = "Variable Inductor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableCapacitorDto.class, name = "Variable Capacitor")
-    //@JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.SeriesRLCBranchDto.class, name = "SeriesRLCBranch")
 })
 @Data
 @SuperBuilder

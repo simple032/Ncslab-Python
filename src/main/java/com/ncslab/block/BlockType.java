@@ -106,6 +106,8 @@ public class BlockType{
         blockClassTree.put("ReciprocalSqrt", com.ncslab.block.math.ReciprocalSqrt.class);
         blockClassTree.put("DotProduct", com.ncslab.block.math.DotProduct.class);
         blockClassTree.put("ComplexToMagnitudeAngle", com.ncslab.block.math.ComplexToMagnitudeAngle.class);
+        blockClassTree.put("ReverseParkTransform", com.ncslab.block.math.ReverseParkTransform.class);
+        blockClassTree.put("ParkTransform", com.ncslab.block.math.ParkTransform.class);
 
         // Continuous
         blockClassTree.put("Derivative", com.ncslab.block.continuous.Derivative.class);
