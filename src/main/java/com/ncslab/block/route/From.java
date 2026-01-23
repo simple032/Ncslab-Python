@@ -44,6 +44,8 @@ public class From extends RouteBlock {
     private final Parameter sampleTime;
     private final Parameter outDataType;
     private final Parameter saturateOnIntegerOverflow;
+    
+    private InputPort inputPort=null;
 
     // === Static Parameter Definitions ===
 
@@ -318,12 +320,18 @@ public class From extends RouteBlock {
     }
 
     private InputPort getInputPort() {
+    	
+    	if(inputPort!=null) {
+    		return inputPort;
+    	}
+    	
         // 1. Search from blocks in the same subsytem
         for(Block block:this.getParent().getBlocks()){
             if(block instanceof To){
                 To toBlock = (To) block;
-                if(this.getTagName() == toBlock.getTagName()){
-                    return toBlock.getInputPortList().get(0);
+                if(this.getTagName().equals(toBlock.getTagName())){
+                	inputPort=toBlock.getInputPortList().get(0);
+                    return inputPort;
                 }
             }
         }
@@ -331,8 +339,9 @@ public class From extends RouteBlock {
         for(Block block:this.getModel().getBlockList()){
             if(block instanceof To){
                 To toBlock = (To) block;
-                if(this.getTagName() == toBlock.getTagName()){
-                    return toBlock.getInputPortList().get(0);
+                if(this.getTagName().equals(toBlock.getTagName())){
+                	inputPort=toBlock.getInputPortList().get(0);
+                    return inputPort;
                 }
             }
         }

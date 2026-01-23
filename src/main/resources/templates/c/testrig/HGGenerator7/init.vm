@@ -1,0 +1,53 @@
+/* Velocity Template for initialization of block HGGenerator */
+{
+	#foreach($state in $blockStateList)
+    	$stateName = 0;
+	#end
+	
+	${Omega0Object.initCodeC}
+	${XdObject.initCodeC}
+	${XqObject.initCodeC}
+	${XddObject.initCodeC}
+	${XdddObject.initCodeC}
+	${XqqqObject.initCodeC}
+	${X1Object.initCodeC}
+	${Td0Object.initCodeC}
+	${Td000Object.initCodeC}
+	${Tq000Object.initCodeC}
+	${HObject.initCodeC}
+	${RObject.initCodeC}
+	
+	REAL xx;
+	REAL LF;
+	REAL LMD0;
+	REAL LMQ0;
+	
+	$Xl=$X1;
+	$ld=$X1;
+	$lq=$X1;
+	$lAD=$Xd-$X1;
+	$lAQ=$Xq-$X1;
+	$lF=$lAD*(($Xdd-$Xl)/($Xd-$Xdd));
+	
+	LF=$lF+$lAD;
+	xx=$Xddd-$Xl;
+	$lD=$lAD*$lF*(xx/($lAD*$lF-LF*xx));
+	$lQ=$lAQ*(($Xqqq-$Xl)/($Xq-$Xqqq));
+	
+	$rF=($lF+$lAD)/($Omega0*$Td0);
+	$rD=($lD+$Xdd-$Xl)/($Omega0*$Td000);
+	$rQ=($lQ+$lAQ)/($Omega0*$Tq000);
+	
+	LMD0=1/$lAD+1/$lD+1/$ld+1/$lF;
+	LMQ0=1/$lAQ+1/$lQ+1/$lq;
+	$LMD=1/LMD0;
+	$LMQ=1/LMQ0;
+	
+	$Psid=0;
+	$PsiD=0;
+	$Psiq=0;
+	$PsiQ=0;
+	$PsiF=0;
+	$Omega=0;
+	$Theta=0;
+}

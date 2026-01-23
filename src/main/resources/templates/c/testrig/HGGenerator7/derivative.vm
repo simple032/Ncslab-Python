@@ -1,0 +1,29 @@
+#set($Input_C1 = $input1)
+#set($Input_Efd = $input2)
+#set($Input_Ud = $input3)
+#set($Input_Uq = $input4)
+/*Code for Derivative of HGGenerator:($blockId)$blockName*/
+{
+	REAL _State_vD=0;
+	REAL _State_vQ=0;
+	REAL _State_PsiAD;
+	REAL _State_PsiAQ;
+	
+	REAL _State_id;
+	REAL _State_iq;
+
+	_State_PsiAQ=$Psiq*$LMQ/$lq+$PsiQ*$LMQ/$lQ;
+	_State_PsiAD=$Psid*$LMD/$ld+$PsiD*$LMD/$lD+$PsiF*$LMD/$lF;
+	
+	_State_iq=-($Psiq-_State_PsiAQ)/$lq;
+	_State_id=-($Psid-_State_PsiAD)/$ld;
+	
+	$PsiqDerivativeName=($Input_Uq-($Omega+1)*$Psid+(_State_PsiAQ-$Psiq)*$R/$lq)*$Omega0;
+	$PsiQDerivativeName=(_State_vQ+(_State_PsiAQ-$PsiQ)*$rQ/$lQ)*$Omega0;
+	$PsidDerivativeName=($Input_Ud+($Omega+1)*$Psiq+(_State_PsiAD-$Psid)*$R/$ld)*$Omega0;
+	$PsiDDerivativeName=(_State_vD+(_State_PsiAD-$PsiD)*$rD/$lD)*$Omega0;
+	$PsiFDerivativeName=($Input_Efd*$rF/$lAD+(_State_PsiAD-$PsiF)*$rF/$lF)*$Omega0;
+	
+	$OmegaDerivativeName=($Input_C1-(_State_iq*$Psid-_State_id*$Psiq))/2/$H;
+	$ThetaDerivativeName=$Omega*$Omega0;
+}

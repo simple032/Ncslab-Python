@@ -1,0 +1,16 @@
+#set($Output_Id = $output1)
+#set($Output_Iq = $output2)
+#set($Output_Theta = $output3)
+#set($Output_Omega = $output4)
+{
+	REAL PsiAD;
+	REAL PsiAQ;
+	
+	PsiAQ=$Psiq*$LMQ/$lq+$PsiQ*$LMQ/$lQ;
+	PsiAD=$Psid*$LMD/$ld+$PsiD*$LMD/$lD+$PsiF*$LMD/$lF;
+	
+	$Output_Iq=-($Psiq-PsiAQ)/$lq;
+	$Output_Id=-($Psid-PsiAD)/$ld;
+	$Output_Omega=$Omega+1;
+	$Output_Theta=$Theta+3.1415926/2+model.time*$Omega0;
+}
