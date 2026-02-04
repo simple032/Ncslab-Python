@@ -77,8 +77,8 @@
 	Id4=2/3*($Input_Ia4*sin(alpha4)+$Input_Ib4*sin(alpha4-2*pi/3)+$Input_Ic4*sin(alpha4+2*pi/3));
 	Iq4=2/3*($Input_Ia4*cos(alpha4)+$Input_Ib4*cos(alpha4-2*pi/3)+$Input_Ic4*cos(alpha4+2*pi/3));
 	
-	psiad=kf*$psif+kD+$psiD-Xadd*(Id1+Id2+Id3+Id4);
-	psiaq=kQ1*$psiQ1+kQ22+$psiQ22-Xaqq*(Iq1+Iq2+Iq3+Iq4);
+	psiad=kf*$psif+kD*$psiD-Xadd*(Id1+Id2+Id3+Id4);
+	psiaq=kQ1*$psiQ1+kQ22*$psiQ22-Xaqq*(Iq1+Iq2+Iq3+Iq4);
 	
 	dpsif=omega0*($Input_Efd-Rf*($psif-psiad)/Xfl);
 	dpsiD=-omega0*RD*($psiD-psiad)/XDl;

@@ -130,9 +130,10 @@
 	//printf("kQ1,kQ22,pha,th,kf,kD:%f\t%f\t%f\t%f\t%f\t%f\n",kQ1,kQ22,pha,th,kf,kD);
 	//printf("alpha1,alpha2,alpha3,alpha4,Id1,Iq1:%f\t%f\t%f\t%f\t%f\t%f\n",alpha1,alpha2,alpha3,alpha4,Id1,Iq1);
 	//printf("Id2,Iq2,Id3,Iq3,Id4,Iq4:%f\t%f\t%f\t%f\t%f\t%f\n",Id2,Iq2,Id3,Iq3,Id4,Iq4);
-	printf("psiad,psiaq,dpsif,dpsiD,dpsiQ1,dpsiQ22:%f\t%f\t%f\t%f\t%f\t%f\n",psiad,psiaq,dpsif,dpsiD,dpsiQ1,dpsiQ22);
-	printf("ed,eq:%f\t%f\n",ed,eq);
-	printf("Output_ea1,Output_eb1:%f\t%f\n",$Output_ea1,$Output_eb1);
-	printf("Id1,Iq1:%f\t%f\n",Id1,Iq1);
-	printf("theta,alpha1:%f\t%f\n",$theta,alpha1);
+	//printf("psiad,psiaq,dpsif,dpsiD,dpsiQ1,dpsiQ22:%f\t%f\t%f\t%f\t%f\t%f\n",psiad,psiaq,dpsif,dpsiD,dpsiQ1,dpsiQ22);
+	//printf("ed,eq:%f\t%f\n",ed,eq);
+	//printf("Output_ea1,Output_eb1:%f\t%f\n",$Output_ea1,$Output_eb1);
+	//printf("Id1,Iq1:%f\t%f\n",Id1,Iq1);
+	//printf("theta,alpha1:%f\t%f\n",$theta,alpha1);
+	//printf("\n");
 }
