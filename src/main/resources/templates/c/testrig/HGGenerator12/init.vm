@@ -1,0 +1,23 @@
+/* Velocity Template for initialization of block HGGenerator */
+{
+	#foreach($state in $blockStateList)
+    	$stateName = 0;
+	#end
+	
+	${XdObject.initCodeC}
+	${XddObject.initCodeC}
+	${XdddObject.initCodeC}
+	${XqObject.initCodeC}
+	${XqqObject.initCodeC}
+	${XqqqObject.initCodeC}
+	${XlObject.initCodeC}
+	${Td0Object.initCodeC}
+	${Td000Object.initCodeC}
+	${Tq0Object.initCodeC}
+	${Tq000Object.initCodeC}
+	${RsObject.initCodeC}
+	${fnObject.initCodeC}
+	${thObject.initCodeC}
+	${phaObject.initCodeC}
+	
+}

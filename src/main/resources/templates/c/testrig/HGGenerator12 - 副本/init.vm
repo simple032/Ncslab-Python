@@ -1,0 +1,59 @@
+/* Velocity Template for initialization of block HGGenerator */
+{
+	#foreach($state in $blockStateList)
+    	$stateName = 0;
+	#end
+	
+	${XdObject.initCodeC}
+	${XqObject.initCodeC}
+	${XddObject.initCodeC}
+	${XdddObject.initCodeC}
+	${XqqObject.initCodeC}
+	${XqqqObject.initCodeC}
+	${XlObject.initCodeC}
+	${Td0Object.initCodeC}
+	${Td000Object.initCodeC}
+	${Tq0Object.initCodeC}
+	${Tq000Object.initCodeC}
+	${fnObject.initCodeC}
+	${RsObject.initCodeC}
+	${thObject.initCodeC}
+	${phaObject.initCodeC}
+	
+	$Xad=$Xd-$Xl;
+	$Xaq=$Xq-$Xl;
+	
+	$Xfl=$Xad*($Xdd-$Xl)/($Xd-$Xdd);
+	$XDl=1/(1/($Xddd-$Xl)-1/($Xd-$Xl)-1/$Xfl);
+	$XQ1l=$Xaq*($Xqq-$Xl)/($Xq-$Xqq);
+	$XQ2l=1/(1/($Xqqq-$Xl)-1/($Xq-$Xl)-1/$XQ1l);
+	$XQ2l2=1/(1/($Xqqq-$Xl)-1/($Xq-$Xl)-1/$XQ1l);
+	
+	$omega0=2*3.14*$fn;
+	
+	$Rf=($Xfl+$Xad)/($omega0*$Td0);
+	$RD=($XDl+$Xad)/($omega0*$Td000);
+	$RQ1=($XQ1l+$Xaq)/($omega0*$Tq0);
+	$RQ2=($XQ2l+$Xaq)/($omega0*$Tq000);
+	$RQ2v=15*$RQ2;
+	
+	$Xadd=1/(1/$Xfl+1/$XDl+1/$Xad);
+	$Xaqq=1/(1/$XQ1l+1/$XQ2l2+1/$Xaq);
+	
+	$kf=$Xadd/$Xfl;
+	$kD=$Xadd/$XDl;
+	$kQ1=$Xaqq/$XQ1l;
+	$kQ22=$Xaqq/$XQ2l2;
+	
+	$psif=0;
+	$psiD=0;
+	$psiQ1=0;
+	$psiQ21=0;
+	$psiQ22=0;
+	$theta=0;
+	$omega=0;
+	
+	printf("$Xad,$Xaq:%f\t%f\n",$Xad,$Xaq);
+	printf("$Xaqq,$XQ2l2:%f\t%f\n",$Xaqq,$XQ2l2);
+	printf("$kQ22:%f\n",$kQ22);
+}

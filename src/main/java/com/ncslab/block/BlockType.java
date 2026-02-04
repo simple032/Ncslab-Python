@@ -158,6 +158,7 @@ public class BlockType{
         blockClassTree.put("BallPlateSystemSUST", com.ncslab.block.testrig.BallPlateSUST.class);
         
         blockClassTree.put("HGGenerator7", com.ncslab.block.testrig.HGGenerator7.class);
+        blockClassTree.put("HGGenerator12", com.ncslab.block.testrig.HGGenerator12.class);
 
         // Function
         blockClassTree.put("Fcn", com.ncslab.block.function.Fcn.class);

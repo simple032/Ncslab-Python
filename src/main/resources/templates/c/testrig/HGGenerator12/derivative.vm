@@ -1,0 +1,105 @@
+#set($Input_C1 = $input1)
+#set($Input_Efd = $input2)
+#set($Input_Ia1 = $input3)
+#set($Input_Ib1 = $input4)
+#set($Input_Ic1 = $input5)
+#set($Input_Ia2 = $input6)
+#set($Input_Ib2 = $input7)
+#set($Input_Ic2 = $input8)
+#set($Input_Ia3 = $input9)
+#set($Input_Ib3 = $input10)
+#set($Input_Ic3 = $input11)
+#set($Input_Ia4 = $input12)
+#set($Input_Ib4 = $input13)
+#set($Input_Ic4 = $input14)
+/*Code for Derivative of HGGenerator:($blockId)$blockName*/
+{
+	REAL psiad;
+	REAL psiaq;
+	REAL Id1;
+	REAL Iq1;
+	REAL Id2;
+	REAL Iq2;
+	REAL Id3;
+	REAL Iq3;
+	REAL Id4;
+	REAL Iq4;
+	REAL dpsif;
+	REAL dpsiD;
+	REAL dpsiQ1;
+	REAL dpsiQ22;
+	REAL ed;
+	REAL eq;
+	
+	double pi=3.1415926;
+	double Xad=$Xd-$Xl;
+    double Xaq=$Xq-$Xl;
+     
+    double Xfl=Xad*($Xdd-$Xl)/($Xd-$Xdd);
+    double XDl=1/(1/($Xddd-$Xl)-1/($Xd-$Xl)-1/Xfl);
+    double XQ1l=Xaq*($Xqq-$Xl)/($Xq-$Xqq);
+    double XQ2l=1/(1/($Xqqq-$Xl)-1/($Xq-$Xl)-1/XQ1l);
+    
+    double XQ2l2=1/(1/Xfl+1/XDl-1/XQ1l);
+    double XQ2l1=XQ2l-XQ2l2;
+    
+    double omega0=2*pi*$fn;
+ 
+    double Rf=(Xfl+Xad)/(omega0*$Td0);
+    double RD=(XDl+Xad)/(omega0*$Td000);
+    double RQ1=(XQ1l+Xaq)/(omega0*$Tq0);
+    double RQ2=(XQ2l+Xaq)/(omega0*$Tq000);
+    double RQ2v=15*RQ2;
+    
+    double Xadd=1/(1/Xfl+1/XDl+1/Xad);
+    double Xaqq=1/(1/XQ1l+1/XQ2l2+1/Xaq);
+    
+    double kf=Xadd/Xfl;
+    double kD=Xadd/XDl;
+    double kQ1=Xaqq/XQ1l;
+    double kQ22=Xaqq/XQ2l2;
+    
+    /* deg to rad */
+    double pha = $pha * pi / 180;
+    double th = $th * pi / 180;
+    
+    double alpha1=$theta+model.time*omega0+th-pha;
+    double alpha2=$theta+model.time*omega0+th-pha-pi/12;
+    double alpha3=$theta+model.time*omega0+th-pha-pi/6;
+    double alpha4=$theta+model.time*omega0+th-pha-pi/4;
+    
+    Id1=2/3*($Input_Ia1*sin(alpha1)+$Input_Ib1*sin(alpha1-2*pi/3)+$Input_Ic1*sin(alpha1+2*pi/3));
+	Iq1=2/3*($Input_Ia1*cos(alpha1)+$Input_Ib1*cos(alpha1-2*pi/3)+$Input_Ic1*cos(alpha1+2*pi/3));
+	Id2=2/3*($Input_Ia2*sin(alpha2)+$Input_Ib2*sin(alpha2-2*pi/3)+$Input_Ic2*sin(alpha2+2*pi/3));
+	Iq2=2/3*($Input_Ia2*cos(alpha2)+$Input_Ib2*cos(alpha2-2*pi/3)+$Input_Ic2*cos(alpha2+2*pi/3));
+	Id3=2/3*($Input_Ia3*sin(alpha3)+$Input_Ib3*sin(alpha3-2*pi/3)+$Input_Ic3*sin(alpha3+2*pi/3));
+	Iq3=2/3*($Input_Ia3*cos(alpha3)+$Input_Ib3*cos(alpha3-2*pi/3)+$Input_Ic3*cos(alpha3+2*pi/3));
+	Id4=2/3*($Input_Ia4*sin(alpha4)+$Input_Ib4*sin(alpha4-2*pi/3)+$Input_Ic4*sin(alpha4+2*pi/3));
+	Iq4=2/3*($Input_Ia4*cos(alpha4)+$Input_Ib4*cos(alpha4-2*pi/3)+$Input_Ic4*cos(alpha4+2*pi/3));
+	
+	psiad=kf*$psif+kD+$psiD-Xadd*(Id1+Id2+Id3+Id4);
+	psiaq=kQ1*$psiQ1+kQ22+$psiQ22-Xaqq*(Iq1+Iq2+Iq3+Iq4);
+	
+	dpsif=omega0*($Input_Efd-Rf*($psif-psiad)/Xfl);
+	dpsiD=-omega0*RD*($psiD-psiad)/XDl;
+	dpsiQ1=-omega0*RQ1*($psiQ1-psiaq)/XQ1l;
+	dpsiQ22=-omega0*RQ2v*(($psiQ22-psiaq)/XQ2l2-($psiQ21-$psiQ22)/XQ2l1);
+	
+	$psifDerivativeName=omega0*($Input_Efd-Rf*($psif-psiad)/Xfl);
+	$psiDDerivativeName=-omega0*RD*($psiD-psiad)/XDl;
+	$psiQ1DerivativeName=-omega0*RQ1*($psiQ1-psiaq)/XQ1l;
+	$psiQ21DerivativeName=-omega0*RQ2*($psiQ21-$psiQ22)/XQ2l1;
+	$psiQ22DerivativeName=-omega0*RQ2v*(($psiQ22-psiaq)/XQ2l2-($psiQ21-$psiQ22)/XQ2l1);
+	
+	$thetaDerivativeName=$omega*omega0;
+	$omegaDerivativeName=($Input_C1-(psiad*(Iq1+Iq2+Iq3+Iq4)-psiaq*(Id1+Id2+Id3+Id4)))/5;
+	
+	/*
+	printf("XQ2l2,XQ2l1:%f\t%f\n",XQ2l2,XQ2l1);
+	printf("psiQ22DerivativeName:%f\n",-omega0*RQ2v*(($psiQ22-psiaq)/XQ2l2-($psiQ21-$psiQ22)/XQ2l1));
+	printf("psiQ22:%f\n",$psiQ22);
+	printf("Xaqq*(Iq1+Iq2+Iq3+Iq4):%f\n",Xaqq*(Iq1+Iq2+Iq3+Iq4));
+	printf("$psiad,psiaq:%f\t%f\n",psiad,psiaq);
+	printf("$omegaDerivativeName:%f\n",$omegaDerivativeName);
+	printf("\n");*/
+}

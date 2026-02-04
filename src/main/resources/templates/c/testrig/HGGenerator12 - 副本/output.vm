@@ -1,0 +1,100 @@
+#set($Input_C1 = $input1)
+#set($Input_Efd = $input2)
+#set($Input_Ia1 = $input3)
+#set($Input_Ib1 = $input4)
+#set($Input_Ic1 = $input5)
+#set($Input_Ia2 = $input6)
+#set($Input_Ib2 = $input7)
+#set($Input_Ic2 = $input8)
+#set($Input_Ia3 = $input9)
+#set($Input_Ib3 = $input10)
+#set($Input_Ic3 = $input11)
+#set($Input_Ia4 = $input12)
+#set($Input_Ib4 = $input13)
+#set($Input_Ic4 = $input14)
+#set($Output_ea1 = $output1)
+#set($Output_eb1 = $output2)
+#set($Output_ec1 = $output3)
+#set($Output_ea2 = $output4)
+#set($Output_eb2 = $output5)
+#set($Output_ec2 = $output6)
+#set($Output_ea3 = $output7)
+#set($Output_eb3 = $output8)
+#set($Output_ec3 = $output9)
+#set($Output_ea4 = $output10)
+#set($Output_eb4 = $output11)
+#set($Output_ec4 = $output12)
+#set($Output_omega = $output13)
+{
+	REAL alpha1;
+	REAL alpha2;
+	REAL alpha3;
+	REAL alpha4;
+	REAL psiad;
+	REAL psiaq;
+	REAL Id1;
+	REAL Iq1;
+	REAL Id2;
+	REAL Iq2;
+	REAL Id3;
+	REAL Iq3;
+	REAL Id4;
+	REAL Iq4;
+	REAL th0;
+	REAL pha0;
+	REAL dpsif;
+	REAL dpsiD;
+	REAL dpsiQ1;
+	REAL dpsiQ22;
+	REAL ed;
+	REAL eq;
+	
+	th0=$th*3.14/180;
+	pha0=$pha*3.14/180;
+
+	alpha1=$theta+model.time*$omega0+th0-pha0;
+	alpha2=$theta+model.time*$omega0+th0-pha0-3.14/12;
+	alpha3=$theta+model.time*$omega0+th0-pha0-3.14/6;
+	alpha4=$theta+model.time*$omega0+th0-pha0-3.14/4;
+	
+	Id1=2/3*($Input_Ia1*sin(alpha1)+$Input_Ib1*sin(alpha1-2*3.14/3)+$Input_Ic1*sin(alpha1+2*3.14/3));
+	Iq1=2/3*($Input_Ia1*cos(alpha1)+$Input_Ib1*cos(alpha1-2*3.14/3)+$Input_Ic1*cos(alpha1+2*3.14/3));
+	Id2=2/3*($Input_Ia2*sin(alpha2)+$Input_Ib2*sin(alpha2-2*3.14/3)+$Input_Ic2*sin(alpha2+2*3.14/3));
+	Iq2=2/3*($Input_Ia2*cos(alpha2)+$Input_Ib2*cos(alpha2-2*3.14/3)+$Input_Ic2*cos(alpha2+2*3.14/3));
+	Id3=2/3*($Input_Ia3*sin(alpha3)+$Input_Ib3*sin(alpha3-2*3.14/3)+$Input_Ic3*sin(alpha3+2*3.14/3));
+	Iq3=2/3*($Input_Ia3*cos(alpha3)+$Input_Ib3*cos(alpha3-2*3.14/3)+$Input_Ic3*cos(alpha3+2*3.14/3));
+	Id4=2/3*($Input_Ia4*sin(alpha4)+$Input_Ib4*sin(alpha4-2*3.14/3)+$Input_Ic4*sin(alpha4+2*3.14/3));
+	Iq4=2/3*($Input_Ia4*cos(alpha4)+$Input_Ib4*cos(alpha4-2*3.14/3)+$Input_Ic4*cos(alpha4+2*3.14/3));
+	
+	psiad=$kf*$psif+$kD+$psiD-$Xadd*(Id1+Id2+Id3+Id4);
+	psiaq=$kQ1*$psiQ1+$kQ22+$psiQ22-$Xaqq*(Iq1+Iq2+Iq3+Iq4);
+	
+	dpsif=$omega0*($Input_Efd-$Rf*($psif-psiad)/$Xfl);
+	dpsiD=-$omega0*$RD*($psiD-psiad)/$XDl;
+	dpsiQ1=-$omega0*$RQ1*($psiQ1-psiaq)/$XQ1l;
+	dpsiQ22=-$omega0*$RQ2v*(($psiQ22-psiaq)/$XQ2l2-($psiQ21-$psiQ22)/$XQ2l1);
+	
+	ed=$kf*dpsif/$omega0+$kD*dpsiD/$omega0-($omega+1)*$kQ1*$psiQ1-($omega+1)*$kQ22*$psiQ22;
+	eq=$kQ1*dpsiQ1/$omega0+$kQ22*dpsiQ22/$omega0-($omega+1)*$kf*$psif-($omega+1)*$kD*$psiD;
+	
+	$Output_ea1=ed*sin(alpha1)+eq*cos(alpha1);
+	$Output_eb1=ed*sin(alpha1-2*3.14/3)+eq*cos(alpha1-2*3.14/3);
+	$Output_ec1=-$Output_ea1-$Output_eb1;
+	$Output_ea2=ed*sin(alpha2)+eq*cos(alpha2);
+	$Output_eb2=ed*sin(alpha2-2*3.14/3)+eq*cos(alpha2-2*3.14/3);
+	$Output_ec2=-$Output_ea2-$Output_eb2;
+	$Output_ea3=ed*sin(alpha3)+eq*cos(alpha3);
+	$Output_eb3=ed*sin(alpha3-2*3.14/3)+eq*cos(alpha3-2*3.14/3);
+	$Output_ec3=-$Output_ea3-$Output_eb3;
+	$Output_ea4=ed*sin(alpha4)+eq*cos(alpha4);
+	$Output_eb4=ed*sin(alpha4-2*3.14/3)+eq*cos(alpha4-2*3.14/3);
+	$Output_ec4=-$Output_ea4-$Output_eb4;
+	$Output_omega=$omega+1;
+	
+	
+	printf("omega:%f\n",$omega);
+	printf("theta,alpha1,alpha2:%f\t%f\t%f\n",$theta,alpha1,alpha2);
+	printf("th0,pha0:%f\t%f\n",th0,pha0);
+	printf("Ia1,Ib1:%f\t%f\n",$Input_Ia1,$Input_Ib1);
+	printf("Id1,Iq1:%f\t%f\n",Id1,Iq1);
+}
