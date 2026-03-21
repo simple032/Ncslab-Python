@@ -150,7 +150,8 @@ public class OptimizedBlockFactory {
     }
     
     /**
-     * Strict constructor finder: only matches exact parameter types
+     * Flexible constructor finder: matches DTO type using isAssignableFrom
+     * This allows subclasses of BlockDto to match constructors that accept BlockDto
      */
     public static Constructor<? extends Block> findBestConstructor(
             Class<? extends Block> blockClass, 
@@ -169,8 +170,10 @@ public class OptimizedBlockFactory {
         for (Constructor<?> constructor : blockClass.getConstructors()) {
             Class<?>[] parameterTypes = constructor.getParameterTypes();
             
+            // Use isAssignableFrom instead of equals to support polymorphic DTO types
+            // This allows NewMotorDto to match a constructor expecting BlockDto
             if (parameterTypes.length == 2 
-                && parameterTypes[0].equals(dtoType) 
+                && parameterTypes[0].isAssignableFrom(dtoType) 
                 && parameterTypes[1].equals(NCSLabModel.class)) {
                 
                 @SuppressWarnings("unchecked")

@@ -22,8 +22,15 @@ public class InputPort {
     private String name;
 
     @Setter
-    @Getter
     private Line linkedLine=null;
+    
+    public Line getLinkedLine() {
+    	if(this.linkedLine==null) {
+    		int n=0;
+    		n=n+1;
+    	}
+    	return this.linkedLine;
+    }
 
     VelocityContext context = new VelocityContext();
 
