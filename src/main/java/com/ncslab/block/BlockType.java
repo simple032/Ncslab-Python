@@ -436,7 +436,7 @@ public class BlockType{
             log.error("Error creating block of type '{}': ", blockType, ee);
         }
         if(block == null)
-            throw(new ModelException("Can not find blocktype \" "+ blockType+ " \" in mapped function"));
+            throw(new ModelException("Can not find blocktype \""+ blockType+ "\" in mapped function"));
 
         block.setBlockId(id);
         block.updateBlock();
@@ -480,7 +480,7 @@ public class BlockType{
             log.error("Error creating block of type '{}': ", blockType, ee);
         }
         if(block == null)
-            throw(new ModelException("Can not find blocktype \" "+ blockType+ " \" in mapped function"));
+            throw(new ModelException("Can not find blocktype \""+ blockType+ "\" in mapped function"));
 
         block.setBlockId(id);
         //block.updateBlock();

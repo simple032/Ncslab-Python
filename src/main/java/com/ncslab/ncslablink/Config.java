@@ -34,6 +34,10 @@ public class Config {
 
         // Parse solver
         this.solver = configIn.optString("Solver", "VariableStepAuto");
+        
+        if(solver.equals("auto")&&step.equals("VariableStep")) {
+        	this.solver="VariableStepAuto";
+        }
 
         // Parse time parameters
         this.startTime = parseDoubleOrDefault(configIn, "StartTime", 0.0);
