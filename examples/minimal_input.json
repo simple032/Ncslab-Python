@@ -1,0 +1,47 @@
+{
+  "userId": 1,
+  "modelId": 1,
+  "outputDir": "./output",
+  "useCudaAcceleration": false,
+  "model": {
+    "config": {
+      "Step": "FixedStep",
+      "FixedStep": "0.01",
+      "Solver": "ode4",
+      "StartTime": "0.0",
+      "StopTime": "1.0",
+      "MaxDataPoints": "100"
+    },
+    "blocks": [
+      {
+        "blockType": "Constant",
+        "srcBlock": "simulink/Sources/Constant",
+        "blockName": "Constant1",
+        "paramValues": {
+          "Value": "1.0"
+        },
+        "blockPath": "demo",
+        "blockUUID": "11111111-1111-1111-1111-111111111111"
+      },
+      {
+        "blockType": "Scope",
+        "srcBlock": "simulink/Sinks/Out1",
+        "blockName": "Scope1",
+        "paramValues": {},
+        "blockPath": "demo",
+        "blockUUID": "22222222-2222-2222-2222-222222222222"
+      }
+    ],
+    "lines": [
+      {
+        "fromBlockName": "Constant1",
+        "fromPortNo": "1",
+        "toBlockName": "Scope1",
+        "toPortNo": "1",
+        "linePath": "demo",
+        "fromBlockUUID": "11111111-1111-1111-1111-111111111111",
+        "toBlockUUID": "22222222-2222-2222-2222-222222222222"
+      }
+    ]
+  }
+}
