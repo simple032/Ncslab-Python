@@ -257,6 +257,33 @@ def run_simulation(model, use_cuda_acceleration=False):
             if isinstance(block, ScopeBlock):
                 block.recording = enabled
 
+    if getattr(model, "uses_circuit_mna", False):
+        set_scope_recording(True)
+        sample_cursor = 0
+        next_sample_index = sample_indices[sample_cursor] if len(sample_indices) > 0 else -1
+        state = initial_states.copy()
+        for index, t in enumerate(t_eval):
+            t_value = float(t)
+            next_t = float(t_eval[index + 1]) if index + 1 < len(t_eval) else t_value
+            step_size = max(0.0, next_t - t_value)
+            record_observers = index == next_sample_index or index + 1 == len(t_eval)
+            model.propagate_signals(
+                t_value,
+                state,
+                include_observers=record_observers,
+                step_size=step_size,
+            )
+            if index == next_sample_index and sample_cursor + 1 < len(sample_indices):
+                sample_cursor += 1
+                next_sample_index = sample_indices[sample_cursor]
+
+            progress = int((t_value - t_start) / total_time * 100) if total_time > 0 else 100
+            if progress >= last_progress + 5:
+                emit_progress(float(t_value), float(total_time), progress)
+                last_progress = progress
+        emit_progress(float(t_stop), float(total_time), 100)
+        return model
+
     if model.has_discrete_blocks:
         set_scope_recording(True)
         state = initial_states.copy()
@@ -265,7 +292,9 @@ def run_simulation(model, use_cuda_acceleration=False):
         for index, t in enumerate(t_eval):
             t_value = float(t)
             record_observers = index == next_sample_index or index + 1 == len(t_eval)
-            model.propagate_signals(t_value, state, include_observers=record_observers)
+            next_t = float(t_eval[index + 1]) if index + 1 < len(t_eval) else t_value
+            step_size = max(0.0, next_t - t_value)
+            model.propagate_signals(t_value, state, include_observers=record_observers, step_size=step_size)
 
             if index == next_sample_index and sample_cursor + 1 < len(sample_indices):
                 sample_cursor += 1
@@ -291,7 +320,9 @@ def run_simulation(model, use_cuda_acceleration=False):
         next_sample_index = sample_indices[sample_cursor] if len(sample_indices) > 0 else -1
         for index, t in enumerate(t_eval):
             record_observers = index == next_sample_index or index + 1 == len(t_eval)
-            model.propagate_signals(t, initial_states, include_observers=record_observers)
+            next_t = float(t_eval[index + 1]) if index + 1 < len(t_eval) else float(t)
+            step_size = max(0.0, next_t - float(t))
+            model.propagate_signals(t, initial_states, include_observers=record_observers, step_size=step_size)
 
             if index == next_sample_index and sample_cursor + 1 < len(sample_indices):
                 sample_cursor += 1
@@ -358,6 +389,8 @@ def run_simulation(model, use_cuda_acceleration=False):
     set_scope_recording(True)
     for index, t in enumerate(solution.t):
         states = solution.y[:, index]
-        model.propagate_signals(float(t), states)
+        next_t = float(solution.t[index + 1]) if index + 1 < len(solution.t) else float(t)
+        step_size = max(0.0, next_t - float(t))
+        model.propagate_signals(float(t), states, step_size=step_size)
     emit_progress(float(t_stop), float(total_time), 100)
     return model

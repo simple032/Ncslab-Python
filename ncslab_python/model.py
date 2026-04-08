@@ -8,6 +8,7 @@ import numpy as np
 
 from .blocks.route import FromBlock, GotoBlock
 from .blocks.sink import ScopeBlock
+from .circuit import CircuitEngine, CircuitNetlistBuilder
 from .profile_counters import bump as _profile_bump
 from .registry import create_block
 from .signal_utils import infer_signal_shape, signal_add, signal_multiply
@@ -26,10 +27,17 @@ def _debug_log(message):
         print(message, file=sys.stderr)
 
 
+def _normalize_block_type(value):
+    text = str(value or "").strip().lower()
+    for token in (" ", "-", "_", "\t"):
+        text = text.replace(token, "")
+    return text
+
+
 class SimulationModel:
     """Holds all blocks, connections, and runtime state."""
 
-    def __init__(self, config, blocks_data, lines_data):
+    def __init__(self, config, blocks_data, lines_data, graph_data=None):
         self.start_time = self._parse_float(config.get("StartTime"), 0.0)
         self.stop_time = self._parse_float(config.get("StopTime"), 10.0)
 
@@ -60,6 +68,19 @@ class SimulationModel:
         self.initial_step = self._parse_float_with_auto(config.get("InitialStep"), self.fixed_step)
         self.rel_tol = self._parse_float_with_auto(config.get("RelTol"), 1e-3)
         self.abs_tol = self._parse_float_with_auto(config.get("AbsTol"), 1e-6)
+        self.circuit_mode = str(config.get("CircuitMode", "compatibility")).strip().lower()
+        self.circuit_tolerance = self._parse_float_with_auto(config.get("CircuitTolerance"), 1e-7)
+        self.circuit_regularization = self._parse_float_with_auto(config.get("CircuitRegularization"), 1e-10)
+        self.circuit_opamp_relaxation = self._parse_float_with_auto(config.get("CircuitOpAmpRelaxation"), 0.2)
+        self.circuit_opamp_relaxation = min(max(self.circuit_opamp_relaxation, 0.01), 1.0)
+        self.circuit_opamp_time_constant = self._parse_float_with_auto(config.get("CircuitOpAmpTimeConstant"), 0.2)
+        self.circuit_opamp_time_constant = max(self.circuit_opamp_time_constant, 1e-6)
+        self.circuit_opamp_control_filter = self._parse_float_with_auto(config.get("CircuitOpAmpControlFilter"), 0.2)
+        self.circuit_opamp_control_filter = min(max(self.circuit_opamp_control_filter, 0.01), 1.0)
+        try:
+            self.circuit_max_iterations = max(1, int(config.get("CircuitMaxIterations", 25)))
+        except (TypeError, ValueError):
+            self.circuit_max_iterations = 25
         self.algebraic_loop_tolerance = self._parse_float_with_auto(
             config.get("AlgebraicLoopTolerance"),
             1e-9,
@@ -92,6 +113,13 @@ class SimulationModel:
         for block in self.blocks.values():
             if block.block_uuid and block.block_uuid != "null":
                 self.blocks_by_uuid[block.block_uuid] = block
+
+        self.graph_data = graph_data or {}
+        self.circuit_elements = CircuitNetlistBuilder(blocks_data, self.graph_data).build()
+        auto_mode = self.circuit_mode in {"", "auto"}
+        has_circuit_topology = bool(self.circuit_elements)
+        self.uses_circuit_mna = has_circuit_topology and (auto_mode or self.circuit_mode == "mna")
+        self.circuit_engine = CircuitEngine(self, self.circuit_elements) if self.uses_circuit_mna else None
 
         raw_connections = []
         for line in lines_data:
@@ -457,6 +485,11 @@ class SimulationModel:
     def _evaluate_component(self, component, t, states):
         for block in component["blocks"]:
             self._load_inputs_for_block(block)
+            if self.uses_circuit_mna and hasattr(block, "is_circuit_block") and block.is_circuit_block():
+                block_type = _normalize_block_type(getattr(block, "block_type", ""))
+                # In MNA mode, only keep bridge/measurement circuit blocks in signal propagation.
+                if block_type not in {"voltagesensor", "voltmeter", "currentsensor", "ammeter", "pssimulinkconverter", "pss"}:
+                    continue
             block.compute_output(t, states)
 
     def _solve_algebraic_loop(self, component, t, states):
@@ -484,8 +517,13 @@ class SimulationModel:
     def get_initial_states(self):
         return self.initial_states.copy()
 
-    def propagate_signals(self, t, states, include_observers=True):
+    def propagate_signals(self, t, states, include_observers=True, step_size=None):
         _profile_bump("propagate_signals_calls", 1)
+        if self.circuit_engine is not None:
+            dt = self.fixed_step if step_size is None else step_size
+            self.circuit_engine.step(t, dt)
+            self.circuit_engine.apply_to_blocks()
+
         for component in self.execution_components:
             if component["is_algebraic_loop"]:
                 self._solve_algebraic_loop(component, t, states)

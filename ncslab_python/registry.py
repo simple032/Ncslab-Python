@@ -2,6 +2,34 @@ import sys
 
 from .blocks.base import Block
 from .blocks.continuous import DerivativeBlock, IntegratorBlock, PIDControllerBlock, StateSpaceBlock, TransferFcnBlock
+from .blocks.circuit import (
+    ACCurrentSourceBlock,
+    ACVoltageSourceBlock,
+    AmmeterBlock,
+    CapacitorBlock,
+    CircuitSwitchBlock,
+    ControlledCurrentSourceBlock,
+    ControlledVoltageSourceBlock,
+    CurrentSensorBlock,
+    DCCurrentSourceBlock,
+    DCVoltageSourceBlock,
+    DiodeBlock,
+    ElectricalReferenceBlock,
+    GroundBlock,
+    IGBTBlock,
+    InductorBlock,
+    MosfetBlock,
+    OpAmpBlock,
+    PSSimulinkConverterBlock,
+    ResistorBlock,
+    SeriesRLCBranchBlock,
+    SolverConfigurationBlock,
+    VariableCapacitorBlock,
+    VariableInductorBlock,
+    VariableResistorBlock,
+    VoltmeterBlock,
+    VoltageSensorBlock,
+)
 from .blocks.discrete import (
     DelayBlock,
     DifferenceBlock,
@@ -124,7 +152,64 @@ BLOCK_REGISTRY = {
     "newMotor": NewMotorBlock,
     "ServoMotorSlider": ServoMotorSliderBlock,
     "ServoMotorSliderSimu": ServoMotorSliderBlock,
+    "Resistor": ResistorBlock,
+    "Capacitor": CapacitorBlock,
+    "Inductor": InductorBlock,
+    "DC Voltage Source": DCVoltageSourceBlock,
+    "DCVoltageSource": DCVoltageSourceBlock,
+    "DC Current Source": DCCurrentSourceBlock,
+    "DCCurrentSource": DCCurrentSourceBlock,
+    "AC Voltage Source": ACVoltageSourceBlock,
+    "ACVoltageSource": ACVoltageSourceBlock,
+    "AC Current Source": ACCurrentSourceBlock,
+    "ACCurrentSource": ACCurrentSourceBlock,
+    "Controlled Voltage Source": ControlledVoltageSourceBlock,
+    "ControlledVoltageSource": ControlledVoltageSourceBlock,
+    "Controlled Current Source": ControlledCurrentSourceBlock,
+    "ControlledCurrentSource": ControlledCurrentSourceBlock,
+    "Voltage Sensor": VoltageSensorBlock,
+    "VoltageSensor": VoltageSensorBlock,
+    "Voltage Meter": VoltmeterBlock,
+    "VoltageMeter": VoltmeterBlock,
+    "Voltmeter": VoltmeterBlock,
+    "Current Sensor": CurrentSensorBlock,
+    "CurrentSensor": CurrentSensorBlock,
+    "Current Meter": AmmeterBlock,
+    "CurrentMeter": AmmeterBlock,
+    "Ammeter": AmmeterBlock,
+    "Variable Resistor": VariableResistorBlock,
+    "VariableResistor": VariableResistorBlock,
+    "Variable Inductor": VariableInductorBlock,
+    "VariableInductor": VariableInductorBlock,
+    "Variable Capacitor": VariableCapacitorBlock,
+    "VariableCapacitor": VariableCapacitorBlock,
+    "SeriesRLCBranch": SeriesRLCBranchBlock,
+    "Circuit\tSwitch": CircuitSwitchBlock,
+    "Circuit Switch": CircuitSwitchBlock,
+    "CircuitSwitch": CircuitSwitchBlock,
+    "Diode": DiodeBlock,
+    "Op Amp": OpAmpBlock,
+    "OpAmp": OpAmpBlock,
+    "IGBT": IGBTBlock,
+    "Mosfet": MosfetBlock,
+    "Ground": GroundBlock,
+    "Electrical Reference": ElectricalReferenceBlock,
+    "ElectricalReference": ElectricalReferenceBlock,
+    "Solver Configuration": SolverConfigurationBlock,
+    "SolverConfiguration": SolverConfigurationBlock,
+    "PS-Simulink Converter": PSSimulinkConverterBlock,
+    "PS-SimulinkConverter": PSSimulinkConverterBlock,
+    "PS-S": PSSimulinkConverterBlock,
+    "PSSimulinkConverter": PSSimulinkConverterBlock,
 }
+
+
+def _normalize_block_type(value):
+    text = str(value or "").strip().lower()
+    for token in (" ", "-", "_", "\t"):
+        text = text.replace(token, "")
+    return text
+
 
 if TransferFcnBlock is not None:
     BLOCK_REGISTRY["TransferFcn"] = TransferFcnBlock
@@ -144,8 +229,16 @@ def create_block(block_data):
 
     block_class = BLOCK_REGISTRY.get(block_type)
     if block_class is None:
+        normalized_type = _normalize_block_type(block_type)
+        for key, value in BLOCK_REGISTRY.items():
+            if _normalize_block_type(key) == normalized_type:
+                block_class = value
+                break
+    if block_class is None:
+        src_block = block_data.get("srcBlock", "")
         print(
-            f"Warning: unsupported block type '{block_type}', treating as pass-through",
+            "Warning: unsupported block degraded to pass-through "
+            f"(blockType='{block_type}', blockName='{block_name}', srcBlock='{src_block}')",
             file=sys.stderr,
         )
         return Block(block_type, block_name, block_uuid, param_values, block_path)

@@ -10,6 +10,13 @@ from .model import SimulationModel
 from .runner import describe_solver, map_solver, run_simulation
 
 
+def _normalize_block_type(value):
+    text = str(value or "").strip().lower()
+    for token in (" ", "-", "_", "\t"):
+        text = text.replace(token, "")
+    return text
+
+
 def main():
     try:
         if use_cuda_requested() and try_cupy() is None:
@@ -59,12 +66,43 @@ def main():
         config = model_json.get("config", {})
         blocks_data = model_json.get("blocks", [])
         lines_data = model_json.get("lines", [])
+        graph_data = model_json.get("graphData", {})
+        config = dict(config or {})
+        if "CircuitMode" not in config:
+            config["CircuitMode"] = os.environ.get("NCSLAB_PYTHON_CIRCUIT_MODE", "auto")
+
+        block_types = {_normalize_block_type(block.get("blockType", "")) for block in blocks_data}
+        has_opamp = "opamp" in block_types
+        has_circuit = bool({
+            "dcvoltagesource",
+            "acvoltagesource",
+            "dccurrentsource",
+            "accurrentsource",
+            "resistor",
+            "capacitor",
+            "inductor",
+            "seriesrlcbranch",
+            "opamp",
+            "voltagesensor",
+            "currentsensor",
+            "electricalreference",
+            "ground",
+        } & block_types)
+        if has_circuit:
+            config.setdefault("CircuitMode", "mna")
+            config.setdefault("CircuitMaxIterations", "80")
+            config.setdefault("CircuitRegularization", "1e-8")
+            config.setdefault("CircuitTolerance", "1e-8")
+        if has_opamp:
+            config.setdefault("CircuitOpAmpRelaxation", "0.08")
+            config.setdefault("CircuitOpAmpTimeConstant", "0.5")
+            config.setdefault("CircuitOpAmpControlFilter", "0.1")
 
         if not blocks_data:
             emit_error("No blocks found in model data")
             sys.exit(1)
 
-        model = SimulationModel(config, blocks_data, lines_data)
+        model = SimulationModel(config, blocks_data, lines_data, graph_data=graph_data)
         emit_status("generated")
         emit_status("simulating", time=0.0, timeLength=model.stop_time, progress=0)
 
