@@ -134,15 +134,21 @@ public class MathFunction extends MathBlock {
         }
 
         // Retrieve parameters initialized by base class
-        // Note: MathFunctionDto uses "FunctionType" parameter name
-        this.operator = getParameterByName("FunctionType");
+        // Support both "Operator" (JointJS/X6) and "FunctionType" (legacy) parameter names
+        this.operator = getOperatorParameter();
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
 
         // CRITICAL: Extract operator value BEFORE initializePorts()
         // initializePorts() needs mathOperator to create correct number of inputs for pow
-        this.mathOperator = this.operator.getInitString();
+        if (this.operator != null) {
+            this.mathOperator = this.operator.getInitString();
+        } else {
+            // Fallback to default if parameter is missing
+            this.mathOperator = "exp";
+            System.err.println("Warning: 'Operator' or 'FunctionType' parameter missing for MathFunction block " + blockDto.getBlockName());
+        }
 
         // Now initialize ports with correct mathOperator value
         initializePorts();
@@ -157,8 +163,8 @@ public class MathFunction extends MathBlock {
     public MathFunction(MathFunctionDto dto, NCSLabModel model) {
         super(dto, model);
 
-        // Retrieve parameters (Note: DTO field is 'functionType', but mapped to 'FunctionType' parameter)
-        this.operator = getParameterByName("Operator");
+        // Retrieve parameters (Support both "Operator" and "FunctionType" parameter names)
+        this.operator = getOperatorParameter();
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
@@ -170,7 +176,7 @@ public class MathFunction extends MathBlock {
         } else {
             // Fallback if parameter is missing (should not happen with valid DTO)
             this.mathOperator = "exp";
-            System.err.println("Warning: 'FunctionType' parameter missing in MathFunctionDto for block " + dto.getBlockName());
+            System.err.println("Warning: 'Operator' or 'FunctionType' parameter missing in MathFunctionDto for block " + dto.getBlockName());
         }
 
         initializePorts();
@@ -178,6 +184,21 @@ public class MathFunction extends MathBlock {
         System.out.println("DTO-SPECIALIZED: MathFunction block created from MathFunctionDto - " + dto.getBlockName());
     }
     // ===========================================================
+
+    /**
+     * Helper method to get operator parameter with fallback.
+     * Supports both "Operator" (JointJS/X6) and "FunctionType" (legacy) parameter names.
+     * 
+     * @return Parameter for operator, or null if neither exists
+     */
+    private Parameter getOperatorParameter() {
+        Parameter param = getParameterByName("Operator");
+        if (param != null) {
+            return param;
+        }
+        // Fallback to legacy "FunctionType" parameter name
+        return getParameterByName("FunctionType");
+    }
 
     // === Static Factory Method for JSON Deserialization ===
     public static MathFunction fromJSON(JSONObject blockJSON, NCSLabModel model) {
