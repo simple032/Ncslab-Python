@@ -719,21 +719,33 @@ abstract public class NCSLabModel {
 		
 		System.out.println("DTO-NATIVE: Parsing " + blockDtos.size() + " blocks directly from DTOs (no conversion)");
 		
+		java.util.concurrent.atomic.AtomicInteger blockSeqCounter = new java.util.concurrent.atomic.AtomicInteger(blockSeq);
+		
 		for (BlockDto blockDto : blockDtos) {
 			try {
-				
-				// **REAL DTO-NATIVE**: 直接从DTO创建Block实例，无需转换！
-				Block block = OptimizedBlockFactory.createOptimizedBlock(blockSeq + 1, blockDto, this);
-				if (block == null) {
-					System.err.println("Failed to create block: " + blockDto.getBlockType() + "/" + blockDto.getBlockName());
-					continue;
+				// 判断是否为电气模块
+				if (isCircuitBlockDto(blockDto)) {
+					JSONObject blockJSON = convertBlockDtoToJSONObject(blockDto);
+					com.ncslab.circuit2.block.CircuitBlock circuitBlock = BlockType.createCircuitBlock(circuitBlockSeq + 1, blockSeqCounter, blockJSON, this, rootSystem);
+					if (circuitBlock == null) {
+						System.err.println("Failed to create circuit block: " + blockDto.getBlockType() + "/" + blockDto.getBlockName());
+						continue;
+					}
+					circuitBlockSeq++;
+					rootSystem.addCircuitBlock(circuitBlock);
+					log.info("Successfully created circuit block: " + blockDto.getBlockType() + "/" + blockDto.getBlockName());
+				} else {
+					// **REAL DTO-NATIVE**: 直接从DTO创建Block实例，无需转换！
+					Block block = OptimizedBlockFactory.createOptimizedBlock(blockSeqCounter.incrementAndGet(), blockDto, this);
+					if (block == null) {
+						System.err.println("Failed to create block: " + blockDto.getBlockType() + "/" + blockDto.getBlockName());
+						continue;
+					}
+					
+					rootSystem.addBlock(block);
+					categorizeBlock(block);
+					log.info("Successfully created block: " + block.getBlockType() + "/" + block.getBlockName());
 				}
-				
-				blockSeq++;
-				rootSystem.addBlock(block);
-				categorizeBlock(block);
-
-				log.info("Successfully created block: " + block.getBlockType() + "/" + block.getBlockName());
 
 			} catch (Exception e) {
 				log.error("Error parsing block DTO: " + blockDto.getBlockName() + " - " + e.getMessage());
@@ -741,7 +753,33 @@ abstract public class NCSLabModel {
 			}
 		}
 		
+		blockSeq = blockSeqCounter.get();
+		
 		log.info("Successfully parsed " + getBlockList().size() + " blocks from DTO");
+	}
+	
+	private boolean isCircuitBlockDto(BlockDto blockDto) {
+		if (blockDto.getSrcBlock() != null && blockDto.getSrcBlock().startsWith("fl_lib")) {
+			return true;
+		}
+		return false;
+	}
+	
+	private JSONObject convertBlockDtoToJSONObject(BlockDto blockDto) {
+		JSONObject blockJSON = new JSONObject();
+		blockJSON.put("blockType", blockDto.getBlockType());
+		blockJSON.put("blockName", blockDto.getBlockName());
+		blockJSON.put("blockPath", blockDto.getBlockPath());
+		blockJSON.put("blockUUID", blockDto.getBlockUUID());
+		if (blockDto.getSrcBlock() != null) {
+			blockJSON.put("srcBlock", blockDto.getSrcBlock());
+		}
+		if (blockDto.getParamValues() != null) {
+			blockJSON.put("paramValues", new JSONObject(blockDto.getParamValues()));
+		} else {
+			blockJSON.put("paramValues", new JSONObject());
+		}
+		return blockJSON;
 	}
 	
 	/**
@@ -822,6 +860,8 @@ abstract public class NCSLabModel {
 
 			List<Block> blocksToRemove = new ArrayList<>();
 			List<Line> linesToRemove = new ArrayList<>();
+			List<com.ncslab.circuit2.block.CircuitBlock> circuitBlocksToRemove = new ArrayList<>();
+			List<com.ncslab.circuit2.line.CircuitLine> circuitLinesToRemove = new ArrayList<>();
 
             // 将子系统和它的端口联系起来
             // 将所有属于该子系统的块添加到containedBlocks中
@@ -837,6 +877,24 @@ abstract public class NCSLabModel {
                     linesToRemove.add(line);
                 }
             }
+            
+            // 处理电气模块
+            for (com.ncslab.circuit2.block.CircuitBlock block : rootSystem.getCircuitBlocks()) {
+                if (block.getBlockPath().equals(subsystemPath)) {
+                    circuitBlocksToRemove.add(block);
+                }
+            }
+            for (com.ncslab.circuit2.line.CircuitLine line : rootSystem.getCircuitLines()) {
+                try {
+                    String fromPath = line.getFromPort().getBlock().getBlockPath();
+                    String toPath = line.getToPort().getBlock().getBlockPath();
+                    if (fromPath.equals(subsystemPath) && toPath.equals(subsystemPath)) {
+                        circuitLinesToRemove.add(line);
+                    }
+                } catch (Exception e) {
+                    // 忽略不完整连线
+                }
+            }
 
 			for(Block block : blocksToRemove) {
 				rootSystem.removeBlock(block);
@@ -845,6 +903,14 @@ abstract public class NCSLabModel {
 			for(Line line : linesToRemove) {
 				rootSystem.removeLine(line);
 				subsystem.addLine(line);
+			}
+			for (com.ncslab.circuit2.block.CircuitBlock block : circuitBlocksToRemove) {
+				rootSystem.getCircuitBlocks().remove(block);
+				subsystem.getInnerSystem().addCircuitBlock(block);
+			}
+			for (com.ncslab.circuit2.line.CircuitLine line : circuitLinesToRemove) {
+				rootSystem.getCircuitLines().remove(line);
+				subsystem.getInnerSystem().addCircuitLine(line);
 			}
         }
     }
@@ -935,16 +1001,34 @@ abstract public class NCSLabModel {
 	 */
 	private void processLineDto(LineDto lineDto) {
 		try {
-
-			//解析各条连线
-			Line line = Line.createLine(lineDto, this.getBlockList());
-			line.setLineId(lineSeq + 1);
-			lineSeq++;
-			rootSystem.addLine(line);
-			getLineList().add(line);
+			if (isCircuitLineDto(lineDto)) {
+				com.ncslab.circuit2.line.CircuitLine circuitLine = com.ncslab.circuit2.line.CircuitLine.createLine(lineDto, this.getBlockList(), rootSystem.getCircuitBlocks());
+				if (circuitLine == null || circuitLine.getFromPort() == null || circuitLine.getToPort() == null) {
+					System.err.println("Failed to create complete circuit line DTO: " + lineDto.getFromBlockName() + " -> " + lineDto.getToBlockName());
+					return;
+				}
+				circuitLine.setLineId(lineSeq + 1);
+				lineSeq++;
+				rootSystem.addCircuitLine(circuitLine);
+			} else {
+				Line line = Line.createLine(lineDto, this.getBlockList());
+				line.setLineId(lineSeq + 1);
+				lineSeq++;
+				rootSystem.addLine(line);
+				getLineList().add(line);
+			}
 		} catch (Exception e) {
 			System.err.println("Failed to process line DTO: " + e.getMessage());
 		}
+	}
+	
+	private boolean isCircuitLineDto(LineDto lineDto) {
+		String fromPortNo = String.valueOf(lineDto.getFromPortNo());
+		String toPortNo = String.valueOf(lineDto.getToPortNo());
+		return fromPortNo.contains("Conn") || fromPortNo.contains("collector") || fromPortNo.contains("emitter")
+			|| fromPortNo.contains("drain") || fromPortNo.contains("source")
+			|| toPortNo.contains("Conn") || toPortNo.contains("collector") || toPortNo.contains("emitter")
+			|| toPortNo.contains("drain") || toPortNo.contains("source");
 	}
 
 	/**
