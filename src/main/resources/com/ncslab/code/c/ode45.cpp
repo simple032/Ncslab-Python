@@ -1,113 +1,164 @@
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 
 #include "ncslabdefines.hpp"
 #include "util.hpp"
 #include "mainccode.hpp"
 #include "onestep.hpp"
 
-#define INIT_POINT_NUM 100
-#define TOL 1E-7
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_odeiv2.h>
 
 extern MODEL *mp;
 extern double sample_time[];
+extern double real_sample_time;
+
+// Required by util.cpp / onestep.hpp even though GSL ode45 does not use them
 double singleStateReserve[3][SINGLE_STATE_NUM];
 Matrix matrixStateReserve[3][MATRIX_STATE_NUM];
-
-// Dormand-Prince 5(4) needs 7 derivative slots (K1..K7)
 double singleDerivativeReserve[7][SINGLE_STATE_NUM];
 Matrix matrixDerivativeReserve[7][MATRIX_STATE_NUM];
 
-// Dormand-Prince 5(4) coefficients
-const double DP_C2 = 1.0 / 5.0;
-const double DP_C3 = 3.0 / 10.0;
-const double DP_C4 = 4.0 / 5.0;
-const double DP_C5 = 8.0 / 9.0;
-const double DP_C6 = 1.0;
+// GSL workspace
+static gsl_odeiv2_system sys;
+static gsl_odeiv2_step *step = NULL;
+static gsl_odeiv2_control *control = NULL;
+static gsl_odeiv2_evolve *evolve = NULL;
+static double *gslY = NULL;
+static int gslDim = 0;
+static double gslStepSize;
 
-// a_ij weights for constructing intermediate stages
-const double DP_A21 = 1.0 / 5.0;
+#define INIT_POINT_NUM 100
+#define TOL 1E-7
 
-const double DP_A31 = 3.0 / 40.0;
-const double DP_A32 = 9.0 / 40.0;
-
-const double DP_A41 = 44.0 / 45.0;
-const double DP_A42 = -56.0 / 15.0;
-const double DP_A43 = 32.0 / 9.0;
-
-const double DP_A51 = 19372.0 / 6561.0;
-const double DP_A52 = -25360.0 / 2187.0;
-const double DP_A53 = 64448.0 / 6561.0;
-const double DP_A54 = -212.0 / 729.0;
-
-const double DP_A61 = 9017.0 / 3168.0;
-const double DP_A62 = -355.0 / 33.0;
-const double DP_A63 = 46732.0 / 5247.0;
-const double DP_A64 = 49.0 / 176.0;
-const double DP_A65 = -5103.0 / 18656.0;
-
-// 5th order weights (local extrapolation - actual step)
-const double DP_B1 = 35.0 / 384.0;
-const double DP_B2 = 0.0;
-const double DP_B3 = 500.0 / 1113.0;
-const double DP_B4 = 125.0 / 192.0;
-const double DP_B5 = -2187.0 / 6784.0;
-const double DP_B6 = 11.0 / 84.0;
-const double DP_B7 = 0.0;
-
-// 4th order weights (error estimation only)
-const double DP_BS1 = 5179.0 / 57600.0;
-const double DP_BS2 = 0.0;
-const double DP_BS3 = 7571.0 / 16695.0;
-const double DP_BS4 = 393.0 / 640.0;
-const double DP_BS5 = -92097.0 / 339200.0;
-const double DP_BS6 = 187.0 / 2100.0;
-const double DP_BS7 = 1.0 / 40.0;
-
-double stepSize;
-double nextStepSize;
-double maxStepSize;
-double prevErrorNorm = 1.0;
-
-extern double real_sample_time;
-
-static void buildStage(double a1, double a2, double a3, double a4, double a5, int numPrev)
+// Helper: compute total flattened dimension of all continuous states
+static int getStateDimension()
 {
-    double w[5];
-    w[0] = a1; w[1] = a2; w[2] = a3; w[3] = a4; w[4] = a5;
-    caculateDerivative(w, numPrev);
-    NCSLabUpdate();
+    int dim = 0;
+    for (int i = 0; i < STATE_NUM; i++) {
+        if (mp->states[i]->type == SINGLE) {
+            dim += 1;
+        } else if (mp->states[i]->type == MATRIX) {
+            Matrix *m = (Matrix *)mp->states[i]->vp;
+            dim += m->rows() * m->cols();
+        }
+    }
+    return dim;
 }
 
-static void copyDerivativeSlot(int from, int to)
+// Helper: copy mp->states values -> gslY
+static void statesToGslY(double *dst)
 {
-    for (int i = 0; i < SINGLE_STATE_NUM; i++) {
-        singleDerivativeReserve[to][i] = singleDerivativeReserve[from][i];
+    int idx = 0;
+    for (int i = 0; i < STATE_NUM; i++) {
+        if (mp->states[i]->type == SINGLE) {
+            dst[idx++] = *((REAL *)mp->states[i]->vp);
+        } else if (mp->states[i]->type == MATRIX) {
+            Matrix *m = (Matrix *)mp->states[i]->vp;
+            int rows = m->rows();
+            int cols = m->cols();
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    dst[idx++] = (*m)(r, c);
+                }
+            }
+        }
     }
-    for (int i = 0; i < MATRIX_STATE_NUM; i++) {
-        matrixDerivativeReserve[to][i] = matrixDerivativeReserve[from][i];
+}
+
+// Helper: copy gslY -> mp->states values
+static void gslYToStates(const double *src)
+{
+    int idx = 0;
+    for (int i = 0; i < STATE_NUM; i++) {
+        if (mp->states[i]->type == SINGLE) {
+            *((REAL *)mp->states[i]->vp) = src[idx++];
+        } else if (mp->states[i]->type == MATRIX) {
+            Matrix *m = (Matrix *)mp->states[i]->vp;
+            int rows = m->rows();
+            int cols = m->cols();
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    (*m)(r, c) = src[idx++];
+                }
+            }
+        }
     }
+}
+
+// Helper: copy mp->states derivatives -> GSL f vector
+static void dvpToGslF(double *dst)
+{
+    int idx = 0;
+    for (int i = 0; i < STATE_NUM; i++) {
+        if (mp->states[i]->type == SINGLE) {
+            dst[idx++] = *((REAL *)mp->states[i]->dvp);
+        } else if (mp->states[i]->type == MATRIX) {
+            Matrix *m = (Matrix *)mp->states[i]->dvp;
+            int rows = m->rows();
+            int cols = m->cols();
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    dst[idx++] = (*m)(r, c);
+                }
+            }
+        }
+    }
+}
+
+// GSL system function
+static int ncsLabFunc(double t, const double y[], double f[], void *params)
+{
+    double savedTime = mp->time;
+    mp->time = t;
+    gslYToStates(y);
+    NCSLabOutput();
+    NCSLabDerivative();
+    dvpToGslF(f);
+    mp->time = savedTime;
+    return GSL_SUCCESS;
 }
 
 void ncslabLoop()
 {
-    maxStepSize = stepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
+    gslDim = getStateDimension();
+
+    if (gslDim > 0) {
+        gslY = (double *)malloc(gslDim * sizeof(double));
+        statesToGslY(gslY);
+
+        sys.function = ncsLabFunc;
+        sys.jacobian = NULL;
+        sys.dimension = gslDim;
+        sys.params = NULL;
+
+        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk8pd, gslDim);
+        control = gsl_odeiv2_control_standard_new(1e-6, 1e-6, 1.0, 0.0);
+        evolve = gsl_odeiv2_evolve_alloc(gslDim);
+
+        gslStepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
+    } else {
+        // No continuous states: use a dummy small step to keep loop alive
+        gslStepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
+    }
+
     discreteInit();
 
-    while (mp->time < mp->stopTime)
-    {
+    while (mp->time < mp->stopTime) {
         writeInformation();
         NCSLabOneStep();
     }
+
+    if (evolve) { gsl_odeiv2_evolve_free(evolve); evolve = NULL; }
+    if (control) { gsl_odeiv2_control_free(control); control = NULL; }
+    if (step) { gsl_odeiv2_step_free(step); step = NULL; }
+    if (gslY) { free(gslY); gslY = NULL; }
 }
 
 void NCSLabOneStep()
 {
-    REAL dif;
-    int accepted = 0;
-    int isFirstStep = (fabs(mp->time - mp->startTime) < 1e-12);
-
-    // Major step output at t_n
+    // Major step processing at current time
     mp->offset = 0;
     mp->majorStep = 1;
     NCSLabOutput();
@@ -117,139 +168,59 @@ void NCSLabOneStep()
         mp->discreteUpdate = 0;
     }
     NCSLabSinkOutput();
-
-    // Compute K1 for the first step; FSAL reuses derivativeReserve[0] for subsequent steps
-    if (isFirstStep) {
-        NCSLabDerivative();
-        storeDerivative(0);
-    }
-
     mp->majorStep = 0;
 
-    while (!accepted)
-    {
-        storeState(0);  // backup y_n
+    if (gslDim > 0) {
+        double t = mp->time;
+        double t1 = mp->stopTime;
 
-        // ---- Stage 2 ----
-        restoreState(0);
-        mp->stepSize = stepSize;
-        buildStage(DP_A21, 0.0, 0.0, 0.0, 0.0, 1);
-        mp->offset = stepSize * DP_C2;
-        NCSLabOutput();
-        NCSLabDerivative();
-        storeDerivative(1);
-
-        // ---- Stage 3 ----
-        restoreState(0);
-        mp->stepSize = stepSize;
-        buildStage(DP_A31, DP_A32, 0.0, 0.0, 0.0, 2);
-        mp->offset = stepSize * DP_C3;
-        NCSLabOutput();
-        NCSLabDerivative();
-        storeDerivative(2);
-
-        // ---- Stage 4 ----
-        restoreState(0);
-        mp->stepSize = stepSize;
-        buildStage(DP_A41, DP_A42, DP_A43, 0.0, 0.0, 3);
-        mp->offset = stepSize * DP_C4;
-        NCSLabOutput();
-        NCSLabDerivative();
-        storeDerivative(3);
-
-        // ---- Stage 5 ----
-        restoreState(0);
-        mp->stepSize = stepSize;
-        buildStage(DP_A51, DP_A52, DP_A53, DP_A54, 0.0, 4);
-        mp->offset = stepSize * DP_C5;
-        NCSLabOutput();
-        NCSLabDerivative();
-        storeDerivative(4);
-
-        // ---- Stage 6 ----
-        restoreState(0);
-        mp->stepSize = stepSize;
-        buildStage(DP_A61, DP_A62, DP_A63, DP_A64, DP_A65, 5);
-        mp->offset = stepSize * DP_C6;
-        NCSLabOutput();
-        NCSLabDerivative();
-        storeDerivative(5);
-
-        // ---- 5th order estimate (local extrapolation, actual step) ----
-        restoreState(0);
-        mp->stepSize = stepSize;
-        double w5[7] = { DP_B1, DP_B2, DP_B3, DP_B4, DP_B5, DP_B6, DP_B7 };
-        caculateDerivative(w5, 6);  // K1..K6 (b7=0, K7 not needed)
-        NCSLabUpdate();
-        storeState(2);  // y_5th
-
-        // ---- Compute K7 = f(t_{n+1}, y5) for error estimation and FSAL ----
-        restoreState(2);
-        mp->offset = stepSize;
-        NCSLabOutput();
-        NCSLabDerivative();
-        storeDerivative(6);  // K7
-
-        // ---- 4th order estimate (for error control only) ----
-        restoreState(0);
-        mp->stepSize = stepSize;
-        double w4[7] = { DP_BS1, DP_BS2, DP_BS3, DP_BS4, DP_BS5, DP_BS6, DP_BS7 };
-        caculateDerivative(w4, 7);  // K1..K7
-        NCSLabUpdate();
-        storeState(1);  // y_4th
-
-        // ---- Error estimate ----
-        dif = calculateStateDif(1, 2);
-
-        // ---- Step size control (PI controller) ----
-        double factor = 1.0;
-        if (dif > 1e-15) {
-            double errorNorm = dif / TOL;
-            double pFactor = pow(1.0 / errorNorm, 0.2);
-            double piFactor = pFactor * pow(errorNorm / prevErrorNorm, 0.08);
-            factor = 0.9 * piFactor;
-
-            if (factor > 5.0) factor = 5.0;
-            if (factor < 0.2) factor = 0.2;
-            prevErrorNorm = errorNorm;
-        } else {
-            factor = 5.0;
-            prevErrorNorm = 1.0;
+        // Limit step size to not cross discrete sample points
+        if (hasdiscrete(sample_time)) {
+            while (mp->discreteTime - t <= TOL) {
+                mp->discreteTime += real_sample_time;
+                mp->discreteUpdate = 1;
+            }
+            double dist = mp->discreteTime - t;
+            if (gslStepSize > dist) {
+                gslStepSize = dist;
+            }
         }
 
-        nextStepSize = stepSize * factor;
-        if (nextStepSize > maxStepSize) nextStepSize = maxStepSize;
-        if (nextStepSize < 1e-12) nextStepSize = 1e-12;
+        // Enforce a maximum step size
+        double maxStep = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
+        if (gslStepSize > maxStep) {
+            gslStepSize = maxStep;
+        }
+        if (gslStepSize < 1e-12) {
+            gslStepSize = 1e-12;
+        }
 
-        // ---- Accept/reject step ----
-        if (dif <= TOL) {
-            // ACCEPT: y5 is already current state from K7 computation above
-            mp->time += stepSize;
+        int status = gsl_odeiv2_evolve_apply(evolve, control, step, &sys, &t, t1, &gslStepSize, gslY);
 
-            // FSAL: K7 becomes next step's K1
-            copyDerivativeSlot(6, 0);
+        if (status != GSL_SUCCESS) {
+            fprintf(stderr, "GSL evolve_apply failed: %s\n", gsl_strerror(status));
+            // Emergency fallback: advance by minimum step to avoid deadlock
+            t += 1e-9;
+        }
 
-            // Adjust next step for discrete sample hits
-            if (hasdiscrete(sample_time)) {
-                while (mp->discreteTime - mp->time <= TOL) {
-                    mp->discreteTime += real_sample_time;
-                    mp->discreteUpdate = 1;
-                }
-                double dist = mp->discreteTime - mp->time;
-                if (nextStepSize > dist) {
-                    nextStepSize = dist;
-                }
+        mp->time = t;
+        gslYToStates(gslY);
+    } else {
+        // No continuous states: simple fixed-step fallback
+        mp->time += gslStepSize;
+        if (mp->time > mp->stopTime) {
+            mp->time = mp->stopTime;
+        }
+
+        if (hasdiscrete(sample_time)) {
+            while (mp->discreteTime - mp->time <= TOL) {
+                mp->discreteTime += real_sample_time;
+                mp->discreteUpdate = 1;
             }
-
-            stepSize = nextStepSize;
-            accepted = 1;
-        } else {
-            // REJECT: restore y_n and retry with smaller step
-            restoreState(0);
-            mp->offset = 0.0;
-            NCSLabOutput();
-            stepSize = nextStepSize;
-            // K1 in derivativeReserve[0] remains valid for retry
+            double dist = mp->discreteTime - mp->time;
+            if (gslStepSize > dist) {
+                gslStepSize = dist;
+            }
         }
     }
 }
