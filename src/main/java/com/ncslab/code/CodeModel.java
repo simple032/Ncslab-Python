@@ -157,6 +157,14 @@ abstract public class CodeModel extends NCSLabModel {
 		
 		System.out.println("Generating codes......");
 		
+		// Check for algebraic loops before generating code
+		if (this.isAlgebraicLoop()) {
+			String errorMsg = "Algebraic loop detected in the model. Please check your feedback connections.";
+			System.err.println(errorMsg);
+			errorList.add(new ErrorMessage(ErrorMessage.AlgebraicLoop, errorMsg));
+			return;
+		}
+		
 		if(this.getCircuitModel()!=null) {
 			CircuitModel2 circuitModel=this.getCircuitModel();
 			circuitModel.generate();

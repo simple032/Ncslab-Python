@@ -56,6 +56,13 @@ public class DependencyGraph {
                 OutputPort sourcePort = line.getLinkedOutputPort();
                 Block sourceBlock = sourcePort.getBlock();
                 
+                // Only consider feedthrough connections for algebraic loop detection.
+                // If source block output does not depend on its current input,
+                // it cannot form an algebraic loop (e.g., Integrator, Memory, TransportDelay).
+                if (!sourcePort.getFeedThrough()) {
+                    continue;
+                }
+                
                 if (allBlocks.contains(sourceBlock) && !sourceBlock.equals(block)) {
                     // block depends on sourceBlock
                     blockDependencies.add(sourceBlock);
