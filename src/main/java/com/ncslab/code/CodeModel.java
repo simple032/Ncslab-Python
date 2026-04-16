@@ -66,6 +66,24 @@ abstract public class CodeModel extends NCSLabModel {
 		case "ode45":
 			solver=Solver.ode45;
 			break;
+		case "ode23":
+			solver=Solver.ode23;
+			break;
+		case "ode15s":
+			solver=Solver.ode15s;
+			break;
+		case "ode113":
+			solver=Solver.ode113;
+			break;
+		case "ode23s":
+			solver=Solver.ode15s;
+			break;
+		case "ode23t":
+			solver=Solver.ode23;
+			break;
+		case "ode23tb":
+			solver=Solver.ode15s;
+			break;
 		case "ode5":
 			solver=Solver.ode5;
 			break;
@@ -83,9 +101,6 @@ abstract public class CodeModel extends NCSLabModel {
 			break;
 		case "ode1":
 			solver=Solver.ode1;
-			break;
-		case "ode23":
-			solver=Solver.ode23;
 			break;
 		}
 		/*if(solverString.equals("VariableStepAuto")||solverString.equals("ode45")) {

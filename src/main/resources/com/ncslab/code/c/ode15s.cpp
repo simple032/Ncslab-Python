@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 
 #include "ncslabdefines.hpp"
 #include "util.hpp"
@@ -9,6 +10,7 @@
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
+#include <gsl/gsl_machine.h>
 
 extern MODEL *mp;
 extern double sample_time[];
@@ -17,8 +19,8 @@ extern double real_sample_time;
 // Placeholders required by util.cpp / onestep.hpp linkage
 double singleStateReserve[3][SINGLE_STATE_NUM];
 Matrix matrixStateReserve[3][MATRIX_STATE_NUM];
-double singleDerivativeReserve[4][SINGLE_STATE_NUM];
-Matrix matrixDerivativeReserve[4][MATRIX_STATE_NUM];
+double singleDerivativeReserve[7][SINGLE_STATE_NUM];
+Matrix matrixDerivativeReserve[7][MATRIX_STATE_NUM];
 
 // GSL workspace
 static gsl_odeiv2_system sys;
@@ -106,12 +108,59 @@ static void dvpToGslF(double *dst)
 static int ncsLabFunc(double t, const double y[], double f[], void *params)
 {
     double savedTime = mp->time;
+    int savedMajorStep = mp->majorStep;
     mp->time = t;
+    mp->majorStep = 1;
     gslYToStates(y);
     NCSLabOutput();
     NCSLabDerivative();
     dvpToGslF(f);
     mp->time = savedTime;
+    mp->majorStep = savedMajorStep;
+    return GSL_SUCCESS;
+}
+
+// Numerical Jacobian using forward differences
+static int ncsLabJac(double t, const double y[], double *dfdy, double dydt[], void *params)
+{
+    int status = ncsLabFunc(t, y, dydt, params);
+    if (status != GSL_SUCCESS) return status;
+
+    double *y_tmp = (double *)malloc(gslDim * sizeof(double));
+    double *f_tmp = (double *)malloc(gslDim * sizeof(double));
+    if (!y_tmp || !f_tmp) {
+        free(y_tmp);
+        free(f_tmp);
+        return GSL_ENOMEM;
+    }
+
+    memcpy(y_tmp, y, gslDim * sizeof(double));
+
+    for (int i = 0; i < gslDim; i++) {
+        double eps = sqrt(GSL_DBL_EPSILON) * (fabs(y[i]) + 1.0);
+        if (eps < 1e-8) eps = 1e-8;
+
+        y_tmp[i] = y[i] + eps;
+
+        status = ncsLabFunc(t, y_tmp, f_tmp, params);
+        if (status != GSL_SUCCESS) {
+            free(y_tmp);
+            free(f_tmp);
+            return status;
+        }
+
+        double denom = eps;
+        for (int j = 0; j < gslDim; j++) {
+            dfdy[j * gslDim + i] = (f_tmp[j] - dydt[j]) / denom;
+        }
+
+        y_tmp[i] = y[i];
+    }
+
+    gslYToStates(y);
+
+    free(y_tmp);
+    free(f_tmp);
     return GSL_SUCCESS;
 }
 
@@ -125,13 +174,32 @@ void ncslabLoop()
         statesToGslY(gslY);
 
         sys.function = ncsLabFunc;
-        sys.jacobian = NULL;
+        // We leave sys.jacobian = NULL because:
+        // 1. MinGW GSL has a platform-level invalid-pointer bug with rk4imp/msbdf.
+        // 2. A user-supplied numerical Jacobian (ncsLabJac) calls NCSLabOutput(),
+        //    which updates discrete state as a side-effect and corrupts the model.
+        // bsimp with internal numerical Jacobian works around both issues.
         sys.dimension = gslDim;
         sys.params = NULL;
 
-        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk2, gslDim);
+        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_bsimp, gslDim);
+        if (!step) {
+            fprintf(stderr, "GSL step allocation failed\n");
+            return;
+        }
         control = gsl_odeiv2_control_standard_new(1e-6, 1e-6, 1.0, 0.0);
+        if (!control) {
+            fprintf(stderr, "GSL control allocation failed\n");
+            gsl_odeiv2_step_free(step);
+            return;
+        }
         evolve = gsl_odeiv2_evolve_alloc(gslDim);
+        if (!evolve) {
+            fprintf(stderr, "GSL evolve allocation failed\n");
+            gsl_odeiv2_control_free(control);
+            gsl_odeiv2_step_free(step);
+            return;
+        }
 
         gslStepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
     } else {
@@ -188,11 +256,11 @@ void NCSLabOneStep()
 
         if (status != GSL_SUCCESS) {
             fprintf(stderr, "GSL evolve_apply failed: %s\n", gsl_strerror(status));
-            t += 1e-9;
+            mp->time = mp->stopTime;
+        } else {
+            mp->time = t;
+            gslYToStates(gslY);
         }
-
-        mp->time = t;
-        gslYToStates(gslY);
     } else {
         mp->time += gslStepSize;
         if (mp->time > mp->stopTime) {

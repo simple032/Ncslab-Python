@@ -1056,6 +1056,9 @@ abstract public class CodeStructC{
         case ode15s:
             writeNCSLabFile("ode15s.cpp","onestep.cpp",true);
             break;
+        case ode113:
+            writeNCSLabFile("ode113.cpp","onestep.cpp",true);
+            break;
 		default:
             System.err.println("Unsupported solver: "+model.getSolver());
             break;

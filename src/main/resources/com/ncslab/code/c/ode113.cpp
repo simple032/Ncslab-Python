@@ -14,11 +14,11 @@ extern MODEL *mp;
 extern double sample_time[];
 extern double real_sample_time;
 
-// Placeholders required by util.cpp / onestep.hpp linkage
+// Required by util.cpp / onestep.hpp even though GSL ode113 does not use them
 double singleStateReserve[3][SINGLE_STATE_NUM];
 Matrix matrixStateReserve[3][MATRIX_STATE_NUM];
-double singleDerivativeReserve[4][SINGLE_STATE_NUM];
-Matrix matrixDerivativeReserve[4][MATRIX_STATE_NUM];
+double singleDerivativeReserve[7][SINGLE_STATE_NUM];
+Matrix matrixDerivativeReserve[7][MATRIX_STATE_NUM];
 
 // GSL workspace
 static gsl_odeiv2_system sys;
@@ -32,6 +32,7 @@ static double gslStepSize;
 #define INIT_POINT_NUM 100
 #define TOL 1E-7
 
+// Helper: compute total flattened dimension of all continuous states
 static int getStateDimension()
 {
     int dim = 0;
@@ -46,6 +47,7 @@ static int getStateDimension()
     return dim;
 }
 
+// Helper: copy mp->states values -> gslY
 static void statesToGslY(double *dst)
 {
     int idx = 0;
@@ -65,6 +67,7 @@ static void statesToGslY(double *dst)
     }
 }
 
+// Helper: copy gslY -> mp->states values
 static void gslYToStates(const double *src)
 {
     int idx = 0;
@@ -84,6 +87,7 @@ static void gslYToStates(const double *src)
     }
 }
 
+// Helper: copy mp->states derivatives -> GSL f vector
 static void dvpToGslF(double *dst)
 {
     int idx = 0;
@@ -103,6 +107,7 @@ static void dvpToGslF(double *dst)
     }
 }
 
+// GSL system function
 static int ncsLabFunc(double t, const double y[], double f[], void *params)
 {
     double savedTime = mp->time;
@@ -115,7 +120,6 @@ static int ncsLabFunc(double t, const double y[], double f[], void *params)
     return GSL_SUCCESS;
 }
 
-#ifdef _SIMU
 void ncslabLoop()
 {
     gslDim = getStateDimension();
@@ -129,12 +133,13 @@ void ncslabLoop()
         sys.dimension = gslDim;
         sys.params = NULL;
 
-        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk2, gslDim);
+        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_msadams, gslDim);
         control = gsl_odeiv2_control_standard_new(1e-6, 1e-6, 1.0, 0.0);
         evolve = gsl_odeiv2_evolve_alloc(gslDim);
 
         gslStepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
     } else {
+        // No continuous states: use a dummy small step to keep loop alive
         gslStepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
     }
 
@@ -150,10 +155,10 @@ void ncslabLoop()
     if (step) { gsl_odeiv2_step_free(step); step = NULL; }
     if (gslY) { free(gslY); gslY = NULL; }
 }
-#endif
 
 void NCSLabOneStep()
 {
+    // Major step processing at current time
     mp->offset = 0;
     mp->majorStep = 1;
     NCSLabOutput();
@@ -169,6 +174,7 @@ void NCSLabOneStep()
         double t = mp->time;
         double t1 = mp->stopTime;
 
+        // Limit step size to not cross discrete sample points
         if (hasdiscrete(sample_time)) {
             while (mp->discreteTime - t <= TOL) {
                 mp->discreteTime += real_sample_time;
@@ -180,20 +186,27 @@ void NCSLabOneStep()
             }
         }
 
+        // Enforce a maximum step size
         double maxStep = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
-        if (gslStepSize > maxStep) gslStepSize = maxStep;
-        if (gslStepSize < 1e-12) gslStepSize = 1e-12;
+        if (gslStepSize > maxStep) {
+            gslStepSize = maxStep;
+        }
+        if (gslStepSize < 1e-12) {
+            gslStepSize = 1e-12;
+        }
 
         int status = gsl_odeiv2_evolve_apply(evolve, control, step, &sys, &t, t1, &gslStepSize, gslY);
 
         if (status != GSL_SUCCESS) {
             fprintf(stderr, "GSL evolve_apply failed: %s\n", gsl_strerror(status));
+            // Emergency fallback: advance by minimum step to avoid deadlock
             t += 1e-9;
         }
 
         mp->time = t;
         gslYToStates(gslY);
     } else {
+        // No continuous states: simple fixed-step fallback
         mp->time += gslStepSize;
         if (mp->time > mp->stopTime) {
             mp->time = mp->stopTime;
