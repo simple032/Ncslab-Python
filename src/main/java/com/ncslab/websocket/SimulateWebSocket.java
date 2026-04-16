@@ -333,6 +333,7 @@ public class SimulateWebSocket {
 			} catch (ModelException e) {
 				throw e; // Re-throw to be handled by outer catch
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw e; // Re-throw to be handled by outer catch
 			}
 		}
