@@ -202,10 +202,11 @@ public class NCSLabSystem {
     	return false;
     }
     
-    public void addElectBlock(Block block,NCSLabSystem sys) {
+    public boolean addElectBlock(Block block,NCSLabSystem sys) {
     	if (block != null && isPathMatch(block,sys) && !sys.getBlocks().contains(block)) {
     		sys.getBlocks().add(block);
             block.setParent(sys);
+            return true;
         }
     	else {
     		for(Block bloc:sys.getBlocks()) {
@@ -213,10 +214,19 @@ public class NCSLabSystem {
                     // Handle subsystem-specific logic
                     Subsystem subSystem = (Subsystem) bloc;
                     NCSLabSystem subSys=subSystem.getInnerSystem();
-                    addElectBlock(block,subSys);
+                    if (addElectBlock(block,subSys)) {
+                        return true;
+                    }
         		}
     		}
     	}
+        // Fallback: if no subsystem matched, add to current system
+        if (block != null && !sys.getBlocks().contains(block)) {
+            sys.getBlocks().add(block);
+            block.setParent(sys);
+            return true;
+        }
+        return false;
     }
     
     public void addCircuitBlock(CircuitBlock block) {

@@ -36,12 +36,21 @@ public class ControlledVoltageSource extends VoltageSource implements InterCircu
 	}
 	
 	public String getVString() {
-		return controlledVoltageSource.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
+		com.ncslab.block.io.InputPort inputPort = controlledVoltageSource.getInputPortList().get(0);
+		if (inputPort.getLinkedLine() == null) {
+			System.err.println("Warning: ControlledVoltageSource '" + this.blockName + "' control input is not connected. Using 0 as fallback.");
+			return "0";
+		}
+		return inputPort.getLinkedLine().getLinkedOutputPort().getOutputSignalC().getName();
 	}
 
 	@Override
 	public double getVValue(double t) {
 		// TODO Auto-generated method stub
-		return controlledVoltageSource.getInputPortList().get(0).getData().getInitValue();
+		com.ncslab.block.io.InputPort inputPort = controlledVoltageSource.getInputPortList().get(0);
+		if (inputPort.getLinkedLine() == null) {
+			return 0.0;
+		}
+		return inputPort.getData().getInitValue();
 	}
 }
