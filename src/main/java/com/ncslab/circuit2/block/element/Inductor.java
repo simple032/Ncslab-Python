@@ -9,6 +9,7 @@ import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.CircuitBlock;
 import com.ncslab.circuit2.block.io.CircuitPort;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.baseelement.*;
 
 
@@ -20,14 +21,14 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 	public Inductor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		//System.out.println(blockJSON);
-		lString=paramValues.getString("l");
+		lString=Data.parseExpression(paramValues.getString("l"));
 		lValue=Double.parseDouble(lString);
 	}
 	
 	public Inductor(JSONObject blockJSON,NCSLabModel model) {
 		super(0,blockJSON,model);
 		//System.out.println(blockJSON);
-		lString=paramValues.getString("l");
+		lString=Data.parseExpression(paramValues.getString("l"));
 		lValue=Double.parseDouble(lString);
 	}
 	
@@ -83,7 +84,7 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 	public String getSwitchCode() {
 		// TODO Auto-generated method stub
 		String switchCode="/*Switch Code for inductor "+this.getBlockName()+" */\n";
-		if(Double.parseDouble(lString)<=0){
+		if(lValue<=0){
 			switchCode+="setSwitchStatus(&switchGAA,"+this.getSwitchId()+","+1+");\n";
 			switchCode+="//CircuitCombine(gAA,iA,vIndex,&size,ref,"+this.getCurcuitPortList().get(0).getCircuitNode().getNodeId()+","+this.getCurcuitPortList().get(1).getCircuitNode().getNodeId()+",oldSize);\n";
 		}
@@ -117,7 +118,7 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 	public String getSwitchCode(int partId) {
 		// TODO Auto-generated method stub
 		String switchCode="/*Switch Code for inductor "+this.getBlockName()+" */\n";
-		if(Double.parseDouble(lString)<=0){
+		if(lValue<=0){
 			switchCode+="setSwitchStatus(partitioner.partitions["+partId+"].pSwitchGaa,"+this.getSwitchPartId()+","+1+");\n";
 			switchCode+="//CircuitCombine(gAA,iA,vIndex,&size,ref,"+this.getCurcuitPortList().get(0).getCircuitNode().getNodeId()+","+this.getCurcuitPortList().get(1).getCircuitNode().getNodeId()+",oldSize);\n";
 		}

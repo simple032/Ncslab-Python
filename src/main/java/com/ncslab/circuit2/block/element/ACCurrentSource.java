@@ -2,6 +2,7 @@ package com.ncslab.circuit2.block.element;
 
 import org.json.JSONObject;
 
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.baseelement.CurrentSource;
 import com.ncslab.ncslablink.NCSLabModel;
 
@@ -18,9 +19,9 @@ public class ACCurrentSource extends CurrentSource {
 	public ACCurrentSource(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		// TODO Auto-generated constructor stub
-		amp = paramValues.getString("amp");
-		shift = paramValues.getString("shift");
-		frequency = paramValues.getString("frequency");
+		amp = Data.parseExpression(paramValues.getString("amp"));
+		shift = Data.parseExpression(paramValues.getString("shift"));
+		frequency = Data.parseExpression(paramValues.getString("frequency"));
 		
 		ampValue=Double.parseDouble(amp);
 		shiftValue=Double.parseDouble(shift);
@@ -30,9 +31,9 @@ public class ACCurrentSource extends CurrentSource {
 	public ACCurrentSource(JSONObject blockJSON, NCSLabModel model) {
 		super(0, blockJSON, model);
 		// TODO Auto-generated constructor stub
-		amp = paramValues.getString("amp");
-		shift = paramValues.getString("shift");
-		frequency = paramValues.getString("frequency");
+		amp = Data.parseExpression(paramValues.getString("amp"));
+		shift = Data.parseExpression(paramValues.getString("shift"));
+		frequency = Data.parseExpression(paramValues.getString("frequency"));
 		
 		ampValue=Double.parseDouble(amp);
 		shiftValue=Double.parseDouble(shift);

@@ -7,6 +7,7 @@ import com.ncslab.block.math.Gain;
 import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.CircuitBlock;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.baseelement.*;
 
 public class Resistor extends CircuitBlockSingle implements SwitchBlock{
@@ -18,20 +19,20 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 	
 	public Resistor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
-		rString=paramValues.getString("R");
+		rString=Data.parseExpression(paramValues.getString("R"));
 		rValue=Double.parseDouble(rString);
 		//System.out.println(blockJSON);
 	}
 	
 	public Resistor(JSONObject blockJSON,NCSLabModel model) {
 		super(0,blockJSON,model);
-		rString=paramValues.getString("R");
+		rString=Data.parseExpression(paramValues.getString("R"));
 		rValue=Double.parseDouble(rString);
 		//System.out.println(blockJSON);
 	}
 	
 	public String getRString() {
-		if(Double.parseDouble(rString)<=0) {
+		if(rValue<=0) {
 			return "1.0";
 		}
 		else {
@@ -45,7 +46,7 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 	
 	public String getSwitchCode() {
 		String switchCode="/*Switch Code for resistor "+this.getBlockName()+" */\n";
-		if(Double.parseDouble(rString)<=0){
+		if(rValue<=0){
 			switchCode+="setSwitchStatus(&switchGAA,"+this.getSwitchId()+","+1+");\n";
 			switchCode+="//CircuitCombine(gAA,iA,vIndex,&size,ref,"+this.getCurcuitPortList().get(0).getCircuitNode().getNodeId()+","+this.getCurcuitPortList().get(1).getCircuitNode().getNodeId()+",oldSize);\n";
 		}
@@ -86,7 +87,7 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 	@Override
 	public String getSwitchCode(int partId) {
 		String switchCode="/*Switch Code for resistor "+this.getBlockName()+" */\n";
-		if(Double.parseDouble(rString)<=0){
+		if(rValue<=0){
 			switchCode+="setSwitchStatus(partitioner.partitions["+partId+"].pSwitchGaa,"+this.getSwitchPartId()+","+1+");\n";
 			switchCode+="//CircuitCombine(gAA,iA,vIndex,&size,ref,"+this.getCurcuitPortList().get(0).getCircuitNode().getNodeId()+","+this.getCurcuitPortList().get(1).getCircuitNode().getNodeId()+",oldSize);\n";
 		}

@@ -2,6 +2,7 @@ package com.ncslab.circuit2.block.element;
 
 import org.json.JSONObject;
 
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.baseelement.CurrentSource;
 import com.ncslab.ncslablink.NCSLabModel;
 

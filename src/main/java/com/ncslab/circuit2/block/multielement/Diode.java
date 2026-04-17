@@ -6,6 +6,7 @@ import com.ncslab.circuit2.block.baseelement.CircuitBlockMulti;
 import com.ncslab.circuit2.block.element.Resistor;
 import com.ncslab.circuit2.block.element.DCVoltageSource;
 import com.ncslab.circuit2.block.multielement.base.SwitchBase;
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.io.CircuitPort;
 import com.ncslab.circuit2.line.CircuitLine;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -25,9 +26,9 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 		super(id,blockJSON,model);
 		System.out.println(blockJSON);
 		
-		rOnString=paramValues.getString("Ron");
-		vFString=paramValues.getString("Vf");
-		gOffString=paramValues.getString("Goff");
+		rOnString=Data.parseExpression(paramValues.getString("Ron"));
+		vFString=Data.parseExpression(paramValues.getString("Vf"));
+		gOffString=Data.parseExpression(paramValues.getString("Goff"));
 		
 		vFValue=Double.parseDouble(vFString);
 		
@@ -38,9 +39,9 @@ public class Diode extends CircuitBlockMulti implements Recalc{
 		super(0,blockJSON,model);
 		System.out.println(blockJSON);
 		
-		rOnString=paramValues.getString("Ron");
-		vFString=paramValues.getString("Vf");
-		gOffString=paramValues.getString("Goff");
+		rOnString=Data.parseExpression(paramValues.getString("Ron"));
+		vFString=Data.parseExpression(paramValues.getString("Vf"));
+		gOffString=Data.parseExpression(paramValues.getString("Goff"));
 		
 		vFValue=Double.parseDouble(vFString);
 		

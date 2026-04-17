@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import com.ncslab.circuit2.block.baseelement.CircuitBlockMulti;
 import com.ncslab.circuit2.block.element.DCVoltageSource;
 import com.ncslab.circuit2.block.element.Resistor;
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.multielement.base.SwitchBase;
 import com.ncslab.circuit2.line.CircuitLine;
 import com.ncslab.ncslablink.NCSLabModel;
@@ -21,11 +22,11 @@ public class IGBT extends CircuitBlockMulti implements Recalc {
 	private block.elec.IGBT igbt;
 	public IGBT(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
-		rOnString=paramValues.getString("Ron");
-		lOnString=paramValues.getString("Lon");
-		vFString=paramValues.getString("Vf");
-		rSString=paramValues.getString("Rs");
-		cSString=paramValues.getString("Cs");
+		rOnString=Data.parseExpression(paramValues.getString("Ron"));
+		lOnString=Data.parseExpression(paramValues.getString("Lon"));
+		vFString=Data.parseExpression(paramValues.getString("Vf"));
+		rSString=Data.parseExpression(paramValues.getString("Rs"));
+		cSString=Data.parseExpression(paramValues.getString("Cs"));
 		
 		createBlock();
 	}

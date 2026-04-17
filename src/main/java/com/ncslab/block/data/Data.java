@@ -162,7 +162,7 @@ public class Data {
         return "temp_var_" + Math.round(Math.random()*100000000);
     }
 
-	private static String parseExpression(String dataString) {
+	public static String parseExpression(String dataString) {
 		// CRITICAL FIX: Handle eye(m,n) pattern before mfcalc
 		// because mfcalc incorrectly evaluates eye(4,1) as eye(4)
 		String trimmed = dataString.trim();

@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 import com.ncslab.circuit2.block.CircuitBlock;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.baseelement.*;
 
 public class Capacitor extends CircuitBlockSingle {
@@ -12,14 +13,14 @@ public class Capacitor extends CircuitBlockSingle {
 	public Capacitor(int id,JSONObject blockJSON,NCSLabModel model) {
 		super(id,blockJSON,model);
 		//System.out.println(blockJSON);
-		cString=paramValues.getString("c");
+		cString=Data.parseExpression(paramValues.getString("c"));
 		cValue=Double.parseDouble(cString);
 	}
 	
 	public Capacitor(JSONObject blockJSON,NCSLabModel model) {
 		super(0,blockJSON,model);
 		//System.out.println(blockJSON);
-		cString=paramValues.getString("c");
+		cString=Data.parseExpression(paramValues.getString("c"));
 		cValue=Double.parseDouble(cString);
 	}
 	

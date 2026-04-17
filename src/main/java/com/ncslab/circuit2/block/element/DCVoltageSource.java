@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 import com.ncslab.circuit2.block.BlockModeType;
 import com.ncslab.circuit2.block.CircuitBlock;
+import com.ncslab.block.data.Data;
 import com.ncslab.circuit2.block.baseelement.VoltageSource;
 import com.ncslab.ncslablink.NCSLabModel;
 
