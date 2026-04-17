@@ -2,7 +2,9 @@ package com.ncslab.code.c;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
+import java.util.*;
+import com.ncslab.block.io.OutputPort;
+import com.ncslab.block.data.DataType;
 
 import jakarta.websocket.Session;
 
@@ -147,6 +149,123 @@ abstract public class CodeModelC extends CodeModel {
 	@Override
 	protected void generateBlockSinkOutputCode(Block block,CodeGenerationOption option) {
 		block.generateBlockSinkOutputCodeC(getCodeStructC());
+	}
+
+	@Override
+	protected void generateOutputCodeFromChain(CodeGenerationOption option) {
+		List<List<Block>> loops = getAlgebraicLoops();
+		if (loops == null || loops.isEmpty()) {
+			super.generateOutputCodeFromChain(option);
+			return;
+		}
+
+		Set<Block> loopBlocks = new HashSet<>();
+		for (List<Block> loop : loops) {
+			loopBlocks.addAll(loop);
+		}
+
+		Set<List<Block>> emittedLoops = Collections.newSetFromMap(new IdentityHashMap<>());
+		int loopIdx = 0;
+
+		for (Block block : getOutputChain()) {
+			if (!loopBlocks.contains(block)) {
+				// Normal block outside any algebraic loop
+				if (block instanceof com.ncslab.block.sink.SinkBlock) {
+					generateBlockSinkOutputCode(block, option);
+				} else {
+					generateBlockOutputCode(block, option);
+				}
+				continue;
+			}
+
+			// Find which loop this block belongs to
+			List<Block> currentLoop = null;
+			for (List<Block> loop : loops) {
+				if (loop.contains(block)) {
+					currentLoop = loop;
+					break;
+				}
+			}
+
+			if (currentLoop == null || emittedLoops.contains(currentLoop)) {
+				continue; // Already emitted or inconsistent state
+			}
+			emittedLoops.add(currentLoop);
+
+			// Collect output code for all blocks in this loop (in outputChain order)
+			CodeStructC cs = getCodeStructC();
+			cs.startTempBuffer();
+			for (Block loopBlock : getOutputChain()) {
+				if (!currentLoop.contains(loopBlock)) continue;
+				if (loopBlock instanceof com.ncslab.block.sink.SinkBlock) {
+					generateBlockSinkOutputCode(loopBlock, option);
+				} else {
+					generateBlockOutputCode(loopBlock, option);
+				}
+			}
+			String loopBody = cs.endTempBuffer();
+
+			String funcName = "alg_loop_" + loopIdx + "_compute";
+			cs.addAlgebraicLoopFunction("static void " + funcName + "(void) {\n" + loopBody + "}\n");
+
+			// Build damped fixed-point iteration wrapper
+			List<String> tearVars = getAlgebraicLoopTearVariables(currentLoop);
+			StringBuilder iterCode = new StringBuilder();
+			iterCode.append("{\n");
+			for (int i = 0; i < tearVars.size(); i++) {
+				iterCode.append("    double alg_prev_").append(i).append(" = ").append(tearVars.get(i)).append(";\n");
+			}
+			iterCode.append("    for (int alg_iter = 0; alg_iter < 100; alg_iter++) {\n");
+			iterCode.append("        ").append(funcName).append("();\n");
+			if (!tearVars.isEmpty()) {
+				// Apply under-relaxation (damping) to stabilize oscillating loops
+				for (int i = 0; i < tearVars.size(); i++) {
+					iterCode.append("        ")
+							.append(tearVars.get(i)).append(" = 0.5 * ")
+							.append(tearVars.get(i)).append(" + 0.5 * alg_prev_").append(i).append(";\n");
+				}
+				iterCode.append("        if (");
+				for (int i = 0; i < tearVars.size(); i++) {
+					if (i > 0) iterCode.append(" && ");
+					iterCode.append("fabs(").append(tearVars.get(i)).append(" - alg_prev_").append(i).append(") < 1e-9");
+				}
+				iterCode.append(") break;\n");
+				for (int i = 0; i < tearVars.size(); i++) {
+					iterCode.append("        alg_prev_").append(i).append(" = ").append(tearVars.get(i)).append(";\n");
+				}
+			}
+			iterCode.append("    }\n");
+			iterCode.append("}\n");
+			cs.addOutputCode(iterCode.toString());
+
+			loopIdx++;
+		}
+	}
+
+	private List<String> getAlgebraicLoopTearVariables(List<Block> loop) {
+		List<String> vars = new ArrayList<>();
+		Set<Block> seenBlocks = new LinkedHashSet<>();
+		for (Block block : loop) {
+			if (!seenBlocks.add(block)) {
+				continue; // skip duplicates caused by cycle representation
+			}
+			for (OutputPort port : block.getOutputPortList()) {
+				String varName = null;
+				if (port.getOutputSignalC() != null) {
+					// Only use scalar real outputs for convergence check
+					if (port.getOutputSignalC().getWidth() == 1 && port.getOutputSignalC().getHeight() == 1
+						&& port.getOutputSignalC().getDataType() == DataType.REAL) {
+						varName = port.getOutputSignalC().getName();
+					}
+				} else {
+					varName = "Block" + block.getBlockId() + "_Output" + port.getNumber();
+				}
+				if (varName != null && !varName.isEmpty()) {
+					vars.add(varName);
+				}
+			}
+		}
+		return vars;
 	}
 
 	//generate arrays code for discrete blocks

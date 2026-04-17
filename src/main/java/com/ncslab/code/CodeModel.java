@@ -124,7 +124,7 @@ abstract public class CodeModel extends NCSLabModel {
         return Solver.ode45;
     }
 
-	private void generateOutputCodeFromChain(CodeGenerationOption option) {
+	protected void generateOutputCodeFromChain(CodeGenerationOption option) {
 		for(Block block:getOutputChain()) {
 			//根据输出链，建立Ouput的代码
 			if(block instanceof com.ncslab.block.sink.SinkBlock) {
@@ -157,12 +157,8 @@ abstract public class CodeModel extends NCSLabModel {
 		
 		System.out.println("Generating codes......");
 		
-		// Check for algebraic loops before generating code
 		if (this.isAlgebraicLoop()) {
-			String errorMsg = "Algebraic loop detected in the model. Please check your feedback connections.";
-			System.err.println(errorMsg);
-			errorList.add(new ErrorMessage(ErrorMessage.AlgebraicLoop, errorMsg));
-			return;
+			System.out.println("Note: Algebraic loop detected. Fixed-point iteration will be used in C code generation.");
 		}
 		
 		if(this.getCircuitModel()!=null) {

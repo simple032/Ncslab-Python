@@ -219,9 +219,30 @@ abstract public class CodeStructC{
     public void addArraysCode(String code) { arraysCode+=code; }
     //end
 
+    private StringBuilder tempOutputBuffer = null;
+    private String algebraicLoopFunctions = "";
+
+    public void startTempBuffer() {
+        tempOutputBuffer = new StringBuilder();
+    }
+
+    public String endTempBuffer() {
+        String result = tempOutputBuffer.toString();
+        tempOutputBuffer = null;
+        return result;
+    }
+
     public void addOutputCode(String code) {
-		outputCode+=code;
-	}
+        if (tempOutputBuffer != null) {
+            tempOutputBuffer.append(code);
+        } else {
+            outputCode += code;
+        }
+    }
+
+    public void addAlgebraicLoopFunction(String code) {
+        algebraicLoopFunctions += code;
+    }
 
     public void addFinalizeCode(String code){
 		this.finalizeCode += code;
@@ -430,6 +451,7 @@ abstract public class CodeStructC{
 				+updateCode+"\n"
 				+"}\n"*/
 
+				+algebraicLoopFunctions
 				+"void NCSLabOutput(){\n"
 				+outputCode+"\n"
 				+"#ifdef _CIRCUIT\n"
@@ -513,6 +535,7 @@ abstract public class CodeStructC{
 				+initCode+"\n"
 				+"}\n"
 
+				+algebraicLoopFunctions
 				+"void NCSLabOutput(){\n"
 				+outputCode+"\n"
 				+"}\n"

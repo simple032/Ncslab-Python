@@ -1653,6 +1653,10 @@ abstract public class NCSLabModel {
 		return rootSystem.isAlgebraicLoop();
 	}
 
+	public java.util.List<java.util.List<com.ncslab.block.Block>> getAlgebraicLoops() {
+		return rootSystem.getAlgebraicLoops();
+	}
+
 	public Integer assignNextBlockSequence() {
 		blockSeq++;
 		return blockSeq;

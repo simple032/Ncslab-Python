@@ -349,6 +349,9 @@ public class NCSLabSystem {
      * Setup the execution order chain by analyzing block dependencies
      * This is the main method that establishes proper execution sequence
      */
+    @Getter
+    private List<List<Block>> algebraicLoops = new ArrayList<>();
+
     public void setupOutputChain() {
         // Clear previous analysis
         outputChain.clear();
@@ -356,6 +359,7 @@ public class NCSLabSystem {
         outputPortPathList.clear();
         scanBlockList.clear();
         isAlgebraicLoop = false;
+        algebraicLoops.clear();
         
         System.out.println("NCSLabSystem: Setting up output chain using dependency analyzer...");
         
@@ -365,6 +369,7 @@ public class NCSLabSystem {
         // Update our state based on the analysis
         outputChain.addAll(result.getExecutionOrder());
         isAlgebraicLoop = result.hasAlgebraicLoops();
+        algebraicLoops.addAll(result.getAlgebraicLoops());
         
         // Still maintain terminal blocks for backward compatibility
         terminalBlocks.addAll(dependencyAnalyzer.getTerminalBlocks(blocks));
