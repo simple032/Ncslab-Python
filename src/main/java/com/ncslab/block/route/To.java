@@ -114,11 +114,24 @@ public class To extends RouteBlock {
         super(blockDto, model);
 
         // Initialize final parameters from DTO
-        this.gotoTag = getParameterByName("Gototag");
+        this.gotoTag = getParameterByName("GotoTag");
         this.iconDisplay = getParameterByName("IconDisplay");
         this.sampleTime = getParameterByName("SampleTime");
         this.outDataType = getParameterByName("OutDataTypeStr");
         this.saturateOnIntegerOverflow = getParameterByName("SaturateOnIntegerOverflow");
+
+        // Store tag name for easy access (fallback to paramValues if parameter not found)
+        if (this.gotoTag != null) {
+            this.tagName = this.gotoTag.getInitString();
+        } else if (paramValues != null && paramValues.has("GotoTag")) {
+            this.tagName = paramValues.getString("GotoTag");
+        } else if (blockDto.hasParam("GotoTag")) {
+            this.tagName = String.valueOf(blockDto.getParam("GotoTag"));
+        } else if (blockDto.hasParam("tagName")) {
+            this.tagName = String.valueOf(blockDto.getParam("tagName"));
+        } else if (blockDto.hasParam("tag")) {
+            this.tagName = String.valueOf(blockDto.getParam("tag"));
+        }
         
         initializePorts();
 
