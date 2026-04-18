@@ -399,6 +399,40 @@ void writeInformation(){
 #endif	
 }
 
+/**
+ * Force send Display block update without time-based throttling.
+ * Used to send initial and final display values at simulation start/end.
+ */
+void sendDisplayUpdateForce() {
+	int displayCount = 0;
+	for (int i = 0; i < mp->terminalNum; i++) {
+		TERMINAL* terminal = terminals[i];
+		SCOPE* scope = (SCOPE*)terminal->terminal;
+		if (scope->maxDataLength == 1) {
+			displayCount++;
+		}
+	}
+	if (displayCount > 0) {
+		PROGRESSTYPE displayType = DisplayUpdate;
+		fputc(0x55, stdout);
+		fputc(0x55, stdout);
+		fwrite(&displayType, 1, sizeof(displayType), stdout);
+		fwrite(&displayCount, 1, sizeof(displayCount), stdout);
+		for (int i = 0; i < mp->terminalNum; i++) {
+			TERMINAL* terminal = terminals[i];
+			SCOPE* scope = (SCOPE*)terminal->terminal;
+			if (scope->maxDataLength == 1) {
+				int uuidLen = strlen(scope->uuid);
+				fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
+				fwrite(scope->uuid, 1, uuidLen, stdout);
+				double value = scope->dataList.empty() ? 0.0 : scope->dataList.back();
+				fwrite(&value, 1, sizeof(value), stdout);
+			}
+		}
+		fflush(stdout);
+	}
+}
+
 
 
 // 初始化缓冲区

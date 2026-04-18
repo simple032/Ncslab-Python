@@ -154,6 +154,15 @@ public class SimulationModel extends NCSLabModel{
             return; // throttle to every 500ms
         }
         lastDisplayUpdateTime = currentTime;
+        sendDisplayUpdateMessageForce(session);
+    }
+
+    /**
+     * Force send display update message without throttling.
+     * Used for sending initial and final display values at simulation start/end.
+     */
+    private void sendDisplayUpdateMessageForce(Session session) throws IOException {
+        if (session == null) return;
 
         Map<String, Double> displayData = new HashMap<>();
         for (Block block : getBlockList()) {
@@ -381,6 +390,11 @@ public class SimulationModel extends NCSLabModel{
             calculateInits(tStart, states);  // Initialize states and outputs
             calculateStarts();  // NEW: One-time startup actions
             
+            // Send initial display values after startup
+            if (session != null) {
+                sendDisplayUpdateMessageForce(session);
+            }
+            
             if(circuitModel!=null) {
             	circuitModel.calculateInits(tStart);
             }
@@ -477,6 +491,11 @@ public class SimulationModel extends NCSLabModel{
             if (!terminateCalled[0]) {
                 calculateStops(tEnd);  // NEW: Graceful shutdown
                 calculateTerminates(tEnd);  // Cleanup resources
+            }
+
+            // Send final display values before sending results
+            if (session != null) {
+                sendDisplayUpdateMessageForce(session);
             }
 
             // Use optimized WebSocket streaming instead of file I/O

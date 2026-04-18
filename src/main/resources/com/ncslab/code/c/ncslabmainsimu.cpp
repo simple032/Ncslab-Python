@@ -5,6 +5,7 @@
 #include "onestep.hpp"
 #include "results.hpp"
 #include "ncslab.hpp"
+#include "util.hpp"
 
 MODEL* mp;
 
@@ -30,7 +31,15 @@ int main(int argc, char* argv[]) {
 	mp->time = mp->startTime;
 	mp->stopTime = endTime;
 
+	// Send initial display values after initialization
+	NCSLabOutput();
+	NCSLabSinkOutput();
+	sendDisplayUpdateForce();
+
 	ncslabLoop();
+
+	// Send final display values before termination
+	sendDisplayUpdateForce();
 
 	NCSLabTerminate();
 	//NCSLabSaveResult();

@@ -75,6 +75,7 @@ double gcd1(double *);
 int hasdiscrete(double *);
 double distance(double,double);
 void writeInformation();
+void sendDisplayUpdateForce();
 double generateGaussianNoise(double mean, double stdDev);
 double lowPassFilter(double input, double alpha);
 unsigned char calcSum(unsigned char bytes[]);
