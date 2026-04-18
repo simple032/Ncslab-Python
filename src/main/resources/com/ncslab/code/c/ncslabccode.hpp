@@ -298,6 +298,7 @@ MODEL * NCSLabGetModelP();
 enum PROGRESSTYPE{
 	Simulating=1,
 	Saving=2,
+	DisplayUpdate=3,
 	Ending=-1
 };
 

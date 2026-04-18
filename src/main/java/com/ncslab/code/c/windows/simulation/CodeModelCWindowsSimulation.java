@@ -14,7 +14,8 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.Optional;
+import java.util.*;
+import java.nio.charset.StandardCharsets;
 
 public class CodeModelCWindowsSimulation extends CodeModelC{
 
@@ -63,6 +64,25 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		jb.put("msg", "saving");
 		jb.put("currentTerminal", currentTerminal);
 		jb.put("terminalNum",terminalNum);
+		session.getBasicRemote().sendText(jb.toString());
+	}
+
+	/**
+	 * Send real-time Display block data update via WebSocket
+	 * @param session WebSocket session
+	 * @param displayData Map of display UUID → current value
+	 * @throws IOException if sending fails
+	 */
+	private void sendDisplayUpdateMessage(Session session, Map<String, Double> displayData) throws IOException {
+		if (session == null || displayData == null || displayData.isEmpty()) return;
+		JSONObject jb = new JSONObject();
+		jb.put("msg", "display_update");
+		jb.put("timestamp", System.currentTimeMillis());
+		JSONObject dataObj = new JSONObject();
+		for (Map.Entry<String, Double> entry : displayData.entrySet()) {
+			dataObj.put(entry.getKey(), entry.getValue());
+		}
+		jb.put("displayData", dataObj);
 		session.getBasicRemote().sendText(jb.toString());
 	}
     
@@ -166,6 +186,21 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 				
 					int terminalNum=out.readInt();
 					sendSavingMessage(session,currentTerminal,terminalNum);
+					break;
+				case 3: // DisplayUpdate - 实时 Display 模块数据
+					int displayCount = out.readInt();
+					Map<String, Double> displayData = new HashMap<>();
+					for (int i = 0; i < displayCount; i++) {
+						int uuidLen = out.readInt();
+						byte[] uuidBytes = new byte[uuidLen];
+						out.readFully(uuidBytes);
+						String uuid = new String(uuidBytes, StandardCharsets.UTF_8);
+						double displayValue = out.readDouble();
+						displayData.put(uuid, displayValue);
+					}
+					if (!displayData.isEmpty()) {
+						sendDisplayUpdateMessage(session, displayData);
+					}
 					break;
 				}
 				

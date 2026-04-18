@@ -16,6 +16,7 @@
 //#include <octave/oct.h>
 
 extern MODEL* mp;
+extern TERMINAL* terminals[];
 
 
 double calalpoutput(double inputvalue) {
@@ -343,24 +344,44 @@ void writeInformation(){
 	DWORD sec=(GetTickCount()/1000)%60;
 	//gettimeofday(&tv,NULL);
 	if(sec!=oldSec){
-		/*
-		int n=0;
-		while(n<sizeof(progressType)){
-			char *pos=(char *)(&progressType);
-			n+=fwrite(pos+n,1,sizeof(progressType)-n,stdout);	
-		}
-		n=0;
-		while(n<sizeof(&mp->time)){
-			char *pos=(char *)(&mp->time);
-			n+=fwrite(pos+n,1,sizeof(mp->time)-n,stdout);	
-		}*/
 		fputc(0x55,stdout);
 		fputc(0x55,stdout);
 		fwrite(&progressType,1,sizeof(progressType),stdout);
 		printf("%f\n",mp->time);
-		//fwrite(&(mp->time),1,sizeof(mp->time),stdout);
-		
-		fflush(stdout); 
+		fflush(stdout);
+
+		// ===== Display 模块实时数据输出 =====
+		// 遍历所有 Terminal，找出 Display 模块（maxDataLength == 1）
+		// 通过 stdout 发送 Display 的 UUID 和当前值到 Java 后端
+		int displayCount = 0;
+		for (int i = 0; i < mp->terminalNum; i++) {
+			TERMINAL* terminal = terminals[i];
+			SCOPE* scope = (SCOPE*)terminal->terminal;
+			if (scope->maxDataLength == 1) {
+				displayCount++;
+			}
+		}
+		if (displayCount > 0) {
+			PROGRESSTYPE displayType = DisplayUpdate;
+			fputc(0x55, stdout);
+			fputc(0x55, stdout);
+			fwrite(&displayType, 1, sizeof(displayType), stdout);
+			fwrite(&displayCount, 1, sizeof(displayCount), stdout);
+			for (int i = 0; i < mp->terminalNum; i++) {
+				TERMINAL* terminal = terminals[i];
+				SCOPE* scope = (SCOPE*)terminal->terminal;
+				if (scope->maxDataLength == 1) {
+					int uuidLen = strlen(scope->uuid);
+					fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
+					fwrite(scope->uuid, 1, uuidLen, stdout);
+					double value = scope->dataList.empty() ? 0.0 : scope->dataList.back();
+					fwrite(&value, 1, sizeof(value), stdout);
+				}
+			}
+			fflush(stdout);
+		}
+		// ===== Display 模块实时数据输出结束 =====
+
 		oldSec=sec;
 	}
 #else

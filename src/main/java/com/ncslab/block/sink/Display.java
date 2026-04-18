@@ -119,6 +119,17 @@ public class Display extends Scope {
         }
     }
 
+    /**
+     * Get the latest display value for real-time WebSocket updates.
+     * @return the most recent value stored in the scope data list, or 0.0 if no data
+     */
+    public double getLatestDisplayValue() {
+        if (scopeStructs != null && scopeStructs.length > 0 && !scopeStructs[0].getDataList().isEmpty()) {
+            return scopeStructs[0].getDataList().get(scopeStructs[0].getDataList().size() - 1);
+        }
+        return 0.0;
+    }
+
     @Override
     public void generateOutputCodeC(com.ncslab.code.c.CodeStructC code) {
         if (model.getModelMode() == ModelMode.Simulation) {

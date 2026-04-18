@@ -85,6 +85,7 @@ import java.util.*;
     // New block DTOs - Week 6 Update
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.ClockDto.class, name = "Clock"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.DisplayDto.class, name = "Display"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.DisplayDto.class, name = "display"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.sink.MatplotlibDto.class, name = "Matplotlib"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.ExponentialDto.class, name = "Exponential"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.math.LogarithmDto.class, name = "Logarithm"),

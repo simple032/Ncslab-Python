@@ -9,6 +9,7 @@ import com.ncslab.block.io.OutputPort;
 import com.ncslab.block.io.State;
 import com.ncslab.block.io.terminal.ScopeStruct;
 import com.ncslab.block.io.terminal.Terminal;
+import com.ncslab.block.sink.Display;
 import com.ncslab.block.sink.Scope;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
@@ -33,6 +34,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
@@ -52,6 +55,7 @@ public class SimulationModel extends NCSLabModel{
     private JSONObject result = new JSONObject();
     
     private long lastSessionTime;
+    private long lastDisplayUpdateTime;
     
     @Getter
     private boolean isMajorStep=false;
@@ -140,7 +144,40 @@ public class SimulationModel extends NCSLabModel{
 		jb.put("timeLength", this.getConfig().getStopTime());
         if(session != null)
 		    session.getBasicRemote().sendText(jb.toString());
+        sendDisplayUpdateMessage(session);
 	}
+
+    private void sendDisplayUpdateMessage(Session session) throws IOException {
+        if (session == null) return;
+        long currentTime = new java.util.Date().getTime();
+        if (currentTime <= lastDisplayUpdateTime + 500) {
+            return; // throttle to every 500ms
+        }
+        lastDisplayUpdateTime = currentTime;
+
+        Map<String, Double> displayData = new HashMap<>();
+        for (Block block : getBlockList()) {
+            if ("Display".equals(block.getBlockType()) && block instanceof Display) {
+                Display displayBlock = (Display) block;
+                double latestValue = displayBlock.getLatestDisplayValue();
+                String uuid = block.getBlockUUID();
+                if (uuid != null && !"null".equals(uuid) && !uuid.isEmpty()) {
+                    displayData.put(uuid, latestValue);
+                }
+            }
+        }
+        if (!displayData.isEmpty()) {
+            JSONObject jb = new JSONObject();
+            jb.put("msg", "display_update");
+            jb.put("timestamp", System.currentTimeMillis());
+            JSONObject dataObj = new JSONObject();
+            for (Map.Entry<String, Double> entry : displayData.entrySet()) {
+                dataObj.put(entry.getKey(), entry.getValue());
+            }
+            jb.put("displayData", dataObj);
+            session.getBasicRemote().sendText(jb.toString());
+        }
+    }
 
     private void sendTimeSeriesMessage(Session session, JSONObject timeseries) throws IOException{
 		JSONObject jb=new JSONObject();
@@ -355,6 +392,7 @@ public class SimulationModel extends NCSLabModel{
                 getSolverDisplayName(solverName), hasState, tStart, tEnd);
             
             lastSessionTime=new java.util.Date().getTime();
+            lastDisplayUpdateTime=lastSessionTime;
             
             if(hasState) {
                 if(isVariableStepSolver(solverName)) {
