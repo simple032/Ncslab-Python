@@ -178,7 +178,7 @@ void ncslabLoop()
         sys.dimension = gslDim;
         sys.params = NULL;
 
-        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_bsimp, gslDim);
+        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk4imp, gslDim);
         if (!step) {
             fprintf(stderr, "GSL step allocation failed\n");
             return;

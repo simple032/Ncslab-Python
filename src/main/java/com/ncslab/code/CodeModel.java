@@ -76,13 +76,13 @@ abstract public class CodeModel extends NCSLabModel {
 			solver=Solver.ode113;
 			break;
 		case "ode23s":
-			solver=Solver.ode15s;
+			solver=Solver.ode23s;
 			break;
 		case "ode23t":
-			solver=Solver.ode23;
+			solver=Solver.ode23t;
 			break;
 		case "ode23tb":
-			solver=Solver.ode15s;
+			solver=Solver.ode23tb;
 			break;
 		case "ode5":
 			solver=Solver.ode5;

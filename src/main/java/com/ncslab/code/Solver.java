@@ -10,5 +10,8 @@ public enum Solver {
 	ode23,
 	ode45,
 	ode113,
-    ode15s
+    ode15s,
+    ode23s,
+    ode23t,
+    ode23tb
 }

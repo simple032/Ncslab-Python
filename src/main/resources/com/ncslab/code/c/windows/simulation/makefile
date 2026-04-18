@@ -13,7 +13,7 @@ CCFlag=-D_SIMU -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings -fpermissive\
 		-IC:\mingw64\include \
 		-fopenmp
 
-LDFLAG=-fopenmp -lm -g -O2 -Wformat -fPIC -lwinmm -lws2_32 -fpermissive -L${M2PLAB_ROOT}/server/cruntime/lib -lgsl
+LDFLAG=-fopenmp -lm -g -O2 -Wformat -fPIC -lwinmm -lws2_32 -fpermissive -L${M2PLAB_ROOT}/server/cruntime/lib -lgsl -lgslcblas 
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)

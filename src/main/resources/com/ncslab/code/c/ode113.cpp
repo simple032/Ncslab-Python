@@ -133,7 +133,7 @@ void ncslabLoop()
         sys.dimension = gslDim;
         sys.params = NULL;
 
-        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_msadams, gslDim);
+        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk8pd, gslDim);
         control = gsl_odeiv2_control_standard_new(1e-6, 1e-6, 1.0, 0.0);
         evolve = gsl_odeiv2_evolve_alloc(gslDim);
 

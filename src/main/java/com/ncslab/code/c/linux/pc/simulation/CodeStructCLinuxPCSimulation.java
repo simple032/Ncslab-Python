@@ -110,6 +110,15 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 		case ode113:
 			writeNCSLabFile("../../../ode113.cpp","onestep.cpp",true);
 			break;
+		case ode23s:
+			writeNCSLabFile("../../../ode23s.cpp","onestep.cpp",true);
+			break;
+		case ode23t:
+			writeNCSLabFile("../../../ode23t.cpp","onestep.cpp",true);
+			break;
+		case ode23tb:
+			writeNCSLabFile("../../../ode23tb.cpp","onestep.cpp",true);
+			break;
 		default:
 			writeNCSLabFile("../../../ode45.cpp","onestep.cpp",true);
 			break;
