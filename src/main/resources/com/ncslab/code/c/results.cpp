@@ -144,25 +144,72 @@ void writeScopeBin(int cursor,TERMINAL *terminal,FILE *fp){
 }
 
 void NCSLabSaveResultBin(){
-	FILE *fp;
+	json scopesMeta = json::array();
 	int scopeCursor=0;
 
-	//printf("Save Result\n");
-	fp=fopen("results.bin","wb");
-	fwrite(&(mp->terminalNum),sizeof(int),1,fp);
 	writeSavingInformation(0,mp->terminalNum);
 	for(int i=0;i<mp->terminalNum;i++){
-		
 		TERMINAL *terminal=terminals[i];
-		fwrite(&(terminal->type),sizeof(terminal->type),1,fp);
-		switch(terminal->type){
-		case Scope:
-			writeScopeBin(scopeCursor,terminal,fp);
+		if(terminal->type==Scope){
+			SCOPE *scope=(SCOPE *)terminal->terminal;
+
+			// 1. Build individual scope JSON with full data
+			json scopeJson;
+			scopeJson["uuid"] = scope->uuid;
+			scopeJson["name"] = scope->name;
+			scopeJson["path"] = scope->path;
+			scopeJson["width"] = scope->width;
+			scopeJson["height"] = scope->height;
+			scopeJson["version"] = "0.2";
+
+			// Trim data to MAX_DATA_POINTS
+			while(scope->timeList.size()>MAX_DATA_POINTS){
+				scope->timeList.pop_front();
+				for(int h=0;h<scope->height;h++){
+					for(int w=0;w<scope->width;w++){
+						scope->dataList.pop_front();
+					}
+				}
+			}
+
+			json timeArray = json::array();
+			json dataArray = json::array();
+			while(!scope->timeList.empty() && !scope->dataList.empty()){
+				timeArray.push_back(scope->timeList.front());
+				scope->timeList.pop_front();
+				for(int h=0;h<scope->height;h++){
+					for(int w=0;w<scope->width;w++){
+						dataArray.push_back(scope->dataList.front());
+						scope->dataList.pop_front();
+					}
+				}
+			}
+			scopeJson["time"] = timeArray;
+			scopeJson["data"] = dataArray;
+
+			// Write individual scope file
+			std::string filename = std::string("scope_") + scope->uuid + ".json";
+			std::ofstream scopeFile(filename);
+			scopeFile << scopeJson << std::endl;
+
+			// 2. Build metadata entry
+			json meta;
+			meta["uuid"] = scope->uuid;
+			meta["name"] = scope->name;
+			meta["path"] = scope->path;
+			meta["width"] = scope->width;
+			meta["height"] = scope->height;
+			scopesMeta.push_back(meta);
+
 			scopeCursor++;
-			break;
 		}
 		writeSavingInformation(i+1,mp->terminalNum);
 	}
-	fclose(fp);
-	//printf("Save Result finish\n");
+
+	// 3. Write metadata results.json
+	json result;
+	result["version"] = "0.2";
+	result["scopes"] = scopesMeta;
+	std::ofstream metaFile("results.json");
+	metaFile << result << std::endl;
 }

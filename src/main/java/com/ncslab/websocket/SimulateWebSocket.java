@@ -119,7 +119,7 @@ public class SimulateWebSocket {
 	}
 
 	private void sendResultMessage(Session session, CodeModelC modelC) throws IOException{
-		String resultsPath = "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.bin";
+		String resultsPath = "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json";
 		WebSocketMessageDto message = WebSocketMessageDto.createResultMessage(
 			resultsPath, modelC.getUserId(), modelC.getModelId());
         if(session!=null) {
