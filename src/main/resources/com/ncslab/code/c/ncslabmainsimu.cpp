@@ -7,6 +7,11 @@
 #include "ncslab.hpp"
 #include "util.hpp"
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 MODEL* mp;
 
 time_t main_timer;
@@ -15,6 +20,12 @@ time_t main_timer;
 // argv[1] is the simulation stop time
 // argv[2] is the port number
 int main(int argc, char* argv[]) {
+
+#ifdef _WIN32
+	// Set stdout to binary mode on Windows to prevent \n -> \r\n conversion,
+	// which corrupts the binary protocol between ncslab.exe and Java backend.
+	_setmode(_fileno(stdout), _O_BINARY);
+#endif
 
 	double endTime = 10;
 	double end = -1;
