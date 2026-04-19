@@ -166,6 +166,43 @@ public class Display extends Scope {
         }
     }
 
+    /**
+     * Override generateOutputSinkCodeC to use Display's own template instead of Scope's.
+     * This prevents Display blocks from being treated as Scope blocks in NCSLabSinkOutput().
+     */
+    @Override
+    public void generateOutputSinkCodeC(com.ncslab.code.c.CodeStructC code) {
+        if (model.getModelMode() == ModelMode.Simulation) {
+            com.ncslab.util.TemplateUtils.populateAllContext(context, this);
+
+            context.put("blockId", getBlockId());
+            context.put("blockName", getBlockName());
+            context.put("inputPortList", getInputPortList());
+            context.put("inputPortListSize", inputPortList.size());
+            context.put("scopeStruct", scopeStructs[0]);
+
+            String scopeStructName = scopeStructs[0].getName();
+            context.put("scopeStructName", scopeStructName);
+
+            if (!inputPortList.isEmpty() && inputPortList.get(0).getLinkedLine() != null) {
+                OutputSignal inputSignal = inputPortList.get(0).getLinkedLine().getLinkedOutputPort().getOutputSignalC();
+                context.put("inputSignal1Height", inputSignal.getHeight());
+                context.put("inputSignal1Width", inputSignal.getWidth());
+                context.put("inputSignal1Name", "Block" + getBlockId() + "_" + inputSignal.getName());
+                context.put("inputSignal", inputSignal.getName());
+                context.put("inputSignal1DataType", inputSignal.getDataType());
+                context.put("realDataType", com.ncslab.block.data.DataType.REAL);
+            }
+
+            String outputCode = TemplateManager.renderTemplate("c/sink/Display/output.vm", context);
+            code.addSinkOutputCode(outputCode);
+
+            context.put("linkedBlockId", this.getInputPortList().get(0).getLinkedLine().getLinkedOutputPort().getBlock().getBlockId());
+            String sinkStatusClearCode = TemplateManager.renderTemplate("c/sink/Scope/status_clear.vm", context);
+            code.addSinkStatusClearCode(sinkStatusClearCode);
+        }
+    }
+
     @Override
     public void generateInitCodeC(com.ncslab.code.c.CodeStructC code) {
         super.generateInitCodeC(code);

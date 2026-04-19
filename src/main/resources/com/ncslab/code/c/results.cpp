@@ -143,6 +143,46 @@ void writeScopeBin(int cursor,TERMINAL *terminal,FILE *fp){
 	}
 }
 
+// ============================================================================
+// Scope chunk flush: write current in-memory data to a chunk file and clear
+// Called at runtime when timeList exceeds CHUNK_SIZE (100,000)
+// ============================================================================
+void flushScopeChunk(SCOPE* scope) {
+    if (scope->timeList.empty()) {
+        return;
+    }
+
+    json scopeJson;
+    scopeJson["uuid"] = scope->uuid;
+    scopeJson["name"] = scope->name;
+    scopeJson["path"] = scope->path;
+    scopeJson["width"] = scope->width;
+    scopeJson["height"] = scope->height;
+    scopeJson["version"] = "0.2";
+    scopeJson["chunkIndex"] = scope->chunkCount;
+
+    json timeArray = json::array();
+    json dataArray = json::array();
+    while (!scope->timeList.empty() && !scope->dataList.empty()) {
+        timeArray.push_back(scope->timeList.front());
+        scope->timeList.pop_front();
+        for (int h = 0; h < scope->height; h++) {
+            for (int w = 0; w < scope->width; w++) {
+                dataArray.push_back(scope->dataList.front());
+                scope->dataList.pop_front();
+            }
+        }
+    }
+    scopeJson["time"] = timeArray;
+    scopeJson["data"] = dataArray;
+
+    std::string filename = std::string("scope_") + scope->uuid + "_chunk" + std::to_string(scope->chunkCount) + ".json";
+    std::ofstream scopeFile(filename);
+    scopeFile << scopeJson << std::endl;
+
+    scope->chunkCount++;
+}
+
 void NCSLabSaveResultBin(){
 	json scopesMeta = json::array();
 	int scopeCursor=0;
@@ -153,7 +193,7 @@ void NCSLabSaveResultBin(){
 		if(terminal->type==Scope){
 			SCOPE *scope=(SCOPE *)terminal->terminal;
 
-			// 1. Build individual scope JSON with full data
+			// 1. Build individual scope JSON with remaining in-memory data
 			json scopeJson;
 			scopeJson["uuid"] = scope->uuid;
 			scopeJson["name"] = scope->name;
@@ -161,16 +201,7 @@ void NCSLabSaveResultBin(){
 			scopeJson["width"] = scope->width;
 			scopeJson["height"] = scope->height;
 			scopeJson["version"] = "0.2";
-
-			// Trim data to MAX_DATA_POINTS
-			while(scope->timeList.size()>MAX_DATA_POINTS){
-				scope->timeList.pop_front();
-				for(int h=0;h<scope->height;h++){
-					for(int w=0;w<scope->width;w++){
-						scope->dataList.pop_front();
-					}
-				}
-			}
+			scopeJson["chunkIndex"] = scope->chunkCount;
 
 			json timeArray = json::array();
 			json dataArray = json::array();
@@ -187,18 +218,26 @@ void NCSLabSaveResultBin(){
 			scopeJson["time"] = timeArray;
 			scopeJson["data"] = dataArray;
 
-			// Write individual scope file
+			// Write final scope file (always scope_<uuid>.json for the last chunk)
 			std::string filename = std::string("scope_") + scope->uuid + ".json";
 			std::ofstream scopeFile(filename);
 			scopeFile << scopeJson << std::endl;
 
-			// 2. Build metadata entry
+			// 2. Build metadata entry with chunks list
 			json meta;
 			meta["uuid"] = scope->uuid;
 			meta["name"] = scope->name;
 			meta["path"] = scope->path;
 			meta["width"] = scope->width;
 			meta["height"] = scope->height;
+
+			json chunks = json::array();
+			for (int c = 0; c < scope->chunkCount; c++) {
+				chunks.push_back(std::string("scope_") + scope->uuid + "_chunk" + std::to_string(c) + ".json");
+			}
+			chunks.push_back(filename); // final chunk
+			meta["chunks"] = chunks;
+
 			scopesMeta.push_back(meta);
 
 			scopeCursor++;

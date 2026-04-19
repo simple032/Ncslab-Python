@@ -67,6 +67,7 @@ public class ScopeStruct extends Terminal {
 		code+=this.name+".height = "+height+";\n";
 		code+=this.name+".cursor = 0;\n";
 		code+=this.name+".isFull = 0;\n";
+		code+=this.name+".chunkCount = 0;\n";
 		
 		
 		return code;

@@ -936,6 +936,7 @@ abstract public class CodeStructC{
 
 		if(model.getModelMode()==ModelMode.Simulation) {
 			code+="#define MAX_DATA_POINTS "+model.getConfig().getMaxDataPoints()+"\n";
+			code+="#define CHUNK_SIZE 100000\n";
 		}
 
 

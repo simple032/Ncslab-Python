@@ -16,6 +16,11 @@
                 }
             }
         #end
+        
+        ## Flush to file when in-memory data exceeds CHUNK_SIZE (100,000)
+        if (${scopeStructName}.timeList.size() > CHUNK_SIZE) {
+            flushScopeChunk(&${scopeStructName});
+        }
     }
 #else
     ## Fallback if parameters missing

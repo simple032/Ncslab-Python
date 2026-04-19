@@ -209,6 +209,7 @@ struct SCOPE
 	std::list<REAL> timeList;
 
 	int isFull;
+	int chunkCount;
 };
 
 void NCSLabInit();
@@ -218,6 +219,7 @@ void NCSLabDerivative();
 void NCSLabUpdate();
 void NCSLabDiscreteUpdate();
 void NCSLabSinkOutput();
+void flushScopeChunk(SCOPE* scope);
 void storeState();
 void restoreState();
 void storeDerivative(int);
