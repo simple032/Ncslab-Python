@@ -1165,7 +1165,8 @@ abstract public class CodeStructC{
         String fileName = file.getName().toLowerCase();
         return fileName.endsWith(".c") || fileName.endsWith(".h") ||
             fileName.endsWith(".cpp") || fileName.endsWith(".hpp") || fileName.endsWith(".o") ||
-            fileName.equals("makefile");
+            fileName.equals("makefile") ||
+            fileName.equals("results.json") || fileName.startsWith("scope_");
     }
 
 	//建立Model,block,input,output,signal,state,parameter等数据结构，并初始化

@@ -289,6 +289,38 @@ public class SimulationModel extends NCSLabModel{
     }
 
     /**
+     * Clean up old simulation result files from previous runs.
+     * Deletes results.json, scope_*.json and scope_*_chunk*.json,
+     * and resets ScopeStruct chunk counters.
+     */
+    private void cleanOldSimulationData() {
+        String outputDir = getOutputDir();
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            return;
+        }
+        File[] files = dir.listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            String name = file.getName();
+            if (name.equals("results.json") || name.startsWith("scope_")) {
+                if (file.delete()) {
+                    System.out.println("RT Simulation: Deleted old file " + name);
+                } else {
+                    System.err.println("RT Simulation: Failed to delete old file " + name);
+                }
+            }
+        }
+        // Reset chunk counters on all Scope terminals
+        for (Terminal terminal : getTerminalList()) {
+            if (terminal instanceof ScopeStruct) {
+                ScopeStruct scope = (ScopeStruct) terminal;
+                scope.resetChunks();
+            }
+        }
+    }
+
+    /**
      * Check all Scope terminals and flush chunks to disk if their in-memory data exceeds CHUNK_SIZE.
      */
     private void flushScopeChunksIfNeeded() {
@@ -398,6 +430,10 @@ public class SimulationModel extends NCSLabModel{
 		System.out.println("Executing simulation codes...");
 		System.out.printf("RT Debug: simulate() called with session=%s, terminals=%d%n", 
 			(session != null ? "present" : "null"), getTerminalList().size());
+
+        // Clean up old simulation data before starting a new run
+        cleanOldSimulationData();
+
         // 初始化解算器
         double absTol = getConfig().getAbsTol();
         double relTol = getConfig().getRelTol();

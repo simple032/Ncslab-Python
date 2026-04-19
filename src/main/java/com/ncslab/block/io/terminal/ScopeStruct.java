@@ -125,6 +125,16 @@ public class ScopeStruct extends Terminal {
     }
 
     /**
+     * Reset chunk counter and clear all in-memory data.
+     * Called before a new simulation run to discard previous state.
+     */
+    public void resetChunks() {
+        this.chunkCount = 0;
+        this.timeList.clear();
+        this.dataList.clear();
+    }
+
+    /**
      * Flush in-memory time/data lists to a chunk JSON file.
      * Clears the lists and increments chunkCount.
      */
