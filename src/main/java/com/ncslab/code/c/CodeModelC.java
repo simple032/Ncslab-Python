@@ -425,6 +425,14 @@ abstract public class CodeModelC extends CodeModel {
 
     }
 
+    /**
+     * Stop the ongoing simulation. Subclasses should override this to
+     * interrupt external processes or solver loops.
+     */
+    public void stop() {
+        // Default no-op; subclasses override
+    }
+
 	public void preBuild(){        
         //1.清除工作
         cleanup();

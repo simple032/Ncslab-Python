@@ -53,12 +53,15 @@ public class SimulationModel extends NCSLabModel{
     private double[] inputs;
     private double[] outputs;
     private JSONObject result = new JSONObject();
-    
+
     private long lastSessionTime;
     private long lastDisplayUpdateTime;
-    
+
     @Getter
     private boolean isMajorStep=false;
+
+    // Flag to request simulation stop from WebSocket disconnect
+    private volatile boolean stopRequested = false;
     
 	// 原有JSONObject构造函数
 	SimulationModel(JSONObject jsonIn, ModelMode mode) throws ModelException{
@@ -138,17 +141,19 @@ public class SimulationModel extends NCSLabModel{
 	}
 
 	public void sendSimulatingMessage(Session session, double time) throws IOException{
+		if (session == null || !session.isOpen()) {
+			throw new IOException("WebSocket session closed, stopping simulation");
+		}
 		JSONObject jb = new JSONObject();
 		jb.put("msg", "simulating");
 		jb.put("time", time);
 		jb.put("timeLength", this.getConfig().getStopTime());
-        if(session != null)
-		    session.getBasicRemote().sendText(jb.toString());
+		session.getBasicRemote().sendText(jb.toString());
         sendDisplayUpdateMessage(session);
 	}
 
     private void sendDisplayUpdateMessage(Session session) throws IOException {
-        if (session == null) return;
+        if (session == null || !session.isOpen()) return;
         long currentTime = new java.util.Date().getTime();
         if (currentTime <= lastDisplayUpdateTime + 500) {
             return; // throttle to every 500ms
@@ -162,7 +167,7 @@ public class SimulationModel extends NCSLabModel{
      * Used for sending initial and final display values at simulation start/end.
      */
     private void sendDisplayUpdateMessageForce(Session session) throws IOException {
-        if (session == null) return;
+        if (session == null || !session.isOpen()) return;
 
         Map<String, Double> displayData = new HashMap<>();
         for (Block block : getBlockList()) {
@@ -254,6 +259,10 @@ public class SimulationModel extends NCSLabModel{
         allResults.put("scopes", jsonScopes);
 
         // Send via WebSocket directly
+        if (!session.isOpen()) {
+            System.out.println("RT Simulation: Session closed before sending final results");
+            return;
+        }
         WebSocketMessageDto message = WebSocketMessageDto.createFinalResultsMessage(
             allResults.toMap(), getUserId(), getModelId());
         session.getBasicRemote().sendText(JsonUtils.getObjectMapper().writeValueAsString(message));
@@ -264,6 +273,11 @@ public class SimulationModel extends NCSLabModel{
     private double lastOutputTime=0;
     
     private double step;
+
+	public void stop() {
+		this.stopRequested = true;
+		System.out.println("[SimulationModel] Stop flag set");
+	}
 
 	public void simulate(Session session) throws ModelException {
 		System.out.println("Executing simulation codes...");
@@ -425,10 +439,14 @@ public class SimulationModel extends NCSLabModel{
             }else {
                 double t = tStart;
                 boolean finalTimeProcessed = false;
-                
+
                 this.isMajorStep=true;
-                
+
                 while(t < tEnd){
+                    if (stopRequested || (session != null && !session.isOpen())) {
+                        System.out.println("[SimulationModel] Stop requested or session closed, breaking loop at t=" + t);
+                        break;
+                    }
                     calculateOutputs(t);
                     if(circuitModel!=null) {
                     	circuitModel.calculateOutputs(t);
@@ -472,7 +490,7 @@ public class SimulationModel extends NCSLabModel{
                 }
                 
                 // Safety check: ensure final time is always processed (should not be needed with above logic)
-                if(!finalTimeProcessed) {
+                if(!stopRequested && !finalTimeProcessed) {
                     System.out.printf("Warning: Processing final time point as safety measure: t=%.6f, tEnd=%.6f%n", t, tEnd);
                     calculateOutputs(tEnd);
                     calculateUpdates(tEnd);  // NEW: Major time step update
@@ -501,10 +519,10 @@ public class SimulationModel extends NCSLabModel{
             // Use optimized WebSocket streaming instead of file I/O
             System.out.printf("RT Debug: About to send results - session=%s, terminals=%d%n", 
                 (session != null ? "present" : "null"), getTerminalList().size());
-            if (session != null) {
+            if (session != null && session.isOpen()) {
                 sendOptimizedFinalResults(session);
             } else {
-                System.out.println("RT Debug: No session provided, skipping result sending");
+                System.out.println("RT Debug: Session closed or null, skipping result sending");
             }
 		}
 		catch(Exception e) {            
@@ -512,7 +530,11 @@ public class SimulationModel extends NCSLabModel{
 			throw new ModelException("Can not execute the exe file!");
 		}
 
-		System.out.println("Simulation executed successfully!");
+		if (stopRequested) {
+			System.out.println("Simulation stopped by user.");
+		} else {
+			System.out.println("Simulation executed successfully!");
+		}
 
 	}
 
@@ -544,6 +566,10 @@ public class SimulationModel extends NCSLabModel{
          
         // Perform step-by-step integration
         for (int stepIndex = 1; stepIndex <= totalSteps; stepIndex++) {
+            if (stopRequested || (session != null && !session.isOpen())) {
+                System.out.println("[SimulationModel] Stop requested or session closed, breaking fixed-step integration at step " + stepIndex);
+                break;
+            }
             double targetTime = tStart + stepIndex * actualStep;
 
             // Clamp to exact end time to avoid floating-point overshoot
@@ -598,7 +624,7 @@ public class SimulationModel extends NCSLabModel{
         }
 
         // Final verification and cleanup
-        if (Math.abs(currentTime - tEnd) > minStep) {
+        if (!stopRequested && Math.abs(currentTime - tEnd) > minStep) {
             System.out.printf("Warning: Final time %.6f differs from target %.6f%n", currentTime, tEnd);
 
             // Force final step if needed

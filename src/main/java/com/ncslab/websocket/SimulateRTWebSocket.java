@@ -2,13 +2,13 @@ package com.ncslab.websocket;
 
 import java.io.IOException;
 
+import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 
-import com.ncslab.code.c.CodeModelC;
 import com.ncslab.ncslablink.*;
 import com.ncslab.dto.core.ModelDto;
 import com.ncslab.dto.core.BlockDto;
@@ -16,7 +16,6 @@ import com.ncslab.dto.communication.WebSocketMessageDto;
 import com.ncslab.dto.model.MdlDataDto;
 import com.ncslab.util.JsonUtils;
 import com.ncslab.util.UserContext;
-import com.utils.Property;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 @ServerEndpoint("/websocketsimulatert")
@@ -30,9 +29,25 @@ public class SimulateRTWebSocket {
 		session.setMaxBinaryMessageBufferSize(1024*1024);
 	}
 
+	@OnClose
+	public void onClose(Session session) {
+		// Interrupt the simulation thread if still running
+		Thread simThread = (Thread) session.getUserProperties().get("simulationThread");
+		if (simThread != null && simThread.isAlive()) {
+			System.out.println("[SimulateRTWebSocket] Session closed, interrupting simulation thread...");
+			simThread.interrupt();
+		}
+		// Also set the stop flag on the model
+		Object modelObj = session.getUserProperties().get("model");
+		if (modelObj instanceof SimulationModel) {
+			System.out.println("[SimulateRTWebSocket] Session closed, setting stop flag on model...");
+			((SimulationModel) modelObj).stop();
+		}
+	}
+
 	private void sendMessage(Session session, String msgString) throws IOException{
 		WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage(msgString, null);
-        if(session!=null) {
+        if(session!=null && session.isOpen()) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
 			    session.getBasicRemote().sendText(messageJson);
@@ -42,7 +57,7 @@ public class SimulateRTWebSocket {
 
 	private void sendErrorMessage(Session session, String msgString) throws IOException{
 		WebSocketMessageDto message = WebSocketMessageDto.createErrorMessage(msgString);
-        if(session!=null) {
+        if(session!=null && session.isOpen()) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
             session.getBasicRemote().sendText(messageJson);
@@ -61,7 +76,7 @@ public class SimulateRTWebSocket {
 		try {
 			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
 			com = wsMessage.getCom();
-			log.info("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);				
+			log.info("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);			
 		} catch (JsonProcessingException e) {
 			// If Jackson parsing fails, log error and return
 			log.error("Failed to parse WebSocket message with Jackson: " + e.getMessage());
@@ -75,6 +90,12 @@ public class SimulateRTWebSocket {
         
         SimulationModel model = null;
         if(com.equals("start")) {
+			// Prevent duplicate simulation for the same session
+			if (session.getUserProperties().get("simulationThread") != null) {
+				log.warn("Simulation already running for this session, ignoring start command");
+				return;
+			}
+
 			try {
 				sendMessage(session,"start");
 				
@@ -142,49 +163,70 @@ public class SimulateRTWebSocket {
                 log.info("RT WebSocket model created successfully: " + model.getModelName() + 
                 		   " with " + model.getBlockList().size() + " blocks");
 
-	        	sendMessage(session,"generated");
+		        	sendMessage(session,"generated");
 
-	        	if(!model.getErrorList().isEmpty()) {
-	        		for(ErrorMessage em: model.getErrorList()) {
-	        			errorMsgs += em.getMessage();
-	        		}
-	        		throw new ModelException(errorMsgs);
-	        	}
+		        	if(!model.getErrorList().isEmpty()) {
+		        		for(ErrorMessage em: model.getErrorList()) {
+		        			errorMsgs += em.getMessage();
+		        		}
+		        		throw new ModelException(errorMsgs);
+		        	}
 
-	        	model.simulate(session);
-
-	        	sendMessage(session,"simulated");
+		        	// Run simulation in a separate thread so @OnClose can be called while simulating
+		        	final SimulationModel finalModel = model;
+		        	Thread simThread = new Thread(() -> {
+		        		try {
+		        			session.getUserProperties().put("model", finalModel);
+		        			finalModel.simulate(session);
+		        			sendMessage(session, "simulated");
+		        		} catch (Exception e) {
+		        			System.err.println("[SimulateRTWebSocket] Simulation thread error: " + e.getMessage());
+		        			e.printStackTrace();
+		        			try {
+		        				sendErrorMessage(session, e.getMessage());
+		        			} catch (IOException ee) {
+		        				// Session may already be closed
+		        			}
+		        		} finally {
+		        			UserContext.clear();
+		        			try {
+		        				if (session != null && session.isOpen()) {
+		        					session.close();
+		        				}
+		        			} catch (IOException e) {
+		        				// Ignore
+		        			}
+		        			// Remove thread reference so session can start a new simulation later
+		        			try {
+		        				session.getUserProperties().remove("simulationThread");
+		        			} catch (IllegalStateException e) {
+		        				// Session already closed, ignore
+		        			}
+		        		}
+		        	}, "RT-Simulation-" + session.getId());
+		        	simThread.setDaemon(true);
+		        	session.getUserProperties().put("simulationThread", simThread);
+		        	simThread.start();
 
                 // sendResultMessage(session, model);
 	        }
 			catch(Exception e) {				
 				e.printStackTrace();
 				try {
-	        		sendErrorMessage(session,e.getMessage());
-	        	}
-	        	catch(IOException ee) {
+		        		sendErrorMessage(session,e.getMessage());
+		        	}
+		        	catch(IOException ee) {
                     ee.printStackTrace();
-	        	}
+		        	}
                 catch (Exception ee) {
                     ee.printStackTrace();
                 }				
-	        	log.error("Code generation terminated unsuccessfully");
+		        	log.error("Code generation terminated unsuccessfully");
+				// Clean up thread reference on pre-simulation error
+				session.getUserProperties().remove("simulationThread");
 			}
 			finally {
-				// ==================== CLEAR USER CONTEXT ====================
-				// Critical: Clear ThreadLocal to prevent memory leaks and context bleeding
-				UserContext.clear();
-
-                try {
-                    if(session != null)
-					    session.close();
-				}
-				catch(IOException e) {
-                    e.printStackTrace();
-				}
-                catch (Exception ee) {
-                    ee.printStackTrace();
-                }
+				// UserContext is cleared in the simulation thread, not here
 			}
 		}
 	}

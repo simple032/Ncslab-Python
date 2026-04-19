@@ -101,17 +101,27 @@ public class SimulateWebSocket {
 	public void onClose(Session session) {
 		// logger.info("WebSocket closed - Session: " + session.getId());
 		// ==================== SECURITY: SESSION CLEANUP ====================
-		// Properly clean up session-related security resources:
-		// - Clear session authentication tokens
-		// - Remove session from rate limiting tracking
-		// - Clean up any cached security context
-		// - Log session closure for audit purposes
+
+		// Interrupt the simulation thread if still running
+		Thread simThread = (Thread) session.getUserProperties().get("simulationThread");
+		if (simThread != null && simThread.isAlive()) {
+			System.out.println("[SimulateWebSocket] Session closed, interrupting simulation thread...");
+			simThread.interrupt();
+		}
+
+		// Stop ongoing simulation if any
+		Object modelObj = session.getUserProperties().get("modelC");
+		if (modelObj instanceof CodeModelC) {
+			System.out.println("[SimulateWebSocket] Session closed, stopping simulation...");
+			((CodeModelC) modelObj).stop();
+		}
+
 		WebSocketSecurity.cleanupSession(session);
 	}
 
 	private void sendMessage(Session session, String msgString) throws IOException{
 		WebSocketMessageDto message = WebSocketMessageDto.createStatusMessage(msgString, null);
-        if(session!=null) {
+        if(session!=null && session.isOpen()) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
 			    session.getBasicRemote().sendText(messageJson);
@@ -122,7 +132,7 @@ public class SimulateWebSocket {
 		String resultsPath = "/CCode/"+modelC.getUserId()+"/"+modelC.getModelId()+"/results.json";
 		WebSocketMessageDto message = WebSocketMessageDto.createResultMessage(
 			resultsPath, modelC.getUserId(), modelC.getModelId());
-        if(session!=null) {
+        if(session!=null && session.isOpen()) {
         	// Use JsonUtils helper for direct DTO serialization
         	String messageJson = JsonUtils.serializeWebSocketMessage(message);
             session.getBasicRemote().sendText(messageJson);
@@ -318,13 +328,37 @@ public class SimulateWebSocket {
 	        	sendSimulatingMessage(session,modelC.getConfig().getStopTime());
 
 				if(session != null) {
-					modelC.simulate(session);
+					session.getUserProperties().put("modelC", modelC);
+					final CodeModelC finalModelC = modelC;
+					Thread simThread = new Thread(() -> {
+						try {
+							finalModelC.simulate(session);
+							if (session.isOpen()) {
+								sendMessage(session, "simulated");
+								sendResultMessage(session, finalModelC);
+							}
+						} catch (Exception e) {
+							System.err.println("[SimulateWebSocket] Simulation thread error: " + e.getMessage());
+							e.printStackTrace();
+						} finally {
+							try {
+								if (session != null && session.isOpen()) {
+									session.close();
+								}
+							} catch (IOException e) {
+								// Ignore
+							}
+							try {
+								session.getUserProperties().remove("simulationThread");
+							} catch (IllegalStateException e) {
+								// Session already closed, ignore
+							}
+						}
+					}, "Std-Simulation-" + session.getId());
+					simThread.setDaemon(true);
+					session.getUserProperties().put("simulationThread", simThread);
+					simThread.start();
 				}
-
-	        	sendMessage(session,"simulated");
-	        	
-	        	// Use original file I/O-based result response for step control compatibility
-	        	sendResultMessage(session, modelC);
 	        	
 			} catch(IOException e) {
 				System.err.println(e.getMessage());
@@ -396,14 +430,9 @@ public class SimulateWebSocket {
 				}
 			}
 
-			// Securely close session connection
-			try {
-				if (session != null && session.isOpen()) {
-					session.close();
-				}
-			} catch (IOException e) {
-				logger.warning("Error closing WebSocket session: " + e.getMessage());
-			}
+			// Note: Do NOT close session here. The simulation runs in a background thread
+			// and the session must remain open until the thread completes.
+			// Session cleanup is handled by the simulation thread's finally block.
 		}
 	}
 		

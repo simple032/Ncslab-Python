@@ -20,6 +20,8 @@ import java.nio.charset.StandardCharsets;
 public class CodeModelCWindowsSimulation extends CodeModelC{
 
 	private CodeStructCWindowsSimulation codeStructC = new CodeStructCWindowsSimulation(this);
+	private volatile Process currentProcess;
+	private volatile boolean stoppedByUser = false;
 
 	// 原有JSONObject构造函数
 	CodeModelCWindowsSimulation(JSONObject jsonIn, ModelMode mode) throws ModelException{
@@ -36,6 +38,15 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		return codeStructC;
 	}
 
+	@Override
+	public void stop() {
+		this.stoppedByUser = true;
+		if (currentProcess != null) {
+			currentProcess.destroyForcibly();
+			currentProcess = null;
+		}
+	}
+
 	// 原有JSONObject工厂方法
 	public static CodeModelCWindowsSimulation createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException {
         return new CodeModelCWindowsSimulation(jsonIn,mode);
@@ -47,12 +58,14 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 	}
 
 	private void sendSimulatingMessage(Session session, double time) throws IOException{
+		if (session == null || !session.isOpen()) {
+			return;
+		}
 		JSONObject jb = new JSONObject();
 		jb.put("msg", "simulating");
 		jb.put("time", time);
 		jb.put("timeLength", this.getConfig().getStopTime());
-        if(session != null)
-		    session.getBasicRemote().sendText(jb.toString());
+		session.getBasicRemote().sendText(jb.toString());
 	}
 
     public void copyLibraryFiles(){
@@ -154,6 +167,7 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
             );
             processBuilder.directory(dir);
             process = processBuilder.start();
+            this.currentProcess = process;
 
 			// read primitive Java data types from an underlying InputStream in a little-endian format
 			// This input stream is the stdout of the process
@@ -162,6 +176,15 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 			long currentTime = new java.util.Date().getTime();
 
 			while(true) {
+				// Check if simulation should be stopped (session closed or thread interrupted)
+				if (session != null && !session.isOpen()) {
+					System.out.println("[CodeModelCWindowsSimulation] Session closed, stopping simulation");
+					return;
+				}
+				if (Thread.interrupted()) {
+					System.out.println("[CodeModelCWindowsSimulation] Thread interrupted, stopping simulation");
+					return;
+				}
 				int pre1=0,pre2=0;
 				do {
 					pre1=pre2;
@@ -217,6 +240,10 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 			
 		}
 		catch(InterruptedException|IOException e) {
+			if (stoppedByUser) {
+				System.out.println("[CodeModelCWindowsSimulation] Simulation stopped by user, exiting cleanly");
+				return;
+			}
             e.printStackTrace();
 			throw new ModelException("Can not execute the exe file!");
 		}
