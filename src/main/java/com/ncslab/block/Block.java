@@ -74,6 +74,14 @@ public class Block implements MCodeBlock, CCodeBlock, SimuBlock {
     @Setter
     protected String blockUUID = "null";
     
+    /** Block visual position (X coordinate) for port ordering */
+    @Getter
+    protected double positionX = 0.0;
+    
+    /** Block visual position (Y coordinate) for port ordering */
+    @Getter
+    protected double positionY = 0.0;
+    
     /** 
      * Block parameters stored in native JSON format.
      * Different blocks have different parameters, so stored as raw JSON for flexibility.
@@ -259,6 +267,12 @@ public class Block implements MCodeBlock, CCodeBlock, SimuBlock {
         this.model = model;
         this.blockPath = blockDto.getBlockPath();
         this.blockUUID = blockDto.getBlockUUID() != null ? blockDto.getBlockUUID() : "null";
+        
+        // Save visual position for port ordering (e.g., subsystem In/Out port sequence)
+        if (blockDto.getPosition() != null) {
+            this.positionX = blockDto.getPosition().getX() != null ? blockDto.getPosition().getX() : 0.0;
+            this.positionY = blockDto.getPosition().getY() != null ? blockDto.getPosition().getY() : 0.0;
+        }
 
         // Initialize paramValues for legacy compatibility
         this.paramValues = new JSONObject();
@@ -299,6 +313,13 @@ public class Block implements MCodeBlock, CCodeBlock, SimuBlock {
         this.model = model;
         this.blockPath = blockIn.getString("blockPath");
         this.blockUUID = blockIn.optString("blockUUID", "null");
+        
+        // Save visual position for port ordering (e.g., subsystem In/Out port sequence)
+        JSONObject posObj = blockIn.optJSONObject("position");
+        if (posObj != null) {
+            this.positionX = posObj.optDouble("x", 0.0);
+            this.positionY = posObj.optDouble("y", 0.0);
+        }
         
         parseParameterList();
         // parseInputOutputPorts();

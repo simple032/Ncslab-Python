@@ -821,6 +821,11 @@ abstract public class NCSLabModel {
 	}
 
     private void refactorSubsystemBlocks() {
+        // Sort In/Out blocks by port number (ascending) so that
+        // subsystem external ports match the port number ordering.
+        inBlockList.sort((a, b) -> Integer.compare(a.getPortNumber(), b.getPortNumber()));
+        outBlockList.sort((a, b) -> Integer.compare(a.getPortNumber(), b.getPortNumber()));
+        
         for(Subsystem subsystem:subsystemBlockList){
             String subsystemPath = subsystem.getFullPath();
             
