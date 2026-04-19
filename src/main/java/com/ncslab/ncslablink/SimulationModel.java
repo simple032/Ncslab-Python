@@ -274,6 +274,121 @@ public class SimulationModel extends NCSLabModel{
     
     private double step;
 
+    private static final int CHUNK_SIZE = 100000;
+
+    /**
+     * Get the output directory for simulation result files.
+     * Format: {CCodePathWin}/{userId}/{modelId}/
+     */
+    private String getOutputDir() {
+        String basePath = Property.instance.getProperty("CCodePathWin", "D:/NewLab/Code/CCode/");
+        if (!basePath.endsWith("/") && !basePath.endsWith("\\")) {
+            basePath += "/";
+        }
+        return basePath + getUserId() + "/" + getModelId() + "/";
+    }
+
+    /**
+     * Check all Scope terminals and flush chunks to disk if their in-memory data exceeds CHUNK_SIZE.
+     */
+    private void flushScopeChunksIfNeeded() {
+        String outputDir = getOutputDir();
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        for (Terminal terminal : getTerminalList()) {
+            if (terminal instanceof ScopeStruct) {
+                ScopeStruct scope = (ScopeStruct) terminal;
+                if (scope.getTimeList().size() > CHUNK_SIZE) {
+                    try {
+                        scope.flushChunk(outputDir);
+                        System.out.printf("RT Simulation: Flushed chunk %d for scope %s%n",
+                            scope.getChunkCount() - 1, scope.getName());
+                    } catch (IOException e) {
+                        System.err.println("Failed to flush scope chunk for " + scope.getName() + ": " + e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Save tail scope data and results.json metadata to disk at the end of simulation.
+     * This allows the frontend to load results via HTTP just like standard simulation.
+     */
+    private void saveFinalResultsToFile() {
+        String outputDir = getOutputDir();
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        JSONArray scopesMeta = new JSONArray();
+        for (Terminal terminal : getTerminalList()) {
+            if (!(terminal instanceof ScopeStruct)) continue;
+            ScopeStruct scope = (ScopeStruct) terminal;
+
+            // Write tail file for any remaining in-memory data (or empty tail if chunks exist)
+            if (!scope.getTimeList().isEmpty() || scope.getChunkCount() > 0) {
+                JSONObject tailJson = new JSONObject();
+                tailJson.put("uuid", scope.getBlock().getBlockUUID());
+                tailJson.put("name", scope.getBlock().getBlockName());
+                tailJson.put("path", scope.getBlock().getBlockPath());
+                tailJson.put("width", scope.getWidth());
+                tailJson.put("height", scope.getHeight());
+                tailJson.put("chunkIndex", scope.getChunkCount());
+
+                JSONArray timeArray = new JSONArray();
+                JSONArray dataArray = new JSONArray();
+                for (Double t : scope.getTimeList()) {
+                    timeArray.put(t);
+                }
+                for (Double d : scope.getDataList()) {
+                    dataArray.put(d);
+                }
+                tailJson.put("time", timeArray);
+                tailJson.put("data", dataArray);
+
+                String tailFilename = "scope_" + scope.getBlock().getBlockUUID() + ".json";
+                try (FileWriter writer = new FileWriter(new File(outputDir, tailFilename))) {
+                    writer.write(tailJson.toString());
+                } catch (IOException e) {
+                    System.err.println("Failed to write tail file for " + scope.getName() + ": " + e.getMessage());
+                }
+            }
+
+            // Build metadata entry for results.json
+            JSONObject meta = new JSONObject();
+            meta.put("uuid", scope.getBlock().getBlockUUID());
+            meta.put("name", scope.getBlock().getBlockName());
+            meta.put("path", scope.getBlock().getBlockPath());
+            meta.put("width", scope.getWidth());
+            meta.put("height", scope.getHeight());
+
+            JSONArray chunks = new JSONArray();
+            for (int c = 0; c < scope.getChunkCount(); c++) {
+                chunks.put("scope_" + scope.getBlock().getBlockUUID() + "_chunk" + c + ".json");
+            }
+            if (!scope.getTimeList().isEmpty() || scope.getChunkCount() > 0) {
+                chunks.put("scope_" + scope.getBlock().getBlockUUID() + ".json");
+            }
+            meta.put("chunks", chunks);
+            scopesMeta.put(meta);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("version", "0.2");
+        result.put("scopes", scopesMeta);
+
+        try (FileWriter writer = new FileWriter(new File(outputDir, "results.json"))) {
+            writer.write(result.toString());
+            System.out.printf("RT Simulation: Saved results.json to %s%n", outputDir);
+        } catch (IOException e) {
+            System.err.println("Failed to write results.json: " + e.getMessage());
+        }
+    }
+
 	public void stop() {
 		this.stopRequested = true;
 		System.out.println("[SimulationModel] Stop flag set");
@@ -343,6 +458,7 @@ public class SimulationModel extends NCSLabModel{
                     // 3. 处理离散状态更新
                     calculateUpdates(t);  // NEW: Major time step update
                     calculateDiscreteUpdates(t);
+                    flushScopeChunksIfNeeded();
 
                     double iteration = Math.floor(t/step)/1000;
                     // 4. 发送时间序列消息（无论是否有状态）
@@ -376,6 +492,7 @@ public class SimulationModel extends NCSLabModel{
                     // 处理离散状态更新
                     calculateUpdates(currentTime);  // NEW: Major time step update
                     calculateDiscreteUpdates(currentTime);
+                    flushScopeChunksIfNeeded();
 
                     // 处理主步长的输出
 
@@ -455,6 +572,7 @@ public class SimulationModel extends NCSLabModel{
                     
                     calculateUpdates(t);  // NEW: Major time step update
                     calculateDiscreteUpdates(t);
+                    flushScopeChunksIfNeeded();
                     // 发送时间序列消息
                     if(t - Math.floor(t) < minStep) {
                         try {
@@ -510,6 +628,9 @@ public class SimulationModel extends NCSLabModel{
                 calculateStops(tEnd);  // NEW: Graceful shutdown
                 calculateTerminates(tEnd);  // Cleanup resources
             }
+
+            // Save scope chunks and results.json to disk (same format as standard simulation)
+            saveFinalResultsToFile();
 
             // Send final display values before sending results
             if (session != null) {
@@ -593,6 +714,7 @@ public class SimulationModel extends NCSLabModel{
                 }
                 this.isMajorStep=false;
                 calculateDiscreteUpdates(currentTime);
+                flushScopeChunksIfNeeded();
 
                 // Send simulation message
                 /*

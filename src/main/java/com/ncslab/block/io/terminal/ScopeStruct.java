@@ -5,9 +5,14 @@ import com.ncslab.block.data.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ScopeStruct extends Terminal {
 	@Setter
@@ -21,6 +26,8 @@ public class ScopeStruct extends Terminal {
     private List<Double> timeList;
     @Getter
     private List<Double> dataList;
+    @Getter
+    private int chunkCount = 0;
 
 	public ScopeStruct(Block block,int id,String localName){
 		super(block, id, localName);
@@ -115,5 +122,44 @@ public class ScopeStruct extends Terminal {
 
     public Block getBlock() {
     	return this.block;
+    }
+
+    /**
+     * Flush in-memory time/data lists to a chunk JSON file.
+     * Clears the lists and increments chunkCount.
+     */
+    public void flushChunk(String outputDir) throws IOException {
+        if (timeList.isEmpty()) return;
+
+        JSONObject scopeJson = new JSONObject();
+        scopeJson.put("uuid", this.block.getBlockUUID());
+        scopeJson.put("name", this.block.getBlockName());
+        scopeJson.put("path", this.block.getBlockPath());
+        scopeJson.put("width", this.width);
+        scopeJson.put("height", this.height);
+        scopeJson.put("chunkIndex", this.chunkCount);
+
+        JSONArray timeArray = new JSONArray();
+        JSONArray dataArray = new JSONArray();
+
+        for (Double t : this.timeList) {
+            timeArray.put(t);
+        }
+        for (Double d : this.dataList) {
+            dataArray.put(d);
+        }
+
+        scopeJson.put("time", timeArray);
+        scopeJson.put("data", dataArray);
+
+        String filename = "scope_" + this.block.getBlockUUID() + "_chunk" + this.chunkCount + ".json";
+        File outFile = new File(outputDir, filename);
+        try (FileWriter writer = new FileWriter(outFile)) {
+            writer.write(scopeJson.toString());
+        }
+
+        this.chunkCount++;
+        this.timeList.clear();
+        this.dataList.clear();
     }
 }
