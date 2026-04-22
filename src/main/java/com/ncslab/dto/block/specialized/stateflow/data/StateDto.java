@@ -79,10 +79,31 @@ public class StateDto {
         Object dataObj = cell.get("data");
         if (dataObj instanceof Map) {
             Map<String, Object> data = (Map<String, Object>) dataObj;
+
+            String entryAction = data.get("entryAction") != null ? data.get("entryAction").toString() : null;
+            String exitAction = data.get("exitAction") != null ? data.get("exitAction").toString() : null;
+            String duringAction = data.get("duringAction") != null ? data.get("duringAction").toString() : null;
+
+            // Fallback: 前端可能把动作代码放在 code 字段中（格式：enty\nvar1=0）
+            boolean allEmpty = (entryAction == null || entryAction.trim().isEmpty())
+                && (exitAction == null || exitAction.trim().isEmpty())
+                && (duringAction == null || duringAction.trim().isEmpty());
+
+            if (allEmpty) {
+                Object codeObj = data.get("code");
+                if (codeObj != null) {
+                    String code = codeObj.toString();
+                    java.util.Map<String, String> parsed = parseStateCode(code);
+                    if (parsed.containsKey("entry")) entryAction = parsed.get("entry");
+                    if (parsed.containsKey("during")) duringAction = parsed.get("during");
+                    if (parsed.containsKey("exit")) exitAction = parsed.get("exit");
+                }
+            }
+
             builder.name(data.get("name") != null ? data.get("name").toString() : null)
-                .entryAction(data.get("entryAction") != null ? data.get("entryAction").toString() : null)
-                .exitAction(data.get("exitAction") != null ? data.get("exitAction").toString() : null)
-                .duringAction(data.get("duringAction") != null ? data.get("duringAction").toString() : null)
+                .entryAction(entryAction)
+                .exitAction(exitAction)
+                .duringAction(duringAction)
                 .isParallel(Boolean.TRUE.equals(data.get("isParallel")))
                 .isDefault(Boolean.TRUE.equals(data.get("isDefault")))
                 .description(data.get("description") != null ? data.get("description").toString() : null);
@@ -94,6 +115,72 @@ public class StateDto {
         }
 
         return builder.build();
+    }
+
+    /**
+     * 解析 Stateflow 状态节点的 code 字段。
+     * <p>
+     * 支持格式：
+     * <pre>
+     * enty
+     * var1=0
+     * dur
+     * var1=var1+1
+     * exit
+     * var1=0
+     * </pre>
+     * 前缀说明：enty/entry=entryAction, dur/during=duringAction, exit=exitAction
+     *
+     * @param code 前端传递的 code 字段值
+     * @return 解析后的动作映射，key 为 entry/during/exit
+     */
+    private static java.util.Map<String, String> parseStateCode(String code) {
+        java.util.Map<String, String> result = new java.util.HashMap<>();
+        if (code == null || code.trim().isEmpty()) {
+            return result;
+        }
+
+        String[] lines = code.split("\n");
+        String currentType = null;
+        StringBuilder currentCode = new StringBuilder();
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) continue;
+
+            String lower = trimmed.toLowerCase();
+            if (lower.equals("enty") || lower.equals("entry") ||
+                lower.equals("dur") || lower.equals("during") ||
+                lower.equals("exit")) {
+                // 保存之前的动作
+                if (currentType != null && currentCode.length() > 0) {
+                    result.put(currentType, currentCode.toString().trim());
+                }
+                // 确定新动作类型
+                if (lower.startsWith("enty") || lower.startsWith("entry")) {
+                    currentType = "entry";
+                } else if (lower.startsWith("dur")) {
+                    currentType = "during";
+                } else if (lower.startsWith("exit")) {
+                    currentType = "exit";
+                }
+                currentCode = new StringBuilder();
+            } else {
+                // 代码行
+                if (currentCode.length() > 0) currentCode.append("\n");
+                currentCode.append(line);
+            }
+        }
+
+        // 保存最后一个动作
+        if (currentType != null && currentCode.length() > 0) {
+            result.put(currentType, currentCode.toString().trim());
+        } else if (currentType == null) {
+            // 没有识别到动作类型前缀，整个 code 视为 entry action
+            result.put("entry", code.trim());
+        }
+
+        return result;
     }
 
     public boolean isInitial() {
