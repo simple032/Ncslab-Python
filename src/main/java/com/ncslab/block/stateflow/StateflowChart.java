@@ -8,6 +8,10 @@ import com.ncslab.ncslablink.MatDimException;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.block.specialized.stateflow.StateflowChartDto;
+import com.ncslab.dto.block.specialized.stateflow.data.StateflowDataDto;
+import com.ncslab.dto.block.specialized.stateflow.data.VariableDto;
+import com.ncslab.dto.block.specialized.stateflow.data.EventDto;
+import com.ncslab.dto.block.specialized.stateflow.data.ChartPropertiesDto;
 
 import org.json.JSONObject;
 
@@ -18,25 +22,18 @@ import java.util.ArrayList;
 
 /**
  * Stateflow Chart block - A state machine container block.
- * 
- * <p>This block represents a Stateflow Chart similar to Simulink's Stateflow.
- * It contains states, transitions, variables, and events that define
- * state machine behavior.</p>
- * 
- * <p>Current implementation is a placeholder that parses the DTO structure
- * and generates comment markers in C code. Full code generation for
- * state machines will be implemented in a future phase.</p>
- * 
+ *
  * @author NCSLab Development Team
- * @version 1.0
+ * @version 1.2
  * @since 2025-04
  */
 public class StateflowChart extends Block {
 
     /**
-     * Parsed stateflow data from DTO.
+     * Stateflow data entity (business layer).
+     * Decoupled from DTO for domain logic independence.
      */
-    private Map<String, Object> stateflowData;
+    private StateflowData stateflowData;
 
     /**
      * Chart name.
@@ -46,27 +43,22 @@ public class StateflowChart extends Block {
     /**
      * Chart variables (input/output/local/parameter).
      */
-    private List<Map<String, Object>> variables;
+    private List<Variable> variables;
 
     /**
      * Chart events.
      */
-    private List<Map<String, Object>> events;
-
-    /**
-     * Chart states.
-     */
-    private List<Map<String, Object>> states;
-
-    /**
-     * Chart transitions.
-     */
-    private List<Map<String, Object>> transitions;
+    private List<Event> events;
 
     /**
      * Chart properties.
      */
-    private Map<String, Object> properties;
+    private ChartProperties properties;
+
+    /**
+     * State machine runtime (initialized during simulation).
+     */
+    private StateMachineRuntime runtime;
 
     @Deprecated
     public StateflowChart(JSONObject blockJSON, NCSLabModel model) {
@@ -76,31 +68,24 @@ public class StateflowChart extends Block {
 
     /**
      * DTO-native constructor.
-     * 
-     * @param blockDto StateflowChartDto containing block configuration
-     * @param model NCSLabModel containing the block diagram
      */
     public StateflowChart(BlockDto blockDto, NCSLabModel model) {
         super(blockDto, model);
         if (blockDto instanceof StateflowChartDto) {
             StateflowChartDto dto = (StateflowChartDto) blockDto;
-            this.stateflowData = dto.getStateflowData();
+            this.stateflowData = StateflowData.fromDto(dto.getStateflowData());
             this.chartName = dto.getChartName();
-            this.variables = dto.getVariables();
-            this.events = dto.getEvents();
-            this.states = dto.getStates();
-            this.transitions = dto.getTransitions();
-            this.properties = dto.getChartProperties();
+            if (this.stateflowData != null) {
+                this.variables = this.stateflowData.getVariables();
+                this.events = this.stateflowData.getEvents();
+                this.properties = this.stateflowData.getProperties();
+            }
         }
         initializePorts();
     }
 
     /**
      * Factory method to create StateflowChart from StateflowChartDto.
-     *
-     * @param dto   StateflowChartDto containing block configuration
-     * @param model NCSLabModel containing the block diagram
-     * @return Created StateflowChart block
      */
     public static StateflowChart createFromDto(StateflowChartDto dto, NCSLabModel model) {
         if (dto == null) {
@@ -114,27 +99,56 @@ public class StateflowChart extends Block {
 
     @SuppressWarnings("unchecked")
     private void parseLegacyJSON(JSONObject blockJSON) {
-        // Legacy JSON parsing - extract stateflow data if present
         if (blockJSON.has("innerChart")) {
             Object innerChart = blockJSON.get("innerChart");
             if (innerChart instanceof JSONObject) {
                 JSONObject chartJSON = (JSONObject) innerChart;
                 this.chartName = chartJSON.optString("name", getBlockName());
-                
+
+                StateflowDataDto.StateflowDataDtoBuilder dataBuilder = StateflowDataDto.builder()
+                    .id(chartJSON.optString("id", null))
+                    .name(this.chartName);
+
+                if (chartJSON.has("cells")) {
+                    dataBuilder.cells(jsonArrayToList(chartJSON.getJSONArray("cells")));
+                }
                 if (chartJSON.has("variables")) {
-                    this.variables = jsonArrayToList(chartJSON.getJSONArray("variables"));
+                    List<Map<String, Object>> varList = jsonArrayToList(chartJSON.getJSONArray("variables"));
+                    List<VariableDto> typedVars = new ArrayList<>();
+                    for (Map<String, Object> varMap : varList) {
+                        VariableDto var = variableFromMap(varMap);
+                        if (var != null) typedVars.add(var);
+                    }
+                    dataBuilder.variables(typedVars);
                 }
                 if (chartJSON.has("events")) {
-                    this.events = jsonArrayToList(chartJSON.getJSONArray("events"));
-                }
-                if (chartJSON.has("states")) {
-                    this.states = jsonArrayToList(chartJSON.getJSONArray("states"));
-                }
-                if (chartJSON.has("transitions")) {
-                    this.transitions = jsonArrayToList(chartJSON.getJSONArray("transitions"));
+                    List<Map<String, Object>> evtList = jsonArrayToList(chartJSON.getJSONArray("events"));
+                    List<EventDto> typedEvents = new ArrayList<>();
+                    for (Map<String, Object> evtMap : evtList) {
+                        EventDto evt = eventFromMap(evtMap);
+                        if (evt != null) typedEvents.add(evt);
+                    }
+                    dataBuilder.events(typedEvents);
                 }
                 if (chartJSON.has("properties")) {
-                    this.properties = chartJSON.getJSONObject("properties").toMap();
+                    JSONObject props = chartJSON.getJSONObject("properties");
+                    ChartPropertiesDto chartProps = ChartPropertiesDto.builder()
+                        .stateMachineType(props.optString("stateMachineType", "Classic"))
+                        .updateMethod(props.optString("updateMethod", "inherited"))
+                        .sampleTime(props.optString("sampleTime", null))
+                        .enableZeroCrossings(props.has("enableZeroCrossings") ? props.getBoolean("enableZeroCrossings") : null)
+                        .enableCBitOperations(props.has("enableCBitOperations") ? props.getBoolean("enableCBitOperations") : null)
+                        .executeAtInitialization(props.has("executeAtInitialization") ? props.getBoolean("executeAtInitialization") : null)
+                        .initializeOutputsEveryTime(props.has("initializeOutputsEveryTime") ? props.getBoolean("initializeOutputsEveryTime") : null)
+                        .build();
+                    dataBuilder.properties(chartProps);
+                }
+
+                this.stateflowData = StateflowData.fromDto(dataBuilder.build());
+                if (this.stateflowData != null) {
+                    this.variables = this.stateflowData.getVariables();
+                    this.events = this.stateflowData.getEvents();
+                    this.properties = this.stateflowData.getProperties();
                 }
             }
         }
@@ -152,35 +166,68 @@ public class StateflowChart extends Block {
         return result;
     }
 
+    private static VariableDto variableFromMap(Map<String, Object> map) {
+        if (map == null) return null;
+        String scope = map.get("scope") != null ? map.get("scope").toString() : "";
+        String name = map.get("name") != null ? map.get("name").toString() : null;
+        String dataType = map.get("dataType") != null ? map.get("dataType").toString() : null;
+
+        VariableDto var;
+        switch (scope.toLowerCase()) {
+            case "input":
+                var = new com.ncslab.dto.block.specialized.stateflow.data.InputVariableDto();
+                break;
+            case "output":
+                var = new com.ncslab.dto.block.specialized.stateflow.data.OutputVariableDto();
+                break;
+            case "local":
+                var = new com.ncslab.dto.block.specialized.stateflow.data.LocalVariableDto();
+                break;
+            case "parameter":
+                var = new com.ncslab.dto.block.specialized.stateflow.data.ParameterVariableDto();
+                break;
+            default:
+                return null;
+        }
+        var.setName(name);
+        var.setDataType(dataType);
+        var.setScope(scope);
+        var.setInitialValue(map.get("initialValue") != null ? map.get("initialValue").toString() : null);
+        var.setSize(map.get("size") != null ? map.get("size").toString() : null);
+        var.setDescription(map.get("description") != null ? map.get("description").toString() : null);
+        if (map.get("port") instanceof Number) {
+            var.setPort(((Number) map.get("port")).intValue());
+        }
+        return var;
+    }
+
+    private static EventDto eventFromMap(Map<String, Object> map) {
+        if (map == null) return null;
+        return EventDto.builder()
+            .name(map.get("name") != null ? map.get("name").toString() : null)
+            .eventType(map.get("eventType") != null ? map.get("eventType").toString() : null)
+            .triggerType(map.get("triggerType") != null ? map.get("triggerType").toString() : null)
+            .description(map.get("description") != null ? map.get("description").toString() : null)
+            .build();
+    }
+
     // ===== Code Generation (Placeholder) =====
 
     @Override
     public void generateInitCodeC(CodeStructC code) {
         super.generateInitCodeC(code);
         code.addInitCode(String.format("// Stateflow Chart: %s (init placeholder)\n", getBlockName()));
-        
-        // TODO: Generate state machine initialization code
-        // - Initialize state variables
-        // - Initialize chart data (local variables, outputs)
-        // - Set default state
     }
 
     @Override
     public void generateOutputCodeC(CodeStructC code) {
         super.generateOutputCodeC(code);
         code.addOutputCode(String.format("// ======================= Stateflow Chart: %s =========================\n", getBlockName()));
-        
-        // TODO: Generate state machine step code
-        // - Evaluate transitions based on events and conditions
-        // - Execute state entry/exit/during actions
-        // - Update outputs
-        
         code.addOutputCode(String.format("// ======================= End Stateflow Chart: %s =========================\n", getBlockName()));
     }
 
     /**
      * Initialize input/output ports based on Stateflow variables.
-     * Input variables create input ports, output variables create output ports.
      */
     private void initializePorts() {
         if (variables == null || variables.isEmpty()) {
@@ -188,12 +235,11 @@ public class StateflowChart extends Block {
         }
         int inputPortCount = 0;
         int outputPortCount = 0;
-        for (Map<String, Object> var : variables) {
-            String scope = var.get("scope") != null ? var.get("scope").toString() : "";
-            if ("input".equalsIgnoreCase(scope)) {
+        for (Variable var : variables) {
+            if (var instanceof InputVariable) {
                 inputPortCount++;
                 inputPortList.add(new InputPort(this, inputPortCount));
-            } else if ("output".equalsIgnoreCase(scope)) {
+            } else if (var instanceof OutputVariable) {
                 outputPortCount++;
                 outputPortList.add(new OutputPort(this, outputPortCount, true));
             }
@@ -202,8 +248,6 @@ public class StateflowChart extends Block {
 
     @Override
     public void updateDimension() throws MatDimException {
-        // Stateflow chart assumes scalar inputs/outputs (1x1)
-        // OutputSignal dimensions are handled by Block.setupOutputSignal()
         for (OutputPort port : outputPortList) {
             if (port.getWidth() <= 0) port.setWidth(1);
             if (port.getHeight() <= 0) port.setHeight(1);
@@ -215,9 +259,22 @@ public class StateflowChart extends Block {
         // TODO: Validate dimensions against variable size declarations
     }
 
-    // ===== Getters for Stateflow Data =====
+    // ===== State Machine Runtime =====
 
-    public Map<String, Object> getStateflowData() {
+    public void initializeRuntime() {
+        if (runtime == null) {
+            runtime = new StateMachineRuntime();
+        }
+        runtime.initialize(this);
+    }
+
+    public StateMachineRuntime getRuntime() {
+        return runtime;
+    }
+
+    // ===== Getters =====
+
+    public StateflowData getStateflowData() {
         return stateflowData;
     }
 
@@ -225,23 +282,45 @@ public class StateflowChart extends Block {
         return chartName;
     }
 
-    public List<Map<String, Object>> getVariables() {
+    public List<Variable> getVariables() {
         return variables;
     }
 
-    public List<Map<String, Object>> getEvents() {
+    public List<Event> getEvents() {
         return events;
     }
 
-    public List<Map<String, Object>> getStates() {
-        return states;
-    }
-
-    public List<Map<String, Object>> getTransitions() {
-        return transitions;
-    }
-
-    public Map<String, Object> getProperties() {
+    public ChartProperties getProperties() {
         return properties;
+    }
+
+    public List<State> getStates() {
+        return stateflowData != null ? stateflowData.getStates() : new ArrayList<>();
+    }
+
+    public List<Transition> getTransitions() {
+        return stateflowData != null ? stateflowData.getTransitions() : new ArrayList<>();
+    }
+
+    public List<InputVariable> getInputVariables() {
+        if (variables == null) return new ArrayList<>();
+        List<InputVariable> result = new ArrayList<>();
+        for (Variable var : variables) {
+            if (var instanceof InputVariable) {
+                result.add((InputVariable) var);
+            }
+        }
+        return result;
+    }
+
+    public List<OutputVariable> getOutputVariables() {
+        if (variables == null) return new ArrayList<>();
+        List<OutputVariable> result = new ArrayList<>();
+        for (Variable var : variables) {
+            if (var instanceof OutputVariable) {
+                result.add((OutputVariable) var);
+            }
+        }
+        return result;
     }
 }
