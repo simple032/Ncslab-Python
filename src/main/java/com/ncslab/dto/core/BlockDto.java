@@ -347,7 +347,10 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.CurrentSensorDto.class, name = "Current Sensor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableResistorDto.class, name = "Variable Resistor"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableInductorDto.class, name = "Variable Inductor"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableCapacitorDto.class, name = "Variable Capacitor")
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableCapacitorDto.class, name = "Variable Capacitor"),
+    // Stateflow Chart block
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.stateflow.StateflowChartDto.class, name = "StateflowChart"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.stateflow.StateflowChartDto.class, name = "Stateflow-chart-block")
 })
 @Data
 @SuperBuilder

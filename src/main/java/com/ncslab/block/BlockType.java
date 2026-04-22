@@ -314,6 +314,10 @@ public class BlockType{
         blockClassTree.put("EnabledSubsystem", com.ncslab.block.subsystem.EnabledSubsystem.class);
         blockClassTree.put("TriggeredSubsystem", com.ncslab.block.subsystem.TriggeredSubsystem.class);
         blockClassTree.put("EnabledAndTriggeredSubsystem", com.ncslab.block.subsystem.EnabledAndTriggeredSubsystem.class);
+        // Stateflow Chart
+        blockClassTree.put("StateflowChart", com.ncslab.block.stateflow.StateflowChart.class);
+        blockClassTree.put("Stateflow-chart-block", com.ncslab.block.stateflow.StateflowChart.class);
+
         // Subsystem aliases for alternative naming conventions
         blockClassTree.put("EnableBlock", com.ncslab.block.subsystem.Enable.class);
         blockClassTree.put("TriggerBlock", com.ncslab.block.subsystem.Trigger.class);
