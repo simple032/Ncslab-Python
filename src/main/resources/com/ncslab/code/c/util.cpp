@@ -433,7 +433,34 @@ void sendDisplayUpdateForce() {
 	}
 }
 
-
+/**
+ * Send Stateflow state change update to Java backend via stdout.
+ * Called from generated C code when a state transition occurs.
+ */
+void sendStateflowStateUpdate(const char* chartUUID, const char* stateId, const char* stateName) {
+	if (chartUUID == NULL || stateId == NULL) return;
+	
+	PROGRESSTYPE type = StateflowStateUpdate;
+	fputc(0x55, stdout);
+	fputc(0x55, stdout);
+	fwrite(&type, 1, sizeof(type), stdout);
+	
+	int chartUuidLen = strlen(chartUUID);
+	fwrite(&chartUuidLen, 1, sizeof(chartUuidLen), stdout);
+	fwrite(chartUUID, 1, chartUuidLen, stdout);
+	
+	int stateIdLen = strlen(stateId);
+	fwrite(&stateIdLen, 1, sizeof(stateIdLen), stdout);
+	fwrite(stateId, 1, stateIdLen, stdout);
+	
+	int stateNameLen = stateName ? strlen(stateName) : 0;
+	fwrite(&stateNameLen, 1, sizeof(stateNameLen), stdout);
+	if (stateNameLen > 0) {
+		fwrite(stateName, 1, stateNameLen, stdout);
+	}
+	
+	fflush(stdout);
+}
 
 // 初始化缓冲区
 void init_buffer(Buffer *buf, int size, double init_value) {

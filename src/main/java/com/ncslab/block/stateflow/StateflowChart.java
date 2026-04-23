@@ -79,6 +79,12 @@ public class StateflowChart extends Block {
     private State currentActiveState;
 
     /**
+     * 最近一次状态变化事件（用于快速仿真时向前端发送状态更新）。
+     * 格式：{ chartUUID, stateId, stateName }
+     */
+    private volatile Map<String, String> lastStateChangeEvent;
+
+    /**
      * InputVariable 到外部信号源的连接映射。
      * 懒加载：第一次访问时通过 {@link #resolveInputConnections()} 自动建立。
      */
@@ -371,9 +377,15 @@ public class StateflowChart extends Block {
                 // State change
                 if (targetStateEnum != null) {
                     outputCode.append(String.format("            %s = %s;\n", getStateVarCName(), targetStateEnum));
-                    // Entry action of target state
+                    // Send state change update to frontend
                     State targetState = findStateById(trans.getTargetId(), states);
                     if (targetState != null) {
+                        outputCode.append(String.format(
+                            "            sendStateflowStateUpdate(\"%s\", \"%s\", \"%s\");\n",
+                            escapeCString(this.blockUUID),
+                            escapeCString(trans.getTargetId()),
+                            escapeCString(targetState.getName())
+                        ));
                         String targetEntryAction = targetState.getEntryAction();
                         if (targetEntryAction != null && !targetEntryAction.trim().isEmpty()) {
                             outputCode.append(String.format("            { %s }\n", ensureStatementTerminator(replaceVariableNames(targetEntryAction))));
@@ -501,6 +513,11 @@ public class StateflowChart extends Block {
     private String escapeCComment(String text) {
         if (text == null) return "";
         return text.replace("*/", "* /").replace("\n", " ");
+    }
+
+    private String escapeCString(String text) {
+        if (text == null) return "";
+        return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
     }
 
     // ===== Global Declaration Generation =====
@@ -851,6 +868,11 @@ public class StateflowChart extends Block {
                 if (targetState != null) {
                     targetState.setActive(true);
                     currentActiveState = targetState;
+                    // 记录状态变化事件（供快速仿真使用）
+                    lastStateChangeEvent = new HashMap<>();
+                    lastStateChangeEvent.put("chartUUID", this.blockUUID);
+                    lastStateChangeEvent.put("stateId", trans.getTargetId());
+                    lastStateChangeEvent.put("stateName", targetState.getName());
                     // 6. 执行目标状态的 entry action
                     executeAction(targetState.getEntryAction());
                 }
@@ -859,6 +881,16 @@ public class StateflowChart extends Block {
                 break;
             }
         }
+    }
+
+    /**
+     * 获取最近一次状态变化事件（快速仿真用）。
+     * @return 包含 chartUUID, stateId, stateName 的 Map，如果没有则返回 null
+     */
+    public Map<String, String> consumeLastStateChangeEvent() {
+        Map<String, String> event = lastStateChangeEvent;
+        lastStateChangeEvent = null;
+        return event;
     }
 
     /**

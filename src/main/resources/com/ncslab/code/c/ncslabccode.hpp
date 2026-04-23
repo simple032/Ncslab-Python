@@ -301,6 +301,7 @@ enum PROGRESSTYPE{
 	Simulating=1,
 	Saving=2,
 	DisplayUpdate=3,
+	StateflowStateUpdate=4,
 	Ending=-1
 };
 

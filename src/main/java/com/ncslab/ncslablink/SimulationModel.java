@@ -62,6 +62,9 @@ public class SimulationModel extends NCSLabModel{
 
     // Flag to request simulation stop from WebSocket disconnect
     private volatile boolean stopRequested = false;
+
+    // WebSocket session for sending real-time updates (Stateflow state changes, etc.)
+    private Session wsSession;
     
 	// 原有JSONObject构造函数
 	SimulationModel(JSONObject jsonIn, ModelMode mode) throws ModelException{
@@ -430,6 +433,8 @@ public class SimulationModel extends NCSLabModel{
 		System.out.println("Executing simulation codes...");
 		System.out.printf("RT Debug: simulate() called with session=%s, terminals=%d%n", 
 			(session != null ? "present" : "null"), getTerminalList().size());
+
+        this.wsSession = session;
 
         // Clean up old simulation data before starting a new run
         cleanOldSimulationData();
@@ -1066,6 +1071,36 @@ public class SimulationModel extends NCSLabModel{
         // 类似Simulink的mdlUpdate
         for(Block block: getBlockList()){
             block.calculateDiscreteUpdate(t);
+        }
+        // 检查 Stateflow Chart 状态变化并发送前端更新
+        checkAndSendStateflowStateUpdates();
+    }
+
+    /**
+     * 检查所有 StateflowChart Block 的状态变化，如有变化则通过 WebSocket 发送。
+     */
+    private void checkAndSendStateflowStateUpdates() {
+        if (wsSession == null || !wsSession.isOpen()) {
+            return;
+        }
+        for (Block block : getBlockList()) {
+            if (block instanceof com.ncslab.block.stateflow.StateflowChart) {
+                com.ncslab.block.stateflow.StateflowChart chart = (com.ncslab.block.stateflow.StateflowChart) block;
+                Map<String, String> event = chart.consumeLastStateChangeEvent();
+                if (event != null) {
+                    try {
+                        JSONObject jb = new JSONObject();
+                        jb.put("msg", "stateflow_state_update");
+                        jb.put("timestamp", System.currentTimeMillis());
+                        jb.put("chartUUID", event.get("chartUUID"));
+                        jb.put("stateId", event.get("stateId"));
+                        jb.put("stateName", event.get("stateName") != null ? event.get("stateName") : "");
+                        wsSession.getBasicRemote().sendText(jb.toString());
+                    } catch (IOException e) {
+                        System.err.println("[SimulationModel] Failed to send stateflow state update: " + e.getMessage());
+                    }
+                }
+            }
         }
     }
 

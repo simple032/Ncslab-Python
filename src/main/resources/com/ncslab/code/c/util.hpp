@@ -76,6 +76,7 @@ int hasdiscrete(double *);
 double distance(double,double);
 void writeInformation();
 void sendDisplayUpdateForce();
+void sendStateflowStateUpdate(const char* chartUUID, const char* stateId, const char* stateName);
 double generateGaussianNoise(double mean, double stdDev);
 double lowPassFilter(double input, double alpha);
 unsigned char calcSum(unsigned char bytes[]);

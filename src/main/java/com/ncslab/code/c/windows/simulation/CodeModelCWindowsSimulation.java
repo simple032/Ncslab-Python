@@ -98,6 +98,25 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		jb.put("displayData", dataObj);
 		session.getBasicRemote().sendText(jb.toString());
 	}
+
+	/**
+	 * Send Stateflow state change update via WebSocket
+	 * @param session WebSocket session
+	 * @param chartUUID Chart block UUID (frontend cell id)
+	 * @param stateId Target state ID (frontend state node id)
+	 * @param stateName Target state name for display
+	 * @throws IOException if sending fails
+	 */
+	private void sendStateflowStateUpdateMessage(Session session, String chartUUID, String stateId, String stateName) throws IOException {
+		if (session == null || chartUUID == null || stateId == null) return;
+		JSONObject jb = new JSONObject();
+		jb.put("msg", "stateflow_state_update");
+		jb.put("timestamp", System.currentTimeMillis());
+		jb.put("chartUUID", chartUUID);
+		jb.put("stateId", stateId);
+		jb.put("stateName", stateName != null ? stateName : "");
+		session.getBasicRemote().sendText(jb.toString());
+	}
     
     private double readDouble(LittleEndianDataInputStream out)  throws IOException{
 		byte c;
@@ -224,6 +243,24 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 					if (!displayData.isEmpty()) {
 						sendDisplayUpdateMessage(session, displayData);
 					}
+					break;
+				case 4: // StateflowStateUpdate - 状态机状态变化
+					int chartUuidLen = out.readInt();
+					byte[] chartUuidBytes = new byte[chartUuidLen];
+					out.readFully(chartUuidBytes);
+					String chartUUID = new String(chartUuidBytes, StandardCharsets.UTF_8);
+					
+					int stateIdLen = out.readInt();
+					byte[] stateIdBytes = new byte[stateIdLen];
+					out.readFully(stateIdBytes);
+					String stateId = new String(stateIdBytes, StandardCharsets.UTF_8);
+					
+					int stateNameLen = out.readInt();
+					byte[] stateNameBytes = new byte[stateNameLen];
+					out.readFully(stateNameBytes);
+					String stateName = new String(stateNameBytes, StandardCharsets.UTF_8);
+					
+					sendStateflowStateUpdateMessage(session, chartUUID, stateId, stateName);
 					break;
 				}
 				
