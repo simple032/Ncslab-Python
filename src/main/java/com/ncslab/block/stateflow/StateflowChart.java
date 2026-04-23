@@ -1,6 +1,7 @@
 package com.ncslab.block.stateflow;
 
 import com.ncslab.block.Block;
+import com.ncslab.block.data.Data;
 import com.ncslab.block.io.InputPort;
 import com.ncslab.block.io.OutputPort;
 import com.ncslab.code.c.CodeStructC;
@@ -61,6 +62,21 @@ public class StateflowChart extends Block {
      * State machine runtime (initialized during simulation).
      */
     private StateMachineRuntime runtime;
+
+    /**
+     * 缓存的状态列表（避免每次从 cells 重新解析导致状态丢失）。
+     */
+    private List<State> cachedStates;
+
+    /**
+     * 缓存的转移列表。
+     */
+    private List<Transition> cachedTransitions;
+
+    /**
+     * 当前激活的状态（仿真期间使用，不依赖 State 对象的 active 标志）。
+     */
+    private State currentActiveState;
 
     /**
      * InputVariable 到外部信号源的连接映射。
@@ -646,6 +662,324 @@ public class StateflowChart extends Block {
     @Override
     public void checkDimension() throws MatDimException {
         // TODO: Validate dimensions against variable size declarations
+    }
+
+    // ===== Java Runtime Simulation (for Rapid Simulation) =====
+
+    /**
+     * 初始化 Stateflow Chart 的仿真状态。
+     * <p>
+     * 设置所有变量的初始值，确定初始状态，并执行初始状态的 entry action。
+     * </p>
+     */
+    @Override
+    public void calculateInit() {
+        if (variables == null || variables.isEmpty()) {
+            return;
+        }
+
+        // 1. 初始化所有变量的当前值
+        for (Variable var : variables) {
+            double initVal = 0.0;
+            if (var.getInitialValue() != null && !var.getInitialValue().trim().isEmpty()) {
+                try {
+                    initVal = Double.parseDouble(var.getInitialValue().trim());
+                } catch (NumberFormatException e) {
+                    initVal = 0.0;
+                }
+            }
+            var.setCurrentValue(initVal);
+        }
+
+        // 2. 缓存状态机和转移列表（避免 getStates/getTransitions 每次重新解析）
+        cachedStates = getStates();
+        cachedTransitions = getTransitions();
+
+        // 3. 初始化 StateMachineRuntime
+        initializeRuntime();
+
+        // 4. 找到初始状态并激活
+        currentActiveState = null;
+
+        // 优先查找 sf-initial 状态的出边目标
+        for (Transition trans : cachedTransitions) {
+            State source = findStateById(trans.getSourceId(), cachedStates);
+            if (source != null && source.isInitial()) {
+                currentActiveState = findStateById(trans.getTargetId(), cachedStates);
+                break;
+            }
+        }
+
+        // fallback：查找标记为 default 的状态
+        if (currentActiveState == null) {
+            for (State state : cachedStates) {
+                if (Boolean.TRUE.equals(state.getIsDefault())) {
+                    currentActiveState = state;
+                    break;
+                }
+            }
+        }
+
+        // fallback：第一个非 initial/final 状态
+        if (currentActiveState == null) {
+            for (State state : cachedStates) {
+                if (!state.isInitial() && !state.isFinal()) {
+                    currentActiveState = state;
+                    break;
+                }
+            }
+        }
+
+        if (currentActiveState != null) {
+            currentActiveState.setActive(true);
+            // 执行初始状态的 entry action
+            executeAction(currentActiveState.getEntryAction());
+        }
+
+        System.out.printf("StateflowChart '%s' (id=%d) initialized: active state = %s%n",
+            getBlockName(), getBlockId(),
+            currentActiveState != null ? currentActiveState.getName() : "none");
+    }
+
+    /**
+     * 在每个仿真步执行 Stateflow Chart 的输入/输出映射。
+     * <p>
+     * 流程：input mapping → output mapping。
+     * 状态机逻辑（during + transitions）在 {@link #calculateDiscreteUpdate(double)} 中执行，
+     * 确保状态转换只在主时间步发生，避免在变步长积分器的中间点意外触发转移。
+     * </p>
+     */
+    @Override
+    public void calculateOutput(double t) {
+        if (variables == null || variables.isEmpty()) {
+            return;
+        }
+
+        // 1. Input mapping：将输入端口的值读入 InputVariable
+        readInputs();
+
+        // 2. Output mapping：将 OutputVariable 的值写入输出端口
+        writeOutputs();
+    }
+
+    /**
+     * 读取输入端口值到 InputVariable。
+     */
+    private void readInputs() {
+        List<InputVariable> inputVars = getInputVariables();
+        List<com.ncslab.block.io.InputPort> inputPorts = getInputPortList();
+        for (int i = 0; i < inputVars.size() && i < inputPorts.size(); i++) {
+            try {
+                double val = inputPorts.get(i).getData().getInitValue();
+                inputVars.get(i).setCurrentValue(val);
+            } catch (Exception e) {
+                // 输入端口未连接时使用 0
+                inputVars.get(i).setCurrentValue(0.0);
+            }
+        }
+    }
+
+    /**
+     * 将 OutputVariable 的当前值写入输出端口。
+     */
+    private void writeOutputs() {
+        List<OutputVariable> outputVars = getOutputVariables();
+        List<com.ncslab.block.io.OutputPort> outputPorts = getOutputPortList();
+        for (int i = 0; i < outputVars.size() && i < outputPorts.size(); i++) {
+            Object val = outputVars.get(i).getCurrentValue();
+            double dval = (val instanceof Number) ? ((Number) val).doubleValue() : 0.0;
+            outputPorts.get(i).setData(new Data(dval));
+        }
+    }
+
+    /**
+     * 在主时间步执行 Stateflow Chart 的状态机逻辑。
+     * <p>
+     * 流程：during action → transition checks → exit → transition → entry。
+     * 该方法只在离散更新阶段被调用，确保状态转换与仿真主步长同步。
+     * </p>
+     */
+    @Override
+    public void calculateDiscreteUpdate(double t) {
+        if (variables == null || variables.isEmpty()) {
+            return;
+        }
+        // 确保 InputVariable 已读取最新值
+        readInputs();
+        executeStateMachine();
+        // 更新后写回输出（让同一时间步的下游 block 在 calculateOutput 中拿到最新值）
+        writeOutputs();
+    }
+
+    /**
+     * 执行完整的状态机步进：during → transitions → exit → entry。
+     */
+    private void executeStateMachine() {
+        if (cachedStates == null || cachedStates.isEmpty()) {
+            cachedStates = getStates();
+        }
+        if (cachedTransitions == null) {
+            cachedTransitions = getTransitions();
+        }
+
+        // 使用 currentActiveState 跟踪当前状态（避免 getStates 重新创建对象导致 active 标志丢失）
+        State currentState = currentActiveState;
+        if (currentState == null) {
+            currentState = findActiveState(cachedStates);
+            currentActiveState = currentState;
+        }
+        if (currentState == null) {
+            return;
+        }
+
+        // 1. 执行 during action
+        executeAction(currentState.getDuringAction());
+
+        // 2. 检查 outgoing transitions
+        List<Transition> outgoing = getOutgoingTransitions(currentState, cachedTransitions);
+        for (Transition trans : outgoing) {
+            if (evaluateCondition(trans.getCondition())) {
+                // 3. 执行 exit action
+                executeAction(currentState.getExitAction());
+                currentState.setActive(false);
+
+                // 4. 执行 transition action
+                executeAction(trans.getTransitionAction());
+
+                // 5. 切换到目标状态
+                State targetState = findStateById(trans.getTargetId(), cachedStates);
+                if (targetState != null) {
+                    targetState.setActive(true);
+                    currentActiveState = targetState;
+                    // 6. 执行目标状态的 entry action
+                    executeAction(targetState.getEntryAction());
+                }
+
+                // 每次步进最多触发一次转移（与 Stateflow 语义一致）
+                break;
+            }
+        }
+    }
+
+    /**
+     * 构建变量名到当前值的映射，供表达式求值器使用。
+     */
+    private Map<String, Double> buildVariableValuesMap() {
+        Map<String, Double> map = new HashMap<>();
+        if (variables != null) {
+            for (Variable var : variables) {
+                String name = var.getName();
+                Object val = var.getCurrentValue();
+                if (name != null) {
+                    double dval = (val instanceof Number) ? ((Number) val).doubleValue() : 0.0;
+                    map.put(name, dval);
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 执行动作代码字符串（entry/during/exit/transition action）。
+     * <p>
+     * 将代码按分号或换行分割为多个语句，对每个赋值语句解析并执行。
+     * 支持形如 {@code var1=0}、{@code var2=var1+1} 的简单赋值。
+     * </p>
+     */
+    private void executeAction(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            return;
+        }
+        Map<String, Double> varMap = buildVariableValuesMap();
+        boolean changed = false;
+
+        // 按分号或换行分割语句
+        String[] statements = code.split("[;\\n]");
+        for (String stmt : statements) {
+            stmt = stmt.trim();
+            if (stmt.isEmpty()) {
+                continue;
+            }
+
+            // 查找赋值运算符 '='，注意跳过 '==', '<=', '>=', '!='
+            int assignPos = -1;
+            for (int i = 0; i < stmt.length(); i++) {
+                char c = stmt.charAt(i);
+                if (c == '=') {
+                    // 检查是否是 '=='
+                    if (i + 1 < stmt.length() && stmt.charAt(i + 1) == '=') {
+                        i++; // 跳过第二个 '='
+                        continue;
+                    }
+                    assignPos = i;
+                    break;
+                }
+            }
+
+            if (assignPos >= 0) {
+                String varName = stmt.substring(0, assignPos).trim();
+                String expr = stmt.substring(assignPos + 1).trim();
+                if (!varName.isEmpty() && !expr.isEmpty()) {
+                    try {
+                        double value = new SfExpressionEvaluator(expr, varMap).evaluate();
+                        varMap.put(varName, value);
+                        changed = true;
+                    } catch (Exception e) {
+                        System.err.printf("StateflowChart '%s': failed to execute '%s' -> %s%n",
+                            getBlockName(), stmt, e.getMessage());
+                    }
+                }
+            } else {
+                // 不是赋值语句，尝试作为纯表达式求值（可能用于副作用，如函数调用）
+                try {
+                    new SfExpressionEvaluator(stmt, varMap).evaluate();
+                } catch (Exception e) {
+                    // 忽略无法执行的语句
+                }
+            }
+        }
+
+        // 将更新后的值写回 Variable 对象
+        if (changed && variables != null) {
+            for (Variable var : variables) {
+                String name = var.getName();
+                if (name != null && varMap.containsKey(name)) {
+                    var.setCurrentValue(varMap.get(name));
+                }
+            }
+        }
+    }
+
+    /**
+     * 求值条件表达式（如 {@code var1 > 5}）。
+     *
+     * @return 条件为真返回 true
+     */
+    private boolean evaluateCondition(String condition) {
+        if (condition == null || condition.trim().isEmpty()) {
+            return true; // 无条件转移始终可触发
+        }
+        Map<String, Double> varMap = buildVariableValuesMap();
+        try {
+            return new SfExpressionEvaluator(condition, varMap).evaluateBoolean();
+        } catch (Exception e) {
+            System.err.printf("StateflowChart '%s': failed to evaluate condition '%s' -> %s%n",
+                getBlockName(), condition, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 在状态列表中查找当前激活的状态。
+     */
+    private State findActiveState(List<State> states) {
+        if (states == null) return null;
+        for (State state : states) {
+            if (state.isActive()) {
+                return state;
+            }
+        }
+        return null;
     }
 
     // ===== State Machine Runtime =====
