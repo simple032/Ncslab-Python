@@ -763,9 +763,7 @@ public class StateflowChart extends Block {
             lastStateChangeEvent.put("stateName", currentActiveState.getName());
         }
 
-        System.out.printf("StateflowChart '%s' (id=%d) initialized: active state = %s%n",
-            getBlockName(), getBlockId(),
-            currentActiveState != null ? currentActiveState.getName() : "none");
+        // StateflowChart initialization complete - no console output to avoid confusion with UI messages
     }
 
     /**
