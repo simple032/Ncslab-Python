@@ -216,6 +216,116 @@ void ncslabLoop()
 }
 #endif
 
+
+void ncslabLoopRealtime()
+{
+gslDim = getStateDimension();
+
+    if (gslDim > 0) {
+        gslY = (double *)malloc(gslDim * sizeof(double));
+        statesToGslY(gslY);
+
+        sys.function = ncsLabFunc;
+        sys.jacobian = ncsLabJac;
+        sys.dimension = gslDim;
+        sys.params = NULL;
+
+        step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk2imp, gslDim);
+        if (!step) {
+            fprintf(stderr, "GSL step allocation failed\n");
+            return;
+        }
+        control = gsl_odeiv2_control_standard_new(1e-6, 1e-6, 1.0, 0.0);
+        if (!control) {
+            fprintf(stderr, "GSL control allocation failed\n");
+            gsl_odeiv2_step_free(step);
+            return;
+        }
+        evolve = gsl_odeiv2_evolve_alloc(gslDim);
+        if (!evolve) {
+            fprintf(stderr, "GSL evolve allocation failed\n");
+            gsl_odeiv2_control_free(control);
+            gsl_odeiv2_step_free(step);
+            return;
+        }
+
+        gslStepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
+    } else {
+        gslStepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
+    }
+
+    discreteInit();
+  NCSLabOutput();
+  NCSLabSinkOutput();
+  sendDisplayUpdateForce();
+
+int stepCountSinceLastSend = 0;
+#ifdef _WIN32
+  DWORD startTick = GetTickCount();
+  DWORD lastSendTick = startTick;
+#else
+  struct timeval startTv;
+  gettimeofday(&startTv, NULL);
+  long long startMs = startTv.tv_sec * 1000LL + startTv.tv_usec / 1000;
+  long long lastSendMs = startMs;
+#endif
+
+  while (mp->time < mp->stopTime) {
+    NCSLabOneStep();
+    stepCountSinceLastSend++;
+
+    bool shouldSend = false;
+#ifdef _WIN32
+    DWORD nowTick = GetTickCount();
+    if (stepCountSinceLastSend >= 10000 || (int)(nowTick - lastSendTick) >= 1000) {
+      shouldSend = true;
+    }
+#else
+    struct timeval nowTv;
+    gettimeofday(&nowTv, NULL);
+    long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
+    if (stepCountSinceLastSend >= 10000 || (int)(nowMs - lastSendMs) >= 1000) {
+      shouldSend = true;
+    }
+#endif
+
+    if (shouldSend) {
+      sendRealtimeDataUpdate();
+      stepCountSinceLastSend = 0;
+#ifdef _WIN32
+      lastSendTick = nowTick;
+#else
+      lastSendMs = nowMs;
+#endif
+    }
+
+    double simulatedElapsed = mp->time - mp->startTime;
+#ifdef _WIN32
+    DWORD realElapsedMs = GetTickCount() - startTick;
+    double realElapsedSec = realElapsedMs / 1000.0;
+    if (simulatedElapsed > realElapsedSec) {
+      DWORD sleepMs = (DWORD)((simulatedElapsed - realElapsedSec) * 1000);
+      if (sleepMs > 0) Sleep(sleepMs);
+    }
+#else
+    struct timeval syncTv;
+    gettimeofday(&syncTv, NULL);
+    long long realElapsedMs = (syncTv.tv_sec * 1000LL + syncTv.tv_usec / 1000) - startMs;
+    double realElapsedSec = realElapsedMs / 1000.0;
+    if (simulatedElapsed > realElapsedSec) {
+      long sleepUs = (long)((simulatedElapsed - realElapsedSec) * 1000000);
+      if (sleepUs > 0) usleep(sleepUs);
+    }
+#endif
+  }
+
+if (evolve) { gsl_odeiv2_evolve_free(evolve); evolve = NULL; }
+    if (control) { gsl_odeiv2_control_free(control); control = NULL; }
+    if (step) { gsl_odeiv2_step_free(step); step = NULL; }
+    if (gslY) { free(gslY); gslY = NULL; }
+}
+#endif
+}
 void NCSLabOneStep()
 {
     mp->offset = 0;

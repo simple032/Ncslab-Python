@@ -39,6 +39,10 @@ abstract public class CodeModelC extends CodeModel {
 	protected String user = Optional.ofNullable(Property.instance.getProperty("user")).orElse("m2plab");
 	protected String group = Optional.ofNullable(Property.instance.getProperty("group")).orElse("m2plab");
 
+	@Getter
+	@Setter
+	protected boolean isRealtime = false;
+
 	abstract protected CodeStructC getCodeStructC();
 
 	// 原有JSONObject构造函数

@@ -4,12 +4,19 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv2.h>
-#include <gsl/gsl_math.h>  // 包含GSL数学头文件
+#include <gsl/gsl_math.h>
 
 #include "ncslabdefines.hpp"
 #include "util.hpp"
 #include "mainccode.hpp"
 #include "onestep.hpp"
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/time.h>
+#endif
 
 #define INIT_POINT_NUM 1000
 #define TOL 1E-4
@@ -99,6 +106,75 @@ void ncslabLoop() {
   while (mp->time < mp->stopTime) {
     //  writeInformation();
     NCSLabOneStep();
+  }
+}
+
+void ncslabLoopRealtime() {
+  maxStepSize = stepSize = (mp->stopTime - mp->startTime) / INIT_POINT_NUM;
+
+  discreteInit();
+  NCSLabOutput();
+  NCSLabSinkOutput();
+  sendDisplayUpdateForce();
+
+  int stepCountSinceLastSend = 0;
+#ifdef _WIN32
+  DWORD startTick = GetTickCount();
+  DWORD lastSendTick = startTick;
+#else
+  struct timeval startTv;
+  gettimeofday(&startTv, NULL);
+  long long startMs = startTv.tv_sec * 1000LL + startTv.tv_usec / 1000;
+  long long lastSendMs = startMs;
+#endif
+
+  while (mp->time < mp->stopTime) {
+    NCSLabOneStep();
+    stepCountSinceLastSend++;
+
+    bool shouldSend = false;
+#ifdef _WIN32
+    DWORD nowTick = GetTickCount();
+    if (stepCountSinceLastSend >= 10000 || (int)(nowTick - lastSendTick) >= 1000) {
+      shouldSend = true;
+    }
+#else
+    struct timeval nowTv;
+    gettimeofday(&nowTv, NULL);
+    long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
+    if (stepCountSinceLastSend >= 10000 || (int)(nowMs - lastSendMs) >= 1000) {
+      shouldSend = true;
+    }
+#endif
+
+    if (shouldSend) {
+      sendRealtimeDataUpdate();
+      stepCountSinceLastSend = 0;
+#ifdef _WIN32
+      lastSendTick = nowTick;
+#else
+      lastSendMs = nowMs;
+#endif
+    }
+
+    double simulatedElapsed = mp->time - mp->startTime;
+#ifdef _WIN32
+    DWORD realElapsedMs = GetTickCount() - startTick;
+    double realElapsedSec = realElapsedMs / 1000.0;
+    if (simulatedElapsed > realElapsedSec) {
+      DWORD sleepMs = (DWORD)((simulatedElapsed - realElapsedSec) * 1000);
+      if (sleepMs > 0) Sleep(sleepMs);
+    }
+#else
+    struct timeval syncTv;
+    gettimeofday(&syncTv, NULL);
+    long long realElapsedMs = (syncTv.tv_sec * 1000LL + syncTv.tv_usec / 1000) - startMs;
+    double realElapsedSec = realElapsedMs / 1000.0;
+    if (simulatedElapsed > realElapsedSec) {
+      long sleepUs = (long)((simulatedElapsed - realElapsedSec) * 1000000);
+      if (sleepUs > 0) usleep(sleepUs);
+    }
+#endif
   }
 }
 

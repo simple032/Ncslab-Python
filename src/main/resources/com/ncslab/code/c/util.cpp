@@ -434,6 +434,108 @@ void sendDisplayUpdateForce() {
 }
 
 /**
+ * Send real-time Display + Scope data update to Java backend via stdout.
+ * Called every 10000 steps or every 1 second during real-time simulation.
+ * Each scope sends at most 10000 new data points (latest points if exceeded).
+ */
+void sendRealtimeDataUpdate() {
+	if (mp->terminalNum <= 0) return;
+
+	int displayCount = 0;
+	int scopeCount = 0;
+	for (int i = 0; i < mp->terminalNum; i++) {
+		TERMINAL* terminal = terminals[i];
+		if (terminal->type != Scope) continue;
+		SCOPE* scope = (SCOPE*)terminal->terminal;
+		if (scope->maxDataLength == 1) {
+			displayCount++;
+		} else {
+			scopeCount++;
+		}
+	}
+	if (displayCount == 0 && scopeCount == 0) return;
+
+	PROGRESSTYPE type = RealtimeDataUpdate;
+	fputc(0x55, stdout);
+	fputc(0x55, stdout);
+	fwrite(&type, 1, sizeof(type), stdout);
+
+	fwrite(&displayCount, 1, sizeof(displayCount), stdout);
+	for (int i = 0; i < mp->terminalNum; i++) {
+		TERMINAL* terminal = terminals[i];
+		if (terminal->type != Scope) continue;
+		SCOPE* scope = (SCOPE*)terminal->terminal;
+		if (scope->maxDataLength == 1) {
+			int uuidLen = strlen(scope->uuid);
+			fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
+			fwrite(scope->uuid, 1, uuidLen, stdout);
+			double value = scope->dataList.empty() ? 0.0 : scope->dataList.back();
+			fwrite(&value, 1, sizeof(value), stdout);
+		}
+	}
+
+	fwrite(&scopeCount, 1, sizeof(scopeCount), stdout);
+	for (int i = 0; i < mp->terminalNum; i++) {
+		TERMINAL* terminal = terminals[i];
+		if (terminal->type != Scope) continue;
+		SCOPE* scope = (SCOPE*)terminal->terminal;
+		if (scope->maxDataLength == 1) continue;
+
+		int uuidLen = strlen(scope->uuid);
+		fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
+		fwrite(scope->uuid, 1, uuidLen, stdout);
+		fwrite(&(scope->width), 1, sizeof(scope->width), stdout);
+		fwrite(&(scope->height), 1, sizeof(scope->height), stdout);
+
+		int totalSize = (int)scope->timeList.size();
+		int newPoints = totalSize - scope->sentCount;
+		if (newPoints < 0) {
+			scope->sentCount = 0;
+			newPoints = totalSize;
+		}
+		if (newPoints > 10000) {
+			scope->sentCount = totalSize - 10000;
+			newPoints = 10000;
+		}
+		fwrite(&newPoints, 1, sizeof(newPoints), stdout);
+
+		std::list<REAL>::iterator timeIt = scope->timeList.begin();
+		std::list<REAL>::iterator dataIt = scope->dataList.begin();
+		for (int skip = 0; skip < scope->sentCount && timeIt != scope->timeList.end(); skip++) {
+			++timeIt;
+			for (int h = 0; h < scope->height; h++) {
+				for (int w = 0; w < scope->width; w++) {
+					if (dataIt != scope->dataList.end()) ++dataIt;
+				}
+			}
+		}
+
+		for (int p = 0; p < newPoints && timeIt != scope->timeList.end(); p++) {
+			REAL t = *timeIt;
+			fwrite(&t, 1, sizeof(t), stdout);
+			++timeIt;
+			for (int h = 0; h < scope->height; h++) {
+				for (int w = 0; w < scope->width; w++) {
+					if (dataIt != scope->dataList.end()) {
+						REAL val = *dataIt;
+						fwrite(&val, 1, sizeof(val), stdout);
+						++dataIt;
+					} else {
+						REAL zero = 0.0;
+						fwrite(&zero, 1, sizeof(zero), stdout);
+					}
+				}
+			}
+		}
+
+		scope->sentCount = totalSize;
+	}
+
+	fwrite(&(mp->time), 1, sizeof(mp->time), stdout);
+	fflush(stdout);
+}
+
+/**
  * Send Stateflow state change update to Java backend via stdout.
  * Called from generated C code when a state transition occurs.
  */

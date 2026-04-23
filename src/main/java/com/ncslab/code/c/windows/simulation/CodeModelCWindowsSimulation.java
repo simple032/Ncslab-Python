@@ -38,6 +38,10 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		return codeStructC;
 	}
 
+	public void setCodeStructC(CodeStructCWindowsSimulation codeStructC) {
+		this.codeStructC = codeStructC;
+	}
+
 	@Override
 	public void stop() {
 		this.stoppedByUser = true;
@@ -115,6 +119,49 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		jb.put("chartUUID", chartUUID);
 		jb.put("stateId", stateId);
 		jb.put("stateName", stateName != null ? stateName : "");
+		session.getBasicRemote().sendText(jb.toString());
+	}
+
+	/**
+	 * Send real-time Display + Scope data update via WebSocket
+	 * @param session WebSocket session
+	 * @param displayData Map of display UUID -> current value
+	 * @param scopeDataList List of scope data maps
+	 * @param currentTime Current simulation time
+	 * @throws IOException if sending fails
+	 */
+	private void sendRealtimeDataUpdateMessage(Session session, Map<String, Double> displayData,
+												 List<Map<String, Object>> scopeDataList,
+												 double currentTime) throws IOException {
+		if (session == null || !session.isOpen()) return;
+		JSONObject jb = new JSONObject();
+		jb.put("msg", "realtime_data_update");
+		jb.put("timestamp", System.currentTimeMillis());
+		jb.put("currentTime", currentTime);
+		JSONObject dataObj = new JSONObject();
+		for (Map.Entry<String, Double> entry : displayData.entrySet()) {
+			dataObj.put(entry.getKey(), entry.getValue());
+		}
+		jb.put("displayData", dataObj);
+		org.json.JSONArray scopeArray = new org.json.JSONArray();
+		for (Map<String, Object> scope : scopeDataList) {
+			JSONObject scopeObj = new JSONObject();
+			scopeObj.put("uuid", scope.get("uuid"));
+			scopeObj.put("width", scope.get("width"));
+			scopeObj.put("height", scope.get("height"));
+			org.json.JSONArray timeArr = new org.json.JSONArray();
+			org.json.JSONArray dataArr = new org.json.JSONArray();
+			for (Double t : (List<Double>) scope.get("time")) {
+				timeArr.put(t);
+			}
+			for (Double d : (List<Double>) scope.get("data")) {
+				dataArr.put(d);
+			}
+			scopeObj.put("time", timeArr);
+			scopeObj.put("data", dataArr);
+			scopeArray.put(scopeObj);
+		}
+		jb.put("scopeData", scopeArray);
 		session.getBasicRemote().sendText(jb.toString());
 	}
     
@@ -261,6 +308,54 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 					String stateName = new String(stateNameBytes, StandardCharsets.UTF_8);
 					
 					sendStateflowStateUpdateMessage(session, chartUUID, stateId, stateName);
+					break;
+				case 5: // RealtimeDataUpdate
+					try {
+						int rtDisplayCount = out.readInt();
+						Map<String, Double> rtDisplayData = new HashMap<>();
+						for (int i = 0; i < rtDisplayCount; i++) {
+							int uuidLen = out.readInt();
+							byte[] uuidBytes = new byte[uuidLen];
+							out.readFully(uuidBytes);
+							String uuid = new String(uuidBytes, StandardCharsets.UTF_8);
+							double displayValue = out.readDouble();
+							rtDisplayData.put(uuid, displayValue);
+						}
+						int rtScopeCount = out.readInt();
+						List<Map<String, Object>> rtScopeDataList = new ArrayList<>();
+						for (int i = 0; i < rtScopeCount; i++) {
+							int uuidLen = out.readInt();
+							byte[] uuidBytes = new byte[uuidLen];
+							out.readFully(uuidBytes);
+							String uuid = new String(uuidBytes, StandardCharsets.UTF_8);
+							int width = out.readInt();
+							int height = out.readInt();
+							int dataPointCount = out.readInt();
+							List<Double> timeList = new ArrayList<>();
+							List<Double> dataList = new ArrayList<>();
+							for (int p = 0; p < dataPointCount; p++) {
+								double t = out.readDouble();
+								timeList.add(t);
+								for (int h = 0; h < height; h++) {
+									for (int w = 0; w < width; w++) {
+										double val = out.readDouble();
+										dataList.add(val);
+									}
+								}
+							}
+							Map<String, Object> scopeData = new HashMap<>();
+							scopeData.put("uuid", uuid);
+							scopeData.put("width", width);
+							scopeData.put("height", height);
+							scopeData.put("time", timeList);
+							scopeData.put("data", dataList);
+							rtScopeDataList.add(scopeData);
+						}
+						double currentSimTime = out.readDouble();
+						sendRealtimeDataUpdateMessage(session, rtDisplayData, rtScopeDataList, currentSimTime);
+					} catch (IOException e) {
+						System.err.println("[CodeModelCWindowsSimulation] Error parsing RealtimeDataUpdate: " + e.getMessage());
+					}
 					break;
 				}
 				

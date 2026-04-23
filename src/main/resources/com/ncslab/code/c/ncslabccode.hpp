@@ -281,6 +281,7 @@ struct SCOPE
 
 	int isFull;
 	int chunkCount;
+	int sentCount;
 };
 
 void NCSLabInit();
@@ -302,6 +303,7 @@ enum PROGRESSTYPE{
 	Saving=2,
 	DisplayUpdate=3,
 	StateflowStateUpdate=4,
+	RealtimeDataUpdate=5,
 	Ending=-1
 };
 
