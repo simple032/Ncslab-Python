@@ -561,6 +561,9 @@ public class SimulationModel extends NCSLabModel{
             calculateCheckParameters();  // NEW: Validate parameters
             calculateInits(tStart, states);  // Initialize states and outputs
             calculateStarts();  // NEW: One-time startup actions
+
+            // Send initial Stateflow state highlight after startup
+            checkAndSendStateflowStateUpdates();
             
             // Send initial display values after startup
             if (session != null) {

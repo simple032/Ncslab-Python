@@ -295,6 +295,17 @@ public class StateflowChart extends Block {
                 initCode.append("// Default state entry action\n");
                 initCode.append(String.format("    { %s }\n", ensureStatementTerminator(replaceVariableNames(entryAction))));
             }
+            // 发送初始状态高亮到前端
+            State initialState = findInitialTargetState();
+            if (initialState != null) {
+                initCode.append("// Send initial state highlight to frontend\n");
+                initCode.append(String.format(
+                    "    sendStateflowStateUpdate(\"%s\", \"%s\", \"%s\");\n",
+                    escapeCString(this.blockUUID),
+                    escapeCString(initialState.getId()),
+                    escapeCString(initialState.getName())
+                ));
+            }
         } else {
             initCode.append("// Warning: No initial state found\n");
         }
@@ -450,13 +461,13 @@ public class StateflowChart extends Block {
         return null;
     }
 
-    private String findInitialStateEnum() {
+    private State findInitialTargetState() {
         List<State> states = getStates();
         List<Transition> transitions = getTransitions();
         for (Transition trans : transitions) {
             State source = findStateById(trans.getSourceId(), states);
             if (source != null && source.isInitial()) {
-                return getTargetStateEnumName(trans.getTargetId(), states);
+                return findStateById(trans.getTargetId(), states);
             }
         }
         // Fallback: if there's an sf-initial state, find its outgoing transition
@@ -464,35 +475,29 @@ public class StateflowChart extends Block {
             if (states.get(i).isInitial()) {
                 for (Transition trans : transitions) {
                     if (trans.getSourceId().equals(states.get(i).getId())) {
-                        return getTargetStateEnumName(trans.getTargetId(), states);
+                        return findStateById(trans.getTargetId(), states);
                     }
                 }
             }
         }
-        return states.isEmpty() ? null : getStateEnumName(0);
+        return states.isEmpty() ? null : states.get(0);
     }
 
-    private String findInitialStateEntryAction() {
+    private String findInitialStateEnum() {
+        State target = findInitialTargetState();
         List<State> states = getStates();
-        List<Transition> transitions = getTransitions();
-        for (Transition trans : transitions) {
-            State source = findStateById(trans.getSourceId(), states);
-            if (source != null && source.isInitial()) {
-                State target = findStateById(trans.getTargetId(), states);
-                return target != null ? target.getEntryAction() : null;
-            }
-        }
+        if (target == null) return null;
         for (int i = 0; i < states.size(); i++) {
-            if (states.get(i).isInitial()) {
-                for (Transition trans : transitions) {
-                    if (trans.getSourceId().equals(states.get(i).getId())) {
-                        State target = findStateById(trans.getTargetId(), states);
-                        return target != null ? target.getEntryAction() : null;
-                    }
-                }
+            if (states.get(i).getId().equals(target.getId())) {
+                return getStateEnumName(i);
             }
         }
         return null;
+    }
+
+    private String findInitialStateEntryAction() {
+        State target = findInitialTargetState();
+        return target != null ? target.getEntryAction() : null;
     }
 
     private List<Transition> getOutgoingTransitions(State state, List<Transition> allTransitions) {
@@ -751,6 +756,11 @@ public class StateflowChart extends Block {
             currentActiveState.setActive(true);
             // 执行初始状态的 entry action
             executeAction(currentActiveState.getEntryAction());
+            // 记录初始状态变化事件（供快速仿真前端高亮使用）
+            lastStateChangeEvent = new HashMap<>();
+            lastStateChangeEvent.put("chartUUID", this.blockUUID);
+            lastStateChangeEvent.put("stateId", currentActiveState.getId());
+            lastStateChangeEvent.put("stateName", currentActiveState.getName());
         }
 
         System.out.printf("StateflowChart '%s' (id=%d) initialized: active state = %s%n",
