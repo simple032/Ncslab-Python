@@ -117,8 +117,7 @@ void ncslabLoopRealtime() {
   NCSLabSinkOutput();
   sendDisplayUpdateForce();
 
-  int stepCountSinceLastSend = 0;
-#ifdef _WIN32
+  #ifdef _WIN32
   DWORD startTick = GetTickCount();
   DWORD lastSendTick = startTick;
 #else
@@ -130,27 +129,25 @@ void ncslabLoopRealtime() {
 
   while (mp->time < mp->stopTime) {
     NCSLabOneStep();
-    stepCountSinceLastSend++;
-
+    
     bool shouldSend = false;
 #ifdef _WIN32
     DWORD nowTick = GetTickCount();
-    if (stepCountSinceLastSend >= 10000 || (int)(nowTick - lastSendTick) >= 1000) {
+    if ((int)(nowTick - lastSendTick) >= 1000) {
       shouldSend = true;
     }
 #else
     struct timeval nowTv;
     gettimeofday(&nowTv, NULL);
     long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
-    if (stepCountSinceLastSend >= 10000 || (int)(nowMs - lastSendMs) >= 1000) {
+    if ((int)(nowMs - lastSendMs) >= 1000) {
       shouldSend = true;
     }
 #endif
 
     if (shouldSend) {
       sendRealtimeDataUpdate();
-      stepCountSinceLastSend = 0;
-#ifdef _WIN32
+      #ifdef _WIN32
       lastSendTick = nowTick;
 #else
       lastSendMs = nowMs;

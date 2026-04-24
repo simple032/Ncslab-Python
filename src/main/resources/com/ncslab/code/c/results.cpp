@@ -11,6 +11,9 @@ using json = nlohmann::json;
 extern MODEL* mp;
 extern TERMINAL* terminals[];
 
+// Real-time mode flag: set by ncslabmainsimurt.cpp to skip disk writes during simulation
+int g_realtimeMode = 0;
+
 void writeScope(int cursor, TERMINAL* terminal, json* pJsonScopes) {
     SCOPE* scope;
     json jsonScope;
@@ -126,6 +129,15 @@ void writeScopeBin(int cursor,TERMINAL *terminal,FILE *fp){
 // ============================================================================
 void flushScopeChunk(SCOPE* scope) {
     if (scope->timeList.empty()) {
+        return;
+    }
+
+    // In real-time mode, discard in-memory data without writing to disk.
+    // Data is already streamed live via WebSocket; no need to persist chunks.
+    if (g_realtimeMode) {
+        scope->timeList.clear();
+        scope->dataList.clear();
+        scope->chunkCount++;
         return;
     }
 

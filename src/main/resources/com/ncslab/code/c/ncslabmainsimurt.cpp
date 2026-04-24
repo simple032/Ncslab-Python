@@ -14,6 +14,8 @@
 
 MODEL* mp;
 
+extern int g_realtimeMode;
+
 time_t main_timer;
 
 // argv[0] is the file path of the executable
@@ -30,6 +32,7 @@ int main(int argc, char* argv[]) {
 	double end = -1;
 	PROGRESSTYPE progressType=Ending;
 	NCSLabInit();
+	g_realtimeMode = 1;  // Enable real-time mode: skip disk writes in flushScopeChunk
 
 	if (argc >= 2) {
 		endTime = atof(argv[1]);
@@ -52,7 +55,7 @@ int main(int argc, char* argv[]) {
 	sendDisplayUpdateForce();
 
 	NCSLabTerminate();
-	NCSLabSaveResultBin();
+	// NCSLabSaveResultBin() skipped for real-time mode — data is streamed live via WebSocket
 	NCSLabFinalize();
 
 #ifdef _WIN32_WINNT
