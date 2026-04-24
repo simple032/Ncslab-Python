@@ -177,6 +177,35 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 
     
     
+	/**
+	 * Write parameter updates to a JSON file that the C process will read.
+	 * Called when the frontend sends parameter changes during real-time simulation.
+	 */
+	public void updateParameters(java.util.Map<String, Object> paramUpdates) throws IOException {
+		if (paramUpdates == null || paramUpdates.isEmpty()) return;
+
+		File dir = new File(codeStructC.getCodePath());
+		File updateFile = new File(dir, "param_updates.json");
+
+		JSONObject json = new JSONObject();
+		org.json.JSONArray updatesArray = new org.json.JSONArray();
+		for (java.util.Map.Entry<String, Object> entry : paramUpdates.entrySet()) {
+			@SuppressWarnings("unchecked")
+			java.util.Map<String, Object> update = (java.util.Map<String, Object>) entry.getValue();
+			JSONObject updateObj = new JSONObject();
+			updateObj.put("blockPath", update.get("blockPath"));
+			updateObj.put("blockName", update.get("blockName"));
+			updateObj.put("paramName", update.get("paramName"));
+			updateObj.put("value", update.get("value"));
+			updatesArray.put(updateObj);
+		}
+		json.put("updates", updatesArray);
+
+		try (java.io.FileWriter writer = new java.io.FileWriter(updateFile)) {
+			writer.write(json.toString());
+		}
+	}
+
 	public void simulate(Session session) throws ModelException {
 		Process process = null;
 		System.out.println("Executing simulation codes...");

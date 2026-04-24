@@ -209,6 +209,7 @@ gslDim = getStateDimension();
 #endif
 
     if (shouldSend) {
+      checkParameterUpdates();
       sendRealtimeDataUpdate();
       #ifdef _WIN32
       lastSendTick = nowTick;

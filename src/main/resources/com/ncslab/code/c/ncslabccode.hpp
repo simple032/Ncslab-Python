@@ -297,6 +297,7 @@ void restoreState();
 void storeDerivative(int);
 void caculateDerivative(double *,int);
 MODEL * NCSLabGetModelP();
+void checkParameterUpdates();
 
 enum PROGRESSTYPE{
 	Simulating=1,

@@ -1336,3 +1336,66 @@ int isPartRef(int nodeId,int *ref,int refSize,int *vIndex){
 
 	return 0;
 }
+
+#include <fstream>
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
+
+/**
+ * Check for parameter update file written by Java backend and apply changes.
+ * Called periodically during real-time simulation (before each data send).
+ */
+void checkParameterUpdates() {
+	std::ifstream file("param_updates.json");
+	if (!file.is_open()) return;
+
+	try {
+		json j;
+		file >> j;
+		file.close();
+
+		// Delete file immediately to avoid re-applying same updates
+		std::remove("param_updates.json");
+
+		if (!j.contains("updates") || !j["updates"].is_array()) return;
+
+		for (const auto& update : j["updates"]) {
+			std::string blockPath = update.value("blockPath", "");
+			std::string blockName = update.value("blockName", "");
+			std::string paramName = update.value("paramName", "");
+			double value = update.value("value", 0.0);
+
+			if (paramName.empty()) continue;
+
+			// Helper: extract last path segment (blockName) from a full path like "hashName/Subsys/BlockName"
+			auto getLastSegment = [](const std::string& path) -> std::string {
+				size_t pos = path.rfind('/');
+				return (pos == std::string::npos) ? path : path.substr(pos + 1);
+			};
+
+			std::string targetBlockName = blockName.empty() ? getLastSegment(blockPath) : blockName;
+			if (targetBlockName.empty()) continue;
+
+			// Match against all parameters in the model
+			for (int i = 0; i < mp->parameterNum; i++) {
+				PARAMETER* param = mp->parameters[i];
+				if (!param || !param->name || !param->path || !param->vp) continue;
+
+				std::string paramBlockName = getLastSegment(param->path);
+				bool blockMatches = paramBlockName == targetBlockName;
+				bool nameMatches = strcmp(param->name, paramName.c_str()) == 0;
+
+				if (blockMatches && nameMatches) {
+					if (param->type == SINGLE) {
+						*((REAL*)param->vp) = (REAL)value;
+					}
+					// MATRIX type updates not supported for real-time tuning
+					break;
+				}
+			}
+		}
+	} catch (...) {
+		// Parse failed or other error - clean up file if it still exists
+		std::remove("param_updates.json");
+	}
+}

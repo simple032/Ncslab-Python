@@ -93,6 +93,32 @@ public class SimulateRealtimeWebSocket {
 		try {
 			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
 			String com = wsMessage.getCom();
+
+			// Handle real-time parameter updates from frontend
+			if (com.equals("update_params")) {
+				Object modelObj = session.getUserProperties().get("modelC");
+				if (modelObj instanceof CodeModelCWindowsSimulation) {
+					CodeModelCWindowsSimulation model = (CodeModelCWindowsSimulation) modelObj;
+					Object data = wsMessage.getData();
+					if (data instanceof java.util.Map) {
+						@SuppressWarnings("unchecked")
+						java.util.Map<String, Object> dataMap = (java.util.Map<String, Object>) data;
+						Object updates = dataMap.get("updates");
+						if (updates instanceof java.util.List) {
+								@SuppressWarnings("unchecked")
+								java.util.List<Object> updatesList = (java.util.List<Object>) updates;
+								// Convert list to indexed map for updateParameters
+								java.util.Map<String, Object> paramUpdates = new java.util.HashMap<>();
+								for (int i = 0; i < updatesList.size(); i++) {
+									paramUpdates.put(String.valueOf(i), updatesList.get(i));
+								}
+								model.updateParameters(paramUpdates);
+							}
+					}
+				}
+				return;
+			}
+
         if(com.equals("start")) {
 			try {
 				sendMessage(session,"start");

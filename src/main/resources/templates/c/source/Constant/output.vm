@@ -1,0 +1,2 @@
+/* Output code for block Constant:($blockId) $blockName */
+${outputVar} = ${Value};
