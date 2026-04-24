@@ -318,6 +318,10 @@ public class BlockType{
         blockClassTree.put("StateflowChart", com.ncslab.block.stateflow.StateflowChart.class);
         blockClassTree.put("Stateflow-chart-block", com.ncslab.block.stateflow.StateflowChart.class);
 
+        // Configuration (组态模块)
+        blockClassTree.put("Configuration", com.ncslab.block.config.Configuration.class);
+        blockClassTree.put("ConfigurationBlock", com.ncslab.block.config.Configuration.class);
+
         // Subsystem aliases for alternative naming conventions
         blockClassTree.put("EnableBlock", com.ncslab.block.subsystem.Enable.class);
         blockClassTree.put("TriggerBlock", com.ncslab.block.subsystem.Trigger.class);

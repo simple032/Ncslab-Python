@@ -350,7 +350,10 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.circuit2.element.VariableCapacitorDto.class, name = "Variable Capacitor"),
     // Stateflow Chart block
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.stateflow.StateflowChartDto.class, name = "StateflowChart"),
-    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.stateflow.StateflowChartDto.class, name = "Stateflow-chart-block")
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.stateflow.StateflowChartDto.class, name = "Stateflow-chart-block"),
+    // Configuration (组态模块)
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.config.ConfigurationDto.class, name = "Configuration"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.config.ConfigurationDto.class, name = "ConfigurationBlock")
 })
 @Data
 @SuperBuilder
