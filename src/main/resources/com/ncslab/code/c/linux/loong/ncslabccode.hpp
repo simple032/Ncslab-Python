@@ -4,7 +4,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include <list>
+#include <vector>
 
 // Hardware-specific includes - only include when explicitly enabled for hardware builds
 #ifdef _ENABLE_PI
@@ -221,8 +221,8 @@ struct SCOPE
 	//REAL *buffer;
 	//REAL *timeBuffer;
 
-	std::list<REAL> dataList;
-	std::list<REAL> timeList;
+	std::vector<REAL> dataList;
+	std::vector<REAL> timeList;
 
 	int isFull;
 	int chunkCount;

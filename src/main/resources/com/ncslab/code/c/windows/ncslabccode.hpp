@@ -4,7 +4,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include <list>
+#include <vector>
 
 enum DATA_TYPE {SINGLE,MATRIX};
 
@@ -205,8 +205,8 @@ struct SCOPE
 	//REAL *buffer;
 	//REAL *timeBuffer;
 
-	std::list<REAL> dataList;
-	std::list<REAL> timeList;
+	std::vector<REAL> dataList;
+	std::vector<REAL> timeList;
 
 	int isFull;
 	int chunkCount;

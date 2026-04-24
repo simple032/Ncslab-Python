@@ -499,27 +499,20 @@ void sendRealtimeDataUpdate() {
 		}
 		fwrite(&newPoints, 1, sizeof(newPoints), stdout);
 
-		std::list<REAL>::iterator timeIt = scope->timeList.begin();
-		std::list<REAL>::iterator dataIt = scope->dataList.begin();
-		for (int skip = 0; skip < scope->sentCount && timeIt != scope->timeList.end(); skip++) {
-			++timeIt;
-			for (int h = 0; h < scope->height; h++) {
-				for (int w = 0; w < scope->width; w++) {
-					if (dataIt != scope->dataList.end()) ++dataIt;
-				}
-			}
-		}
+		size_t timeIdx = scope->sentCount;
+		size_t dataIdx = (size_t)scope->sentCount * scope->width * scope->height;
+		size_t wh = scope->width * scope->height;
 
-		for (int p = 0; p < newPoints && timeIt != scope->timeList.end(); p++) {
-			REAL t = *timeIt;
+		for (int p = 0; p < newPoints && timeIdx < scope->timeList.size(); p++) {
+			REAL t = scope->timeList[timeIdx];
 			fwrite(&t, 1, sizeof(t), stdout);
-			++timeIt;
+			timeIdx++;
 			for (int h = 0; h < scope->height; h++) {
 				for (int w = 0; w < scope->width; w++) {
-					if (dataIt != scope->dataList.end()) {
-						REAL val = *dataIt;
+					if (dataIdx < scope->dataList.size()) {
+						REAL val = scope->dataList[dataIdx];
 						fwrite(&val, 1, sizeof(val), stdout);
-						++dataIt;
+						dataIdx++;
 					} else {
 						REAL zero = 0.0;
 						fwrite(&zero, 1, sizeof(zero), stdout);

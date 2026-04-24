@@ -1,3 +1,5 @@
 /* Code for initialization of block Scope:($blockId)$blockName */
 ${scopeStructName}.cursor=0;
 ${scopeStructName}.isFull=0;
+${scopeStructName}.timeList.reserve(CHUNK_SIZE);
+${scopeStructName}.dataList.reserve(CHUNK_SIZE * 4);
