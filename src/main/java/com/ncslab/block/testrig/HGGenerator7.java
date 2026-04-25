@@ -2,6 +2,10 @@ package com.ncslab.block.testrig;
 
 import java.io.InputStream;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -13,10 +17,48 @@ import com.ncslab.block.io.OutputSignal;
 import com.ncslab.block.io.Parameter;
 import com.ncslab.block.io.State;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.dto.core.BlockDto;
 import com.ncslab.ncslablink.NCSLabModel;
 import com.ncslab.util.TemplateManager;
 
 public class HGGenerator7 extends Block {
+
+	public static final List<String> outputNames = new ArrayList<>();
+	public static final List<String> inputNames = new ArrayList<>();
+	public static final Map<String, String> PARAMETER_DEFAULTS = new HashMap<>();
+
+	static {
+		outputNames.add("Id");
+		outputNames.add("Iq");
+		outputNames.add("Theta");
+		outputNames.add("Omega");
+		inputNames.add("C1");
+		inputNames.add("Efd");
+		inputNames.add("Ud");
+		inputNames.add("Uq");
+
+		PARAMETER_DEFAULTS.put("Omega0", "314.15926");
+		PARAMETER_DEFAULTS.put("Xd", "1.346");
+		PARAMETER_DEFAULTS.put("Xq", "0.940");
+		PARAMETER_DEFAULTS.put("Xdd", "0.446");
+		PARAMETER_DEFAULTS.put("Xddd", "0.330");
+		PARAMETER_DEFAULTS.put("Xqqq", "0.370");
+		PARAMETER_DEFAULTS.put("X1", "0.243");
+		PARAMETER_DEFAULTS.put("Td0", "1.660");
+		PARAMETER_DEFAULTS.put("Td000", "0.118");
+		PARAMETER_DEFAULTS.put("Tq000", "0.035");
+		PARAMETER_DEFAULTS.put("H", "1.2");
+		PARAMETER_DEFAULTS.put("R", "0.006");
+	}
+
+	public static List<String> getInputNames() {
+		return inputNames;
+	}
+
+	public static List<String> getOutputNames() {
+		return outputNames;
+	}
+
 	Parameter cParaOmega0;
 	Parameter cParaXd;
 	Parameter cParaXq;
@@ -66,77 +108,60 @@ public class HGGenerator7 extends Block {
 	State statePsiD=new State(this,6,"PsiD");
 	State statePsiF=new State(this,7,"PsiF");
 	
-	public HGGenerator7(JSONObject blockJSON,NCSLabModel model) {
-		super(blockJSON,model);
-		
-		
+	/**
+	 * DTO-NATIVE Constructor - Creates HGGenerator7 block directly from BlockDto DTO
+	 */
+	public HGGenerator7(BlockDto blockDto, NCSLabModel model) {
+		super(blockDto, model);
+		initializeBlock();
+		System.out.println("DTO-NATIVE: HGGenerator7 block created successfully - " + blockDto.getBlockName());
+	}
+
+	public HGGenerator7(JSONObject blockJSON, NCSLabModel model) {
+		super(blockJSON, model);
+		initializeBlock();
+	}
+
+	private void initializeBlock() {
 		inputPortList.add(inC1);
 		inputPortList.add(inEfd);
 		inputPortList.add(inUd);
 		inputPortList.add(inUq);
-		
+
 		outputPortList.add(outId);
 		outputPortList.add(outIq);
 		outputPortList.add(outTheta);
 		outputPortList.add(outOmega);
-		
-		
-		cParaOmega0=new Parameter(this,parameterList.size()+1,"Omega0",paramValues.getString("Omega0"));
-		parameterList.add(cParaOmega0);
-		cParaXd=new Parameter(this,parameterList.size()+1,"Xd",paramValues.getString("Xd"));
-		parameterList.add(cParaXd);
-		cParaXq=new Parameter(this,parameterList.size()+1,"Xq",paramValues.getString("Xq"));
-		parameterList.add(cParaXq);
-		cParaXdd=new Parameter(this,parameterList.size()+1,"Xdd",paramValues.getString("Xdd"));
-		parameterList.add(cParaXdd);
-		
-		cParaXddd=new Parameter(this,parameterList.size()+1,"Xddd",paramValues.getString("Xddd"));
-		parameterList.add(cParaXddd);
-		cParaXqqq=new Parameter(this,parameterList.size()+1,"Xqqq",paramValues.getString("Xqqq"));
-		parameterList.add(cParaXqqq);
-		cParaX1=new Parameter(this,parameterList.size()+1,"X1",paramValues.getString("X1"));
-		parameterList.add(cParaX1);
-		cParaTd0=new Parameter(this,parameterList.size()+1,"Td0",paramValues.getString("Td0"));
-		parameterList.add(cParaTd0);
-		
-		cParaTd000=new Parameter(this,parameterList.size()+1,"Td000",paramValues.getString("Td000"));
-		parameterList.add(cParaTd000);
-		cParaTq000=new Parameter(this,parameterList.size()+1,"Tq000",paramValues.getString("Tq000"));
-		parameterList.add(cParaTq000);
-		cParaH=new Parameter(this,parameterList.size()+1,"H",paramValues.getString("H"));
-		parameterList.add(cParaH);
-		cParaR=new Parameter(this,parameterList.size()+1,"R",paramValues.getString("R"));
-		parameterList.add(cParaR);
-		
-		cParaRQ=new Parameter(this,parameterList.size()+1,"rQ","0");
-		parameterList.add(cParaRQ);
-		cParaRF=new Parameter(this,parameterList.size()+1,"rF","0");
-		parameterList.add(cParaRF);
-		cParaRD=new Parameter(this,parameterList.size()+1,"rD","0");
-		parameterList.add(cParaRD);
-		
-		cParaXl=new Parameter(this,parameterList.size()+1,"Xl","0");
-		parameterList.add(cParaXl);
-		cParaLd=new Parameter(this,parameterList.size()+1,"ld","0");
-		parameterList.add(cParaLd);
-		cParaLq=new Parameter(this,parameterList.size()+1,"lq","0");
-		parameterList.add(cParaLq);
-		cParaLAD=new Parameter(this,parameterList.size()+1,"lAD","0");
-		parameterList.add(cParaLAD);
-		cParaLAQ=new Parameter(this,parameterList.size()+1,"lAQ","0");
-		parameterList.add(cParaLAQ);
-		cParaLQ=new Parameter(this,parameterList.size()+1,"lQ","0");
-		parameterList.add(cParaLQ);
-		cParaLF=new Parameter(this,parameterList.size()+1,"lF","0");
-		parameterList.add(cParaLF);
-		cParaLD=new Parameter(this,parameterList.size()+1,"lD","0");
-		parameterList.add(cParaLD);
-		
-		cParaLMD=new Parameter(this,parameterList.size()+1,"LMD","0");
-		parameterList.add(cParaLMD);
-		cParaLMQ=new Parameter(this,parameterList.size()+1,"LMQ","0");
-		parameterList.add(cParaLMQ);
-		
+
+		// Only add parameters not already created by Block.parseParameterList()
+		cParaOmega0 = addParameterIfAbsent("Omega0", PARAMETER_DEFAULTS.get("Omega0"));
+		cParaXd = addParameterIfAbsent("Xd", PARAMETER_DEFAULTS.get("Xd"));
+		cParaXq = addParameterIfAbsent("Xq", PARAMETER_DEFAULTS.get("Xq"));
+		cParaXdd = addParameterIfAbsent("Xdd", PARAMETER_DEFAULTS.get("Xdd"));
+		cParaXddd = addParameterIfAbsent("Xddd", PARAMETER_DEFAULTS.get("Xddd"));
+		cParaXqqq = addParameterIfAbsent("Xqqq", PARAMETER_DEFAULTS.get("Xqqq"));
+		cParaX1 = addParameterIfAbsent("X1", PARAMETER_DEFAULTS.get("X1"));
+		cParaTd0 = addParameterIfAbsent("Td0", PARAMETER_DEFAULTS.get("Td0"));
+		cParaTd000 = addParameterIfAbsent("Td000", PARAMETER_DEFAULTS.get("Td000"));
+		cParaTq000 = addParameterIfAbsent("Tq000", PARAMETER_DEFAULTS.get("Tq000"));
+		cParaH = addParameterIfAbsent("H", PARAMETER_DEFAULTS.get("H"));
+		cParaR = addParameterIfAbsent("R", PARAMETER_DEFAULTS.get("R"));
+
+		// Derived / internal parameters (not in PARAMETER_DEFAULTS)
+		cParaRQ = addParameterIfAbsent("rQ", "0");
+		cParaRF = addParameterIfAbsent("rF", "0");
+		cParaRD = addParameterIfAbsent("rD", "0");
+		cParaXl = addParameterIfAbsent("Xl", "0");
+		cParaLd = addParameterIfAbsent("ld", "0");
+		cParaLq = addParameterIfAbsent("lq", "0");
+		cParaLAD = addParameterIfAbsent("lAD", "0");
+		cParaLAQ = addParameterIfAbsent("lAQ", "0");
+		cParaLQ = addParameterIfAbsent("lQ", "0");
+		cParaLF = addParameterIfAbsent("lF", "0");
+		cParaLD = addParameterIfAbsent("lD", "0");
+		cParaLMD = addParameterIfAbsent("LMD", "0");
+		cParaLMQ = addParameterIfAbsent("LMQ", "0");
+
 		stateList.add(stateTheta);
 		stateList.add(stateOmega);
 		stateList.add(statePsiq);
@@ -144,6 +169,17 @@ public class HGGenerator7 extends Block {
 		stateList.add(statePsid);
 		stateList.add(statePsiD);
 		stateList.add(statePsiF);
+	}
+
+	private Parameter addParameterIfAbsent(String name, String defaultValue) {
+		Parameter existing = getParameterByName(name);
+		if (existing != null) {
+			return existing;
+		}
+		String value = paramValues.has(name) ? paramValues.getString(name) : defaultValue;
+		Parameter p = new Parameter(this, parameterList.size() + 1, name, value);
+		parameterList.add(p);
+		return p;
 	}
 	
 	

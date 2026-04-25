@@ -278,7 +278,9 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.SecondOrderRotaryInvertedPendulumDto.class, name = "R2IP"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.BallPlateSystemDto.class, name = "BallPlateSystem"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.WaterLevelDto.class, name = "NetWaterLevel"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator7Dto.class, name = "HGGenerator7"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator7Dto.class, name = "HG Generator7"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator12Dto.class, name = "HGGenerator12"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator12Dto.class, name = "HG Generator12"),
     // Data processing blocks (added Week 6)
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
