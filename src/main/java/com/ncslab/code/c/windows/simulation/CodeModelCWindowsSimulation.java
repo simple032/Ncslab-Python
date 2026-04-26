@@ -169,6 +169,131 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		jb.put("scopeData", scopeArray);
 		session.getBasicRemote().sendText(jb.toString());
 	}
+
+	/**
+	 * Calculate the maximum number of scope data points to upload per batch.
+	 * Based on: maxScopePoints * uploadInterval / stopTime
+	 * @return max points per upload (at least 1)
+	 */
+	private int calculateMaxPointsPerUpload() {
+		int maxScopePoints = 1000;      // 趋势图最大点数，可改为从配置读取
+		double uploadInterval = 1.0;    // 上传更新间距(秒)，根据 C++ 调用频率调整
+		double stopTime = this.getConfig().getStopTime();
+		if (stopTime > 0) {
+			return Math.max(1, (int) (maxScopePoints * uploadInterval / stopTime));
+		} else {
+			// 无限实时运行的默认值
+			return 100;
+		}
+	}
+
+	/**
+	 * Downsample scope data using min-max bucketing to preserve peaks and step edges.
+	 * Each bucket retains: first point, min point, max point, last point (de-duplicated).
+	 * This prevents step signals from appearing as gradual slopes after downsampling.
+	 *
+	 * @param scopeDataList list of scope data maps
+	 * @param maxPoints maximum points to keep per scope
+	 * @return downsampled list
+	 */
+	private List<Map<String, Object>> downsampleScopes(List<Map<String, Object>> scopeDataList, int maxPoints) {
+		if (scopeDataList == null || scopeDataList.isEmpty() || maxPoints <= 0) {
+			return scopeDataList;
+		}
+		for (Map<String, Object> scope : scopeDataList) {
+			List<Double> timeList = (List<Double>) scope.get("time");
+			List<Double> dataList = (List<Double>) scope.get("data");
+			if (timeList == null || dataList == null || timeList.size() <= maxPoints) {
+				continue;
+			}
+
+			int width = (Integer) scope.get("width");
+			int height = (Integer) scope.get("height");
+			int valuesPerPoint = width * height;
+			int originalSize = timeList.size();
+
+			// Bucket size: aim for ~maxPoints total after min-max expansion
+			int targetBuckets = Math.max(1, maxPoints / 4);
+			int bucketSize = Math.max(2, originalSize / targetBuckets);
+
+			List<Double> dsTime = new ArrayList<>();
+			List<Double> dsData = new ArrayList<>();
+
+			for (int i = 0; i < originalSize; ) {
+				int end = Math.min(i + bucketSize, originalSize);
+
+				// Always keep first point of bucket
+				addDownsamplePoint(dsTime, dsData, timeList, dataList, i, valuesPerPoint);
+
+				// For scalar data, also keep min and max inside the bucket
+				if (end - i > 2 && valuesPerPoint == 1) {
+					int minIdx = i;
+					int maxIdx = i;
+					double minVal = dataList.get(i);
+					double maxVal = dataList.get(i);
+					for (int j = i + 1; j < end; j++) {
+						double val = dataList.get(j);
+						if (val < minVal) { minVal = val; minIdx = j; }
+						if (val > maxVal) { maxVal = val; maxIdx = j; }
+					}
+					if (minIdx != i) {
+						addDownsamplePoint(dsTime, dsData, timeList, dataList, minIdx, valuesPerPoint);
+					}
+					if (maxIdx != i && maxIdx != minIdx) {
+						addDownsamplePoint(dsTime, dsData, timeList, dataList, maxIdx, valuesPerPoint);
+					}
+				}
+
+				// Always keep last point of bucket
+				int lastIdx = end - 1;
+				if (lastIdx != i) {
+					addDownsamplePoint(dsTime, dsData, timeList, dataList, lastIdx, valuesPerPoint);
+				}
+
+				i = end;
+			}
+
+			// Fallback: if still over limit, uniform decimation on the pre-selected key points
+			if (dsTime.size() > maxPoints) {
+				int step = Math.max(1, dsTime.size() / maxPoints);
+				List<Double> finalTime = new ArrayList<>(maxPoints);
+				List<Double> finalData = new ArrayList<>(maxPoints * valuesPerPoint);
+				for (int i = 0; i < dsTime.size() && finalTime.size() < maxPoints; i += step) {
+					addDownsamplePoint(finalTime, finalData, dsTime, dsData, i, valuesPerPoint);
+				}
+				// Ensure last (newest) point is preserved
+				double lastTime = dsTime.get(dsTime.size() - 1);
+				if (finalTime.isEmpty() || !finalTime.get(finalTime.size() - 1).equals(lastTime)) {
+					if (finalTime.size() >= maxPoints) {
+						finalTime.set(finalTime.size() - 1, lastTime);
+						int lastDsIdx = finalTime.size() - 1;
+						int lastSrcOffset = (dsTime.size() - 1) * valuesPerPoint;
+						for (int v = 0; v < valuesPerPoint; v++) {
+							finalData.set(lastDsIdx * valuesPerPoint + v, dsData.get(lastSrcOffset + v));
+						}
+					} else {
+						addDownsamplePoint(finalTime, finalData, dsTime, dsData, dsTime.size() - 1, valuesPerPoint);
+					}
+				}
+				dsTime = finalTime;
+				dsData = finalData;
+			}
+
+			scope.put("time", dsTime);
+			scope.put("data", dsData);
+		}
+		return scopeDataList;
+	}
+
+	private void addDownsamplePoint(List<Double> dsTime, List<Double> dsData,
+									List<Double> timeList, List<Double> dataList,
+									int idx, int valuesPerPoint) {
+		dsTime.add(timeList.get(idx));
+		int offset = idx * valuesPerPoint;
+		for (int v = 0; v < valuesPerPoint; v++) {
+			dsData.add(dataList.get(offset + v));
+		}
+	}
     
     private double readDouble(LittleEndianDataInputStream out)  throws IOException{
 		byte c;
@@ -178,6 +303,14 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		}
 		//System.out.println(valueString);
 		return Double.parseDouble(valueString);
+	}
+
+	/**
+	 * Validate that a length field read from the stream is within reasonable bounds.
+	 * Prevents NegativeArraySizeException and OOM from corrupted/misaligned data.
+	 */
+	private boolean isValidLength(int len, int maxAllowed) {
+		return len >= 0 && len <= maxAllowed;
 	}
 
     
@@ -271,25 +404,25 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 
 			long currentTime = new java.util.Date().getTime();
 
-			while(true) {
-				// Check if simulation should be stopped (session closed or thread interrupted)
-				if (session != null && !session.isOpen()) {
-					System.out.println("[CodeModelCWindowsSimulation] Session closed, stopping simulation");
-					return;
-				}
-				if (Thread.interrupted()) {
-					System.out.println("[CodeModelCWindowsSimulation] Thread interrupted, stopping simulation");
-					return;
-				}
-				int pre1=0,pre2=0;
-				do {
-					pre1=pre2;
-					pre2=out.readByte();
-					if(pre1==0x55&&pre2==0x55) {
-						break;
+							while(true) {
+					// Check if simulation should be stopped (session closed or thread interrupted)
+					if (session != null && !session.isOpen()) {
+						System.out.println("[CodeModelCWindowsSimulation] Session closed, stopping simulation");
+						return;
 					}
-				}
-				while(true);
+					if (Thread.interrupted()) {
+						System.out.println("[CodeModelCWindowsSimulation] Thread interrupted, stopping simulation");
+						return;
+					}
+					// 4-byte preamble sync: 0x55 0xAA 0x55 0xAA
+					int b1 = 0, b2 = 0, b3 = 0, b4 = 0;
+					do {
+						b1 = b2; b2 = b3; b3 = b4;
+						b4 = out.readByte() & 0xFF;
+						if (b1 == 0x55 && b2 == 0xAA && b3 == 0x55 && b4 == 0xAA) {
+							break;
+						}
+					} while (true);
 				int cmd=out.readInt();
 				//System.out.println(cmd);
 				if(cmd==-1) {
@@ -340,53 +473,74 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 					sendStateflowStateUpdateMessage(session, chartUUID, stateId, stateName);
 					break;
 				case 5: // RealtimeDataUpdate
-					try {
-						int rtDisplayCount = out.readInt();
-						Map<String, Double> rtDisplayData = new HashMap<>();
-						for (int i = 0; i < rtDisplayCount; i++) {
-							int uuidLen = out.readInt();
-							byte[] uuidBytes = new byte[uuidLen];
-							out.readFully(uuidBytes);
-							String uuid = new String(uuidBytes, StandardCharsets.UTF_8);
-							double displayValue = out.readDouble();
-							rtDisplayData.put(uuid, displayValue);
-						}
-						int rtScopeCount = out.readInt();
-						List<Map<String, Object>> rtScopeDataList = new ArrayList<>();
-						for (int i = 0; i < rtScopeCount; i++) {
-							int uuidLen = out.readInt();
-							byte[] uuidBytes = new byte[uuidLen];
-							out.readFully(uuidBytes);
-							String uuid = new String(uuidBytes, StandardCharsets.UTF_8);
-							int width = out.readInt();
-							int height = out.readInt();
-							int dataPointCount = out.readInt();
-							List<Double> timeList = new ArrayList<>();
-							List<Double> dataList = new ArrayList<>();
-							for (int p = 0; p < dataPointCount; p++) {
-								double t = out.readDouble();
-								timeList.add(t);
-								for (int h = 0; h < height; h++) {
-									for (int w = 0; w < width; w++) {
-										double val = out.readDouble();
-										dataList.add(val);
+						try {
+							int rtDisplayCount = out.readInt();
+							if (!isValidLength(rtDisplayCount, 10000)) {
+								System.err.println("[CodeModelCWindowsSimulation] Invalid rtDisplayCount: " + rtDisplayCount + ", skipping RealtimeDataUpdate");
+								break;
+							}
+							Map<String, Double> rtDisplayData = new HashMap<>();
+							for (int i = 0; i < rtDisplayCount; i++) {
+								int uuidLen = out.readInt();
+								if (!isValidLength(uuidLen, 1024)) {
+									System.err.println("[CodeModelCWindowsSimulation] Invalid display uuidLen: " + uuidLen + ", skipping RealtimeDataUpdate");
+									break;
+								}
+								byte[] uuidBytes = new byte[uuidLen];
+								out.readFully(uuidBytes);
+								String uuid = new String(uuidBytes, StandardCharsets.UTF_8);
+								double displayValue = out.readDouble();
+								rtDisplayData.put(uuid, displayValue);
+							}
+							int rtScopeCount = out.readInt();
+							if (!isValidLength(rtScopeCount, 10000)) {
+								System.err.println("[CodeModelCWindowsSimulation] Invalid rtScopeCount: " + rtScopeCount + ", skipping RealtimeDataUpdate");
+								break;
+							}
+							List<Map<String, Object>> rtScopeDataList = new ArrayList<>();
+							for (int i = 0; i < rtScopeCount; i++) {
+								int uuidLen = out.readInt();
+								if (!isValidLength(uuidLen, 1024)) {
+									System.err.println("[CodeModelCWindowsSimulation] Invalid scope uuidLen: " + uuidLen + ", skipping RealtimeDataUpdate");
+									break;
+								}
+								byte[] uuidBytes = new byte[uuidLen];
+								out.readFully(uuidBytes);
+								String uuid = new String(uuidBytes, StandardCharsets.UTF_8);
+								int width = out.readInt();
+								int height = out.readInt();
+								int dataPointCount = out.readInt();
+								if (!isValidLength(dataPointCount, 10000)) {
+									System.err.println("[CodeModelCWindowsSimulation] Invalid dataPointCount: " + dataPointCount + ", skipping RealtimeDataUpdate");
+									break;
+								}
+								List<Double> timeList = new ArrayList<>();
+								List<Double> dataList = new ArrayList<>();
+								for (int p = 0; p < dataPointCount; p++) {
+									double t = out.readDouble();
+									timeList.add(t);
+									for (int h = 0; h < height; h++) {
+										for (int w = 0; w < width; w++) {
+											double val = out.readDouble();
+											dataList.add(val);
+										}
 									}
 								}
+								Map<String, Object> scopeData = new HashMap<>();
+								scopeData.put("uuid", uuid);
+								scopeData.put("width", width);
+								scopeData.put("height", height);
+								scopeData.put("time", timeList);
+								scopeData.put("data", dataList);
+								rtScopeDataList.add(scopeData);
 							}
-							Map<String, Object> scopeData = new HashMap<>();
-							scopeData.put("uuid", uuid);
-							scopeData.put("width", width);
-							scopeData.put("height", height);
-							scopeData.put("time", timeList);
-							scopeData.put("data", dataList);
-							rtScopeDataList.add(scopeData);
+							double currentSimTime = out.readDouble();
+
+							sendRealtimeDataUpdateMessage(session, rtDisplayData, rtScopeDataList, currentSimTime);
+						} catch (IOException e) {
+							System.err.println("[CodeModelCWindowsSimulation] Error parsing RealtimeDataUpdate: " + e.getMessage());
 						}
-						double currentSimTime = out.readDouble();
-						sendRealtimeDataUpdateMessage(session, rtDisplayData, rtScopeDataList, currentSimTime);
-					} catch (IOException e) {
-						System.err.println("[CodeModelCWindowsSimulation] Error parsing RealtimeDataUpdate: " + e.getMessage());
-					}
-					break;
+						break;
 				}
 				
 				//if((new java.util.Date().getTime())-currentTime>1000) {

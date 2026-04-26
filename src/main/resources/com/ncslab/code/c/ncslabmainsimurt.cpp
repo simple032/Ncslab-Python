@@ -108,8 +108,7 @@ int main(int argc, char* argv[]) {
 	NCSLabFinalize();
 
 #ifdef _WIN32_WINNT
-    simPutc(0x55);
-    simPutc(0x55);
+    sendPreamble();
 #endif
     simWrite(&progressType, sizeof(progressType));
 	simFlush();

@@ -61,7 +61,9 @@ int main(int argc, char* argv[]) {
 	
 	#ifdef _WIN32_WINNT	
     fputc(0x55,stdout);
+    fputc(0xAA,stdout);
     fputc(0x55,stdout);
+    fputc(0xAA,stdout);
 #endif
     fwrite(&progressType,1,sizeof(progressType),stdout);
 }

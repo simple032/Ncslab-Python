@@ -88,6 +88,7 @@ void simWrite(const void* buf, size_t len);
 void simPutc(int c);
 void simPrintf(const char* fmt, ...);
 void simFlush();
+void sendPreamble();
 double generateGaussianNoise(double mean, double stdDev);
 double lowPassFilter(double input, double alpha);
 unsigned char calcSum(unsigned char bytes[]);

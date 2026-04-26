@@ -30,10 +30,23 @@ void simWrite(const void* buf, size_t len) {
 		while (sent < len) {
 #ifdef _WIN32
 			int n = send(g_simSocket, (const char*)buf + sent, (int)(len - sent), 0);
+			if (n == SOCKET_ERROR) {
+				int err = WSAGetLastError();
+				if (err == WSAEWOULDBLOCK) {
+					Sleep(1);
+					continue;
+				}
+				break;
+			}
+			if (n <= 0) break;
 #else
 			ssize_t n = send(g_simSocket, (const char*)buf + sent, len - sent, 0);
-#endif
+			if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+				usleep(1000);
+				continue;
+			}
 			if (n <= 0) break;
+#endif
 			sent += n;
 		}
 	} else {
@@ -59,8 +72,15 @@ void simPrintf(const char* fmt, ...) {
 
 void simFlush() {
 	if (g_simSocket < 0) {
-		simFlush();
+		fflush(g_simStream);
 	}
+}
+
+void sendPreamble() {
+	simPutc(0x55);
+	simPutc(0xAA);
+	simPutc(0x55);
+	simPutc(0xAA);
 }
 
 
@@ -390,8 +410,7 @@ void writeInformation(){
 	DWORD sec=(GetTickCount()/1000)%60;
 	//gettimeofday(&tv,NULL);
 	if(sec!=oldSec){
-		simPutc(0x55);
-		simPutc(0x55);
+		sendPreamble();
 		simWrite(&progressType, sizeof(progressType));
 		simPrintf("%f\n", mp->time);
 		simFlush();
@@ -409,8 +428,7 @@ void writeInformation(){
 		}
 		if (displayCount > 0) {
 			PROGRESSTYPE displayType = DisplayUpdate;
-			simPutc(0x55);
-			simPutc(0x55);
+			sendPreamble();
 			simWrite(&displayType, sizeof(displayType));
 			simWrite(&displayCount, sizeof(displayCount));
 			for (int i = 0; i < mp->terminalNum; i++) {
@@ -435,8 +453,7 @@ void writeInformation(){
 	PROGRESSTYPE progressType=Simulating;
 	gettimeofday(&tv,NULL);
 	if(tv.tv_sec!=oldSec){
-		simPutc(0x55);
-		simPutc(0x55);
+		sendPreamble();
 		simWrite(&progressType, sizeof(progressType));
 		simPrintf("%f\n", mp->time);
 		simFlush();
@@ -460,8 +477,7 @@ void sendDisplayUpdateForce() {
 	}
 	if (displayCount > 0) {
 		PROGRESSTYPE displayType = DisplayUpdate;
-		simPutc(0x55);
-		simPutc(0x55);
+		sendPreamble();
 		simWrite(&displayType, sizeof(displayType));
 		simWrite(&displayCount, sizeof(displayCount));
 		for (int i = 0; i < mp->terminalNum; i++) {
@@ -502,8 +518,7 @@ void sendRealtimeDataUpdate() {
 	if (displayCount == 0 && scopeCount == 0) return;
 
 	PROGRESSTYPE type = RealtimeDataUpdate;
-	simPutc(0x55);
-	simPutc(0x55);
+	sendPreamble();
 	simWrite(&type, sizeof(type));
 
 	simWrite(&displayCount, sizeof(displayCount));
@@ -539,30 +554,43 @@ void sendRealtimeDataUpdate() {
 			scope->sentCount = 0;
 			newPoints = totalSize;
 		}
-		if (newPoints > 10000) {
-			scope->sentCount = totalSize - 10000;
-			newPoints = 10000;
+
+		// Calculate target points per upload based on Scope config.
+		// Example: maxDataLength=10000, stopTime=10s -> 1000 points/second/upload
+		int maxLen = scope->maxDataLength > 0 ? scope->maxDataLength : 1000;
+		int stopTimeSec = (int)(mp->stopTime + 0.5);
+		if (stopTimeSec < 1) stopTimeSec = 1;
+		int targetPoints = maxLen / stopTimeSec;
+		if (targetPoints < 50) targetPoints = 50;
+		if (targetPoints > maxLen) targetPoints = maxLen;
+
+		int step = 1;
+		int sendPoints = newPoints;
+		if (newPoints > targetPoints) {
+			step = newPoints / targetPoints;
+			if (step < 2) step = 2;
+			sendPoints = 0;
+			for (int i = 0; i < newPoints; i += step) sendPoints++;
 		}
-		simWrite(&newPoints, sizeof(newPoints));
+		simWrite(&sendPoints, sizeof(sendPoints));
 
-		size_t timeIdx = scope->sentCount;
-		size_t dataIdx = (size_t)scope->sentCount * scope->width * scope->height;
-		size_t wh = scope->width * scope->height;
+		size_t wh = (size_t)scope->width * scope->height;
 
-		for (int p = 0; p < newPoints && timeIdx < scope->timeList.size(); p++) {
-			REAL t = scope->timeList[timeIdx];
+		for (int p = 0; p < newPoints; p += step) {
+			size_t idx = (size_t)scope->sentCount + p;
+			if (idx >= scope->timeList.size()) break;
+
+			REAL t = scope->timeList[idx];
 			simWrite(&t, sizeof(t));
-			timeIdx++;
-			for (int h = 0; h < scope->height; h++) {
-				for (int w = 0; w < scope->width; w++) {
-					if (dataIdx < scope->dataList.size()) {
-						REAL val = scope->dataList[dataIdx];
-						simWrite(&val, sizeof(val));
-						dataIdx++;
-					} else {
-						REAL zero = 0.0;
-						simWrite(&zero, sizeof(zero));
-					}
+
+			size_t dataOffset = idx * wh;
+			for (size_t v = 0; v < wh; v++) {
+				if (dataOffset + v < scope->dataList.size()) {
+					REAL val = scope->dataList[dataOffset + v];
+					simWrite(&val, sizeof(val));
+				} else {
+					REAL zero = 0.0;
+					simWrite(&zero, sizeof(zero));
 				}
 			}
 		}
@@ -582,8 +610,7 @@ void sendStateflowStateUpdate(const char* chartUUID, const char* stateId, const 
 	if (chartUUID == NULL || stateId == NULL) return;
 	
 	PROGRESSTYPE type = StateflowStateUpdate;
-	simPutc(0x55);
-	simPutc(0x55);
+	sendPreamble();
 	simWrite(&type, sizeof(type));
 	
 	int chartUuidLen = strlen(chartUUID);
@@ -883,8 +910,7 @@ void writeBuf(unsigned char *buf,int size){
 void writeSavingInformation(int currentTerminal,int terminalNum){
 	PROGRESSTYPE progressType=Saving;
 	
-	simPutc(0x55);
-	simPutc(0x55);
+	sendPreamble();
 	
 	writeBuf((unsigned char *)(&progressType),sizeof(progressType));
 	writeBuf((unsigned char *)(&currentTerminal),sizeof(currentTerminal));

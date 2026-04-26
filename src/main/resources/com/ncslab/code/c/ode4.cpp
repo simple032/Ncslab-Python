@@ -99,7 +99,17 @@ discreteInitFixed();
     double realElapsedSec = realElapsedMs / 1000.0;
     if (simulatedElapsed > realElapsedSec) {
       DWORD sleepMs = (DWORD)((simulatedElapsed - realElapsedSec) * 1000);
-      if (sleepMs > 0) Sleep(sleepMs);
+      while (sleepMs > 0) {
+        DWORD chunk = sleepMs > 100 ? 100 : sleepMs;
+        Sleep(chunk);
+        sleepMs -= chunk;
+        DWORD nowTick = GetTickCount();
+        if ((int)(nowTick - lastSendTick) >= 1000) {
+          checkParameterUpdates();
+          sendRealtimeDataUpdate();
+          lastSendTick = nowTick;
+        }
+      }
     }
 #else
     struct timeval syncTv;
@@ -108,7 +118,19 @@ discreteInitFixed();
     double realElapsedSec = realElapsedMs / 1000.0;
     if (simulatedElapsed > realElapsedSec) {
       long sleepUs = (long)((simulatedElapsed - realElapsedSec) * 1000000);
-      if (sleepUs > 0) usleep(sleepUs);
+      while (sleepUs > 0) {
+        long chunk = sleepUs > 100000 ? 100000 : sleepUs;
+        usleep(chunk);
+        sleepUs -= chunk;
+        struct timeval nowTv;
+        gettimeofday(&nowTv, NULL);
+        long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
+        if ((int)(nowMs - lastSendMs) >= 1000) {
+          checkParameterUpdates();
+          sendRealtimeDataUpdate();
+          lastSendMs = nowMs;
+        }
+      }
     }
 #endif
   }
