@@ -78,6 +78,16 @@ void writeInformation();
 void sendDisplayUpdateForce();
 void sendStateflowStateUpdate(const char* chartUUID, const char* stateId, const char* stateName);
 void sendRealtimeDataUpdate();
+
+// Global simulation stream/socket for TCP communication with Java backend
+extern FILE* g_simStream;
+extern int g_simSocket;
+
+// Cross-platform socket write helpers (bypass FILE* buffering issues on Windows)
+void simWrite(const void* buf, size_t len);
+void simPutc(int c);
+void simPrintf(const char* fmt, ...);
+void simFlush();
 double generateGaussianNoise(double mean, double stdDev);
 double lowPassFilter(double input, double alpha);
 unsigned char calcSum(unsigned char bytes[]);

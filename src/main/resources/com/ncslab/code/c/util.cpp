@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdio>
+#include <stdarg.h>
 #ifndef _WIN32
 #include <sys/time.h>
 #else
@@ -17,6 +18,51 @@
 
 extern MODEL* mp;
 extern TERMINAL* terminals[];
+
+// Global simulation stream/socket for TCP communication with Java backend
+FILE* g_simStream = stdout;
+int g_simSocket = -1;
+
+// Cross-platform socket write helpers
+void simWrite(const void* buf, size_t len) {
+	if (g_simSocket >= 0) {
+		size_t sent = 0;
+		while (sent < len) {
+#ifdef _WIN32
+			int n = send(g_simSocket, (const char*)buf + sent, (int)(len - sent), 0);
+#else
+			ssize_t n = send(g_simSocket, (const char*)buf + sent, len - sent, 0);
+#endif
+			if (n <= 0) break;
+			sent += n;
+		}
+	} else {
+		fwrite(buf, 1, len, g_simStream);
+	}
+}
+
+void simPutc(int c) {
+	unsigned char ch = (unsigned char)c;
+	simWrite(&ch, 1);
+}
+
+void simPrintf(const char* fmt, ...) {
+	char buf[512];
+	va_list args;
+	va_start(args, fmt);
+	int n = vsnprintf(buf, sizeof(buf), fmt, args);
+	va_end(args);
+	if (n > 0) {
+		simWrite(buf, n);
+	}
+}
+
+void simFlush() {
+	if (g_simSocket < 0) {
+		simFlush();
+	}
+}
+
 
 
 double calalpoutput(double inputvalue) {
@@ -344,15 +390,15 @@ void writeInformation(){
 	DWORD sec=(GetTickCount()/1000)%60;
 	//gettimeofday(&tv,NULL);
 	if(sec!=oldSec){
-		fputc(0x55,stdout);
-		fputc(0x55,stdout);
-		fwrite(&progressType,1,sizeof(progressType),stdout);
-		printf("%f\n",mp->time);
-		fflush(stdout);
+		simPutc(0x55);
+		simPutc(0x55);
+		simWrite(&progressType, sizeof(progressType));
+		simPrintf("%f\n", mp->time);
+		simFlush();
 
 		// ===== Display 模块实时数据输出 =====
 		// 遍历所有 Terminal，找出 Display 模块（maxDataLength == 1）
-		// 通过 stdout 发送 Display 的 UUID 和当前值到 Java 后端
+		// 通过 g_simStream 发送 Display 的 UUID 和当前值到 Java 后端
 		int displayCount = 0;
 		for (int i = 0; i < mp->terminalNum; i++) {
 			TERMINAL* terminal = terminals[i];
@@ -363,22 +409,22 @@ void writeInformation(){
 		}
 		if (displayCount > 0) {
 			PROGRESSTYPE displayType = DisplayUpdate;
-			fputc(0x55, stdout);
-			fputc(0x55, stdout);
-			fwrite(&displayType, 1, sizeof(displayType), stdout);
-			fwrite(&displayCount, 1, sizeof(displayCount), stdout);
+			simPutc(0x55);
+			simPutc(0x55);
+			simWrite(&displayType, sizeof(displayType));
+			simWrite(&displayCount, sizeof(displayCount));
 			for (int i = 0; i < mp->terminalNum; i++) {
 				TERMINAL* terminal = terminals[i];
 				SCOPE* scope = (SCOPE*)terminal->terminal;
 				if (scope->maxDataLength == 1) {
 					int uuidLen = strlen(scope->uuid);
-					fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
-					fwrite(scope->uuid, 1, uuidLen, stdout);
+					simWrite(&uuidLen, sizeof(uuidLen));
+					simWrite(scope->uuid, uuidLen);
 					double value = scope->dataList.empty() ? 0.0 : scope->dataList.back();
-					fwrite(&value, 1, sizeof(value), stdout);
+					simWrite(&value, sizeof(value));
 				}
 			}
-			fflush(stdout);
+			simFlush();
 		}
 		// ===== Display 模块实时数据输出结束 =====
 
@@ -389,11 +435,11 @@ void writeInformation(){
 	PROGRESSTYPE progressType=Simulating;
 	gettimeofday(&tv,NULL);
 	if(tv.tv_sec!=oldSec){
-		fputc(0x55,stdout);
-		fputc(0x55,stdout);
-		fwrite(&progressType,1,sizeof(progressType),stdout);
-		printf("%f\n",mp->time);
-		fflush(stdout); 
+		simPutc(0x55);
+		simPutc(0x55);
+		simWrite(&progressType, sizeof(progressType));
+		simPrintf("%f\n", mp->time);
+		simFlush();
 		oldSec=tv.tv_sec;
 	}
 #endif	
@@ -414,22 +460,22 @@ void sendDisplayUpdateForce() {
 	}
 	if (displayCount > 0) {
 		PROGRESSTYPE displayType = DisplayUpdate;
-		fputc(0x55, stdout);
-		fputc(0x55, stdout);
-		fwrite(&displayType, 1, sizeof(displayType), stdout);
-		fwrite(&displayCount, 1, sizeof(displayCount), stdout);
+		simPutc(0x55);
+		simPutc(0x55);
+		simWrite(&displayType, sizeof(displayType));
+		simWrite(&displayCount, sizeof(displayCount));
 		for (int i = 0; i < mp->terminalNum; i++) {
 			TERMINAL* terminal = terminals[i];
 			SCOPE* scope = (SCOPE*)terminal->terminal;
 			if (scope->maxDataLength == 1) {
 				int uuidLen = strlen(scope->uuid);
-				fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
-				fwrite(scope->uuid, 1, uuidLen, stdout);
+				simWrite(&uuidLen, sizeof(uuidLen));
+				simWrite(scope->uuid, uuidLen);
 				double value = scope->dataList.empty() ? 0.0 : scope->dataList.back();
-				fwrite(&value, 1, sizeof(value), stdout);
+				simWrite(&value, sizeof(value));
 			}
 		}
-		fflush(stdout);
+		simFlush();
 	}
 }
 
@@ -456,25 +502,25 @@ void sendRealtimeDataUpdate() {
 	if (displayCount == 0 && scopeCount == 0) return;
 
 	PROGRESSTYPE type = RealtimeDataUpdate;
-	fputc(0x55, stdout);
-	fputc(0x55, stdout);
-	fwrite(&type, 1, sizeof(type), stdout);
+	simPutc(0x55);
+	simPutc(0x55);
+	simWrite(&type, sizeof(type));
 
-	fwrite(&displayCount, 1, sizeof(displayCount), stdout);
+	simWrite(&displayCount, sizeof(displayCount));
 	for (int i = 0; i < mp->terminalNum; i++) {
 		TERMINAL* terminal = terminals[i];
 		if (terminal->type != Scope) continue;
 		SCOPE* scope = (SCOPE*)terminal->terminal;
 		if (scope->maxDataLength == 1) {
 			int uuidLen = strlen(scope->uuid);
-			fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
-			fwrite(scope->uuid, 1, uuidLen, stdout);
+			simWrite(&uuidLen, sizeof(uuidLen));
+			simWrite(scope->uuid, uuidLen);
 			double value = scope->dataList.empty() ? 0.0 : scope->dataList.back();
-			fwrite(&value, 1, sizeof(value), stdout);
+			simWrite(&value, sizeof(value));
 		}
 	}
 
-	fwrite(&scopeCount, 1, sizeof(scopeCount), stdout);
+	simWrite(&scopeCount, sizeof(scopeCount));
 	for (int i = 0; i < mp->terminalNum; i++) {
 		TERMINAL* terminal = terminals[i];
 		if (terminal->type != Scope) continue;
@@ -482,10 +528,10 @@ void sendRealtimeDataUpdate() {
 		if (scope->maxDataLength == 1) continue;
 
 		int uuidLen = strlen(scope->uuid);
-		fwrite(&uuidLen, 1, sizeof(uuidLen), stdout);
-		fwrite(scope->uuid, 1, uuidLen, stdout);
-		fwrite(&(scope->width), 1, sizeof(scope->width), stdout);
-		fwrite(&(scope->height), 1, sizeof(scope->height), stdout);
+		simWrite(&uuidLen, sizeof(uuidLen));
+		simWrite(scope->uuid, uuidLen);
+		simWrite(&(scope->width), sizeof(scope->width));
+		simWrite(&(scope->height), sizeof(scope->height));
 
 		int totalSize = (int)scope->timeList.size();
 		int newPoints = totalSize - scope->sentCount;
@@ -497,7 +543,7 @@ void sendRealtimeDataUpdate() {
 			scope->sentCount = totalSize - 10000;
 			newPoints = 10000;
 		}
-		fwrite(&newPoints, 1, sizeof(newPoints), stdout);
+		simWrite(&newPoints, sizeof(newPoints));
 
 		size_t timeIdx = scope->sentCount;
 		size_t dataIdx = (size_t)scope->sentCount * scope->width * scope->height;
@@ -505,17 +551,17 @@ void sendRealtimeDataUpdate() {
 
 		for (int p = 0; p < newPoints && timeIdx < scope->timeList.size(); p++) {
 			REAL t = scope->timeList[timeIdx];
-			fwrite(&t, 1, sizeof(t), stdout);
+			simWrite(&t, sizeof(t));
 			timeIdx++;
 			for (int h = 0; h < scope->height; h++) {
 				for (int w = 0; w < scope->width; w++) {
 					if (dataIdx < scope->dataList.size()) {
 						REAL val = scope->dataList[dataIdx];
-						fwrite(&val, 1, sizeof(val), stdout);
+						simWrite(&val, sizeof(val));
 						dataIdx++;
 					} else {
 						REAL zero = 0.0;
-						fwrite(&zero, 1, sizeof(zero), stdout);
+						simWrite(&zero, sizeof(zero));
 					}
 				}
 			}
@@ -524,8 +570,8 @@ void sendRealtimeDataUpdate() {
 		scope->sentCount = totalSize;
 	}
 
-	fwrite(&(mp->time), 1, sizeof(mp->time), stdout);
-	fflush(stdout);
+	simWrite(&(mp->time), sizeof(mp->time));
+	simFlush();
 }
 
 /**
@@ -536,25 +582,25 @@ void sendStateflowStateUpdate(const char* chartUUID, const char* stateId, const 
 	if (chartUUID == NULL || stateId == NULL) return;
 	
 	PROGRESSTYPE type = StateflowStateUpdate;
-	fputc(0x55, stdout);
-	fputc(0x55, stdout);
-	fwrite(&type, 1, sizeof(type), stdout);
+	simPutc(0x55);
+	simPutc(0x55);
+	simWrite(&type, sizeof(type));
 	
 	int chartUuidLen = strlen(chartUUID);
-	fwrite(&chartUuidLen, 1, sizeof(chartUuidLen), stdout);
-	fwrite(chartUUID, 1, chartUuidLen, stdout);
+	simWrite(&chartUuidLen, sizeof(chartUuidLen));
+	simWrite(chartUUID, chartUuidLen);
 	
 	int stateIdLen = strlen(stateId);
-	fwrite(&stateIdLen, 1, sizeof(stateIdLen), stdout);
-	fwrite(stateId, 1, stateIdLen, stdout);
+	simWrite(&stateIdLen, sizeof(stateIdLen));
+	simWrite(stateId, stateIdLen);
 	
 	int stateNameLen = stateName ? strlen(stateName) : 0;
-	fwrite(&stateNameLen, 1, sizeof(stateNameLen), stdout);
+	simWrite(&stateNameLen, sizeof(stateNameLen));
 	if (stateNameLen > 0) {
-		fwrite(stateName, 1, stateNameLen, stdout);
+		simWrite(stateName, stateNameLen);
 	}
 	
-	fflush(stdout);
+	simFlush();
 }
 
 // 初始化缓冲区
@@ -829,39 +875,21 @@ void insert_to_z_table(InterpolationTable *table, int x_index, int y_index, doub
 
 void writeBuf(unsigned char *buf,int size){
 	for(int i=0;i<size;i++){
-		fputc(buf[i],stdout);
-		//fflush(stdout); 
+		simPutc(buf[i]);
+		//simFlush(); 
 	}
 }
 
 void writeSavingInformation(int currentTerminal,int terminalNum){
 	PROGRESSTYPE progressType=Saving;
-	/*
-	int n=0;
-	while(n<sizeof(progressType)){
-		char *pos=(char *)(&progressType);
-		n+=fwrite(pos+n,1,sizeof(progressType)-n,stdout);	
-	}
 	
-	n=0;
-	while(n<sizeof(currentTerminal)){
-		char *pos=(char *)(&currentTerminal);
-		n+=fwrite(&currentTerminal,1,sizeof(currentTerminal)-n,stdout);
-	}
-	
-	n=0;
-	while(n<sizeof(terminalNum)){
-		char *pos=(char *)(&terminalNum);
-		n+=fwrite(&terminalNum,1,sizeof(terminalNum)-n,stdout);
-	}*/
-	
-	fputc(0x55,stdout);
-	fputc(0x55,stdout);
+	simPutc(0x55);
+	simPutc(0x55);
 	
 	writeBuf((unsigned char *)(&progressType),sizeof(progressType));
 	writeBuf((unsigned char *)(&currentTerminal),sizeof(currentTerminal));
 	writeBuf((unsigned char *)(&terminalNum),sizeof(terminalNum));
-	fflush(stdout);
+	simFlush();
 }
 
 void copyCircuitMartrix(REAL *gAA,REAL *gAAc,REAL *iA,REAL *iAc,int size){
@@ -1342,10 +1370,98 @@ int isPartRef(int nodeId,int *ref,int refSize,int *vIndex){
 using json = nlohmann::json;
 
 /**
- * Check for parameter update file written by Java backend and apply changes.
+ * Check for parameter updates from Java backend and apply changes.
+ * TCP mode: reads length-prefixed JSON from g_simSocket (non-blocking).
+ * Fallback mode: reads param_updates.json file.
  * Called periodically during real-time simulation (before each data send).
  */
 void checkParameterUpdates() {
+	// TCP mode: receive param updates via socket
+	if (g_simSocket >= 0) {
+		static std::string recvBuffer;
+		static int expectedLen = -1;
+
+		while (true) {
+			if (expectedLen < 0) {
+				// Try to read 4-byte little-endian length header
+				int len = 0;
+				int n = recv(g_simSocket, (char*)&len, 4, 0);
+				if (n == 4) {
+					expectedLen = len;
+				} else {
+					break; // incomplete header or no data
+				}
+			}
+
+			if (expectedLen >= 0) {
+				size_t current = recvBuffer.size();
+				int need = expectedLen - (int)current;
+				if (need > 0) {
+					char buf[1024];
+					int toRead = need < 1024 ? need : 1024;
+					int n = recv(g_simSocket, buf, toRead, 0);
+					if (n > 0) {
+						recvBuffer.append(buf, n);
+					} else {
+						break; // no more data available right now
+					}
+				}
+
+				if ((int)recvBuffer.size() == expectedLen) {
+					// Complete JSON received
+					try {
+						json j = json::parse(recvBuffer);
+						recvBuffer.clear();
+						expectedLen = -1;
+
+						if (j.contains("updates") && j["updates"].is_array()) {
+							for (const auto& update : j["updates"]) {
+								std::string blockPath = update.value("blockPath", "");
+								std::string blockName = update.value("blockName", "");
+								std::string paramName = update.value("paramName", "");
+								double value = update.value("value", 0.0);
+
+								if (paramName.empty()) continue;
+
+								auto getLastSegment = [](const std::string& path) -> std::string {
+									size_t pos = path.rfind('/');
+									return (pos == std::string::npos) ? path : path.substr(pos + 1);
+								};
+
+								std::string targetBlockName = blockName.empty() ? getLastSegment(blockPath) : blockName;
+								if (targetBlockName.empty()) continue;
+
+								for (int i = 0; i < mp->parameterNum; i++) {
+									PARAMETER* param = mp->parameters[i];
+									if (!param || !param->name || !param->path || !param->vp) continue;
+
+									std::string paramBlockName = getLastSegment(param->path);
+									bool blockMatches = paramBlockName == targetBlockName;
+									bool nameMatches = strcmp(param->name, paramName.c_str()) == 0;
+
+									if (blockMatches && nameMatches) {
+										if (param->type == SINGLE) {
+											*((REAL*)param->vp) = (REAL)value;
+										}
+										break;
+									}
+								}
+							}
+						}
+					} catch (...) {
+						recvBuffer.clear();
+						expectedLen = -1;
+					}
+				} else if ((int)recvBuffer.size() > expectedLen) {
+					recvBuffer.clear();
+					expectedLen = -1;
+				}
+			}
+		}
+		return;
+	}
+
+	// Fallback: file-based for non-TCP mode
 	std::ifstream file("param_updates.json");
 	if (!file.is_open()) return;
 
@@ -1354,7 +1470,6 @@ void checkParameterUpdates() {
 		file >> j;
 		file.close();
 
-		// Delete file immediately to avoid re-applying same updates
 		std::remove("param_updates.json");
 
 		if (!j.contains("updates") || !j["updates"].is_array()) return;
@@ -1367,7 +1482,6 @@ void checkParameterUpdates() {
 
 			if (paramName.empty()) continue;
 
-			// Helper: extract last path segment (blockName) from a full path like "hashName/Subsys/BlockName"
 			auto getLastSegment = [](const std::string& path) -> std::string {
 				size_t pos = path.rfind('/');
 				return (pos == std::string::npos) ? path : path.substr(pos + 1);
@@ -1376,7 +1490,6 @@ void checkParameterUpdates() {
 			std::string targetBlockName = blockName.empty() ? getLastSegment(blockPath) : blockName;
 			if (targetBlockName.empty()) continue;
 
-			// Match against all parameters in the model
 			for (int i = 0; i < mp->parameterNum; i++) {
 				PARAMETER* param = mp->parameters[i];
 				if (!param || !param->name || !param->path || !param->vp) continue;
@@ -1389,13 +1502,11 @@ void checkParameterUpdates() {
 					if (param->type == SINGLE) {
 						*((REAL*)param->vp) = (REAL)value;
 					}
-					// MATRIX type updates not supported for real-time tuning
 					break;
 				}
 			}
 		}
 	} catch (...) {
-		// Parse failed or other error - clean up file if it still exists
 		std::remove("param_updates.json");
 	}
 }

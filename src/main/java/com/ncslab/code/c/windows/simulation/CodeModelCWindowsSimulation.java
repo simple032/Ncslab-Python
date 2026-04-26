@@ -13,6 +13,9 @@ import jakarta.websocket.Session;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.*;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
@@ -22,6 +25,8 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 	private CodeStructCWindowsSimulation codeStructC = new CodeStructCWindowsSimulation(this);
 	private volatile Process currentProcess;
 	private volatile boolean stoppedByUser = false;
+	private volatile Socket simSocket;
+	private volatile ServerSocket serverSocket;
 
 	// 原有JSONObject构造函数
 	CodeModelCWindowsSimulation(JSONObject jsonIn, ModelMode mode) throws ModelException{
@@ -131,8 +136,8 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 	 * @throws IOException if sending fails
 	 */
 	private void sendRealtimeDataUpdateMessage(Session session, Map<String, Double> displayData,
-												 List<Map<String, Object>> scopeDataList,
-												 double currentTime) throws IOException {
+													 List<Map<String, Object>> scopeDataList,
+													 double currentTime) throws IOException {
 		if (session == null || !session.isOpen()) return;
 		JSONObject jb = new JSONObject();
 		jb.put("msg", "realtime_data_update");
@@ -178,14 +183,13 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
     
     
 	/**
-	 * Write parameter updates to a JSON file that the C process will read.
+	 * Send parameter updates to the C++ simulation process.
+	 * TCP mode: sends length-prefixed JSON via the active TCP socket.
+	 * Fallback mode: writes param_updates.json file.
 	 * Called when the frontend sends parameter changes during real-time simulation.
 	 */
 	public void updateParameters(java.util.Map<String, Object> paramUpdates) throws IOException {
 		if (paramUpdates == null || paramUpdates.isEmpty()) return;
-
-		File dir = new File(codeStructC.getCodePath());
-		File updateFile = new File(dir, "param_updates.json");
 
 		JSONObject json = new JSONObject();
 		org.json.JSONArray updatesArray = new org.json.JSONArray();
@@ -201,6 +205,24 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		}
 		json.put("updates", updatesArray);
 
+		// TCP mode: send via socket
+		Socket socket = this.simSocket;
+		if (socket != null && socket.isConnected() && !socket.isClosed()) {
+			byte[] jsonBytes = json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+			java.io.OutputStream os = socket.getOutputStream();
+			// Send 4-byte little-endian length prefix
+			os.write(jsonBytes.length & 0xFF);
+			os.write((jsonBytes.length >> 8) & 0xFF);
+			os.write((jsonBytes.length >> 16) & 0xFF);
+			os.write((jsonBytes.length >> 24) & 0xFF);
+			os.write(jsonBytes);
+			os.flush();
+			return;
+		}
+
+		// Fallback: write to file for non-TCP mode
+		File dir = new File(codeStructC.getCodePath());
+		File updateFile = new File(dir, "param_updates.json");
 		try (java.io.FileWriter writer = new java.io.FileWriter(updateFile)) {
 			writer.write(json.toString());
 		}
@@ -209,6 +231,9 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 	public void simulate(Session session) throws ModelException {
 		Process process = null;
 		System.out.println("Executing simulation codes...");
+		ServerSocket srvSocket = null;
+		Socket socket = null;
+		LittleEndianDataInputStream out = null;
 		try {
 			// run the executable ncslab file
 
@@ -218,55 +243,31 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 
             String exeFilePath = exeFile.getAbsolutePath();
 
-            // 获取当前环境变量
-//            Map<String, String> currentEnv = System.getenv();
-//
-//            // 创建一个新的环境变量映射
-//            Map<String, String> env = new HashMap<>(currentEnv);
-//
-//            // 添加或修改环境变量
-//            env.put("Path", "%M2PLAB_ROOT%/server/cruntime/bin;" + env.get("Path")); // 例如，添加新的路径
-//
-//            // 将环境变量映射转换为字符串数组
-//            String[] envArray = new String[env.size()];
-//            int i = 0;
-//            for (Map.Entry<String, String> entry : env.entrySet()) {
-//                envArray[i++] = entry.getKey() + "=" + entry.getValue();
-//            }
-//            String dllFolderName = Optional.ofNullable(Property.instance.getProperty("DllFolder"))
-//                .orElse(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
-//
-//            File dllFolder = new File(dllFolderName);
-//            if(!dllFolder.exists()){
-//                dllFolder = new File(codeStructC.getM2plabRoot()+"/server/cruntime/bin");
-//            }
-//            File[] files = dllFolder.listFiles();
-//            if(files != null){
-//                for(File file : files){
-//                    if(file.isFile() && file.getName().endsWith(".dll")){
-//                        try{
-//                            Path sourcePath = Paths.get(file.getAbsolutePath());
-//                            Path targetPath = Paths.get(dir.getAbsolutePath(), file.getName());
-//                            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
-//                        }catch(IOException e){
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            }
+            // Create a ServerSocket to accept TCP connection from the C++ process
+            srvSocket = new ServerSocket(0);
+            srvSocket.setSoTimeout(30000);
+            int port = srvSocket.getLocalPort();
+            System.out.println("[CodeModelCWindowsSimulation] Waiting for C++ simulation to connect on TCP port " + port);
 
             // Use ProcessBuilder instead of deprecated Runtime.exec()
             ProcessBuilder processBuilder = new ProcessBuilder(
                 exeFilePath,
-                String.valueOf(this.getConfig().getStopTime())
+                String.valueOf(this.getConfig().getStopTime()),
+                String.valueOf(port)
             );
             processBuilder.directory(dir);
             process = processBuilder.start();
             this.currentProcess = process;
 
+            // Accept TCP connection from the C++ process
+            socket = srvSocket.accept();
+            this.simSocket = socket;
+            this.serverSocket = srvSocket;
+            System.out.println("[CodeModelCWindowsSimulation] C++ simulation connected via TCP");
+
 			// read primitive Java data types from an underlying InputStream in a little-endian format
-			// This input stream is the stdout of the process
-			LittleEndianDataInputStream out = new LittleEndianDataInputStream(process.getInputStream());
+			// This input stream is the TCP socket from the process
+			out = new LittleEndianDataInputStream(socket.getInputStream());
 
 			long currentTime = new java.util.Date().getTime();
 
@@ -409,9 +410,20 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 			throw new ModelException("Can not execute the exe file!");
 		}
 		finally {
+			if (out != null) {
+				try { out.close(); } catch (IOException ignored) {}
+			}
+			if (socket != null) {
+				try { socket.close(); } catch (IOException ignored) {}
+			}
+			if (srvSocket != null) {
+				try { srvSocket.close(); } catch (IOException ignored) {}
+			}
 			if(process!=null) {
 				process.destroy();
 			}
+			this.simSocket = null;
+			this.serverSocket = null;
 		}
 
 		System.out.println("Simulation codes executed successfully!");
