@@ -14,6 +14,9 @@ import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
 
+import java.net.ServerSocket;
+import java.net.Socket;
+
 public class CodeModelCLinuxPCSimulation extends CodeModelC{
 
 	private CodeStructCLinuxPCSimulation codeRaspberry = new CodeStructCLinuxPCSimulation(this);
@@ -57,19 +60,33 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 	public void simulate(Session session) throws ModelException {
 		Process process = null;
 		System.out.println("Executing simulation codes...");
+		ServerSocket srvSocket = null;
+		Socket socket = null;
+		LittleEndianDataInputStream out = null;
 		try {
 			// run the executable ncslab file
+			// Create a ServerSocket to accept TCP connection from the C++ process
+			srvSocket = new ServerSocket(0);
+			srvSocket.setSoTimeout(30000);
+			int port = srvSocket.getLocalPort();
+			System.out.println("[CodeModelCLinuxPCSimulation] Waiting for C++ simulation to connect on TCP port " + port);
+
 			// Use ProcessBuilder instead of deprecated Runtime.exec()
 			ProcessBuilder processBuilder = new ProcessBuilder(
 				"./ncslab",
-				String.valueOf(this.getConfig().getStopTime())
+				String.valueOf(this.getConfig().getStopTime()),
+				String.valueOf(port)
 			);
 			processBuilder.directory(new File(codeRaspberry.getCodePath()));
 			process = processBuilder.start();
 
+			// Accept TCP connection from the C++ process
+			socket = srvSocket.accept();
+			System.out.println("[CodeModelCLinuxPCSimulation] C++ simulation connected via TCP");
+
 			// read primitive Java data types from an underlying InputStream in a little-endian format
-			// This input stream is the stdout of the process
-			LittleEndianDataInputStream out = new LittleEndianDataInputStream(process.getInputStream());
+			// This input stream is the TCP socket from the process
+			out = new LittleEndianDataInputStream(socket.getInputStream());
 
 			long currentTime = new java.util.Date().getTime();
 
@@ -120,6 +137,15 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 			throw new ModelException("Can not execute the exe file!");
 		}
 		finally {
+			if (out != null) {
+				try { out.close(); } catch (IOException ignored) {}
+			}
+			if (socket != null) {
+				try { socket.close(); } catch (IOException ignored) {}
+			}
+			if (srvSocket != null) {
+				try { srvSocket.close(); } catch (IOException ignored) {}
+			}
 			if(process!=null) {
 				process.destroy();
 			}

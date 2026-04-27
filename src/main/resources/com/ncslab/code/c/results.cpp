@@ -137,6 +137,7 @@ void flushScopeChunk(SCOPE* scope) {
     if (g_realtimeMode) {
         scope->timeList.clear();
         scope->dataList.clear();
+        scope->sentCount = 0;
         scope->chunkCount++;
         return;
     }
