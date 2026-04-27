@@ -43,11 +43,24 @@
 	$LMD=1/LMD0;
 	$LMQ=1/LMQ0;
 	
-	$Psid=0;
-	$PsiD=0;
-	$Psiq=0;
-	$PsiQ=0;
-	$PsiF=0;
-	$Omega=0;
-	$Theta=0;
+	/* Compute no-load steady-state flux linkage for typical Efd=1.0 pu.
+	   This avoids large inrush current when a voltage source is suddenly applied. */
+	REAL denom = $ld * $lD - $LMD * $lD - $LMD * $ld;
+	REAL Efd_init = 1.0;
+	if (denom > 1e-10 && $lAD > 1e-10 && $lF > 1e-10) {
+		REAL a = $LMD * $ld * $lD / ($lF * denom);
+		REAL Psid_init = a * Efd_init * $lF / $lAD / (1.0 - a);
+		REAL Psif_init = Psid_init + Efd_init * $lF / $lAD;
+		$Psid = Psid_init;
+		$PsiD = Psid_init;
+		$PsiF = Psif_init;
+	} else {
+		$Psid = 0;
+		$PsiD = 0;
+		$PsiF = 0;
+	}
+	$Psiq = 0;
+	$PsiQ = 0;
+	$Omega = 0;
+	$Theta = 0;
 }

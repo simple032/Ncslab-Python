@@ -282,6 +282,11 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator7Dto.class, name = "HG Generator7"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator12Dto.class, name = "HGGenerator12"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.HGGenerator12Dto.class, name = "HG Generator12"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCDroopDto.class, name = "ACDCDroop"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCDroopDto.class, name = "ACDC Droop"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCGeneratorDto.class, name = "ACDCGenerator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCGeneratorDto.class, name = "ACDC Generator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCGeneratorDto.class, name = "acdc generator"),
     // Data processing blocks (added Week 6)
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.ByteUnpackDto.class, name = "Byte Unpack"),

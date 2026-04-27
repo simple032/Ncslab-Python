@@ -1,0 +1,50 @@
+/* Velocity Template for output of block ACDCGenerator */
+/* 3-order generator + controllable rectifier with AVR, Governor and soft-start */
+/* All AC quantities in per-unit; DC quantities in actual units */
+#set($Output_Vdc = $output1)
+#set($Output_P = $output2)
+#set($Output_Q = $output3)
+#set($Output_Id = $output4)
+#set($Output_Iq = $output5)
+#set($Output_Theta = $output6)
+#set($Output_Omega = $output7)
+/*Code for Output of ACDCGenerator:($blockId)$blockName*/
+{
+	/* --- Generator terminal voltage (rotor reference frame) --- */
+	REAL _Vd = $Xq * $Iq - $Ra * $Id;
+	REAL _Vq = $Eq_prime - $Xdd * $Id - $Ra * $Iq;
+	REAL _Vt = sqrt(_Vd * _Vd + _Vq * _Vq);
+	if (_Vt < 0.01) _Vt = 0.01;
+	
+	/* --- Electrical power (per-unit) --- */
+	REAL _Pe = _Vd * $Id + _Vq * $Iq;
+	REAL P_inst = 1.5 * _Pe;
+	REAL Q_inst = 1.5 * (_Vq * $Id - _Vd * $Iq);
+	
+	/* --- Soft-start / sequencing --- */
+	REAL enable = 0.0;
+	if (model.time > $t_precharge) enable = 1.0;
+	
+	REAL soft = 0.0;
+	if (enable > 0.5) {
+		soft = (model.time - $t_precharge) / $t_ramp;
+		if (soft > 1.0) soft = 1.0;
+	}
+	
+	/* --- Rectifier Vdc control --- */
+	REAL Vdc_ref_eff = $Vdc_ref - $mq * $Q_flt;
+	REAL vdc_err = Vdc_ref_eff - $vdc_int;
+	REAL Iq_ref = soft * ($Kp_v * vdc_err + $Ki_v * $vdc_err_int);
+	if (Iq_ref < 0.0) Iq_ref = 0.0;      /* unidirectional AC->DC only */
+	if (Iq_ref > $Iq_max) Iq_ref = $Iq_max;
+	REAL Id_ref = 0.0;                    /* unity power factor */
+	
+	/* Assign outputs */
+	$Output_Vdc = $vdc_int;
+	$Output_P = $P_flt;
+	$Output_Q = $Q_flt;
+	$Output_Id = $Id;
+	$Output_Iq = $Iq;
+	$Output_Theta = $Theta;
+	$Output_Omega = $Omega;
+}

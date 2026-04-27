@@ -1,0 +1,54 @@
+/* Velocity Template for init of block ACDCGenerator */
+/* 3-order generator + controllable rectifier with AVR, Governor and soft-start */
+/* All AC quantities in per-unit; DC quantities in actual units (V, A, F) */
+/*Code for Init of ACDCGenerator:($blockId)$blockName*/
+{
+	/* --- Parameter initialization --- */
+	${Omega0Object.initCodeC}
+	${XdObject.initCodeC}
+	${XqObject.initCodeC}
+	${XddObject.initCodeC}
+	${Td0Object.initCodeC}
+	${RaObject.initCodeC}
+	${HObject.initCodeC}
+	${DObject.initCodeC}
+	${Vt_refObject.initCodeC}
+	${Kp_avrObject.initCodeC}
+	${Ki_avrObject.initCodeC}
+	${Efd0Object.initCodeC}
+	${Efd_minObject.initCodeC}
+	${Efd_maxObject.initCodeC}
+	${omega_refObject.initCodeC}
+	${Kp_govObject.initCodeC}
+	${Ki_govObject.initCodeC}
+	${Pm0Object.initCodeC}
+	${Pm_minObject.initCodeC}
+	${Pm_maxObject.initCodeC}
+	${Vdc_refObject.initCodeC}
+	${CdcObject.initCodeC}
+	${Kp_vObject.initCodeC}
+	${Ki_vObject.initCodeC}
+	${mqObject.initCodeC}
+	${S_baseObject.initCodeC}
+	${tau_iObject.initCodeC}
+	${Iq_maxObject.initCodeC}
+	${t_prechargeObject.initCodeC}
+	${t_rampObject.initCodeC}
+
+	/* --- Generator state initialization --- */
+	$Theta = 0.0;
+	$Omega = 1.0;       /* speed deviation = 0 => actual speed = 1 pu (3000 rpm / 50 Hz) */
+	$Eq_prime = $Efd0;  /* initial transient emf matches Efd0 */
+	
+	/* --- Rectifier current initialization --- */
+	$Id = 0.0;
+	$Iq = 0.0;
+	
+	/* --- DC and control state initialization --- */
+	$vdc_int = $Vdc_ref;
+	$P_flt = 0.0;
+	$Q_flt = 0.0;
+	$vdc_err_int = 0.0;
+	$avr_int = 0.0;
+	$gov_int = 0.0;
+}

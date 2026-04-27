@@ -159,6 +159,9 @@ public class BlockType{
         
         blockClassTree.put("HGGenerator7", com.ncslab.block.testrig.HGGenerator7.class);
         blockClassTree.put("HGGenerator12", com.ncslab.block.testrig.HGGenerator12.class);
+        blockClassTree.put("ACDCDroop", com.ncslab.block.testrig.ACDCDroop.class);
+        blockClassTree.put("ACDCGenerator", com.ncslab.block.testrig.ACDCGenerator.class);
+        blockClassTree.put("acdc generator", com.ncslab.block.testrig.ACDCGenerator.class);
 
         // Function
         blockClassTree.put("Fcn", com.ncslab.block.function.Fcn.class);

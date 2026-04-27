@@ -1,0 +1,48 @@
+/* Velocity Template for output of block ACDCDroop (dq-frame, connects to HGGenerator7) */
+/* All AC quantities are in PER-UNIT. Vdc and DC quantities are in actual units. */
+#set($Input_Id = $input1)
+#set($Input_Iq = $input2)
+#set($Input_Theta = $input3)
+#set($Input_Omega = $input4)
+#set($Output_Ud = $output1)
+#set($Output_Uq = $output2)
+#set($Output_Vdc = $output3)
+#set($Output_P = $output4)
+#set($Output_Q = $output5)
+/*Code for Output of ACDCDroop:($blockId)$blockName*/
+{
+	REAL Id = $Input_Id;
+	REAL Iq = $Input_Iq;
+	REAL theta = $Input_Theta;
+	REAL omega = $Input_Omega;
+
+	/* Droop control: modify DC voltage reference based on filtered reactive power */
+	REAL Vdc_ref_eff = $Vdc_ref - $mq * $Q_flt;
+
+	/* Voltage outer loop P-control: regulates DC voltage */
+	/* In q-axis-aligned frame, Iq controls active power (P ~ 1.5*Vn*Iq) */
+	/* All AC quantities are in per-unit, so Vn = 1.0 pu */
+	REAL vdc_err = Vdc_ref_eff - $vdc_int;
+	REAL Iq_ref = $Kp_v * vdc_err;
+	REAL Id_ref = 0.0; /* unity power factor: Id = 0 */
+
+	/* Anti-windup clamp on q-axis current reference */
+	if (Iq_ref > 10.0) Iq_ref = 10.0;
+	if (Iq_ref < -10.0) Iq_ref = -10.0;
+
+	/* Current inner loop PI with decoupling */
+	REAL Id_err = Id_ref - Id;
+	REAL Iq_err = Iq_ref - Iq;
+
+	/* Note: HGGenerator7 uses q-axis aligned with terminal voltage, so Vn feedforward goes to Uq */
+	/* Ud/Uq are in PER-UNIT to match generator model */
+	REAL Ud_ctrl = $Kp_i * Id_err + $Ki_i * $id_int - omega * $Lf * Iq;
+	REAL Uq_ctrl = $Kp_i * Iq_err + $Ki_i * $iq_int + omega * $Lf * Id + $Vn;
+
+	/* Assign outputs */
+	$Output_Ud = Ud_ctrl;
+	$Output_Uq = Uq_ctrl;
+	$Output_Vdc = $vdc_int;
+	$Output_P = $P_flt;
+	$Output_Q = $Q_flt;
+}

@@ -1,0 +1,9 @@
+/* Velocity Template for init of block ACDCDroop */
+/*Code for Init of ACDCDroop:($blockId)$blockName*/
+{
+	$id_int = 0;
+	$iq_int = 0;
+	$vdc_int = $Vdc_ref;
+	$P_flt = 0;
+	$Q_flt = 0;
+}

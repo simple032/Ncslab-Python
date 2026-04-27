@@ -1,0 +1,74 @@
+/* Velocity Template for derivative of block ACDCGenerator */
+/* 3-order generator + controllable rectifier with AVR, Governor and soft-start */
+/* All AC quantities in per-unit; DC quantities in actual units */
+#set($Input_IdcLoad = $input1)
+/*Code for Derivative of ACDCGenerator:($blockId)$blockName*/
+{
+	/* --- Recompute all algebraic quantities (must match output block exactly) --- */
+	REAL _Vd = $Xq * $Iq - $Ra * $Id;
+	REAL _Vq = $Eq_prime - $Xdd * $Id - $Ra * $Iq;
+	REAL _Vt = sqrt(_Vd * _Vd + _Vq * _Vq);
+	if (_Vt < 0.01) _Vt = 0.01;
+	
+	REAL _Pe = _Vd * $Id + _Vq * $Iq;
+	REAL P_inst = 1.5 * _Pe;
+	REAL Q_inst = 1.5 * (_Vq * $Id - _Vd * $Iq);
+	
+	REAL enable = 0.0;
+	if (model.time > $t_precharge) enable = 1.0;
+	
+	REAL soft = 0.0;
+	if (enable > 0.5) {
+		soft = (model.time - $t_precharge) / $t_ramp;
+		if (soft > 1.0) soft = 1.0;
+	}
+	
+	REAL Vdc_ref_eff = $Vdc_ref - $mq * $Q_flt;
+	REAL vdc_err = Vdc_ref_eff - $vdc_int;
+	REAL Iq_ref = soft * ($Kp_v * vdc_err + $Ki_v * $vdc_err_int);
+	if (Iq_ref < 0.0) Iq_ref = 0.0;
+	if (Iq_ref > $Iq_max) Iq_ref = $Iq_max;
+	REAL Id_ref = 0.0;
+	
+	/* --- AVR (control Vq for stability under load) --- */
+	REAL Vt_err = $Vt_ref - _Vq;
+	REAL _Efd = $Efd0 + $Kp_avr * Vt_err + $Ki_avr * $avr_int;
+	if (_Efd > $Efd_max) _Efd = $Efd_max;
+	if (_Efd < $Efd_min) _Efd = $Efd_min;
+	
+	/* --- Governor with anti-windup --- */
+	REAL omega_err = $omega_ref - $Omega;
+	REAL Pm_raw = $Pm0 + $Kp_gov * omega_err + $Ki_gov * $gov_int;
+	REAL _Pm = Pm_raw;
+	if (_Pm > $Pm_max) _Pm = $Pm_max;
+	if (_Pm < $Pm_min) _Pm = $Pm_min;
+	REAL gov_err = omega_err;
+	if (Pm_raw > $Pm_max && gov_err > 0) gov_err = 0;
+	if (Pm_raw < $Pm_min && gov_err < 0) gov_err = 0;
+	
+	/* --- Generator state derivatives (3-order model) --- */
+	$ThetaDerivativeName = $Omega0 * ($Omega - 1.0);
+	$OmegaDerivativeName = (_Pm - _Pe - $D * ($Omega - 1.0)) / (2.0 * $H);
+	$Eq_primeDerivativeName = (_Efd - $Eq_prime - ($Xd - $Xdd) * $Id) / $Td0;
+	
+	/* --- Rectifier current dynamics (average model) --- */
+	$IdDerivativeName = (Id_ref - $Id) / $tau_i;
+	$IqDerivativeName = (Iq_ref - $Iq) / $tau_i;
+	
+	/* --- DC-link dynamics --- */
+	REAL Idc_load = $Input_IdcLoad;
+	REAL Idc_in = 0.0;
+	if ($vdc_int > 10.0) {
+		Idc_in = P_inst * $S_base / $vdc_int;
+	}
+	$vdc_intDerivativeName = (Idc_in - Idc_load) / $Cdc;
+	
+	/* --- Power filters --- */
+	$P_fltDerivativeName = (P_inst - $P_flt) / 0.02;
+	$Q_fltDerivativeName = (Q_inst - $Q_flt) / 0.02;
+	
+	/* --- Controller integrators --- */
+	$vdc_err_intDerivativeName = vdc_err;
+	$avr_intDerivativeName = Vt_err;
+	$gov_intDerivativeName = gov_err;
+}

@@ -1,0 +1,49 @@
+/* Velocity Template for derivative of block ACDCDroop */
+/* All AC quantities are in PER-UNIT. Vdc and DC quantities are in actual units. */
+#set($Input_Id = $input1)
+#set($Input_Iq = $input2)
+#set($Input_Theta = $input3)
+#set($Input_Omega = $input4)
+#set($Input_IdcLoad = $input5)
+/*Code for Derivative of ACDCDroop:($blockId)$blockName*/
+{
+	REAL Id = $Input_Id;
+	REAL Iq = $Input_Iq;
+	REAL theta = $Input_Theta;
+	REAL omega = $Input_Omega;
+
+	/* Compute instantaneous power using actual Ud/Uq from output (per-unit) */
+	REAL Ud_out = $output1;
+	REAL Uq_out = $output2;
+	REAL P_inst = 1.5 * (Ud_out * Id + Uq_out * Iq); /* per-unit power */
+	REAL Q_inst = 1.5 * (Uq_out * Id - Ud_out * Iq); /* per-unit reactive power */
+
+	/* Droop control */
+	REAL Vdc_ref_eff = $Vdc_ref - $mq * $Q_flt;
+
+	/* Voltage outer loop: Iq controls active power in q-axis-aligned frame */
+	REAL vdc_err = Vdc_ref_eff - $vdc_int;
+	REAL Iq_ref = $Kp_v * vdc_err;
+	REAL Id_ref = 0.0;
+
+	/* Anti-windup */
+	if (Iq_ref > 10.0) Iq_ref = 10.0;
+	if (Iq_ref < -10.0) Iq_ref = -10.0;
+
+	REAL Id_err = Id_ref - Id;
+	REAL Iq_err = Iq_ref - Iq;
+
+	/* Derivatives of current PI integrator states */
+	$id_intDerivative = Id_err;
+	$iq_intDerivative = Iq_err;
+
+	/* Filtered P and Q with time constant 0.02s */
+	$P_fltDerivative = (P_inst - $P_flt) / 0.02;
+	$Q_fltDerivative = (Q_inst - $Q_flt) / 0.02;
+
+	/* DC-link dynamics: convert per-unit power to actual current */
+	REAL Idc_load = $Input_IdcLoad;
+	REAL Idc_in = P_inst * $S_base / $vdc_int;
+	if ($vdc_int < 10.0) Idc_in = 0.0;    /* avoid division by near-zero */
+	$vdc_intDerivative = (Idc_in - Idc_load) / $Cdc;
+}
