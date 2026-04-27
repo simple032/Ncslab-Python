@@ -162,6 +162,8 @@ public class BlockType{
         blockClassTree.put("ACDCDroop", com.ncslab.block.testrig.ACDCDroop.class);
         blockClassTree.put("ACDCGenerator", com.ncslab.block.testrig.ACDCGenerator.class);
         blockClassTree.put("acdc generator", com.ncslab.block.testrig.ACDCGenerator.class);
+        blockClassTree.put("SynchronousGenerator3", com.ncslab.block.testrig.SynchronousGenerator3.class);
+        blockClassTree.put("AverageRectifier", com.ncslab.block.testrig.AverageRectifier.class);
 
         // Function
         blockClassTree.put("Fcn", com.ncslab.block.function.Fcn.class);

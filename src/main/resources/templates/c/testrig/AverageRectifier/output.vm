@@ -1,0 +1,12 @@
+/* Velocity Template for output of block AverageRectifier */
+/* Average-model AC/DC rectifier with Vdc control and soft-start */
+#set($Output_Vdc = $output1)
+#set($Output_Id = $output2)
+#set($Output_Iq = $output3)
+/*Code for Output of AverageRectifier:($blockId)$blockName*/
+{
+	/* --- Outputs are state variables (Vdc and current source outputs) --- */
+	$Output_Vdc = $vdc_int;
+	$Output_Id = $Id;
+	$Output_Iq = $Iq;
+}

@@ -1,0 +1,45 @@
+/* Velocity Template for derivative of block AverageRectifier */
+/* Average-model AC/DC rectifier with Vdc control and soft-start */
+/*Code for Derivative of AverageRectifier:($blockId)$blockName*/
+{
+	/* --- Read inputs --- */
+	REAL P_inst = $input1;
+	REAL Q_inst = $input2;
+	REAL Idc_load = $input3;
+
+	/* --- Power filters --- */
+	$P_fltDerivativeName = (P_inst - $P_flt) / 0.02;
+	$Q_fltDerivativeName = (Q_inst - $Q_flt) / 0.02;
+
+	/* --- Soft-start / sequencing --- */
+	REAL enable = 0.0;
+	if (model.time > $t_precharge) enable = 1.0;
+
+	REAL soft = 0.0;
+	if (enable > 0.5) {
+		soft = (model.time - $t_precharge) / $t_ramp;
+		if (soft > 1.0) soft = 1.0;
+	}
+
+	/* --- Rectifier Vdc control --- */
+	REAL Vdc_ref_eff = $Vdc_ref - $mq * $Q_flt;
+	REAL vdc_err = Vdc_ref_eff - $vdc_int;
+	REAL Iq_ref = soft * ($Kp_v * vdc_err + $Ki_v * $vdc_err_int);
+	if (Iq_ref < 0.0) Iq_ref = 0.0;      /* unidirectional AC->DC only */
+	if (Iq_ref > $Iq_max) Iq_ref = $Iq_max;
+	REAL Id_ref = 0.0;                    /* unity power factor */
+
+	/* --- DC-link dynamics --- */
+	REAL Idc_in = 0.0;
+	if ($vdc_int > 10.0) {
+		Idc_in = P_inst * $S_base / $vdc_int;
+	}
+	$vdc_intDerivativeName = (Idc_in - Idc_load) / $Cdc;
+
+	/* --- Current source lag (tau_i) --- */
+	$IdDerivativeName = (Id_ref - $Id) / $tau_i;
+	$IqDerivativeName = (Iq_ref - $Iq) / $tau_i;
+
+	/* --- Controller integrator --- */
+	$vdc_err_intDerivativeName = vdc_err;
+}

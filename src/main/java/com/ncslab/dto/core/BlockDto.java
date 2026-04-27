@@ -287,6 +287,8 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCGeneratorDto.class, name = "ACDCGenerator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCGeneratorDto.class, name = "ACDC Generator"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.ACDCGeneratorDto.class, name = "acdc generator"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.SynchronousGenerator3Dto.class, name = "SynchronousGenerator3"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.testrig.AverageRectifierDto.class, name = "AverageRectifier"),
     // Data processing blocks (added Week 6)
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.BytePackDto.class, name = "Byte pack"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.data.ByteUnpackDto.class, name = "Byte Unpack"),

@@ -1,0 +1,34 @@
+/* Velocity Template for init of block SynchronousGenerator3 */
+/* 3-order synchronous generator with internal AVR and Governor */
+/* All quantities in per-unit */
+/*Code for Init of SynchronousGenerator3:($blockId)$blockName*/
+{
+	/* --- Parameter initialization --- */
+	${Omega0Object.initCodeC}
+	${XdObject.initCodeC}
+	${XqObject.initCodeC}
+	${XddObject.initCodeC}
+	${Td0Object.initCodeC}
+	${RaObject.initCodeC}
+	${HObject.initCodeC}
+	${DObject.initCodeC}
+	${Vt_refObject.initCodeC}
+	${Kp_avrObject.initCodeC}
+	${Ki_avrObject.initCodeC}
+	${Efd0Object.initCodeC}
+	${Efd_minObject.initCodeC}
+	${Efd_maxObject.initCodeC}
+	${omega_refObject.initCodeC}
+	${Kp_govObject.initCodeC}
+	${Ki_govObject.initCodeC}
+	${Pm0Object.initCodeC}
+	${Pm_minObject.initCodeC}
+	${Pm_maxObject.initCodeC}
+
+	/* --- State initialization --- */
+	$Theta = 0.0;
+	$Omega = 1.0;       /* speed deviation = 0 => actual speed = 1 pu */
+	$Eq_prime = $Efd0;  /* initial transient emf matches Efd0 */
+	$avr_int = 0.0;
+	$gov_int = 0.0;
+}

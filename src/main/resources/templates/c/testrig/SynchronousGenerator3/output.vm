@@ -1,0 +1,37 @@
+/* Velocity Template for output of block SynchronousGenerator3 */
+/* 3-order synchronous generator with internal AVR and Governor */
+#set($Output_Vd = $output1)
+#set($Output_Vq = $output2)
+#set($Output_Vt = $output3)
+#set($Output_Pe = $output4)
+#set($Output_P_inst = $output5)
+#set($Output_Q_inst = $output6)
+#set($Output_Theta = $output7)
+#set($Output_Omega = $output8)
+/*Code for Output of SynchronousGenerator3:($blockId)$blockName*/
+{
+	/* --- Read inputs (currents from rectifier) --- */
+	REAL _Id = $input1;
+	REAL _Iq = $input2;
+
+	/* --- Generator terminal voltage (rotor reference frame) --- */
+	REAL _Vd = $Xq * _Iq - $Ra * _Id;
+	REAL _Vq = $Eq_prime - $Xdd * _Id - $Ra * _Iq;
+	REAL _Vt = sqrt(_Vd * _Vd + _Vq * _Vq);
+	if (_Vt < 0.01) _Vt = 0.01;
+
+	/* --- Electrical power (per-unit) --- */
+	REAL _Pe = _Vd * _Id + _Vq * _Iq;
+	REAL P_inst = 1.5 * _Pe;
+	REAL Q_inst = 1.5 * (_Vq * _Id - _Vd * _Iq);
+
+	/* --- Assign outputs --- */
+	$Output_Vd = _Vd;
+	$Output_Vq = _Vq;
+	$Output_Vt = _Vt;
+	$Output_Pe = _Pe;
+	$Output_P_inst = P_inst;
+	$Output_Q_inst = Q_inst;
+	$Output_Theta = $Theta;
+	$Output_Omega = $Omega;
+}

@@ -1,0 +1,25 @@
+/* Velocity Template for init of block AverageRectifier */
+/* Average-model AC/DC rectifier with Vdc control and soft-start */
+/* DC quantities in actual units (V, A, F) */
+/*Code for Init of AverageRectifier:($blockId)$blockName*/
+{
+	/* --- Parameter initialization --- */
+	${Vdc_refObject.initCodeC}
+	${CdcObject.initCodeC}
+	${Kp_vObject.initCodeC}
+	${Ki_vObject.initCodeC}
+	${mqObject.initCodeC}
+	${S_baseObject.initCodeC}
+	${tau_iObject.initCodeC}
+	${Iq_maxObject.initCodeC}
+	${t_prechargeObject.initCodeC}
+	${t_rampObject.initCodeC}
+
+	/* --- State initialization --- */
+	$vdc_int = $Vdc_ref;
+	$Id = 0.0;
+	$Iq = 0.0;
+	$vdc_err_int = 0.0;
+	$P_flt = 0.0;
+	$Q_flt = 0.0;
+}

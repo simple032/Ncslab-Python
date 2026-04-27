@@ -1,0 +1,36 @@
+/* Velocity Template for derivative of block SynchronousGenerator3 */
+/* 3-order synchronous generator with internal AVR and Governor */
+/*Code for Derivative of SynchronousGenerator3:($blockId)$blockName*/
+{
+	/* --- Recompute algebraic quantities (must match output block) --- */
+	REAL _Id = $input1;
+	REAL _Iq = $input2;
+	REAL _Vd = $Xq * _Iq - $Ra * _Id;
+	REAL _Vq = $Eq_prime - $Xdd * _Id - $Ra * _Iq;
+	REAL _Pe = _Vd * _Id + _Vq * _Iq;
+
+	/* --- AVR (controls Vq for stability under load) --- */
+	REAL Vt_err = $Vt_ref - _Vq;
+	REAL _Efd = $Efd0 + $Kp_avr * Vt_err + $Ki_avr * $avr_int;
+	if (_Efd > $Efd_max) _Efd = $Efd_max;
+	if (_Efd < $Efd_min) _Efd = $Efd_min;
+
+	/* --- Governor with anti-windup --- */
+	REAL omega_err = $omega_ref - $Omega;
+	REAL Pm_raw = $Pm0 + $Kp_gov * omega_err + $Ki_gov * $gov_int;
+	REAL _Pm = Pm_raw;
+	if (_Pm > $Pm_max) _Pm = $Pm_max;
+	if (_Pm < $Pm_min) _Pm = $Pm_min;
+	REAL gov_err = omega_err;
+	if (Pm_raw > $Pm_max && gov_err > 0) gov_err = 0;
+	if (Pm_raw < $Pm_min && gov_err < 0) gov_err = 0;
+
+	/* --- Generator state derivatives (3-order model) --- */
+	$ThetaDerivativeName = $Omega0 * ($Omega - 1.0);
+	$OmegaDerivativeName = (_Pm - _Pe - $D * ($Omega - 1.0)) / (2.0 * $H);
+	$Eq_primeDerivativeName = (_Efd - $Eq_prime - ($Xd - $Xdd) * _Id) / $Td0;
+
+	/* --- Controller integrators --- */
+	$avr_intDerivativeName = Vt_err;
+	$gov_intDerivativeName = gov_err;
+}
