@@ -376,31 +376,45 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 
             String exeFilePath = exeFile.getAbsolutePath();
 
-            // Create a ServerSocket to accept TCP connection from the C++ process
-            srvSocket = new ServerSocket(0);
-            srvSocket.setSoTimeout(30000);
-            int port = srvSocket.getLocalPort();
-            System.out.println("[CodeModelCWindowsSimulation] Waiting for C++ simulation to connect on TCP port " + port);
+            // Determine simulation mode: realtime uses TCP, standard uses stdout
+            boolean realtime = this.isRealtime;
+            System.out.println("[CodeModelCWindowsSimulation] Simulation mode: " + (realtime ? "realtime (TCP)" : "standard (stdout)"));
 
-            // Use ProcessBuilder instead of deprecated Runtime.exec()
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                exeFilePath,
-                String.valueOf(this.getConfig().getStopTime()),
-                String.valueOf(port)
-            );
-            processBuilder.directory(dir);
-            process = processBuilder.start();
-            this.currentProcess = process;
+            if (realtime) {
+                // Realtime mode: C++ acts as TCP client, Java acts as TCP server
+                srvSocket = new ServerSocket(0);
+                srvSocket.setSoTimeout(30000);
+                int port = srvSocket.getLocalPort();
+                System.out.println("[CodeModelCWindowsSimulation] Waiting for C++ simulation to connect on TCP port " + port);
 
-            // Accept TCP connection from the C++ process
-            socket = srvSocket.accept();
-            this.simSocket = socket;
-            this.serverSocket = srvSocket;
-            System.out.println("[CodeModelCWindowsSimulation] C++ simulation connected via TCP");
+                ProcessBuilder processBuilder = new ProcessBuilder(
+                    exeFilePath,
+                    String.valueOf(this.getConfig().getStopTime()),
+                    String.valueOf(port)
+                );
+                processBuilder.directory(dir);
+                process = processBuilder.start();
+                this.currentProcess = process;
 
-			// read primitive Java data types from an underlying InputStream in a little-endian format
-			// This input stream is the TCP socket from the process
-			out = new LittleEndianDataInputStream(socket.getInputStream());
+                socket = srvSocket.accept();
+                this.simSocket = socket;
+                this.serverSocket = srvSocket;
+                System.out.println("[CodeModelCWindowsSimulation] C++ simulation connected via TCP");
+
+                out = new LittleEndianDataInputStream(socket.getInputStream());
+            } else {
+                // Standard mode: C++ writes binary protocol to stdout, Java reads from process input stream
+                ProcessBuilder processBuilder = new ProcessBuilder(
+                    exeFilePath,
+                    String.valueOf(this.getConfig().getStopTime())
+                );
+                processBuilder.directory(dir);
+                process = processBuilder.start();
+                this.currentProcess = process;
+
+                out = new LittleEndianDataInputStream(process.getInputStream());
+                System.out.println("[CodeModelCWindowsSimulation] Reading C++ simulation output from stdout");
+            }
 
 			long currentTime = new java.util.Date().getTime();
 
