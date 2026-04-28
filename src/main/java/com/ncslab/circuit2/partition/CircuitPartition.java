@@ -87,8 +87,14 @@ public class CircuitPartition {
 		
 		//初始的时候，block的连接的node，就是对外node
 		for(CircuitPort port:block.getCurcuitPortList()) {
-			exNodeList.add(port.getCircuitNode());
+			if(exNodeList.contains(port.getCircuitNode())==false) {
+				exNodeList.add(port.getCircuitNode());
+			}
+			//System.out.print(""+port.getCircuitNode()+'\t');
 		}
+		
+		//System.out.println();
+		
 		
 		//按照各个SingleBlock,增加内部节点
 		for(CircuitBlockSingle singleBlock:singleBlockList) {
@@ -183,6 +189,11 @@ public class CircuitPartition {
 				exNodeList.add(node);
 			}
 		}
+		
+		for(CircuitNode node:exNodeList) {
+			System.out.print(node+"\t");
+		}
+		System.out.println(this.getExNodeList().size());
 	}
 	
 	//part合并之后，要进行的一些善后处理
@@ -406,7 +417,7 @@ public class CircuitPartition {
 			circuitDefineCode+="REAL "+this.getPrefix()+"_"+node.getNodeString()+"; /*";
 			
 			for(CircuitPort port:node.getCircuitPortList()) {
-				circuitDefineCode+=port.getBlock().getBlockName()+"\t";
+				circuitDefineCode+=port.getBlock().getBlockPath()+"/"+port.getBlock().getBlockName()+"\t";
 			}
 			
 			circuitDefineCode+="*/\n";
