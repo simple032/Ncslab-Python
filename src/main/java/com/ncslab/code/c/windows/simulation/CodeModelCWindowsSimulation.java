@@ -361,6 +361,28 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		}
 	}
 
+	/**
+	 * Send a control command (e.g., pause, resume) to the C++ simulation process.
+	 * Uses the same length-prefixed JSON TCP protocol as updateParameters.
+	 */
+	public void sendCommand(String command) throws IOException {
+		JSONObject json = new JSONObject();
+		json.put("command", command);
+
+		Socket socket = this.simSocket;
+		if (socket != null && socket.isConnected() && !socket.isClosed()) {
+			byte[] jsonBytes = json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+			java.io.OutputStream os = socket.getOutputStream();
+			// Send 4-byte little-endian length prefix
+			os.write(jsonBytes.length & 0xFF);
+			os.write((jsonBytes.length >> 8) & 0xFF);
+			os.write((jsonBytes.length >> 16) & 0xFF);
+			os.write((jsonBytes.length >> 24) & 0xFF);
+			os.write(jsonBytes);
+			os.flush();
+		}
+	}
+
 	public void simulate(Session session) throws ModelException {
 		Process process = null;
 		System.out.println("Executing simulation codes...");

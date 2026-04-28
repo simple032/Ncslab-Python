@@ -83,6 +83,9 @@ void sendRealtimeDataUpdate();
 extern FILE* g_simStream;
 extern int g_simSocket;
 
+// Real-time simulation pause/resume control flag
+extern bool g_simulationPaused;
+
 // Cross-platform socket write helpers (bypass FILE* buffering issues on Windows)
 void simWrite(const void* buf, size_t len);
 void simPutc(int c);

@@ -270,6 +270,26 @@ gslDim = getStateDimension();
 #endif
 
   while (mp->time < mp->stopTime) {
+        // Pause/resume control
+        while (g_simulationPaused) {
+#ifdef _WIN32
+          DWORD pauseTick = GetTickCount();
+          Sleep(10);
+          DWORD pauseDuration = GetTickCount() - pauseTick;
+          startTick += pauseDuration;
+          lastSendTick += pauseDuration;
+#else
+          struct timeval pauseTv;
+          gettimeofday(&pauseTv, NULL);
+          usleep(10000);
+          struct timeval pauseEndTv;
+          gettimeofday(&pauseEndTv, NULL);
+          long long pauseDurationMs = (pauseEndTv.tv_sec * 1000LL + pauseEndTv.tv_usec / 1000) - (pauseTv.tv_sec * 1000LL + pauseTv.tv_usec / 1000);
+          startMs += pauseDurationMs;
+          lastSendMs += pauseDurationMs;
+#endif
+          checkParameterUpdates();
+        }
     NCSLabOneStep();
     
     bool shouldSend = false;

@@ -21,7 +21,7 @@
 #define INIT_POINT_NUM 1000
 #define TOL 1E-4
 #define REL_TOL 1E-3
-#define MAX_RETRIES 5  // 增加最大重试次数
+#define MAX_RETRIES 5  // 增加最大重试次�?
 
 extern MODEL *mp;
 
@@ -31,7 +31,7 @@ double maxStepSize;
 
 extern double real_sample_time;
 
-// 兼容旧版本，已经不适用了
+// 兼容旧版本，已经不适用�?
 double singleStateReserve[7][SINGLE_STATE_NUM];
 Matrix matrixStateReserve[7][MATRIX_STATE_NUM];
 
@@ -128,6 +128,26 @@ void ncslabLoopRealtime() {
 #endif
 
   while (mp->time < mp->stopTime) {
+        // Pause/resume control
+        while (g_simulationPaused) {
+#ifdef _WIN32
+          DWORD pauseTick = GetTickCount();
+          Sleep(10);
+          DWORD pauseDuration = GetTickCount() - pauseTick;
+          startTick += pauseDuration;
+          lastSendTick += pauseDuration;
+#else
+          struct timeval pauseTv;
+          gettimeofday(&pauseTv, NULL);
+          usleep(10000);
+          struct timeval pauseEndTv;
+          gettimeofday(&pauseEndTv, NULL);
+          long long pauseDurationMs = (pauseEndTv.tv_sec * 1000LL + pauseEndTv.tv_usec / 1000) - (pauseTv.tv_sec * 1000LL + pauseTv.tv_usec / 1000);
+          startMs += pauseDurationMs;
+          lastSendMs += pauseDurationMs;
+#endif
+          checkParameterUpdates();
+        }
     NCSLabOneStep();
     
     bool shouldSend = false;

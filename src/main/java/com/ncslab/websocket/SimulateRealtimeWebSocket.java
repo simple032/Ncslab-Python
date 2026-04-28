@@ -119,6 +119,20 @@ public class SimulateRealtimeWebSocket {
 				return;
 			}
 
+				// Handle pause/resume commands from frontend
+				if (com.equals("pause") || com.equals("resume")) {
+					Object modelObj = session.getUserProperties().get("modelC");
+					if (modelObj instanceof CodeModelCWindowsSimulation) {
+						CodeModelCWindowsSimulation model = (CodeModelCWindowsSimulation) modelObj;
+						try {
+							model.sendCommand(com);
+						} catch (IOException e) {
+							logger.warning("Failed to send " + com + " command: " + e.getMessage());
+						}
+					}
+					return;
+				}
+
         if(com.equals("start")) {
 			try {
 				sendMessage(session,"start");

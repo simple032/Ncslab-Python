@@ -23,6 +23,9 @@ extern TERMINAL* terminals[];
 FILE* g_simStream = stdout;
 int g_simSocket = -1;
 
+// Real-time simulation pause/resume control flag
+bool g_simulationPaused = false;
+
 // Cross-platform socket write helpers
 void simWrite(const void* buf, size_t len) {
 	if (g_simSocket >= 0) {
@@ -1406,16 +1409,25 @@ void checkParameterUpdates() {
 	if (g_simSocket >= 0) {
 		static std::string recvBuffer;
 		static int expectedLen = -1;
+		static char headerBuffer[4];
+		static int headerBytesReceived = 0;
 
 		while (true) {
 			if (expectedLen < 0) {
 				// Try to read 4-byte little-endian length header
-				int len = 0;
-				int n = recv(g_simSocket, (char*)&len, 4, 0);
-				if (n == 4) {
-					expectedLen = len;
+				if (headerBytesReceived < 4) {
+					int n = recv(g_simSocket, headerBuffer + headerBytesReceived, 4 - headerBytesReceived, 0);
+					if (n > 0) {
+						headerBytesReceived += n;
+					} else {
+						break; // no more data available right now
+					}
+				}
+				if (headerBytesReceived == 4) {
+					expectedLen = *(int*)headerBuffer;
+					headerBytesReceived = 0;
 				} else {
-					break; // incomplete header or no data
+					break; // incomplete header
 				}
 			}
 
@@ -1440,6 +1452,17 @@ void checkParameterUpdates() {
 						recvBuffer.clear();
 						expectedLen = -1;
 
+						// Handle pause/resume commands
+						if (j.contains("command") && j["command"].is_string()) {
+							std::string cmd = j["command"];
+							if (cmd == "pause") {
+								g_simulationPaused = true;
+							} else if (cmd == "resume") {
+								g_simulationPaused = false;
+							}
+						}
+
+						// Handle parameter updates
 						if (j.contains("updates") && j["updates"].is_array()) {
 							for (const auto& update : j["updates"]) {
 								std::string blockPath = update.value("blockPath", "");
