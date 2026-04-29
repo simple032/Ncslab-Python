@@ -31,7 +31,7 @@ public class ScopeStruct extends Terminal {
 
 	public ScopeStruct(Block block,int id,String localName){
 		super(block, id, localName);
-		this.name="Block" + block.getBlockId() + "_Scope_" + localName;
+		this.name=sanitizeCIdentifier("Block" + block.getBlockId() + "_Scope_" + localName);
 		this.localName=localName;
 		this.timeList=new LinkedList<>();
 		this.dataList=new LinkedList<>();
