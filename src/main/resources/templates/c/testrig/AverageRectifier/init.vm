@@ -9,6 +9,8 @@
 	${Kp_vObject.initCodeC}
 	${Ki_vObject.initCodeC}
 	${mqObject.initCodeC}
+	${k_pObject.initCodeC}
+	${P_refObject.initCodeC}
 	${S_baseObject.initCodeC}
 	${tau_iObject.initCodeC}
 	${Iq_maxObject.initCodeC}

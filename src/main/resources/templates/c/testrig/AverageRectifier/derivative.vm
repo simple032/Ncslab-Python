@@ -21,8 +21,8 @@
 		if (soft > 1.0) soft = 1.0;
 	}
 
-	/* --- Rectifier Vdc control --- */
-	REAL Vdc_ref_eff = $Vdc_ref - $mq * $Q_flt;
+	/* --- Rectifier Vdc control with V-P droop --- */
+	REAL Vdc_ref_eff = $Vdc_ref - $mq * $Q_flt - $k_p * ($P_flt - $P_ref);
 	REAL vdc_err = Vdc_ref_eff - $vdc_int;
 	REAL Iq_ref = soft * ($Kp_v * vdc_err + $Ki_v * $vdc_err_int);
 	if (Iq_ref < 0.0) Iq_ref = 0.0;      /* unidirectional AC->DC only */

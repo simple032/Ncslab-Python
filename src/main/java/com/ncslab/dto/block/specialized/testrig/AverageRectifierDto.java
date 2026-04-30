@@ -33,6 +33,12 @@ public class AverageRectifierDto extends BlockDto {
     @Builder.Default
     private TypedParameter mq = TypedParameter.of(0.0016);
 
+    /* V-P droop control */
+    @Builder.Default
+    private TypedParameter k_p = TypedParameter.of(0.0);
+    @Builder.Default
+    private TypedParameter p_ref = TypedParameter.of(0.0);
+
     /* Power / current scaling */
     @Builder.Default
     private TypedParameter s_base = TypedParameter.of(9800.0);
@@ -54,6 +60,9 @@ public class AverageRectifierDto extends BlockDto {
     public Double getKiVValue() { return ki_v != null ? ki_v.getAsDouble() : 0.5; }
     public Double getMqValue() { return mq != null ? mq.getAsDouble() : 0.0016; }
 
+    public Double getKpValue() { return k_p != null ? k_p.getAsDouble() : 0.0; }
+    public Double getPRefValue() { return p_ref != null ? p_ref.getAsDouble() : 0.0; }
+
     public Double getSBaseValue() { return s_base != null ? s_base.getAsDouble() : 9800.0; }
     public Double getTauIValue() { return tau_i != null ? tau_i.getAsDouble() : 0.001; }
     public Double getIqMaxValue() { return iq_max != null ? iq_max.getAsDouble() : 2.0; }
@@ -69,6 +78,8 @@ public class AverageRectifierDto extends BlockDto {
                 .put("Kp_v", kp_v)
                 .put("Ki_v", ki_v)
                 .put("mq", mq)
+                .put("k_p", k_p)
+                .put("P_ref", p_ref)
                 .put("S_base", s_base)
                 .put("tau_i", tau_i)
                 .put("Iq_max", iq_max)

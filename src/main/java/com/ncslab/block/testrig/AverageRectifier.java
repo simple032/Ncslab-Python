@@ -41,6 +41,10 @@ public class AverageRectifier extends Block {
 		PARAMETER_DEFAULTS.put("Ki_v", "0.5");
 		PARAMETER_DEFAULTS.put("mq", "0.0016");
 
+		/* V-P droop control */
+		PARAMETER_DEFAULTS.put("k_p", "0.0");
+		PARAMETER_DEFAULTS.put("P_ref", "0.0");
+
 		/* Power / current scaling */
 		PARAMETER_DEFAULTS.put("S_base", "9800.0");
 		PARAMETER_DEFAULTS.put("tau_i", "0.001");
@@ -64,6 +68,9 @@ public class AverageRectifier extends Block {
 
 	/* Vdc controller */
 	Parameter cParaKpV, cParaKiV, cParaMq;
+
+	/* V-P droop control */
+	Parameter cParaKp, cParaPRef;
 
 	/* Power / current scaling */
 	Parameter cParaSBase, cParaTauI, cParaIqMax;
@@ -115,6 +122,10 @@ public class AverageRectifier extends Block {
 		cParaKpV = addParameterIfAbsent("Kp_v", PARAMETER_DEFAULTS.get("Kp_v"));
 		cParaKiV = addParameterIfAbsent("Ki_v", PARAMETER_DEFAULTS.get("Ki_v"));
 		cParaMq = addParameterIfAbsent("mq", PARAMETER_DEFAULTS.get("mq"));
+
+		/* V-P droop control */
+		cParaKp = addParameterIfAbsent("k_p", PARAMETER_DEFAULTS.get("k_p"));
+		cParaPRef = addParameterIfAbsent("P_ref", PARAMETER_DEFAULTS.get("P_ref"));
 
 		/* Power / current scaling */
 		cParaSBase = addParameterIfAbsent("S_base", PARAMETER_DEFAULTS.get("S_base"));
