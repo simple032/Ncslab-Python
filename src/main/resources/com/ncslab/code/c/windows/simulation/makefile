@@ -7,7 +7,7 @@ CC=g++
 
 LD=g++
 
-CCFlag=-D_SIMU -fPIC -g -O2 -std=gnu++11 -Wformat -Wwrite-strings -fpermissive\
+CCFlag=-D_SIMU -fPIC -g -O0 -std=gnu++11 -Wformat -Wwrite-strings -fpermissive\
 		-D_WIN32_WINNT=0x0501 -DPSAPI_VERSION=1 \
 		-I${M2PLAB_ROOT}/server/cruntime/include \
 		-IC:\mingw64\include \
