@@ -1472,29 +1472,30 @@ void checkParameterUpdates() {
 
 								if (paramName.empty()) continue;
 
-								auto getLastSegment = [](const std::string& path) -> std::string {
-									size_t pos = path.rfind('/');
-									return (pos == std::string::npos) ? path : path.substr(pos + 1);
-								};
+								// 使用完整路径 blockPath/blockName 匹配 param->path，
+				// 以区分不同子系统内部的同名模块
+				std::string targetPath = blockPath;
+if (!blockName.empty()) {
+	if (!targetPath.empty()) targetPath += "/";
+	targetPath += blockName;
+}
+if (targetPath.empty()) continue;
 
-								std::string targetBlockName = blockName.empty() ? getLastSegment(blockPath) : blockName;
-								if (targetBlockName.empty()) continue;
+for (int i = 0; i < mp->parameterNum; i++) {
+	PARAMETER* param = mp->parameters[i];
+	if (!param || !param->name || !param->path || !param->vp) continue;
 
-								for (int i = 0; i < mp->parameterNum; i++) {
-									PARAMETER* param = mp->parameters[i];
-									if (!param || !param->name || !param->path || !param->vp) continue;
+	std::string paramPath = param->path;
+	bool blockMatches = paramPath == targetPath;
+	bool nameMatches = strcmp(param->name, paramName.c_str()) == 0;
 
-									std::string paramBlockName = getLastSegment(param->path);
-									bool blockMatches = paramBlockName == targetBlockName;
-									bool nameMatches = strcmp(param->name, paramName.c_str()) == 0;
-
-									if (blockMatches && nameMatches) {
-										if (param->type == SINGLE) {
-											*((REAL*)param->vp) = (REAL)value;
-										}
-										break;
-									}
-								}
+	if (blockMatches && nameMatches) {
+		if (param->type == SINGLE) {
+			*((REAL*)param->vp) = (REAL)value;
+		}
+		break;
+	}
+}
 							}
 						}
 					} catch (...) {
@@ -1531,29 +1532,30 @@ void checkParameterUpdates() {
 
 			if (paramName.empty()) continue;
 
-			auto getLastSegment = [](const std::string& path) -> std::string {
-				size_t pos = path.rfind('/');
-				return (pos == std::string::npos) ? path : path.substr(pos + 1);
-			};
+			// 使用完整路径 blockPath/blockName 匹配 param->path，
+// 以区分不同子系统内部的同名模块
+std::string targetPath = blockPath;
+if (!blockName.empty()) {
+	if (!targetPath.empty()) targetPath += "/";
+	targetPath += blockName;
+}
+if (targetPath.empty()) continue;
 
-			std::string targetBlockName = blockName.empty() ? getLastSegment(blockPath) : blockName;
-			if (targetBlockName.empty()) continue;
+for (int i = 0; i < mp->parameterNum; i++) {
+	PARAMETER* param = mp->parameters[i];
+	if (!param || !param->name || !param->path || !param->vp) continue;
 
-			for (int i = 0; i < mp->parameterNum; i++) {
-				PARAMETER* param = mp->parameters[i];
-				if (!param || !param->name || !param->path || !param->vp) continue;
+	std::string paramPath = param->path;
+	bool blockMatches = paramPath == targetPath;
+	bool nameMatches = strcmp(param->name, paramName.c_str()) == 0;
 
-				std::string paramBlockName = getLastSegment(param->path);
-				bool blockMatches = paramBlockName == targetBlockName;
-				bool nameMatches = strcmp(param->name, paramName.c_str()) == 0;
-
-				if (blockMatches && nameMatches) {
-					if (param->type == SINGLE) {
-						*((REAL*)param->vp) = (REAL)value;
-					}
-					break;
-				}
-			}
+	if (blockMatches && nameMatches) {
+		if (param->type == SINGLE) {
+			*((REAL*)param->vp) = (REAL)value;
+		}
+		break;
+	}
+}
 		}
 	} catch (...) {
 		std::remove("param_updates.json");
