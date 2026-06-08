@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.ncslab.dto.annotations.MigrationCompatible;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.dto.mapper.validation.ValidationResult;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("Configuration")
 @MigrationCompatible(originalClass = "com.ncslab.block.config.Configuration")
@@ -24,13 +22,17 @@ public class ConfigurationDto extends BlockDto {
 
     @Override
     public ConfigurationDto copy() {
-        ConfigurationDto copy = new ConfigurationDto();
-        copyBaseFieldsTo(copy);
-        return copy;
+        return ConfigurationDto.builder()
+                .blockId(getBlockId())
+                .blockName(getBlockName())
+                .blockPath(getBlockPath())
+                .blockUUID(getBlockUUID())
+                .sampleTime(getSampleTime())
+                .build();
     }
 
     @Override
     public ValidationResult validate() {
-        return ValidationResult.success();
+        return new ValidationResult();
     }
 }

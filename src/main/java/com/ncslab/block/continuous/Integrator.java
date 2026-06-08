@@ -701,6 +701,8 @@ public class Integrator extends ContinuousBlock {
                 }
                 break;
         }
+        // updateDimension() may run more than once during compilation; replace the single integral state
+        stateList.clear();
         stateList.add(state);
     }    /**
      * DTO-NATIVE Constructor - Creates Integrator block directly from BlockDto DTO

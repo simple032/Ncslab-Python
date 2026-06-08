@@ -3,6 +3,7 @@ package com.ncslab.websocket;
 import java.io.IOException;
 
 import jakarta.websocket.OnClose;
+import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
@@ -24,9 +25,10 @@ public class SimulateRTWebSocket {
 
 	@OnOpen
 	public void onOpen(Session session) {
-		log.info("WEBopen Experiment for RT Simulation");
-		session.setMaxTextMessageBufferSize(1024*1024);
-		session.setMaxBinaryMessageBufferSize(1024*1024);
+		session.setMaxTextMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		session.setMaxBinaryMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		System.out.println("[SimulateRTWebSocket] Opened session " + session.getId()
+				+ " with max message size " + WebSocketSecurity.MAX_MESSAGE_SIZE + " bytes");
 	}
 
 	@OnClose
@@ -66,7 +68,8 @@ public class SimulateRTWebSocket {
 
 	@OnMessage
 	public void onMessage(Session session,String msgString){
-		log.info(msgString);
+		System.out.println("[SimulateRTWebSocket] Received WebSocket message length="
+				+ (msgString != null ? msgString.length() : 0));
 
         // Try to parse as DTO first, fall back to legacy JSONObject
         WebSocketMessageDto wsMessage = null;
@@ -76,7 +79,7 @@ public class SimulateRTWebSocket {
 		try {
 			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
 			com = wsMessage.getCom();
-			log.info("Using ObjectMapper-based RT WebSocket message parsing for command: " + com);			
+			System.out.println("[SimulateRTWebSocket] Parsed command=" + com);
 		} catch (JsonProcessingException e) {
 			// If Jackson parsing fails, log error and return
 			log.error("Failed to parse WebSocket message with Jackson: " + e.getMessage());
@@ -228,6 +231,16 @@ public class SimulateRTWebSocket {
 			finally {
 				// UserContext is cleared in the simulation thread, not here
 			}
+		}
+	}
+
+	@OnError
+	public void onError(Session session, Throwable throwable) {
+		String sessionId = session != null ? session.getId() : "null";
+		String message = throwable != null ? throwable.getMessage() : "unknown";
+		System.err.println("[SimulateRTWebSocket] WebSocket error on session " + sessionId + ": " + message);
+		if (throwable != null) {
+			throwable.printStackTrace();
 		}
 	}
 }

@@ -10,15 +10,15 @@ extern MODEL *mp;
 
 //double stateReserve[STATE_NUM];
 
-double singleStateReserve[5][SINGLE_STATE_NUM];
-Matrix matrixStateReserve[5][MATRIX_STATE_NUM];
+double singleStateReserve[5][SINGLE_STATE_RESERVE_NUM];
+Matrix matrixStateReserve[5][MATRIX_STATE_RESERVE_NUM];
 
 extern double sample_time[];
 
 //double derivativeReserve[4][STATE_NUM];
 
-double singleDerivativeReserve[6][SINGLE_STATE_NUM];
-Matrix matrixDerivativeReserve[6][MATRIX_STATE_NUM];
+double singleDerivativeReserve[6][SINGLE_STATE_RESERVE_NUM];
+Matrix matrixDerivativeReserve[6][MATRIX_STATE_RESERVE_NUM];
 
 double weight1[]={1.0/24.0, 0.0, 0.0, 5.0/48.0, 27.0/56.0, 125.0/336.0};
 
@@ -63,7 +63,12 @@ discreteInitFixed();
   long long lastSendMs = startMs;
 #endif
 
-  while (mp->time < mp->stopTime) {
+  
+  int realtimeUpdateMs = ncsRealtimeNativeIntervalMs();
+  if (realtimeUpdateMs < 50) {
+    realtimeUpdateMs = 50;
+  }
+while (mp->time < mp->stopTime) {
         // Pause/resume control
         while (g_simulationPaused) {
 #ifdef _WIN32
@@ -90,14 +95,14 @@ discreteInitFixed();
     bool shouldSend = false;
 #ifdef _WIN32
     DWORD nowTick = GetTickCount();
-    if ((int)(nowTick - lastSendTick) >= 1000) {
+    if ((int)(nowTick - lastSendTick) >= realtimeUpdateMs) {
       shouldSend = true;
     }
 #else
     struct timeval nowTv;
     gettimeofday(&nowTv, NULL);
     long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
-    if ((int)(nowMs - lastSendMs) >= 1000) {
+    if ((int)(nowMs - lastSendMs) >= realtimeUpdateMs) {
       shouldSend = true;
     }
 #endif
@@ -130,7 +135,7 @@ discreteInitFixed();
 
         DWORD nowTick = GetTickCount();
 
-        if ((int)(nowTick - lastSendTick) >= 1000) {
+        if ((int)(nowTick - lastSendTick) >= realtimeUpdateMs) {
 
           checkParameterUpdates();
 
@@ -166,7 +171,7 @@ discreteInitFixed();
 
         long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
 
-        if ((int)(nowMs - lastSendMs) >= 1000) {
+        if ((int)(nowMs - lastSendMs) >= realtimeUpdateMs) {
 
           checkParameterUpdates();
 
@@ -267,3 +272,4 @@ void NCSLabOneStep(){
   caculateDerivative(weight1,6);
   NCSLabUpdate();
 }
+

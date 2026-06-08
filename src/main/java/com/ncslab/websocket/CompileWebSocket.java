@@ -35,8 +35,9 @@ public class CompileWebSocket {
 	@OnOpen
 	public void onOpen(Session session) {
 		System.out.println("CompileWebSocket opened - Session: " + session.getId());
-		session.setMaxTextMessageBufferSize(1024 * 1024);
-		session.setMaxBinaryMessageBufferSize(1024 * 1024);
+		session.setMaxTextMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		session.setMaxBinaryMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		System.out.println("CompileWebSocket max message size: " + WebSocketSecurity.MAX_MESSAGE_SIZE + " bytes");
 		
 		// Set session timeout to prevent premature closure during compilation
 		session.setMaxIdleTimeout(300000); // 5 minutes

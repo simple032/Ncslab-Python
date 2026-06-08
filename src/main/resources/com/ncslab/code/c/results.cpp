@@ -1,4 +1,6 @@
 #include <fstream>
+#include <cstdlib>
+#include <cmath>
 #include "nlohmann/json.hpp"
 
 #include "ncslabdefines.hpp"
@@ -13,6 +15,48 @@ extern TERMINAL* terminals[];
 
 // Real-time mode flag: set by ncslabmainsimurt.cpp to skip disk writes during simulation
 int g_realtimeMode = 0;
+
+static int ncsReadPositiveEnvInt(const char* name, int defaultValue) {
+    const char* value = std::getenv(name);
+    if (value == NULL || value[0] == '\0') {
+        return defaultValue;
+    }
+    int parsed = std::atoi(value);
+    return parsed > 0 ? parsed : defaultValue;
+}
+
+int ncsScopeShouldLog(SCOPE* scope) {
+    if (scope == NULL) {
+        return 0;
+    }
+    if (scope->maxDataLength <= 1) {
+        return 1;
+    }
+    if (scope->logEvery <= 0) {
+        int forcedEvery = ncsReadPositiveEnvInt("NCSLAB_SCOPE_DECIMATE", 0);
+        if (forcedEvery > 0) {
+            scope->logEvery = forcedEvery;
+        } else {
+            int targetPoints = ncsReadPositiveEnvInt("NCSLAB_SCOPE_TARGET_POINTS", 50000);
+            double duration = mp != NULL ? (mp->stopTime - mp->startTime) : 0.0;
+            double step = STEP_SIZE;
+            int estimatedSteps = (duration > 0.0 && step > 0.0)
+                ? (int)std::ceil(duration / step)
+                : 0;
+            scope->logEvery = estimatedSteps > targetPoints
+                ? (int)std::ceil((double)estimatedSteps / (double)targetPoints)
+                : 1;
+        }
+        if (scope->logEvery < 1) {
+            scope->logEvery = 1;
+        }
+        scope->logCounter = 0;
+    }
+
+    int shouldLog = (scope->logCounter % scope->logEvery) == 0;
+    scope->logCounter++;
+    return shouldLog;
+}
 
 void writeScope(int cursor, TERMINAL* terminal, json* pJsonScopes) {
     SCOPE* scope;

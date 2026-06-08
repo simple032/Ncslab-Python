@@ -1,5 +1,6 @@
 package com.utils;
 
+import com.ncslab.config.NCSLabConfig;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -15,7 +16,7 @@ public class DatabaseConfig {
      * @throws IllegalStateException if required variables are missing
      */
     public static void validateDatabaseConfiguration() {
-        String password = System.getenv("NCSLAB_DB_PASSWORD");
+        String password = NCSLabConfig.get().getProperty("NCSLAB_DB_PASSWORD");
         if (password == null || password.trim().isEmpty()) {
             throw new IllegalStateException(
                 "NCSLab database password not configured. Please set NCSLAB_DB_PASSWORD environment variable."
@@ -31,17 +32,18 @@ public class DatabaseConfig {
      */
     public static Properties getDatabaseProperties() {
         validateDatabaseConfiguration();
+        NCSLabConfig config = NCSLabConfig.get();
         
         Properties props = new Properties();
         
         // Database connection properties with secure defaults
-        props.setProperty("NCSLAB_DB_URL", 
-            System.getenv().getOrDefault("NCSLAB_DB_URL", 
+        props.setProperty("NCSLAB_DB_URL",
+            config.getProperty("NCSLAB_DB_URL",
                 "jdbc:mysql://localhost:3306/ncslab?useSSL=true&characterEncoding=utf8&serverTimezone=UTC"));
-        props.setProperty("NCSLAB_DB_USERNAME", 
-            System.getenv().getOrDefault("NCSLAB_DB_USERNAME", "root"));
+        props.setProperty("NCSLAB_DB_USERNAME",
+            config.getProperty("NCSLAB_DB_USERNAME", "root"));
         props.setProperty("NCSLAB_DB_PASSWORD", 
-            System.getenv("NCSLAB_DB_PASSWORD"));
+            config.getProperty("NCSLAB_DB_PASSWORD"));
         
         return props;
     }

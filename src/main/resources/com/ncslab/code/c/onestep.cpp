@@ -21,7 +21,7 @@
 #define INIT_POINT_NUM 1000
 #define TOL 1E-4
 #define REL_TOL 1E-3
-#define MAX_RETRIES 5  // 增加最大重试次�?
+#define MAX_RETRIES 5  // 增加最大重试次�?
 
 extern MODEL *mp;
 
@@ -31,12 +31,12 @@ double maxStepSize;
 
 extern double real_sample_time;
 
-// 兼容旧版本，已经不适用�?
-double singleStateReserve[7][SINGLE_STATE_NUM];
-Matrix matrixStateReserve[7][MATRIX_STATE_NUM];
+// 兼容旧版本，已经不适用�?
+double singleStateReserve[7][SINGLE_STATE_RESERVE_NUM];
+Matrix matrixStateReserve[7][MATRIX_STATE_RESERVE_NUM];
 
-double singleDerivativeReserve[7][SINGLE_STATE_NUM];
-Matrix matrixDerivativeReserve[7][MATRIX_STATE_NUM];
+double singleDerivativeReserve[7][SINGLE_STATE_RESERVE_NUM];
+Matrix matrixDerivativeReserve[7][MATRIX_STATE_RESERVE_NUM];
 
 // GSL ODE function that wraps NCSLabDerivative
 int ncslab_ode_function(double t, const double y[], double dydt[], void *params) {
@@ -125,7 +125,11 @@ void ncslabLoopRealtime() {
   gettimeofday(&startTv, NULL);
   long long startMs = startTv.tv_sec * 1000LL + startTv.tv_usec / 1000;
   long long lastSendMs = startMs;
-#endif
+  #endif
+  int realtimeUpdateMs = ncsRealtimeNativeIntervalMs();
+  if (realtimeUpdateMs < 50) {
+    realtimeUpdateMs = 50;
+  }
 
   while (mp->time < mp->stopTime) {
         // Pause/resume control
@@ -153,14 +157,14 @@ void ncslabLoopRealtime() {
     bool shouldSend = false;
 #ifdef _WIN32
     DWORD nowTick = GetTickCount();
-    if ((int)(nowTick - lastSendTick) >= 1000) {
+    if ((int)(nowTick - lastSendTick) >= realtimeUpdateMs) {
       shouldSend = true;
     }
 #else
     struct timeval nowTv;
     gettimeofday(&nowTv, NULL);
     long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
-    if ((int)(nowMs - lastSendMs) >= 1000) {
+    if ((int)(nowMs - lastSendMs) >= realtimeUpdateMs) {
       shouldSend = true;
     }
 #endif
@@ -193,7 +197,7 @@ void ncslabLoopRealtime() {
 
         DWORD nowTick = GetTickCount();
 
-        if ((int)(nowTick - lastSendTick) >= 1000) {
+        if ((int)(nowTick - lastSendTick) >= realtimeUpdateMs) {
 
           checkParameterUpdates();
 
@@ -229,7 +233,7 @@ void ncslabLoopRealtime() {
 
         long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
 
-        if ((int)(nowMs - lastSendMs) >= 1000) {
+        if ((int)(nowMs - lastSendMs) >= realtimeUpdateMs) {
 
           checkParameterUpdates();
 

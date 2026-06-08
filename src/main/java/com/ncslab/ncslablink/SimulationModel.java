@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import com.ncslab.dto.core.ModelDto;
 import com.ncslab.dto.communication.WebSocketMessageDto;
+import com.ncslab.profile.SimulationStepProfiler;
 
 import jakarta.websocket.Session;
 
@@ -721,6 +722,10 @@ public class SimulationModel extends NCSLabModel{
         System.out.printf("Fixed-step integration: start=%.6f, end=%.6f, steps=%d, actualStep=%.6f%n",
             tStart, tEnd, totalSteps, actualStep);
 
+        if (SimulationStepProfiler.isEnabled()) {
+            SimulationStepProfiler.reset();
+        }
+
         // Initialize and send initial condition
         this.isMajorStep=true;
         calculateOutputs(currentTime);
@@ -743,22 +748,37 @@ public class SimulationModel extends NCSLabModel{
             }
 
             try {
+                long tIntegrate0 = SimulationStepProfiler.isEnabled() ? System.nanoTime() : 0L;
                 // Integrate from current time to target time
                 double actualEndTime = integrator.integrate(systemODE, currentTime, currentStates, targetTime, currentStates);
 
                 // Update current time
                 currentTime = actualEndTime;
 
+                long tIntegrate1 = SimulationStepProfiler.isEnabled() ? System.nanoTime() : 0L;
                 // Calculate outputs and discrete updates at this precise time point
                 this.isMajorStep=true;
                 calculateOutputs(currentTime);
+                long tOut1 = SimulationStepProfiler.isEnabled() ? System.nanoTime() : 0L;
                 if(circuitModel!=null) {
                 	circuitModel.calculateOutputs(currentTime);
                 	circuitModel.calculateUpdate(currentTime);
                 }
+                long tCirc1 = SimulationStepProfiler.isEnabled() ? System.nanoTime() : 0L;
                 this.isMajorStep=false;
                 calculateDiscreteUpdates(currentTime);
+                long tDisc1 = SimulationStepProfiler.isEnabled() ? System.nanoTime() : 0L;
                 flushScopeChunksIfNeeded();
+                long tScope1 = SimulationStepProfiler.isEnabled() ? System.nanoTime() : 0L;
+
+                if (SimulationStepProfiler.isEnabled()) {
+                    SimulationStepProfiler.recordFixedStep(
+                            tIntegrate1 - tIntegrate0,
+                            tOut1 - tIntegrate1,
+                            tCirc1 - tOut1,
+                            tDisc1 - tCirc1,
+                            tScope1 - tDisc1);
+                }
 
                 // Send simulation message
                 /*
@@ -787,6 +807,10 @@ public class SimulationModel extends NCSLabModel{
                     stepIndex, currentTime, targetTime);
                 throw new RuntimeException("Integration step failed", e);
             }
+        }
+
+        if (SimulationStepProfiler.isEnabled()) {
+            SimulationStepProfiler.logSummary("fixed-step", totalSteps);
         }
 
         // Final verification and cleanup

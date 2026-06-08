@@ -43,6 +43,14 @@ abstract public class CodeModelC extends CodeModel {
 	@Setter
 	protected boolean isRealtime = false;
 
+	/**
+	 * When true, {@link CodeStructC#makeExeFile()} passes USE_CUDA=1 to the make environment so generated native
+	 * simulation builds can compile/link CUDA device code where the platform makefile supports it.
+	 */
+	@Getter
+	@Setter
+	private boolean cudaSimulationRequested;
+
 	abstract protected CodeStructC getCodeStructC();
 
 	// 原有JSONObject构造函数
@@ -113,6 +121,10 @@ abstract public class CodeModelC extends CodeModel {
 	}
 
     public void removeAllFiles() { getCodeStructC().removeAllFiles(); }
+
+    public String prepareGeneratedCodePath() { return getCodeStructC().prepareCodePath(); }
+
+    public String getGeneratedCodePath() { return getCodeStructC().getCodePath(); }
 
 	@Override
 //	/*将代码变成C语言的一系列文件 */

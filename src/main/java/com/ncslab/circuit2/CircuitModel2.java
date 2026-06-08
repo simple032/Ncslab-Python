@@ -149,6 +149,11 @@ public class CircuitModel2 {
 		code+="switchGAA.switchNum="+(switchBlockList.size())+";\n";
 		code+="switchGAA.switchStatus=switchStatus;\n";
 		code+="switchGAA.storeGAASize=0;\n";
+		code+="switchGAA.storeGAACapacity=0;\n";
+		code+="switchGAA.cacheHits=0;\n";
+		code+="switchGAA.cacheMisses=0;\n";
+		code+="switchGAA.cacheRebuilds=0;\n";
+		code+="switchGAA.lastStoreGAA=NULL;\n";
 		code+="switchGAA.storeGAA=(StoreGAA *)malloc(0);\n";
 		
 		//code+="addSwitchCombine(&switchGAA,switchGAA.gAAOriginal,"+switchBlockList.size()+","+gAA.length+",switchGAA.switchStatus);\n";

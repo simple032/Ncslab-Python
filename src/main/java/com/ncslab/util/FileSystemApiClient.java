@@ -1,5 +1,6 @@
 package com.ncslab.util;
 
+import com.ncslab.config.NCSLabConfig;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -31,13 +32,10 @@ public class FileSystemApiClient {
     private static final int TIMEOUT_MS = 5000; // 5 second timeout
 
     /**
-     * Get the API base URL from system properties or default to localhost
+     * Get the API base URL from NCSLab configuration or default to localhost.
      */
     private static String getApiBaseUrl() {
-        String baseUrl = System.getProperty("filesystem.api.url");
-        if (baseUrl == null || baseUrl.trim().isEmpty()) {
-            baseUrl = "http://localhost:8080"; // Default for development
-        }
+        String baseUrl = NCSLabConfig.get().getProperty("filesystem.api.url", "http://localhost:8080");
         return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 

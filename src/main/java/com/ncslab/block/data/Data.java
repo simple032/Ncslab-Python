@@ -234,6 +234,44 @@ public class Data {
 	}
 
 	/**
+	 * Maps a Java-evaluated scalar string (e.g. {@code Double#toString()} for infinity) to a
+	 * C/C++ token for generated code that includes {@code <cmath>} / {@code <math.h>}.
+	 * Finite numeric strings are returned unchanged (aside from trim).
+	 */
+	public static String evaluatedJavaScalarToCxxToken(String evaluated) {
+		if (evaluated == null || evaluated.isEmpty()) {
+			return "0.0";
+		}
+		String n = evaluated.trim();
+		if (n.equalsIgnoreCase("infinity") || n.equalsIgnoreCase("inf") || n.equalsIgnoreCase("+infinity")) {
+			return "INFINITY";
+		}
+		if (n.equalsIgnoreCase("-infinity") || n.equalsIgnoreCase("-inf")) {
+			return "(-INFINITY)";
+		}
+		if (n.equalsIgnoreCase("nan")) {
+			return "NAN";
+		}
+		return n;
+	}
+
+	/**
+	 * C/C++ macro name or parenthesized expression for non-finite {@code double} values.
+	 * For use in generated {@code mainccode.cpp} with standard math headers.
+	 *
+	 * @throws IllegalArgumentException if {@code value} is finite
+	 */
+	public static String cxxScalarMacroForNonFiniteDouble(double value) {
+		if (Double.isNaN(value)) {
+			return "NAN";
+		}
+		if (Double.isInfinite(value)) {
+			return value > 0 ? "INFINITY" : "(-INFINITY)";
+		}
+		throw new IllegalArgumentException("Expected NaN or infinite value, got: " + value);
+	}
+
+	/**
 	 * Generate eye(m,n) identity matrix string
 	 * Workaround for m2pcode/mfcalc bug where eye(4,1) is incorrectly evaluated as eye(4)
 	 */
@@ -303,6 +341,9 @@ public class Data {
 	/**
 	 * Parse a string to double, handling special infinity values.
 	 * Converts "inf", "-inf", "Inf", "-Inf" to proper Java infinity constants.
+	 * Also accepts left-associative division chains (e.g. {@code 1/0.1}, {@code 1/2/3}) and,
+	 * when no {@code /} is present, multiplication chains (e.g. {@code 2*3*4}).
+	 * Mixed {@code /} and {@code *} without spaces is not supported; use a single literal or one operator kind.
 	 *
 	 * @param str String representation of a number or infinity
 	 * @return Parsed double value
@@ -313,8 +354,10 @@ public class Data {
 			throw new NumberFormatException("Empty string cannot be parsed as double");
 		}
 
+		String trimmed = str.trim();
+
 		// Normalize the string
-		String normalized = str.trim().toLowerCase();
+		String normalized = trimmed.toLowerCase();
 
 		// Handle infinity cases
 		if (normalized.equals("inf") || normalized.equals("infinity") || normalized.equals("+inf")) {
@@ -325,8 +368,53 @@ public class Data {
 			return Double.NaN;
 		}
 
-		// Standard parsing for regular numbers
-		return Double.parseDouble(str);
+		try {
+			return Double.parseDouble(trimmed);
+		} catch (NumberFormatException e) {
+			if (trimmed.indexOf('/') >= 0) {
+				return parseLeftAssociativeDivisionChain(trimmed);
+			}
+			if (trimmed.indexOf('*') >= 0) {
+				return parseLeftAssociativeMultiplyChain(trimmed);
+			}
+			throw e;
+		}
+	}
+
+	/**
+	 * Parse {@code a/b/.../z} as left-associative division: {@code ((a/b)/...)/z}.
+	 */
+	private static double parseLeftAssociativeDivisionChain(String s) {
+		int slash = s.lastIndexOf('/');
+		if (slash <= 0 || slash >= s.length() - 1) {
+			throw new NumberFormatException("Invalid division expression: " + s);
+		}
+		String left = s.substring(0, slash).trim();
+		String right = s.substring(slash + 1).trim();
+		if (left.isEmpty() || right.isEmpty()) {
+			throw new NumberFormatException("Invalid division expression: " + s);
+		}
+		double denominator = parseDoubleWithInfinity(right);
+		double numerator = parseDoubleWithInfinity(left);
+		return numerator / denominator;
+	}
+
+	/**
+	 * Parse {@code a*b*...*z} as left-associative multiplication: {@code ((a*b)*...)*z}.
+	 */
+	private static double parseLeftAssociativeMultiplyChain(String s) {
+		int star = s.lastIndexOf('*');
+		if (star <= 0 || star >= s.length() - 1) {
+			throw new NumberFormatException("Invalid multiplication expression: " + s);
+		}
+		String left = s.substring(0, star).trim();
+		String right = s.substring(star + 1).trim();
+		if (left.isEmpty() || right.isEmpty()) {
+			throw new NumberFormatException("Invalid multiplication expression: " + s);
+		}
+		double rhs = parseDoubleWithInfinity(right);
+		double lhs = parseDoubleWithInfinity(left);
+		return lhs * rhs;
 	}
 
 	/**

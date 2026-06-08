@@ -1,0 +1,47 @@
+Integrating libcircuit_cuda with NCSLab (generated C++ or JNI)
+==============================================================
+
+This directory builds a small static library `circuit_cuda` with a stable C ABI
+declared in include/circuit_cuda.h. Java builds do not need CUDA; link the
+library only from native code (generated ncslab sources or a JNI glue DLL).
+
+Suggested boundaries
+--------------------
+1) Keep CUDA optional: default CMake build uses circuit_cuda_gpu_stub.c so the
+   same symbols resolve on machines without an NVIDIA stack.
+
+2) Link site: the MinGW/MSVC project that already compiles ncslab.exe, or a
+   separate native helper loaded via System.loadLibrary from Java if you add a
+   JNI wrapper later.
+
+3) Data ownership: allocate host buffers in the caller; circuit_cuda_batch_saxpy
+   copies through device memory only when the cuda backend is active. For tight
+   integration later, extend the context with persistent pinned memory — not
+   required for the POC.
+
+4) Fallback: circuit_cuda_create(0) forces CPU; circuit_cuda_create(1) picks
+   CUDA when circuit_cuda_device_available() is true. circuit_cuda_batch_saxpy
+   falls back to CPU if the GPU path returns an error.
+
+5) Do not block the WebSocket thread: any future GPU step should run in the same
+   process as the solver thread, not in the Java TCP read loop.
+
+Build (CPU only)
+----------------
+  cmake -S native/circuit_cuda -B native/circuit_cuda/build
+  cmake --build native/circuit_cuda/build --config Release
+
+Build with CUDA (when toolkit is installed)
+-------------------------------------------
+  cmake -S native/circuit_cuda -B native/circuit_cuda/build -DCIRCUIT_CUDA_ENABLE_GPU=ON
+  cmake --build native/circuit_cuda/build --config Release
+
+Run micro-benchmark
+-------------------
+  native/circuit_cuda/build/Release/circuit_cuda_bench.exe   (Windows)
+  native/circuit_cuda/build/circuit_cuda_bench             (Unix)
+
+End-to-end ncslab CUDA hint (Java + generated exe)
+---------------------------------------------------
+  See DEPLOYMENT.md (env vars, logs, CPU fallback) and HOTSPOT_EXTENSION.md (where to
+  add real circuit acceleration after profiling).

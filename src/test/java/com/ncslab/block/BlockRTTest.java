@@ -1,5 +1,6 @@
 package com.ncslab.block;
 
+import com.ncslab.test.category.IntegrationTest;
 import com.ncslab.database.MdlBlock;
 import com.ncslab.websocket.CompileWebSocket;
 import com.ncslab.websocket.SimulateRTWebSocket;
@@ -12,12 +13,14 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import com.utils.ResourceReader;
 
 import java.util.UUID;
 
 import static org.junit.Assert.fail;
 
+@Category(IntegrationTest.class)
 public class BlockRTTest {
     private String simulateFilePath = "simulateWebsocket.json";
     private String compileFilePath = "websocketCompile.json";

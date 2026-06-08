@@ -131,6 +131,8 @@ import java.util.*;
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.DeadZoneDto.class, name = "Dead Zone"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.RateLimiterDto.class, name = "RateLimiter"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.BacklashDto.class, name = "Backlash"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.QuantizerDto.class, name = "Quantizer"),
+    @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.QuantizerDto.class, name = "Quantize"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.CoulombDto.class, name = "CoulombViscousFriction"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.discontinuous.CoulombDto.class, name = "Coulomb Viscous Friction"),
     @JsonSubTypes.Type(value = com.ncslab.dto.block.specialized.source.RampDto.class, name = "Ramp"),

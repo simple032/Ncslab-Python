@@ -26,7 +26,14 @@ public class CodeStructCWindowsSimulation extends CodeStructCWindows {
 //        writeNCSLabFile("makefile");
         writeMakefile("makefile");
 
+        writeNCSLabFile("../../util.cpp", "util.cpp", true);
+        writeNCSLabFile("../../util.hpp", "util.hpp", true);
         writeNCSLabFile("../../ncslabmainsimu.cpp","ncslabmain.cpp", true);
+        writeNCSLabFile("../../ncslab_cuda_probe.cpp", "ncslab_cuda_probe.cpp", true);
+        writeNCSLabFile("../../ncslab_cuda_cublas.cpp", "ncslab_cuda_cublas.cpp", true);
+        writeNCSLabFile("../../ncslab_cuda_cusolver_stub.cpp", "ncslab_cuda_cusolver_stub.cpp", true);
+        writeNCSLabFile("../../ncslab_cuda_device.cu", "ncslab_cuda_device.cu", true);
+        writeNCSLabFile("../../ncslab_cuda_device_stub.cpp", "ncslab_cuda_device_stub.cpp", true);
 
 		// write the main code file ncslabccdoe.c
 

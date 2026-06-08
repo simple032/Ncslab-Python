@@ -44,6 +44,9 @@ public class CodeStructCLinuxPCSimulation extends CodeStructC{
 
 		writeNCSLabFile("../../../util.hpp","util.hpp",true);
 		writeNCSLabFile("../../../util.cpp","util.cpp",true);
+		writeNCSLabFile("../../../ncslab_cuda_probe.cpp", "ncslab_cuda_probe.cpp", true);
+		writeNCSLabFile("../../../ncslab_cuda_cublas.cpp", "ncslab_cuda_cublas.cpp", true);
+		writeNCSLabFile("../../../ncslab_cuda_cusolver_stub.cpp", "ncslab_cuda_cusolver_stub.cpp", true);
 
 		writeNCSLabFile("../../../ncslabdefines.hpp","ncslabdefines.hpp", true);
 		writeNCSLabFile("../../../ncslabsfun.hpp","ncslabsfun.hpp", true);

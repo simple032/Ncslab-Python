@@ -416,8 +416,28 @@ public class CircuitPartitioner {
 		code+="void partitionerProcessCode(){\n";
 		
 		//分区计算的代码
-		for(CircuitPartition part:partitionList) {
-			code+=part.getPrefix()+"_CircuitOutputCode();\n";
+		if(partitionList.size()>1) {
+			code+="long long ncs_partitions_start_us=ncs_prof_now_us();\n";
+			code+="if(ncs_parallel_partitions_enabled()){\n";
+			code+="#pragma omp parallel sections\n";
+			code+="{\n";
+			for(CircuitPartition part:partitionList) {
+				code+="#pragma omp section\n";
+				code+="{ "+part.getPrefix()+"_CircuitOutputCode(); }\n";
+			}
+			code+="}\n";
+			code+="}\n";
+			code+="else{\n";
+			for(CircuitPartition part:partitionList) {
+				code+=part.getPrefix()+"_CircuitOutputCode();\n";
+			}
+			code+="}\n";
+			code+="ncs_prof_add_partitions(ncs_prof_now_us()-ncs_partitions_start_us);\n";
+		}
+		else {
+			for(CircuitPartition part:partitionList) {
+				code+=part.getPrefix()+"_CircuitOutputCode();\n";
+			}
 		}
 		
 		//定义gAA
@@ -456,14 +476,7 @@ public class CircuitPartitioner {
 		//求解线性方程的解
 		code+="gsl_vector_view b = gsl_vector_view_array (iA, "+mSize+");\n";
 		code+="gsl_vector *x = gsl_vector_alloc ("+mSize+");\n";
-
-		code+="int s;\n";
-		code+="gsl_matrix_view m = gsl_matrix_view_array (gAA, "+mSize+", "+mSize+");\n";
-		code+="gsl_permutation * p = gsl_permutation_alloc ("+mSize+");\n";
-		code+="gsl_linalg_LU_decomp (&m.matrix, p, &s);\n";
-		code+="gsl_linalg_LU_solve (&m.matrix, p, &b.vector, x);\n";
-
-		code+="gsl_permutation_free (p);\n";
+		code+="solveDenseLinearSystem(gAA, iA, "+mSize+", x);\n";
 		
 		//获取公共node的电压值
 		int vi=0;

@@ -75,6 +75,8 @@ public class ScopeStruct extends Terminal {
 		code+=this.name+".cursor = 0;\n";
 		code+=this.name+".isFull = 0;\n";
 		code+=this.name+".chunkCount = 0;\n";
+		code+=this.name+".logEvery = 0;\n";
+		code+=this.name+".logCounter = 0;\n";
 		
 		
 		return code;

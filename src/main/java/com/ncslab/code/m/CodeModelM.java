@@ -14,6 +14,21 @@ public class CodeModelM extends CodeModel{
 		super(jsonIn,mode);
 	}
 
+	@Override
+	protected void generatorCircuitGloablCode(CodeGenerationOption option) {
+		// M-code generation does not emit circuit2 native support code.
+	}
+
+	@Override
+	protected void generatorCircuitOutputCode(CodeGenerationOption option) {
+		// M-code generation does not emit circuit2 native support code.
+	}
+
+	@Override
+	protected void generatorCircuitUpdateCode(CodeGenerationOption option) {
+		// M-code generation does not emit circuit2 native support code.
+	}
+
 	public static CodeModelM createFromJSON(JSONObject jsonIn,ModelMode mode) throws ModelException{
 		CodeModelM model=new CodeModelM(jsonIn,mode);
 

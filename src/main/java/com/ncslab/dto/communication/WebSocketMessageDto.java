@@ -64,7 +64,16 @@ public class WebSocketMessageDto {
     // Model data for start commands - now typed
     @JsonProperty("mdlData")
     private MdlDataDto mdlData;
-    
+
+    /**
+     * When true with command {@code start}, the simulation worker prefers CUDA-capable native
+     * paths (see {@link com.ncslab.simulation.SimulationBackendContext}). Use this on the
+     * <strong>same</strong> WebSocket URL as normal simulation (e.g. {@code /websocketsimulate})
+     * so nginx does not need a separate {@code location} for CUDA.
+     */
+    @JsonProperty("preferCudaSimulation")
+    private Boolean preferCudaSimulation;
+
     // Step control fields
     @JsonProperty("steps")
     private Integer steps; // Number of steps for step_forward/step_backward

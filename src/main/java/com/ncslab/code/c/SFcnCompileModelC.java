@@ -1,6 +1,8 @@
 package com.ncslab.code.c;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.parquet.bytes.LittleEndianDataInputStream;
 //import com.google.common.io.LittleEndianDataInputStream;
@@ -177,18 +179,34 @@ public class SFcnCompileModelC extends SFcnModel{
 		try {
 			System.out.println("Making execute file...");
 			System.out.println(codePath);
-			String exeString="g++ -D_S_COMPILE -I${M2PLAB_ROOT}/server/cruntime/include -fpermissive -o "+fileName+" "+fileName+".cpp";
+			String m2plabRoot = System.getenv("M2PLAB_ROOT");
+			if (m2plabRoot == null || m2plabRoot.trim().isEmpty()) {
+				m2plabRoot = "/data/M2PLab";
+			}
+			String exeString="cl.exe /nologo /EHsc /MD /O2 /std:c++14 /D_S_COMPILE /I\""
+					+ m2plabRoot + "/server/cruntime/include\" /Fe:" + fileName + ".exe " + fileName + ".cpp";
 			System.out.println(exeString);
 
-			// Use ProcessBuilder instead of deprecated Runtime.exec()
-			ProcessBuilder processBuilder = new ProcessBuilder(
-				"g++",
-				"-D_S_COMPILE",
-				"-I${M2PLAB_ROOT}/server/cruntime/include",
-				"-fpermissive",
-				"-o", fileName,
-				fileName+".cpp"
-			);
+			List<String> clCommand = new ArrayList<>();
+			clCommand.add("cl.exe");
+			clCommand.add("/nologo");
+			clCommand.add("/EHsc");
+			clCommand.add("/MD");
+			clCommand.add("/O2");
+			clCommand.add("/std:c++14");
+			clCommand.add("/D_S_COMPILE");
+			clCommand.add("/I" + m2plabRoot + "/server/cruntime/include");
+			clCommand.add("/Fe:" + fileName + ".exe");
+			clCommand.add(fileName+".cpp");
+
+			ProcessBuilder processBuilder;
+			String vsDevCmd = isWindowsHost() ? findVsDevCmd() : null;
+			if (vsDevCmd != null) {
+				processBuilder = new ProcessBuilder("cmd.exe", "/d", "/c",
+						"call \"" + vsDevCmd + "\" -arch=x64 -host_arch=x64 >nul && " + joinCommandForCmd(clCommand));
+			} else {
+				processBuilder = new ProcessBuilder(clCommand);
+			}
 			processBuilder.directory(new File(codePath));
 			Process process = processBuilder.start();
 
@@ -237,6 +255,72 @@ public class SFcnCompileModelC extends SFcnModel{
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	private static boolean isWindowsHost() {
+		return System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win");
+	}
+
+	private static String joinCommandForCmd(List<String> commandParts) {
+		StringBuilder sb = new StringBuilder();
+		for (String part : commandParts) {
+			if (part == null || part.isEmpty()) {
+				continue;
+			}
+			if (sb.length() > 0) {
+				sb.append(' ');
+			}
+			if (part.indexOf(' ') >= 0 || part.indexOf('&') >= 0 || part.indexOf('(') >= 0 || part.indexOf(')') >= 0) {
+				sb.append('"').append(part.replace("\"", "\\\"")).append('"');
+			} else {
+				sb.append(part);
+			}
+		}
+		return sb.toString();
+	}
+
+	private static String findVsDevCmd() {
+		String envPath = System.getenv("VSDEVCMD_PATH");
+		if (isExistingFile(envPath)) {
+			return envPath;
+		}
+
+		String vsInstallDir = System.getenv("VSINSTALLDIR");
+		String fromInstallDir = vsInstallDir == null ? null : vsInstallDir + File.separator + "Common7"
+				+ File.separator + "Tools" + File.separator + "VsDevCmd.bat";
+		if (isExistingFile(fromInstallDir)) {
+			return fromInstallDir;
+		}
+
+		File vswhere = new File("C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe");
+		if (!vswhere.isFile()) {
+			return null;
+		}
+		try {
+			Process process = new ProcessBuilder(
+					vswhere.getAbsolutePath(),
+					"-latest",
+					"-products", "*",
+					"-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+					"-property", "installationPath").start();
+			String installPath;
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+				installPath = reader.readLine();
+			}
+			int exitCode = process.waitFor();
+			if (exitCode != 0 || installPath == null || installPath.trim().isEmpty()) {
+				return null;
+			}
+			String devCmd = installPath.trim() + File.separator + "Common7" + File.separator + "Tools"
+					+ File.separator + "VsDevCmd.bat";
+			return isExistingFile(devCmd) ? devCmd : null;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private static boolean isExistingFile(String path) {
+		return path != null && !path.trim().isEmpty() && new File(path).isFile();
 	}
 
 	public void compile() throws SFcnException{

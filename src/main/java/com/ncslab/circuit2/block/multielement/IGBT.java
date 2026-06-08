@@ -19,7 +19,7 @@ public class IGBT extends CircuitBlockMulti implements Recalc {
 	private String cSString;
 	private SwitchBase sw;
 	
-	private block.elec.IGBT igbt;
+	private com.ncslab.block.elec.IGBT igbt;
 	public IGBT(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		rOnString=Data.parseExpression(paramValues.getString("Ron"));
@@ -39,7 +39,7 @@ public class IGBT extends CircuitBlockMulti implements Recalc {
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		igbt=new block.elec.IGBT(addJSON,model,this);
+		igbt=new com.ncslab.block.elec.IGBT(addJSON,model,this);
 		model.addElectBlock(igbt);
 	}
 	

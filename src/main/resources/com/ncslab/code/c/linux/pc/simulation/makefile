@@ -1,11 +1,13 @@
 
 # OBJS=$(SFCNOBJS) mainccode.o ServerThread.o ClientThread.o DataApi.o UploadThread.o onestep.o util.o ncslabmain.o results.o
 # Matrix.o removed - Matrix.hpp is now header-only template
-OBJS = $(SFCNOBJS) mainccode.o onestep.o util.o ncslabmain.o results.o
+OBJS = $(SFCNOBJS) mainccode.o onestep.o util.o ncslabmain.o results.o ncslab_cuda_probe.o ncslab_cuda_cublas.o ncslab_cuda_cusolver_stub.o
 
 CC=g++
 
 LD=g++
+
+USE_CUDA ?= 0
 # LD=/opt/homebrew/Cellar/llvm/17.0.5/bin/clang++
 
 srcdir=/home/wenshan/NetConTop/ncslablink/src/main/java/com/ncslab/code/c
@@ -24,7 +26,11 @@ CCFlag=-D_SIMU -I $(srcdir) -I $(jsondir) -I $(pidir) -I $(eigendir) -fPIC -g -O
 # -fopenmp -lpthread =pthread
 # -Werror=format-security
 # -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wdate-time
-LDFLAG=-fopenmp -lm  -g -O2 -Wformat -rdynamic -fPIC -lgsl -lgslcblas
+LDFLAG=-fopenmp -lm  -g -O2 -Wformat -rdynamic -fPIC -lgsl -lgslcblas -ldl
+
+ifeq ($(USE_CUDA),1)
+  $(info NCSLab: USE_CUDA=1 — reserved for future nvcc-linked .cu; tail dgemm uses dynamic cuBLAS without nvcc.)
+endif
 
 ncslab: $(OBJS)
 	$(LD) -o ncslab $(OBJS) $(LDFLAG)
@@ -43,6 +49,15 @@ util.o: util.cpp
 
 ncslabmain.o: ncslabmain.cpp
 	$(CC) $(CCFlag)  -c ncslabmain.cpp
+
+ncslab_cuda_probe.o: ncslab_cuda_probe.cpp
+	$(CC) $(CCFlag)  -c ncslab_cuda_probe.cpp
+
+ncslab_cuda_cublas.o: ncslab_cuda_cublas.cpp
+	$(CC) $(CCFlag)  -c ncslab_cuda_cublas.cpp
+
+ncslab_cuda_cusolver_stub.o: ncslab_cuda_cusolver_stub.cpp
+	$(CC) $(CCFlag)  -c ncslab_cuda_cusolver_stub.cpp
 
 # Matrix.o build rule removed - Matrix.hpp is now header-only template
 

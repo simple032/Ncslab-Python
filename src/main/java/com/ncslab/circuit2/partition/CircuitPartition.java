@@ -371,6 +371,11 @@ public class CircuitPartition {
 		code+=getPrefix()+"_switchGAA.switchNum="+(switchBlockList.size())+";\n";
 		code+=getPrefix()+"_switchGAA.switchStatus="+getPrefix()+"_switchStatus;\n";
 		code+=getPrefix()+"_switchGAA.storeGAASize=0;\n";
+		code+=getPrefix()+"_switchGAA.storeGAACapacity=0;\n";
+		code+=getPrefix()+"_switchGAA.cacheHits=0;\n";
+		code+=getPrefix()+"_switchGAA.cacheMisses=0;\n";
+		code+=getPrefix()+"_switchGAA.cacheRebuilds=0;\n";
+		code+=getPrefix()+"_switchGAA.lastStoreGAA=NULL;\n";
 		code+=getPrefix()+"_switchGAA.storeGAA=(StoreGAA *)malloc(0);\n";
 		
 		code+="partitioner.partitions["+n+"].pSwitchGaa=&"+getPrefix()+"_switchGAA;\n";
@@ -675,6 +680,7 @@ public class CircuitPartition {
 	
 	private String getCircuitSolveCode() {
 		String circuitOutputCode="/*Circuit Solver Code for part"+id+"*/\n";
+		circuitOutputCode += "long long ncs_partition_prepare_start_us=ncs_prof_now_us();\n";
 		
 		circuitOutputCode+="//寻找能否在表格结构中找到现在开关状态的逆阵\n";
 		circuitOutputCode+="StoreGAA *pStoreGaa=findStoreGAA(partitioner.partitions["+id+"].pSwitchGaa,partitioner.partitions["+id+"].pSwitchGaa->switchStatus);\n";
@@ -718,6 +724,7 @@ public class CircuitPartition {
 		}
 		
 		circuitOutputCode+="//更新新的inv，放入表格中\n";
+		circuitOutputCode+="partitioner.partitions["+id+"].pSwitchGaa->cacheRebuilds++;\n";
 		circuitOutputCode+="inv=caclulateInv(pStoreGaa,gAA,size);\n";
 		circuitOutputCode+="pStoreGaa->isVariableChanged=0;\n";
 		
@@ -740,13 +747,20 @@ public class CircuitPartition {
 		}
 		circuitOutputCode+="//计算新的inv，添加到表格中\n";
 		circuitOutputCode+="inv=addSwitchCombine(partitioner.partitions["+id+"].pSwitchGaa,gAA,"+switchBlockList.size()+",size,partitioner.partitions["+id+"].pSwitchGaa->switchStatus);\n";
+		circuitOutputCode+="pStoreGaa=partitioner.partitions["+id+"].pSwitchGaa->lastStoreGAA;\n";
 		circuitOutputCode+="}\n";
+		circuitOutputCode += "ncs_prof_add_partition_prepare(ncs_prof_now_us()-ncs_partition_prepare_start_us);\n";
 		
 		// 调用gsl库，求解行列式的值
 		circuitOutputCode += "//矩阵和向量相乘，计算各个节点电压和其他未知数\n";
+		circuitOutputCode += "long long ncs_partition_solve_start_us=ncs_prof_now_us();\n";
 		circuitOutputCode += "gsl_vector_view b = gsl_vector_view_array (iA, size);\n";
 		circuitOutputCode += "gsl_vector *x = gsl_vector_alloc (size);\n";
+		circuitOutputCode+="if(!solveStoreGAA(pStoreGaa, &b.vector, x)){\n";
 		circuitOutputCode+="gsl_blas_dgemv(CblasNoTrans, 1.0, inv, &b.vector, 0.0, x);\n";
+		circuitOutputCode+="}\n";
+		circuitOutputCode += "ncs_prof_add_partition_solve(ncs_prof_now_us()-ncs_partition_solve_start_us);\n";
+		circuitOutputCode += "long long ncs_partition_equiv_start_us=ncs_prof_now_us();\n";
 		//circuitOutputCode+="printf(\"%f\\n\",gsl_vector_get(x,vIndex[1]));\n";
 		
 		int i=0;
@@ -799,6 +813,7 @@ public class CircuitPartition {
 		}
 		
 		circuitOutputCode+="gsl_vector_free (x);\n";
+		circuitOutputCode += "ncs_prof_add_partition_equiv(ncs_prof_now_us()-ncs_partition_equiv_start_us);\n";
 		
 		/*
 		for(CircuitNode node:exIntNodeList) {

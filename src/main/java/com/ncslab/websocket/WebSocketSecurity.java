@@ -32,12 +32,27 @@ public class WebSocketSecurity {
     private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     
     // Security limits
-    private static final int MAX_MESSAGE_SIZE = 1024 * 1024; // 1MB
+    public static final int MAX_MESSAGE_SIZE = resolveMaxMessageSize();
     private static final int MAX_JSON_DEPTH = 10;
     private static final int MAX_REQUESTS_PER_MINUTE = 60;
     
     private WebSocketSecurity() {
         // Utility class
+    }
+
+    private static int resolveMaxMessageSize() {
+        String configured = System.getProperty("ncslab.websocket.maxMessageBytes");
+        if (configured == null || configured.trim().isEmpty()) {
+            configured = System.getenv("NCSLAB_WEBSOCKET_MAX_MESSAGE_BYTES");
+        }
+        if (configured != null && !configured.trim().isEmpty()) {
+            try {
+                return Math.max(1024 * 1024, Integer.parseInt(configured.trim()));
+            } catch (NumberFormatException e) {
+                logger.warning("Invalid WebSocket max message size: " + configured + ", using default 64MB");
+            }
+        }
+        return 64 * 1024 * 1024;
     }
     
     /**

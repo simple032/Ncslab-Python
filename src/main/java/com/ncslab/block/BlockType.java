@@ -258,6 +258,7 @@ public class BlockType{
         blockClassTree.put("CoulombViscousFriction", com.ncslab.block.discontinuous.Coulomb.class);
         blockClassTree.put("RateLimiter", com.ncslab.block.discontinuous.RateLimiter.class);
         blockClassTree.put("Backlash", com.ncslab.block.discontinuous.Backlash.class);
+        blockClassTree.put("Quantizer", com.ncslab.block.discontinuous.Quantizer.class);
 
         blockClassTree.put("OneDimensionLookupTable", com.ncslab.block.lookupTable.OneDimensionLookupTableBlock.class);
         blockClassTree.put("TwoDimensionLookupTable", com.ncslab.block.lookupTable.TwoDimensionLookupTableBlock.class);
@@ -269,6 +270,7 @@ public class BlockType{
         // These map database block type names to existing registry entries
         blockClassTree.put("StateSpace", com.ncslab.block.continuous.StateSpace.class);  // maps to "State-Space"
         blockClassTree.put("Coulomb", com.ncslab.block.discontinuous.Coulomb.class);  // maps to "CoulombViscousFriction"
+        blockClassTree.put("Quantize", com.ncslab.block.discontinuous.Quantizer.class);  // maps to "Quantizer"
         blockClassTree.put("ZeroOrderHold", com.ncslab.block.discrete.Zero_Order_Hold.class);  // maps to "Zero-OrderHold"
         blockClassTree.put("DiscreteTimeIntegrator", com.ncslab.block.discrete.Discrete_Time_Integrator.class);  // maps to "Discrete-TimeIntegrator"
         blockClassTree.put("DiscreteTransferFcnz", com.ncslab.block.discrete.Discrete_Transfer_Fcnz.class);  // maps to "DiscreteTransferFcn(z)"

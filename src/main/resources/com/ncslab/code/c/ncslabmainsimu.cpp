@@ -27,25 +27,43 @@
 
 MODEL* mp;
 
+extern "C" void ncslab_cuda_runtime_probe(void);
+
+
 extern int g_simSocket;
 
 time_t main_timer;
+
+#ifdef _WIN32
+static LONG WINAPI ncsUnhandledExceptionFilter(EXCEPTION_POINTERS* info) {
+	DWORD code = info && info->ExceptionRecord ? info->ExceptionRecord->ExceptionCode : 0;
+	void* address = info && info->ExceptionRecord ? info->ExceptionRecord->ExceptionAddress : NULL;
+	fprintf(stderr, "[ncslab_crash] code=0x%08lx address=%p stage=%d\n",
+		(unsigned long)code, address, g_ncsCrashStage);
+	fflush(stderr);
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
 
 // argv[0] is the file path of the executable
 // argv[1] is the simulation stop time
 // argv[2] is the TCP port number (optional, if provided use TCP instead of stdout)
 int main(int argc, char* argv[]) {
 
+#ifdef _WIN32
+	SetUnhandledExceptionFilter(ncsUnhandledExceptionFilter);
+#endif
+
 	double endTime = 10;
 	double end = -1;
 	PROGRESSTYPE progressType=Ending;
-	NCSLabInit();
 
 	if (argc >= 2) {
 		endTime = atof(argv[1]);
 	}
 
-	// TCP mode: if port is provided, connect to Java backend
+	// TCP mode: connect to Java BEFORE NCSLabInit(). If init aborts (e.g. GSL singular matrix),
+	// Java would otherwise block on accept() until timeout because connect() never runs.
 	if (argc >= 3) {
 		int port = atoi(argv[2]);
 #ifdef _WIN32
@@ -87,6 +105,12 @@ int main(int argc, char* argv[]) {
 	}
 #endif
 
+	ncslab_runtime_params_load(NULL);
+	NCSLabInit();
+
+	ncslab_cuda_runtime_probe();
+	ncslab_cuda_cublas_warmup();
+
 	mp = NCSLabGetModelP();
 
 	mp->time = mp->startTime;
@@ -106,6 +130,7 @@ int main(int argc, char* argv[]) {
 	//NCSLabSaveResult();
 	NCSLabSaveResultBin();
 	NCSLabFinalize();
+	ncs_prof_print_summary();
 
 	// Send ending preamble + cmd via unified simWrite (works for both TCP and stdout)
 	sendPreamble();
@@ -113,13 +138,7 @@ int main(int argc, char* argv[]) {
 	simFlush();
 
 	if (g_simSocket >= 0) {
-#ifdef _WIN32
-		closesocket(g_simSocket);
-		WSACleanup();
-#else
-		close(g_simSocket);
-#endif
-		g_simSocket = -1;
+		simCloseSocketGracefully();
 	}
 }
 

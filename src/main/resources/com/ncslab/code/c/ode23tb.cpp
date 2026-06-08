@@ -17,10 +17,10 @@ extern double sample_time[];
 extern double real_sample_time;
 
 // Placeholders required by util.cpp / onestep.hpp linkage
-double singleStateReserve[3][SINGLE_STATE_NUM];
-Matrix matrixStateReserve[3][MATRIX_STATE_NUM];
-double singleDerivativeReserve[7][SINGLE_STATE_NUM];
-Matrix matrixDerivativeReserve[7][MATRIX_STATE_NUM];
+double singleStateReserve[3][SINGLE_STATE_RESERVE_NUM];
+Matrix matrixStateReserve[3][MATRIX_STATE_RESERVE_NUM];
+double singleDerivativeReserve[7][SINGLE_STATE_RESERVE_NUM];
+Matrix matrixDerivativeReserve[7][MATRIX_STATE_RESERVE_NUM];
 
 // GSL workspace
 static gsl_odeiv2_system sys;
@@ -269,7 +269,12 @@ gslDim = getStateDimension();
   long long lastSendMs = startMs;
 #endif
 
-  while (mp->time < mp->stopTime) {
+  
+  int realtimeUpdateMs = ncsRealtimeNativeIntervalMs();
+  if (realtimeUpdateMs < 50) {
+    realtimeUpdateMs = 50;
+  }
+while (mp->time < mp->stopTime) {
         // Pause/resume control
         while (g_simulationPaused) {
 #ifdef _WIN32
@@ -295,14 +300,14 @@ gslDim = getStateDimension();
     bool shouldSend = false;
 #ifdef _WIN32
     DWORD nowTick = GetTickCount();
-    if ((int)(nowTick - lastSendTick) >= 1000) {
+    if ((int)(nowTick - lastSendTick) >= realtimeUpdateMs) {
       shouldSend = true;
     }
 #else
     struct timeval nowTv;
     gettimeofday(&nowTv, NULL);
     long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
-    if ((int)(nowMs - lastSendMs) >= 1000) {
+    if ((int)(nowMs - lastSendMs) >= realtimeUpdateMs) {
       shouldSend = true;
     }
 #endif
@@ -328,7 +333,7 @@ gslDim = getStateDimension();
         Sleep(chunk);
         sleepMs -= chunk;
         DWORD nowTick = GetTickCount();
-        if ((int)(nowTick - lastSendTick) >= 1000) {
+        if ((int)(nowTick - lastSendTick) >= realtimeUpdateMs) {
           checkParameterUpdates();
           sendRealtimeDataUpdate();
           lastSendTick = nowTick;
@@ -349,7 +354,7 @@ gslDim = getStateDimension();
         struct timeval nowTv;
         gettimeofday(&nowTv, NULL);
         long long nowMs = nowTv.tv_sec * 1000LL + nowTv.tv_usec / 1000;
-        if ((int)(nowMs - lastSendMs) >= 1000) {
+        if ((int)(nowMs - lastSendMs) >= realtimeUpdateMs) {
           checkParameterUpdates();
           sendRealtimeDataUpdate();
           lastSendMs = nowMs;
@@ -425,3 +430,4 @@ void NCSLabOneStep()
         }
     }
 }
+

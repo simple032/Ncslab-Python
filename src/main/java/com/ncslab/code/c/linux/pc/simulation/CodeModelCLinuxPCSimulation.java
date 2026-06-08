@@ -13,6 +13,7 @@ import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
 import com.ncslab.code.c.CodeModelC;
 import com.ncslab.code.c.CodeStructC;
+import com.ncslab.simulation.SimulationBackendContext;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -78,6 +79,20 @@ public class CodeModelCLinuxPCSimulation extends CodeModelC{
 				String.valueOf(port)
 			);
 			processBuilder.directory(new File(codeRaspberry.getCodePath()));
+			File codeDir = new File(codeRaspberry.getCodePath());
+			processBuilder.environment().put("NCSLAB_RUNTIME_PARAMS",
+				new File(codeDir, "runtime_params.tsv").getAbsolutePath());
+			if (SimulationBackendContext.preferCuda()) {
+				processBuilder.environment().put("NCSLAB_SIM_CUDA", "1");
+				processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SVD", "1");
+				processBuilder.environment().putIfAbsent("NCSLAB_CUDA_FORCE_SVD", "0");
+				processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SVD_MIN_N", "32");
+				processBuilder.environment().putIfAbsent("NCSLAB_CUDA_DGEMM_MIN_N", "32");
+				processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SOLVE_DGEMV_MIN_N", "128");
+				processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SOLVE_DGEMV_FORCE", "0");
+				processBuilder.environment().putIfAbsent("NCSLAB_CUDA_CUBLAS_WARMUP", "1");
+			}
+			processBuilder.redirectError(ProcessBuilder.Redirect.to(new File(codeDir, "ncslab_stderr.log")));
 			process = processBuilder.start();
 
 			// Accept TCP connection from the C++ process

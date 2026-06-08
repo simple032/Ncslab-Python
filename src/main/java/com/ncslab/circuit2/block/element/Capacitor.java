@@ -25,7 +25,11 @@ public class Capacitor extends CircuitBlockSingle {
 	}
 	
 	public String getRString() {
-		return "("+this.getSimpleTime()+"/2.0/("+this.cString+"))";
+		if (Double.isNaN(cValue) || Double.isInfinite(cValue)) {
+			return "(" + this.getSimpleTime() + "/2.0/(" + Data.cxxScalarMacroForNonFiniteDouble(cValue) + "))";
+		}
+		String cTok = runtimeParamExpression("c", Data.evaluatedJavaScalarToCxxToken(this.cString));
+		return "(" + this.getSimpleTime() + "/2.0/(" + cTok + "))";
 	}
 	
 	public double getRValue() {
@@ -47,9 +51,21 @@ public class Capacitor extends CircuitBlockSingle {
 		String lv=this.getCurcuitPortList().get(0).getCircuitNode().getNodeString();
 		String rv=this.getCurcuitPortList().get(1).getCircuitNode().getNodeString();
 		
-		hisUpdateString+=hisString+"=-"+hisString+"-(4.0*"+this.cString+")/("+this.getSimpleTime()+")*("+lv+"-"+rv+")";
+		String cTok = (Double.isNaN(cValue) || Double.isInfinite(cValue))
+				? Data.cxxScalarMacroForNonFiniteDouble(cValue)
+				: runtimeParamExpression("c", Data.evaluatedJavaScalarToCxxToken(this.cString));
+		hisUpdateString+=hisString+"=-"+hisString+"-(4.0*"+cTok+")/("+this.getSimpleTime()+")*("+lv+"-"+rv+")";
 		
 		return hisUpdateString;
+	}
+
+	private String runtimeParamExpression(String paramName, String defaultToken) {
+		String key = getBlockUUID();
+		if (key == null || key.trim().isEmpty() || "null".equalsIgnoreCase(key.trim())) {
+			key = getBlockPath() + "/" + getBlockName();
+		}
+		return "ncslab_runtime_param(\"" + key.replace("\\", "\\\\").replace("\"", "\\\"")
+				+ "." + paramName + "\", " + defaultToken + ")";
 	}
 	
 	public void updateHis() {

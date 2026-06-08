@@ -33,7 +33,11 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 	}
 	
 	public String getRString() {
-		return "(2.0*("+this.lString+")/"+this.getSimpleTime()+")";
+		if (Double.isNaN(lValue) || Double.isInfinite(lValue)) {
+			return "(2.0*(" + Data.cxxScalarMacroForNonFiniteDouble(lValue) + ")/" + this.getSimpleTime() + ")";
+		}
+		String lTok = runtimeParamExpression("l", Data.evaluatedJavaScalarToCxxToken(this.lString));
+		return "(2.0*(" + lTok + ")/" + this.getSimpleTime() + ")";
 	}
 	
 	public double getRValue() {
@@ -54,9 +58,21 @@ public class Inductor extends CircuitBlockSingle implements SwitchBlock{
 		String lv=this.getCurcuitPortList().get(0).getCircuitNode().getNodeString();
 		String rv=this.getCurcuitPortList().get(1).getCircuitNode().getNodeString();
 		
-		hisUpdateString+=hisString+"=("+hisString+"+"+this.getSimpleTime()+"/("+this.lString+")*("+lv+"-"+rv+"))";
+		String lTok = (Double.isNaN(lValue) || Double.isInfinite(lValue))
+				? Data.cxxScalarMacroForNonFiniteDouble(lValue)
+				: runtimeParamExpression("l", Data.evaluatedJavaScalarToCxxToken(this.lString));
+		hisUpdateString+=hisString+"=("+hisString+"+"+this.getSimpleTime()+"/("+lTok+")*("+lv+"-"+rv+"))";
 		
 		return hisUpdateString;
+	}
+
+	private String runtimeParamExpression(String paramName, String defaultToken) {
+		String key = getBlockUUID();
+		if (key == null || key.trim().isEmpty() || "null".equalsIgnoreCase(key.trim())) {
+			key = getBlockPath() + "/" + getBlockName();
+		}
+		return "ncslab_runtime_param(\"" + key.replace("\\", "\\\\").replace("\"", "\\\"")
+				+ "." + paramName + "\", " + defaultToken + ")";
 	}
 	
 	public void updateHis() {

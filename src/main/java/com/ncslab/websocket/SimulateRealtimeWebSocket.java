@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import jakarta.websocket.OnClose;
+import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
@@ -24,6 +25,7 @@ import com.ncslab.code.c.linux.pc.simulation.CodeModelCLinuxPCSimulation;
 import com.ncslab.ncslablink.ErrorMessage;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
+import com.ncslab.simulation.SimulationBackendContext;
 import com.ncslab.util.UserContext;
 
 @ServerEndpoint("/websocketsimulaterealtime")
@@ -32,8 +34,10 @@ public class SimulateRealtimeWebSocket {
 
 	@OnOpen
 	public void onOpen(Session session) {
-		session.setMaxTextMessageBufferSize(1024*1024);
-		session.setMaxBinaryMessageBufferSize(1024*1024);
+		session.setMaxTextMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		session.setMaxBinaryMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		System.out.println("[SimulateRealtimeWebSocket] Opened session " + session.getId()
+				+ " with max message size " + WebSocketSecurity.MAX_MESSAGE_SIZE + " bytes");
 	}
 	
 	@OnClose
@@ -87,12 +91,14 @@ public class SimulateRealtimeWebSocket {
 
 	@OnMessage
 	public void onMessage(Session session, String msgString) {
-		System.out.println(msgString);
+		System.out.println("[SimulateRealtimeWebSocket] Received WebSocket message length="
+				+ (msgString != null ? msgString.length() : 0));
 		WebSocketMessageDto wsMessage = null;
 		CodeModelC modelC = null;
 		try {
 			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
 			String com = wsMessage.getCom();
+			System.out.println("[SimulateRealtimeWebSocket] Parsed command=" + com);
 
 			// Handle real-time parameter updates from frontend
 			if (com.equals("update_params")) {
@@ -136,10 +142,15 @@ public class SimulateRealtimeWebSocket {
         if(com.equals("start")) {
 			try {
 				sendMessage(session,"start");
+				boolean cudaMode = Boolean.TRUE.equals(wsMessage.getPreferCudaSimulation());
 
 				MdlDataDto mdlData = wsMessage.getMdlData();
 				if (mdlData == null) {
 					throw new ModelException("No mdlData found in WebSocket message");
+				}
+				if (!cudaMode && SimulationBackendContext.shouldPreferCudaForModel(mdlData.getModelId())) {
+					cudaMode = true;
+					System.out.println("SimulateRealtimeWebSocket: CUDA enabled by model allowlist for modelId=" + mdlData.getModelId());
 				}
 
 				Integer userId = mdlData.getUserId();
@@ -224,6 +235,7 @@ public class SimulateRealtimeWebSocket {
 
 	        	sendMessage(session,"compiling");
 
+	        	modelC.setCudaSimulationRequested(cudaMode);
 	        	if(!modelC.makeExeFile()) {
 	        		throw new ModelException("Can not make exe file!");
 	        	}
@@ -235,7 +247,11 @@ public class SimulateRealtimeWebSocket {
 				if(session != null) {
 					session.getUserProperties().put("modelC", modelC);
 					final CodeModelC finalModelC = modelC;
+					final boolean cudaRun = cudaMode;
 					Thread simThread = new Thread(() -> {
+						if (cudaRun) {
+							SimulationBackendContext.setPreferCuda(true);
+						}
 						try {
 							finalModelC.simulate(session);
 							if (session.isOpen()) {
@@ -246,6 +262,7 @@ public class SimulateRealtimeWebSocket {
 							System.err.println("[SimulateRealtimeWebSocket] Simulation thread error: " + e.getMessage());
 							e.printStackTrace();
 						} finally {
+							SimulationBackendContext.clear();
 							try {
 								if (session != null && session.isOpen()) {
 									session.close();
@@ -313,6 +330,16 @@ public class SimulateRealtimeWebSocket {
 					logger.warning("Error during model cleanup: " + e.getMessage());
 				}
 			}
+		}
+	}
+
+	@OnError
+	public void onError(Session session, Throwable throwable) {
+		String sessionId = session != null ? session.getId() : "null";
+		String message = throwable != null ? throwable.getMessage() : "unknown";
+		logger.severe("[SimulateRealtimeWebSocket] WebSocket error on session " + sessionId + ": " + message);
+		if (throwable != null) {
+			throwable.printStackTrace();
 		}
 	}
 		

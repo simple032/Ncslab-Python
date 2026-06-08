@@ -6,5 +6,6 @@ struct SCOPE;
 void NCSLabSaveResult();
 void NCSLabSaveResultBin();
 void flushScopeChunk(SCOPE* scope);
+int ncsScopeShouldLog(SCOPE* scope);
 
 #endif

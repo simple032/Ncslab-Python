@@ -1,5 +1,6 @@
 package com.ncslab.block.comm;
 
+import com.ncslab.test.category.HardwareTest;
 import com.ncslab.database.MdlBlock;
 import com.utils.MdlBlockMapper;
 import com.utils.Mybatis1Utils;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -21,6 +23,7 @@ import com.ncslab.websocket.CompileWebSocket;
 import com.ncslab.websocket.SimulateWebSocket;
 import com.ncslab.websocket.SimulateRTWebSocket;
 
+@Category(HardwareTest.class)
 public class UDPReceiverTest {
 
     private String simulateFilePath = "com/ncslab/websocket/simulateWebsocket.json";

@@ -519,6 +519,7 @@ public class IntegratorLimited extends ContinuousBlock {
                 }
                 break;
         }
+        stateList.clear();
         stateList.add(state);
     }
 

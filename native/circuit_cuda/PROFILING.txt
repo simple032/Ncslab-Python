@@ -1,0 +1,66 @@
+NCSLab simulation profiling (Java ODE vs native ncslab bridge)
+============================================================
+
+Goal: decide whether CUDA should target the ODE integrator path, circuitModel,
+generated C++ compute, or the Java TCP bridge (see TRACK_SELECTION.txt).
+
+1) Java fixed-step ODE path (SimulationModel)
+   - Enable:  -Dncslab.sim.profile=true
+              or set environment variable NCSLAB_SIM_PROFILE=1
+   - Run a model that uses fixed-step integration in the server JVM.
+   - Logs [SimulationStepProfiler] lines with percentage of wall time spent in:
+     integrate / calculateOutputs / circuitModel / discrete / flushScopeChunks
+
+2) Java native-code bridge (Windows CodeModelCWindowsSimulation)
+   - Same enable flag as (1).
+   - While ncslab.exe streams messages over TCP, logs [NativeCodeBridgeProfiler]:
+     preambleRead = time blocked in sync-byte loop + readInt(cmd)
+     handle = switch + WebSocket sends for that message
+
+3) Generated C++ executable (ncslab.exe)
+   - Windows: Visual Studio / MSVC: build RelWithDebInfo, attach with Very Sleepy or
+     Visual Studio CPU sampling while reproducing a slow case.
+   - NVIDIA Nsight Systems: profile ncslab.exe to see whether CPU is compute-bound
+     or timer/socket bound (see ncslabmain.cpp timeSetEvent + server thread).
+
+4) Full JVM picture (optional)
+   - Async-profiler or JFR (Flight Recorder) on the same JVM flags as (1) to catch
+     hotspots outside the instrumented loop.
+
+5) Native POC micro-benchmark (circuit_cuda_bench)
+   - Build native/circuit_cuda (see INTEGRATION.txt), then run:
+       Windows: native/circuit_cuda/build/Release/circuit_cuda_bench.exe
+       Unix:    native/circuit_cuda/build/circuit_cuda_bench
+   - Compares CPU vs CUDA backend on a batched SAXPY workload (toolchain sanity check;
+     not a full circuit solve).
+
+6) Verify “CUDA path” vs real GPU usage (after frontend sends preferCudaSimulation)
+   - **Java hint (routing correct):** Right before `ncslab.exe` runs, the server sends a WebSocket
+     status whose `msg` field is either `simulation_backend_cuda` or `simulation_backend_cpu`.
+     Your UI can display that. Tomcat stdout also logs a line containing
+     `[SimulationBackend] worker=CUDA_HINT` or `worker=CPU`.
+   - **Subprocess:** When that hint is active, Java sets **`NCSLAB_SIM_CUDA=1`** on the `ncslab`
+     process. See **`ncslab_stderr.log`** in the model directory for **`[ncslab_cuda]`** lines
+     (`probe OK` after a successful device malloc/memcpy, **`cublas warm-up OK`** when default
+     tail warm-up runs, or errors if cudart failed to load).
+   - **Important:** The probe validates the driver stack; the optional **tail cuBLAS `dgemm`**
+     in `util.cpp` (pseudoinverse path) is the first numerical offload when `n` is large enough
+     (see HOTSPOT_TABLE.md, VALIDATION_DGEMM.md, HOTSPOT_EXTENSION.md).
+   - **Real GPU activity:** Run `nvidia-smi` during startup; a successful probe may show a short
+     memory blip when `NCSLAB_SIM_CUDA=1`.
+   - **Native POC:** `circuit_cuda_bench` (see §5) confirms the CUDA toolkit path on the machine;
+     it is not the full circuit solver.
+
+7) Compile vs runtime (end-to-end)
+   - See **native/circuit_cuda/PROFILE_COMPILE_AND_RUN.md** for T_compile (`[CodeStructC] make wall=...`)
+     and T_run (Nsight Attach). Splits “slow compile” from “slow ncslab”.
+
+Interpretation
+--------------
+- If integrate% dominates in (1): consider dense/sparse math acceleration or solver
+  tuning before CUDA.
+- If circuit% dominates: algebraic-loop / block graph path (Track B in design).
+- If NativeCodeBridge handle% dominates: optimize WebSocket payload or message rate
+  before GPU (GPU will not help).
+- If C++ profile shows tight numerical loops: candidate for device kernels or batch
+  Monte Carlo (Track B).

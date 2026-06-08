@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.json.JSONArray;
+import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
@@ -27,9 +28,10 @@ public class SimulateStepWebSocket {
 
 	@OnOpen
 	public void onOpen(Session session) {
-		System.out.println("WEBopen Real-Time Step Control Simulation");
-		session.setMaxTextMessageBufferSize(1024*1024);
-		session.setMaxBinaryMessageBufferSize(1024*1024);
+		session.setMaxTextMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		session.setMaxBinaryMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		System.out.println("[SimulateStepWebSocket] Opened session " + session.getId()
+				+ " with max message size " + WebSocketSecurity.MAX_MESSAGE_SIZE + " bytes");
 		
 		// Send initial connection status for RT mode
 		try {
@@ -109,7 +111,8 @@ public class SimulateStepWebSocket {
 
 	@OnMessage
 	public void onMessage(Session session,String msgString){
-		System.out.println("RT Step Control: " + msgString);
+		System.out.println("[SimulateStepWebSocket] Received WebSocket message length="
+				+ (msgString != null ? msgString.length() : 0));
 
         // Try to parse as DTO first, fall back to legacy JSONObject (RT pattern)
         WebSocketMessageDto wsMessage = null;
@@ -120,7 +123,7 @@ public class SimulateStepWebSocket {
 		try {
 			wsMessage = JsonUtils.getObjectMapper().readValue(msgString, WebSocketMessageDto.class);
 			com = wsMessage.getCom();
-			System.out.println("Using Jackson DTO-based RT Step Control WebSocket message parsing for command: " + com);
+			System.out.println("[SimulateStepWebSocket] Parsed command=" + com);
 		} catch (Exception e) {
 			System.err.println("Failed to parse WebSocket message with Jackson: " + e.getMessage());
 			try {
@@ -176,6 +179,16 @@ public class SimulateStepWebSocket {
                 handleUnknownCommand(session, com);
                 break;        
         }
+	}
+
+	@OnError
+	public void onError(Session session, Throwable throwable) {
+		String sessionId = session != null ? session.getId() : "null";
+		String message = throwable != null ? throwable.getMessage() : "unknown";
+		System.err.println("[SimulateStepWebSocket] WebSocket error on session " + sessionId + ": " + message);
+		if (throwable != null) {
+			throwable.printStackTrace();
+		}
 	}
 
 	private void handleStartCommand(Session session, WebSocketMessageDto wsMessage, JSONObject msg) {

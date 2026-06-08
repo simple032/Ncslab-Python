@@ -1,5 +1,6 @@
 package com.ncslab.block.testrig;
 
+import com.ncslab.test.category.HardwareTest;
 import com.ncslab.database.MdlBlock;
 import com.utils.MdlBlockMapper;
 import com.utils.Mybatis1Utils;
@@ -10,12 +11,14 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import static org.junit.Assert.fail;
 import java.util.List;
 import java.util.UUID;
 import com.ncslab.websocket.CompileWebSocket;
 import com.ncslab.websocket.SimulateWebSocket;
 
+@Category(HardwareTest.class)
 public class LoongarchPLCTest {
     
         private String simulateFilePath = "com/ncslab/websocket/simulateWebsocket.json";

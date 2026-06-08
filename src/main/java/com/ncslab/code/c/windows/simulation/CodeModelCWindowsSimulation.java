@@ -6,6 +6,8 @@ import com.ncslab.code.c.CodeStructC;
 import com.ncslab.dto.core.ModelDto;
 import com.ncslab.ncslablink.ModelException;
 import com.ncslab.ncslablink.ModelMode;
+import com.ncslab.profile.NativeCodeBridgeProfiler;
+import com.ncslab.simulation.SimulationBackendContext;
 import com.utils.Property;
 import org.json.JSONObject;
 
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.file.*;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
@@ -72,8 +75,8 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		}
 		JSONObject jb = new JSONObject();
 		jb.put("msg", "simulating");
-		jb.put("time", time);
-		jb.put("timeLength", this.getConfig().getStopTime());
+		jb.put("time", toJsonNumber(time));
+		jb.put("timeLength", toJsonNumber(this.getConfig().getStopTime()));
 		session.getBasicRemote().sendText(jb.toString());
 	}
 
@@ -101,10 +104,18 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		jb.put("msg", "display_update");
 		jb.put("timestamp", System.currentTimeMillis());
 		JSONObject dataObj = new JSONObject();
+		JSONObject textObj = new JSONObject();
 		for (Map.Entry<String, Double> entry : displayData.entrySet()) {
-			dataObj.put(entry.getKey(), entry.getValue());
+			Double value = entry.getValue();
+			dataObj.put(entry.getKey(), toJsonNumber(value));
+			if (!isFinite(value)) {
+				textObj.put(entry.getKey(), nonFiniteText(value));
+			}
 		}
 		jb.put("displayData", dataObj);
+		if (textObj.length() > 0) {
+			jb.put("displayDataText", textObj);
+		}
 		session.getBasicRemote().sendText(jb.toString());
 	}
 
@@ -142,12 +153,20 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		JSONObject jb = new JSONObject();
 		jb.put("msg", "realtime_data_update");
 		jb.put("timestamp", System.currentTimeMillis());
-		jb.put("currentTime", currentTime);
+		jb.put("currentTime", toJsonNumber(currentTime));
 		JSONObject dataObj = new JSONObject();
+		JSONObject textObj = new JSONObject();
 		for (Map.Entry<String, Double> entry : displayData.entrySet()) {
-			dataObj.put(entry.getKey(), entry.getValue());
+			Double value = entry.getValue();
+			dataObj.put(entry.getKey(), toJsonNumber(value));
+			if (!isFinite(value)) {
+				textObj.put(entry.getKey(), nonFiniteText(value));
+			}
 		}
 		jb.put("displayData", dataObj);
+		if (textObj.length() > 0) {
+			jb.put("displayDataText", textObj);
+		}
 		org.json.JSONArray scopeArray = new org.json.JSONArray();
 		for (Map<String, Object> scope : scopeDataList) {
 			JSONObject scopeObj = new JSONObject();
@@ -157,10 +176,10 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 			org.json.JSONArray timeArr = new org.json.JSONArray();
 			org.json.JSONArray dataArr = new org.json.JSONArray();
 			for (Double t : (List<Double>) scope.get("time")) {
-				timeArr.put(t);
+				timeArr.put(toJsonNumber(t));
 			}
 			for (Double d : (List<Double>) scope.get("data")) {
-				dataArr.put(d);
+				dataArr.put(toJsonNumber(d));
 			}
 			scopeObj.put("time", timeArr);
 			scopeObj.put("data", dataArr);
@@ -168,6 +187,43 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		}
 		jb.put("scopeData", scopeArray);
 		session.getBasicRemote().sendText(jb.toString());
+	}
+
+	private int getRealtimeUiIntervalMs() {
+		String value = System.getProperty("ncslab.ui.update.ms");
+		if (value == null || value.trim().isEmpty()) {
+			value = System.getenv("NCSLAB_UI_UPDATE_MS");
+		}
+		if (value == null || value.trim().isEmpty()) {
+			return 50;
+		}
+		try {
+			return Math.max(0, Math.min(1000, Integer.parseInt(value.trim())));
+		} catch (NumberFormatException ex) {
+			return 50;
+		}
+	}
+
+	static boolean isFinite(Double value) {
+		return value != null && !Double.isNaN(value) && !Double.isInfinite(value);
+	}
+
+	static Object toJsonNumber(Double value) {
+		return isFinite(value) ? value : JSONObject.NULL;
+	}
+
+	static Object toJsonNumber(double value) {
+		return toJsonNumber(Double.valueOf(value));
+	}
+
+	static String nonFiniteText(Double value) {
+		if (value == null) {
+			return "null";
+		}
+		if (Double.isNaN(value)) {
+			return "NaN";
+		}
+		return value > 0 ? "Infinity" : "-Infinity";
 	}
 
 	/**
@@ -392,8 +448,8 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 		try {
 			// run the executable ncslab file
 
-            File dir = new File(codeStructC.getCodePath());
-            File exeFile = new File(dir, "ncslab.exe");
+            File codeDir = new File(codeStructC.getCodePath());
+            File exeFile = new File(codeDir, "ncslab.exe");
             System.out.println("The executing file is on " + exeFile);
 
             String exeFilePath = exeFile.getAbsolutePath();
@@ -410,7 +466,26 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
                 String.valueOf(this.getConfig().getStopTime()),
                 String.valueOf(port)
             );
-            processBuilder.directory(dir);
+            processBuilder.directory(codeDir);
+            processBuilder.environment().put("NCSLAB_RUNTIME_PARAMS",
+                new File(codeDir, "runtime_params.tsv").getAbsolutePath());
+            processBuilder.environment().putIfAbsent("NCSLAB_PROFILE", "1");
+            processBuilder.environment().putIfAbsent("NCSLAB_PARALLEL_PARTITIONS", "0");
+            processBuilder.environment().putIfAbsent("NCSLAB_UI_UPDATE_MS", "100");
+            processBuilder.environment().putIfAbsent("NCSLAB_NATIVE_UI_UPDATE_MS", "100");
+            processBuilder.environment().putIfAbsent("NCSLAB_RT_SCOPE_POINTS_PER_UPDATE", "120");
+            processBuilder.environment().putIfAbsent("NCSLAB_SCOPE_TARGET_POINTS", "12000");
+            if (SimulationBackendContext.preferCuda()) {
+                processBuilder.environment().put("NCSLAB_SIM_CUDA", "1");
+                processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SVD", "1");
+                processBuilder.environment().putIfAbsent("NCSLAB_CUDA_FORCE_SVD", "0");
+                processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SVD_MIN_N", "32");
+                processBuilder.environment().putIfAbsent("NCSLAB_CUDA_DGEMM_MIN_N", "32");
+                processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SOLVE_DGEMV_MIN_N", "128");
+                processBuilder.environment().putIfAbsent("NCSLAB_CUDA_SOLVE_DGEMV_FORCE", "0");
+                processBuilder.environment().putIfAbsent("NCSLAB_CUDA_CUBLAS_WARMUP", "1");
+            }
+            processBuilder.redirectError(ProcessBuilder.Redirect.to(new File(codeDir, "ncslab_stderr.log")));
             process = processBuilder.start();
             this.currentProcess = process;
 
@@ -425,18 +500,31 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 			out = new LittleEndianDataInputStream(socket.getInputStream());
 
 			long currentTime = new java.util.Date().getTime();
+			long lastRealtimeUiSendMs = 0L;
+			int realtimeUiIntervalMs = getRealtimeUiIntervalMs();
+
+			if (NativeCodeBridgeProfiler.isEnabled()) {
+				NativeCodeBridgeProfiler.reset();
+			}
 
 							while(true) {
 					// Check if simulation should be stopped (session closed or thread interrupted)
 					if (session != null && !session.isOpen()) {
 						System.out.println("[CodeModelCWindowsSimulation] Session closed, stopping simulation");
+						if (NativeCodeBridgeProfiler.isEnabled()) {
+							NativeCodeBridgeProfiler.logSummary("CodeModelCWindowsSimulation");
+						}
 						return;
 					}
 					if (Thread.interrupted()) {
 						System.out.println("[CodeModelCWindowsSimulation] Thread interrupted, stopping simulation");
+						if (NativeCodeBridgeProfiler.isEnabled()) {
+							NativeCodeBridgeProfiler.logSummary("CodeModelCWindowsSimulation");
+						}
 						return;
 					}
 					// 4-byte preamble sync: 0x55 0xAA 0x55 0xAA
+					long preambleStartNs = NativeCodeBridgeProfiler.isEnabled() ? System.nanoTime() : 0L;
 					int b1 = 0, b2 = 0, b3 = 0, b4 = 0;
 					do {
 						b1 = b2; b2 = b3; b3 = b4;
@@ -446,8 +534,12 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 						}
 					} while (true);
 				int cmd=out.readInt();
+				long handleStartNs = NativeCodeBridgeProfiler.isEnabled() ? System.nanoTime() : 0L;
 				//System.out.println(cmd);
 				if(cmd==-1) {
+					if (NativeCodeBridgeProfiler.isEnabled()) {
+						NativeCodeBridgeProfiler.recordMessage(handleStartNs - preambleStartNs, 0L);
+					}
 					break;
 				}
 				switch(cmd) {
@@ -558,11 +650,20 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 							}
 							double currentSimTime = out.readDouble();
 
-							sendRealtimeDataUpdateMessage(session, rtDisplayData, rtScopeDataList, currentSimTime);
+							long nowMs = System.currentTimeMillis();
+							if (realtimeUiIntervalMs == 0 || nowMs - lastRealtimeUiSendMs >= realtimeUiIntervalMs) {
+								rtScopeDataList = downsampleScopes(rtScopeDataList, calculateMaxPointsPerUpload());
+								sendRealtimeDataUpdateMessage(session, rtDisplayData, rtScopeDataList, currentSimTime);
+								lastRealtimeUiSendMs = nowMs;
+							}
 						} catch (IOException e) {
 							System.err.println("[CodeModelCWindowsSimulation] Error parsing RealtimeDataUpdate: " + e.getMessage());
 						}
 						break;
+				}
+				if (NativeCodeBridgeProfiler.isEnabled()) {
+					long handleEndNs = System.nanoTime();
+					NativeCodeBridgeProfiler.recordMessage(handleStartNs - preambleStartNs, handleEndNs - handleStartNs);
 				}
 				
 				//if((new java.util.Date().getTime())-currentTime>1000) {
@@ -571,6 +672,9 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 				//}
 				
 				//System.out.println(time);
+			}
+			if (NativeCodeBridgeProfiler.isEnabled()) {
+				NativeCodeBridgeProfiler.logSummary("CodeModelCWindowsSimulation");
 			}
 			
 			out.close();
@@ -582,8 +686,30 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 				System.out.println("[CodeModelCWindowsSimulation] Simulation stopped by user, exiting cleanly");
 				return;
 			}
+			File codeDir = new File(codeStructC.getCodePath());
             e.printStackTrace();
-			throw new ModelException("Can not execute the exe file!");
+			String stderrTail = readNcslabStderrTailString(codeDir, 16000);
+			dumpNcslabStderrTail(stderrTail);
+			if (stderrTail != null && stderrTail.toLowerCase().contains("singular")) {
+				throw new ModelException(
+					"Simulation stopped: GSL reported a singular matrix during circuit setup (matrix inversion). "
+						+ "This usually means the network equations are degenerate (e.g. inconsistent topology or parameters). "
+						+ "Inverter tables now use an SVD pseudoinverse in util.cpp; if this still appears, another GSL call failed or the matrix is non-finite. "
+						+ "See ncslab_stderr.log in: " + codeDir.getAbsolutePath());
+			}
+			if (e instanceof SocketTimeoutException) {
+				throw new ModelException(
+					"The simulation executable did not open a TCP connection within 30 seconds. "
+						+ "Typical causes: ncslab.exe could not run (missing MSVC runtime/GSL DLL on PATH), could not connect to 127.0.0.1, or exited before connect. "
+						+ "Try from PowerShell: & \"" + new File(codeDir, "ncslab.exe").getAbsolutePath() + "\" "
+						+ this.getConfig().getStopTime() + " " + srvSocket.getLocalPort()
+						+ " (use the port printed above if different). "
+						+ "Stderr (if any) is in ncslab_stderr.log under: " + codeDir.getAbsolutePath());
+			}
+			String detail = e.getClass().getSimpleName() + ": " + e.getMessage();
+			throw new ModelException(
+				"Simulation I/O error (" + detail + "). The ncslab.exe process may have exited (see connection reset). "
+					+ "Stderr is in ncslab_stderr.log under: " + codeDir.getAbsolutePath());
 		}
 		finally {
 			if (out != null) {
@@ -604,5 +730,28 @@ public class CodeModelCWindowsSimulation extends CodeModelC{
 
 		System.out.println("Simulation codes executed successfully!");
 
+	}
+
+	private static String readNcslabStderrTailString(File codeDir, int maxBytes) {
+		File log = new File(codeDir, "ncslab_stderr.log");
+		if (!log.isFile() || log.length() == 0L) {
+			return null;
+		}
+		try {
+			byte[] bytes = Files.readAllBytes(log.toPath());
+			int cap = Math.min(maxBytes, bytes.length);
+			int from = Math.max(0, bytes.length - cap);
+			return new String(bytes, from, bytes.length - from, StandardCharsets.UTF_8);
+		} catch (IOException ex) {
+			return null;
+		}
+	}
+
+	private static void dumpNcslabStderrTail(String stderrTail) {
+		if (stderrTail == null || stderrTail.isEmpty()) {
+			return;
+		}
+		System.err.println("[CodeModelCWindowsSimulation] --- tail of ncslab_stderr.log ---");
+		System.err.println(stderrTail);
 	}
 }

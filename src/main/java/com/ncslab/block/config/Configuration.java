@@ -1,10 +1,10 @@
 package com.ncslab.block.config;
 
 import com.ncslab.block.Block;
-import com.ncslab.c.code.CodeGenerationOption;
-import com.ncslab.c.code.CodeStruct;
+import com.ncslab.code.c.CodeStructC;
 import com.ncslab.dto.core.BlockDto;
 import com.ncslab.ncslablink.NCSLabModel;
+import com.ncslab.ncslablink.MatDimException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -41,27 +41,27 @@ public class Configuration extends Block {
      * Configuration 不参与 C 代码生成
      */
     @Override
-    public void generateOutputCodeC(CodeStruct code, CodeGenerationOption option) {
+    public void generateOutputCodeC(CodeStructC code) {
         // no-op: configuration block does not participate in simulation
     }
 
     @Override
-    public void generateInitCodeC(CodeStruct code, CodeGenerationOption option) {
+    public void generateInitCodeC(CodeStructC code) {
         // no-op
     }
 
     @Override
-    public void generateUpdateCodeC(CodeStruct code, CodeGenerationOption option) {
+    public void generateUpdateCodeC(CodeStructC code) throws MatDimException {
         // no-op
     }
 
     @Override
-    public void generateDerivativeCodeC(CodeStruct code, CodeGenerationOption option) {
+    public void generateDerivativeCodeC(CodeStructC code) {
         // no-op
     }
 
     @Override
-    public void generateDiscreteUpdateCodeC(CodeStruct code, CodeGenerationOption option) {
+    public void generateDiscreteUpdateCodeC(CodeStructC code) throws MatDimException {
         // no-op
     }
 }

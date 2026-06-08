@@ -7,7 +7,8 @@ info:
     
     **Recent Updates (2025):**
     - Added real-time simulation endpoint (/websocketsimulatert)
-    - Added step control simulation endpoint (/websocketsimulatestep)  
+    - Added step control simulation endpoint (/websocketsimulatestep)
+    - Added CUDA hint via optional JSON `preferCudaSimulation` on `/websocketsimulate` (no nginx change required); optional path `/websocketsimulatecuda` when proxy allows
     - Enhanced message schemas with optimized performance
     - Improved error handling and progress reporting
   version: 2.0.0
@@ -61,13 +62,45 @@ paths:
       summary: WebSocket for simulation progress
       description: |
         Real-time simulation with progress updates and results streaming.
-        
+
+        **CUDA without nginx changes:** send the same `start` command on this URL and set top-level
+        JSON field `preferCudaSimulation` to `true` (alongside `com`, `mdlData`, etc.). The server
+        then enables the same CUDA hint as `/websocketsimulatecuda` for the simulation worker thread.
+
+        **Outbound status `msg`:** before the generated binary runs, the server may send
+        `simulation_backend_cuda` or `simulation_backend_cpu` (Java-side hint only; see PROFILING.txt §6).
+
         **Message Flow:**
         1. Client sends simulation request
         2. Server sends progress: start → generating → generated → compiling → compiled → simulating → simulated → result
         3. Results are streamed in real-time during simulation
       servers:
         - url: ws://localhost:8080/ncslab_link
+      responses:
+        '101':
+          description: WebSocket connection established
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SimulationRequest'
+                  - $ref: '#/components/schemas/SimulationProgress'
+                  - $ref: '#/components/schemas/SimulationResult'
+
+  /websocketsimulatecuda:
+    get:
+      tags:
+        - Simulation
+      summary: Optional alternate path for CUDA-routed simulation
+      description: |
+        Same protocol as `/websocketsimulate`. Sets the CUDA worker hint implicitly (equivalent to
+        `preferCudaSimulation: true` on `/websocketsimulate`). Use when your reverse proxy already
+        exposes this path; **if nginx cannot add a new location**, use `/websocketsimulate` with
+        `preferCudaSimulation: true` instead.
+
+        **Message flow:** identical to `/websocketsimulate` (start → generating → … → simulated → result).
+      servers:
+        - url: ws://localhost:8080/matlab/websocketsimulatecuda
       responses:
         '101':
           description: WebSocket connection established

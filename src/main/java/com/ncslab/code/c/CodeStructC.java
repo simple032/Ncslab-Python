@@ -456,8 +456,12 @@ abstract public class CodeStructC{
 				+outputCode+"\n"
 				+"#ifdef _CIRCUIT\n"
 				+"if(mp->majorStep){\n"
+				+"long long ncs_circuit_output_start_us=ncs_prof_now_us();\n"
 				+"CircuitOutput();\n"
+				+"ncs_prof_add_circuit_output(ncs_prof_now_us()-ncs_circuit_output_start_us);\n"
+				+"long long ncs_circuit_update_start_us=ncs_prof_now_us();\n"
 				+"CircuitUpdate();\n"
+				+"ncs_prof_add_circuit_update(ncs_prof_now_us()-ncs_circuit_update_start_us);\n"
 				+"}\n"
 				+"#endif\n"
 				+"}\n"
@@ -502,11 +506,8 @@ abstract public class CodeStructC{
 				+"\n";
 
 		File file = new File(codePath+"mainccode.cpp");
-		FileOutputStream outputStream;
 		try {
-			outputStream = new FileOutputStream(file);
-			outputStream.write(mainCCode.getBytes());
-			outputStream.close();
+			writeStringIfChanged(file, mainCCode);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -711,6 +712,10 @@ abstract public class CodeStructC{
 	@Getter
     protected String codePath;
 
+	public String getCodePath() {
+		return codePath;
+	}
+
 	protected void writeMakefile(String fileName) {
 		System.out.println("Writing file "+fileName+"...");
 		
@@ -739,13 +744,11 @@ abstract public class CodeStructC{
         if(inputStream == null) {
             System.err.println("No makefile "+fileName+"...");
             return;
-        }
+		}
 
 		File file = new File(codePath+"/"+fileName);
-		FileOutputStream outputStream;
 		try {
-			outputStream = new FileOutputStream(file);
-			//ckeckout the s-function file
+			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 			String sfcn = "SFCNOBJS=";
 			for(Block block : model.getBlockList())
 			{
@@ -760,16 +763,16 @@ abstract public class CodeStructC{
 			sfcn += "\n";
 
 			byte[] buffer = sfcn.getBytes();
-			outputStream.write(buffer,0,buffer.length);
+			bytes.write(buffer,0,buffer.length);
 
 			buffer = new byte[1024];
 
 			int len;
 			while((len=inputStream.read(buffer))>0) {
-				outputStream.write(buffer,0,len);
+				bytes.write(buffer,0,len);
 			}
 
-			outputStream.close();
+			writeBytesIfChanged(file, bytes.toByteArray());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -817,18 +820,32 @@ abstract public class CodeStructC{
             return;
         }
 
-        FileOutputStream outputStream;
         try {
-            outputStream = new FileOutputStream(file);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int len;
             while((len=inputStream.read(buffer))>0) {
-                outputStream.write(buffer,0,len);
+                bytes.write(buffer,0,len);
             }
-
-            outputStream.close();
+            writeBytesIfChanged(file, bytes.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void writeStringIfChanged(File file, String content) throws IOException {
+        writeBytesIfChanged(file, content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    private void writeBytesIfChanged(File file, byte[] bytes) throws IOException {
+        if (file.exists()) {
+            byte[] oldBytes = java.nio.file.Files.readAllBytes(file.toPath());
+            if (java.util.Arrays.equals(oldBytes, bytes)) {
+                return;
+            }
+        }
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            outputStream.write(bytes);
         }
     }
 
@@ -947,11 +964,8 @@ abstract public class CodeStructC{
 
 
 		File file = new File(codePath+"ncslab.hpp");
-		FileOutputStream outputStream;
 		try {
-			outputStream = new FileOutputStream(file);
-			outputStream.write(code.getBytes());
-			outputStream.close();
+			writeStringIfChanged(file, code);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -976,17 +990,13 @@ abstract public class CodeStructC{
 		return readFile("ncslab");
 	}
 
-
-	public void writeCCodeFiles() {
-        System.out.println("Write CCode Files in CodeStructC");
-		//生成目标文件夹的位置codePathBase/用户id/modelId
+	public String prepareCodePath() {
 		String userPath=codePathBase+model.getUserId();
 
 		File file=new File(userPath);
 		if(!file.exists()) {
 			file.mkdir();
 		}
-
 
 		String modelPath=userPath+"/"+model.getModelId();
 		file=new File(modelPath);
@@ -995,6 +1005,13 @@ abstract public class CodeStructC{
 		}
 
 		codePath=modelPath+"/";
+		return codePath;
+	}
+
+
+	public void writeCCodeFiles() {
+        System.out.println("Write CCode Files in CodeStructC");
+		prepareCodePath();
 
 		//写入周边的资源文件
 		//makefile
@@ -1030,8 +1047,8 @@ abstract public class CodeStructC{
         writeNCSLabFile("ricatti.hpp","ricatti.hpp", true);
         writeNCSLabFile("onestep.hpp","onestep.hpp", true);
 
-        writeNCSLabFile("util.cpp");
-        writeNCSLabFile("util.hpp");
+        writeNCSLabFile("util.cpp", "util.cpp", true);
+        writeNCSLabFile("util.hpp", "util.hpp", true);
 
         // Matrix.cpp removed - Matrix.hpp is now header-only template
         writeNCSLabFile("Matrix.hpp");
@@ -1101,46 +1118,125 @@ abstract public class CodeStructC{
 	}
 
 	public boolean makeExeFile() {
+		boolean cudaReq = model.isCudaSimulationRequested();
+		Integer exitCode = runMakeOnce(cudaReq ? "1" : "0");
+		return exitCode != null && exitCode == 0;
+	}
+
+	/**
+	 * Runs make in {@link #codePath}. When {@code useCudaMakeFlag} is non-null, sets environment USE_CUDA to that value
+	 * (typically "1" or "0"); when null, removes USE_CUDA so the makefile default applies.
+	 */
+	private Integer runMakeOnce(String useCudaMakeFlag) {
 		try {
-            // Use ProcessBuilder instead of deprecated Runtime.exec()
-            ProcessBuilder processBuilder = new ProcessBuilder();
-
-            // Split the maketool command into command and arguments
-            // This handles commands like "make" or "mingw32-make"
-            String[] commandParts = maketool.split("\\s+");
-            processBuilder.command(commandParts);
-
-            // Set working directory
-            processBuilder.directory(new File(codePath));
-
-            // Start the process
-            Process process = processBuilder.start();
-
-            // 创建线程读取标准输出和错误输出
-            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
-            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
-
-            // 启动线程
-            outputGobbler.start();
-            errorGobbler.start();
-
-            // 等待进程完成
-            int exitCode = process.waitFor();
-
-            // 确保所有输出都被读取
-            outputGobbler.join();
-            errorGobbler.join();
-
-			if(exitCode == 0) {
-				return true;
+			final long t0 = System.nanoTime();
+			ProcessBuilder processBuilder = new ProcessBuilder();
+			String[] commandParts = maketool.split("\\s+");
+			String vsDevCmd = isWindowsHost() ? findVsDevCmd() : null;
+			if (vsDevCmd != null) {
+				processBuilder.command("cmd.exe", "/d", "/c",
+						"call \"" + vsDevCmd + "\" -arch=x64 -host_arch=x64 >nul && " + joinCommandForCmd(commandParts));
+			} else {
+				processBuilder.command(commandParts);
+			}
+			processBuilder.directory(new File(codePath));
+			java.util.Map<String, String> env = processBuilder.environment();
+			if (useCudaMakeFlag != null) {
+				env.put("USE_CUDA", useCudaMakeFlag);
+			} else {
+				env.remove("USE_CUDA");
 			}
 
-		}
-		catch(Exception e) {
+			Process process = processBuilder.start();
+
+			StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
+			StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), System.err::println);
+
+			outputGobbler.start();
+			errorGobbler.start();
+
+			int exitCode = process.waitFor();
+
+			outputGobbler.join();
+			errorGobbler.join();
+
+			long wallMs = (System.nanoTime() - t0) / 1_000_000L;
+			String cudaTag = useCudaMakeFlag == null ? "unset" : useCudaMakeFlag;
+			System.err.printf(java.util.Locale.US,
+					"[CodeStructC] make wall=%d ms USE_CUDA=%s exit=%d%n",
+					wallMs, cudaTag, exitCode);
+
+			return exitCode;
+		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private static boolean isWindowsHost() {
+		return System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win");
+	}
+
+	private static String joinCommandForCmd(String[] commandParts) {
+		StringBuilder sb = new StringBuilder();
+		for (String part : commandParts) {
+			if (part == null || part.isEmpty()) {
+				continue;
+			}
+			if (sb.length() > 0) {
+				sb.append(' ');
+			}
+			if (part.indexOf(' ') >= 0 || part.indexOf('&') >= 0 || part.indexOf('(') >= 0 || part.indexOf(')') >= 0) {
+				sb.append('"').append(part.replace("\"", "\\\"")).append('"');
+			} else {
+				sb.append(part);
+			}
+		}
+		return sb.toString();
+	}
+
+	private static String findVsDevCmd() {
+		String envPath = System.getenv("VSDEVCMD_PATH");
+		if (isExistingFile(envPath)) {
+			return envPath;
 		}
 
-		return false;
+		String vsInstallDir = System.getenv("VSINSTALLDIR");
+		String fromInstallDir = vsInstallDir == null ? null : vsInstallDir + File.separator + "Common7"
+				+ File.separator + "Tools" + File.separator + "VsDevCmd.bat";
+		if (isExistingFile(fromInstallDir)) {
+			return fromInstallDir;
+		}
+
+		File vswhere = new File("C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe");
+		if (!vswhere.isFile()) {
+			return null;
+		}
+		try {
+			Process process = new ProcessBuilder(
+					vswhere.getAbsolutePath(),
+					"-latest",
+					"-products", "*",
+					"-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+					"-property", "installationPath").start();
+			String installPath;
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+				installPath = reader.readLine();
+			}
+			int exitCode = process.waitFor();
+			if (exitCode != 0 || installPath == null || installPath.trim().isEmpty()) {
+				return null;
+			}
+			String devCmd = installPath.trim() + File.separator + "Common7" + File.separator + "Tools"
+					+ File.separator + "VsDevCmd.bat";
+			return isExistingFile(devCmd) ? devCmd : null;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private static boolean isExistingFile(String path) {
+		return path != null && !path.trim().isEmpty() && new File(path).isFile();
 	}
 
     public void removeAllFiles(){
@@ -1239,15 +1335,21 @@ abstract public class CodeStructC{
 				dataStructureCode+="PARAMETER **parameters"+block.getBlockId()+"=NULL;\n";
 			}
 		}
-		dataStructureCode+="PARAMETER *parameters["+parameterNum+"];\n";
+		dataStructureCode+="PARAMETER *parameters["+Math.max(1, parameterNum)+"];\n";
 		model.setParameterNum(parameterNum);
 
 		dataStructureCode+="/*Define state structures*/\n";
 
 		for(Block block:model.getBlockList()) {
 			if(!block.getStateList().isEmpty()) {
+				// Same (blockId, stateId) can appear twice in the model list (e.g. duplicate wiring);
+				// C requires a single STATE state{blockId}_{id} definition — mirror output-port deduping.
+				java.util.Set<String> definedStateStructs = new java.util.HashSet<>();
 				for(State state:block.getStateList()) {
-					dataStructureCode+="STATE state"+block.getBlockId()+"_"+state.getId()+"={(char *)\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
+					String stateStructKey = block.getBlockId() + "_" + state.getId();
+					if (definedStateStructs.add(stateStructKey)) {
+						dataStructureCode+="STATE state"+stateStructKey+"={(char *)\""+state.getLocalName()+"\","+state.getWidth()+"};\n";
+					}
 				}
 				dataStructureCode+="STATE *states"+block.getBlockId()+"["+block.getStateList().size()+"];\n";
 			}
@@ -1255,7 +1357,7 @@ abstract public class CodeStructC{
 				dataStructureCode+="STATE **states"+block.getBlockId()+"=NULL;\n";
 			}
 		}
-		dataStructureCode+="STATE *states["+model.getStateNum()+"];\n";
+		dataStructureCode+="STATE *states["+Math.max(1, model.getStateNum())+"];\n";
 
 		dataStructureCode+="/*Define signal structures*/\n";
 		for(Block block:model.getBlockList()) {
@@ -1279,7 +1381,7 @@ abstract public class CodeStructC{
 				dataStructureCode+="SIGNAL **signals"+block.getBlockId()+"=NULL;\n";
 			}
 		}
-		dataStructureCode+="SIGNAL *signals["+model.getSignalNum()+"];\n";
+		dataStructureCode+="SIGNAL *signals["+Math.max(1, model.getSignalNum())+"];\n";
 
 		dataStructureCode+="/*Define block structures*/\n";
 		if(!model.getBlockList().isEmpty()) {

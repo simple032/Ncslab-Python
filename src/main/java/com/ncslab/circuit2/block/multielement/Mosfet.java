@@ -20,7 +20,7 @@ public class Mosfet extends CircuitBlockMulti implements Recalc {
 	private SwitchBase sw1;
 	private SwitchBase sw2;
 	
-	private block.elec.Mosfet mosfet;
+	private com.ncslab.block.elec.Mosfet mosfet;
 	public Mosfet(int id, JSONObject blockJSON, NCSLabModel model) {
 		super(id, blockJSON, model);
 		rOnString=paramValues.getString("Ron");
@@ -39,7 +39,7 @@ public class Mosfet extends CircuitBlockMulti implements Recalc {
 		JSONObject addParamValues=new JSONObject();
 		addJSON.put("paramValues", addParamValues);
 		//System.out.println(addJSON);
-		mosfet=new block.elec.Mosfet(addJSON,model,this);
+		mosfet=new com.ncslab.block.elec.Mosfet(addJSON,model,this);
 		model.addElectBlock(mosfet);
 	}
 	

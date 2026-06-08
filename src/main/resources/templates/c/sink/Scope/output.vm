@@ -2,24 +2,44 @@
 #if($inputPortList && $inputPortListSize > 0 && $scopeStruct)    
     ## Scope data logging - only on major time steps
     if (sfcnIsMajorStep()) {
-        ## Log current simulation time
-        ${scopeStructName}.timeList.push_back(sfcnGetT());
-        
-        #if($inputSignal1DataType == $realDataType)
-            ## Scalar data logging
-            ${scopeStructName}.dataList.push_back($inputSignal);
-        #else
-            ## Matrix data logging - flatten matrix into vector
-            for(int i = 0; i < $inputSignal1Height; i++) {
-                for(int j = 0; j < $inputSignal1Width; j++) {
-                    ${scopeStructName}.dataList.push_back(${inputSignal}(i, j));
-                }
+        if (${scopeStructName}.maxDataLength <= 1) {
+            ## Display-like terminals only need the newest point. Keeping a growing
+            ## vector here makes real-time simulation slower on large models.
+            if (${scopeStructName}.timeList.empty()) {
+                ${scopeStructName}.timeList.push_back(sfcnGetT());
+            } else {
+                ${scopeStructName}.timeList[0] = sfcnGetT();
             }
-        #end
-        
-        ## Flush to file when in-memory data exceeds CHUNK_SIZE (100,000)
-        if (${scopeStructName}.timeList.size() > CHUNK_SIZE) {
-            flushScopeChunk(&${scopeStructName});
+            ${scopeStructName}.dataList.resize($inputSignal1Height * $inputSignal1Width);
+            #if($inputSignal1DataType == $realDataType)
+                ${scopeStructName}.dataList[0] = $inputSignal;
+            #else
+                for(int i = 0; i < $inputSignal1Height; i++) {
+                    for(int j = 0; j < $inputSignal1Width; j++) {
+                        ${scopeStructName}.dataList[i * $inputSignal1Width + j] = ${inputSignal}(i, j);
+                    }
+                }
+            #end
+        } else if (ncsScopeShouldLog(&${scopeStructName})) {
+            ## Log current simulation time
+            ${scopeStructName}.timeList.push_back(sfcnGetT());
+            
+            #if($inputSignal1DataType == $realDataType)
+                ## Scalar data logging
+                ${scopeStructName}.dataList.push_back($inputSignal);
+            #else
+                ## Matrix data logging - flatten matrix into vector
+                for(int i = 0; i < $inputSignal1Height; i++) {
+                    for(int j = 0; j < $inputSignal1Width; j++) {
+                        ${scopeStructName}.dataList.push_back(${inputSignal}(i, j));
+                    }
+                }
+            #end
+            
+            ## Flush to file when in-memory data exceeds CHUNK_SIZE (100,000)
+            if (${scopeStructName}.timeList.size() > CHUNK_SIZE) {
+                flushScopeChunk(&${scopeStructName});
+            }
         }
     }
 #else

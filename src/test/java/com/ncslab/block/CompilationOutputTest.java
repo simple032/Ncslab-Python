@@ -1,5 +1,6 @@
 package com.ncslab.block;
 
+import com.ncslab.test.category.NativeTest;
 import com.ncslab.database.MdlBlock;
 import com.utils.MdlBlockMapper;
 import com.utils.Mybatis1Utils;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.*;
 import java.util.Arrays;
@@ -20,6 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ncslab.websocket.SimulateWebSocket;
 
+@Category(NativeTest.class)
 public class CompilationOutputTest {
 
     String filePath = "com/ncslab/websocket/simulateWebsocket.json";

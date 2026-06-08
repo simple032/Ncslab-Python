@@ -146,6 +146,8 @@ struct SCOPE
 	std::vector<REAL> timeList;
 
 	int isFull;
+	int logEvery;
+	int logCounter;
 };
 
 void NCSLabInit();

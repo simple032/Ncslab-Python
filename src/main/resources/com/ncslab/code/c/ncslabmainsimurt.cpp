@@ -27,6 +27,8 @@
 
 MODEL* mp;
 
+extern "C" void ncslab_cuda_runtime_probe(void);
+
 extern int g_realtimeMode;
 extern FILE* g_simStream;
 extern int g_simSocket;
@@ -41,14 +43,12 @@ int main(int argc, char* argv[]) {
 	double endTime = 10;
 	double end = -1;
 	PROGRESSTYPE progressType=Ending;
-	NCSLabInit();
-	g_realtimeMode = 1;  // Enable real-time mode: skip disk writes in flushScopeChunk
 
 	if (argc >= 2) {
 		endTime = atof(argv[1]);
 	}
 
-	// TCP mode: if port is provided, connect to Java backend
+	// TCP before NCSLabInit() so Java accept() completes even if init aborts (see ncslabmainsimu.cpp).
 	if (argc >= 3) {
 		int port = atoi(argv[2]);
 #ifdef _WIN32
@@ -91,6 +91,14 @@ int main(int argc, char* argv[]) {
 	}
 #endif
 
+	ncslab_runtime_params_load(NULL);
+	NCSLabInit();
+
+	ncslab_cuda_runtime_probe();
+	ncslab_cuda_cublas_warmup();
+
+	g_realtimeMode = 1;  // Enable real-time mode: skip disk writes in flushScopeChunk
+
 	mp = NCSLabGetModelP();
 
 	mp->time = mp->startTime;
@@ -118,13 +126,7 @@ int main(int argc, char* argv[]) {
 	simFlush();
 
 	if (g_simSocket >= 0) {
-#ifdef _WIN32
-		closesocket(g_simSocket);
-		WSACleanup();
-#else
-		close(g_simSocket);
-#endif
-		g_simSocket = -1;
+		simCloseSocketGracefully();
 	}
 
 	return 0;

@@ -17,6 +17,21 @@ public class CodeModelST extends CodeModel {
         super(jsonIn, mode);
     }
 
+    @Override
+    protected void generatorCircuitGloablCode(CodeGenerationOption option) {
+        // ST generation does not emit circuit2 native support code.
+    }
+
+    @Override
+    protected void generatorCircuitOutputCode(CodeGenerationOption option) {
+        // ST generation does not emit circuit2 native support code.
+    }
+
+    @Override
+    protected void generatorCircuitUpdateCode(CodeGenerationOption option) {
+        // ST generation does not emit circuit2 native support code.
+    }
+
     public static CodeModelST createFromJSON(JSONObject jsonIn, ModelMode mode) throws ModelException{
 		CodeModelST model=new CodeModelST(jsonIn,mode);
 

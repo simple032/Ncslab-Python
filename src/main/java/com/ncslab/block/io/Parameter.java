@@ -111,11 +111,53 @@ public class Parameter {
 	}
 
     public String getInitCodeC() {
-		String code;
-
-		code=data.getInitCodeC(this.getName());
-
+		String code = data.getInitCodeC(this.getName());
+		if (data.getDataType() == DataType.REAL) {
+			code += this.getName() + " = ncslab_runtime_param(\""
+					+ escapeC(runtimeParamKey()) + "\", " + this.getName() + ");\n";
+			String pathKey = runtimePathKey();
+			if (!pathKey.equals(runtimeParamKey())) {
+				code += this.getName() + " = ncslab_runtime_param(\""
+						+ escapeC(pathKey) + "\", " + this.getName() + ");\n";
+			}
+		} else if (data.getDataType() == DataType.MATRIX) {
+			String primary = runtimeParamKey();
+			String pathKey = runtimePathKey();
+			for (int i = 0; i < getHeight(); i++) {
+				for (int j = 0; j < getWidth(); j++) {
+					String suffix = "[" + i + "," + j + "]";
+					code += this.getName() + "(" + i + "," + j + ") = ncslab_runtime_param(\""
+							+ escapeC(primary + suffix) + "\", " + this.getName() + "(" + i + "," + j + "));\n";
+					if (!pathKey.equals(primary)) {
+						code += this.getName() + "(" + i + "," + j + ") = ncslab_runtime_param(\""
+								+ escapeC(pathKey + suffix) + "\", " + this.getName() + "(" + i + "," + j + "));\n";
+					}
+				}
+			}
+		}
 		return code;
+	}
+
+	private String runtimeParamKey() {
+		if (block != null) {
+			String uuid = block.getBlockUUID();
+			if (uuid != null && !uuid.trim().isEmpty() && !"null".equalsIgnoreCase(uuid.trim())) {
+				return uuid.trim() + "." + localName;
+			}
+			return runtimePathKey();
+		}
+		return (name != null ? name : "Parameter_" + localName) + "." + localName;
+	}
+
+	private String runtimePathKey() {
+		if (block == null) {
+			return runtimeParamKey();
+		}
+		return block.getBlockPath() + "/" + block.getBlockName() + "." + localName;
+	}
+
+	private static String escapeC(String value) {
+		return value.replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 
 	public String getDefineCodeC() {

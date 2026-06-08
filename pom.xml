@@ -28,6 +28,8 @@
 		<junit.version>4.13.2</junit.version>
 		<jupiter.version>5.6.2</jupiter.version>
 		<mockito.version>4.0.0</mockito.version>
+    <test.groups></test.groups>
+    <test.excluded.groups>com.ncslab.test.category.IntegrationTest,com.ncslab.test.category.NativeTest,com.ncslab.test.category.HardwareTest</test.excluded.groups>
 	</properties>
 
   <!-- 1. 开发/生产 Profile（核心调整：添加文件重命名） -->
@@ -174,6 +176,34 @@
               </plugins>
           </build>
       </profile>
+      <profile>
+          <id>integration-tests</id>
+          <properties>
+              <test.groups>com.ncslab.test.category.IntegrationTest</test.groups>
+              <test.excluded.groups></test.excluded.groups>
+          </properties>
+      </profile>
+      <profile>
+          <id>native-tests</id>
+          <properties>
+              <test.groups>com.ncslab.test.category.NativeTest</test.groups>
+              <test.excluded.groups></test.excluded.groups>
+          </properties>
+      </profile>
+      <profile>
+          <id>hardware-tests</id>
+          <properties>
+              <test.groups>com.ncslab.test.category.HardwareTest</test.groups>
+              <test.excluded.groups></test.excluded.groups>
+          </properties>
+      </profile>
+      <profile>
+          <id>all-tests</id>
+          <properties>
+              <test.groups></test.groups>
+              <test.excluded.groups></test.excluded.groups>
+          </properties>
+      </profile>
   </profiles>
 
 	<dependencies>
@@ -181,12 +211,14 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
+      <scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>${mockito.version}</version>
+      <scope>test</scope>
 		</dependency>
 
 		<!-- Replace TopLink with EclipseLink for JPA -->
@@ -496,7 +528,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
-<!--          <groups>com.ncslab.LinuxLoongarchTest, com.ncslab.WindowsTest</groups>-->
+          <groups>${test.groups}</groups>
+          <excludedGroups>${test.excluded.groups}</excludedGroups>
         </configuration>
       </plugin>
 

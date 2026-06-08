@@ -32,12 +32,26 @@ public class Resistor extends CircuitBlockSingle implements SwitchBlock{
 	}
 	
 	public String getRString() {
-		if(rValue<=0) {
+		if (Double.isNaN(rValue)) {
+			return "(" + Data.cxxScalarMacroForNonFiniteDouble(rValue) + "*1.0)";
+		}
+		if (Double.isInfinite(rValue) && rValue > 0) {
+			return "(" + Data.cxxScalarMacroForNonFiniteDouble(rValue) + "*1.0)";
+		}
+		if (rValue <= 0) {
 			return "1.0";
 		}
-		else {
-			return "("+this.rString+"*1.0)";
+		String defaultToken = "(" + Data.evaluatedJavaScalarToCxxToken(this.rString) + "*1.0)";
+		return runtimeParamExpression("R", defaultToken);
+	}
+
+	private String runtimeParamExpression(String paramName, String defaultToken) {
+		String key = getBlockUUID();
+		if (key == null || key.trim().isEmpty() || "null".equalsIgnoreCase(key.trim())) {
+			key = getBlockPath() + "/" + getBlockName();
 		}
+		return "ncslab_runtime_param(\"" + key.replace("\\", "\\\\").replace("\"", "\\\"")
+				+ "." + paramName + "\", " + defaultToken + ")";
 	}
 	
 	public double getRValue() {

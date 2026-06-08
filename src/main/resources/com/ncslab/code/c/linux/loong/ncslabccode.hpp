@@ -226,6 +226,8 @@ struct SCOPE
 
 	int isFull;
 	int chunkCount;
+	int logEvery;
+	int logCounter;
 };
 
 void NCSLabInit();
@@ -236,6 +238,7 @@ void NCSLabUpdate();
 void NCSLabDiscreteUpdate();
 void NCSLabSinkOutput();
 void flushScopeChunk(SCOPE* scope);
+int ncsScopeShouldLog(SCOPE* scope);
 void storeState();
 void restoreState();
 void storeDerivative(int);

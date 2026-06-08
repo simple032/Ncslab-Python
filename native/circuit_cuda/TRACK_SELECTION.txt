@@ -1,0 +1,38 @@
+CUDA track selection (SPICE-style vs NCSLab block/ODE)
+=====================================================
+
+Track A — SPICE-like implicit Newton + large sparse Jacobians
+-------------------------------------------------------------
+Choose when:
+- Dominant cost is assembling/solving large sparse linear systems each Newton step.
+- Many nonlinear devices, high node count, stiff implicit integration.
+- You control or generate full MNA / companion-model stamping.
+
+GPU wins most often for:
+- Parallel device evaluation + parallel sparse fill.
+- Monte Carlo / corners: many independent solves with similar sparsity patterns.
+
+Risks:
+- Ill-conditioned matrices need strong preconditioners; small circuits are slower on GPU.
+
+Track B — ODE + block diagram + CircuitModel / LoopSolver (closer to this repo)
+------------------------------------------------------------------------------
+Choose when:
+- Profiling shows time in Java integrate(), calculateOutputs(), or modest loop solvers.
+- Many small matrix solves or wide state vectors updated each step.
+- Or throughput is "run the same model 10^3–10^6 times" (parameters, MC).
+
+GPU wins most often for:
+- Batched instances (same structure, different parameters).
+- SIMD-friendly vector updates emitted into generated C++.
+
+Risks:
+- Per-step tiny solves and heavy branching waste GPU threads.
+
+Quick rule
+----------
+Single small schematic + interactive latency  -> start Track B (batch/MC) or CPU.
+Large post-layout transient + many devices    -> invest in Track A sparse pipeline.
+
+The native library in this folder (circuit_cuda) is sized for Track B style POCs:
+batched host vectors + optional CUDA kernel, with CPU fallback always available.

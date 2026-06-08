@@ -4,6 +4,11 @@
 #include "ncslabdefines.hpp"
 #include "ncslabccode.hpp"
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_blas.h>
+#ifdef NCSLAB_USE_KLU
+#include <suitesparse/klu.h>
+#endif
 
 // 定义缓冲区结构体
 typedef struct {
@@ -78,10 +83,12 @@ void writeInformation();
 void sendDisplayUpdateForce();
 void sendStateflowStateUpdate(const char* chartUUID, const char* stateId, const char* stateName);
 void sendRealtimeDataUpdate();
+int ncsRealtimeNativeIntervalMs();
 
 // Global simulation stream/socket for TCP communication with Java backend
 extern FILE* g_simStream;
 extern int g_simSocket;
+extern volatile int g_ncsCrashStage;
 
 // Real-time simulation pause/resume control flag
 extern bool g_simulationPaused;
@@ -92,9 +99,12 @@ void simPutc(int c);
 void simPrintf(const char* fmt, ...);
 void simFlush();
 void sendPreamble();
+void simCloseSocketGracefully();
 double generateGaussianNoise(double mean, double stdDev);
 double lowPassFilter(double input, double alpha);
 unsigned char calcSum(unsigned char bytes[]);
+void ncslab_runtime_params_load(const char* path);
+double ncslab_runtime_param(const char* key, double defaultValue);
 
 
 //电路仿真的定义代码
@@ -108,6 +118,17 @@ typedef struct{
 	uint32_T isVariableChanged; //是否有参数发生变化，需要重新计算
 	//REAL *rAA;
 	gsl_matrix * inv; //逆阵的指针
+	gsl_matrix * lu; //LU分解缓存，用于快速求解A*x=b
+	gsl_permutation * perm; //LU分解排列缓存
+	int luSignum;
+	int luReady;
+	void *cudaInv; //GPU resident inverse matrix cache for repeated dense solves
+#ifdef NCSLAB_USE_KLU
+	klu_symbolic *kluSymbolic;
+	klu_numeric *kluNumeric;
+	klu_common kluCommon;
+	int kluReady;
+#endif
 }StoreGAA;
 
 //逆阵表的数据结构
@@ -117,6 +138,11 @@ typedef struct{
 	uint32_T switchNum; //开关的个数
 	uint32_T *switchStatus; //开关的状态
 	uint32_T storeGAASize; //逆阵表的大小
+	uint32_T storeGAACapacity; //逆阵表已分配容量
+	uint32_T cacheHits; //逆阵缓存命中次数
+	uint32_T cacheMisses; //逆阵缓存未命中次数
+	uint32_T cacheRebuilds; //参数变化后重建次数
+	StoreGAA *lastStoreGAA; //上一次命中的缓存项
 	StoreGAA *storeGAA; //指向逆阵的数据结构的指针
 }SwitchGAA;
 
@@ -147,6 +173,17 @@ StoreGAA *findStoreGAA(SwitchGAA *psGaa,uint32_T *switchStatus);
 int getSwtichStatus(SwitchGAA *psGaa,int pos);
 void CircuitCombineIA(REAL *iA,int *vIndex,int *size_p,int* ref,int n,int m,int indexSize,int refSize);
 gsl_matrix *caclulateInv(StoreGAA *pStoreGaa,REAL *gAA,int size);
+int solveStoreGAA(StoreGAA *pStoreGaa,gsl_vector *b,gsl_vector *x);
+int solveDenseLinearSystem(REAL *gAA, REAL *iA, int size, gsl_vector *x);
+int ncs_parallel_partitions_enabled(void);
+long long ncs_prof_now_us(void);
+void ncs_prof_add_circuit_output(long long us);
+void ncs_prof_add_circuit_update(long long us);
+void ncs_prof_add_partitions(long long us);
+void ncs_prof_add_partition_prepare(long long us);
+void ncs_prof_add_partition_solve(long long us);
+void ncs_prof_add_partition_equiv(long long us);
+void ncs_prof_print_summary(void);
 #define CIRCUIT_THREAD_NUM 8
 
 typedef struct{
@@ -181,4 +218,21 @@ void CircuitUpdate();
 void copyCircuitMartrix(REAL *gAA,REAL *gAAc,REAL *iA,REAL *iAc,int size);
 void copyCircuitVector(REAL *iA,REAL *iAc,int size);
 void CircuitCombine(REAL *,REAL *,int *,int *,int *,int,int,int,int);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+/** 0 if C_col holds W*U^T on GPU; nonzero => caller uses GSL dgemm. */
+int ncslab_cuda_gemm_nt_colmajor_nxn(int n, const double* W_col, const double* U_col, double* C_col);
+/** 0 if y holds A*x using a cached device copy of row-major A; nonzero => caller uses CPU solve. */
+int ncslab_cuda_dgemv_rowmajor_cached_nxn(int n, const double* A_row, const double* x, double* y, void** device_cache);
+void ncslab_cuda_free_device_cache(void** device_cache);
+/** After ncslab_cuda_runtime_probe(); optional cuBLAS Lt / library load before first real pseudoinverse. */
+void ncslab_cuda_cublas_warmup(void);
+/** Experimental: 0 => inv_col_major filled GPU-side; nonzero => GSL path in util.cpp. Unimplemented until cuSOLVER path lands. */
+int ncslab_cuda_svd_pinv_colmajor(int n, const double* A_col_major, double* inv_col_major);
+#ifdef __cplusplus
+}
+#endif
+
 #endif

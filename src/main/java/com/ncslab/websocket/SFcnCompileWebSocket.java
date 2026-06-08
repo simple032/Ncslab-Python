@@ -29,8 +29,8 @@ public class SFcnCompileWebSocket {
 	@OnOpen
 	public void onOpen(Session session){
 		System.out.println("WEBopen Experiment for Sfunction Compile");
-		session.setMaxTextMessageBufferSize(1024*1024);
-		session.setMaxBinaryMessageBufferSize(1024*1024);
+		session.setMaxTextMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
+		session.setMaxBinaryMessageBufferSize(WebSocketSecurity.MAX_MESSAGE_SIZE);
 	}
 	
 	private void sendMessage(Session session, String msgString) throws IOException{
